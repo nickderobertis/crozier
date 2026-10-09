@@ -15,6 +15,7 @@ from __future__ import annotations
 import dataclasses
 import email.utils
 import http.server
+import itertools
 import json
 import os
 import shutil
@@ -147,7 +148,7 @@ class GuardTestCase(unittest.TestCase):
 
             do_POST = do_GET
 
-            def log_message(self, *args: Any) -> None:
+            def log_message(self, format: str, *args: Any) -> None:
                 pass
 
         self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
@@ -175,8 +176,12 @@ class GuardTestCase(unittest.TestCase):
         self.addCleanup(restore_env)
 
         # Shorter timings keep the tier fast; the rules they drive are the module's own.
-        saved = (guard_module.RESET_MARGIN_S, guard_module.SECONDARY_BACKOFF_BASE_S,
-                 guard_module.SECONDARY_ATTEMPT_BUDGET, dict(guard_module.PACED_LANES))
+        saved = (
+            guard_module.RESET_MARGIN_S,
+            guard_module.SECONDARY_BACKOFF_BASE_S,
+            guard_module.SECONDARY_ATTEMPT_BUDGET,
+            dict(guard_module.PACED_LANES),
+        )
         guard_module.RESET_MARGIN_S = 0.2
         guard_module.SECONDARY_BACKOFF_BASE_S = 0.3
         guard_module.SECONDARY_ATTEMPT_BUDGET = 3
@@ -184,8 +189,12 @@ class GuardTestCase(unittest.TestCase):
             guard_module.PACED_LANES[lane] = PacedLane(spacing_s=0.4, backoff_base_s=0.3, attempt_budget=4)
 
         def restore_timings() -> None:
-            (guard_module.RESET_MARGIN_S, guard_module.SECONDARY_BACKOFF_BASE_S,
-             guard_module.SECONDARY_ATTEMPT_BUDGET, lanes) = saved
+            (
+                guard_module.RESET_MARGIN_S,
+                guard_module.SECONDARY_BACKOFF_BASE_S,
+                guard_module.SECONDARY_ATTEMPT_BUDGET,
+                lanes,
+            ) = saved
             guard_module.PACED_LANES.clear()
             guard_module.PACED_LANES.update(lanes)
 
@@ -194,8 +203,9 @@ class GuardTestCase(unittest.TestCase):
     def guard(self, host: str = "github") -> RateLimitGuard:
         return RateLimitGuard(host, evidence_dir=self.evidence)
 
-    def call(self, guard: RateLimitGuard, bucket: str, path: str, *, cost: int = 1,
-             hold: float = 0.0) -> tuple[float, int]:
+    def call(
+        self, guard: RateLimitGuard, bucket: str, path: str, *, cost: int = 1, hold: float = 0.0
+    ) -> tuple[float, int]:
         """One guarded call exactly as a consumer makes it; returns (admitted_at, status).
 
         `admitted_at` is the wall-clock moment the guard released the call, to
@@ -291,7 +301,7 @@ class GitHubCapTests(GuardTestCase):
         self.assertFalse(refusing["admitted"])
         self.assertEqual(refusing["reading"]["used"], 70)
         reads = self.fixture.requests("/rate_limit")
-        second_read = [r for r in reads if r.reading and r.reading["code_search"]["used"] == 70][0]
+        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 70)
         self.assertGreater(second_read.at, calls[0].at)
 
     def test_first_reading_of_an_over_cap_bucket_is_free_and_repeated_until_reset(self) -> None:
@@ -308,7 +318,7 @@ class GitHubCapTests(GuardTestCase):
         self.assertGreaterEqual(len(before), 1)
         self.assertGreaterEqual(len(after), 1)
         # Reading charged the bucket nothing.
-        self.assertTrue(all(r.reading["core"]["used"] == 100 for r in before))
+        self.assertTrue(all(r.reading is not None and r.reading["core"]["used"] == 100 for r in before))
         self.assertTrue(all(r.authorization == f"Bearer {SECRET}" for r in reads))
         calls = self.fixture.requests("/repos/o/r/contents")
         self.assertEqual(len(calls), 1)
@@ -349,18 +359,21 @@ class GitHubCapTests(GuardTestCase):
         # The guard is not wedged: a covered bucket still admits.
         self.call(guard, "core", "/repos/o/r/contents")
 
-        with urllib.request.urlopen(urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST"), timeout=10) as response:
-            with self.assertRaises(UnsupportedBucket):
-                guard.record(response)
+        with (
+            urllib.request.urlopen(
+                urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST"), timeout=10
+            ) as response,
+            self.assertRaises(UnsupportedBucket),
+        ):
+            guard.record(response)
         self.assertEqual(guard.waits(), [])
 
     def test_rejecting_a_graphql_response_releases_the_acquired_bucket(self) -> None:
         guard = self.guard()
         guard.acquire("core")
         request = urllib.request.Request(f"{self.url}/graphql", data=b"", method="POST")
-        with urllib.request.urlopen(request, timeout=10) as response:
-            with self.assertRaises(UnsupportedBucket):
-                guard.record(response)
+        with urllib.request.urlopen(request, timeout=10) as response, self.assertRaises(UnsupportedBucket):
+            guard.record(response)
         # The reservation closed with the refusal: this thread acquires again,
         # and another thread is not left blocked on the bucket's lock.
         self.assertEqual(self.call(guard, "core", "/repos/o/r/contents")[1], 200)
@@ -371,8 +384,13 @@ class GitHubCapTests(GuardTestCase):
         self.assertEqual(other, [200])
 
     def test_an_api_root_off_github_https_or_loopback_http_is_refused_before_any_call(self) -> None:
-        for root in ("http://example.invalid", "https://example.invalid", "ftp://127.0.0.1:9",
-                     f"https://127.0.0.1:{self.server.server_address[1]}", "not a url"):
+        for root in (
+            "http://example.invalid",
+            "https://example.invalid",
+            "ftp://127.0.0.1:9",
+            f"https://127.0.0.1:{self.server.server_address[1]}",
+            "not a url",
+        ):
             with self.subTest(root=root):
                 os.environ["CROZIER_GITHUB_API_URL"] = root
                 guard = self.guard()
@@ -388,13 +406,15 @@ class GitHubCapTests(GuardTestCase):
 
     def test_rate_limit_figures_that_are_not_nonnegative_integers_are_refused(self) -> None:
         reset = int(time.time()) + 3600
-        for figures in ({"limit": 100, "used": -1000, "reset": reset},
-                        {"limit": 100, "used": "5", "reset": reset},
-                        {"limit": 100, "used": 5.5, "reset": reset},
-                        {"limit": 100, "used": True, "reset": reset},
-                        {"limit": -100, "used": 0, "reset": reset},
-                        {"limit": 100, "used": 0, "remaining": -1, "reset": reset},
-                        {"limit": 100, "used": 0, "reset": None}):
+        for figures in (
+            {"limit": 100, "used": -1000, "reset": reset},
+            {"limit": 100, "used": "5", "reset": reset},
+            {"limit": 100, "used": 5.5, "reset": reset},
+            {"limit": 100, "used": True, "reset": reset},
+            {"limit": -100, "used": 0, "reset": reset},
+            {"limit": 100, "used": 0, "remaining": -1, "reset": reset},
+            {"limit": 100, "used": 0, "reset": None},
+        ):
             with self.subTest(figures=figures):
                 self.fixture.rate_limit_body = json.dumps({"resources": {"core": figures}}).encode()
                 guard = self.guard()
@@ -409,15 +429,16 @@ class GitHubCapTests(GuardTestCase):
 
     def test_record_without_acquire_and_double_acquire_are_loud(self) -> None:
         guard = self.guard()
-        with urllib.request.urlopen(f"{self.url}/repos/o/r/contents", timeout=10) as response:
-            with self.assertRaises(RuntimeError):
-                guard.record(response)
+        with (
+            urllib.request.urlopen(f"{self.url}/repos/o/r/contents", timeout=10) as response,
+            self.assertRaises(RuntimeError),
+        ):
+            guard.record(response)
         guard.acquire("core")
         with self.assertRaises(RuntimeError):
             guard.acquire("search")
         with self.assertRaises(ValueError):
             RateLimitGuard("gitlab")
-
 
     def test_a_call_spending_in_another_bucket_is_refused_loudly(self) -> None:
         guard = self.guard()
@@ -526,12 +547,16 @@ class PacedLaneTests(GuardTestCase):
             with self.subTest(lane=lane):
                 guard = self.guard(lane)
                 self.fixture.scripted[path] = [
-                    (200, {}), (200, {}),
+                    (200, {}),
+                    (200, {}),
                     (429, {"Retry-After": "1"}),
                     (429, {}),
                     (429, {}),
                     (200, {}),
-                    (429, {}), (503, {}), (429, {}), (429, {}),
+                    (429, {}),
+                    (503, {}),
+                    (429, {}),
+                    (429, {}),
                 ]
                 self.admissions.clear()
                 statuses = [self.call(guard, lane, path)[1] for _ in range(9)]
@@ -544,7 +569,7 @@ class PacedLaneTests(GuardTestCase):
                 self.assertEqual(len(self.fixture.requests(path)), served)
 
                 at = self.admissions[:9]
-                gaps = [later - earlier for earlier, later in zip(at, at[1:])]
+                gaps = [later - earlier for earlier, later in itertools.pairwise(at)]
                 self.assertTrue(all(gap >= 0.4 for gap in gaps), gaps)  # declared spacing
                 self.assertGreaterEqual(gaps[2], 1.0)  # Retry-After waited out, not retried into
                 self.assertGreaterEqual(gaps[3], 0.6)  # second refusal: base doubled
@@ -590,8 +615,9 @@ class PacedLaneTests(GuardTestCase):
 
     def test_concurrent_callers_cannot_collapse_one_interval(self) -> None:
         guard = self.guard("postman")
-        threads = [threading.Thread(target=self.call, args=(guard, "postman", "/postman/_api/ws/proxy"))
-                   for _ in range(3)]
+        threads = [
+            threading.Thread(target=self.call, args=(guard, "postman", "/postman/_api/ws/proxy")) for _ in range(3)
+        ]
         for thread in threads:
             thread.start()
         for thread in threads:
@@ -599,7 +625,7 @@ class PacedLaneTests(GuardTestCase):
         self.assertEqual(len(self.fixture.requests("/postman/_api/ws/proxy")), 3)
         at = sorted(self.admissions)
         self.assertEqual(len(at), 3)
-        self.assertTrue(all(b - a >= 0.4 for a, b in zip(at, at[1:])), at)
+        self.assertTrue(all(b - a >= 0.4 for a, b in itertools.pairwise(at)), at)
 
 
 class EvidenceTests(GuardTestCase):
@@ -612,10 +638,14 @@ class EvidenceTests(GuardTestCase):
         self.call(postman, "postman", "/postman/_api/ws/proxy")
 
         on_disk = self.evidence_lines(guard_module.WAITS_FILE)
-        self.assertEqual(sorted(json.dumps(e, sort_keys=True) for e in on_disk),
-                         sorted(json.dumps(e, sort_keys=True) for e in github.waits() + postman.waits()))
-        self.assertEqual({(e["host"], e["kind"], e.get("cause")) for e in on_disk},
-                         {("github", "probe", None), ("github", "wait", "cap"), ("postman", "wait", "spacing")})
+        self.assertEqual(
+            sorted(json.dumps(e, sort_keys=True) for e in on_disk),
+            sorted(json.dumps(e, sort_keys=True) for e in github.waits() + postman.waits()),
+        )
+        self.assertEqual(
+            {(e["host"], e["kind"], e.get("cause")) for e in on_disk},
+            {("github", "probe", None), ("github", "wait", "cap"), ("postman", "wait", "spacing")},
+        )
         for entry in on_disk:
             if entry["kind"] == "wait":
                 self.assertGreater(entry["duration_s"], 0)
@@ -628,8 +658,9 @@ class EvidenceTests(GuardTestCase):
 class QuotaStatusTests(GuardTestCase):
     def status(self, url: str) -> subprocess.CompletedProcess[str]:
         env = {**os.environ, "CROZIER_GITHUB_API_URL": url}
-        return subprocess.run([sys.executable, str(SCRIPT), "status"], env=env, capture_output=True,
-                              text=True, timeout=30)
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "status"], env=env, capture_output=True, text=True, timeout=30
+        )
 
     def test_reports_live_figures_in_one_free_read_and_never_waits(self) -> None:
         self.fixture.set("code_search", limit=10, used=9, reset_in=3600)

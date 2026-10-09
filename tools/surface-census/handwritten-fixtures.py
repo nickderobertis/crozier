@@ -124,10 +124,7 @@ def table_cells(line: str) -> list[str]:
     """One markdown table line's cells; `\\|` inside a cell is an escaped pipe."""
     if not line.startswith("|"):
         return []
-    return [
-        cell.replace("\x00", "\\|").strip()
-        for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
-    ]
+    return [cell.replace("\x00", "\\|").strip() for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")]
 
 
 def region_rows(root: Path) -> dict[str, tuple[str, list[str]]]:
@@ -213,9 +210,7 @@ def read_evidence(directory: Path) -> tuple[Fixture | None, list[str]]:
                 f"{where} (`{table['key']}`): `renewed` is required exactly when the verdict "
                 "is `search-incomplete`; remove it"
             )
-        covers.append(
-            Cover(table["key"], table.get("arm"), table["search"], verdict, table.get("renewed"))
-        )
+        covers.append(Cover(table["key"], table.get("arm"), table["search"], verdict, table.get("renewed")))
     fixture = Fixture(
         name,
         str(data.get("fern_cli_version", "")),
@@ -336,20 +331,28 @@ def read_reach_ledger(path: Path) -> tuple[list[tuple[str, str, str, int, int]],
     """`handwritten-reach.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
-        return [], [f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"]
+        return [], [
+            f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"
+        ]
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != REACH_HEADER:
-        return [], [f"{name}: the header line must be exactly {'<TAB>'.join(REACH_HEADER)}; run `just handwritten-reach`"]
+        return [], [
+            f"{name}: the header line must be exactly {'<TAB>'.join(REACH_HEADER)}; run `just handwritten-reach`"
+        ]
     rows, failures = [], []
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != len(REACH_HEADER) or not fields[3].isdigit() or not fields[4].isdigit():
-            failures.append(f"{name} line {number}: not five tab-separated fields ending in two counts; run `just handwritten-reach`")
+            failures.append(
+                f"{name} line {number}: not five tab-separated fields ending in two counts; run `just handwritten-reach`"
+            )
             continue
         rows.append((fields[0], fields[1], fields[2], int(fields[3]), int(fields[4])))
     keys = [row[:3] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
-        failures.append(f"{name}: rows are not sorted by fixture, key and site with none twice; run `just handwritten-reach`")
+        failures.append(
+            f"{name}: rows are not sorted by fixture, key and site with none twice; run `just handwritten-reach`"
+        )
     return rows, failures
 
 
@@ -362,26 +365,32 @@ def read_gate_ledger(path: Path) -> tuple[list[tuple[str, str, str, str, int, in
     """`handwritten-config-gates.tsv`: its header, its rows and their order."""
     name = path.name
     if not path.is_file():
-        return [], [f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"]
+        return [], [
+            f"{name}: missing — restore it (`git checkout -- {path.as_posix()}`) or run `just handwritten-reach`"
+        ]
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != GATE_HEADER:
-        return [], [f"{name}: the header line must be exactly {'<TAB>'.join(GATE_HEADER)}; run `just handwritten-reach`"]
+        return [], [
+            f"{name}: the header line must be exactly {'<TAB>'.join(GATE_HEADER)}; run `just handwritten-reach`"
+        ]
     rows, failures = [], []
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != len(GATE_HEADER) or not fields[4].isdigit() or not fields[5].isdigit():
-            failures.append(f"{name} line {number}: not six tab-separated fields ending in two counts; run `just handwritten-reach`")
+            failures.append(
+                f"{name} line {number}: not six tab-separated fields ending in two counts; run `just handwritten-reach`"
+            )
             continue
         rows.append((fields[0], fields[1], fields[2], fields[3], int(fields[4]), int(fields[5])))
     keys = [row[:4] for row in rows]
     if keys != sorted(keys) or len(keys) != len(set(keys)):
-        failures.append(f"{name}: rows are not sorted by fixture, key, site and setting with none twice; run `just handwritten-reach`")
+        failures.append(
+            f"{name}: rows are not sorted by fixture, key, site and setting with none twice; run `just handwritten-reach`"
+        )
     return rows, failures
 
 
-def gate_ledger_failures(
-    fixtures: dict[str, Fixture], rows: list[tuple[str, str, str, str, int, int]]
-) -> list[str]:
+def gate_ledger_failures(fixtures: dict[str, Fixture], rows: list[tuple[str, str, str, str, int, int]]) -> list[str]:
     """Each arm-level cover of a fixture declaring a setting is measured with and without it.
 
     A `config-gated` cover's fixture must declare the setting its record says
@@ -441,9 +450,18 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
     try:
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
-        return keys, [f"{E2E_COVERS}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"]
-    if set(data) != {"version", "covers"} or type(data.get("version")) is not int or data.get("version") != 1 or not isinstance(data.get("covers"), list):
-        return keys, [f"{E2E_COVERS}: invalid registry fields {sorted(data)}, version {data.get("version")!r} or covers type {type(data.get("covers")).__name__} — expected version = 1 and covers tables; repair the registry to contain only those fields"]
+        return keys, [
+            f"{E2E_COVERS}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"
+        ]
+    if (
+        set(data) != {"version", "covers"}
+        or type(data.get("version")) is not int
+        or data.get("version") != 1
+        or not isinstance(data.get("covers"), list)
+    ):
+        return keys, [
+            f"{E2E_COVERS}: invalid registry fields {sorted(data)}, version {data.get('version')!r} or covers type {type(data.get('covers')).__name__} — expected version = 1 and covers tables; repair the registry to contain only those fields"
+        ]
 
     def committed_path(value: str) -> Path | None:
         candidate = root / value
@@ -453,8 +471,14 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
     test_path = root / "crates" / "crozier-e2e" / "tests" / "e2e.rs"
     test_source = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
     for cover in data["covers"]:
-        if not isinstance(cover, dict) or set(cover) != E2E_FIELDS or not all(isinstance(v, str) and v for v in cover.values()):
-            failures.append(f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each")
+        if (
+            not isinstance(cover, dict)
+            or set(cover) != E2E_FIELDS
+            or not all(isinstance(v, str) and v for v in cover.values())
+        ):
+            failures.append(
+                f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each"
+            )
             continue
         key = cover["key"]
         where = f"handwritten-e2e `{key}`"
@@ -474,12 +498,21 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         golden = committed_path(cover["golden"])
         if golden is None or not golden.is_dir() or not (golden / ".fern" / "metadata.json").is_file():
             failures.append(f"{where}: commit the complete certified golden")
-        test = re.search(r"#\[test\]\s*fn " + re.escape(cover["test"]) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source)
+        test = re.search(
+            r"#\[test\]\s*fn " + re.escape(cover["test"]) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source
+        )
         body = test.group(1) if test else ""
-        required = ("LocalDocumentServer::start", "probe_command", "golden_tree_failures", "assert!(failures.is_empty()")
+        required = (
+            "LocalDocumentServer::start",
+            "probe_command",
+            "golden_tree_failures",
+            "assert!(failures.is_empty()",
+        )
         fixture_include = cover["fixture"] + "/"
         if not body or any(token not in body for token in required) or fixture_include not in body:
-            failures.append(f"{where}: name a gated real-binary test serving this fixture over loopback and comparing its complete tree")
+            failures.append(
+                f"{where}: name a gated real-binary test serving this fixture over loopback and comparing its complete tree"
+            )
         golden_prefix, _, golden_suffix = cover["golden"].rpartition("/")
         golden_prefix, _, fixture_name = golden_prefix.rpartition("/")
         constants = re.findall(r'const ([A-Z_]+): &str = "([^"]+)";', test_source)
@@ -489,9 +522,13 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         if cover["verdict"] not in VERDICTS:
             failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
         elif committed_path(cover["search"].partition("#")[0]) is None or committed_path(cover["renewed"]) is None:
-            failures.append(f"{where}: invalid search {cover["search"]!r} or renewed {cover["renewed"]!r} — replace it with a repository-relative path without parent traversal")
+            failures.append(
+                f"{where}: invalid search {cover['search']!r} or renewed {cover['renewed']!r} — replace it with a repository-relative path without parent traversal"
+            )
         else:
-            failures += search_failures(root, where, Cover(key, None, cover["search"], cover["verdict"], cover["renewed"]))
+            failures += search_failures(
+                root, where, Cover(key, None, cover["search"], cover["verdict"], cover["renewed"])
+            )
         row = rows.get(key)
         evidence_link = os.path.relpath(root / cover["evidence"], root / REGIONS).replace(os.sep, "/")
         search_path, _, anchor = cover["search"].partition("#")
@@ -501,10 +538,14 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
             f"evidence: [note]({evidence_link}); search: {cover['verdict']} ([record]({search_link}))"
         )
         if row is None or row[1][3] != "handwritten" or row[1][4] != expected or any(row[1][5:8]):
-            failures.append(f"{where}: its handwritten row must name exactly this fixture, test, evidence and search, with empty remaining cells")
+            failures.append(
+                f"{where}: its handwritten row must name exactly this fixture, test, evidence and search, with empty remaining cells"
+            )
     for key, (_region, cells) in rows.items():
         if cells[4].startswith("handwritten-e2e:") and key not in keys:
-            failures.append(f"{key}: handwritten-e2e row has no cover record — add its registry cover or remove the unsupported row")
+            failures.append(
+                f"{key}: handwritten-e2e row has no cover record — add its registry cover or remove the unsupported row"
+            )
     return keys, failures
 
 
@@ -513,13 +554,18 @@ def gate(root: Path) -> dict[str, Any]:
     failures: list[str] = []
     base = root / HANDWRITTEN
     if not base.is_dir():
-        return {"fixtures": {}, "failures": [f"{HANDWRITTEN.as_posix()}: missing — the fixture directory must exist, with its AGENTS.md"]}
+        return {
+            "fixtures": {},
+            "failures": [f"{HANDWRITTEN.as_posix()}: missing — the fixture directory must exist, with its AGENTS.md"],
+        }
     fixtures: dict[str, Fixture] = {}
     for entry in sorted(base.iterdir()):
         if entry.is_file() and entry.name == "AGENTS.md":
             continue
         if not entry.is_dir():
-            failures.append(f"{entry.name}: is under {HANDWRITTEN.as_posix()}/ but is not a fixture directory — move or remove it")
+            failures.append(
+                f"{entry.name}: is under {HANDWRITTEN.as_posix()}/ but is not a fixture directory — move or remove it"
+            )
             continue
         name = entry.name
         if not FIXTURE_NAME.match(name):
@@ -612,9 +658,7 @@ def gate(root: Path) -> dict[str, Any]:
                 continue
             arm_covers.add((name, cover.key, cover.arm))
             if category != "golden":
-                failures.append(
-                    f"{where}: an arm-level cover's row must read `golden`, and it reads `{category}`"
-                )
+                failures.append(f"{where}: an arm-level cover's row must read `golden`, and it reads `{category}`")
             if cover.key not in sites or cover.arm not in sites[cover.key].sites:
                 failures.append(
                     f"{where}: golden-reach-sites.tsv lists no such site for this key — spell the arm "
@@ -665,7 +709,9 @@ def gate(root: Path) -> dict[str, Any]:
                 f"{key}: a committed non-generation proof settles it, so it is `limitations`, not `handwritten`"
             )
         if key in sites:
-            failures.append(f"{key}: golden-reach-sites.tsv lists it, so a golden source declares it and it is not `handwritten`")
+            failures.append(
+                f"{key}: golden-reach-sites.tsv lists it, so a golden source declares it and it is not `handwritten`"
+            )
 
     failures += isolation_failures(root, sorted(e.name for e in base.iterdir() if e.is_dir()), ledger)
     return {
@@ -691,12 +737,15 @@ def handwritten_row_failures(key: str, cells: list[str], covers: list[tuple[str,
         ]
     failures = []
     if any(cells[5:8]):
-        failures.append(f"{key}: a `handwritten` row's `crozier sites`, `why bytes could move` and `settlement` cells are empty")
+        failures.append(
+            f"{key}: a `handwritten` row's `crozier sites`, `why bytes could move` and `settlement` cells are empty"
+        )
     parsed = EVIDENCE_CELL.match(cells[4])
     if parsed is None:
-        return failures + [
+        return [
+            *failures,
             f"{key}: its evidence cell must read `handwritten: <fixture>[, <fixture>…]; search: "
-            "<verdict> ([record](<link>))`"
+            "<verdict> ([record](<link>))`",
         ]
     named = parsed.group("fixtures").split(", ")
     if named != sorted({name for name, _cover in covers}):
@@ -727,7 +776,9 @@ def isolation_failures(root: Path, names: list[str], ledger: dict[str, Any]) -> 
     base = (root / HANDWRITTEN).resolve()
     engine = census()
     fixtures_root = root / "tests" / "fixtures"
-    sources = engine.registered_sources(fixtures_root, root / ".local" / "corpus", True) if fixtures_root.is_dir() else []
+    sources = (
+        engine.registered_sources(fixtures_root, root / ".local" / "corpus", True) if fixtures_root.is_dir() else []
+    )
     for source in sources:
         if source.path is not None and source.path.resolve().is_relative_to(base):
             failures.append(
@@ -736,11 +787,17 @@ def isolation_failures(root: Path, names: list[str], ledger: dict[str, Any]) -> 
             )
     for name in names:
         if name in corpus:
-            failures.append(f"{name}: is also a CORPUS.md row; a hand-written fixture is never a corpus row — rename it")
+            failures.append(
+                f"{name}: is also a CORPUS.md row; a hand-written fixture is never a corpus row — rename it"
+            )
         if (fixtures_root / name).exists():
-            failures.append(f"{name}: tests/fixtures/{name} exists; a hand-written fixture is never a corpus golden — rename it")
+            failures.append(
+                f"{name}: tests/fixtures/{name} exists; a hand-written fixture is never a corpus golden — rename it"
+            )
         if name in witnesses:
-            failures.append(f"{name}: golden-reach.tsv counts it as a witness; the golden-only tier never reads a hand-written fixture")
+            failures.append(
+                f"{name}: golden-reach.tsv counts it as a witness; the golden-only tier never reads a hand-written fixture"
+            )
     return failures
 
 
@@ -795,9 +852,13 @@ def measure(args: argparse.Namespace) -> int:
             return len(regions & {tuple(r) for r in hit.get(site.file, [])}), len(regions)
 
         for name, cover in planned:
+            # `planned` holds the arm-level covers alone.
+            assert cover.arm is not None
             rows.append((name, cover.key, cover.arm, *reached(runs[name], cover.arm)))
             if name in controls:
-                gate_rows.append((name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm)))
+                gate_rows.append(
+                    (name, cover.key, cover.arm, setting_of(declared[name]), *reached(runs[name], cover.arm))
+                )
                 gate_rows.append((name, cover.key, cover.arm, UNSET, *reached(controls[name], cover.arm)))
     rows.sort(key=lambda row: row[:3])
     gate_rows.sort(key=lambda row: row[:4])
@@ -806,21 +867,35 @@ def measure(args: argparse.Namespace) -> int:
             "\n".join(["\t".join(header)] + ["\t".join(map(str, row)) for row in lines]) + "\n",
             encoding="utf-8",
         )
-    print(f"handwritten-reach: measured {len(rows)} arm-level cover(s) into {ledger}, "
-          f"{len(gate_rows) // 2} configuration gate(s) into {gates}")
+    print(
+        f"handwritten-reach: measured {len(rows)} arm-level cover(s) into {ledger}, "
+        f"{len(gate_rows) // 2} configuration gate(s) into {gates}"
+    )
     return 0
 
 
 def instrumented_crozier(repo_root: Path, reach: Any) -> Path:
     """Build the instrumented crozier `just golden-reach` measures with, and return it."""
     build = subprocess.run(
-        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "--workspace", "-E",
-         "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],
-        cwd=repo_root, capture_output=True, text=True,
+        [
+            "cargo",
+            "llvm-cov",
+            "--locked",
+            "--no-report",
+            "nextest",
+            "--workspace",
+            "-E",
+            "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)",
+        ],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
     )
     if build.returncode != 0:
         sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
-        raise SystemExit("handwritten-reach: the instrumented build failed (its output is above); fix what it names and re-run")
+        raise SystemExit(
+            "handwritten-reach: the instrumented build failed (its output is above); fix what it names and re-run"
+        )
     _e2e, crozier = reach._instrumented_binaries(repo_root)
     return crozier
 
@@ -833,10 +908,23 @@ def scoped_run(
     with tempfile.TemporaryDirectory(prefix="handwritten-reach-") as scratch:
         raw = Path(scratch)
         run = subprocess.run(
-            [str(crozier), "generate", "python", "--spec", str(spec), "--output", str(raw / "sdk"),
-             "--package-name", "fern", "--project-name", "default_package_name",
-             *(argument for audience in audiences for argument in ("--audience", audience))],
-            cwd=repo_root, capture_output=True, text=True,
+            [
+                str(crozier),
+                "generate",
+                "python",
+                "--spec",
+                str(spec),
+                "--output",
+                str(raw / "sdk"),
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                *(argument for audience in audiences for argument in ("--audience", audience)),
+            ],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
             env=dict(os.environ, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
         )
         if run.returncode != 0:
@@ -845,7 +933,9 @@ def scoped_run(
                 "crozier cannot generate measures nothing — repair crozier and re-run"
             )
         merged = raw / "merged.profdata"
-        reach.run_llvm([profdata, "merge", "-sparse", *sorted(str(p) for p in raw.glob("*.profraw")), "-o", str(merged)])
+        reach.run_llvm(
+            [profdata, "merge", "-sparse", *sorted(str(p) for p in raw.glob("*.profraw")), "-o", str(merged)]
+        )
         export = raw / "export.json"
         with export.open("w", encoding="utf-8") as sink:
             reach.run_llvm([llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier)], stdout=sink)

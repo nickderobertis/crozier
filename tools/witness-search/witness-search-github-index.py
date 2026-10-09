@@ -21,9 +21,14 @@ from typing import Any
 
 SOURCES = ("github-code-search", "github-publisher-trees", "sourcegraph")
 RAW_DECLARING = frozenset({"declares", "readable"})
-RAW_OUTSTANDING = frozenset({
-    "acquisition-failure", "parse-failure", "acquisition-outstanding", "selector-unavailable",
-})
+RAW_OUTSTANDING = frozenset(
+    {
+        "acquisition-failure",
+        "parse-failure",
+        "acquisition-outstanding",
+        "selector-unavailable",
+    }
+)
 RAW_ZERO = frozenset({"does-not-declare", "excluded-non-openapi-3"})
 # Every parser available refused the document: decided, with the refusal as its reason.
 RAW_REFUSED = "census-refused"
@@ -71,6 +76,8 @@ def known_disposition(disposition: str) -> bool:
         or PENDING_REGISTRATION.fullmatch(disposition) is not None
         or BYTE_IDENTICAL.fullmatch(disposition) is not None
     )
+
+
 # GitHub refuses a pushed blob over 100 MB and warns over 50 MB. A ledger that
 # outgrows SHARD_BYTES keeps its first line-aligned part at its own path and
 # continues in numbered siblings: candidates.tsv, candidates.001.tsv, ...
@@ -100,7 +107,7 @@ def write_ledger(path: Path, text: str, limit: int | None = None) -> None:
             size = 0
         chunks[-1].append(line)
         size += encoded
-    stale = ledger_parts(path)[max(len(chunks), 1):]
+    stale = ledger_parts(path)[max(len(chunks), 1) :]
     for number, chunk in enumerate(chunks or [[]]):
         part = path if number == 0 else path.with_name(f"{path.stem}.{number:03d}{path.suffix}")
         part.write_text("".join(chunk), encoding="utf-8", newline="\n")
@@ -113,7 +120,7 @@ def append_ledger(path: Path, line: str, limit: int | None = None) -> None:
     parts = ledger_parts(path)
     target = parts[-1]
     encoded = len(line.encode("utf-8"))
-    if target.is_file() and 0 < target.stat().st_size and target.stat().st_size + encoded > limit:
+    if target.is_file() and target.stat().st_size > 0 and target.stat().st_size + encoded > limit:
         target = path.with_name(f"{path.stem}.{len(parts):03d}{path.suffix}")
     with target.open("a", encoding="utf-8", newline="\n") as output:
         output.write(line)
@@ -187,50 +194,51 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             # and is historical; one filed since without its record is refused.
             failures = load_screen().row_failures(row, path.parent, SCREEN_FIELDS)
             if failures:
-                raise ValueError(f"{path}:{number}: a screen is filed only with its measured record — "
-                                 + "; ".join(failures) + " — re-screen it with `just witness-screen screen`")
+                raise ValueError(
+                    f"{path}:{number}: a screen is filed only with its measured record — "
+                    + "; ".join(failures)
+                    + " — re-screen it with `just witness-screen screen`"
+                )
             keys = row.get("keys") or [row.get("key")]
-            if not isinstance(keys, list) or any(
-                not isinstance(key, str) or not key for key in keys
-            ):
+            if not isinstance(keys, list) or any(not isinstance(key, str) or not key for key in keys):
                 raise ValueError(f"{path}:{number}: missing or invalid keys")
         if path.name == "documents.jsonl" and "selector_counts" in row:
             counts = row["selector_counts"]
             if not isinstance(counts, dict) or any(
-                not isinstance(key, str) or not isinstance(value, int)
-                for key, value in counts.items()
+                not isinstance(key, str) or not isinstance(value, int) for key, value in counts.items()
             ):
                 raise ValueError(f"{path}:{number}: invalid selector_counts")
         if path.name == "trees.jsonl" and "paths" in row:
             paths = row["paths"]
-            if not isinstance(row.get("repository"), str) or not isinstance(row.get("commit"), str) or not isinstance(paths, list) or any(
-                not isinstance(item, dict)
-                or not isinstance(item.get("path"), str)
-                or not isinstance(item.get("blob"), str)
-                for item in paths
+            if (
+                not isinstance(row.get("repository"), str)
+                or not isinstance(row.get("commit"), str)
+                or not isinstance(paths, list)
+                or any(
+                    not isinstance(item, dict)
+                    or not isinstance(item.get("path"), str)
+                    or not isinstance(item.get("blob"), str)
+                    for item in paths
+                )
             ):
                 raise ValueError(f"{path}:{number}: invalid publisher tree paths")
         if path.name == "queries.jsonl" and row["outcome"] == "partitioned":
             windows = row.get("windows")
-            if not isinstance(windows, list) or not windows or any(
-                not isinstance(window, dict) or not isinstance(window.get("query"), str)
-                for window in windows
+            if (
+                not isinstance(windows, list)
+                or not windows
+                or any(not isinstance(window, dict) or not isinstance(window.get("query"), str) for window in windows)
             ):
                 raise ValueError(f"{path}:{number}: partitioned query lacks its size windows")
             if not isinstance(row.get("reported"), int) or isinstance(row.get("reported"), bool):
                 raise ValueError(f"{path}:{number}: partitioned query lacks its reported count")
-        limit_fields = (
-            load_search().INDEX_LIMIT_FIELDS.get(row["outcome"], ())
-            if path.name == "queries.jsonl" else ()
-        )
+        limit_fields = load_search().INDEX_LIMIT_FIELDS.get(row["outcome"], ()) if path.name == "queries.jsonl" else ()
         for field in limit_fields:
             if not isinstance(row.get(field), int) or isinstance(row.get(field), bool):
                 raise ValueError(f"{path}:{number}: {row['outcome']} lacks an integer {field}")
         if path.name == "queries.jsonl" and row["outcome"] == "answered":
             for field in ("result_count", "retrieved_total", "page", "page_count"):
-                if field in row and (
-                    not isinstance(row[field], int) or isinstance(row[field], bool)
-                ):
+                if field in row and (not isinstance(row[field], int) or isinstance(row[field], bool)):
                     raise ValueError(f"{path}:{number}: {field} is not an integer")
             results = row.get("results")
             if not isinstance(results, list) or any(
@@ -250,13 +258,15 @@ def jsonl(path: Path) -> list[tuple[int, dict[str, Any]]]:
             failure = identity_failure(row)
             if failure:
                 raise ValueError(f"{path}:{number}: {failure}")
-        if path.name == "candidates.jsonl":
-            if not isinstance(row.get("disposition"), str) or (
-                "selector_count" in row and not isinstance(row["selector_count"], int)
-            ):
-                raise ValueError(f"{path}:{number}: invalid candidate disposition or selector_count")
-        if path.name.endswith("waits.jsonl") and "duration_s" in row and (
-            not isinstance(row["duration_s"], (int, float)) or isinstance(row["duration_s"], bool)
+        if path.name == "candidates.jsonl" and (
+            not isinstance(row.get("disposition"), str)
+            or ("selector_count" in row and not isinstance(row["selector_count"], int))
+        ):
+            raise ValueError(f"{path}:{number}: invalid candidate disposition or selector_count")
+        if (
+            path.name.endswith("waits.jsonl")
+            and "duration_s" in row
+            and (not isinstance(row["duration_s"], (int, float)) or isinstance(row["duration_s"], bool))
         ):
             raise ValueError(f"{path}:{number}: duration_s is not a number")
         rows.append((number, row))
@@ -270,8 +280,10 @@ def load_screen() -> Any:
         "witness_screen_for_index", Path(__file__).with_name("witness_screen.py")
     )
     if spec is None or spec.loader is None:
-        raise ValueError("cannot load tools/witness-search/witness_screen.py; restore it from git "
-                         "(`git checkout -- tools/witness-search/witness_screen.py`)")
+        raise ValueError(
+            "cannot load tools/witness-search/witness_screen.py; restore it from git "
+            "(`git checkout -- tools/witness-search/witness_screen.py`)"
+        )
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
@@ -343,8 +355,10 @@ def validate_opaque_values(value: Any) -> None:
                         continue
                     locator = opaque_identity(value[field])
                     if not locator:
-                        raise ValueError(f"opaque locator {field} must carry an opaque revision; "
-                                         "restore valid v2 evidence from git and rerun the command")
+                        raise ValueError(
+                            f"opaque locator {field} must carry an opaque revision; "
+                            "restore valid v2 evidence from git and rerun the command"
+                        )
         for item in value.values():
             validate_opaque_values(item)
     elif isinstance(value, list):
@@ -439,9 +453,7 @@ def classify(
             )
         else:
             licence = ref = fern = (
-                "not-run: key closed by found witness"
-                if closed
-                else "not-run: declaration screen outstanding"
+                "not-run: key closed by found witness" if closed else "not-run: declaration screen outstanding"
             )
             disposition = "not-owed" if closed else "outstanding"
     elif status == RAW_EXCLUDED:
@@ -452,24 +464,18 @@ def classify(
         # The ledger row keeps the parser's whole diagnostic; the record cites it.
         diagnostic = str(row.get("diagnostic") or "document not yet fetched")
         if len(diagnostic) > DIAGNOSTIC_LIMIT:
-            diagnostic = diagnostic[:DIAGNOSTIC_LIMIT] + f" [{len(diagnostic)} characters; whole text in the ledger row]"
+            diagnostic = (
+                diagnostic[:DIAGNOSTIC_LIMIT] + f" [{len(diagnostic)} characters; whole text in the ledger row]"
+            )
         census = f"{status}: {diagnostic}"
         licence = ref = fern = f"not-run: {status}"
-        disposition = (
-            "not-owed"
-            if closed and status == "acquisition-outstanding"
-            else "outstanding"
-        )
+        disposition = "not-owed" if closed and status == "acquisition-outstanding" else "outstanding"
     elif status == RAW_REFUSED:
         census = f"{status}: {row.get('diagnostic')}"
         licence = ref = fern = f"not-run: {status}"
         disposition = "rejected"
     else:
-        census = (
-            "census 0"
-            if status in ("does-not-declare", "readable")
-            else f"{status}: not OpenAPI 3"
-        ) + read_by
+        census = ("census 0" if status in ("does-not-declare", "readable") else f"{status}: not OpenAPI 3") + read_by
         licence = ref = fern = "not-run: census found no declaration"
         disposition = "rejected"
     return {
@@ -498,16 +504,12 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
     keys = sorted(key_data["keys"])
     latest: dict[tuple[str, str, str], dict[str, str]] = {}
     resolved_blobs = set()
-    filename = (
-        "documents.jsonl" if source == "github-publisher-trees" else "candidates.jsonl"
-    )
+    filename = "documents.jsonl" if source == "github-publisher-trees" else "candidates.jsonl"
     for number, row in jsonl(directory / filename):
         targets = keys if source == "github-publisher-trees" else [row["key"]]
         for key in targets:
             closed = (directory / f"closure-{key}.json").is_file()
-            result = classify(
-                source, key, row, f"{filename}:{number}", screened, closed=closed
-            )
+            result = classify(source, key, row, f"{filename}:{number}", screened, closed=closed)
             latest[(key, result["candidate"], result["revision"])] = result
             # A re-acquisition at a later commit replaces the row it re-requested.
             if row.get("supersedes"):
@@ -552,10 +554,7 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
                 # GitHub search supplies a blob SHA; the contents acquisition
                 # resolves it to a pinned commit. Match by blob before creating
                 # an outstanding row for the unresolved query hit.
-                if (
-                    source == "github-code-search"
-                    and (key, name, item.get("sha")) in resolved_blobs
-                ):
+                if source == "github-code-search" and (key, name, item.get("sha")) in resolved_blobs:
                     continue
                 latest[identity] = classify(
                     source,
@@ -565,9 +564,7 @@ def source_rows(root: Path, source: str) -> list[dict[str, str]]:
                     screened,
                     closed=closed,
                 )
-    return sorted(
-        latest.values(), key=lambda row: (row["key"], row["candidate"], row["revision"])
-    )
+    return sorted(latest.values(), key=lambda row: (row["key"], row["candidate"], row["revision"]))
 
 
 OUTSTANDING_FIELDS = (
@@ -602,12 +599,15 @@ def query_state(
         return "unissued", None, []
     last = mine[-1]
     refusal = (
-        [{
-            "query": query, "outcome": last["outcome"],
-            "status": last.get("status", "not-reported"),
-            "at": last.get("at", "not-recorded"),
-            "diagnostic": str(last.get("diagnostic", ""))[:300],
-        }]
+        [
+            {
+                "query": query,
+                "outcome": last["outcome"],
+                "status": last.get("status", "not-reported"),
+                "at": last.get("at", "not-recorded"),
+                "diagnostic": str(last.get("diagnostic", ""))[:300],
+            }
+        ]
         if last["outcome"] in load_search().NON_ANSWER_OUTCOMES
         else []
     )
@@ -621,22 +621,35 @@ def query_state(
         for window in partition["windows"]:
             state, _, found = query_state(rows, source, key, window["query"])
             states.append(state)
-            refusals.extend(found or (
-                [{"query": window["query"], "outcome": UNISSUED_WINDOW,
-                  "reason": "this size window was never issued"}]
-                if state == "unissued" else []
-            ))
+            refusals.extend(
+                found
+                or (
+                    [
+                        {
+                            "query": window["query"],
+                            "outcome": UNISSUED_WINDOW,
+                            "reason": "this size window was never issued",
+                        }
+                    ]
+                    if state == "unissued"
+                    else []
+                )
+            )
         if all(state == "complete" for state in states):
             return "complete", last, []
         return "incomplete", last, refusals
     answered = [r for r in mine if r["outcome"] == "answered"]
-    if answered and not any(r.get("incomplete_results") for r in answered) and (
-        answered[-1].get("retrieved_total", 0) >= answered[-1].get("result_count", 0)
+    if (
+        answered
+        and not any(r.get("incomplete_results") for r in answered)
+        and (answered[-1].get("retrieved_total", 0) >= answered[-1].get("result_count", 0))
     ):
         return "complete", last, []
     limit = index_limit(query, mine)
-    if refusal or limit:
-        return "incomplete", last, refusal or [limit]
+    if refusal:
+        return "incomplete", last, refusal
+    if limit:
+        return "incomplete", last, [limit]
     read = answered[-1] if answered else last
     reported, served = read.get("result_count", 0), read.get("retrieved_total", 0)
     short = (
@@ -670,8 +683,7 @@ def index_limit(query: str, rows: list[dict[str, Any]]) -> dict[str, Any] | None
             f"a window of files of {cap['size']} bytes still reports {cap['reported']} "
             "results, over the 1,000 GitHub pages"
             if isinstance(cap.get("size"), int)
-            else f"GitHub reported {cap['reported']} and pages at most "
-            f"{cap.get('retrieved', 1000)} of them"
+            else f"GitHub reported {cap['reported']} and pages at most {cap.get('retrieved', 1000)} of them"
         )
         return {"query": query, "outcome": cap["outcome"], "reason": reason}
     truncated = by_outcome.get(search.TRUNCATION)
@@ -682,8 +694,11 @@ def index_limit(query: str, rows: list[dict[str, Any]]) -> dict[str, Any] | None
         )
         return {"query": query, "outcome": truncated["outcome"], "reason": reason}
     if search.INCOMPLETE_RESULTS in by_outcome:
-        return {"query": query, "outcome": search.INCOMPLETE_RESULTS,
-                "reason": "GitHub flagged the response incomplete_results"}
+        return {
+            "query": query,
+            "outcome": search.INCOMPLETE_RESULTS,
+            "reason": "GitHub flagged the response incomplete_results",
+        }
     return None
 
 
@@ -693,8 +708,7 @@ def read_keys(directory: Path) -> dict[str, dict[str, str]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     keys = data.get("keys") if isinstance(data, dict) else None
     if not isinstance(keys, dict) or any(
-        not isinstance(key, str) or not key
-        or not isinstance(value, dict) or not isinstance(value.get("selector"), str)
+        not isinstance(key, str) or not key or not isinstance(value, dict) or not isinstance(value.get("selector"), str)
         for key, value in keys.items()
     ):
         raise ValueError(f"{path}: every key must map to an object carrying its selector")
@@ -714,15 +728,11 @@ def outstanding_rows(root: Path, records: dict[str, list[dict[str, str]]]) -> li
             if row.get("status") != "acquisition-failure":
                 walked.setdefault((row["repository"], row.get("commit", "")), set()).add(row["path"])
         trees = {
-            (row["repository"], row["commit"]): row
-            for _, row in jsonl(directory / "trees.jsonl")
-            if "paths" in row
+            (row["repository"], row["commit"]): row for _, row in jsonl(directory / "trees.jsonl") if "paths" in row
         }
         unwalked = []
         if source == "github-publisher-trees":
-            declared = json.loads(
-                (directory / "publisher-set.json").read_text(encoding="utf-8")
-            )
+            declared = json.loads((directory / "publisher-set.json").read_text(encoding="utf-8"))
             publishers = declared.get("publishers") if isinstance(declared, dict) else None
             if not isinstance(publishers, list) or any(
                 not isinstance(publisher, dict)
@@ -740,44 +750,39 @@ def outstanding_rows(root: Path, records: dict[str, list[dict[str, str]]]) -> li
                     unwalked.append(f"{label}: tree not listed")
                     continue
                 missing = [
-                    item["path"] for item in trees[identity]["paths"]
-                    if item["path"] not in walked.get(identity, set())
+                    item["path"] for item in trees[identity]["paths"] if item["path"] not in walked.get(identity, set())
                 ]
                 if missing:
                     unwalked.append(f"{label}: {len(missing)} documents outstanding")
         for key in sorted(keys):
-            planned = (
-                [] if source == "github-publisher-trees"
-                else search.query_plan(keys[key]["selector"])[source]
-            )
+            planned = [] if source == "github-publisher-trees" else search.query_plan(keys[key]["selector"])[source]
             closed = (directory / f"closure-{key}.json").is_file()
             stopped = (
                 f"; acquisition for this key stopped once closure-{key}.json closed it on a "
                 "witness, and the turn budget went to the open keys"
-                if closed else "; the turn budget ran out before it was read"
+                if closed
+                else "; the turn budget ran out before it was read"
             )
             answered, unissued, incomplete, refusals = 0, [], [], []
             for query in planned:
                 state, last, found = query_state(queries, source, key, query)
                 if state == "complete":
                     answered += 1
-                elif state == "unissued":
+                elif state == "unissued" or last is None:
                     unissued.append(query)
                 else:
-                    incomplete.append({
-                        "query": query,
-                        "outcome": last["outcome"],
-                        "windows": [
-                            {**leaf, "reason": leaf["reason"] + stopped}
-                            if leaf["outcome"] in UNREAD else leaf
-                            for leaf in found
-                            if leaf["outcome"] not in search.NON_ANSWER_OUTCOMES
-                        ],
-                    })
-                    refusals.extend(
-                        leaf for leaf in found
-                        if leaf["outcome"] in search.NON_ANSWER_OUTCOMES
+                    incomplete.append(
+                        {
+                            "query": query,
+                            "outcome": last["outcome"],
+                            "windows": [
+                                {**leaf, "reason": leaf["reason"] + stopped} if leaf["outcome"] in UNREAD else leaf
+                                for leaf in found
+                                if leaf["outcome"] not in search.NON_ANSWER_OUTCOMES
+                            ],
+                        }
                     )
+                    refusals.extend(leaf for leaf in found if leaf["outcome"] in search.NON_ANSWER_OUTCOMES)
             mine = [row for row in records[source] if row["key"] == key]
             open_rows = [row for row in mine if row["disposition"] == "outstanding"]
             unacquired = sum(row["census"].startswith("acquisition-outstanding") for row in open_rows)
@@ -792,21 +797,23 @@ def outstanding_rows(root: Path, records: dict[str, list[dict[str, str]]]) -> li
                 outcome = "declarers screened; none registrable"
             else:
                 outcome = "none-found"
-            out.append({
-                "key": key,
-                "source": source,
-                "outcome": outcome,
-                "planned_queries": str(len(planned)),
-                "answered_queries": str(answered),
-                "unissued_queries": json.dumps(unissued, separators=(",", ":")),
-                "issued_incomplete": json.dumps(incomplete, separators=(",", ":")),
-                "unacquired_candidates": str(unacquired),
-                "failed_candidates": str(failed),
-                "unscreened_declarers": str(unscreened),
-                "unwalked_trees": json.dumps(unwalked, separators=(",", ":")),
-                "refusals": json.dumps(refusals, separators=(",", ":")),
-                "candidate_records": f"witness-search-{source}/records.tsv",
-            })
+            out.append(
+                {
+                    "key": key,
+                    "source": source,
+                    "outcome": outcome,
+                    "planned_queries": str(len(planned)),
+                    "answered_queries": str(answered),
+                    "unissued_queries": json.dumps(unissued, separators=(",", ":")),
+                    "issued_incomplete": json.dumps(incomplete, separators=(",", ":")),
+                    "unacquired_candidates": str(unacquired),
+                    "failed_candidates": str(failed),
+                    "unscreened_declarers": str(unscreened),
+                    "unwalked_trees": json.dumps(unwalked, separators=(",", ":")),
+                    "refusals": json.dumps(refusals, separators=(",", ":")),
+                    "candidate_records": f"witness-search-{source}/records.tsv",
+                }
+            )
     return out
 
 
@@ -834,9 +841,7 @@ def query_result(rows: list[dict[str, Any]]) -> str:
     )
 
 
-def search_index_rows(
-    root: Path, source: str, records: list[dict[str, str]]
-) -> list[dict[str, str]]:
+def search_index_rows(root: Path, source: str, records: list[dict[str, str]]) -> list[dict[str, str]]:
     """One source's evidence as `key kind subject result file` rows.
 
     Every query string issued (a planned phrasing or one of its size windows) with
@@ -852,8 +857,9 @@ def search_index_rows(
     for _, row in jsonl(directory / "queries.jsonl"):
         by_query.setdefault((row["key"], row["query"]), []).append(row)
     for (key, query), rows in sorted(by_query.items()):
-        out.append({"key": key, "kind": "query", "subject": query,
-                    "result": query_result(rows), "file": "queries.jsonl"})
+        out.append(
+            {"key": key, "kind": "query", "subject": query, "result": query_result(rows), "file": "queries.jsonl"}
+        )
     if source == "github-publisher-trees":
         walked: dict[tuple[str, str], int] = {}
         for _, row in jsonl(directory / "documents.jsonl"):
@@ -867,50 +873,69 @@ def search_index_rows(
             listed = len(tree["paths"])
             read = walked.get(identity, 0)
             for key in keys:
-                out.append({
-                    "key": key, "kind": "walk", "subject": f"{identity[0]}@{identity[1]}",
-                    "result": str(listed) if read >= listed else f"{listed} ({read} censused)",
-                    "file": "documents.jsonl",
-                })
+                out.append(
+                    {
+                        "key": key,
+                        "kind": "walk",
+                        "subject": f"{identity[0]}@{identity[1]}",
+                        "result": str(listed) if read >= listed else f"{listed} ({read} censused)",
+                        "file": "documents.jsonl",
+                    }
+                )
     for row in records:
         if not row["census"].startswith("census "):
             continue
         candidate = f"{row['candidate']}@{row['revision']}"
-        out.append({"key": row["key"], "kind": "candidate", "subject": candidate,
-                    "result": row["census"], "file": "records.tsv"})
-        for screen, field in (("licence", "licence_screen"), ("ref", "revision_screen"),
-                              ("fern", "fern_screen")):
+        out.append(
+            {
+                "key": row["key"],
+                "kind": "candidate",
+                "subject": candidate,
+                "result": row["census"],
+                "file": "records.tsv",
+            }
+        )
+        for screen, field in (("licence", "licence_screen"), ("ref", "revision_screen"), ("fern", "fern_screen")):
             if row[field].startswith("not-run"):
                 continue  # the candidate row's disposition in records.tsv says why
-            out.append({"key": row["key"], "kind": "screen", "subject": f"{candidate} {screen}",
-                        "result": row[field], "file": "screens.jsonl"})
+            out.append(
+                {
+                    "key": row["key"],
+                    "kind": "screen",
+                    "subject": f"{candidate} {screen}",
+                    "result": row[field],
+                    "file": "screens.jsonl",
+                }
+            )
     search = load_search()
     lanes: dict[str, dict[str, Any]] = {}
     for name in search.CALL_LEDGERS:
         for _, row in jsonl(directory / name):
-            lane = (
-                RAW_LANE if name == search.RAW_CALLS
-                else row.get("bucket") or row.get("lane") or "unlabelled"
-            )
+            lane = RAW_LANE if name == search.RAW_CALLS else row.get("bucket") or row.get("lane") or "unlabelled"
             lanes.setdefault(lane, {"calls": 0, "waits": {}})["calls"] += 1
     for name in search.WAIT_LEDGERS:
         for _, row in jsonl(directory / name):
-            lane = (
-                RAW_LANE if name == search.RAW_WAITS
-                else row.get("bucket") or row.get("lane") or "unlabelled"
-            )
+            lane = RAW_LANE if name == search.RAW_WAITS else row.get("bucket") or row.get("lane") or "unlabelled"
             entry = lanes.setdefault(lane, {"calls": 0, "waits": {}})
             count, total = entry["waits"].get(name, (0, 0.0))
             entry["waits"][name] = (count + 1, total + float(row.get("duration_s") or 0))
     for lane, entry in sorted(lanes.items()):
-        waits = "; ".join(
-            f"{count} waits {total:.0f} s in {name}"
-            for name, (count, total) in sorted(entry["waits"].items())
-        ) or "0 waits"
+        waits = (
+            "; ".join(
+                f"{count} waits {total:.0f} s in {name}" for name, (count, total) in sorted(entry["waits"].items())
+            )
+            or "0 waits"
+        )
         for key in keys:
-            out.append({"key": key, "kind": "wait", "subject": lane,
-                        "result": f"{entry['calls']} calls; {waits}",
-                        "file": search.RAW_CALLS if lane == RAW_LANE else search.CALLS_FILE})
+            out.append(
+                {
+                    "key": key,
+                    "kind": "wait",
+                    "subject": lane,
+                    "result": f"{entry['calls']} calls; {waits}",
+                    "file": search.RAW_CALLS if lane == RAW_LANE else search.CALLS_FILE,
+                }
+            )
     return out
 
 
@@ -922,13 +947,14 @@ def search_index_failures(directory: Path) -> list[str]:
     screen is such a record; every issued query string is indexed once, and
     every indexed query was issued.
     """
+
     def table(name: str) -> list[dict[str, str]]:
         path = directory / name
         if not path.is_file():
             return []
         lines = path.read_text(encoding="utf-8").splitlines()
         header = lines[0].split("\t") if lines else []
-        return [dict(zip(header, line.split("\t"))) for line in lines[1:]]
+        return [dict(zip(header, line.split("\t"), strict=False)) for line in lines[1:]]
 
     failures = []
     csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
@@ -941,13 +967,13 @@ def search_index_failures(directory: Path) -> list[str]:
             continue
         candidate = f"{row['candidate']}@{row['revision']}"
         expected.add((row["key"], "candidate", candidate, row["census"]))
-        for screen, field in (("licence", "licence_screen"), ("ref", "revision_screen"),
-                              ("fern", "fern_screen")):
+        for screen, field in (("licence", "licence_screen"), ("ref", "revision_screen"), ("fern", "fern_screen")):
             if not row[field].startswith("not-run"):
                 expected.add((row["key"], "screen", f"{candidate} {screen}", row[field]))
     indexed = {
         (row["key"], row["kind"], row["subject"], row["result"])
-        for row in index if row.get("kind") in ("candidate", "screen")
+        for row in index
+        if row.get("kind") in ("candidate", "screen")
     }
     for missing in sorted(expected - indexed):
         failures.append(f"{directory.name}: records.tsv {missing[1]} {missing[2]!r} is not indexed")
@@ -983,9 +1009,7 @@ def render(rows: list[dict[str, str]], fields: tuple[str, ...]) -> str:
         if not known_disposition(row["disposition"]):
             raise ValueError(f"unknown candidate disposition: {row['disposition']}")
     output = io.StringIO()
-    writer = csv.DictWriter(
-        output, fieldnames=fields, delimiter="\t", lineterminator="\n"
-    )
+    writer = csv.DictWriter(output, fieldnames=fields, delimiter="\t", lineterminator="\n")
     writer.writeheader()
     writer.writerows(rows)
     return output.getvalue()
@@ -1057,8 +1081,10 @@ def rederived_region_texts(root: Path) -> dict[Path, str]:
                 historical = f", {count[HISTORICAL]} {HISTORICAL}" if count[HISTORICAL] else ""
                 segments.append(
                     f"{source}: {sum(count[name] for name in count if name != HISTORICAL)} candidates ("
-                    + ", ".join(f"{count[name]} {name}" for name in DISPOSITIONS) + historical
-                    + f") [records](witness-search-{match['directory']}/records.tsv){match['witness'] or ''}")
+                    + ", ".join(f"{count[name]} {name}" for name in DISPOSITIONS)
+                    + historical
+                    + f") [records](witness-search-{match['directory']}/records.tsv){match['witness'] or ''}"
+                )
             cells[2] = "; ".join(segments)
             lines[number] = " | ".join(cells)
         rewritten[path] = head + EXHAUSTIVE_SEARCH_HEADING + "\n".join(lines) + ("\n#" + tail if _ else "")
@@ -1067,12 +1093,12 @@ def rederived_region_texts(root: Path) -> dict[Path, str]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--evidence-root", type=Path, default=Path("docs/openapi-surface")
-    )
+    parser.add_argument("--evidence-root", type=Path, default=Path("docs/openapi-surface"))
     parser.add_argument("--check", action="store_true")
     parser.add_argument(
-        "--shard-bytes", type=int, default=SHARD_BYTES,
+        "--shard-bytes",
+        type=int,
+        default=SHARD_BYTES,
         help="largest part a written records.tsv or candidates.tsv is split into",
     )
     args = parser.parse_args()
@@ -1095,8 +1121,10 @@ def main() -> int:
         index_target = directory / "search-index.tsv"
         index_text = "".join(
             "\t".join(row[field] for field in SEARCH_INDEX_FIELDS) + "\n"
-            for row in [dict(zip(SEARCH_INDEX_FIELDS, SEARCH_INDEX_FIELDS)),
-                        *search_index_rows(args.evidence_root, source, rows)]
+            for row in [
+                dict(zip(SEARCH_INDEX_FIELDS, SEARCH_INDEX_FIELDS, strict=False)),
+                *search_index_rows(args.evidence_root, source, rows),
+            ]
         )
         if args.check:
             if not index_target.is_file() or index_target.read_text(encoding="utf-8") != index_text:
@@ -1112,9 +1140,7 @@ def main() -> int:
                     "record": f"witness-search-{source}/records.tsv:{number}",
                 }
             )
-    central.sort(
-        key=lambda row: (row["source"], row["key"], row["candidate"], row["revision"])
-    )
+    central.sort(key=lambda row: (row["source"], row["key"], row["candidate"], row["revision"]))
     target = args.evidence_root / "witness-search-github/candidates.tsv"
     target.parent.mkdir(parents=True, exist_ok=True)
     expected = render(central, CENTRAL_FIELDS)
@@ -1125,8 +1151,11 @@ def main() -> int:
             changed.append(str(target))
         if not inventory.is_file() or inventory.read_text(encoding="utf-8") != owed:
             changed.append(str(inventory))
-        changed.extend(str(path) for path, text in rederived_region_texts(args.evidence_root).items()
-                       if path.read_text(encoding="utf-8") != text)
+        changed.extend(
+            str(path)
+            for path, text in rederived_region_texts(args.evidence_root).items()
+            if path.read_text(encoding="utf-8") != text
+        )
         if changed:
             print(
                 "candidate records differ from evidence: "

@@ -34,15 +34,16 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import time
 import textwrap
+import time
 import tomllib
-import unittest
 import unicodedata
+import unittest
 from collections import Counter
 from collections.abc import Callable
 from pathlib import Path
 from types import ModuleType
+from typing import Any, ClassVar
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -80,6 +81,13 @@ def grep_speaks_pcre() -> bool:
         ["grep", "-oP", r"a\Kb(?=c)"], input="abc\n", capture_output=True, text=True, encoding="utf-8"
     )
     return probe.returncode == 0 and probe.stdout.strip() == "b"
+
+
+def matched(match: re.Match[str] | None) -> re.Match[str]:
+    """The match a case's pattern must find, so a miss fails the case instead of reading `None`."""
+    if match is None:
+        raise AssertionError("an expected pattern did not match")
+    return match
 
 
 def recipe_body(name: str) -> list[str]:
@@ -124,6 +132,7 @@ SCRIPT = script_under_test()
 def load_census():
     """Import the script as a module for the loader's own unit cases."""
     spec = importlib.util.spec_from_file_location("openapi_surface_census", SCRIPT)
+    assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
     # Registered before execution because the module defines dataclasses, whose
     # type resolution reads the module out of sys.modules.
@@ -149,7 +158,8 @@ def run(*args: str) -> subprocess.CompletedProcess:
         cwd=REPO,
         capture_output=True,
         text=True,
-        timeout=CENSUS_TIMEOUT, encoding="utf-8",
+        timeout=CENSUS_TIMEOUT,
+        encoding="utf-8",
     )
 
 
@@ -184,8 +194,8 @@ def write_golden_registry(fixtures: Path, *apis: str, residual: dict[str, list[s
     for index, api in enumerate(apis):
         files = ", ".join(f'"{name}"' for name in residual.get(api, []))
         blocks.append(
-            f"const ROW_{index}: Corpus = Corpus {{\n    api: \"{api}\",\n"
-            f"    package_name: \"fern\",\n    unmatched: &[{files}],\n}};\n\n"
+            f'const ROW_{index}: Corpus = Corpus {{\n    api: "{api}",\n'
+            f'    package_name: "fern",\n    unmatched: &[{files}],\n}};\n\n'
             f"#[test]\nfn row_{index}_matches_fern_output() {{\n"
             f"    assert_committed_corpus_matches(&ROW_{index});\n}}\n"
         )
@@ -237,10 +247,7 @@ def table_cells(line: str, width: int) -> list[str] | None:
     """
     if not line.startswith("| "):
         return None
-    cells = [
-        cell.replace("\x00", "\\|").strip()
-        for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")
-    ]
+    cells = [cell.replace("\x00", "\\|").strip() for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")]
     if len(cells) < width:
         return None
     return cells[: width - 1] + ["|".join(cells[width - 1 :])]
@@ -288,10 +295,7 @@ def declared_witness_sources(text: str) -> dict[str, str]:
     if WITNESS_SEARCH_HEADING not in text:
         return {}
     preamble = text.split(WITNESS_SEARCH_HEADING, 1)[1].split("\n| key | outcome", 1)[0]
-    return {
-        source_key(label): label
-        for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)
-    }
+    return {source_key(label): label for label in re.findall(r"^[-*] \*\*([^*]+)\*\*", preamble, re.M)}
 
 
 def witness_sources_queried(cell: str, declared: dict[str, str]) -> dict[str, str]:
@@ -302,19 +306,13 @@ def witness_sources_queried(cell: str, declared: dict[str, str]) -> dict[str, st
     query put to it has to be. Bold spans that are not sources (a count, an
     emphasised value) are not boundaries.
     """
-    spans = [
-        (match.start(), match.end(), source_key(match.group(0)))
-        for match in re.finditer(r"\*\*[^*]+\*\*", cell)
-    ]
+    spans = [(match.start(), match.end(), source_key(match.group(0))) for match in re.finditer(r"\*\*[^*]+\*\*", cell)]
     found: dict[str, tuple[int, int]] = {}
     for start, end, key in spans:
         if key in declared and key not in found:
             found[key] = (start, end)
     starts = sorted(start for start, _end in found.values())
-    return {
-        key: cell[end : next((s for s in starts if s > start), len(cell))]
-        for key, (start, end) in found.items()
-    }
+    return {key: cell[end : next((s for s in starts if s > start), len(cell))] for key, (start, end) in found.items()}
 
 
 def records_rate_limit_cap(segment: str) -> bool:
@@ -326,8 +324,10 @@ def records_rate_limit_cap(segment: str) -> bool:
     """
     text = re.sub(r"(?i)\bpage cap\b", "", segment)
     # A match inside a longer word (`reset` in `preset-io`) names no limit.
-    return any(not (match.start() and (text[match.start() - 1].isalnum() or text[match.start() - 1] == "-"))
-               for match in RATE_LIMIT_REASON.finditer(text))
+    return any(
+        not (match.start() and (text[match.start() - 1].isalnum() or text[match.start() - 1] == "-"))
+        for match in RATE_LIMIT_REASON.finditer(text)
+    )
 
 
 OUTSTANDING_ACQUISITION = "outstanding acquisition"
@@ -342,7 +342,8 @@ def capped_sources(cell: str, declared: dict[str, str]) -> list[str]:
     nothing. Every live completeness decision reads the rest as outstanding.
     """
     return sorted(
-        declared[name] for name, segment in witness_sources_queried(cell, declared).items()
+        declared[name]
+        for name, segment in witness_sources_queried(cell, declared).items()
         if records_rate_limit_cap(segment)
         and re.search(rf"\b(?:{UNANSWERED}|{OUTSTANDING_ACQUISITION})\b", segment, re.I)
     )
@@ -370,8 +371,11 @@ def rate_limit_unanswered_failures(key: str, region: str, row: list[str], declar
     is spelled so.
     """
     queried = witness_sources_queried(row[6], declared)
-    capped = sorted(declared[name] for name, segment in queried.items()
-                    if records_rate_limit_cap(segment) and re.search(rf"\b{UNANSWERED}\b", segment, re.I))
+    capped = sorted(
+        declared[name]
+        for name, segment in queried.items()
+        if records_rate_limit_cap(segment) and re.search(rf"\b{UNANSWERED}\b", segment, re.I)
+    )
     if not capped:
         return []
     return [
@@ -540,9 +544,7 @@ def source_record_failure(label: str, segment: str) -> str | None:
     return None
 
 
-def blocked_witness_probe_failures(
-    key: str, region: str, cells: list[str], region_text: str, ledger: str
-) -> list[str]:
+def blocked_witness_probe_failures(key: str, region: str, cells: list[str], region_text: str, ledger: str) -> list[str]:
     """Every way one row fails the amended settlement rule; empty means it conforms.
 
     The rule's own five gates, in the order the index states them: a recorded
@@ -578,15 +580,11 @@ def blocked_witness_probe_failures(
         missing = sorted(declared[name] for name in set(declared) - set(queried))
         if missing:
             failures.append(
-                f"{key}: its recorded search omits {missing}, which {region}.md "
-                f"declares its search put to every row"
+                f"{key}: its recorded search omits {missing}, which {region}.md declares its search put to every row"
             )
         incomplete = sorted(
             reason
-            for reason in (
-                source_record_failure(declared[name], segment)
-                for name, segment in queried.items()
-            )
+            for reason in (source_record_failure(declared[name], segment) for name, segment in queried.items())
             if reason
         )
         if incomplete:
@@ -611,9 +609,7 @@ def blocked_witness_probe_failures(
     return failures
 
 
-def open_search_probe_failures(
-    key: str, region: str, cells: list[str], region_text: str, ledger: str
-) -> list[str]:
+def open_search_probe_failures(key: str, region: str, cells: list[str], region_text: str, ledger: str) -> list[str]:
     """Every way one row fails route 3 of the settlement rule; empty means it conforms.
 
     Route 3 settles a row whose recorded search found no usable witness and left a
@@ -682,9 +678,7 @@ def open_search_probe_failures(
     return failures
 
 
-def unread_source_failures(
-    key: str, region: str, row: list[str], declared: dict[str, str]
-) -> list[str]:
+def unread_source_failures(key: str, region: str, row: list[str], declared: dict[str, str]) -> list[str]:
     """A search claiming absence while a source it required did not answer.
 
     `none-found` is a claim about the world, and it is only as good as the set of
@@ -728,9 +722,7 @@ DECLARED_SOURCES = (
 )
 EXHAUSTED = "exhausted"
 EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
-FROZEN_SEARCH_CONTRACT = (
-    REPO / "docs" / "openapi-surface" / "witness-search-redo" / "contract.md"
-)
+FROZEN_SEARCH_CONTRACT = REPO / "docs" / "openapi-surface" / "witness-search-redo" / "contract.md"
 
 
 HANDWRITTEN = REPO / "docs" / "openapi-surface" / "handwritten"
@@ -752,8 +744,9 @@ _RUST_SPAN_REPORT = load_script("tools/surface-census/fixtures-coverage-report.p
 
 def rust_function_body(lines: list[str], name: str) -> list[str]:
     """Bound one Rust function with the coverage scanner's literal-aware lexer."""
-    start = next((index for index, line in enumerate(lines)
-                  if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None)
+    start = next(
+        (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+    )
     if start is None:
         raise AssertionError(f"source declares no fn {name}")
     end = _RUST_SPAN_REPORT._item_end_line(lines, start - 1)
@@ -855,7 +848,8 @@ def residual_attributions(root: Path) -> dict[str, tuple[str, list[str], list[st
         if cells and re.fullmatch(r"`[^`]+`", cells[0].strip()):
             matched, _, gap = cells[2].partition("; open gap:")
             found[cells[0].strip("` ")] = (
-                cells[1].strip("` "), re.findall(r"`([^`]+)`", matched),
+                cells[1].strip("` "),
+                re.findall(r"`([^`]+)`", matched),
                 [name for name in re.findall(r"`([^`]+)`", gap) if name != "unmatched"],
                 cells[3].strip("` "),
             )
@@ -933,10 +927,14 @@ def finished_state_failures(root: Path) -> list[str]:
                             f"search record, so its reason must be {NOT_SEARCHED}"
                         )
                     continue
-                verdicts = {
-                    line[2].strip("`")
-                    for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
-                } if record.is_file() else set()
+                verdicts = (
+                    {
+                        line[2].strip("`")
+                        for line in exhaustive_search_lines(record.read_text(encoding="utf-8")).get(reach.key, [])
+                    }
+                    if record.is_file()
+                    else set()
+                )
                 if verdicts != {SEARCH_INCOMPLETE} or not named[(reach.key, arm)]:
                     failures.append(
                         f"{reach.key}: unreached arm `{arm}` is named an unproven gap, but its arm "
@@ -999,10 +997,11 @@ def entry_search_failures(key: str, cell: str) -> list[str]:
         )
     elif unanswered and outcome.group(1) != SEARCH_INCOMPLETE:
         failures.append(
-            f"{key}: reads `{outcome.group(1)}` while {unanswered} did not answer; "
-            f"that search is `{SEARCH_INCOMPLETE}`"
+            f"{key}: reads `{outcome.group(1)}` while {unanswered} did not answer; that search is `{SEARCH_INCOMPLETE}`"
         )
     return failures
+
+
 _index_spec = importlib.util.spec_from_file_location(
     "witness_search_github_index", REPO / "tools/witness-search/witness-search-github-index.py"
 )
@@ -1013,10 +1012,9 @@ COMPACT_RECORD_FIELDS = _index_module.FIELDS
 COMPACT_DISPOSITIONS = _index_module.DISPOSITIONS
 COMPACT_SEGMENT = re.compile(
     r"(?P<source>[\w.-]+): (?P<total>\d+) candidates "
-    "\\(" + ", ".join(
-        rf"(?P<{name.replace('-', '_')}>\d+) {re.escape(name)}"
-        for name in COMPACT_DISPOSITIONS
-    ) + r"(?:, (?P<historical>\d+) on historical screens)?\) "
+    "\\("
+    + ", ".join(rf"(?P<{name.replace('-', '_')}>\d+) {re.escape(name)}" for name in COMPACT_DISPOSITIONS)
+    + r"(?:, (?P<historical>\d+) on historical screens)?\) "
     r"\[records\]\(witness-search-(?P<directory>[\w.-]+)/records\.tsv\)"
     r"(?: witness `(?P<witness>[^`]+)` at `(?P<revision>[^`]+)`)?"
 )
@@ -1025,9 +1023,7 @@ SCREENS = ("licence", "ref", "fern")
 EVIDENCE_KINDS = ("query", "walk", "document", "candidate", "screen", "wait")
 # A bucket reaching its cap is the search's to wait out, never a source declining
 # to answer, so an `unanswered` giving any of these as its reason is refused.
-RATE_LIMIT_REASON = re.compile(
-    r"(?i)rate[- ]?limit|limiter|quota|too many requests|\b429\b|\bcap(?:ped)?\b|reset"
-)
+RATE_LIMIT_REASON = re.compile(r"(?i)rate[- ]?limit|limiter|quota|too many requests|\b429\b|\bcap(?:ped)?\b|reset")
 IMMUTABLE_READ = re.compile(r"[0-9a-f]{40}|sha256:[0-9a-f]{64}|pages? \d+[–-]\d+")
 
 
@@ -1086,7 +1082,7 @@ def compact_ledger(path: Path) -> tuple[tuple[str, ...], dict[str, list[tuple[in
     return _compact_ledger(path, state)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _compact_ledger(
     path: Path, _state: tuple[tuple[str, int, int, int], ...]
 ) -> tuple[tuple[str, ...], dict[str, list[tuple[int, dict[str, str]]]]]:
@@ -1114,9 +1110,7 @@ def compact_record_failures(
     sources = [segment["source"] for segment in segments]
     declared = [source for source in DECLARED_SOURCES if source in capabilities]
     if sources != declared:
-        failures.append(
-            f"{key}: compact search sources {sources} differ from declared {declared}"
-        )
+        failures.append(f"{key}: compact search sources {sources} differ from declared {declared}")
     # The consolidated index is built over the sources its script declares; the
     # catalogue and portal ledgers are indexed by their own acquisitions, so their
     # rows reconcile with their own records.tsv alone.
@@ -1130,10 +1124,7 @@ def compact_record_failures(
         if header != (*COMPACT_RECORD_FIELDS[:-1], "record"):
             failures.append(f"{key}: candidates.tsv has the wrong header")
         central = [row for _number, row in by_key.get(key, [])]
-    central_by_identity = {
-        (row.get("source"), row.get("candidate"), row.get("revision")): row
-        for row in central
-    }
+    central_by_identity = {(row.get("source"), row.get("candidate"), row.get("revision")): row for row in central}
     if len(central_by_identity) != len(central):
         failures.append(f"{key}: candidates.tsv duplicates a source candidate")
     encountered = set()
@@ -1157,12 +1148,8 @@ def compact_record_failures(
             "outstanding": int(segment["outstanding"]),
             "not-owed": int(segment["not_owed"]),
         }
-        if len(rows) != int(segment["total"]) or any(
-            counts[name] != value for name, value in expected.items()
-        ):
-            failures.append(
-                f"{key}: `{source}` compact candidate count differs from records.tsv"
-            )
+        if len(rows) != int(segment["total"]) or any(counts[name] != value for name, value in expected.items()):
+            failures.append(f"{key}: `{source}` compact candidate count differs from records.tsv")
         # The candidates whose disposition rests on a screen filed before the
         # measured stage: the index labels each on its evidence, and the line
         # says how many, so a reader citing it sees which are history.
@@ -1177,72 +1164,42 @@ def compact_record_failures(
         for number, row in rows:
             candidate = row.get("candidate", "")
             if row.get("source") != source:
-                failures.append(
-                    f"{key}: `{source}` records.tsv mislabels candidate `{candidate}`"
-                )
+                failures.append(f"{key}: `{source}` records.tsv mislabels candidate `{candidate}`")
             identity = (source, candidate, row.get("revision"))
             if identity in encountered:
-                failures.append(
-                    f"{key}: duplicate candidate `{candidate}` at `{row.get('revision')}` for `{source}`"
-                )
+                failures.append(f"{key}: duplicate candidate `{candidate}` at `{row.get('revision')}` for `{source}`")
             encountered.add(identity)
-            if not candidate or any(
-                not row.get(field) for field in COMPACT_RECORD_FIELDS
-            ):
-                failures.append(
-                    f"{key}: `{source}` candidate `{candidate}` has an empty field"
-                )
+            if not candidate or any(not row.get(field) for field in COMPACT_RECORD_FIELDS):
+                failures.append(f"{key}: `{source}` candidate `{candidate}` has an empty field")
             for field in ("licence_screen", "revision_screen", "fern_screen"):
                 if not re.fullmatch(r"pass|failed: .+|not-run: .+", row.get(field, "")):
-                    failures.append(
-                        f"{key}: `{source}` candidate `{candidate}` has invalid {field}"
-                    )
+                    failures.append(f"{key}: `{source}` candidate `{candidate}` has invalid {field}")
             if row.get("disposition") == "witness-found" and any(
-                row.get(field) != "pass"
-                for field in ("licence_screen", "revision_screen", "fern_screen")
+                row.get(field) != "pass" for field in ("licence_screen", "revision_screen", "fern_screen")
             ):
-                failures.append(
-                    f"{key}: `{source}` candidate `{candidate}` is not a screened witness"
-                )
+                failures.append(f"{key}: `{source}` candidate `{candidate}` is not a screened witness")
             if source not in indexed_sources:
                 continue
             indexed = central_by_identity.get(identity)
             if (
                 indexed is None
-                or any(
-                    indexed.get(field) != row.get(field)
-                    for field in COMPACT_RECORD_FIELDS
-                    if field != "evidence"
-                )
-                or (
-                    indexed
-                    and indexed.get("record")
-                    != f"witness-search-{source}/records.tsv:{number}"
-                )
+                or any(indexed.get(field) != row.get(field) for field in COMPACT_RECORD_FIELDS if field != "evidence")
+                or (indexed and indexed.get("record") != f"witness-search-{source}/records.tsv:{number}")
             ):
-                failures.append(
-                    f"{key}: `{source}` candidate `{candidate}` differs from candidates.tsv"
-                )
-        if expected["witness-found"]:
-            if (
-                not segment["witness"]
-                or not segment["revision"]
-                or not any(
-                    row["candidate"] == segment["witness"]
-                    and row["revision"] == segment["revision"]
-                    and row["disposition"] == "witness-found"
-                    for _, row in rows
-                )
-            ):
-                failures.append(
-                    f"{key}: `{source}` omits its witness candidate and revision"
-                )
-    if set(central_by_identity) != {
-        identity for identity in encountered if identity[0] in indexed_sources
-    }:
-        failures.append(
-            f"{key}: candidates.tsv and per-source records.tsv disagree on candidates"
-        )
+                failures.append(f"{key}: `{source}` candidate `{candidate}` differs from candidates.tsv")
+        if expected["witness-found"] and (
+            not segment["witness"]
+            or not segment["revision"]
+            or not any(
+                row["candidate"] == segment["witness"]
+                and row["revision"] == segment["revision"]
+                and row["disposition"] == "witness-found"
+                for _, row in rows
+            )
+        ):
+            failures.append(f"{key}: `{source}` omits its witness candidate and revision")
+    if set(central_by_identity) != {identity for identity in encountered if identity[0] in indexed_sources}:
+        failures.append(f"{key}: candidates.tsv and per-source records.tsv disagree on candidates")
     return failures
 
 
@@ -1267,29 +1224,20 @@ _redo_spec = importlib.util.spec_from_file_location(
 assert _redo_spec and _redo_spec.loader
 _redo_module = importlib.util.module_from_spec(_redo_spec)
 _redo_spec.loader.exec_module(_redo_module)
-EXCLUDED_SOURCE_NAMES = tuple(
-    source for source in _redo_module.ALL_SOURCES if source not in DECLARED_SOURCES
-)
+EXCLUDED_SOURCE_NAMES = tuple(source for source in _redo_module.ALL_SOURCES if source not in DECLARED_SOURCES)
 EXCLUDED_SOURCES = re.compile("(?i)" + "|".join(map(re.escape, EXCLUDED_SOURCE_NAMES)))
 OUTSTANDING_NOTE = re.compile(r"\boutstanding: (?P<sources>`[\w.-]+`(?:(?:, |,? and )`[\w.-]+`)*)")
 
 
 def manifest_rows(text: str) -> dict[str, list[str]]:
     """key -> its six `MANIFEST.tsv` fields."""
-    return {
-        fields[0]: fields
-        for line in text.splitlines()[1:]
-        if len(fields := line.split("\t")) == 6
-    }
+    return {fields[0]: fields for line in text.splitlines()[1:] if len(fields := line.split("\t")) == 6}
 
 
 def proof_citation(key: str, row: list[str]) -> str:
     """The line a row settled by `row`'s proof carries in its evidence cell."""
     suffix = "" if row[1] == "refusal" else "/"
-    return (
-        f"**Committed Fern measurement:** [`{key}`]"
-        f"({row[3].removeprefix('docs/openapi-surface/')}{suffix})"
-    )
+    return f"**Committed Fern measurement:** [`{key}`]({row[3].removeprefix('docs/openapi-surface/')}{suffix})"
 
 
 def compact_search_outcome_failures(key: str, line: list[str]) -> list[str]:
@@ -1306,22 +1254,14 @@ def compact_search_outcome_failures(key: str, line: list[str]) -> list[str]:
     if EXCLUDED_SOURCES.search(" ".join(line)):
         failures.append(f"{key}: its search record cites a source Contract B excludes")
     segments = [COMPACT_SEGMENT.fullmatch(piece.strip()) for piece in line[2].split("; ")]
-    owing = [
-        segment["source"]
-        for segment in segments
-        if segment and int(segment["outstanding"])
-    ]
+    owing = [segment["source"] for segment in segments if segment and int(segment["outstanding"])]
     note = OUTSTANDING_NOTE.search(line[3])
     named = re.findall(r"`([\w.-]+)`", note["sources"]) if note else []
     if outcome == EXHAUSTED and owing:
-        failures.append(
-            f"{key}: reads `{EXHAUSTED}` while {owing} still owe outstanding candidates"
-        )
+        failures.append(f"{key}: reads `{EXHAUSTED}` while {owing} still owe outstanding candidates")
     if outcome == SEARCH_INCOMPLETE:
         if not named:
-            failures.append(
-                f"{key}: reads `{SEARCH_INCOMPLETE}` and its note names no outstanding source"
-            )
+            failures.append(f"{key}: reads `{SEARCH_INCOMPLETE}` and its note names no outstanding source")
         undeclared = [name for name in named if name not in DECLARED_SOURCES]
         if undeclared:
             failures.append(f"{key}: names {undeclared} outstanding, none a declared source")
@@ -1351,9 +1291,7 @@ def completeness_failures(
     """
     named = named or {}
     failures = []
-    searched = {
-        region: compact_search_lines(text) for region, text in region_texts.items()
-    }
+    searched = {region: compact_search_lines(text) for region, text in region_texts.items()}
     for key, (region, cells) in sorted(entries.items()):
         category = cells[3].strip("`")
         if category == "golden":
@@ -1408,10 +1346,7 @@ def completeness_failures(
 
 def recorded_queries(cell: str) -> list[tuple[str, str]]:
     """(phrasing, what it returned) for every query a `queries` cell records."""
-    return [
-        (query, result.strip())
-        for query, result in re.findall(r"`([^`]+)`\s*→\s*([^;]+)", cell)
-    ]
+    return [(query, result.strip()) for query, result in re.findall(r"`([^`]+)`\s*→\s*([^;]+)", cell)]
 
 
 def recorded_walk(cell: str) -> tuple[str, str, str] | None:
@@ -1434,8 +1369,11 @@ ACQUISITION_MANIFEST_COLUMNS = ("walk", "document", "revision", "sha256")
 
 
 def enumeration_census_failures(
-    key: str, source: str, walks: list[tuple[str, str, str]],
-    directory: Path, records: list[dict[str, str]],
+    key: str,
+    source: str,
+    walks: list[tuple[str, str, str]],
+    directory: Path,
+    records: list[dict[str, str]],
     pinned: list[dict[str, str]] | None = None,
 ) -> list[str]:
     """Reconcile one compact census row per walked document with positive records.
@@ -1489,9 +1427,10 @@ def enumeration_census_failures(
         by_identity = {(row["walk"], row["document"]): row for row in manifest}
         for row in census:
             acquired = by_identity.get((row["walk"], row["document"]))
-            if acquired and (row["revision"] != acquired["revision"] or
-                             row["sha256"] != acquired["sha256"]):
-                failures.append(f"{key}: `{source}` {row['document']} differs from pinned acquisition digest or revision")
+            if acquired and (row["revision"] != acquired["revision"] or row["sha256"] != acquired["sha256"]):
+                failures.append(
+                    f"{key}: `{source}` {row['document']} differs from pinned acquisition digest or revision"
+                )
     for tree, ref, count in walks:
         selected = census_by_walk.get(tree, [])
         if len(selected) != int(count):
@@ -1506,10 +1445,7 @@ def enumeration_census_failures(
         failures.append(f"{key}: `{source}` enumeration has a document outside the named walks")
     # A path more than one walked tree pins is named `<walk>:<path>` in the
     # records, so each copy is its own declarer (`document_subject`).
-    repeated = {
-        document for document, count in Counter(row["document"] for row in census).items()
-        if count > 1
-    }
+    repeated = {document for document, count in Counter(row["document"] for row in census).items() if count > 1}
 
     def subject(row: dict[str, str]) -> str:
         return f"{row['walk']}:{row['document']}" if row["document"] in repeated else row["document"]
@@ -1531,20 +1467,14 @@ def enumeration_census_failures(
         if key in matched:
             if len(positive) != 1 or not re.fullmatch(r"census [1-9]\d*", positive[0].get("result", "")):
                 failures.append(
-                    f"{key}: `{source}` {document} matched in enumeration.tsv "
-                    "but has no one positive records.tsv row"
+                    f"{key}: `{source}` {document} matched in enumeration.tsv but has no one positive records.tsv row"
                 )
         elif positive:
-            failures.append(
-                f"{key}: `{source}` records.tsv claims {document} without an "
-                "enumeration.tsv match"
-            )
+            failures.append(f"{key}: `{source}` records.tsv claims {document} without an enumeration.tsv match")
     census_documents = {subject(row) for row in census}
     for document in document_records:
         if document not in census_documents:
-            failures.append(
-                f"{key}: `{source}` records.tsv names {document} absent from enumeration.tsv"
-            )
+            failures.append(f"{key}: `{source}` records.tsv names {document} absent from enumeration.tsv")
     return failures
 
 
@@ -1554,9 +1484,7 @@ def recorded_screens(cell: str) -> dict[str, dict[str, str]]:
     for segment in cell.split(";"):
         candidate = re.match(r"\s*`([^`]+)`", segment)
         if candidate:
-            found[candidate.group(1)] = dict(
-                re.findall(r"\b(licence|ref|fern) `([^`]+)`", segment[candidate.end():])
-            )
+            found[candidate.group(1)] = dict(re.findall(r"\b(licence|ref|fern) `([^`]+)`", segment[candidate.end() :]))
     return found
 
 
@@ -1567,7 +1495,7 @@ def evidence_records(directory: Path) -> list[dict[str, str]]:
         return []
     lines = _index_module.read_ledger(index).splitlines()
     header = lines[0].split("\t") if lines else []
-    return [dict(zip(header, line.split("\t"))) for line in lines[1:] if line]
+    return [dict(zip(header, line.split("\t"), strict=False)) for line in lines[1:] if line]
 
 
 class EvidenceDirectory:
@@ -1596,8 +1524,12 @@ class EvidenceDirectory:
     def unreached_probes(self) -> set[tuple[str, str, str]]:
         """(key, candidate, build) of every `probe.jsonl` row reaching no site."""
         probes = self.directory / "probe.jsonl"
-        rows = [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
-        identities = ((row.get("key"), row.get("candidate"), row.get("build")) for row in rows if not row.get("reached"))
+        rows = (
+            [json.loads(line) for line in probes.read_text(encoding="utf-8").splitlines()] if probes.is_file() else []
+        )
+        identities = (
+            (row.get("key"), row.get("candidate"), row.get("build")) for row in rows if not row.get("reached")
+        )
         return {identity for identity in identities if all(isinstance(part, str) for part in identity)}
 
     @functools.cached_property
@@ -1622,23 +1554,14 @@ def directory_layout_failures(
     named = {record.get("file", "") for record in records}
     # A row naming a ledger names every part the ledger was sharded into
     # (`ledger_parts`), as `records.tsv`'s own parts are exempt below.
-    named |= {
-        part.name
-        for file in list(named)
-        if file
-        for part in _index_module.ledger_parts(directory / file)
-    }
+    named |= {part.name for file in list(named) if file for part in _index_module.ledger_parts(directory / file)}
     for record in records:
         if record.get("kind") not in EVIDENCE_KINDS:
             failures.append(
-                f"{name}/records.tsv carries kind `{record.get('kind')}`, "
-                f"which is none of {list(EVIDENCE_KINDS)}"
+                f"{name}/records.tsv carries kind `{record.get('kind')}`, which is none of {list(EVIDENCE_KINDS)}"
             )
         if not (directory / record.get("file", "")).is_file():
-            failures.append(
-                f"{name}/records.tsv names `{record.get('file')}`, which is "
-                "not in the evidence directory"
-            )
+            failures.append(f"{name}/records.tsv names `{record.get('file')}`, which is not in the evidence directory")
     tables = {part.name for part in _index_module.ledger_parts(directory / "records.tsv")}
     for path in sorted(directory.rglob("*")):
         rel = path.relative_to(directory).as_posix()
@@ -1647,15 +1570,14 @@ def directory_layout_failures(
         # measured stage's redacted logs, each named by the screen row it backs.
         under = any(rel.startswith(entry) for entry in layout_files if entry.endswith("/"))
         if path.is_file() and rel not in exempt and rel not in named and not under:
-            failures.append(
-                f"{name}/{rel} is evidence the table accounts for nowhere — "
-                "no records.tsv row names it"
-            )
+            failures.append(f"{name}/{rel} is evidence the table accounts for nowhere — no records.tsv row names it")
     return failures
 
 
 def evidence_directory_failures(
-    key: str, directory: Path, layout_files: tuple[str, ...] = (),
+    key: str,
+    directory: Path,
+    layout_files: tuple[str, ...] = (),
     evidence: EvidenceDirectory | None = None,
 ) -> list[str]:
     """Every file under the directory is named by a row, and every named file exists.
@@ -1694,7 +1616,7 @@ def exhaustive_search_failures(
     exhausted = outcomes == {EXHAUSTED}
     sources = [line[1].strip("`* ") for line in lines]
 
-    for source, line in zip(sources, lines):
+    for source, line in zip(sources, lines, strict=False):
         for cell in (line[3], line[4]):
             for reason in re.findall(r"unanswered\b([^;|]*)", cell):
                 if RATE_LIMIT_REASON.search(reason):
@@ -1715,20 +1637,24 @@ def exhaustive_search_failures(
         if dropped:
             failures.append(f"{key}: an `exhausted` search drops declared source(s) {dropped}")
 
-    for source, line in zip(sources, lines):
+    for source, line in zip(sources, lines, strict=False):
         if source not in DECLARED_SOURCES:
             # An undeclared source answers for nothing and owes nothing.
             continue
-        directory = (
-            directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
-        )
+        directory = directory_for(source) if directory_for else evidence_root / f"witness-search-{source}"
         evidence = EvidenceDirectory(directory)
         records = evidence.records_by_key.get(key, [])
         if not directory.is_dir():
             failures.append(f"{key}: `{source}` has no evidence directory {directory.name}/")
         failures += evidence_directory_failures(key, directory, layout_files, evidence) if directory.is_dir() else []
         failures += exhaustive_line_failures(
-            key, source, line, records, capabilities.get(source), exhausted, directory,
+            key,
+            source,
+            line,
+            records,
+            capabilities.get(source),
+            exhausted,
+            directory,
             pinned_for(source, line) if pinned_for and recorded_walks(line[4]) else None,
             measured_build,
             evidence,
@@ -1763,7 +1689,7 @@ def fixture_declined(key: str, evidence: EvidenceDirectory) -> set[str]:
     return {c for c, row in latest.items() if str(row.get("declined", "")).startswith(marker)}
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def reaching_probes(directory: Path) -> frozenset[tuple[str, str, str]]:
     """`(key, candidate, build)` of every probe in `directory/probe.jsonl` that reaches an unreached site."""
     probes = directory / "probe.jsonl"
@@ -1776,7 +1702,7 @@ def reaches_on(directory: Path, key: str, candidate: str, build: str) -> bool:
     return (key, candidate, build) in reaching_probes(directory)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def screen_states(directory: Path, key: str) -> dict[str, str]:
     """The arm search's own reading of each candidate's latest screen in `directory` (measured or historical)."""
     return golden_reach_search().screen_states_in(directory, key)
@@ -1800,8 +1726,10 @@ def not_reaching_failures(
     build = marked[0].group(1)
     if (key, candidate, build) in evidence.unreached_probes:
         return []
-    return [f"{key}: candidate `{candidate}` claims {template.format(build=build)!r}, which "
-            f"{evidence.directory.name}/probe.jsonl does not carry"]
+    return [
+        f"{key}: candidate `{candidate}` claims {template.format(build=build)!r}, which "
+        f"{evidence.directory.name}/probe.jsonl does not carry"
+    ]
 
 
 def exhaustive_line_failures(
@@ -1844,15 +1772,11 @@ def exhaustive_line_failures(
     # The table against the evidence, and the evidence against the table.
     for query, result in queries:
         if not recorded("query", query, result):
-            failures.append(
-                f"{key}: asserts `{query}` → {result} for `{source}`, which {where} "
-                "does not carry"
-            )
+            failures.append(f"{key}: asserts `{query}` → {result} for `{source}`, which {where} does not carry")
     for tree, ref, count in walks:
         if not recorded("walk", f"{tree}@{ref}", count):
             failures.append(
-                f"{key}: asserts a walk of `{tree}` at `{ref}` for `{source}`, "
-                f"which {where} does not carry"
+                f"{key}: asserts a walk of `{tree}` at `{ref}` for `{source}`, which {where} does not carry"
             )
     for candidate, outcomes in screens.items():
         for screen, outcome in outcomes.items():
@@ -1861,7 +1785,7 @@ def exhaustive_line_failures(
                     f"{key}: asserts `{candidate}`'s {screen} screen `{outcome}` for "
                     f"`{source}`, which {where} does not carry"
                 )
-    table = {("query", q, r) for q, r in queries}
+    table: set[tuple[str, str, str | None]] = {("query", q, r) for q, r in queries}
     for tree, ref, count in walks:
         table.add(("walk", f"{tree}@{ref}", count))
     for candidate in candidates:
@@ -1875,26 +1799,17 @@ def exhaustive_line_failures(
             continue
         result = None if kind == "candidate" else r.get("result")
         if (kind, r.get("subject"), result) not in table:
-            failures.append(
-                f"{key}: {where} carries {kind} `{r.get('subject')}` that the table "
-                "accounts for nowhere"
-            )
+            failures.append(f"{key}: {where} carries {kind} `{r.get('subject')}` that the table accounts for nowhere")
     if capability and capability[1] and walks:
         failures += enumeration_census_failures(key, source, walks, directory, records, pinned)
 
     # Condition 3 and 4 hold at every outcome a candidate is recorded under.
     for candidate in candidates:
         census_run = [result or "" for result in results.get(("candidate", candidate), [])]
-        outstanding = [
-            result for result in census_run
-            if re.fullmatch(r"(?:parse|acquisition)-failure: .+", result)
-        ]
+        outstanding = [result for result in census_run if re.fullmatch(r"(?:parse|acquisition)-failure: .+", result)]
         if len(census_run) == 1 and outstanding:
             if exhausted:
-                failures.append(
-                    f"{key}: `exhausted` keeps candidate `{candidate}` with "
-                    f"outstanding {outstanding[0]}"
-                )
+                failures.append(f"{key}: `exhausted` keeps candidate `{candidate}` with outstanding {outstanding[0]}")
             continue
         # A golden-arm candidate the counted build's probe finds reaching nothing
         # keeps its row, marked with that probe, as the arm-search contract in
@@ -1910,7 +1825,7 @@ def exhaustive_line_failures(
                 f"in `{source}` — the census decides a declaration, never a keyword"
             )
             continue
-        if int(confirmed[0].group(1)) == 0:
+        if int(matched(confirmed[0]).group(1)) == 0:
             continue
         done = screens.get(candidate, {})
         if len(set(done) & set(SCREENS)) < len(SCREENS):
@@ -1919,15 +1834,22 @@ def exhaustive_line_failures(
                 f"{sorted(done)}; a declaring candidate is screened on licence, ref "
                 "and fern"
             )
-        elif (exhausted and all(done[s].startswith("passed") for s in SCREENS)
-              and candidate not in fixture_declined(key, evidence)):
+        elif (
+            exhausted
+            and all(done[s].startswith("passed") for s in SCREENS)
+            and candidate not in fixture_declined(key, evidence)
+        ):
             failures.append(
                 f"{key}: an `exhausted` search keeps `{candidate}`, which passes all "
                 "three screens — that is a witness, not an absence"
             )
-        elif (exhausted and measured_build and candidate not in fixture_declined(key, evidence)
-              and reaches_on(directory, key, candidate, measured_build)
-              and screen_states(directory, key).get(candidate) == "historical"):
+        elif (
+            exhausted
+            and measured_build
+            and candidate not in fixture_declined(key, evidence)
+            and reaches_on(directory, key, candidate, measured_build)
+            and screen_states(directory, key).get(candidate) == "historical"
+        ):
             failures.append(
                 f"{key}: an `exhausted` search settles `{candidate}` in `{source}` on a historical "
                 "screen — one filed before tools/witness-search/witness_screen.py, with no measured record — "
@@ -1937,9 +1859,9 @@ def exhaustive_line_failures(
     if not exhausted:
         return failures
     if capability is None:
-        return failures + [
-            f"{key}: `{source}` has no row in the source-capability table, so what "
-            "it owes cannot be read"
+        return [
+            *failures,
+            f"{key}: `{source}` has no row in the source-capability table, so what it owes cannot be read",
         ]
     text_query, enumerable, _cited = capability
     if "unanswered" in line[3] or "unanswered" in line[4]:
@@ -1951,8 +1873,7 @@ def exhaustive_line_failures(
         phrasings = [query for query, _ in queries]
         if len(phrasings) != len(set(phrasings)):
             failures.append(
-                f"{key}: records the same query phrasing twice for `{source}`; two "
-                "phrasings are two different strings"
+                f"{key}: records the same query phrasing twice for `{source}`; two phrasings are two different strings"
             )
         if len(set(phrasings)) < 2:
             failures.append(
@@ -1962,9 +1883,7 @@ def exhaustive_line_failures(
             )
         for query, result in queries:
             if not result.isdigit():
-                failures.append(
-                    f"{key}: `{query}` against `{source}` returned `{result}`, not a count"
-                )
+                failures.append(f"{key}: `{query}` against `{source}` returned `{result}`, not a count")
     if enumerable and not (walk and IMMUTABLE_READ.fullmatch(walk[1])):
         failures.append(
             f"{key}: records no tree or index at an immutable ref or page range for "
@@ -1991,8 +1910,11 @@ def config_gated_verdict(text: str, key: str) -> str | None:
     if not is_config_gated(text):
         return None
     body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
-    stated = {cells[3].strip("`") for cells in map(lambda line: table_cells(line, 4), body.splitlines())
-              if cells and cells[0].strip("`") == key}
+    stated = {
+        cells[3].strip("`")
+        for cells in (table_cells(line, 4) for line in body.splitlines())
+        if cells and cells[0].strip("`") == key
+    }
     return stated.pop() if len(stated) == 1 else None
 
 
@@ -2027,8 +1949,9 @@ def config_gated_record_failures(
     sub = {part.split("\n", 1)[0].strip(): part for part in parts[1:]}
 
     # (1) The setting and its code path.
-    rows = [cells for cells in (table_cells(line, 4) for line in head.splitlines())
-            if cells and cells[0].strip("`") == key]
+    rows = [
+        cells for cells in (table_cells(line, 4) for line in head.splitlines()) if cells and cells[0].strip("`") == key
+    ]
     setting = ""
     if len(rows) != 1 or rows[0][3].strip("`") != CONFIG_GATED:
         failures.append(f"{key}: its gate table states no one `{CONFIG_GATED}` line for the key")
@@ -2062,8 +1985,9 @@ def config_gated_record_failures(
             if cells and cells[0].startswith("`")
         ]
         with ledger.open(encoding="utf-8", newline="") as handle:
-            recorded = [row for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-                        if row["key"] == key]
+            recorded = [
+                row for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE) if row["key"] == key
+            ]
         rows_of = [(r["fixture"], r["setting"], r["regions_executed"], r["regions"]) for r in recorded]
         if sorted(stated) != sorted(rows_of):
             failures.append(
@@ -2083,9 +2007,10 @@ def config_gated_record_failures(
     # (3) Each declared source: its probe sets nothing, and its evidence shows no search.
     sources = sub.get("Each declared source")
     if sources is None:
-        return failures + [f"{key}: has no `#### Each declared source` table"]
-    lines = [cells for cells in (table_cells(line, 3) for line in sources.splitlines())
-             if cells and cells[0].startswith("`")]
+        return [*failures, f"{key}: has no `#### Each declared source` table"]
+    lines = [
+        cells for cells in (table_cells(line, 3) for line in sources.splitlines()) if cells and cells[0].startswith("`")
+    ]
     named = [cells[0].strip("`") for cells in lines]
     if sorted(named) != sorted(DECLARED_SOURCES):
         failures.append(f"{key}: names sources {sorted(named)}, not each of {sorted(DECLARED_SOURCES)} once")
@@ -2120,9 +2045,13 @@ def config_gated_record_failures(
                         failures.append(f"{key}: `{path}` matched documents for the key, so it was walked")
             elif path == "queries.tsv":
                 with target.open(encoding="utf-8", newline="") as handle:
-                    if any(r["key"] == key and r["source"] == source
-                           for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)):
-                        failures.append(f"{key}: `queries.tsv` holds a `{source}` phrasing for the key, so it was queried")
+                    if any(
+                        r["key"] == key and r["source"] == source
+                        for r in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+                    ):
+                        failures.append(
+                            f"{key}: `queries.tsv` holds a `{source}` phrasing for the key, so it was queried"
+                        )
     return failures
 
 
@@ -2146,17 +2075,24 @@ class ConfigGatedRecordTests(unittest.TestCase):
             shutil.copy(REPO / rel, self.root / rel)
         self.evidence = self.root / "golden-reach-witnesses"
         self.capabilities = source_capabilities(
-            (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8"))
+            (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+        )
         for source in DECLARED_SOURCES:
             directory = self.evidence / source
             directory.mkdir(parents=True)
             (directory / "records.tsv").write_text(
                 "key\tkind\tsubject\tresult\tfile\nother\tdocument\ta.yaml\tcensus 1\tenumeration.tsv.gz\n",
-                encoding="utf-8", newline="\n")
+                encoding="utf-8",
+                newline="\n",
+            )
             with gzip.open(directory / "enumeration.tsv.gz", "wt", encoding="utf-8", newline="\n") as handle:
-                handle.write("walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
-                             f"tree\ta.yaml\t{'0' * 40}\t{'0' * 64}\tother\treadable\n")
-        (self.evidence / "queries.tsv").write_text("key\tsource\tphrasing\nother\tsourcegraph\tq\n", encoding="utf-8", newline="\n")
+                handle.write(
+                    "walk\tdocument\trevision\tsha256\tmatched_keys\tstatus\n"
+                    f"tree\ta.yaml\t{'0' * 40}\t{'0' * 64}\tother\treadable\n"
+                )
+        (self.evidence / "queries.tsv").write_text(
+            "key\tsource\tphrasing\nother\tsourcegraph\tq\n", encoding="utf-8", newline="\n"
+        )
         self.ledger = self.root / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
         self.ledger.parent.mkdir(parents=True)
         self.write_ledger(9, 0)
@@ -2166,13 +2102,16 @@ class ConfigGatedRecordTests(unittest.TestCase):
             "fixture\tkey\tsite\tsetting\tregions_executed\tregions\n"
             f"fx\t{self.KEY}\t{self.ARM}\t-\t{executed_without}\t9\n"
             f"fx\t{self.KEY}\t{self.ARM}\taudiences=public\t{executed_with}\t9\n",
-            encoding="utf-8", newline="\n")
+            encoding="utf-8",
+            newline="\n",
+        )
 
     def record(self, executed_without: int = 0) -> str:
         def cited(source: str) -> str:
             text_query, enumerable, _how = self.capabilities[source]
             files = [f"{source}/records.tsv"] + ([f"{source}/enumeration.tsv.gz"] if enumerable else [])
             return ", ".join(f"`{f}`" for f in files + (["queries.tsv"] if text_query else []))
+
         sources = "\n".join(f"| `{source}` | none | {cited(source)} |" for source in DECLARED_SOURCES)
         return (
             f"# Arm search: `{self.KEY}`\n\nThe arm: `{self.ARM}`.\n\n{CONFIG_GATE_HEADING}\n\n"
@@ -2202,24 +2141,30 @@ class ConfigGatedRecordTests(unittest.TestCase):
         for setting, flag in CONFIG_FLAGS.items():
             with self.subTest(setting=setting):
                 self.assertTrue(flag.startswith("--"))
-                self.assertRegex(cli, rf'#\[arg\(long = "{re.escape(flag[2:])}"\)\]\s*{re.escape(setting)}:',
-                                 f"src/cli.rs declares no `{flag}` for the field `{setting}`")
+                self.assertRegex(
+                    cli,
+                    rf'#\[arg\(long = "{re.escape(flag[2:])}"\)\]\s*{re.escape(setting)}:',
+                    f"src/cli.rs declares no `{flag}` for the field `{setting}`",
+                )
 
     def test_a_well_formed_record_is_accepted(self) -> None:
         self.assertEqual([], self.failures(self.record()))
         self.assertEqual(CONFIG_GATED, config_gated_verdict(self.record(), self.KEY))
 
     def test_a_record_without_its_setting_or_code_path_is_refused(self) -> None:
-        self.assert_refused(self.record().replace(f"| `{self.KEY}` | `audiences` |", "| `other` | `audiences` |"),
-                            f"states no one `{CONFIG_GATED}` line")
-        self.assert_refused(self.record().replace("| `audiences` |", "| `colour` |"),
-                            "which is not a configuration field")
-        self.assert_refused(self.record().replace("filter_by_audience", "filter_by_colour"),
-                            "does not resolve")
+        self.assert_refused(
+            self.record().replace(f"| `{self.KEY}` | `audiences` |", "| `other` | `audiences` |"),
+            f"states no one `{CONFIG_GATED}` line",
+        )
+        self.assert_refused(
+            self.record().replace("| `audiences` |", "| `colour` |"), "which is not a configuration field"
+        )
+        self.assert_refused(self.record().replace("filter_by_audience", "filter_by_colour"), "does not resolve")
 
     def test_a_record_without_its_measured_gate_is_refused(self) -> None:
-        self.assert_refused(self.record().replace("#### Measured gate", "#### Something else"),
-                            "has no `#### Measured gate` table")
+        self.assert_refused(
+            self.record().replace("#### Measured gate", "#### Something else"), "has no `#### Measured gate` table"
+        )
         self.write_ledger(9, 2)
         self.assert_refused(self.record(executed_without=2), "is missing or executes the arm, so it is not gated")
         self.write_ledger(0, 0)
@@ -2228,21 +2173,27 @@ class ConfigGatedRecordTests(unittest.TestCase):
         self.assert_refused(self.record(executed_without=3), "run `just handwritten-reach` and restate the table")
 
     def test_a_record_without_each_sources_statement_is_refused(self) -> None:
-        self.assert_refused(self.record().replace("#### Each declared source", "#### Sources"),
-                            "has no `#### Each declared source` table")
-        self.assert_refused(self.record().replace("| `jentic` | none |", "| `postman` | none |"),
-                            "not each of")
-        self.assert_refused(self.record().replace("| `jentic` | none |", "| `jentic` | audiences |"),
-                            "must read `none`")
-        self.assert_refused(self.record().replace(" `jentic/enumeration.tsv.gz`", " `jentic/missing.tsv`"),
-                            "cites no `jentic/enumeration.tsv.gz`")
+        self.assert_refused(
+            self.record().replace("#### Each declared source", "#### Sources"),
+            "has no `#### Each declared source` table",
+        )
+        self.assert_refused(self.record().replace("| `jentic` | none |", "| `postman` | none |"), "not each of")
+        self.assert_refused(
+            self.record().replace("| `jentic` | none |", "| `jentic` | audiences |"), "must read `none`"
+        )
+        self.assert_refused(
+            self.record().replace(" `jentic/enumeration.tsv.gz`", " `jentic/missing.tsv`"),
+            "cites no `jentic/enumeration.tsv.gz`",
+        )
         with (self.evidence / "jentic" / "records.tsv").open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(f"{self.KEY}\tdocument\tb.yaml\tcensus 1\tenumeration.tsv.gz\n")
         self.assert_refused(self.record(), "`jentic/records.tsv` records a search for the key")
         with (self.evidence / "queries.tsv").open("a", encoding="utf-8", newline="\n") as handle:
             handle.write(f"{self.KEY}\tsourcegraph\tq\n")
         self.assert_refused(self.record(), "holds a `sourcegraph` phrasing for the key")
-        with gzip.open(self.evidence / "apis.guru" / "enumeration.tsv.gz", "at", encoding="utf-8", newline="\n") as handle:
+        with gzip.open(
+            self.evidence / "apis.guru" / "enumeration.tsv.gz", "at", encoding="utf-8", newline="\n"
+        ) as handle:
             handle.write(f"tree\tb.yaml\t{'0' * 40}\t{'0' * 64}\t{self.KEY}\treadable\n")
         self.assert_refused(self.record(), "matched documents for the key, so it was walked")
         script = self.root / "tools" / "surface-census" / "golden-reach-search.py"
@@ -2268,11 +2219,10 @@ class RecipeWiringTests(unittest.TestCase):
         project = census_project()
         self.assertNotIn("tier:promoted", project["tags"])
         self.assertEqual(
-            [
-                f"sh scripts/census-python.sh {Path(__file__).resolve().relative_to(REPO).as_posix()}",
-                "sh scripts/census-python.sh tools/surface-census/tests/apis_guru_gap_screen_test.py",
-            ],
-            project["targets"]["test-census"]["options"]["commands"],
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            f"{Path(__file__).resolve().relative_to(REPO).as_posix()} "
+            "tools/surface-census/tests/apis_guru_gap_screen_test.py",
+            project["targets"]["test-census"]["options"]["command"],
         )
         self.assertIn("test-census", project["targets"]["test"]["dependsOn"])
         self.assertEqual(["@just nx run surface-census:test-census"], recipe_body("test-surface-census"))
@@ -2281,21 +2231,23 @@ class RecipeWiringTests(unittest.TestCase):
 # The document-reading predicates `BodyAndResponseSelectorControls` discriminates:
 # each reads where its operation stands (its method, its route's parameters, the
 # document's version, a local Response `$ref`), so none is node-local.
-BODY_AND_RESPONSE_PREDICATES = frozenset({
-    "operation.requestBody:body-prefixed-single-use",
-    "operation.requestBody:titled-inline-container-oas-three-zero",
-    "operation.responses:empty-schema-success-oas-three-zero",
-    "operation.responses:schemaless-text-success",
-    "operation.responses:schemaless-download-success",
-    "operation.responses:suffixed-status-key",
-    "operation.requestBody:schemaless-json",
-    "operation.responses:schemaless-wav-success",
-    "operation.responses:contentless-two-hundred-with-created",
-    "operation.responses:space-suffixed-status-key",
-    "operation.requestBody:blank-description-optional-object",
-    "operation.requestBody:described-inline-scalar",
-    "operation.requestBody:plain-string-map",
-})
+BODY_AND_RESPONSE_PREDICATES = frozenset(
+    {
+        "operation.requestBody:body-prefixed-single-use",
+        "operation.requestBody:titled-inline-container-oas-three-zero",
+        "operation.responses:empty-schema-success-oas-three-zero",
+        "operation.responses:schemaless-text-success",
+        "operation.responses:schemaless-download-success",
+        "operation.responses:suffixed-status-key",
+        "operation.requestBody:schemaless-json",
+        "operation.responses:schemaless-wav-success",
+        "operation.responses:contentless-two-hundred-with-created",
+        "operation.responses:space-suffixed-status-key",
+        "operation.requestBody:blank-description-optional-object",
+        "operation.requestBody:described-inline-scalar",
+        "operation.requestBody:plain-string-map",
+    }
+)
 
 
 class GrammarContractTests(unittest.TestCase):
@@ -2318,9 +2270,7 @@ class GrammarContractTests(unittest.TestCase):
     def test_the_documented_enumeration_headers_are_the_gated_ones(self) -> None:
         # The doc names `enumeration.tsv`'s header first and the acquisition
         # manifest's second; the gate rejects any other column spelling.
-        documented = re.findall(
-            r"`(walk(?:\\t\w+)+)`", self.DOC.read_text(encoding="utf-8")
-        )
+        documented = re.findall(r"`(walk(?:\\t\w+)+)`", self.DOC.read_text(encoding="utf-8"))
         self.assertEqual(
             documented,
             ["\\t".join(ENUMERATION_COLUMNS), "\\t".join(ACQUISITION_MANIFEST_COLUMNS)],
@@ -2328,18 +2278,14 @@ class GrammarContractTests(unittest.TestCase):
 
     def test_the_documented_anchor_kinds_are_the_ones_that_head_a_selector(self) -> None:
         documented = self.backticked("- **Anchor kinds head their own selector.**", "- **")
-        self.assertEqual(
-            {name for name, kind in census.OBJECTS.items() if kind.anchor}, documented
-        )
+        self.assertEqual({name for name, kind in census.OBJECTS.items() if kind.anchor}, documented)
 
     def test_the_documented_extending_kinds_are_the_ones_that_extend_a_selector(self) -> None:
         documented = self.backticked(
             "- **Extending kinds append to their parent's selector under the field that holds",
             "So a License",
         )
-        self.assertEqual(
-            {name for name, kind in census.OBJECTS.items() if not kind.anchor}, documented
-        )
+        self.assertEqual({name for name, kind in census.OBJECTS.items() if not kind.anchor}, documented)
 
     def test_the_documented_valued_fields_are_the_ones_that_emit_a_value(self) -> None:
         documented = self.backticked("themselves a closed list:", "\n\nA **count**")
@@ -2370,15 +2316,14 @@ class GrammarContractTests(unittest.TestCase):
         # admits a `$` too, because the field a pointer-form predicate reads is
         # spelled `$ref`: the gate widens to the spelling rather than the spelling
         # bending to the gate.
-        documented = set(
-            re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body)
-        )
+        documented = set(re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body))
         self.assertEqual(set(census.PREDICATES), documented)
         stated = re.search(
             r"The predicates are themselves a closed list of\s+(\d+)",
             text,
         )
         self.assertIsNotNone(stated, "the grammar no longer states how many predicates there are")
+        assert stated is not None
         self.assertEqual(len(census.PREDICATES), int(stated.group(1)))
 
     def test_the_documented_member_only_readings_are_the_ones_the_script_declares(self) -> None:
@@ -2394,22 +2339,17 @@ class GrammarContractTests(unittest.TestCase):
         start = "##### The member-only readings"
         self.assertIn(start, text, "the grammar section documents no member-only reading")
         body = text.split(start, 1)[1].split("\nA shape that is a **combination**", 1)[0]
-        documented = set(
-            re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z]+)?)`", body, re.M)
-        )
+        documented = set(re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z]+)?)`", body, re.M))
         self.assertEqual(set(census.MEMBER_ONLY_PREDICATES), documented)
         stated = re.search(r"They are a\s+closed list of (\d+)", body)
         self.assertIsNotNone(stated, "the section no longer states how many there are")
+        assert stated is not None
         self.assertEqual(len(census.MEMBER_ONLY_PREDICATES), int(stated.group(1)))
 
     def test_no_member_only_reading_is_also_a_declared_selector(self) -> None:
         """The two lists are disjoint, and a member-only reading is not askable."""
-        self.assertEqual(
-            set(), set(census.MEMBER_ONLY_PREDICATES) & set(census.PREDICATES)
-        )
-        self.assertEqual(
-            set(), set(census.MEMBER_ONLY_PREDICATES) & set(census.CONJUNCTIONS)
-        )
+        self.assertEqual(set(), set(census.MEMBER_ONLY_PREDICATES) & set(census.PREDICATES))
+        self.assertEqual(set(), set(census.MEMBER_ONLY_PREDICATES) & set(census.CONJUNCTIONS))
         for reading in sorted(census.MEMBER_ONLY_PREDICATES):
             with self.subTest(reading=reading):
                 self.assertIsNotNone(
@@ -2423,40 +2363,42 @@ class GrammarContractTests(unittest.TestCase):
     # prose; this list is the third statement of the same partition, and the case
     # below holds all three together. A predicate added to the closed list is
     # node-local unless it is here.
-    DOCUMENT_COMPARING_PREDICATES = frozenset({
-        "operation.operationId:duplicate",
-        "openapi.paths:normalized-collision",
-        "components.schemas:normalized-collision",
-        "schema.$ref:undeclared-component-head",
-        "schema.$ref:resolves-to-component",
-        "schema.oneOf:discriminated-union",
-        "schema.anyOf:discriminated-union",
-        "schema.discriminator:inheritance-union",
-        "parameter.schema:subset-header-string-default",
-        # Read where the node stands, or resolve one local reference (#361).
-        "operation.operationId:digit-leading-method",
-        "operation.responses:wildcard-binary",
-        "parameter.example:non-scalar-query",
-        "mediaType.examples:named-beside-example",
-        "mediaType.examples:named-only",
-        "schema.example:on-ref-to-object",
-        "schema.example:on-ref-to-enum",
-        "schema.example:on-ref-to-union",
-        "schema.example:on-ref-to-alias",
-        # Read an operation's method, route parameters or document version, or
-        # resolve its success response's local `$ref`.
-        *BODY_AND_RESPONSE_PREDICATES,
-        # Read a request body's selected media type and resolve the component
-        # schemas its schema and example reach.
-        "mediaType.schema:allof-parent-body",
-        "mediaType.example:nested-null-member",
-        "mediaType.example:deprecated-property",
-        # Compare a document's component schemas against each other (the
-        # reference graph), or read where a media type stands.
-        "components.schemas:fields-reach-cycles-unsorted",
-        "components.schemas:cycle-into-cycle",
-        "mediaType.schema:closed-empty-object-property",
-    })
+    DOCUMENT_COMPARING_PREDICATES = frozenset(
+        {
+            "operation.operationId:duplicate",
+            "openapi.paths:normalized-collision",
+            "components.schemas:normalized-collision",
+            "schema.$ref:undeclared-component-head",
+            "schema.$ref:resolves-to-component",
+            "schema.oneOf:discriminated-union",
+            "schema.anyOf:discriminated-union",
+            "schema.discriminator:inheritance-union",
+            "parameter.schema:subset-header-string-default",
+            # Read where the node stands, or resolve one local reference (#361).
+            "operation.operationId:digit-leading-method",
+            "operation.responses:wildcard-binary",
+            "parameter.example:non-scalar-query",
+            "mediaType.examples:named-beside-example",
+            "mediaType.examples:named-only",
+            "schema.example:on-ref-to-object",
+            "schema.example:on-ref-to-enum",
+            "schema.example:on-ref-to-union",
+            "schema.example:on-ref-to-alias",
+            # Read an operation's method, route parameters or document version, or
+            # resolve its success response's local `$ref`.
+            *BODY_AND_RESPONSE_PREDICATES,
+            # Read a request body's selected media type and resolve the component
+            # schemas its schema and example reach.
+            "mediaType.schema:allof-parent-body",
+            "mediaType.example:nested-null-member",
+            "mediaType.example:deprecated-property",
+            # Compare a document's component schemas against each other (the
+            # reference graph), or read where a media type stands.
+            "components.schemas:fields-reach-cycles-unsorted",
+            "components.schemas:cycle-into-cycle",
+            "mediaType.schema:closed-empty-object-property",
+        }
+    )
 
     def test_the_documented_node_local_split_partitions_the_predicate_list(self) -> None:
         """The two counts the grammar states about its own predicates, recomputed.
@@ -2471,26 +2413,50 @@ class GrammarContractTests(unittest.TestCase):
         the word before "of the 26" stayed put.
         """
         words = {
-            "Twenty": 20, "Twenty-one": 21, "Twenty-two": 22,
-            "Twenty-three": 23, "Twenty-four": 24, "Twenty-five": 25,
-            "Thirty-eight": 38, "Thirty-nine": 39, "Forty": 40, "Forty-one": 41,
-            "Sixty-seven": 67, "Sixty-eight": 68, "Sixty-nine": 69, "Seventy": 70,
+            "Twenty": 20,
+            "Twenty-one": 21,
+            "Twenty-two": 22,
+            "Twenty-three": 23,
+            "Twenty-four": 24,
+            "Twenty-five": 25,
+            "Thirty-eight": 38,
+            "Thirty-nine": 39,
+            "Forty": 40,
+            "Forty-one": 41,
+            "Sixty-seven": 67,
+            "Sixty-eight": 68,
+            "Sixty-nine": 69,
+            "Seventy": 70,
             "Seventy-one": 71,
-            "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9,
-            "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
-            "twenty-three": 23, "twenty-four": 24,
-            "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
-            "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
+            "four": 4,
+            "five": 5,
+            "six": 6,
+            "seven": 7,
+            "eight": 8,
+            "nine": 9,
+            "seventeen": 17,
+            "eighteen": 18,
+            "twenty": 20,
+            "twenty-one": 21,
+            "twenty-three": 23,
+            "twenty-four": 24,
+            "thirty-one": 31,
+            "thirty-two": 32,
+            "thirty-three": 33,
+            "thirty-four": 34,
+            "thirty-five": 35,
+            "thirty-six": 36,
+            "thirty-seven": 37,
         }
         text = self.DOC.read_text(encoding="utf-8")
-        stated = re.search(
-            r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text
-        )
+        stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
         self.assertIsNotNone(stated, "the grammar no longer states its node-local count")
+        assert stated is not None
         self.assertEqual(len(census.PREDICATES), int(stated.group(2)))
         body = text.split(stated.group(0), 1)[1].split("\n\nA predicate selector", 1)[0]
         other = re.search(r"The other\n?([a-z-]+) —", body)
         self.assertIsNotNone(other, "the grammar no longer counts the other family")
+        assert other is not None
         node_local = words[stated.group(1)]
         comparing = words[other.group(1)]
         self.assertEqual(
@@ -2553,8 +2519,9 @@ class GrammarContractTests(unittest.TestCase):
             # of a condition joined by `||`.
             row = re.match(r"^\| \d+[a-z]? \| ", line.replace("\\|", "\x00"))
             if row and function is not None:
-                cells = [c.replace("\x00", "\\|").strip() for c in
-                         line.replace("\\|", "\x00").strip().strip("|").split("|")]
+                cells = [
+                    c.replace("\x00", "\\|").strip() for c in line.replace("\\|", "\x00").strip().strip("|").split("|")
+                ]
                 self.assertEqual(3, len(cells), f"{function}: {line}")
                 found[function].append(cells)
         return found
@@ -2573,10 +2540,9 @@ class GrammarContractTests(unittest.TestCase):
         the valued-field and predicate lists above are already reconciled.
         """
         self.assertEqual(census.CONJUNCTIONS, self.documented_conjunctions())
-        stated = re.search(
-            r"closed list of (\d+), declared in", self.DOC.read_text(encoding="utf-8")
-        )
+        stated = re.search(r"closed list of (\d+), declared in", self.DOC.read_text(encoding="utf-8"))
         self.assertIsNotNone(stated, "the grammar no longer states how many conjunctions there are")
+        assert stated is not None
         self.assertEqual(len(census.CONJUNCTIONS), int(stated.group(1)))
 
     def test_every_conjunction_is_spelled_in_its_one_canonical_order(self) -> None:
@@ -2587,9 +2553,9 @@ class GrammarContractTests(unittest.TestCase):
 
     def test_the_case_analysis_covers_the_six_blind_functions_of_the_rule(self) -> None:
         """The rule names six functions; the derivation has to work all six."""
-        rule = self.DOC.read_text(encoding="utf-8").split(
-            "> A conjunction is worth enumerating", 1
-        )[1].split("\n\n", 1)[0]
+        rule = (
+            self.DOC.read_text(encoding="utf-8").split("> A conjunction is worth enumerating", 1)[1].split("\n\n", 1)[0]
+        )
         named = set(re.findall(r"`([a-z_]+)`", rule))
         self.assertEqual(6, len(named), f"the rule names {sorted(named)}")
         self.assertEqual(named, set(self.case_rows()))
@@ -2608,6 +2574,7 @@ class GrammarContractTests(unittest.TestCase):
                     if hole:
                         self.assertIn(hole.group(1), holes)
                     else:
+                        assert selector is not None
                         # A conjunction, or — where the arm reads one Paths Object
                         # key and opens no schema — the predicate that reads it.
                         self.assertIn(
@@ -2618,7 +2585,7 @@ class GrammarContractTests(unittest.TestCase):
     def test_every_declared_conjunction_is_read_off_a_case_of_a_blind_region(self) -> None:
         """The list is bounded by the generator's branches, not by what `&` can spell."""
         derived = {
-            re.fullmatch(r"`(.+)`", cells[2]).group(1)
+            matched(re.fullmatch(r"`(.+)`", cells[2])).group(1)
             for rows_of in self.case_rows().values()
             for cells in rows_of
             if re.fullmatch(r"`(.+)`", cells[2])
@@ -2664,7 +2631,7 @@ class GrammarContractTests(unittest.TestCase):
         return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
 
     def test_function_body_ignores_literal_and_comment_braces(self) -> None:
-        source = '''fn held<'a>(value: &'a str) {
+        source = """fn held<'a>(value: &'a str) {
     let text = "{";
     let raw = r##"}"##;
     let character = '{';
@@ -2672,7 +2639,7 @@ class GrammarContractTests(unittest.TestCase):
     /* { /* } */ { */
 }
 fn following() { let other = 42; }
-'''
+"""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             (root / "src").mkdir()
@@ -2696,9 +2663,15 @@ fn following() { let other = 42; }
         nothing composes.
         """
         documented = {
-            function: [(cells[0], cells[2].strip("`") if cells[2].startswith("`")
-                        else re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2]).group(1))
-                       for cells in rows_of]
+            function: [
+                (
+                    cells[0],
+                    cells[2].strip("`")
+                    if cells[2].startswith("`")
+                    else matched(re.fullmatch(r"\*\*(H-[a-z-]+)\*\*", cells[2])).group(1),
+                )
+                for cells in rows_of
+            ]
             for function, rows_of in self.case_rows().items()
         }
         declared = {
@@ -2721,16 +2694,11 @@ fn following() { let other = 42; }
             self.assertEqual(len(numbers), len(set(numbers)), f"{function} repeats a case")
             for case in cases:
                 with self.subTest(function=function, case=case.number):
-                    stated = [
-                        field
-                        for field in (case.selector, case.hole, case.residual)
-                        if field is not None
-                    ]
+                    stated = [field for field in (case.selector, case.hole, case.residual) if field is not None]
                     self.assertEqual(
                         1,
                         len(stated),
-                        "a case carries exactly one of a selector, a hole and a "
-                        "residual sentence",
+                        "a case carries exactly one of a selector, a hole and a residual sentence",
                     )
                     if case.block is not None:
                         self.assertIn(case.block, census.BLOCKS)
@@ -2770,7 +2738,11 @@ fn following() { let other = 42; }
         are that helper's own unit-test cases, which the reading still answers.
         """
         for value in (
-            None, [], {}, {"field": "value"}, {"field": {}},
+            None,
+            [],
+            {},
+            {"field": "value"},
+            {"field": {}},
             {"field": {"description": "only metadata"}},
             {"good": {"type": "string"}, "bad": {}},
         ):
@@ -2791,11 +2763,7 @@ fn following() { let other = 42; }
         lines = self.function_body("nested_array_element")
         self.assertTrue(lines[0].strip().startswith("fn nested_array_element"))
         edited = [lines[0], "        if items.pattern.is_some() { return None; }", *lines[1:]]
-        kept = [
-            " ".join(line.split())
-            for line in edited
-            if line.strip() and not line.strip().startswith("//")
-        ]
+        kept = [" ".join(line.split()) for line in edited if line.strip() and not line.strip().startswith("//")]
         self.assertNotEqual(
             census.BLIND_FUNCTION_DIGESTS["nested_array_element"],
             hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
@@ -2810,13 +2778,33 @@ fn following() { let other = 42; }
         sentence moving fails here.
         """
         words = {
-            0: "zero", 1: "one", 3: "three", 4: "four", 5: "five", 7: "seven", 8: "eight",
-            9: "nine", 94: "ninety-four", 95: "ninety-five", 99: "ninety-nine",
-            103: "one-hundred-and-three", 106: "one-hundred-and-six",
-            15: "fifteen", 20: "twenty", 23: "twenty-three",
-            28: "twenty-eight", 36: "thirty-six", 40: "forty", 50: "fifty",
-            60: "sixty", 69: "sixty-nine", 74: "seventy-four", 76: "seventy-six",
-            78: "seventy-eight", 83: "eighty-three", 89: "eighty-nine",
+            0: "zero",
+            1: "one",
+            3: "three",
+            4: "four",
+            5: "five",
+            7: "seven",
+            8: "eight",
+            9: "nine",
+            94: "ninety-four",
+            95: "ninety-five",
+            99: "ninety-nine",
+            103: "one-hundred-and-three",
+            106: "one-hundred-and-six",
+            15: "fifteen",
+            20: "twenty",
+            23: "twenty-three",
+            28: "twenty-eight",
+            36: "thirty-six",
+            40: "forty",
+            50: "fifty",
+            60: "sixty",
+            69: "sixty-nine",
+            74: "seventy-four",
+            76: "seventy-six",
+            78: "seventy-eight",
+            83: "eighty-three",
+            89: "eighty-nine",
             107: "one-hundred-and-seven",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
@@ -2829,6 +2817,7 @@ fn following() { let other = 42; }
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(stated, "the exactness rule no longer states its own totals")
+        assert stated is not None
         self.assertEqual(
             (words[len(selectors)], words[len(rows_of)], words[len(holes)]),
             tuple(group.lower() for group in stated.groups()),
@@ -2838,6 +2827,7 @@ fn following() { let other = 42; }
             self.DOC.read_text(encoding="utf-8"),
         )
         self.assertIsNotNone(kinds, "the case analysis no longer states its hole-kind count")
+        assert kinds is not None
         self.assertEqual(words[len(self.documented_holes())], kinds.group(1))
 
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
@@ -2852,9 +2842,7 @@ fn following() { let other = 42; }
         self.assertEqual(6, len(owns), "the index no longer lists six regions")
         for region, boundary in sorted(owns.items()):
             with self.subTest(region=region):
-                body = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(
-                    encoding="utf-8"
-                )
+                body = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(encoding="utf-8")
                 self.assertIn("\n## Scope\n", body, f"{region}.md has no ## Scope section")
                 scope = body.split("\n## Scope\n", 1)[1].split("\n## ", 1)[0]
                 self.assertEqual(
@@ -2871,15 +2859,13 @@ fn following() { let other = 42; }
         doc = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"the (\d+) original\n`tests/fixtures/<name>/openapi\.\*` documents", doc)
         self.assertIsNotNone(stated, "the instrument section no longer states the corpus split")
+        assert stated is not None
         self.assertEqual(counts[0], int(stated.group(1)))
         script = SCRIPT.read_text(encoding="utf-8")
-        in_script = re.search(
-            r"and (\d+) of the (\d+) registered sources live in `corpus-sources/`", script
-        )
+        in_script = re.search(r"and (\d+) of the (\d+) registered sources live in `corpus-sources/`", script)
         self.assertIsNotNone(in_script, "the script's docstring no longer states the corpus split")
-        self.assertEqual(
-            (counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2)))
-        )
+        assert in_script is not None
+        self.assertEqual((counts[1], counts[2]), (int(in_script.group(1)), int(in_script.group(2))))
 
     def test_the_verdict_vocabulary_is_the_one_fern_limitations_defines(self) -> None:
         """A `limitations` row quotes that file's verdict; the enum is its property."""
@@ -2901,6 +2887,7 @@ fn following() { let other = 42; }
         doc = self.DOC.read_text(encoding="utf-8")
         pattern = re.search(r"^grep -oP '(.+)' docs/fern-limitations\.md", doc, re.M)
         self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        assert pattern is not None
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         # The same expression with PCRE's \K — which Python's re does not have —
         # rewritten as the capture group it is shorthand for.
@@ -2915,7 +2902,10 @@ fn following() { let other = 42; }
             self.skipTest("this grep has no PCRE support, so the command cannot run here")
         grep = subprocess.run(
             ["grep", "-oP", pattern.group(1), "docs/fern-limitations.md"],
-            cwd=REPO, capture_output=True, text=True, encoding="utf-8",
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
         )
         # Fail loudly on a refusal rather than comparing against empty output:
         # every way this command can go wrong has to be a red, not a quiet zero.
@@ -2924,12 +2914,8 @@ fn following() { let other = 42; }
 
     def test_bodies_media_ledger_citations_match_the_keyed_verdicts(self) -> None:
         """A cited verdict is the ledger's exact text, not a stale paraphrase."""
-        region = (
-            REPO / "docs" / "openapi-surface" / "bodies-media.md"
-        ).read_text(encoding="utf-8")
-        citations = re.findall(
-            r"Ledger `(?P<key>[A-Za-z0-9._-]+)`: `(?P<verdict>.*?)`\.", region
-        )
+        region = (REPO / "docs" / "openapi-surface" / "bodies-media.md").read_text(encoding="utf-8")
+        citations = re.findall(r"Ledger `(?P<key>[A-Za-z0-9._-]+)`: `(?P<verdict>.*?)`\.", region)
         self.assertGreater(len(citations), 10, "bodies-media.md has almost no Ledger citations")
 
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
@@ -2949,9 +2935,7 @@ fn following() { let other = 42; }
             elif not verdicts[key]:
                 failures.append(f"missing ledger verdict for key: {key}")
             elif cited != verdicts[key]:
-                failures.append(
-                    f"verdict mismatch for {key}: cited {cited!r}, ledger has {verdicts[key]!r}"
-                )
+                failures.append(f"verdict mismatch for {key}: cited {cited!r}, ledger has {verdicts[key]!r}")
         self.assertFalse(failures, "\n" + "\n".join(failures))
 
     @unittest.skipUnless(os.name == "posix", "the shim is a /bin/sh script")
@@ -2960,10 +2944,7 @@ fn following() { let other = 42; }
         real = shutil.which("grep")
         if real is None:
             self.skipTest("no grep on PATH to fall back to")
-        case = (
-            f"{type(self).__name__}"
-            ".test_the_documented_join_command_still_finds_the_limitations_keys"
-        )
+        case = f"{type(self).__name__}.test_the_documented_join_command_still_finds_the_limitations_keys"
         with tempfile.TemporaryDirectory() as shim:
             refuser = Path(shim) / "grep"
             refuser.write_text(
@@ -2978,13 +2959,17 @@ fn following() { let other = 42; }
                     exec {real} "$@"
                     """
                 ),
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             refuser.chmod(0o755)
             run = subprocess.run(
                 [sys.executable, str(Path(__file__).resolve()), case],
-                cwd=REPO, capture_output=True, text=True,
-                env={**os.environ, "PATH": f"{shim}{os.pathsep}{os.environ['PATH']}"}, encoding="utf-8",
+                cwd=REPO,
+                capture_output=True,
+                text=True,
+                env={**os.environ, "PATH": f"{shim}{os.pathsep}{os.environ['PATH']}"},
+                encoding="utf-8",
             )
         self.assertEqual(0, run.returncode, run.stderr)
         self.assertIn("skipped=1", run.stderr)
@@ -2992,21 +2977,17 @@ fn following() { let other = 42; }
     def test_the_region_files_carry_the_agreed_table_header(self) -> None:
         """Six files, one skeleton: the regions have to compose into one table."""
         header = (
-            "| key | oas | spec location | category | evidence | crozier sites | "
-            "why bytes could move | settlement |"
+            "| key | oas | spec location | category | evidence | crozier sites | why bytes could move | settlement |"
         )
         self.assertIn(header, self.DOC.read_text(encoding="utf-8"))
         regions = sorted(p.stem for p in (REPO / "docs" / "openapi-surface").glob("*.md"))
         self.assertEqual(
-            ["bodies-media", "document-paths", "oas31-extensions", "parameters",
-             "schemas", "security"],
+            ["bodies-media", "document-paths", "oas31-extensions", "parameters", "schemas", "security"],
             regions,
         )
         for region in regions:
             with self.subTest(region=region):
-                text = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(
-                    encoding="utf-8"
-                )
+                text = (REPO / "docs" / "openapi-surface" / f"{region}.md").read_text(encoding="utf-8")
                 self.assertIn(header, text)
                 self.assertIn(f"openapi-surface/{region}.md", self.DOC.read_text(encoding="utf-8"))
                 for section in ("## Scope", "## Entries", "## Method notes"):
@@ -3092,11 +3073,13 @@ class CensusReportTests(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         payload = json.loads(completed.stdout)
         self.assertEqual(
-            [{
-                "fixture": WEBHOOKS,
-                "origin": "vendored",
-                "path": f"tests/fixtures/{WEBHOOKS}/openapi.yml",
-            }],
+            [
+                {
+                    "fixture": WEBHOOKS,
+                    "origin": "vendored",
+                    "path": f"tests/fixtures/{WEBHOOKS}/openapi.yml",
+                }
+            ],
             payload["sources"],
         )
         self.assertIn(
@@ -3133,7 +3116,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.oneOf",
     )
 
-    DECLARED = {
+    DECLARED: ClassVar = {
         "schema.anyOf>schema.$ref": {},
         "schema.anyOf>schema.allOf": {},
         "schema.items>schema.$ref": {
@@ -3144,7 +3127,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "inline-array-request": 1,
             "inline-request-response": 1,
             "oauth-client-credentials": 1,
-            "recursive-types": 2
+            "recursive-types": 2,
         },
         "schema.items>schema.anyOf": {},
         "schema.items>schema.oneOf": {},
@@ -3152,28 +3135,18 @@ class ConjunctionCensusTests(unittest.TestCase):
             "crozier-property-name": 1,
             "discriminated-unions": 1,
             "nexmo-messages": 3,
-            "recursive-types": 1
+            "recursive-types": 1,
         },
-        "schema.oneOf>schema.allOf": {
-            "nexmo-messages": 5
-        },
-        "schema.oneOf>schema.enum:string-valued": {
-            "groupe-psa": 2
-        },
+        "schema.oneOf>schema.allOf": {"nexmo-messages": 5},
+        "schema.oneOf>schema.enum:string-valued": {"groupe-psa": 2},
         "schema.anyOf>schema.enum:string-valued": {},
         "schema.oneOf>schema.const:string-valued": {},
         "schema.anyOf>schema.const:string-valued": {},
         "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object": {},
         "schema.properties>schema.anyOf": {},
-        "schema.properties>schema.oneOf": {
-            "groupe-psa": 2
-        },
+        "schema.properties>schema.oneOf": {"groupe-psa": 2},
         "schema.items>schema.type:primary=array": {},
-        "schema.items>schema.properties:non-empty": {
-            "groupe-psa": 4,
-            "inline-array-request": 1,
-            "nexmo-messages": 3
-        },
+        "schema.items>schema.properties:non-empty": {"groupe-psa": 4, "inline-array-request": 1, "nexmo-messages": 3},
         "schema.items>schema.additionalProperties=false": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
@@ -3187,13 +3160,9 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false": {},
-        "schema.oneOf>schema.properties:non-empty": {
-            "nexmo-messages": 1
-        },
+        "schema.oneOf>schema.properties:non-empty": {"nexmo-messages": 1},
         "schema.anyOf>schema.properties:non-empty": {},
-        "schema.oneOf>schema.oneOf": {
-            "nexmo-messages": 1
-        },
+        "schema.oneOf>schema.oneOf": {"nexmo-messages": 1},
         "schema.oneOf>schema.anyOf": {},
         "schema.anyOf>schema.oneOf": {},
         "schema.anyOf>schema.anyOf": {},
@@ -3201,7 +3170,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "discriminated-unions": 2,
             "groupe-psa": 52,
             "nexmo-messages": 40,
-            "recursive-types": 2
+            "recursive-types": 2,
         },
         "schema.properties>schema.const:string-valued": {},
         "schema.properties>schema.properties:non-empty": {
@@ -3209,7 +3178,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "groupe-psa": 63,
             "inline-request-response": 2,
             "nested-core-imports": 1,
-            "nexmo-messages": 37
+            "nexmo-messages": 37,
         },
         "schema.properties>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.oneOf:sole-non-null-member": {},
@@ -3222,7 +3191,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "malformed-property-schema": 1,
             "nexmo-messages": 3,
             "recursive-types": 2,
-            "schema-constraints": 1
+            "schema-constraints": 1,
         },
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty": {},
@@ -3230,9 +3199,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties": {},
-        "schema.properties>schema.allOf:annotated-ref": {
-            "groupe-psa": 5
-        },
+        "schema.properties>schema.allOf:annotated-ref": {"groupe-psa": 5},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued": {},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf": {},
@@ -3240,9 +3207,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty": {
             "groupe-psa": 1
         },
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {
-            "groupe-psa": 3
-        },
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf": {"groupe-psa": 3},
         "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component": {},
@@ -3260,9 +3225,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties": {},
         "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items": {},
-        "schema.items>!schema.type:primary-scalar&schema.allOf": {
-            "groupe-psa": 2
-        },
+        "schema.items>!schema.type:primary-scalar&schema.allOf": {"groupe-psa": 2},
         "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
         "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf": {},
@@ -3271,9 +3234,7 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref": {
             "groupe-psa": 1
         },
-        "schema.properties>!schema.type:primary-scalar&schema.allOf": {
-            "groupe-psa": 11
-        },
+        "schema.properties>!schema.type:primary-scalar&schema.allOf": {"groupe-psa": 11},
         "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": {},
         "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf": {},
         "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf": {},
@@ -3294,7 +3255,7 @@ class ConjunctionCensusTests(unittest.TestCase):
             "operation-id-non-identifier": 1,
             "pydantic-extra-fields": 1,
             "schema-constraints": 1,
-            "tag-based-grouping": 2
+            "tag-based-grouping": 2,
         },
         "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty": {
             "groupe-psa": 2
@@ -3337,8 +3298,8 @@ class ConjunctionCensusTests(unittest.TestCase):
             "servers-webhooks": 3,
             "sse-streaming": 1,
             "tag-based-grouping": 2,
-            "writeonly-fields": 1
-        }
+            "writeonly-fields": 1,
+        },
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -3440,7 +3401,8 @@ class ConjunctionCensusTests(unittest.TestCase):
             write_fixture(root, "examples", document)
             completed = run(
                 "--vendored-only",
-                "--fixtures-root", str(root),
+                "--fixtures-root",
+                str(root),
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
         counted = rows(completed)
@@ -3450,13 +3412,17 @@ class ConjunctionCensusTests(unittest.TestCase):
                 ("schema.example:schema-shaped", "examples"): 1,
                 (selector, "examples"): 1,
             },
-            {key: value for key, value in counted.items() if key[0] in {
-                "schema.example=object", "schema.example:schema-shaped", selector
-            }},
+            {
+                key: value
+                for key, value in counted.items()
+                if key[0] in {"schema.example=object", "schema.example:schema-shaped", selector}
+            },
         )
         self.assertEqual(2, counted.get(("schema.example=string", "examples")))
         refused = run(
-            "--vendored-only", "--selector", "schema.example=scalar",
+            "--vendored-only",
+            "--selector",
+            "schema.example=scalar",
         )
         self.assertEqual(1, refused.returncode, refused.stdout)
         self.assertIn("six example value kinds", refused.stderr)
@@ -3780,17 +3746,13 @@ class ResolvingDescentTests(unittest.TestCase):
         refuses it by name exactly as it refuses any well-formed combination
         nobody declared.
         """
-        using = [
-            selector for selector in census.CONJUNCTIONS
-            if census.RESOLVING_DESCENT in selector
-        ]
+        using = [selector for selector in census.CONJUNCTIONS if census.RESOLVING_DESCENT in selector]
         self.assertEqual(8, len(using), f"the closed list spells {len(using)} with `~>`")
         self.assertNotIn(self.RESOLVING, census.CONJUNCTIONS)
         completed = run("--vendored-only", "--selector", self.RESOLVING)
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn(repr(self.RESOLVING), completed.stderr)
         self.assertIn("is not one of the conjunction selectors", completed.stderr)
-
 
 
 # --- the node-local selector family ----------------------------------------
@@ -3842,9 +3804,7 @@ def paths_source(title: str, key: str) -> dict:
 def write_json_fixture(root: Path, name: str, document: dict) -> None:
     directory = root / name
     directory.mkdir(parents=True)
-    (directory / "openapi.json").write_text(
-        json.dumps(document, indent=2), encoding="utf-8", newline="\n"
-    )
+    (directory / "openapi.json").write_text(json.dumps(document, indent=2), encoding="utf-8", newline="\n")
 
 
 # The twelve the annotated-`$ref` pass declared, kept apart from the node-local
@@ -3852,20 +3812,22 @@ def write_json_fixture(root: Path, name: str, document: dict) -> None:
 # one path through `src/ir.rs` — `described_all_of_ref` resolving, and the arms
 # that read what it resolved to — and `AnnotatedRefSelectorDiscriminationTests`
 # is the case that answers for every one of them.
-ANNOTATED_REF_SELECTORS = frozenset({
-    "schema.properties>schema.allOf:annotated-ref",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
-    "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
-    "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
-    "schema.allOf:annotated-ref",
-    "schema.$ref:resolves-to-component",
-})
+ANNOTATED_REF_SELECTORS = frozenset(
+    {
+        "schema.properties>schema.allOf:annotated-ref",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+        "schema.allOf:annotated-ref",
+        "schema.$ref:resolves-to-component",
+    }
+)
 
 
 # The twelve the discriminated-union pass declared, kept apart for the same
@@ -3873,35 +3835,39 @@ ANNOTATED_REF_SELECTORS = frozenset({
 # `Some` — reached from three arms, and
 # `DiscriminatedUnionSelectorDiscriminationTests` is the case that answers for
 # every one of them.
-DISCRIMINATED_UNION_SELECTORS = frozenset({
-    "schema.items>schema.oneOf:discriminated-union",
-    "schema.items>schema.anyOf:discriminated-union",
-    "schema.items>schema.discriminator:inheritance-union",
-    "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
-    "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
-    "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
-    "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
-    "schema.properties>schema.oneOf:discriminated-union",
-    "schema.properties>schema.anyOf:discriminated-union",
-    "schema.oneOf:discriminated-union",
-    "schema.anyOf:discriminated-union",
-    "schema.discriminator:inheritance-union",
-})
+DISCRIMINATED_UNION_SELECTORS = frozenset(
+    {
+        "schema.items>schema.oneOf:discriminated-union",
+        "schema.items>schema.anyOf:discriminated-union",
+        "schema.items>schema.discriminator:inheritance-union",
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+        "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+        "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+        "schema.properties>schema.oneOf:discriminated-union",
+        "schema.properties>schema.anyOf:discriminated-union",
+        "schema.oneOf:discriminated-union",
+        "schema.anyOf:discriminated-union",
+        "schema.discriminator:inheritance-union",
+    }
+)
 
 
 # The pointer-form family, declared by the pass after the node-local one and
 # discriminated by `PointerFormSelectorDiscriminationTests` below. Named here
 # because the node-local table's own completeness assertion is "every selector
 # that pass declared", and these are not its.
-POINTER_FORM_PREDICATES = frozenset({
-    "schema.$ref:cross-document",
-    "schema.$ref:same-document-foreign-pointer",
-    "schema.$ref:nested-properties",
-    "schema.$ref:nested-items",
-    "schema.$ref:composition-index",
-    "schema.$ref:unnamed-segment",
-    "schema.$ref:undeclared-component-head",
-})
+POINTER_FORM_PREDICATES = frozenset(
+    {
+        "schema.$ref:cross-document",
+        "schema.$ref:same-document-foreign-pointer",
+        "schema.$ref:nested-properties",
+        "schema.$ref:nested-items",
+        "schema.$ref:composition-index",
+        "schema.$ref:unnamed-segment",
+        "schema.$ref:undeclared-component-head",
+    }
+)
 
 
 # The naming and example branches #361 brought inside the census, discriminated
@@ -3909,39 +3875,61 @@ POINTER_FORM_PREDICATES = frozenset({
 # numeric_enum_identifier arms, the operationId leading-digit prefix, and the
 # example arms of `src/emit.rs` read through resolved types, nested values and
 # positions.
-NAMING_AND_EXAMPLE_BRANCH_PREDICATES = frozenset({
-    "schema.enum:deburred-member", "schema.enum:letter-run-member",
-    "schema.enum:alphanumeric-join-member", "schema.enum:digit-boundary-member",
-    "schema.enum:single-digit-prefix-member", "schema.enum:numeric-small-member",
-    "schema.enum:numeric-tens-member", "schema.enum:numeric-hundreds-member",
-    "schema.enum:numeric-thousands-member",
-    "operation.operationId:digit-leading-method",
-    "schema.example:date-time-string", "schema.example:date-string",
-    "schema.example:integral-on-number", "schema.example:fractional-on-integer",
-    "schema.example:empty-array", "schema.example:empty-object",
-    "schema.example:array-null-element", "schema.example:array-object-element",
-    "schema.example:temporal-duplicate-element", "schema.example:union-ref-sentinel",
-    "schema.example:missing-required-field", "schema.example:undeclared-field",
-    "schema.example:empty-object-member", "schema.example:empty-array-member",
-    "schema.example:object-on-map", "schema.example:outside-enum",
-    "schema.example:on-ref-to-object", "schema.example:on-ref-to-enum",
-    "schema.example:on-ref-to-union", "schema.example:on-ref-to-alias",
-    "schema.properties:optional-example", "parameter.example:non-scalar-query",
-    "mediaType.examples:named-beside-example", "mediaType.examples:named-only",
-    "operation.responses:wildcard-binary",
-    "schema.example:unread-date-time", "mediaType.schema:allof-parent-body",
-    "mediaType.example:nested-null-member", "mediaType.example:deprecated-property",
-})
+NAMING_AND_EXAMPLE_BRANCH_PREDICATES = frozenset(
+    {
+        "schema.enum:deburred-member",
+        "schema.enum:letter-run-member",
+        "schema.enum:alphanumeric-join-member",
+        "schema.enum:digit-boundary-member",
+        "schema.enum:single-digit-prefix-member",
+        "schema.enum:numeric-small-member",
+        "schema.enum:numeric-tens-member",
+        "schema.enum:numeric-hundreds-member",
+        "schema.enum:numeric-thousands-member",
+        "operation.operationId:digit-leading-method",
+        "schema.example:date-time-string",
+        "schema.example:date-string",
+        "schema.example:integral-on-number",
+        "schema.example:fractional-on-integer",
+        "schema.example:empty-array",
+        "schema.example:empty-object",
+        "schema.example:array-null-element",
+        "schema.example:array-object-element",
+        "schema.example:temporal-duplicate-element",
+        "schema.example:union-ref-sentinel",
+        "schema.example:missing-required-field",
+        "schema.example:undeclared-field",
+        "schema.example:empty-object-member",
+        "schema.example:empty-array-member",
+        "schema.example:object-on-map",
+        "schema.example:outside-enum",
+        "schema.example:on-ref-to-object",
+        "schema.example:on-ref-to-enum",
+        "schema.example:on-ref-to-union",
+        "schema.example:on-ref-to-alias",
+        "schema.properties:optional-example",
+        "parameter.example:non-scalar-query",
+        "mediaType.examples:named-beside-example",
+        "mediaType.examples:named-only",
+        "operation.responses:wildcard-binary",
+        "schema.example:unread-date-time",
+        "mediaType.schema:allof-parent-body",
+        "mediaType.example:nested-null-member",
+        "mediaType.example:deprecated-property",
+    }
+)
 
 
 # The four `hoist_union_variant` gained with its nested-composition arm (cases
 # 13a to 13d), discriminated by `NestedCompositionSelectorDiscriminationTests`.
-NESTED_COMPOSITION_SELECTORS = frozenset({
-    "schema.oneOf>schema.oneOf",
-    "schema.oneOf>schema.anyOf",
-    "schema.anyOf>schema.oneOf",
-    "schema.anyOf>schema.anyOf",
-})
+NESTED_COMPOSITION_SELECTORS = frozenset(
+    {
+        "schema.oneOf>schema.oneOf",
+        "schema.oneOf>schema.anyOf",
+        "schema.anyOf>schema.oneOf",
+        "schema.anyOf>schema.anyOf",
+    }
+)
 
 
 # The twenty-three the negation pass declared, case 11's example-value
@@ -3949,36 +3937,38 @@ NESTED_COMPOSITION_SELECTORS = frozenset({
 # `properties: {}` member), kept apart from the tables above because all
 # twenty-eight depend
 # on `!` and are exercised together by `NegationSelectorDiscriminationTests`.
-NEGATION_SELECTORS = frozenset({
-    "schema.type:primary=object",
-    "schema.type:primary-scalar",
-    "schema.allOf:sole-member",
-    "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
-    "schema.items>!schema.type:primary-scalar&schema.allOf",
-    "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
-    "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
-    "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref",
-    "schema.properties>!schema.type:primary-scalar&schema.allOf",
-    "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
-    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
-    "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
-    "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
-    "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
-    "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
-    "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
-    "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
-    "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
-    "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
-    "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
-    "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
-})
+NEGATION_SELECTORS = frozenset(
+    {
+        "schema.type:primary=object",
+        "schema.type:primary-scalar",
+        "schema.allOf:sole-member",
+        "schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object",
+        "schema.items>!schema.type:primary-scalar&schema.allOf",
+        "schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref",
+        "schema.properties>!schema.type:primary-scalar&schema.allOf",
+        "schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+        "schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+        "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+        "schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array",
+        "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>!schema.additionalProperties=false&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
+        "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
+        "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+    }
+)
 
 
 # The five segment spellings `resolve_schema_pointer`'s `match part` names, in the
@@ -3991,8 +3981,7 @@ _POINTER_WALK_ARMS = ("allOf", "oneOf", "anyOf", "properties", "items")
 # gate in front of the reading of the arm.
 # `PointerWalkSelectorDiscriminationTests` is the case that answers for all five.
 POINTER_WALK_SELECTORS = frozenset(
-    "schema.properties>schema.type:primary=array"
-    f"&schema.items>schema.$ref:pointer-walk-reaches={arm}"
+    f"schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches={arm}"
     for arm in _POINTER_WALK_ARMS
 )
 
@@ -4007,9 +3996,7 @@ POINTER_WALK_SELECTORS = frozenset(
 # table, and that is the miscount the exactness rule disqualifies. So none of the
 # five is a declared selector: the census refuses it as a `--selector` and never
 # records it, and it reaches a count only through the conjunction that gates it.
-POINTER_WALK_MEMBERS = frozenset(
-    f"schema.$ref:pointer-walk-reaches={arm}" for arm in _POINTER_WALK_ARMS
-)
+POINTER_WALK_MEMBERS = frozenset(f"schema.$ref:pointer-walk-reaches={arm}" for arm in _POINTER_WALK_ARMS)
 
 
 class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
@@ -4161,9 +4148,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "hoist_union_variant case 3a",
             "select": ("schema", {"oneOf": [array_of(NULLABLE_ANY_OF)]}),
             "near": ("schema", {"oneOf": [array_of(TWO_ANY_OF)]}),
-            "overlap": ("schema", {"oneOf": [array_of(
-                {"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]}
-            )]}),
+            "overlap": (
+                "schema",
+                {"oneOf": [array_of({"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]})]},
+            ),
             "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
         },
         {
@@ -4172,9 +4160,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "hoist_union_variant case 3b",
             "select": ("schema", {"oneOf": [array_of(NULLABLE_ONE_OF)]}),
             "near": ("schema", {"oneOf": [array_of(TWO_ONE_OF)]}),
-            "overlap": ("schema", {"oneOf": [array_of(
-                {"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]}
-            )]}),
+            "overlap": (
+                "schema",
+                {"oneOf": [array_of({"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]})]},
+            ),
             "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
         },
         {
@@ -4183,9 +4172,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "hoist_union_variant case 3c",
             "select": ("schema", {"anyOf": [array_of(NULLABLE_ANY_OF)]}),
             "near": ("schema", {"anyOf": [array_of(TWO_ANY_OF)]}),
-            "overlap": ("schema", {"anyOf": [array_of(
-                {"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]}
-            )]}),
+            "overlap": (
+                "schema",
+                {"anyOf": [array_of({"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]})]},
+            ),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
         },
         {
@@ -4194,9 +4184,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "hoist_union_variant case 3d",
             "select": ("schema", {"anyOf": [array_of(NULLABLE_ONE_OF)]}),
             "near": ("schema", {"anyOf": [array_of(TWO_ONE_OF)]}),
-            "overlap": ("schema", {"anyOf": [array_of(
-                {"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]}
-            )]}),
+            "overlap": (
+                "schema",
+                {"anyOf": [array_of({"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]})]},
+            ),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
         },
         # --- hoist_union_variant, cases 5a to 5d ------------------------------
@@ -4395,12 +4386,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "slug": "ptr-15",
             "branch": "prop_type_ref case 15",
             "select": ("schema", {"properties": {"many": array_of(STRUCT)}}),
-            "near": ("schema", {"properties": {"many": {
-                "type": ["string", "array"], "items": STRUCT
-            }}}),
-            "overlap": ("schema", {"properties": {"many": {
-                **array_of(STRUCT), **TWO_ONE_OF
-            }}}),
+            "near": ("schema", {"properties": {"many": {"type": ["string", "array"], "items": STRUCT}}}),
+            "overlap": ("schema", {"properties": {"many": {**array_of(STRUCT), **TWO_ONE_OF}}}),
             "overlap_selector": "schema.properties>schema.oneOf",
         },
         {
@@ -4427,9 +4414,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "prop_type_ref case 12c",
             "select": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
             "near": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {
-                "oneOf": [{**STRUCT, "additionalProperties": False}]
-            }}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**STRUCT, "additionalProperties": False}]}}}),
             "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
         },
         {
@@ -4438,9 +4423,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "prop_type_ref case 12d",
             "select": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
             "near": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {
-                "anyOf": [{**STRUCT, "additionalProperties": False}]
-            }}}),
+            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**STRUCT, "additionalProperties": False}]}}}),
             "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
         },
         {
@@ -4448,7 +4431,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "slug": "historical-closed-oneof",
             "branch": "historical closed-member witness search",
             "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"oneOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "near": (
+                "schema",
+                {"properties": {"wrapper": {"oneOf": [{"type": "object", "additionalProperties": True}]}}},
+            ),
             "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
             "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
         },
@@ -4457,7 +4443,10 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "slug": "historical-closed-anyof",
             "branch": "historical closed-member witness search",
             "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"anyOf": [{"type": "object", "additionalProperties": True}]}}}),
+            "near": (
+                "schema",
+                {"properties": {"wrapper": {"anyOf": [{"type": "object", "additionalProperties": True}]}}},
+            ),
             "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
             "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
         },
@@ -4477,24 +4466,39 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         "components.schemas:normalized-collision",
         "info.title:non-ascii",
     )
-    DECLARED_HERE = frozenset(
-        set(census.PREDICATES)
-        | set(census.CONJUNCTIONS)
-        | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
-    ) - frozenset(ConjunctionCensusTests.PRE_EXISTING) - frozenset(
-        PREDICATES_OUTSIDE_TABLE
-    ) - POINTER_FORM_PREDICATES - ANNOTATED_REF_SELECTORS - DISCRIMINATED_UNION_SELECTORS \
-        - POINTER_WALK_SELECTORS - NEGATION_SELECTORS - NESTED_COMPOSITION_SELECTORS \
-        - {name for name in census.PREDICATES
-           if name.startswith("schema.enum:") and name != "schema.enum:string-valued"} \
-        - {"components.schemas:nonidentifier-name", "components.schemas:same-primitive-union",
-           "components.schemas:fields-reach-cycles-unsorted",
-           "components.schemas:cycle-into-cycle", "mediaType.schema:closed-empty-object-property",
-           "schema.type:misspelled-scalar",
-           "securityScheme:$ref", "parameter.schema:query-items-union",
-           "parameter.schema:subset-header-string-default"} \
-        - BODY_AND_RESPONSE_PREDICATES \
+    DECLARED_HERE = (
+        frozenset(
+            set(census.PREDICATES)
+            | set(census.CONJUNCTIONS)
+            | {"schema.additionalProperties=false", "schema.additionalProperties=true"}
+        )
+        - frozenset(ConjunctionCensusTests.PRE_EXISTING)
+        - frozenset(PREDICATES_OUTSIDE_TABLE)
+        - POINTER_FORM_PREDICATES
+        - ANNOTATED_REF_SELECTORS
+        - DISCRIMINATED_UNION_SELECTORS
+        - POINTER_WALK_SELECTORS
+        - NEGATION_SELECTORS
+        - NESTED_COMPOSITION_SELECTORS
+        - {
+            name
+            for name in census.PREDICATES
+            if name.startswith("schema.enum:") and name != "schema.enum:string-valued"
+        }
+        - {
+            "components.schemas:nonidentifier-name",
+            "components.schemas:same-primitive-union",
+            "components.schemas:fields-reach-cycles-unsorted",
+            "components.schemas:cycle-into-cycle",
+            "mediaType.schema:closed-empty-object-property",
+            "schema.type:misspelled-scalar",
+            "securityScheme:$ref",
+            "parameter.schema:query-items-union",
+            "parameter.schema:subset-header-string-default",
+        }
+        - BODY_AND_RESPONSE_PREDICATES
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
+    )
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -4507,18 +4511,12 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
                         continue
                     kind, payload = case[role]
                     name = f"{case['slug']}-{role}"
-                    document = (
-                        schema_source(name, payload)
-                        if kind == "schema"
-                        else paths_source(name, payload)
-                    )
+                    document = schema_source(name, payload) if kind == "schema" else paths_source(name, payload)
                     write_json_fixture(root, name, document)
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         payload = json.loads(completed.stdout)
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"] for row in payload["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in payload["rows"]}
 
     def test_the_table_covers_every_selector_this_node_declared(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
@@ -4573,11 +4571,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         """
         exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
         self.assertEqual(
-            {
-                selector
-                for selector in self.DECLARED_HERE
-                if not census.is_conjunction(selector)
-            },
+            {selector for selector in self.DECLARED_HERE if not census.is_conjunction(selector)},
             exempt,
             "a conjunction read off one arm must exercise the overlap its case permits",
         )
@@ -4602,8 +4596,11 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
             completed = run(
-                "--vendored-only", "--fixtures-root", str(root),
-                "--selector", "schema.items>schema.additionalProperties=false",
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.items>schema.additionalProperties=false",
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
@@ -4680,36 +4677,22 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
         payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
         cls.spec = payload
         # The shared file carries every pass's cases; this one answers for its own.
-        cls.cases = [
-            case for case in payload["cases"]
-            if case["selector"] in ANNOTATED_REF_SELECTORS
-        ]
-        cls.names = {
-            name
-            for case in cls.cases
-            for role in ("select", "near", "overlap")
-            for name in case[role]
-        }
+        cls.cases = [case for case in payload["cases"] if case["selector"] in ANNOTATED_REF_SELECTORS]
+        cls.names = {name for case in cls.cases for role in ("select", "near", "overlap") for name in case[role]}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in sorted(cls.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         report = json.loads(completed.stdout)
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in report["rows"]}
         cls.censused = {source["fixture"] for source in report["sources"]}
 
     def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
-        self.assertEqual(
-            ANNOTATED_REF_SELECTORS, {case["selector"] for case in self.cases}
-        )
+        self.assertEqual(ANNOTATED_REF_SELECTORS, {case["selector"] for case in self.cases})
 
     def test_every_document_the_table_names_was_censused(self) -> None:
         """No case rests on a document the run never read."""
@@ -4796,15 +4779,16 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             for name in sorted(self.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             for case in self.cases:
                 selector = case["selector"]
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     expected = {
@@ -4874,13 +4858,15 @@ class AnnotatedRefSelectorDiscriminationTests(unittest.TestCase):
             for selector in sorted(ANNOTATED_REF_SELECTORS):
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     self.assertEqual({}, rows(completed))
                     self.assertIn("(declared by no registered source)", completed.stdout)
-
 
 
 class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
@@ -4934,36 +4920,22 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
         cls.spec = payload
-        cls.cases = [
-            case for case in payload["cases"]
-            if case["selector"] in DISCRIMINATED_UNION_SELECTORS
-        ]
-        cls.names = {
-            name
-            for case in cls.cases
-            for role in ("select", "near", "overlap")
-            for name in case[role]
-        }
+        cls.cases = [case for case in payload["cases"] if case["selector"] in DISCRIMINATED_UNION_SELECTORS]
+        cls.names = {name for case in cls.cases for role in ("select", "near", "overlap") for name in case[role]}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in sorted(cls.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         report = json.loads(completed.stdout)
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in report["rows"]}
         cls.censused = {source["fixture"] for source in report["sources"]}
 
     def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
-        self.assertEqual(
-            DISCRIMINATED_UNION_SELECTORS, {case["selector"] for case in self.cases}
-        )
+        self.assertEqual(DISCRIMINATED_UNION_SELECTORS, {case["selector"] for case in self.cases})
 
     def test_every_document_the_table_names_was_censused(self) -> None:
         """No case rests on a document the run never read."""
@@ -5025,20 +4997,23 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
         ):
             with self.subTest(selector=selector):
                 self.assertEqual(
-                    1, self.reported.get((selector, f"du-{position}-oneof-enum-tag")),
-                    "a discriminator beside a oneOf whose members each carry a "
-                    "discriminable value is counted",
+                    1,
+                    self.reported.get((selector, f"du-{position}-oneof-enum-tag")),
+                    "a discriminator beside a oneOf whose members each carry a discriminable value is counted",
                 )
                 self.assertNotIn(
-                    (selector, f"du-{position}-oneof-untagged-member"), self.reported,
+                    (selector, f"du-{position}-oneof-untagged-member"),
+                    self.reported,
                     "a member carrying no discriminable value is not this shape",
                 )
                 self.assertNotIn(
-                    (selector, f"du-{position}-anyof-with-discriminator"), self.reported,
+                    (selector, f"du-{position}-anyof-with-discriminator"),
+                    self.reported,
                     "a discriminator beside an anyOf with no oneOf is refused",
                 )
                 self.assertEqual(
-                    1, self.reported.get((selector, f"du-{position}-oneof-inferred")),
+                    1,
+                    self.reported.get((selector, f"du-{position}-oneof-inferred")),
                     "the inferred spelling, with no discriminator written at all, "
                     "is counted exactly as the written one is",
                 )
@@ -5050,15 +5025,16 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             for name in sorted(self.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             for case in self.cases:
                 selector = case["selector"]
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     expected = {
@@ -5120,8 +5096,11 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
             for selector in sorted(DISCRIMINATED_UNION_SELECTORS):
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     self.assertEqual({}, rows(completed))
@@ -5146,9 +5125,8 @@ class DiscriminatedUnionSelectorDiscriminationTests(unittest.TestCase):
             source,
             re.DOTALL,
         )
-        self.assertIsNotNone(
-            body, "`preserve_const_discriminant` is no longer a `matches!` over string literals"
-        )
+        self.assertIsNotNone(body, "`preserve_const_discriminant` is no longer a `matches!` over string literals")
+        assert body is not None
         self.assertEqual(
             set(re.findall(r'"([^"]+)"', body.group(1))),
             set(census._PRESERVED_CONST_DISCRIMINANTS),
@@ -5197,6 +5175,7 @@ class DocumentContextTests(unittest.TestCase):
         the pointer's head is a key of `components.schemas`, and the head sits at a
         response schema rather than beside the map it is compared with.
         """
+
         def source(title: str, head: str) -> dict:
             return {
                 "openapi": "3.0.3",
@@ -5209,11 +5188,7 @@ class DocumentContextTests(unittest.TestCase):
                                 "200": {
                                     "description": "ok",
                                     "content": {
-                                        "application/json": {
-                                            "schema": {
-                                                "$ref": f"#/components/schemas/{head}"
-                                            }
-                                        }
+                                        "application/json": {"schema": {"$ref": f"#/components/schemas/{head}"}}
                                     },
                                 }
                             },
@@ -5228,8 +5203,11 @@ class DocumentContextTests(unittest.TestCase):
             write_json_fixture(root, "deep-declared", source("deep-declared", "Declared"))
             write_json_fixture(root, "deep-undeclared", source("deep-undeclared", "Missing"))
             completed = run(
-                "--vendored-only", "--fixtures-root", str(root),
-                "--selector", "schema.$ref:undeclared-component-head",
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.$ref:undeclared-component-head",
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual(
@@ -5254,11 +5232,7 @@ class DocumentContextTests(unittest.TestCase):
                     "openapi": "3.0.3",
                     "info": {"title": "neighbouring-file", "version": "1"},
                     "paths": {},
-                    "components": {
-                        "schemas": {
-                            "Root": {"$ref": "./neighbour.yaml#/components/schemas/Secret"}
-                        }
-                    },
+                    "components": {"schemas": {"Root": {"$ref": "./neighbour.yaml#/components/schemas/Secret"}}},
                 },
             )
             (root / "neighbouring-file" / "neighbour.yaml").write_text(
@@ -5268,16 +5242,14 @@ class DocumentContextTests(unittest.TestCase):
                 "      patternProperties:\n"
                 "        '^x-':\n"
                 "          type: string\n",
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        counted = {
-            row["selector"]: row["count"] for row in json.loads(completed.stdout)["rows"]
-        }
+        counted = {row["selector"]: row["count"] for row in json.loads(completed.stdout)["rows"]}
         self.assertEqual(1, counted.get("schema.$ref:cross-document"))
         self.assertNotIn("schema.patternProperties", counted)
-
 
 
 class PointerFormSelectorDiscriminationTests(unittest.TestCase):
@@ -5377,21 +5349,15 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
                     if role not in case:
                         continue
                     name = f"{case['slug']}-{role}"
-                    write_json_fixture(
-                        root, name, schema_source(name, {"$ref": case[role]})
-                    )
+                    write_json_fixture(root, name, schema_source(name, {"$ref": case[role]}))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         payload = json.loads(completed.stdout)
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"] for row in payload["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in payload["rows"]}
 
     def test_the_table_covers_every_pointer_form_selector(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
-        self.assertEqual(
-            set(POINTER_FORM_PREDICATES), {case["selector"] for case in self.CASES}
-        )
+        self.assertEqual(set(POINTER_FORM_PREDICATES), {case["selector"] for case in self.CASES})
 
     def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
         for case in self.CASES:
@@ -5496,6 +5462,7 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
         two. Driven through the real script, so a `sorted(set(...))` turned into a
         list fails here.
         """
+
         def source(title: str, schemas: dict) -> dict:
             return {
                 "openapi": "3.0.3",
@@ -5512,12 +5479,8 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
                 source(
                     "repeated-segments",
                     {
-                        "TwiceItems": {
-                            "$ref": "#/components/schemas/Other/items/items"
-                        },
-                        "TwiceProperties": {
-                            "$ref": "#/components/schemas/Other/properties/a/properties/b"
-                        },
+                        "TwiceItems": {"$ref": "#/components/schemas/Other/items/items"},
+                        "TwiceProperties": {"$ref": "#/components/schemas/Other/properties/a/properties/b"},
                     },
                 ),
             )
@@ -5534,10 +5497,7 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
             )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         self.assertEqual(0, completed.returncode, completed.stderr)
-        counted = {
-            (row["selector"], row["fixture"]): row["count"]
-            for row in json.loads(completed.stdout)["rows"]
-        }
+        counted = {(row["selector"], row["fixture"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
         self.assertEqual(
             1,
             counted.get(("schema.$ref:nested-items", "repeated-segments")),
@@ -5569,9 +5529,7 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual({}, rows(completed))
         for selector in sorted(POINTER_FORM_PREDICATES):
             with self.subTest(selector=selector):
-                self.assertIn(
-                    f"{selector}", completed.stdout
-                )
+                self.assertIn(f"{selector}", completed.stdout)
         self.assertEqual(
             len(POINTER_FORM_PREDICATES),
             completed.stdout.count("(declared by no registered source)"),
@@ -5601,8 +5559,11 @@ class PointerFormSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             write_json_fixture(root, "bare", schema_source("bare", {"type": "string"}))
             completed = run(
-                "--vendored-only", "--fixtures-root", str(root),
-                "--selector", "schema.$ref:undeclared-component-head",
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "schema.$ref:undeclared-component-head",
             )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({}, rows(completed))
@@ -5669,36 +5630,22 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         payload = json.loads(RESOLVING_ARM_INPUTS.read_text(encoding="utf-8"))
         cls.spec = payload
-        cls.cases = [
-            case for case in payload["cases"]
-            if case["selector"] in POINTER_WALK_SELECTORS
-        ]
-        cls.names = {
-            name
-            for case in cls.cases
-            for role in ("select", "near", "overlap")
-            for name in case[role]
-        }
+        cls.cases = [case for case in payload["cases"] if case["selector"] in POINTER_WALK_SELECTORS]
+        cls.names = {name for case in cls.cases for role in ("select", "near", "overlap") for name in case[role]}
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for name in sorted(cls.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         report = json.loads(completed.stdout)
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"] for row in report["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in report["rows"]}
         cls.censused = {source["fixture"] for source in report["sources"]}
 
     def test_the_table_covers_every_selector_this_pass_declared(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
-        self.assertEqual(
-            POINTER_WALK_SELECTORS, {case["selector"] for case in self.cases}
-        )
+        self.assertEqual(POINTER_WALK_SELECTORS, {case["selector"] for case in self.cases})
 
     def test_every_document_the_table_names_was_censused(self) -> None:
         """No case rests on a document the run never read."""
@@ -5739,13 +5686,9 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
         document. This is the property the withdrawn standalone predicates broke.
         """
         recorded = sorted(
-            (selector, fixture)
-            for (selector, fixture) in self.reported
-            if selector in POINTER_WALK_MEMBERS
+            (selector, fixture) for (selector, fixture) in self.reported if selector in POINTER_WALK_MEMBERS
         )
-        self.assertEqual(
-            [], recorded, "a member-only reading was recorded as a selector of its own"
-        )
+        self.assertEqual([], recorded, "a member-only reading was recorded as a selector of its own")
 
     def test_a_pointer_the_generator_never_walks_is_counted_by_nothing(self) -> None:
         """The exactness repair, over the documents that used to break it.
@@ -5778,9 +5721,7 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
                             self.reported,
                             f"{member} counted {name}, which the generator never walks",
                         )
-        self.assertEqual(
-            15, seen, "three caller-gate documents for each of the five arms"
-        )
+        self.assertEqual(15, seen, "three caller-gate documents for each of the five arms")
 
     def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
         """The overlap the exactness rule permits, made visible rather than assumed."""
@@ -5804,20 +5745,16 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
         selects different arms in different documents. All three references below
         carry an `allOf` segment; only two of them reach it.
         """
-        addressed = "pw-allof-after-items"      # `Root/items/allOf/0`, `Root` writing `items`
+        addressed = "pw-allof-after-items"  # `Root/items/allOf/0`, `Root` writing `items`
         stopped = "pw-allof-earlier-segment-unresolved"  # the same pointer, `Root` writing none
         sequenced = "pw-allof-with-properties"  # `Root/allOf/0/properties/b`, two arms in a row
-        gated = (
-            "schema.properties>schema.type:primary=array"
-            "&schema.items>schema.$ref:pointer-walk-reaches="
-        )
+        gated = "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches="
         allof, items, properties = gated + "allOf", gated + "items", gated + "properties"
         for name in (addressed, stopped, sequenced):
             self.assertIn(name, self.censused, f"{name} was not censused")
         self.assertEqual(
             "#/components/schemas/Root/items/allOf/0",
-            self.spec["documents"][addressed]["schemas"]["Holder"]
-                ["properties"]["list"]["items"]["$ref"],
+            self.spec["documents"][addressed]["schemas"]["Holder"]["properties"]["list"]["items"]["$ref"],
         )
         self.assertEqual(
             self.spec["documents"][addressed]["schemas"]["Holder"],
@@ -5846,15 +5783,16 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             for name in sorted(self.names):
                 fragment = payload["documents"][name]
-                write_json_fixture(root, name, substituted(
-                    payload["envelope"], fragment["schemas"], fragment["body"]
-                ))
+                write_json_fixture(root, name, substituted(payload["envelope"], fragment["schemas"], fragment["body"]))
             for case in self.cases:
                 selector = case["selector"]
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     expected = {
@@ -5885,9 +5823,7 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
                 self.assertEqual(selector, census.canonical_conjunction(selector))
                 writings = [""]
                 for members, operator in census.conjunction_parts(selector):
-                    head, last = (
-                        (members, []) if operator is None else (members[:-1], members[-1:])
-                    )
+                    head, last = (members, []) if operator is None else (members[:-1], members[-1:])
                     writings = [
                         prefix + "&".join([*order, *last]) + (operator or "")
                         for prefix in writings
@@ -5907,10 +5843,7 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
         exactly right. They are refused for the same reason a typo is: neither is
         a selector the census declares, so asking for one names nothing to count.
         """
-        gated = (
-            "schema.properties>schema.type:primary=array"
-            "&schema.items>schema.$ref:pointer-walk-reaches="
-        )
+        gated = "schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches="
         for selector, expected in (
             (gated + "allof", "Did you mean: " + gated + "allOf"),
             (gated + "item", "is not one of the conjunction selectors"),
@@ -5938,8 +5871,11 @@ class PointerWalkSelectorDiscriminationTests(unittest.TestCase):
             for selector in sorted(POINTER_WALK_SELECTORS):
                 with self.subTest(selector=selector):
                     completed = run(
-                        "--vendored-only", "--fixtures-root", str(root),
-                        "--selector", selector,
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--selector",
+                        selector,
                     )
                     self.assertEqual(0, completed.returncode, completed.stderr)
                     self.assertEqual({}, rows(completed))
@@ -6284,10 +6220,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                 write_json_fixture(root, name, components_source(name, schemas))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
-        return {
-            (row["selector"], row["fixture"]): row["count"]
-            for row in json.loads(completed.stdout)["rows"]
-        }
+        return {(row["selector"], row["fixture"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -6304,9 +6237,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         self.assertEqual(NEGATION_SELECTORS, {case["selector"] for case in self.CASES})
         for selector in sorted(NEGATION_SELECTORS):
             with self.subTest(selector=selector):
-                self.assertIn(
-                    selector, set(census.PREDICATES) | set(census.CONJUNCTIONS)
-                )
+                self.assertIn(selector, set(census.PREDICATES) | set(census.CONJUNCTIONS))
 
     def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
         for case in self.CASES:
@@ -6352,23 +6283,43 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         """
         exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
         self.assertEqual(
-            {selector for selector in NEGATION_SELECTORS
-             if not census.is_conjunction(selector)},
+            {selector for selector in NEGATION_SELECTORS if not census.is_conjunction(selector)},
             exempt,
         )
 
     def test_property_residual_counts_closed_objects_without_properties(self) -> None:
         residual = "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array"
-        reported = self.censused({
-            "closed-without-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False}}}},
-            "closed-empty-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False, "properties": {}}}}},
-            "closed-nonempty-properties": {"Root": {"properties": {"p": {"type": "object", "additionalProperties": False, "properties": {"id": {"type": "string", "enum": ["signal"]}}}}}},
-        })
+        reported = self.censused(
+            {
+                "closed-without-properties": {
+                    "Root": {"properties": {"p": {"type": "object", "additionalProperties": False}}}
+                },
+                "closed-empty-properties": {
+                    "Root": {"properties": {"p": {"type": "object", "additionalProperties": False, "properties": {}}}}
+                },
+                "closed-nonempty-properties": {
+                    "Root": {
+                        "properties": {
+                            "p": {
+                                "type": "object",
+                                "additionalProperties": False,
+                                "properties": {"id": {"type": "string", "enum": ["signal"]}},
+                            }
+                        }
+                    }
+                },
+            }
+        )
         self.assertEqual(1, reported.get((residual, "closed-without-properties")))
         # A multi-atom case cannot be complemented by the census grammar:
         # explicitly empty properties overlap case 8d and the residual.
         self.assertEqual(1, reported.get((residual, "closed-empty-properties")))
-        self.assertEqual(1, reported.get(("schema.properties>schema.additionalProperties=false&schema.properties", "closed-empty-properties")))
+        self.assertEqual(
+            1,
+            reported.get(
+                ("schema.properties>schema.additionalProperties=false&schema.properties", "closed-empty-properties")
+            ),
+        )
         self.assertNotIn((residual, "closed-nonempty-properties"), reported)
 
     def test_a_residual_inside_a_gate_counts_no_node_the_gate_excludes(self) -> None:
@@ -6381,13 +6332,15 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         not exist — and the gate is what has to stop it being counted.
         """
         residual = census.RESIDUAL_SELECTORS[("prop_type_ref", "5")]
-        reported = self.censused({
-            "resolving": {
-                "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
-                "Target": {"type": "string"},
-            },
-            "dangling": {"Root": {"properties": {"p": {"allOf": ANNOTATED}}}},
-        })
+        reported = self.censused(
+            {
+                "resolving": {
+                    "Root": {"properties": {"p": {"allOf": ANNOTATED}}},
+                    "Target": {"type": "string"},
+                },
+                "dangling": {"Root": {"properties": {"p": {"allOf": ANNOTATED}}}},
+            }
+        )
         self.assertEqual(1, reported.get((residual, "resolving")))
         self.assertNotIn((residual, "dangling"), reported)
         # The gate itself holds over both, which is what makes the difference the
@@ -6405,10 +6358,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
         block, and drives *that* script over a document the real residual counts
         and the patched one must not.
         """
-        addition = (
-            '        Case("8z", block="nested_array_element", '
-            'selector="schema.items>schema.title"),\n'
-        )
+        addition = '        Case("8z", block="nested_array_element", selector="schema.items>schema.title"),\n'
         source = SCRIPT.read_text(encoding="utf-8")
         marker = '        Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),\n'
         self.assertIn(marker, source)
@@ -6425,6 +6375,7 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             (root / "tools" / "corpus").mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "corpus" / "corpus_remote_ref_pins.py", root / "tools" / "corpus")
             spec = importlib.util.spec_from_file_location("patched_census", patched)
+            assert spec and spec.loader
             module = importlib.util.module_from_spec(spec)
             sys.modules["patched_census"] = module
             spec.loader.exec_module(module)
@@ -6450,15 +6401,19 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
             arguments = ["--vendored-only", "--fixtures-root", str(fixtures), "--json"]
             real = subprocess.run(
                 [sys.executable, str(SCRIPT), *arguments, "--selector", real_residual],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(0, real.returncode, real.stderr)
-            self.assertEqual(
-                [1], [row["count"] for row in json.loads(real.stdout)["rows"]]
-            )
+            self.assertEqual([1], [row["count"] for row in json.loads(real.stdout)["rows"]])
             moved = subprocess.run(
                 [sys.executable, str(patched), *arguments, "--selector", patched_residual],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(0, moved.returncode, moved.stderr)
             self.assertEqual([], json.loads(moved.stdout)["rows"])
@@ -6512,7 +6467,7 @@ class NestedCompositionSelectorDiscriminationTests(unittest.TestCase):
     the composition, are asserted over documents of their own.
     """
 
-    PAIR = [{"type": "string"}, {"type": "integer"}]
+    PAIR: ClassVar = [{"type": "string"}, {"type": "integer"}]
     CASES: tuple[dict, ...] = (
         {"selector": "schema.oneOf>schema.oneOf", "head": "oneOf", "member": "oneOf", "other": "anyOf"},
         {"selector": "schema.oneOf>schema.anyOf", "head": "oneOf", "member": "anyOf", "other": "oneOf"},
@@ -6558,9 +6513,7 @@ class NestedCompositionSelectorDiscriminationTests(unittest.TestCase):
             selector, slug = case["selector"], case["slug"]
             with self.subTest(selector=selector):
                 self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
-                self.assertEqual(
-                    1, self.reported.get((f"schema.{case['head']}>schema.allOf", f"{slug}-overlap"))
-                )
+                self.assertEqual(1, self.reported.get((f"schema.{case['head']}>schema.allOf", f"{slug}-overlap")))
 
     def test_the_residual_no_longer_counts_a_member_this_arm_claims(self) -> None:
         """Adding the case narrowed case 12a, with no residual text written.
@@ -6595,9 +6548,7 @@ class ObjectModelWalkTests(unittest.TestCase):
         completed = run("--vendored-only", "--fixture", WEBHOOKS)
         self.assertEqual(0, completed.returncode, completed.stderr)
         declared = {selector for selector, _ in rows(completed)}
-        self.assertEqual(
-            [], [selector for selector in declared if selector.endswith(".name")]
-        )
+        self.assertEqual([], [selector for selector in declared if selector.endswith(".name")])
         self.assertIn("schema.properties", declared)
 
     def test_the_walk_separates_three_different_meanings_of_one_key(self) -> None:
@@ -6616,7 +6567,10 @@ class ObjectModelWalkTests(unittest.TestCase):
         """A `$ref` in a schema is a keyword; a `$ref` elsewhere is a Reference Object."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            write_fixture(root, "refs", """\
+            write_fixture(
+                root,
+                "refs",
+                """\
                 openapi: 3.0.3
                 info: {title: refs, version: "1"}
                 paths:
@@ -6632,7 +6586,8 @@ class ObjectModelWalkTests(unittest.TestCase):
                   schemas:
                     A:
                       $ref: "#/components/schemas/B"
-                """)
+                """,
+            )
             counted = rows(run("--vendored-only", "--fixtures-root", str(root)))
         self.assertEqual(1, counted[("reference.$ref", "refs")])
         self.assertEqual(1, counted[("schema.$ref", "refs")])
@@ -6694,9 +6649,7 @@ class FreeMapKeyWalkTests(unittest.TestCase):
         for key in ('"200"', "200"):
             with self.subTest(key=key):
                 declared = self.surface(key)
-                self.assertEqual(
-                    [], [selector for selector in declared if selector.endswith(".200")]
-                )
+                self.assertEqual([], [selector for selector in declared if selector.endswith(".200")])
                 self.assertNotIn("responses.200", declared)
 
     def test_the_publisher_source_that_writes_unquoted_status_codes_is_read(self) -> None:
@@ -6737,46 +6690,66 @@ class PinnedTreeWalkTests(unittest.TestCase):
         (self.fixtures / "CORPUS.md").write_text(
             "| # | name | method | source | pinned ref | license | decision | shapes |\n"
             "|---:|---|---|---|---|---|---|---|\n"
-            f"| 1 | `tree-proof` | github-raw | {url} | `{sha}` | MIT | link-ok | refs |\n", encoding="utf-8", newline="\n"
+            f"| 1 | `tree-proof` | github-raw | {url} | `{sha}` | MIT | link-ok | refs |\n",
+            encoding="utf-8",
+            newline="\n",
         )
         (self.fixtures / "corpus-remote-ref-pins.tsv").write_text(
             f"tree\ttree-proof\tnested/defs.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/defs.yml\t{'0' * 64}\n"
             f"tree\ttree-proof\tnested/pathitem.yml\thttps://raw.githubusercontent.com/example/api/{sha}/nested/pathitem.yml\t{'0' * 64}\n"
-            f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n", encoding="utf-8", newline="\n"
+            f"tree\ttree-proof\topenapi.yml\t{url}\t{'0' * 64}\n",
+            encoding="utf-8",
+            newline="\n",
         )
         write_golden_registry(self.fixtures, "tree-proof")
 
     def measure(self) -> dict[tuple[str, str], int]:
         completed = run(
-            "--fixtures-root", str(self.fixtures), "--corpus-root", str(self.corpus),
-            "--fixture", "tree-proof",
+            "--fixtures-root",
+            str(self.fixtures),
+            "--corpus-root",
+            str(self.corpus),
+            "--fixture",
+            "tree-proof",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
 
     def test_a_declaration_reachable_only_across_a_document_boundary_is_counted(self) -> None:
-        document = (self.tree / "openapi.yml")
+        document = self.tree / "openapi.yml"
         text = document.read_text(encoding="utf-8").replace(
             "    Second:\n      $ref: nested/defs.yml#/components/schemas/Reachable\n", ""
         )
         document.write_text(text, encoding="utf-8", newline="\n")
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
-        pins.write_text("".join(
-            line for line in pins.read_text(encoding="utf-8").splitlines(keepends=True)
-            if "\tnested/defs.yml\t" not in line
-        ), encoding="utf-8", newline="\n")
+        pins.write_text(
+            "".join(
+                line
+                for line in pins.read_text(encoding="utf-8").splitlines(keepends=True)
+                if "\tnested/defs.yml\t" not in line
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assertEqual(0, self.measure().get(("schema.properties:non-empty", "tree-proof"), 0))
 
     def test_two_references_to_one_declaration_count_it_once(self) -> None:
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         # A distinct second written declaration must make the same selector 2.
         definitions = self.tree / "nested/defs.yml"
-        definitions.write_text(definitions.read_text(encoding="utf-8") +
-            "    Another:\n      type: object\n      properties:\n        secondSite:\n          type: string\n", encoding="utf-8", newline="\n")
+        definitions.write_text(
+            definitions.read_text(encoding="utf-8")
+            + "    Another:\n      type: object\n      properties:\n        secondSite:\n          type: string\n",
+            encoding="utf-8",
+            newline="\n",
+        )
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text(encoding="utf-8") +
-            "    Third:\n      $ref: nested/defs.yml#/components/schemas/Another\n", encoding="utf-8", newline="\n")
+        root.write_text(
+            root.read_text(encoding="utf-8") + "    Third:\n      $ref: nested/defs.yml#/components/schemas/Another\n",
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
     def test_a_reference_cannot_pull_in_an_unregistered_sibling(self) -> None:
@@ -6786,8 +6759,12 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.assertEqual(1, self.measure()["schema.properties:non-empty", "tree-proof"])
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
         sha = "a" * 40
-        pins.write_text(pins.read_text(encoding="utf-8") +
-            f"tree\ttree-proof\toutside.yml\thttps://raw.githubusercontent.com/example/api/{sha}/outside.yml\t{'0' * 64}\n", encoding="utf-8", newline="\n")
+        pins.write_text(
+            pins.read_text(encoding="utf-8")
+            + f"tree\ttree-proof\toutside.yml\thttps://raw.githubusercontent.com/example/api/{sha}/outside.yml\t{'0' * 64}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
     def test_relative_path_item_reference_counts_at_its_writing_site(self) -> None:
@@ -6796,22 +6773,32 @@ class PinnedTreeWalkTests(unittest.TestCase):
         self.assertEqual(1, measured["operation.operationId", "tree-proof"])
 
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text(encoding="utf-8").replace(
-            "nested/pathitem.yml", "/absolute/pathitem.yml"
-        ), encoding="utf-8", newline="\n")
+        root.write_text(
+            root.read_text(encoding="utf-8").replace("nested/pathitem.yml", "/absolute/pathitem.yml"),
+            encoding="utf-8",
+            newline="\n",
+        )
         measured = self.measure()
         self.assertEqual(0, measured.get(("pathItem.$ref:relative-file", "tree-proof"), 0))
         self.assertEqual(1, measured["pathItem.$ref", "tree-proof"])
 
     def test_a_sibling_reference_back_into_the_root_does_not_recount_it(self) -> None:
         root = self.tree / "openapi.yml"
-        root.write_text(root.read_text(encoding="utf-8") +
-            "    Local:\n      type: object\n      properties:\n        inRoot:\n          type: string\n", encoding="utf-8", newline="\n")
+        root.write_text(
+            root.read_text(encoding="utf-8")
+            + "    Local:\n      type: object\n      properties:\n        inRoot:\n          type: string\n",
+            encoding="utf-8",
+            newline="\n",
+        )
         item = self.tree / "nested/pathitem.yml"
-        item.write_text(item.read_text(encoding="utf-8").replace(
-            '    "204":\n      description: No content\n',
-            '    "200":\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../openapi.yml#/components/schemas/Local\n'
-        ), encoding="utf-8", newline="\n")
+        item.write_text(
+            item.read_text(encoding="utf-8").replace(
+                '    "204":\n      description: No content\n',
+                '    "200":\n      description: OK\n      content:\n        application/json:\n          schema:\n            $ref: ../openapi.yml#/components/schemas/Local\n',
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assertEqual(2, self.measure()["schema.properties:non-empty", "tree-proof"])
 
 
@@ -6846,16 +6833,14 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             write_golden_registry(fixtures, "compared", "residual", residual={"residual": ["reference.md"]})
             # A golden tree with no test comparing it is not a registration either.
             (fixtures / "uncompared" / "expected").mkdir(parents=True)
-            completed = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus),
-                            "--selector", "pathItem.trace", "--json")
+            completed = run(
+                "--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--selector", "pathItem.trace", "--json"
+            )
             self.assertEqual(0, completed.returncode, completed.stderr)
             payload = json.loads(completed.stdout)
             self.assertEqual(["compared", "residual"], [s["fixture"] for s in payload["sources"]])
-            self.assertEqual(
-                {"compared", "residual"}, {row["fixture"] for row in payload["rows"]}
-            )
-            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus),
-                          "--fixture", "dropped")
+            self.assertEqual({"compared", "residual"}, {row["fixture"] for row in payload["rows"]})
+            refused = run("--fixtures-root", str(fixtures), "--corpus-root", str(corpus), "--fixture", "dropped")
             self.assertEqual(1, refused.returncode, refused.stdout)
             self.assertIn("carries no Fern golden", refused.stderr)
 
@@ -6897,6 +6882,7 @@ class GoldenSourcePopulationTests(unittest.TestCase):
         spec = importlib.util.spec_from_file_location(
             "golden_reach_population", REPO / "tools" / "surface-census" / "golden-reach.py"
         )
+        assert spec and spec.loader
         module = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = module
         try:
@@ -6904,9 +6890,7 @@ class GoldenSourcePopulationTests(unittest.TestCase):
             tests = module.fixture_test_map(REPO)
         finally:
             del sys.modules[spec.name]
-        registered = census.registered_sources(
-            FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False
-        )
+        registered = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False)
         self.assertEqual([], [s.fixture for s in registered if s.fixture not in tests])
 
 
@@ -6932,28 +6916,28 @@ class SourceSelectionTests(unittest.TestCase):
         """A census that read the output would be measuring the answer, not the question."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            fixture = write_fixture(root, "planted", """\
+            fixture = write_fixture(
+                root,
+                "planted",
+                """\
                 openapi: 3.0.3
                 info: {title: planted, version: "1"}
                 paths: {}
-                """)
+                """,
+            )
             expected = fixture / "expected" / "src"
             expected.mkdir(parents=True)
             # A generated tree that would light up three selectors if it were read.
             (expected / "openapi.yml").write_text(
-                "openapi: 3.1.0\npaths:\n  /x:\n    trace:\n      responses:\n"
-                '        "200": {description: ok}\n',
-                encoding="utf-8", newline="\n",
+                'openapi: 3.1.0\npaths:\n  /x:\n    trace:\n      responses:\n        "200": {description: ok}\n',
+                encoding="utf-8",
+                newline="\n",
             )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         payload = json.loads(completed.stdout)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual(
-            [str(fixture / "openapi.yml")], [source["path"] for source in payload["sources"]]
-        )
-        self.assertEqual(
-            [], [row for row in payload["rows"] if row["selector"] == "pathItem.trace"]
-        )
+        self.assertEqual([str(fixture / "openapi.yml")], [source["path"] for source in payload["sources"]])
+        self.assertEqual([], [row for row in payload["rows"] if row["selector"] == "pathItem.trace"])
 
     def test_source_selection_flags_keep_their_legacy_aliases(self) -> None:
         old = run("--vendored-only", "--selector", "openapi.info", "--json")
@@ -6981,17 +6965,13 @@ class SourceSelectionTests(unittest.TestCase):
             self.assertIn("is missing", allowed.stderr)
             self.assertIn("31 original fixtures, 0 corpus sources", allowed.stderr)
 
-            payload = json.loads(
-                run("--corpus-root", directory, "--allow-unfetched", "--json").stdout
-            )
+            payload = json.loads(run("--corpus-root", directory, "--allow-unfetched", "--json").stdout)
             corpus = [s for s in payload["sources"] if s["origin"] == "corpus"]
             self.assertGreater(len(corpus), 50, "the link-ok half is missing from the report")
             # Listed as registered but read as nothing: a path of null is the
             # difference between "declares nothing" and "was never opened".
             self.assertEqual({None}, {source["path"] for source in corpus})
-            self.assertEqual(
-                set(), {row["fixture"] for row in payload["rows"]} & {s["fixture"] for s in corpus}
-            )
+            self.assertEqual(set(), {row["fixture"] for row in payload["rows"]} & {s["fixture"] for s in corpus})
 
     def test_a_selector_the_grammar_cannot_emit_is_refused(self) -> None:
         """An unrefused typo would manufacture the evidence a `gap` row cites."""
@@ -7030,7 +7010,7 @@ class SourceSelectionTests(unittest.TestCase):
         """The link-ok half is read out of CORPUS.md; its absence is not zero rows."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            write_fixture(root, "solo", "openapi: 3.0.3\ninfo: {title: solo, version: \"1\"}\n")
+            write_fixture(root, "solo", 'openapi: 3.0.3\ninfo: {title: solo, version: "1"}\n')
             completed = run("--fixtures-root", str(root), "--corpus-root", directory)
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("missing corpus manifest", completed.stderr)
@@ -7044,13 +7024,17 @@ class SourceSelectionTests(unittest.TestCase):
     def test_an_unreadable_document_names_the_file_and_the_line(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            write_fixture(root, "broken", """\
+            write_fixture(
+                root,
+                "broken",
+                """\
                 openapi: 3.0.3
                 info:
                   title: broken
                 paths:
                   /a: !ruby/object:Thing
-                """)
+                """,
+            )
             completed = run("--vendored-only", "--fixtures-root", str(root))
         self.assertEqual(1, completed.returncode, completed.stdout)
         self.assertIn("broken", completed.stderr)
@@ -7082,7 +7066,11 @@ class CorpusManifestAgreementTests(unittest.TestCase):
     def shell(self, snippet: str) -> str:
         return subprocess.run(
             ["bash", "-c", f". tools/corpus/corpus-lib.sh\n{snippet}"],
-            cwd=REPO, capture_output=True, text=True, check=True, encoding="utf-8",
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
         ).stdout
 
     def test_the_census_registers_exactly_the_rows_the_fetcher_fetches(self) -> None:
@@ -7109,8 +7097,12 @@ class CorpusManifestAgreementTests(unittest.TestCase):
             root = Path(directory)
             # Each script copied to its own repository-relative path, so the
             # fetcher finds its neighbours where the real tree keeps them.
-            for name in ("tools/corpus/fetch-corpus.sh", "tools/corpus/corpus-lib.sh",
-                         "tools/corpus/corpus_remote_ref_pins.py", "scripts/lib.sh"):
+            for name in (
+                "tools/corpus/fetch-corpus.sh",
+                "tools/corpus/corpus-lib.sh",
+                "tools/corpus/corpus_remote_ref_pins.py",
+                "scripts/lib.sh",
+            ):
                 (root / name).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(REPO / name, root / name)
             fetch = root / "tools" / "corpus" / "fetch-corpus.sh"
@@ -7122,15 +7114,22 @@ class CorpusManifestAgreementTests(unittest.TestCase):
             aliases = census.corpus_aliases(fixtures)
             self.assertEqual({"planet-window": "alpha", "signal-history": "beta"}, aliases)
             names = (*aliases, "gamma")
-            (fixtures / "CORPUS.md").write_text("\n".join(
-                f"| {number} | `{name}` | test | https://example.test/{name}.yaml "
-                "| `1` | MIT | link-ok | alias |"
-                for number, name in enumerate(names, start=1)
-            ) + "\n", encoding="utf-8", newline="\n")
+            (fixtures / "CORPUS.md").write_text(
+                "\n".join(
+                    f"| {number} | `{name}` | test | https://example.test/{name}.yaml | `1` | MIT | link-ok | alias |"
+                    for number, name in enumerate(names, start=1)
+                )
+                + "\n",
+                encoding="utf-8",
+                newline="\n",
+            )
             for name in names:
                 completed = subprocess.run(
                     [fetch, "--dry-run", "--fixture", aliases.get(name, name)],
-                    cwd=root, capture_output=True, text=True, encoding="utf-8",
+                    cwd=root,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
                 )
                 self.assertEqual(0, completed.returncode, completed.stderr)
                 self.assertTrue(completed.stdout.startswith(name + "\t"), completed.stdout)
@@ -7279,14 +7278,25 @@ class YamlSubsetTests(unittest.TestCase):
         """The same refusals through the real CLI, over a source it would otherwise count."""
         base = "openapi: 3.0.3\ninfo:\n  title: t\n  version: '1'\npaths: {}\n"
         for label, document, expected, line in (
-            ("a second document after the end marker", base + "...\nopenapi: 3.1.0\n",
-             "more than one YAML document", 7),
+            (
+                "a second document after the end marker",
+                base + "...\nopenapi: 3.1.0\n",
+                "more than one YAML document",
+                7,
+            ),
             ("a repeated block key", base + "paths: {}\n", "the mapping key 'paths' appears twice", 6),
-            ("a repeated flow key", base.replace("paths: {}", "paths: {/a: {}, /a: {}}"),
-             "the mapping key '/a' appears twice", 5),
-            ("no comma between flow entries",
-             base.replace("info:\n  title: t\n  version: '1'", 'info: {title: "first" version: "1"}'),
-             "flow entries need a `,` between them", 2),
+            (
+                "a repeated flow key",
+                base.replace("paths: {}", "paths: {/a: {}, /a: {}}"),
+                "the mapping key '/a' appears twice",
+                5,
+            ),
+            (
+                "no comma between flow entries",
+                base.replace("info:\n  title: t\n  version: '1'", 'info: {title: "first" version: "1"}'),
+                "flow entries need a `,` between them",
+                2,
+            ),
         ):
             with self.subTest(label), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -7309,7 +7319,7 @@ class YamlSubsetTests(unittest.TestCase):
         ("? 2\n: two\n", {2: "two"}),
         ("? lone\nnext: 1\n", {"lone": None, "next": 1}),
         ("? long\n  key\n: v\n", {"long key": "v"}),
-        ('? "q k"\n: \'v\'\n', {"q k": "v"}),
+        ("? \"q k\"\n: 'v'\n", {"q k": "v"}),
         ("? &x k\n: *x\n", {"k": "k"}),
         ("?\n  indented\n: v\n", {"indented": "v"}),
         ("? |\n  block\n: v\n", {"block\n": "v"}),
@@ -7337,7 +7347,9 @@ class YamlSubsetTests(unittest.TestCase):
         installed, reads each explicit-key sample to exactly those counts. The
         pinned Stripe description is one of them.
         """
-        with (REPO / "tools/surface-census/tests/data/census-fallback-sample.tsv").open(encoding="utf-8", newline="") as handle:
+        with (REPO / "tools/surface-census/tests/data/census-fallback-sample.tsv").open(
+            encoding="utf-8", newline=""
+        ) as handle:
             samples = [row for row in csv.DictReader(handle, delimiter="\t") if row["form"] == "explicit-key"]
         self.assertIn(
             "https://raw.githubusercontent.com/stripe/openapi/58e06a3214ae1574600fba64d40b770e5da6d505/latest/openapi.spec3.yaml",
@@ -7345,7 +7357,11 @@ class YamlSubsetTests(unittest.TestCase):
         )
         for row in samples:
             with self.subTest(url=row["url"]):
-                path = REPO / "tools/surface-census/tests/data/census-fallback-sample" / f"{row['sha256']}{Path(row['url']).suffix}"
+                path = (
+                    REPO
+                    / "tools/surface-census/tests/data/census-fallback-sample"
+                    / f"{row['sha256']}{Path(row['url']).suffix}"
+                )
                 counts = census.census_document(census.load_document(path), root_path=path)
                 declared = dict(pair.rsplit("=", 1) for pair in row["declares"].split(";"))
                 self.assertEqual(
@@ -7449,7 +7465,8 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 "enum: [urn:ietf:params:oauth:client-assertion-type:jwt-bearer]\n"
                 "pairs: [a:b, c]\n"
                 "urls: {url: http://example.test/x, key: v}\n",
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             self.assertEqual(
                 {
@@ -7459,10 +7476,13 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 },
                 census.load_document(path),
             )
-            path.write_text("pairs: [x: y, z, {w: 1}]\nexamples: [\n  example: 1702353706\n]\n",
-                            encoding="utf-8", newline="\n")
-            self.assertEqual({"pairs": [{"x": "y"}, "z", {"w": 1}], "examples": [{"example": 1702353706}]},
-                             census.load_document(path))
+            path.write_text(
+                "pairs: [x: y, z, {w: 1}]\nexamples: [\n  example: 1702353706\n]\n", encoding="utf-8", newline="\n"
+            )
+            self.assertEqual(
+                {"pairs": [{"x": "y"}, "z", {"w": 1}], "examples": [{"example": 1702353706}]},
+                census.load_document(path),
+            )
 
     def test_a_quote_inside_a_flow_plain_scalar_and_a_bare_flow_key_read_as_yaml_does(self) -> None:
         """Two flow forms APWG's eCX document (`APWG/ecx2-openapi-doc`, corpus row 261) writes.
@@ -7479,7 +7499,7 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 "example:\n"
                 "  {\n"
                 '    "data": [\n'
-                '    {\n'
+                "    {\n"
                 '      "id": 1,\n'
                 '      domain": "ecrimex.net",\n'
                 "      it's: plain\n"
@@ -7491,7 +7511,8 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 '    "json events"\n'
                 "    }\n"
                 "  }\n",
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             self.assertEqual(
                 {
@@ -7510,10 +7531,13 @@ class FlowCollectionRegressionTests(unittest.TestCase):
             self.skipTest("the link-ok corpus is unfetched; run tools/corpus/fetch-corpus.sh")
         document = census.load_document(path)
         form = document["paths"]["/token"]["post"]["requestBody"]["content"]["application/x-www-form-urlencoded"]
-        self.assertEqual(["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
-                         form["schema"]["properties"]["client_assertion_type"]["enum"])
-        counted = rows(run("--fixture", "openbankingproject-ch-kundenbeziehung",
-                           "--selector", "schema.enum:string-valued"))
+        self.assertEqual(
+            ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"],
+            form["schema"]["properties"]["client_assertion_type"]["enum"],
+        )
+        counted = rows(
+            run("--fixture", "openbankingproject-ch-kundenbeziehung", "--selector", "schema.enum:string-valued")
+        )
         self.assertEqual({("schema.enum:string-valued", "openbankingproject-ch-kundenbeziehung"): 95}, counted)
 
     def test_a_flow_collection_across_lines_reads_its_quoted_scalars_and_brackets(self) -> None:
@@ -7522,7 +7546,8 @@ class FlowCollectionRegressionTests(unittest.TestCase):
             path = Path(directory) / "openapi.yml"
             path.write_text(
                 'info: {\n  "title": "a [bracket\n  and ] more",\n  "version": "1" }\nopenapi: 3.0.0\n',
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             self.assertEqual(
                 {"info": {"title": "a [bracket and ] more", "version": "1"}, "openapi": "3.0.0"},
@@ -7559,7 +7584,6 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 census.load_document(path)
         self.assertIn("stalls", str(raised.exception))
 
-
     def test_a_flow_collection_used_as_a_key_is_a_parse_error_not_a_crash(self) -> None:
         """A Helm template's `{{ .Values.x }}` keys a mapping on a mapping, which no object model holds."""
         for text in ("info: {{ .Values.title }}\n", "info: {[a]: b}\n", "tags: [{a}: b]\n"):
@@ -7569,6 +7593,30 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 with self.assertRaises(census.DocumentError) as raised:
                     census.load_document(path)
                 self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
+
+
+def stage_windows_runtime(destination: Path, *, base_prefix: Path, base_executable: str | None) -> Path:
+    """Copy the base Windows installation's interpreter and runtime into `destination`.
+
+    The base installation, never `sys.executable`'s directory: under a virtual
+    environment that is `Scripts\\`, whose `python.exe` is a launcher that needs
+    the venv's `pyvenv.cfg` and has no adjacent `Lib` or DLLs.
+    """
+    executable = Path(base_executable) if base_executable else base_prefix / "python.exe"
+    interpreter = destination / "python.exe"
+    shutil.copy2(executable, interpreter)
+    # PATH is deliberately restricted, so retain the real runtime's adjacent DLLs
+    # as well as its executable.
+    for library in base_prefix.glob("*.dll"):
+        shutil.copy2(library, destination / library.name)
+    # A copied Windows executable also needs its standard library when no
+    # installed Python directory remains on PATH.
+    shutil.copytree(
+        base_prefix / "Lib",
+        destination / "Lib",
+        ignore=shutil.ignore_patterns("site-packages", "__pycache__"),
+    )
+    return interpreter
 
 
 class CensusInterpreterCase(unittest.TestCase):
@@ -7588,7 +7636,8 @@ class CensusInterpreterCase(unittest.TestCase):
             [self.shell(), "-c", 'cd "$1" && pwd -P', "census-path", str(path)],
             capture_output=True,
             text=True,
-            timeout=CENSUS_TIMEOUT, encoding="utf-8",
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         return completed.stdout.strip()
@@ -7600,14 +7649,24 @@ class CensusInterpreterCase(unittest.TestCase):
         environment = dict(os.environ)
         if path is not None:
             environment["PATH"] = path
-        return subprocess.run(
-            [shell, str(self.RESOLVER)],
-            cwd=REPO,
-            capture_output=True,
-            text=True,
-            env=environment,
-            timeout=CENSUS_TIMEOUT, encoding="utf-8",
-        )
+        # The real resolver, copied into a root with no `.venv`: these cases drive
+        # the PATH selection, which the checkout's own workspace venv (`uv sync`
+        # makes one) would otherwise win before PATH is read. The `.venv` branch
+        # is `test_a_repo_local_venv_is_preferred_over_anything_on_path`'s.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "scripts").mkdir()
+            copied = root / "scripts" / self.RESOLVER.name
+            shutil.copy2(self.RESOLVER, copied)
+            return subprocess.run(
+                [shell, str(copied)],
+                cwd=root,
+                capture_output=True,
+                text=True,
+                env=environment,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
+            )
 
 
 class PortableCensusInterpreterTests(CensusInterpreterCase):
@@ -7618,26 +7677,64 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
         """Windows Python installations need not install a python3 executable."""
         with tempfile.TemporaryDirectory() as directory:
             interpreter = Path(directory) / ("python.exe" if os.name == "nt" else "python")
-            shutil.copy2(Path(sys.executable).resolve(), interpreter)
-            if os.name == "nt":
-                # PATH is deliberately restricted, so retain the real runtime's
-                # adjacent DLLs as well as its executable.
-                runtime = Path(sys.executable).resolve().parent
-                for library in runtime.glob("*.dll"):
-                    shutil.copy2(library, Path(directory) / library.name)
-                # A copied Windows executable also needs its standard library
-                # when no installed Python directory remains on PATH.
-                shutil.copytree(runtime / "Lib", Path(directory) / "Lib",
-                                ignore=shutil.ignore_patterns("site-packages", "__pycache__"))
+            if os.name != "nt":
+                # A link, not a copy: a relocatable CPython (uv's, which the
+                # workspace venv runs on) finds its standard library relative to
+                # the real executable, which a copy elsewhere would lose.
+                interpreter.symlink_to(Path(sys.executable).resolve())
+            else:
+                stage_windows_runtime(
+                    Path(directory),
+                    base_prefix=Path(sys.base_prefix),
+                    base_executable=getattr(sys, "_base_executable", None),
+                )
             completed = self.resolve(path=self.shell_path(Path(directory)))
             self.assertEqual(0, completed.returncode, completed.stderr)
             invoked = subprocess.run(
-                [self.shell(), "-c", '"$1" -c "$2"', "census-python",
-                 completed.stdout.strip(), "import sys; print(sys.version_info.major)"],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                [
+                    self.shell(),
+                    "-c",
+                    '"$1" -c "$2"',
+                    "census-python",
+                    completed.stdout.strip(),
+                    "import sys; print(sys.version_info.major)",
+                ],
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(0, invoked.returncode, invoked.stderr)
             self.assertEqual("3", invoked.stdout.strip())
+
+
+class WindowsRuntimeStagingTests(unittest.TestCase):
+    """Stage the base installation, not a venv launcher's directory, on any host."""
+
+    def test_a_venv_launcher_layout_stages_the_base_installations_standard_library(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            # Windows' layouts: the base install holds python.exe, its DLLs and
+            # Lib; a venv's Scripts\python.exe launcher has none of them beside it.
+            base = root / "Python314"
+            (base / "Lib" / "site-packages").mkdir(parents=True)
+            (base / "Lib" / "os.py").write_text("# base stdlib\n", encoding="utf-8")
+            (base / "python.exe").write_bytes(b"base interpreter")
+            (base / "python314.dll").write_bytes(b"base runtime")
+            scripts = root / "venv" / "Scripts"
+            scripts.mkdir(parents=True)
+            (scripts / "python.exe").write_bytes(b"venv launcher")
+            for base_executable in (str(base / "python.exe"), None):
+                with self.subTest(base_executable=base_executable):
+                    staged = root / f"staged-{base_executable is None}"
+                    staged.mkdir()
+                    interpreter = stage_windows_runtime(staged, base_prefix=base, base_executable=base_executable)
+                    self.assertEqual(b"base interpreter", interpreter.read_bytes())
+                    self.assertEqual("# base stdlib\n", (staged / "Lib" / "os.py").read_text(encoding="utf-8"))
+                    self.assertEqual(b"base runtime", (staged / "python314.dll").read_bytes())
+                    self.assertFalse((staged / "Lib" / "site-packages").exists())
 
 
 @unittest.skipIf(
@@ -7647,15 +7744,16 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
 class CensusInterpreterTests(CensusInterpreterCase):
     """Pin POSIX interpreter provenance and virtualenv selection."""
 
-    def test_both_census_recipes_resolve_the_interpreter_through_the_resolver(self) -> None:
-        # The measurement recipe, and the gate target the test recipe runs.
-        for name, body in (
-            ("surface-census", " ".join(recipe_body("surface-census"))),
-            ("test-census", " ".join(census_project()["targets"]["test-census"]["options"]["commands"])),
-        ):
-            with self.subTest(recipe=name):
-                self.assertIn("scripts/census-python.sh", body)
-                self.assertNotRegex(body, r"(?<!census-)\bpython3 ")
+    def test_both_census_recipes_run_under_this_repositorys_interpreter(self) -> None:
+        # The measurement recipe resolves it through the resolver; the gate target
+        # the test recipe runs uses the workspace's own locked environment. Neither
+        # borrows whatever `python3` PATH offers.
+        measurement = " ".join(recipe_body("surface-census"))
+        self.assertIn("scripts/census-python.sh", measurement)
+        self.assertNotRegex(measurement, r"(?<!census-)\bpython3 ")
+        gate = census_project()["targets"]["test-census"]["options"]["command"]
+        self.assertTrue(gate.startswith("uv run --locked "), gate)
+        self.assertNotRegex(gate, r"\bpython3 ")
 
     def test_the_resolver_names_a_real_interpreter_that_is_not_a_virtualenv(self) -> None:
         completed = self.resolve()
@@ -7668,18 +7766,23 @@ class CensusInterpreterTests(CensusInterpreterCase):
         self.assertEqual(0, exists.returncode, interpreter)
         prefixes = subprocess.run(
             [
-                self.shell(), "-c", '"$1" -c "$2"', "census-python", interpreter,
+                self.shell(),
+                "-c",
+                '"$1" -c "$2"',
+                "census-python",
+                interpreter,
                 "import sys; print(sys.prefix); print(sys.base_prefix)",
             ],
             capture_output=True,
             text=True,
-            timeout=CENSUS_TIMEOUT, encoding="utf-8",
+            timeout=CENSUS_TIMEOUT,
+            encoding="utf-8",
         )
         self.assertEqual(0, prefixes.returncode, prefixes.stderr)
-        # This repository commits no virtualenv, so PATH's system Python is the
-        # answer here. A deliberate local `.venv` would win instead, which is the
-        # preference the next case drives.
-        self.assertFalse((REPO / ".venv").exists(), "this case assumes no local .venv")
+        # With no `.venv` beside the resolver, PATH's first non-virtualenv Python
+        # is the answer: a virtualenv ahead of it on PATH (the workspace venv a
+        # `uv run` puts first) is passed over. A local `.venv` would win instead,
+        # which is the preference the next case drives.
         first, second = prefixes.stdout.split()
         self.assertEqual(first, second, "the resolver chose a virtualenv")
 
@@ -7702,8 +7805,11 @@ class CensusInterpreterTests(CensusInterpreterCase):
             shutil.copy2(self.RESOLVER, copied)
 
             completed = subprocess.run(
-                [self.shell(), str(copied)], capture_output=True, text=True,
-                timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                [self.shell(), str(copied)],
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             expected = f"{self.shell_path(local)}/{interpreter.name}"
 
@@ -7718,12 +7824,18 @@ class CensusInterpreterTests(CensusInterpreterCase):
         sh = shutil.which("sh")
         if sh is None:
             self.skipTest("no sh on PATH")
-        for code, expected in (("import sys; print(sys.argv[1:]); sys.exit(0)", 0),
-                               ("import sys; print(sys.argv[1:]); sys.exit(3)", 3)):
+        for code, expected in (
+            ("import sys; print(sys.argv[1:]); sys.exit(0)", 0),
+            ("import sys; print(sys.argv[1:]); sys.exit(3)", 3),
+        ):
             with self.subTest(expected=expected):
                 completed = subprocess.run(
                     [sh, str(self.RESOLVER), "-c", code, "first arg", "--flag"],
-                    cwd=REPO, capture_output=True, text=True, encoding="utf-8", timeout=CENSUS_TIMEOUT,
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    timeout=CENSUS_TIMEOUT,
                 )
                 self.assertEqual(expected, completed.returncode, completed.stderr)
                 self.assertEqual("['first arg', '--flag']", completed.stdout.strip())
@@ -7734,12 +7846,22 @@ class CensusInterpreterTests(CensusInterpreterCase):
         if sh is None:
             self.skipTest("no sh on PATH")
         with tempfile.TemporaryDirectory() as empty:
-            completed = subprocess.run([sh, str(self.RESOLVER), "-c", "print('ran')"], cwd=REPO,
-                                       capture_output=True, text=True, encoding="utf-8", timeout=CENSUS_TIMEOUT, env={"PATH": empty})
+            completed = subprocess.run(
+                [sh, str(self.RESOLVER), "-c", "print('ran')"],
+                cwd=REPO,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                timeout=CENSUS_TIMEOUT,
+                env={"PATH": empty},
+            )
         self.assertEqual(127, completed.returncode, completed.stderr)
         self.assertEqual("", completed.stdout)
-        self.assertIn("census-python: bash is not on PATH — it selects the interpreter; install bash "
-                      "(Git Bash on Windows), then re-run", completed.stderr)
+        self.assertIn(
+            "census-python: bash is not on PATH — it selects the interpreter; install bash "
+            "(Git Bash on Windows), then re-run",
+            completed.stderr,
+        )
 
     @unittest.skipIf(os.name == "nt", "a shebang names the interpreter that cannot start only on POSIX")
     def test_an_interpreter_that_cannot_start_names_itself_and_the_fix(self) -> None:
@@ -7755,8 +7877,11 @@ class CensusInterpreterTests(CensusInterpreterCase):
             copied = root / "scripts" / self.RESOLVER.name
             shutil.copy2(self.RESOLVER, copied)
             completed = subprocess.run(
-                [self.shell(), str(copied), "-c", "print('ran')"], capture_output=True, text=True,
-                timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                [self.shell(), str(copied), "-c", "print('ran')"],
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             self.assertEqual(126, completed.returncode, completed.stderr)
             self.assertNotIn("ran", completed.stdout)
@@ -7769,7 +7894,10 @@ class CensusInterpreterTests(CensusInterpreterCase):
             foreign = Path(directory) / "other-project" / ".venv"
             built = subprocess.run(
                 [sys.executable, "-m", "venv", "--without-pip", str(foreign)],
-                capture_output=True, text=True, timeout=CENSUS_TIMEOUT, encoding="utf-8",
+                capture_output=True,
+                text=True,
+                timeout=CENSUS_TIMEOUT,
+                encoding="utf-8",
             )
             if built.returncode != 0:
                 self.skipTest(f"this interpreter cannot build a venv: {built.stderr}")
@@ -7834,14 +7962,17 @@ class PyYamlOracleTests(unittest.TestCase):
             import yaml
         except ImportError:
             self.skipTest(f"PyYAML is not importable on {sys.executable}")
-        path = REPO / "tools/surface-census/tests/data/census-fallback-sample/4b23d81eeb8a0d4d789baa362841c0c14f181b579ff3458c3ab002eb6aa1b553.yaml"
+        path = (
+            REPO
+            / "tools/surface-census/tests/data/census-fallback-sample/4b23d81eeb8a0d4d789baa362841c0c14f181b579ff3458c3ab002eb6aa1b553.yaml"
+        )
         loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
-        theirs = yaml.load(path.read_text(encoding="utf-8"), Loader=loader)
+        # `loader` is CSafeLoader or SafeLoader, both safe; ruff cannot see through getattr.
+        theirs = yaml.load(path.read_text(encoding="utf-8"), Loader=loader)  # noqa: S506
         self.assertEqual(
             census.census_document(theirs, root_path=path),
             census.census_document(census.load_document(path), root_path=path),
         )
-
 
 
 class EscalationRestatementTests(unittest.TestCase):
@@ -7857,8 +7988,27 @@ class EscalationRestatementTests(unittest.TestCase):
     REGIONS = REPO / "docs" / "openapi-surface"
     DOC = REPO / "docs" / "openapi-surface-coverage.md"
     SCHEMAS = REGIONS / "schemas.md"
-    WORDS = {word: n for n, word in enumerate(
-        "zero one two three four five six seven eight nine ten eleven twelve thirteen".split())}
+    WORDS: ClassVar = {
+        word: n
+        for n, word in enumerate(
+            [
+                "zero",
+                "one",
+                "two",
+                "three",
+                "four",
+                "five",
+                "six",
+                "seven",
+                "eight",
+                "nine",
+                "ten",
+                "eleven",
+                "twelve",
+                "thirteen",
+            ]
+        )
+    }
     STAYS_OPEN = re.compile(r"what stays open is (\d+) candidate\(s\)")
 
     @classmethod
@@ -7875,11 +8025,11 @@ class EscalationRestatementTests(unittest.TestCase):
             for key in cls.lines:
                 rows = [row for _number, row in by_key.get(key, [])]
                 cls.open_rows.setdefault(key, []).extend(row for row in rows if row["disposition"] == "outstanding")
-                cls.reread.extend(row for row in rows
-                                  if "; read by " in row["census"] or row["census"].startswith("census-refused"))
+                cls.reread.extend(
+                    row for row in rows if "; read by " in row["census"] or row["census"].startswith("census-refused")
+                )
                 cls.served.setdefault(key, []).extend(row for row in rows if "; served by " in row["census"])
-        cls.refused = {key: rows for key, rows in cls.open_rows.items()
-                       if cls.STAYS_OPEN.search(cls.lines[key][3])}
+        cls.refused = {key: rows for key, rows in cls.open_rows.items() if cls.STAYS_OPEN.search(cls.lines[key][3])}
 
     def number(self, word: str) -> int:
         word = word.replace(",", "")
@@ -7902,15 +8052,18 @@ class EscalationRestatementTests(unittest.TestCase):
         for key, rows in self.refused.items():
             with self.subTest(key=key):
                 note = self.lines[key][3]
-                self.assertEqual(len(rows), int(self.STAYS_OPEN.search(note)[1]))
+                self.assertEqual(len(rows), int(matched(self.STAYS_OPEN.search(note))[1]))
                 for row in rows:
                     self.assertIn(f"`{row['candidate']}` at `{row['revision']}`", note)
                     self.assertIn(row["census"].removeprefix("acquisition-failure: "), note)
 
     def test_the_escalation_table_counts_what_each_key_owes(self) -> None:
         section = self.doc.split("| key | selector | outstanding, per source |", 1)[1].split("\n\n", 1)[0]
-        rows = {cells[0].strip("`"): cells for line in section.splitlines()
-                if (cells := table_cells(line, 5)) and cells[0].startswith("`")}
+        rows = {
+            cells[0].strip("`"): cells
+            for line in section.splitlines()
+            if (cells := table_cells(line, 5)) and cells[0].startswith("`")
+        }
         # A key whose search found a witness is registered, not escalated.
         escalated = {key for key, line in self.lines.items() if line[1].strip("`") != "witness-found"}
         self.assertEqual(escalated, set(rows))
@@ -7928,11 +8081,13 @@ class EscalationRestatementTests(unittest.TestCase):
     def test_the_sentences_summing_the_outcomes_add_up(self) -> None:
         outcomes = Counter(line[1].strip("`") for line in self.lines.values())
         refused = [row for rows in self.refused.values() for row in rows]
-        gone = sum(bool(re.match(r"GET /repos/\S+ answered HTTP 404", row["census"].split(": ", 1)[1]))
-                   for row in refused)
+        gone = sum(
+            bool(re.match(r"GET /repos/\S+ answered HTTP 404", row["census"].split(": ", 1)[1])) for row in refused
+        )
         served = [row for rows in self.served.values() for row in rows]
-        declaring = {(row["candidate"], row["revision"]) for row in self.reread
-                     if re.match(r"census [1-9]", row["census"])}
+        declaring = {
+            (row["candidate"], row["revision"]) for row in self.reread if re.match(r"census [1-9]", row["census"])
+        }
         expected = {
             "reread": len(self.reread),
             "declaring": len(declaring),
@@ -7972,6 +8127,7 @@ class EscalationRestatementTests(unittest.TestCase):
             with self.subTest(pattern=pattern):
                 found = re.search(pattern, text)
                 self.assertIsNotNone(found, pattern)
+                assert found is not None
                 self.assertEqual(expected[name], self.number(found[1]))
 
 
@@ -8026,17 +8182,14 @@ class RankedBacklogTests(unittest.TestCase):
     def ranked_rows(self) -> list[tuple[int, str, tuple[int, int, int, int], str]]:
         """(rank, key, the four published criteria, the whole line)."""
         out = []
-        for line in self.section(
-            "### The ranked `FIXTURE` backlog", "### The ranked list against"
-        ).splitlines():
+        for line in self.section("### The ranked `FIXTURE` backlog", "### The ranked list against").splitlines():
             row = re.match(r"\| (\d+) \| \[`([^`]+)`\]", line)
             if not row:
                 continue
             measured = [int(value) for value in re.findall(r"\*\*(\d+)\*\*", line)]
-            self.assertEqual(
-                4, len(measured), f"{row.group(2)} does not publish four measured criteria"
-            )
-            out.append((int(row.group(1)), row.group(2), tuple(measured), line))
+            self.assertEqual(4, len(measured), f"{row.group(2)} does not publish four measured criteria")
+            first, second, third, fourth = measured
+            out.append((int(row.group(1)), row.group(2), (first, second, third, fourth), line))
         self.assertEqual(
             bool(self.gaps("FIXTURE")),
             bool(out),
@@ -8050,9 +8203,7 @@ class RankedBacklogTests(unittest.TestCase):
         for line in self.section("| `src/` file | printed |", "**Where the two").splitlines():
             row = re.match(r"\| `(src/(?:[a-z_]+/)*[a-z_]+\.rs)` \| (\d+) \| ([^|]+) \| ([^|]+) \|", line)
             if row:
-                found[row.group(1)] = (
-                    int(row.group(2)), row.group(3).strip(), row.group(4).strip()
-                )
+                found[row.group(1)] = (int(row.group(2)), row.group(3).strip(), row.group(4).strip())
         self.assertTrue(found, "the golden blind spots join table no longer parses")
         return found
 
@@ -8070,6 +8221,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(len(keys), len(set(keys)), "a feature key appears in two rows")
         stated = re.search(r"The (\d+) rows carry (\d+) distinct\s+keys", self.doc)
         self.assertIsNotNone(stated, "the reconciliation no longer states the row count")
+        assert stated is not None
         self.assertEqual(
             [len(keys), len(set(keys))],
             [int(stated.group(1)), int(stated.group(2))],
@@ -8085,9 +8237,7 @@ class RankedBacklogTests(unittest.TestCase):
         """Per-region totals, recomputed from the tables they aggregate."""
         stated = {}
         for line in self.section("### What the walk enumerated", "The walk enumerated").splitlines():
-            row = re.match(
-                r"\| \[`([a-z0-9-]+)`\][^|]*\|" + r"\s*(\d+)\s*\|" * 8, line
-            )
+            row = re.match(r"\| \[`([a-z0-9-]+)`\][^|]*\|" + r"\s*(\d+)\s*\|" * 8, line)
             if row:
                 stated[row.group(1)] = [int(row.group(n)) for n in range(2, 10)]
         self.assertEqual(6, len(stated), "the summary table no longer lists six regions")
@@ -8096,8 +8246,9 @@ class RankedBacklogTests(unittest.TestCase):
             self.section("### What the walk enumerated", "The walk enumerated"),
         )
         self.assertIsNotNone(totals, "the summary table no longer carries a total row")
+        assert totals is not None
         self.assertEqual(
-            [sum(column) for column in zip(*stated.values())],
+            [sum(column) for column in zip(*stated.values(), strict=False)],
             [int(totals.group(n)) for n in range(1, 9)],
             "the total row is not the six region rows' own column sums",
         )
@@ -8105,17 +8256,9 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(region=region):
                 rows = [c for r, c in self.entries.values() if r == region]
                 counts = [len(rows)]
+                counts += [sum(1 for cells in rows if cells[3].strip("`") == category) for category in self.CATEGORIES]
                 counts += [
-                    sum(1 for cells in rows if cells[3].strip("`") == category)
-                    for category in self.CATEGORIES
-                ]
-                counts += [
-                    sum(
-                        1
-                        for cells in rows
-                        if cells[3].strip("`") == "gap"
-                        and self.settlement_of(cells) == settlement
-                    )
+                    sum(1 for cells in rows if cells[3].strip("`") == "gap" and self.settlement_of(cells) == settlement)
                     for settlement in self.SETTLEMENTS
                 ]
                 self.assertEqual(counts, numbers)
@@ -8129,15 +8272,27 @@ class RankedBacklogTests(unittest.TestCase):
         """
         stated = re.search(r"^\| `category` \| exactly one of ((?:`[a-z]+`(?:, )?)+) \|$", self.doc, re.M)
         self.assertIsNotNone(stated, "the entry table no longer states the category vocabulary")
+        assert stated is not None
         documented = tuple(re.findall(r"`([a-z]+)`", stated.group(1)))
-        rules = re.findall(r"^\d+\. \*\*`([a-z]+)`\*\*", self.section("## The category rules", "## The settlement classes"), re.M)
+        rules = re.findall(
+            r"^\d+\. \*\*`([a-z]+)`\*\*", self.section("## The category rules", "## The settlement classes"), re.M
+        )
         self.assertEqual(documented, tuple(rules), "the category rules' precedence is not the entry table's order")
         for name, categories in (
             ("RankedBacklogTests", self.CATEGORIES),
-            ("tools/surface-census/witness-search-region-keys.py (golden-reach and the witness-search tools "
-             "parse through it)", load_script("tools/surface-census/witness-search-region-keys.py").CATEGORIES),
-            ("tools/surface-census/handwritten-fixtures.py", load_script("tools/surface-census/handwritten-fixtures.py").CATEGORIES),
-            ("tools/witness-search/witness-search-redo.py", load_script("tools/witness-search/witness-search-redo.py").CATEGORIES),
+            (
+                "tools/surface-census/witness-search-region-keys.py (golden-reach and the witness-search tools "
+                "parse through it)",
+                load_script("tools/surface-census/witness-search-region-keys.py").CATEGORIES,
+            ),
+            (
+                "tools/surface-census/handwritten-fixtures.py",
+                load_script("tools/surface-census/handwritten-fixtures.py").CATEGORIES,
+            ),
+            (
+                "tools/witness-search/witness-search-redo.py",
+                load_script("tools/witness-search/witness-search-redo.py").CATEGORIES,
+            ),
         ):
             with self.subTest(parser=name):
                 self.assertEqual(documented, tuple(categories))
@@ -8152,10 +8307,7 @@ class RankedBacklogTests(unittest.TestCase):
         """The narrated per-category and per-settlement totals are the table's own."""
         rows = list(self.entries.values())
         totals = [len(rows)]
-        totals += [
-            sum(1 for _r, cells in rows if cells[3].strip("`") == category)
-            for category in self.CATEGORIES
-        ]
+        totals += [sum(1 for _r, cells in rows if cells[3].strip("`") == category) for category in self.CATEGORIES]
         prose = self.section("The walk enumerated", "**What the `gap` count means.**")
         narrated = [int(value.replace(",", "")) for value in re.findall(r"\*\*([\d,]+)\*\*", prose)]
         self.assertEqual(totals + [len(self.gaps(s)) for s in self.SETTLEMENTS], narrated)
@@ -8182,12 +8334,11 @@ class RankedBacklogTests(unittest.TestCase):
         vendored = {path.parent.name for path in FIXTURES.glob("*/openapi.*")}
         ledger_rows = self.reach_ledger()
         ledger = {reach.key: reach for _rank, reach in ledger_rows}
-        manifest = manifest_rows(
-            (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
-        )
+        manifest = manifest_rows((self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8"))
         byte_match = no_witness = proof = handwritten = residual_gap = 0
-        residual_open = {key for key, (_w, _f, _g, verdict) in residual_attributions(REPO).items()
-                         if verdict == "open gap"}
+        residual_open = {
+            key for key, (_w, _f, _g, verdict) in residual_attributions(REPO).items() if verdict == "open gap"
+        }
         for key, (_region, cells) in self.entries.items():
             category = cells[3].strip("`")
             if category == "golden":
@@ -8205,9 +8356,7 @@ class RankedBacklogTests(unittest.TestCase):
                 handwritten += 1
             elif key in manifest and manifest[key][2] in NON_GENERATION_VERDICTS:
                 proof += 1
-        unreached = {
-            (reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit
-        }
+        unreached = {(reach.key, spec) for _rank, reach in ledger_rows for spec, hit, _total in reach.sites if not hit}
         covered = {(key, arm) for _fixture, key, arm in handwritten_covers() if arm} & unreached
         fixture = len(self.gaps("FIXTURE"))
         headline = " ".join(self.section("**What it says today.**", "**The denominator").split())
@@ -8226,20 +8375,35 @@ class RankedBacklogTests(unittest.TestCase):
             headline,
         )
         self.assertIsNotNone(stated, "the headline no longer states its four numbers")
+        assert stated is not None
         unproven = fixture + residual_gap + no_witness
         expected = [
-            len(rows), categories["golden"], categories["limitations"], categories["handwritten"],
-            categories["gap"], byte_match, proof, categories["limitations"],
-            len(self.gaps("UNREACHABLE")), handwritten, byte_match,
-            unproven, fixture, residual_gap, no_witness, byte_match, proof, handwritten, unproven,
+            len(rows),
+            categories["golden"],
+            categories["limitations"],
+            categories["handwritten"],
+            categories["gap"],
+            byte_match,
+            proof,
+            categories["limitations"],
+            len(self.gaps("UNREACHABLE")),
+            handwritten,
+            byte_match,
+            unproven,
+            fixture,
+            residual_gap,
+            no_witness,
+            byte_match,
+            proof,
+            handwritten,
+            unproven,
             len(rows),
         ]
         self.assertEqual(expected, [int(value) for value in stated.groups()])
+        self.assertEqual(len(rows), byte_match + proof + handwritten + unproven, "the four do not partition the walk")
         self.assertEqual(
-            len(rows), byte_match + proof + handwritten + unproven, "the four do not partition the walk"
-        )
-        self.assertEqual(
-            proof, categories["limitations"] + len(self.gaps("UNREACHABLE")),
+            proof,
+            categories["limitations"] + len(self.gaps("UNREACHABLE")),
             "a committed proof is not exactly the `limitations` and `UNREACHABLE` rows",
         )
         # The arms, split the same way: reached by a real specification, reached
@@ -8247,7 +8411,7 @@ class RankedBacklogTests(unittest.TestCase):
         arms = [(reach.key, spec) for _rank, reach in ledger_rows for spec, _hit, _total in reach.sites]
         refused = set(refused_arm_records(REPO)) & unreached
         self.assertEqual(set(), covered & refused, "an arm is both hand-written and Fern-refused")
-        searches = REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        REPO / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
         cover_verdicts: dict[tuple[str, str], set[str]] = {}
         gate = load_script("tools/surface-census/handwritten-fixtures.py")
         for directory in sorted(HANDWRITTEN.iterdir()):
@@ -8274,18 +8438,35 @@ class RankedBacklogTests(unittest.TestCase):
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
+        assert arms_stated is not None
         reached = len(arms) - len(unreached)
         named = set(named_gap_arms(REPO)) & unreached
         self.assertEqual(
-            [categories["golden"], len(arms), reached, len(covered), len(covered), len(unreached),
-             verdict_counts[EXHAUSTED], verdict_counts[SEARCH_INCOMPLETE], verdict_counts[CONFIG_GATED],
-             len(refused), len(named),
-             reached, len(covered), len(refused), len(named), len(arms), len(classes)],
+            [
+                categories["golden"],
+                len(arms),
+                reached,
+                len(covered),
+                len(covered),
+                len(unreached),
+                verdict_counts[EXHAUSTED],
+                verdict_counts[SEARCH_INCOMPLETE],
+                verdict_counts[CONFIG_GATED],
+                len(refused),
+                len(named),
+                reached,
+                len(covered),
+                len(refused),
+                len(named),
+                len(arms),
+                len(classes),
+            ],
             [int(v) if v.isdigit() else v for i, v in enumerate(arms_stated.groups()) if i != 10],
         )
         self.assertEqual(len(ledger_rows), categories["golden"], "the reach ledger is not every golden row")
-        self.assertEqual(len(unreached), len(covered) + len(refused) + len(named),
-                         "an unreached arm is unaccounted for")
+        self.assertEqual(
+            len(unreached), len(covered) + len(refused) + len(named), "an unreached arm is unaccounted for"
+        )
         self.assertEqual(
             sorted({key for key, _arm in refused}),
             sorted(set(re.findall(r"`([a-z-]+)`(?:'s)?", arms_stated.group(11))) & {k for k, _a in refused}),
@@ -8338,7 +8519,8 @@ class RankedBacklogTests(unittest.TestCase):
                 stated = re.findall(r"(\d+) of \[the (\d+) unreached arms\]", line)
                 held = unreached.count(row.group(1))
                 self.assertEqual(
-                    [(str(held), str(len(unreached)))] if held else [], stated,
+                    [(str(held), str(len(unreached)))] if held else [],
+                    stated,
                     "the row's unreached-arm count is not the reach ledger's",
                 )
 
@@ -8348,11 +8530,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     def test_the_gap_count_paragraph_recomputes_its_own_numbers(self) -> None:
         """What `gap` means restates the gap total twice, then its two parts."""
-        gap = sum(
-            1
-            for _region, cells in self.entries.values()
-            if cells[3].strip("`") == "gap"
-        )
+        gap = sum(1 for _region, cells in self.entries.values() if cells[3].strip("`") == "gap")
         unreachable = len(self.gaps("UNREACHABLE"))
         prose = self.section("**What the `gap` count means.**", "### Reconciliation")
         self.assertEqual(
@@ -8363,10 +8541,9 @@ class RankedBacklogTests(unittest.TestCase):
 
     def ledger_keys(self) -> set[str]:
         """The keys the index's own documented join reports, run here."""
-        pattern = re.search(
-            r"^grep -oP '(.+)' docs/fern-limitations\.md", self.doc, re.M
-        )
+        pattern = re.search(r"^grep -oP '(.+)' docs/fern-limitations\.md", self.doc, re.M)
         self.assertIsNotNone(pattern, "the index no longer documents the join command")
+        assert pattern is not None
         before, _, after = pattern.group(1).partition("\\K")
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         return set(re.findall(f"{before}({after})", ledger, re.M))
@@ -8377,13 +8554,10 @@ class RankedBacklogTests(unittest.TestCase):
         for _region, cells in self.entries.values():
             owners[cells[2]] = owners.get(cells[2], 0) + 1
         shared = {loc: count for loc, count in owners.items() if count > 1}
-        flat = " ".join(
-            self.section(
-                "**Each feature is classified exactly once.**", "**Nothing is left"
-            ).split()
-        )
+        flat = " ".join(self.section("**Each feature is classified exactly once.**", "**Nothing is left").split())
         stated = re.search(r"(\w+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
+        assert stated is not None
         self.assertEqual(len(shared), {"Fifteen": 15, "Eighteen": 18}.get(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
@@ -8391,10 +8565,9 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             named += 1
             with self.subTest(location=location):
-                follows = re.search(
-                    rf"`{re.escape(location)}`(?: heads)? (\d+)", flat
-                )
+                follows = re.search(rf"`{re.escape(location)}`(?: heads)? (\d+)", flat)
                 self.assertIsNotNone(follows, f"{location} is named without its row count")
+                assert follows is not None
                 self.assertEqual(count, int(follows.group(1)))
         self.assertEqual(3, named, "the reconciliation no longer names three locations by size")
 
@@ -8404,10 +8577,9 @@ class RankedBacklogTests(unittest.TestCase):
         keys = self.ledger_keys()
         verbatim = keys & set(self.entries)
         text = self.section("**Every ledger key is accounted for.**", "**The one correction")
-        stated = re.search(
-            r"canonical join reports (\d+) keys, of\nwhich (\d+) are a region row's key verbatim", text
-        )
+        stated = re.search(r"canonical join reports (\d+) keys, of\nwhich (\d+) are a region row's key verbatim", text)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the join")
+        assert stated is not None
         self.assertEqual((len(keys), len(verbatim)), (int(stated.group(1)), int(stated.group(2))))
         unaccounted = sorted(keys - verbatim)
         self.assertEqual(
@@ -8419,15 +8591,14 @@ class RankedBacklogTests(unittest.TestCase):
             self.assertIn(f"| `{key}` |", text, f"{key} has no row saying how it is accounted for")
         yielded = re.search(r"The join's real yield is (\d+)\.", text)
         self.assertIsNotNone(yielded, "the reconciliation no longer states the join's real yield")
+        assert yielded is not None
         self.assertEqual(len(keys) - 1, int(yielded.group(1)), "one key is the non-feature label")
 
     def test_the_ranked_backlog_is_every_fixture_gap_in_rubric_order(self) -> None:
         """One total order over every `FIXTURE` row, by the four published numbers."""
         ranked = self.ranked_rows()
         self.assertEqual(self.gaps("FIXTURE"), {key for _n, key, _m, _line in ranked})
-        self.assertEqual(
-            list(range(1, len(ranked) + 1)), [n for n, _key, _m, _line in ranked]
-        )
+        self.assertEqual(list(range(1, len(ranked) + 1)), [n for n, _key, _m, _line in ranked])
         sortable = [
             ((sites, -blind, -breadth, -witnesses, key), rank)
             for rank, key, (sites, blind, breadth, witnesses), _line in ranked
@@ -8435,6 +8606,7 @@ class RankedBacklogTests(unittest.TestCase):
         self.assertEqual(sorted(sortable), sortable, "the ranked table is not in rubric order")
         stated = re.search(r"All (\d+) `FIXTURE` gaps", self.doc)
         self.assertIsNotNone(stated, "the ranked backlog no longer states its own size")
+        assert stated is not None
         self.assertEqual(len(ranked), int(stated.group(1)))
 
     def test_the_ranked_table_names_each_keys_owning_region(self) -> None:
@@ -8492,16 +8664,15 @@ class RankedBacklogTests(unittest.TestCase):
         leftover from the last list that had rows.
         """
         blind = sorted(measured[1] for _n, _key, measured, _line in self.ranked_rows())
-        stated = re.search(
-            r"\*\*The median blind-spot count of this list is (\d+)\*\*", self.doc
-        )
+        stated = re.search(r"\*\*The median blind-spot count of this list is (\d+)\*\*", self.doc)
         if not blind:
             self.assertIsNone(stated, "an empty ranked list has no median to publish")
             return
-        median = blind[len(blind) // 2] if len(blind) % 2 else (
-            blind[len(blind) // 2 - 1] + blind[len(blind) // 2]
-        ) // 2
+        median = (
+            blind[len(blind) // 2] if len(blind) % 2 else (blind[len(blind) // 2 - 1] + blind[len(blind) // 2]) // 2
+        )
         self.assertIsNotNone(stated, "the ranked backlog no longer publishes its median")
+        assert stated is not None
         self.assertEqual(median, int(stated.group(1)))
 
     def test_each_ranked_row_reads_its_blind_spot_count_off_the_join_table(self) -> None:
@@ -8522,9 +8693,7 @@ class RankedBacklogTests(unittest.TestCase):
                     "criterion 2 is not the join table's printed count",
                 )
                 if not named:
-                    self.assertEqual(
-                        (0, 0), (measured[0], measured[1]), "a `none` row must score zero twice"
-                    )
+                    self.assertEqual((0, 0), (measured[0], measured[1]), "a `none` row must score zero twice")
 
     def test_the_join_table_names_the_ranked_gaps_that_point_at_each_file(self) -> None:
         """The `ranked gaps pointing at it` cells are the ranked table's own counts."""
@@ -8534,7 +8703,7 @@ class RankedBacklogTests(unittest.TestCase):
                 pointing[name] = pointing.get(name, 0) + 1
         for name, (_printed, _by_tier, cell) in sorted(self.blind_spot_table().items()):
             with self.subTest(file=name):
-                stated = 0 if cell.startswith("none") else int(re.match(r"(\d+)", cell).group(1))
+                stated = 0 if cell.startswith("none") else int(matched(re.match(r"(\d+)", cell)).group(1))
                 self.assertEqual(pointing.get(name, 0), stated)
 
     def test_the_join_table_is_the_coverage_reports_own_blind_spot_block(self) -> None:
@@ -8553,18 +8722,18 @@ class RankedBacklogTests(unittest.TestCase):
         out_dir = re.search(r'^out_dir="\$repo_root/([^"]+)"', recipe, re.M)
         golden = re.search(r"^  --golden-tier (\S+)", recipe, re.M)
         self.assertTrue(out_dir and golden, "fixtures-coverage.sh no longer names its exports")
+        assert out_dir is not None and golden is not None
         exports = REPO / out_dir.group(1)
         names = re.findall(r'--output-path "\$out_dir/([a-z0-9-]+)\.json"', recipe)
         self.assertIn(golden.group(1), names, "the golden tier has no export in the recipe")
-        order = [golden.group(1)] + sorted(name for name in names if name != golden.group(1))
+        order = [golden.group(1), *sorted(name for name in names if name != golden.group(1))]
         missing = sorted(name for name in order if not (exports / f"{name}.json").is_file())
         if missing:
-            self.skipTest(
-                f"no {', '.join(missing)} export in {exports}; run `just fixtures-coverage`"
-            )
+            self.skipTest(f"no {', '.join(missing)} export in {exports}; run `just fixtures-coverage`")
         spec = importlib.util.spec_from_file_location(
             "fixtures_coverage_report", REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
         )
+        assert spec and spec.loader
         report = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(report)
         tiers = {name: report.load_tier(exports / f"{name}.json", REPO) for name in order}
@@ -8582,9 +8751,7 @@ class RankedBacklogTests(unittest.TestCase):
             {name: cells[:2] for name, cells in self.blind_spot_table().items()},
             "the join table is not the last `just fixtures-coverage` run's blind spots",
         )
-        self.assertIn(
-            f"`{total}`", self.doc, "the join table does not quote the report's own total line"
-        )
+        self.assertIn(f"`{total}`", self.doc, "the join table does not quote the report's own total line")
 
     def test_the_ranked_backlog_counts_its_own_populations(self) -> None:
         """The "N of the M" figures the criteria list and the join narrate.
@@ -8602,9 +8769,7 @@ class RankedBacklogTests(unittest.TestCase):
             return
         for population, total in populations:
             self.assertEqual(len(ranked), int(total), "a population is stated against the wrong total")
-            self.assertIn(
-                int(population), (zero_witness, no_file), "a stated population is neither count"
-            )
+            self.assertIn(int(population), (zero_witness, no_file), "a stated population is neither count")
         self.assertIn(f"{zero_witness} of the {len(ranked)} score zero", flat)
         self.assertIn(f"{no_file} of the {len(ranked)} entries name no", flat)
         self.assertIn(f"{no_file} of the {len(ranked)} ranked entries reach no", flat)
@@ -8612,15 +8777,12 @@ class RankedBacklogTests(unittest.TestCase):
     def test_the_two_largest_unranked_files_sum_as_the_join_narrates(self) -> None:
         """The share of the block the two files no ranked gap points at hold."""
         table = self.blind_spot_table()
-        unranked = sorted(
-            (count, name)
-            for name, (count, _tier, cell) in table.items()
-            if cell.startswith("none")
-        )
+        unranked = sorted((count, name) for name, (count, _tier, cell) in table.items() if cell.startswith("none"))
         largest = sum(count for count, _name in unranked[-2:])
         flat = " ".join(self.doc.split())
         stated = re.search(r"together ([\d,]+) of the block's ([\d,]+) printed regions", flat)
         self.assertIsNotNone(stated, "the join no longer states the two largest files' share")
+        assert stated is not None
         self.assertEqual(
             (largest, sum(count for count, _tier, _cell in table.values())),
             tuple(int(value.replace(",", "")) for value in stated.groups()),
@@ -8635,8 +8797,12 @@ class RankedBacklogTests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     BLIND_FUNCTIONS = (
-        "resolve_schema_pointer", "nested_array_element", "hoist_union_variant",
-        "ref_to_class", "prop_type_ref", "path_group",
+        "resolve_schema_pointer",
+        "nested_array_element",
+        "hoist_union_variant",
+        "ref_to_class",
+        "prop_type_ref",
+        "path_group",
     )
     NOT_EXHAUSTED = "does not pin\nthe whole of the branch's behaviour"
 
@@ -8656,10 +8822,11 @@ class RankedBacklogTests(unittest.TestCase):
                 (region, cells)
                 for key, (region, cells) in self.entries.items()
                 if f"`{selector}`" in cells[4]
-                or cells[3].strip("`") == "handwritten" and tracked.get(key) == selector
+                or (cells[3].strip("`") == "handwritten" and tracked.get(key) == selector)
             ]
             self.assertEqual(
-                1, len(citing),
+                1,
+                len(citing),
                 f"{selector}: {len(citing)} region rows cite it; exactly one must",
             )
             found[selector] = citing[0]
@@ -8681,7 +8848,7 @@ class RankedBacklogTests(unittest.TestCase):
     # The reading of each arm on its own is a `census.MEMBER_ONLY_PREDICATES`
     # member rather than a selector, so it carries no row and this rule does not
     # reach it — see the note where the five names would otherwise sit, below.
-    BRANCH_PREDICATES = {
+    BRANCH_PREDICATES: ClassVar = {
         "schema.type:primary=array": "schemas",
         "schema.properties:non-empty": "schemas",
         "schema.oneOf:sole-member": "schemas",
@@ -8713,13 +8880,10 @@ class RankedBacklogTests(unittest.TestCase):
         """selector -> the one region row whose evidence cell cites it."""
         found: dict[str, tuple[str, list[str]]] = {}
         for selector in self.BRANCH_PREDICATES:
-            citing = [
-                (region, cells)
-                for region, cells in self.entries.values()
-                if f"`{selector}`" in cells[4]
-            ]
+            citing = [(region, cells) for region, cells in self.entries.values() if f"`{selector}`" in cells[4]]
             self.assertEqual(
-                1, len(citing),
+                1,
+                len(citing),
                 f"{selector}: {len(citing)} region rows cite it; exactly one must",
             )
             found[selector] = citing[0]
@@ -8776,9 +8940,9 @@ class RankedBacklogTests(unittest.TestCase):
         for selector, (region, cells) in sorted(rows.items()):
             with self.subTest(selector=selector):
                 self.assertEqual(
-                    "schemas", region,
-                    "every conjunction anchors on a Schema Object, so the "
-                    "`schemas` region owns its row",
+                    "schemas",
+                    region,
+                    "every conjunction anchors on a Schema Object, so the `schemas` region owns its row",
                 )
                 self.assertIn(cells[3].strip("`"), self.CATEGORIES)
 
@@ -8795,12 +8959,14 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(selector=selector):
                 named = [fn for fn in self.BLIND_FUNCTIONS if f"`{fn}`" in cells[4]]
                 self.assertEqual(
-                    1, len(named),
+                    1,
+                    len(named),
                     "a conjunction row names exactly one of the six blind functions "
                     f"of `src/ir.rs`; this one names {named}",
                 )
                 self.assertRegex(
-                    cells[4], r"case \d+",
+                    cells[4],
+                    r"case \d+",
                     "a conjunction row names the case of that function it distinguishes",
                 )
 
@@ -8828,9 +8994,17 @@ class RankedBacklogTests(unittest.TestCase):
         """
         reported: dict[str, dict[str, int]] = {s: {} for s in census.CONJUNCTIONS}
         completed = subprocess.run(
-            [sys.executable, str(SCRIPT), "--json", *itertools.chain.from_iterable(
-                ("--selector", selector) for selector in census.CONJUNCTIONS)],
-            cwd=REPO, capture_output=True, text=True, timeout=180, encoding="utf-8",
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--json",
+                *itertools.chain.from_iterable(("--selector", selector) for selector in census.CONJUNCTIONS),
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=180,
+            encoding="utf-8",
         )
         self.assertEqual(0, completed.returncode, completed.stderr)
         payload = json.loads(completed.stdout)
@@ -8857,25 +9031,20 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             with self.subTest(selector=selector):
                 named = re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \(\d+\)", cells[4])
-                backed = [
-                    name for name in named
-                    if (fixtures_root / alias.get(name, name) / "expected").is_dir()
-                ]
+                backed = [name for name in named if (fixtures_root / alias.get(name, name) / "expected").is_dir()]
                 self.assertTrue(
                     backed,
-                    f"{selector}: the row is `golden` but names no source carrying "
-                    f"a committed golden (named {named})",
+                    f"{selector}: the row is `golden` but names no source carrying a committed golden (named {named})",
                 )
 
     def test_the_probe_backlog_is_every_probe_gap_and_nothing_else(self) -> None:
         """The other backlog: probe work, listed apart from the fixture work."""
-        listed = set(
-            re.findall(r"^\| \[`([^`]+)`\]", self.section("## The probe backlog"), re.M)
-        )
+        listed = set(re.findall(r"^\| \[`([^`]+)`\]", self.section("## The probe backlog"), re.M))
         self.assertEqual(self.gaps("PROBE"), listed)
         self.assertEqual(set(), listed & {key for _n, key, _m, _l in self.ranked_rows()})
         stated = re.search(r"The other (\d+) `gap` rows", self.doc)
         self.assertIsNotNone(stated, "the probe backlog no longer states its own size")
+        assert stated is not None
         self.assertEqual(len(listed), int(stated.group(1)))
 
     def test_the_documented_witness_supply_derivation_is_the_region_files_own(self) -> None:
@@ -8906,13 +9075,10 @@ class RankedBacklogTests(unittest.TestCase):
             re.M,
         )
         self.assertIsNotNone(command, "the probe backlog no longer documents its derivation")
+        assert command is not None
 
-        marker = re.search(r"grep -h '([^']+)'", command.group(0)).group(1)
-        derived = {
-            key
-            for key, (_region, cells) in self.entries.items()
-            if re.search(marker, cells[7])
-        }
+        marker = matched(re.search(r"grep -h '([^']+)'", command.group(0))).group(1)
+        derived = {key for key, (_region, cells) in self.entries.items() if re.search(marker, cells[7])}
 
         if not grep_speaks_pcre():
             self.skipTest("this grep has no PCRE support, so the command cannot run here")
@@ -8938,11 +9104,7 @@ class RankedBacklogTests(unittest.TestCase):
         other one* — `witness-supply` grounds "rather than structural ones" — in
         prose without declaring both.
         """
-        declared = [
-            kind
-            for kind in self.PROBE_KINDS
-            if re.search(rf"\*\*{re.escape(kind)}\*\*", cells[7])
-        ]
+        declared = [kind for kind in self.PROBE_KINDS if re.search(rf"\*\*{re.escape(kind)}\*\*", cells[7])]
         self.assertEqual(
             1,
             len(declared),
@@ -8972,10 +9134,7 @@ class RankedBacklogTests(unittest.TestCase):
 
     def witness_search_rows(self, region: str) -> dict[str, str]:
         """key -> the `sources searched and the exact query` cell, per region file."""
-        return {
-            key: row[6]
-            for key, row in witness_search_table(self.region_text(region)).items()
-        }
+        return {key: row[6] for key, row in witness_search_table(self.region_text(region)).items()}
 
     def declared_witness_sources(self, region: str) -> dict[str, str]:
         return declared_witness_sources(self.region_text(region))
@@ -9071,9 +9230,9 @@ class RankedBacklogTests(unittest.TestCase):
         for outcome in ("witness-found", *BLOCKED_OUTCOMES, "none-found", SEARCH_INCOMPLETE):
             self.assertIn(f"**`{outcome}`**", flat, f"the rule does not define `{outcome}`")
         for demanded in (
-            AMENDED_ROUTE,               # how a row says it took the route
-            "`blocker:`",                # and where it names its blocker
-            "still beats",               # the precedence that does not move
+            AMENDED_ROUTE,  # how a row says it took the route
+            "`blocker:`",  # and where it names its blocker
+            "still beats",  # the precedence that does not move
             "no byte-comparison evidence",
         ):
             self.assertIn(demanded, flat, f"the rule no longer states {demanded!r}")
@@ -9086,13 +9245,9 @@ class RankedBacklogTests(unittest.TestCase):
         gives it meaning is, and a region file naming it links there rather than
         re-glossing it.
         """
-        self.assertIn(
-            SEARCH_INCOMPLETE, self.section("#### The settlement rule, as amended", "\n#### ")
-        )
+        self.assertIn(SEARCH_INCOMPLETE, self.section("#### The settlement rule, as amended", "\n#### "))
         naming = [
-            path
-            for path in sorted(self.REGIONS.glob("*.md"))
-            if SEARCH_INCOMPLETE in path.read_text(encoding="utf-8")
+            path for path in sorted(self.REGIONS.glob("*.md")) if SEARCH_INCOMPLETE in path.read_text(encoding="utf-8")
         ]
         self.assertTrue(naming, "no region file names the outcome its own tables may read")
         for path in naming:
@@ -9112,9 +9267,7 @@ class RankedBacklogTests(unittest.TestCase):
                 continue
             for key, row in sorted(witness_search_table(text).items()):
                 with self.subTest(region=path.stem, key=key):
-                    self.assertEqual(
-                        [], unread_source_failures(key, path.stem, row, declared)
-                    )
+                    self.assertEqual([], unread_source_failures(key, path.stem, row, declared))
 
     def test_no_recorded_search_reads_a_rate_limit_cap_as_unanswered(self) -> None:
         """The exhaustive contract's vocabulary, held over every legacy issue-188 record too.
@@ -9154,9 +9307,7 @@ class RankedBacklogTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     [],
-                    blocked_witness_probe_failures(
-                        key, region, cells, self.region_text(region), ledger
-                    ),
+                    blocked_witness_probe_failures(key, region, cells, self.region_text(region), ledger),
                 )
 
     def test_every_open_search_probe_row_meets_the_amended_settlement_rule(self) -> None:
@@ -9181,9 +9332,7 @@ class RankedBacklogTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     [],
-                    open_search_probe_failures(
-                        key, region, cells, self.region_text(region), ledger
-                    ),
+                    open_search_probe_failures(key, region, cells, self.region_text(region), ledger),
                 )
 
     def test_the_rule_states_route_three_and_what_separates_it_from_the_others(self) -> None:
@@ -9197,7 +9346,7 @@ class RankedBacklogTests(unittest.TestCase):
         flat = " ".join(self.section("#### The settlement rule, as amended", "\n#### ").split())
         for demanded in (
             f"**`{OPEN_SEARCH_ROUTE}`**",  # how a row says it took the route
-            "`outstanding:`",              # and where it names its outstanding source
+            "`outstanding:`",  # and where it names its outstanding source
             "stays convertible",
             "`witness-found`, since route 1 is what settles that",
             "records no probe and no verdict",
@@ -9234,11 +9383,10 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(kind=kind):
                 body = self.section(heading, "\n### " if kind == "structural" else None)
                 listed = set(re.findall(r"^\| \[`([^`]+)`\]", body, re.M))
-                self.assertEqual(
-                    expected, listed, f"{heading} is not the rows whose cells say {kind}"
-                )
+                self.assertEqual(expected, listed, f"{heading} is not the rows whose cells say {kind}")
                 stated = re.match(r"\s*\*\*(\d+) rows?\.\*\*", body)
                 self.assertIsNotNone(stated, f"{heading} no longer states its own size")
+                assert stated is not None
                 self.assertEqual(len(expected), int(stated.group(1)))
 
     def test_the_stated_registered_and_golden_source_counts_are_measured(self) -> None:
@@ -9247,19 +9395,15 @@ class RankedBacklogTests(unittest.TestCase):
         sources = census.registered_sources(FIXTURES, REPO / "tests" / "fixtures" / "corpus-sources", False)
         aliases = census.corpus_aliases(FIXTURES)
         golden = sum(
-            1
-            for source in sources
-            if (FIXTURES / aliases.get(source.fixture, source.fixture) / "expected").is_dir()
+            1 for source in sources if (FIXTURES / aliases.get(source.fixture, source.fixture) / "expected").is_dir()
         )
         stated = re.search(
             r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\* carry a committed golden",
             self.doc,
         )
         self.assertIsNotNone(stated, "the section no longer states the source counts")
-        self.assertEqual(
-            (len(sources), golden), (int(stated.group(1)), int(stated.group(2)))
-        )
-
+        assert stated is not None
+        self.assertEqual((len(sources), golden), (int(stated.group(1)), int(stated.group(2))))
 
     # ------------------------------------------------------------------
     # The amended settlement rule's second amendment: what each former
@@ -9267,15 +9411,13 @@ class RankedBacklogTests(unittest.TestCase):
     # ------------------------------------------------------------------
 
     PROOF_OUTSTANDING = re.compile(r"\*\*proof outstanding:\*\* `([a-z-]+)`")
-    PROOF_COMMITTED = re.compile(
-        r"\*\*Committed Fern measurement:\*\* \[`([^`]+)`\]\(([^)]+)\)"
-    )
+    PROOF_COMMITTED = re.compile(r"\*\*Committed Fern measurement:\*\* \[`([^`]+)`\]\(([^)]+)\)")
     DEMOTED = re.compile(r"\*\*demoted to gap:\*\* `([a-z]+)`")
     # A demoted row a registered specification has since settled: `golden`, and
     # still counted in the population that read `limitations` before the
     # amendment, under the verdict that demoted it.
     SETTLED_AFTER_DEMOTION = re.compile(r"\*\*settled after demotion:\*\* `([a-z]+)`")
-    PROOF_FORMS = {
+    PROOF_FORMS: ClassVar = {
         "absent-tree": ("discards",),
         "refusal": ("refuses", "crashes"),
         "differential": ("ignores", "coincidence"),
@@ -9309,15 +9451,14 @@ class RankedBacklogTests(unittest.TestCase):
                     else key
                 )
                 ledger_rows = [
-                    row for row in ledger.splitlines()
-                    if row.startswith(f"| `{ledger_key}` |")
-                    and f"(openapi-surface/{local_artifact})" in row
+                    row
+                    for row in ledger.splitlines()
+                    if row.startswith(f"| `{ledger_key}` |") and f"(openapi-surface/{local_artifact})" in row
                 ]
                 self.assertTrue(ledger_rows, f"{key}: ledger citation drifted")
                 for ledger_row in ledger_rows:
                     self.assertIn(
-                        f"**Committed Fern measurement:** [`{key}`]"
-                        f"(openapi-surface/{local_artifact})",
+                        f"**Committed Fern measurement:** [`{key}`](openapi-surface/{local_artifact})",
                         ledger_row,
                     )
                     self.assertRegex(ledger_row, rf"\b{re.escape(verdict)}\b")
@@ -9382,9 +9523,7 @@ class RankedBacklogTests(unittest.TestCase):
                         if key in {"encoding-explode", "encoding-allow-reserved"}
                         else key
                     )
-                    ledger_rows = [
-                        line for line in ledger.splitlines() if line.startswith(f"| `{ledger_key}` |")
-                    ]
+                    ledger_rows = [line for line in ledger.splitlines() if line.startswith(f"| `{ledger_key}` |")]
                     self.assertTrue(ledger_rows, f"{key}: has no Fern limitation row")
                     self.assertIn(f"(openapi-surface/{artifact}{suffix})", ledger_rows[-1])
                     self.assertRegex(self.ledger_cell(ledger_key), rf"\b{row[2]}\b")
@@ -9401,9 +9540,7 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertIn(forms[0], self.PROOF_FORMS)
                 self.assertFalse(self.DEMOTED.search(cells[4]), f"{key}: is `limitations` and demoted")
                 verdicts = self.PROOF_FORMS[forms[0]]
-                ruled = cells[4].split("**proof outstanding:**", 1)[0].split(
-                    "**Committed Fern measurement:**", 1
-                )[0]
+                ruled = cells[4].split("**proof outstanding:**", 1)[0].split("**Committed Fern measurement:**", 1)[0]
                 self.assertTrue(
                     any(re.search(rf"\b{v}\b", ruled) for v in verdicts),
                     f"{key}: owes a `{forms[0]}` proof, which establishes {verdicts}, "
@@ -9412,35 +9549,28 @@ class RankedBacklogTests(unittest.TestCase):
 
     def test_every_demoted_row_is_a_gap_naming_its_verdict_and_its_need(self) -> None:
         """A row the amended rule demoted says why, and says what settles it now."""
-        demoted = {
-            key: cells
-            for key, (_region, cells) in self.entries.items()
-            if self.DEMOTED.search(cells[4])
-        }
+        demoted = {key: cells for key, (_region, cells) in self.entries.items() if self.DEMOTED.search(cells[4])}
         settled = {
-            key: cells
-            for key, (_region, cells) in self.entries.items()
-            if self.SETTLED_AFTER_DEMOTION.search(cells[4])
+            key: cells for key, (_region, cells) in self.entries.items() if self.SETTLED_AFTER_DEMOTION.search(cells[4])
         }
-        self.assertTrue(
-            demoted or settled, "no row records a demotion by the amended rule"
-        )
+        self.assertTrue(demoted or settled, "no row records a demotion by the amended rule")
         for key, cells in sorted(settled.items()):
             with self.subTest(key=key, settled=True):
                 self.assertEqual("golden", cells[3].strip("`"))
                 self.assertFalse(self.DEMOTED.search(cells[4]))
                 self.assertIn(
-                    self.SETTLED_AFTER_DEMOTION.search(cells[4]).group(1),
+                    matched(self.SETTLED_AFTER_DEMOTION.search(cells[4])).group(1),
                     ("implements", "unmeasured"),
                 )
                 self.assertRegex(
-                    cells[4], r"corpus rows? \d+",
+                    cells[4],
+                    r"corpus rows? \d+",
                     f"{key}: names no corpus row that settled it",
                 )
         for key, cells in sorted(demoted.items()):
             with self.subTest(key=key):
                 self.assertEqual("gap", cells[3].strip("`"))
-                verdict = self.DEMOTED.search(cells[4]).group(1)
+                verdict = matched(self.DEMOTED.search(cells[4])).group(1)
                 self.assertIn(verdict, ("implements", "unmeasured"))
                 self.assertFalse(self.PROOF_OUTSTANDING.search(cells[4]))
                 self.assertIn("now needs", cells[4], f"{key}: says not what it now needs")
@@ -9449,13 +9579,8 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertEqual("FIXTURE", self.settlement_of(cells))
 
     def classification_table(self) -> dict[str, int]:
-        body = self.section(
-            "#### The limitations rows under the amended rule", "\n#### "
-        )
-        return {
-            label.strip(): int(count)
-            for label, count in re.findall(r"^\| ([^|*]+) \| (\d+) \|", body, re.M)
-        }
+        body = self.section("#### The limitations rows under the amended rule", "\n#### ")
+        return {label.strip(): int(count) for label, count in re.findall(r"^\| ([^|*]+) \| (\d+) \|", body, re.M)}
 
     PROMOTED = "**Promoted by the final reconciliation** from `limitations`"
 
@@ -9469,7 +9594,11 @@ class RankedBacklogTests(unittest.TestCase):
         `golden` keeps the proof it was settled on, and is counted in the sixth.
         """
         counts = {
-            "artifact": 0, "differential": 0, "implements": 0, "unmeasured": 0, "settled": 0,
+            "artifact": 0,
+            "differential": 0,
+            "implements": 0,
+            "unmeasured": 0,
+            "settled": 0,
             "promoted": 0,
         }
         manifest = {
@@ -9489,7 +9618,11 @@ class RankedBacklogTests(unittest.TestCase):
                 self.assertTrue(committed, f"{cells[0]}: promoted without the proof it kept")
                 counts["promoted"] += 1
             elif category == "limitations" and (form or committed):
-                proof_form = form.group(1) if form else manifest[committed.group(1)]
+                if form:
+                    proof_form = form.group(1)
+                else:
+                    assert committed is not None
+                    proof_form = manifest[committed.group(1)]
                 counts["differential" if proof_form == "differential" else "artifact"] += 1
             elif demoted:
                 counts[demoted.group(1)] += 1
@@ -9512,6 +9645,7 @@ class RankedBacklogTests(unittest.TestCase):
         total = re.search(r"\| \*\*total\*\* \| \*\*(\d+)\*\*", body)
         population = re.search(r"The (\d+) rows that read `limitations` before", body)
         self.assertTrue(total and population, "the classification states no total")
+        assert total is not None and population is not None
         self.assertEqual(sum(counts.values()), int(total.group(1)))
         self.assertEqual(int(total.group(1)), int(population.group(1)))
 
@@ -9551,10 +9685,7 @@ class RankedBacklogTests(unittest.TestCase):
     def test_every_golden_row_carries_the_reach_cell_its_ledger_row_renders(self) -> None:
         """A `golden` row with no reach cell, or a stale one, is refused."""
         module = self.golden_reach()
-        rendered = {
-            reach.key: module.reach_cell(reach, rank)
-            for rank, reach in self.reach_ledger()
-        }
+        rendered = {reach.key: module.reach_cell(reach, rank) for rank, reach in self.reach_ledger()}
         for key, (region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") != "golden":
                 continue
@@ -9570,11 +9701,7 @@ class RankedBacklogTests(unittest.TestCase):
         """One ledger row per golden row, owned by the right region, in rubric order."""
         module = self.golden_reach()
         ledger = self.reach_ledger()
-        golden = {
-            key: region
-            for key, (region, cells) in self.entries.items()
-            if cells[3].strip("`") == "golden"
-        }
+        golden = {key: region for key, (region, cells) in self.entries.items() if cells[3].strip("`") == "golden"}
         self.assertEqual(golden, {reach.key: reach.region for _rank, reach in ledger})
         self.assertEqual(list(range(1, len(ledger) + 1)), [rank for rank, _reach in ledger])
         self.assertEqual(
@@ -9598,7 +9725,8 @@ class RankedBacklogTests(unittest.TestCase):
             for fixture in named:
                 with self.subTest(key=key, fixture=fixture):
                     self.assertIn(
-                        f"`{fixture}`", self.entries[key][1][4],
+                        f"`{fixture}`",
+                        self.entries[key][1][4],
                         "a witness the site table names directly is not one the row's evidence names",
                     )
 
@@ -9628,7 +9756,7 @@ class RankedBacklogTests(unittest.TestCase):
             assert [(p["repository"], p["path"], p["commit"], p["blob"]) for p in pins] == [
                 (r["walk"], r["document"], r["revision"], r["blob"]) for r in rows
             ], "pins.tsv is not the shared publisher-tree pin"
-            for pin, row in zip(pins, rows):
+            for pin, row in zip(pins, rows, strict=False):
                 assert not pin.get("sha256") or pin["sha256"] == row["sha256"], row["document"]
         else:
             with (shared / "acquisition-manifest.tsv").open(encoding="utf-8", newline="") as handle:
@@ -9650,9 +9778,7 @@ class RankedBacklogTests(unittest.TestCase):
         for key, (region, cells) in sorted(self.entries.items()):
             if cells[3].strip("`") not in ("gap", "golden") or key in frozen:
                 continue
-            record = compact_search_lines(
-                (self.REGIONS / f"{region}.md").read_text(encoding="utf-8")
-            ).get(key)
+            record = compact_search_lines((self.REGIONS / f"{region}.md").read_text(encoding="utf-8")).get(key)
             if record is None:
                 continue
             checked.append(key)
@@ -9691,8 +9817,9 @@ class RankedBacklogTests(unittest.TestCase):
             with self.subTest(key=key):
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
                 if is_config_gated(text):
-                    self.assertIsNone(re.search(r"\| search incomplete, ", line),
-                                      "a configuration-gated record owes no item")
+                    self.assertIsNone(
+                        re.search(r"\| search incomplete, ", line), "a configuration-gated record owes no item"
+                    )
                     continue
                 owed = {
                     source: int(cells.split("|")[-2])
@@ -9705,6 +9832,7 @@ class RankedBacklogTests(unittest.TestCase):
                     self.assertIsNone(stated, "a cell states outstanding items its record does not owe")
                     continue
                 self.assertIsNotNone(stated, "a record owing items reads incomplete in its cell, with its tally")
+                assert stated is not None
                 self.assertEqual(sum(owing.values()), int(stated.group(1).replace(",", "")))
                 self.assertEqual(
                     owing,
@@ -9730,11 +9858,14 @@ class RankedBacklogTests(unittest.TestCase):
         counted = 0
         gated = [path for path in records if is_config_gated(path.read_text(encoding="utf-8"))]
         records = [path for path in records if path not in gated]
-        self.assertEqual(set(), {row["key"] for row in rows} & {path.stem for path in gated},
-                         "a configuration-gated record ran no search, so it owes no item")
+        self.assertEqual(
+            set(),
+            {row["key"] for row in rows} & {path.stem for path in gated},
+            "a configuration-gated record ran no search, so it owes no item",
+        )
         for path in records:
             text = path.read_text(encoding="utf-8")
-            build = re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1)
+            build = matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1)
             self.assertEqual({build}, {r["build"] for r in rows if r["key"] == path.stem} or {build})
             for source, cells in re.findall(r"^\| `([\w.-]+)` \|((?: \d+ \|){10})$", text, re.M):
                 counted += 1
@@ -9743,8 +9874,11 @@ class RankedBacklogTests(unittest.TestCase):
         # Every record's six source counts are read, so a list and a set of
         # records that both owe nothing is a reading, not a vacuous pass.
         self.assertTrue(records, "no arm-search record; the check reads nothing")
-        self.assertEqual(len(DECLARED_SOURCES) * len(records), counted,
-                         "an arm-search record whose declarer table this check cannot read")
+        self.assertEqual(
+            len(DECLARED_SOURCES) * len(records),
+            counted,
+            "an arm-search record whose declarer table this check cannot read",
+        )
         self.assertEqual(owed, listed)
 
     def test_every_linked_arm_search_names_the_six_sources_and_reconciles(self) -> None:
@@ -9769,27 +9903,34 @@ class RankedBacklogTests(unittest.TestCase):
                 text = (self.ARM_SEARCHES / "searches" / f"{key}.md").read_text(encoding="utf-8")
                 if is_config_gated(text):
                     # No search ran: the record owes the gate, measured, in its place.
-                    self.assertEqual(
-                        [], config_gated_record_failures(key, text, self.ARM_SEARCHES, REPO, capabilities)
-                    )
+                    self.assertEqual([], config_gated_record_failures(key, text, self.ARM_SEARCHES, REPO, capabilities))
                     continue
                 lines = [
-                    [cell.replace("\\|", "|") for cell in line]
-                    for line in exhaustive_search_lines(text).get(key, [])
+                    [cell.replace("\\|", "|") for cell in line] for line in exhaustive_search_lines(text).get(key, [])
                 ]
                 self.assertEqual(
-                    sorted(DECLARED_SOURCES), sorted(line[1].strip("`") for line in lines),
+                    sorted(DECLARED_SOURCES),
+                    sorted(line[1].strip("`") for line in lines),
                     "an arm search names each declared source exactly once",
                 )
                 self.assertEqual(
                     [],
                     exhaustive_search_failures(
-                        key, lines, self.ARM_SEARCHES, capabilities,
+                        key,
+                        lines,
+                        self.ARM_SEARCHES,
+                        capabilities,
                         directory_for=lambda source: self.ARM_SEARCHES / source,
                         pinned_for=self.arm_search_pin,
-                        layout_files=("probe.jsonl", "pins.tsv", "census-refused.tsv", "census-fallback.tsv",
-                                      "fern-rescreen.jsonl", f"{golden_reach_search().SCREEN.LOG_DIR}/"),
-                        measured_build=re.search(r"(?m)^build `([0-9a-f]+)` only\.", text).group(1),
+                        layout_files=(
+                            "probe.jsonl",
+                            "pins.tsv",
+                            "census-refused.tsv",
+                            "census-fallback.tsv",
+                            "fern-rescreen.jsonl",
+                            f"{golden_reach_search().SCREEN.LOG_DIR}/",
+                        ),
+                        measured_build=matched(re.search(r"(?m)^build `([0-9a-f]+)` only\.", text)).group(1),
                     ),
                 )
         records = self.ARM_SEARCHES / "searches"
@@ -9804,8 +9945,9 @@ class RankedBacklogTests(unittest.TestCase):
         it leaves the outstanding list without settling any search on its own.
         """
         with (self.ARM_SEARCHES / "outstanding.tsv").open(encoding="utf-8", newline="") as handle:
-            outstanding = {(row["source"], row["item"])
-                           for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)}
+            outstanding = {
+                (row["source"], row["item"]) for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+            }
         counted = {}
         for source in DECLARED_SOURCES:
             path = self.ARM_SEARCHES / source / "census-refused.tsv"
@@ -9822,19 +9964,18 @@ class RankedBacklogTests(unittest.TestCase):
                 for row in rows:
                     self.assertIn(row["verdict"], ("syntax", "not-openapi"), row["document"])
                     self.assertRegex(row["parser"], r"^(python json|ruamel\.yaml) \d", row["document"])
-                self.assertEqual(set(), {(source, name) for name in names} & outstanding,
-                                 "a census-refused document is still an outstanding item")
+                self.assertEqual(
+                    set(),
+                    {(source, name) for name in names} & outstanding,
+                    "a census-refused document is still an outstanding item",
+                )
                 counted[source] = len(names)
         self.assertTrue(counted, "no source files a census refusal")
 
     def test_every_golden_row_resting_on_one_document_is_reported(self) -> None:
         """The thin end, as a list: every single-witness and no-witness golden row."""
         ledger = self.reach_ledger()
-        one = {
-            reach.key: (reach.region, reach.witnesses[0])
-            for _rank, reach in ledger
-            if len(reach.witnesses) == 1
-        }
+        one = {reach.key: (reach.region, reach.witnesses[0]) for _rank, reach in ledger if len(reach.witnesses) == 1}
         published = {
             cells[0].strip("`"): (cells[1].strip("`"), cells[2].strip("`"))
             for cells in self.reach_table(self.REACH_ONE_DOCUMENT, 3)
@@ -9846,8 +9987,7 @@ class RankedBacklogTests(unittest.TestCase):
             if not reach.witnesses
         }
         published_none = {
-            cells[0].strip("`"): (cells[1].strip("`"), cells[2])
-            for cells in self.reach_table(self.REACH_NO_WITNESS, 3)
+            cells[0].strip("`"): (cells[1].strip("`"), cells[2]) for cells in self.reach_table(self.REACH_NO_WITNESS, 3)
         }
         self.assertEqual(none, published_none, "the index's no-witness list is not the ledger's")
         flat = " ".join(self.doc.split())
@@ -9857,8 +9997,14 @@ class RankedBacklogTests(unittest.TestCase):
         """The committed ranking, off the ledger, and each row's owner stated."""
         ledger = self.reach_ledger()
         expected = [
-            [str(rank), f"`{reach.key}`", f"`{reach.region}`", f"**{reach.unreached_sites}**",
-             f"**{reach.unreached}**", f"**{len(reach.witnesses)}**"]
+            [
+                str(rank),
+                f"`{reach.key}`",
+                f"`{reach.region}`",
+                f"**{reach.unreached_sites}**",
+                f"**{reach.unreached}**",
+                f"**{len(reach.witnesses)}**",
+            ]
             for rank, reach in ledger
             if reach.unreached_sites
         ]
@@ -9899,10 +10045,11 @@ class RankedBacklogTests(unittest.TestCase):
             record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
             if record.is_file():
                 text = record.read_text(encoding="utf-8")
-                outcomes = {
-                    line[2].strip("`")
-                    for line in exhaustive_search_lines(text).get(reach.key, [])
-                } if not is_config_gated(text) else {config_gated_verdict(text, reach.key)}
+                outcomes = (
+                    {line[2].strip("`") for line in exhaustive_search_lines(text).get(reach.key, [])}
+                    if not is_config_gated(text)
+                    else {config_gated_verdict(text, reach.key)}
+                )
                 self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
                 verdict = outcomes.pop()
                 self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), reach.key)
@@ -9912,8 +10059,14 @@ class RankedBacklogTests(unittest.TestCase):
                 # search's verdict.
                 cell = f"{NOT_SEARCHED} — no arm search has run"
             expected.extend(
-                [str(rank), f"`{reach.key}`", f"`{spec}`", str(total), cell,
-                 ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—"]
+                [
+                    str(rank),
+                    f"`{reach.key}`",
+                    f"`{spec}`",
+                    str(total),
+                    cell,
+                    ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
+                ]
                 for spec, hit, total in reach.sites
                 if not hit
             )
@@ -9943,9 +10096,7 @@ class RankedBacklogTests(unittest.TestCase):
                 with self.subTest(region=path.stem, key=key):
                     self.assertEqual(
                         [],
-                        exhaustive_search_failures(
-                            key, lines, self.REGIONS, capabilities
-                        ),
+                        exhaustive_search_failures(key, lines, self.REGIONS, capabilities),
                     )
             for key, line in sorted(compact_search_lines(region).items()):
                 with self.subTest(region=path.stem, key=key):
@@ -9964,20 +10115,13 @@ class RankedBacklogTests(unittest.TestCase):
         Contract B's compact search record in its own region file. A row with
         neither fails here, naming the row and the half it lacks.
         """
-        manifest = manifest_rows(
-            (self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8")
-        )
-        region_texts = {
-            path.stem: path.read_text(encoding="utf-8")
-            for path in sorted(self.REGIONS.glob("*.md"))
-        }
+        manifest = manifest_rows((self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8"))
+        region_texts = {path.stem: path.read_text(encoding="utf-8") for path in sorted(self.REGIONS.glob("*.md"))}
         self.assertTrue(
             any(cells[3].strip("`") != "golden" for _region, cells in self.entries.values()),
             "no row is outside `golden`; the tier reads nothing",
         )
-        self.assertEqual(
-            [], completeness_failures(self.entries, region_texts, manifest, named_gap_features(REPO))
-        )
+        self.assertEqual([], completeness_failures(self.entries, region_texts, manifest, named_gap_features(REPO)))
 
     def test_contract_a_restatements_agree_with_the_gate(self) -> None:
         """Three facts about Contract A live beside `crates/crozier-e2e/tests/e2e.rs`'s manifest gate,
@@ -9995,6 +10139,7 @@ class RankedBacklogTests(unittest.TestCase):
         fields = re.search(r"const REFUSAL_FIELDS: \[&str; \d+\] = \[(.*?)\];", gate, re.S)
         stated = re.search(r"holding five fields in this order and\s+spelling: (.*?)\. ", self.doc, re.S)
         self.assertTrue(fields and stated, "a restatement of the refusal fields no longer parses")
+        assert stated is not None and fields is not None
         self.assertEqual(
             re.findall(r"`([a-z_]+)`", stated.group(1)),
             re.findall(r'"([a-z_]+)"', fields.group(1)),
@@ -10002,14 +10147,18 @@ class RankedBacklogTests(unittest.TestCase):
         )
         self.assertEqual(
             {"absent-tree"},
-            {form for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
-             if '"measured"' in verdicts},
+            {
+                form
+                for form, verdicts in re.findall(r'^ +"([a-z-]+)" => &\[([^\]]*)\],$', gate, re.M)
+                if '"measured"' in verdicts
+            },
             "`measured` is admitted on a form other than `absent-tree`",
         )
         admitted = re.search(r"\} else if !\[(.*?)\]\s*\.contains\(&verdict\)", gate, re.S)
         refused = re.search(r"is not one Contract A admits \\\s*\((.*?)\)", gate, re.S)
         vocabulary = re.search(r"`verdict` admits exactly six values: (.*?)\. ", " ".join(self.doc.split()))
         self.assertTrue(admitted and refused and vocabulary, "a restatement of the verdicts no longer parses")
+        assert admitted is not None and refused is not None and vocabulary is not None
         admitted_verdicts = re.findall(r'"([a-z]+)"', admitted.group(1))
         self.assertEqual(6, len(admitted_verdicts))
         self.assertEqual(
@@ -10018,12 +10167,19 @@ class RankedBacklogTests(unittest.TestCase):
             "NON_GENERATION_VERDICTS is not the gate's admitted set less `measured`, the one "
             "verdict that records Fern generating and is never a non-generation proof",
         )
-        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", refused.group(1)),
-                         "the gate's refusal message states other verdicts than it admits")
-        self.assertEqual(admitted_verdicts, re.findall(r"`([a-z]+)`", vocabulary.group(1)),
-                         "the index states other verdicts than the gate admits")
+        self.assertEqual(
+            admitted_verdicts,
+            re.findall(r"`([a-z]+)`", refused.group(1)),
+            "the gate's refusal message states other verdicts than it admits",
+        )
+        self.assertEqual(
+            admitted_verdicts,
+            re.findall(r"`([a-z]+)`", vocabulary.group(1)),
+            "the index states other verdicts than the gate admits",
+        )
         header = re.search(r'const PROBE_MANIFEST_HEADER: &str = "(.*?)";', gate)
         self.assertTrue(header, "the gate's manifest header no longer parses")
+        assert header is not None
         self.assertIn(
             "\n" + header.group(1).replace("\\t", "\t") + "\n",
             self.doc,
@@ -10043,8 +10199,10 @@ class RankedBacklogTests(unittest.TestCase):
         ]
         sixth = re.search(r"\*\*The outcome vocabulary gains a sixth word:\*\* \*\*`([a-z-]+)`\*\*", self.doc)
         self.assertTrue(stated and sixth, "the index's outcome vocabulary no longer parses")
-        self.assertEqual([*stated, sixth.group(1)], list(SEARCH_OUTCOMES),
-                         "SEARCH_OUTCOMES is not the index's outcome vocabulary")
+        assert sixth is not None
+        self.assertEqual(
+            [*stated, sixth.group(1)], list(SEARCH_OUTCOMES), "SEARCH_OUTCOMES is not the index's outcome vocabulary"
+        )
         self.assertTrue(set(BLOCKED_OUTCOMES) <= set(SEARCH_OUTCOMES))
         self.assertEqual(("swaggerhub", "postman"), EXCLUDED_SOURCE_NAMES)
         flat = " ".join(self.doc.split())
@@ -10064,17 +10222,22 @@ class RankedBacklogTests(unittest.TestCase):
         for line in ledger.splitlines():
             for found in annotation.finditer(line):
                 seen += 1
-                key = re.match(r"\| `([^`]+)` \|", line).group(1)
+                key = matched(re.match(r"\| `([^`]+)` \|", line)).group(1)
                 with self.subTest(key=key):
                     entry = self.entries.get(key)
                     self.assertIsNotNone(entry, f"{key}: the annotation names no region row")
+                    assert entry is not None
                     region, cells = entry
                     self.assertEqual(found.group(2), region, f"{key}: links the wrong region file")
                     self.assertEqual("golden", cells[3].strip("`"), f"{key}: its region row is not `golden`")
                     declarers = re.search(r"declaration sites? in (\d+) golden-bearing registered sources?", cells[4])
                     self.assertTrue(declarers, f"{key}: its region row states no declarer count")
-                    self.assertEqual(declarers.group(1), found.group(1),
-                                     f"{key}: the ledger's declarer count drifted from its region row")
+                    assert declarers is not None
+                    self.assertEqual(
+                        declarers.group(1),
+                        found.group(1),
+                        f"{key}: the ledger's declarer count drifted from its region row",
+                    )
         self.assertTrue(seen, "no golden annotation parsed; the check reads nothing")
 
     def test_the_evidence_kinds_are_the_indexs_own(self) -> None:
@@ -10103,10 +10266,7 @@ class RankedBacklogTests(unittest.TestCase):
         """Schema proof citations and verdicts track their manifest rows."""
         manifest = REPO / "docs/openapi-surface/probe-expected/MANIFEST.tsv"
         ledger = (REPO / "docs/fern-limitations.md").read_text(encoding="utf-8")
-        rows = [
-            line.split("\t")
-            for line in manifest.read_text(encoding="utf-8").splitlines()[1:]
-        ]
+        rows = [line.split("\t") for line in manifest.read_text(encoding="utf-8").splitlines()[1:]]
         for key, _form, verdict, artifact, _control, _digest in rows:
             entry = self.entries.get(key)
             if entry is None or entry[0] != "schemas":
@@ -10115,11 +10275,7 @@ class RankedBacklogTests(unittest.TestCase):
             if cells[3] != "limitations" and "UNREACHABLE" not in cells[7]:
                 continue
             with self.subTest(key=key):
-                matching = [
-                    line
-                    for line in ledger.splitlines()
-                    if line.startswith(f"| `{key}` |")
-                ]
+                matching = [line for line in ledger.splitlines() if line.startswith(f"| `{key}` |")]
                 self.assertTrue(
                     any(
                         artifact.removeprefix("docs/openapi-surface/") + "/" in line
@@ -10148,6 +10304,10 @@ class RegionFixture:
     what they exercise is the reconciliation over region-file content rather than
     a hand-built cell list.
     """
+
+    # Supplied by the `unittest.TestCase` each suite mixes this into.
+    addCleanup: Callable[..., None]
+    assertEqual: Callable[..., None]
 
     REGION = """\
 # OpenAPI surface coverage — a sample region
@@ -10250,12 +10410,8 @@ class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
     ) -> list[str]:
         entry = self.ENTRY.format(blocker=self.BLOCKER if blocker is None else blocker)
         if search is None:
-            search = self.SEARCH.format(
-                outcome=outcome, sources=self.BOTH_SOURCES if sources is None else sources
-            )
-        text, cells, read_ledger = self.written(
-            entry, search, self.LEDGER if ledger is None else ledger
-        )
+            search = self.SEARCH.format(outcome=outcome, sources=self.BOTH_SOURCES if sources is None else sources)
+        text, cells, read_ledger = self.written(entry, search, self.LEDGER if ledger is None else ledger)
         return blocked_witness_probe_failures("sample-shape", "sample", cells, text, read_ledger)
 
     def only_failure(self, failures: list[str]) -> str:
@@ -10370,23 +10526,19 @@ class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
         ),
         (
             "a Fern refusal quoting the pinned ref rather than a diagnostic",
-            "**blocker:** fern refusal — `fern check` exits **1** at commit "
-            "`8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b`",
+            "**blocker:** fern refusal — `fern check` exits **1** at commit `8d9ff98f7d3ddd3e74340bcfb322c12df2ed189b`",
         ),
         (
             "a Fern refusal quoting the spec URL rather than a diagnostic",
-            "**blocker:** fern refusal — `fern check` exits **1** on "
-            "`https://example.test/openapi.yaml`",
+            "**blocker:** fern refusal — `fern check` exits **1** on `https://example.test/openapi.yaml`",
         ),
         (
             "a Fern refusal whose longer invocation is its only prose span",
-            "**blocker:** fern refusal — exits **1** running "
-            "`fern generate --group python-sdk --log-level debug`",
+            "**blocker:** fern refusal — exits **1** running `fern generate --group python-sdk --log-level debug`",
         ),
         (
             "a mutable ref restating the label instead of naming the change",
-            "**blocker:** mutable ref — `https://example.test/openapi.yaml`; "
-            "this is a mutable reference",
+            "**blocker:** mutable ref — `https://example.test/openapi.yaml`; this is a mutable reference",
         ),
         (
             "a mutable ref whose words after the URL describe the document",
@@ -10446,8 +10598,7 @@ class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
     def test_a_none_found_row_whose_search_a_source_did_not_answer_is_refused(self) -> None:
         """An unread source is not evidence of absence, however the row spells it."""
         self.assertIn(
-            "records ['GitHub code search'] as `unanswered` while the row reads "
-            "`none-found`",
+            "records ['GitHub code search'] as `unanswered` while the row reads `none-found`",
             self.only_failure(self.unread("none-found", self.UNANSWERED_SOURCES)),
         )
 
@@ -10456,7 +10607,8 @@ class AmendedSettlementRuleTests(RegionFixture, unittest.TestCase):
         capped = self.UNANSWERED_SOURCES.replace(
             "→ **unanswered**: the endpoint returned HTTP 502 on every attempt.",
             "→ 3; `… filename:openapi.json` is an **outstanding acquisition**: refused with "
-            "`HTTP 403: API rate limit exceeded` while the bucket was capped.")
+            "`HTTP 403: API rate limit exceeded` while the bucket was capped.",
+        )
         self.assertIn(
             "records a rate-limit cap at ['GitHub code search'] while the row reads `none-found`",
             self.only_failure(self.unread("none-found", capped)),
@@ -10492,8 +10644,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         "on every attempt, so it answered nothing."
     )
     CONVERTIBLE = (
-        "The row stays convertible: a registrable witness promotes it to `golden` "
-        "under the classification precedence."
+        "The row stays convertible: a registrable witness promotes it to `golden` under the classification precedence."
     )
     SEARCH = (
         "| `sample-shape` | {outcome} | none reached — every source that answered "
@@ -10545,9 +10696,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
                 outcome=outcome,
                 sources=self.OUTSTANDING_SOURCES if sources is None else sources,
             )
-        text, cells, read_ledger = self.written(
-            entry, search, self.LEDGER if ledger is None else ledger
-        )
+        text, cells, read_ledger = self.written(entry, search, self.LEDGER if ledger is None else ledger)
         return open_search_probe_failures("sample-shape", "sample", cells, text, read_ledger)
 
     def only_failure(self, failures: list[str]) -> str:
@@ -10577,9 +10726,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         """The source that did not answer is what licenses the route, so it is named."""
         self.assertIn(
             "names no outstanding source after `outstanding:`",
-            self.only_failure(
-                self.reconcile(outstanding="The search left a source outstanding.")
-            ),
+            self.only_failure(self.reconcile(outstanding="The search left a source outstanding.")),
         )
 
     # Each of these carries the marker and everything but a source the record
@@ -10617,10 +10764,8 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         """And the complete ones are, so the refusal above is about content."""
         for good in (
             "**outstanding:** GitHub code search, which refused every query put to it.",
-            "**outstanding:** GitHub code search — the endpoint was unreachable on "
-            "every attempt.",
-            "**outstanding:** GitHub code search — its index returned an error "
-            "rather than a result.",
+            "**outstanding:** GitHub code search — the endpoint was unreachable on every attempt.",
+            "**outstanding:** GitHub code search — its index returned an error rather than a result.",
             "**outstanding:** GitHub code search — the 414,968 bodies behind it went "
             "unread, since it exposes no body search.",
         ):
@@ -10631,11 +10776,13 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         """A capped source is an outstanding acquisition, so it licenses no route 3."""
         for cap in (
             self.CAPPED_SOURCES,
-            self.CAPPED_SOURCES.replace("refused with `HTTP 403: API rate limit exceeded for user ID 19440155`",
-                                        "refused by the secondary limiter while `gh api rate_limit` still "
-                                        "reported budget,"),
-            self.CAPPED_SOURCES.replace("`HTTP 403: API rate limit exceeded for user ID 19440155`",
-                                        "`HTTP Error 429: Too Many Requests`"),
+            self.CAPPED_SOURCES.replace(
+                "refused with `HTTP 403: API rate limit exceeded for user ID 19440155`",
+                "refused by the secondary limiter while `gh api rate_limit` still reported budget,",
+            ),
+            self.CAPPED_SOURCES.replace(
+                "`HTTP 403: API rate limit exceeded for user ID 19440155`", "`HTTP Error 429: Too Many Requests`"
+            ),
         ):
             with self.subTest(cap=cap):
                 failure = self.only_failure(self.reconcile(sources=cap))
@@ -10644,8 +10791,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
 
     def test_a_capped_source_spelled_as_an_outstanding_acquisition_still_licenses_nothing(self) -> None:
         """Reworded honestly, the cap is no unanswered source either: route 3 needs a real one."""
-        outstanding = self.CAPPED_SOURCES.replace(
-            "→ **unanswered**: refused", "→ **outstanding acquisition**: refused")
+        outstanding = self.CAPPED_SOURCES.replace("→ **unanswered**: refused", "→ **outstanding acquisition**: refused")
         self.assertIn(
             "marks no required source `unanswered`",
             self.only_failure(self.reconcile(sources=outstanding)),
@@ -10662,9 +10808,7 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
         """A probe settles what Fern does; it must not read as closing the row."""
         self.assertIn(
             "does not say the row stays convertible to `golden`",
-            self.only_failure(
-                self.reconcile(convertible="The probe is the settlement available.")
-            ),
+            self.only_failure(self.reconcile(convertible="The probe is the settlement available.")),
         )
 
     def test_a_row_promised_convertible_with_no_destination_is_refused(self) -> None:
@@ -10680,7 +10824,6 @@ class OpenSearchProbeRuleTests(RegionFixture, unittest.TestCase):
             "records no probe and no verdict",
             self.only_failure(self.reconcile(ledger="| key | witnesses |\n|---|---|\n")),
         )
-
 
 
 class FinishedStateGateTests(unittest.TestCase):
@@ -10702,7 +10845,9 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
-        copies += [path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")]
+        copies += [
+            path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")
+        ]
         for relative in copies:
             (self.root / relative).parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(REPO / relative, self.root / relative)
@@ -10721,11 +10866,15 @@ class FinishedStateGateTests(unittest.TestCase):
             "| `sample-unproven` | both | Schema Object.sample | gap | none | "
             "`src/ir.rs::sample` | sample | **FIXTURE** — no witness found |\n"
         )
-        with (self.root / "docs" / "openapi-surface" / "schemas.md").open("a", encoding="utf-8", newline="\n") as handle:
+        with (self.root / "docs" / "openapi-surface" / "schemas.md").open(
+            "a", encoding="utf-8", newline="\n"
+        ) as handle:
             handle.write("\n" + row)
         self.assertEqual(
-            ["sample-unproven: a `FIXTURE` gap row with neither a registered real witness "
-             "nor a `handwritten` cover (schemas.md)"],
+            [
+                "sample-unproven: a `FIXTURE` gap row with neither a registered real witness "
+                "nor a `handwritten` cover (schemas.md)"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10733,12 +10882,15 @@ class FinishedStateGateTests(unittest.TestCase):
         arm = "src/ir.rs::auth_model[=_ => Auth::None,]"
         self.edit(
             "docs/openapi-surface/handwritten/http-dpop-unrequired/evidence.toml",
-            'key = "http-dpop"', 'key = "http-dpop-retired"',
+            'key = "http-dpop"',
+            'key = "http-dpop-retired"',
         )
         self.assertEqual(
-            [f"http-dpop: unreached arm `{arm}` has neither an arm-level hand-written cover "
-             f"nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
-             f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"],
+            [
+                f"http-dpop: unreached arm `{arm}` has neither an arm-level hand-written cover "
+                f"nor a record under {REFUSED_ARMS_HEADING!r} in docs/fern-limitations.md, "
+                f"nor a row under {NAMED_GAPS_HEADING!r} in docs/openapi-surface-coverage.md"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10749,25 +10901,31 @@ class FinishedStateGateTests(unittest.TestCase):
         """The arm has no cover, no refused record and no search: only its named row holds it."""
         self.assertIn((self.NAMED_KEY, self.NAMED_ARM), named_gap_arms(self.root))
         self.assertTrue(named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)].startswith(NOT_SEARCHED))
-        covered = {(key, arm) for _fixture, key, arm in handwritten_covers(
-            self.root / "docs" / "openapi-surface" / "handwritten")}
+        covered = {
+            (key, arm)
+            for _fixture, key, arm in handwritten_covers(self.root / "docs" / "openapi-surface" / "handwritten")
+        }
         self.assertNotIn((self.NAMED_KEY, self.NAMED_ARM), covered)
         # Anchored at a line start: the unreached-arm table carries the same
         # key and arm after its rank column.
         row = f"\n| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` |"
-        self.edit("docs/openapi-surface-coverage.md", row,
-                  row.replace(f"`{self.NAMED_KEY}`", f"`{self.NAMED_KEY}-retired`"))
+        self.edit(
+            "docs/openapi-surface-coverage.md", row, row.replace(f"`{self.NAMED_KEY}`", f"`{self.NAMED_KEY}-retired`")
+        )
         failures = finished_state_failures(self.root)
         self.assertIn(f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` has neither", failures[0])
         self.assertIn(f"{self.NAMED_KEY}-retired: docs/openapi-surface-coverage.md names", failures[1])
 
     def test_a_named_gap_with_no_search_must_say_it_was_not_searched(self) -> None:
         row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | {NOT_SEARCHED}"
-        self.edit("docs/openapi-surface-coverage.md", row,
-                  f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | searched, somewhere")
+        self.edit(
+            "docs/openapi-surface-coverage.md", row, f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | searched, somewhere"
+        )
         self.assertEqual(
-            [f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap with no arm "
-             f"search record, so its reason must be {NOT_SEARCHED}"],
+            [
+                f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap with no arm "
+                f"search record, so its reason must be {NOT_SEARCHED}"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10777,11 +10935,14 @@ class FinishedStateGateTests(unittest.TestCase):
         template = (searches / "format-duration.md").read_text(encoding="utf-8")
         (searches / f"{self.NAMED_KEY}.md").write_text(
             template.replace("format-duration", self.NAMED_KEY).replace("`search-incomplete`", "`exhausted`"),
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         self.assertEqual(
-            [f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
-             "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"],
+            [
+                f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap, but its "
+                "arm search reads ['exhausted']; only a `search-incomplete` arm, with its reason, is a named gap"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10790,24 +10951,35 @@ class FinishedStateGateTests(unittest.TestCase):
         named = named_gap_features(self.root)
         self.assertIn("operation-id-digit-leading-method", named)
         self.assertTrue(all(reason.startswith(NOT_SEARCHED) for reason in named.values()))
-        self.edit("docs/openapi-surface-coverage.md", "| `operation-id-digit-leading-method` |",
-                  "| `operation-id-digit-leading-method-retired` |")
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            "| `operation-id-digit-leading-method` |",
+            "| `operation-id-digit-leading-method-retired` |",
+        )
         failures = finished_state_failures(self.root)
         self.assertIn(
             "operation-id-digit-leading-method: a `FIXTURE` gap row with neither a registered real "
-            "witness nor a `handwritten` cover (document-paths.md)", failures)
+            "witness nor a `handwritten` cover (document-paths.md)",
+            failures,
+        )
         self.assertIn(
             "operation-id-digit-leading-method-retired: docs/openapi-surface-coverage.md names it an "
             "unproven feature, but it is not a `FIXTURE` gap row lacking a witness and a cover; "
-            "remove the row", failures)
+            "remove the row",
+            failures,
+        )
 
     def test_a_fixture_gap_named_without_the_not_searched_reason_is_refused(self) -> None:
-        self.edit("docs/openapi-surface-coverage.md",
-                  f"| `operation-id-digit-leading-method` | `document-paths` | {NOT_SEARCHED}",
-                  "| `operation-id-digit-leading-method` | `document-paths` | pending")
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            f"| `operation-id-digit-leading-method` | `document-paths` | {NOT_SEARCHED}",
+            "| `operation-id-digit-leading-method` | `document-paths` | pending",
+        )
         self.assertEqual(
-            ["operation-id-digit-leading-method: docs/openapi-surface-coverage.md names it an "
-             f"unproven feature without {NOT_SEARCHED} as its reason"],
+            [
+                "operation-id-digit-leading-method: docs/openapi-surface-coverage.md names it an "
+                f"unproven feature without {NOT_SEARCHED} as its reason"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10815,9 +10987,10 @@ class FinishedStateGateTests(unittest.TestCase):
         self.edit("docs/fern-limitations.md", "| `enum-leading-digit-identifier` |", "| retired |")
         failures = finished_state_failures(self.root)
         self.assertEqual(1, len(failures), failures)
-        self.assertTrue(failures[0].startswith(
-            "enum-leading-digit-identifier: unreached arm `src/naming.rs::finalize_enum_ident"
-        ), failures)
+        self.assertTrue(
+            failures[0].startswith("enum-leading-digit-identifier: unreached arm `src/naming.rs::finalize_enum_ident"),
+            failures,
+        )
 
     def test_a_refused_document_record_without_its_committed_probe_is_refused(self) -> None:
         (self.root / "docs" / "openapi-surface" / "probes" / "recursive-graph-refused-control.yml").unlink()
@@ -10834,8 +11007,10 @@ class FinishedStateGateTests(unittest.TestCase):
         lines[1] = "\t".join(fields)
         path.write_text("".join(lines), encoding="utf-8", newline="\n")
         self.assertEqual(
-            [f"{fields[0]}: docs/fern-refusals/classes.tsv leaves the class `unevaluated`; "
-             "decide it `generate` or `refuse`"],
+            [
+                f"{fields[0]}: docs/fern-refusals/classes.tsv leaves the class `unevaluated`; "
+                "decide it `generate` or `refuse`"
+            ],
             finished_state_failures(self.root),
         )
 
@@ -10867,8 +11042,7 @@ class CompletenessTierTests(unittest.TestCase):
         record = (
             ""
             if search is None
-            else f"\n{EXHAUSTIVE_SEARCH_HEADING}\n\n| key | outcome | search | note |\n"
-            f"|---|---|---|---|\n{search}\n"
+            else f"\n{EXHAUSTIVE_SEARCH_HEADING}\n\n| key | outcome | search | note |\n|---|---|---|---|\n{search}\n"
         )
         settlement = "`FIXTURE` — pending" if category == "gap" else "—"
         (root / "sample.md").write_text(
@@ -10877,7 +11051,8 @@ class CompletenessTierTests(unittest.TestCase):
             "|---|---|---|---|---|---|---|---|\n"
             f"| sample-shape | both | Schema Object.sample | {category} | {evidence} | none | — | {settlement} |\n"
             f"{record}",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         (root / "MANIFEST.tsv").write_text(
             "key\tform\tverdict\tartifact\tcontrol\tdigest\n" + manifest, encoding="utf-8", newline="\n"
@@ -10896,8 +11071,7 @@ class CompletenessTierTests(unittest.TestCase):
         return f"| `sample-shape` | `{outcome}` | {self.SEGMENTS.format(n=outstanding)} | {note} |"
 
     PROOF = (
-        "sample-shape\tabsent-tree\tdiscards\t"
-        "docs/openapi-surface/probe-expected/sample-shape\t—\t" + "0" * 64 + "\n"
+        "sample-shape\tabsent-tree\tdiscards\tdocs/openapi-surface/probe-expected/sample-shape\t—\t" + "0" * 64 + "\n"
     )
     CITED = "**Committed Fern measurement:** [`sample-shape`](probe-expected/sample-shape/)"
     OWING = "outstanding: " + ", ".join(f"`{source}`" for source in DECLARED_SOURCES) + " — parse failures"
@@ -10906,10 +11080,12 @@ class CompletenessTierTests(unittest.TestCase):
         """The report drives the existing fixture gate over real overlay files."""
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
+
             def overlay(source: Path, target: Path) -> None:
                 target.mkdir()
                 for child in source.iterdir():
                     (target / child.name).symlink_to(child, target_is_directory=child.is_dir())
+
             overlay(REPO, root / "repo")
             root = root / "repo"
             for relative in ("docs", "docs/openapi-surface", "docs/openapi-surface/handwritten"):
@@ -10920,22 +11096,38 @@ class CompletenessTierTests(unittest.TestCase):
             fixture.unlink()
             shutil.copytree(HANDWRITTEN / fixture.name, fixture)
             text = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
-            cells = next(row for row in RankedBacklogTests.region_rows(text)
-                         if row[0].strip("`") == "integer-format-fallback")
+            cells = next(
+                row for row in RankedBacklogTests.region_rows(text) if row[0].strip("`") == "integer-format-fallback"
+            )
+
             def check() -> list[str]:
-                return completeness_failures({"integer-format-fallback": ("schemas", cells)},
-                                             {"schemas": text}, {}, root=root)
+                return completeness_failures(
+                    {"integer-format-fallback": ("schemas", cells)}, {"schemas": text}, {}, root=root
+                )
+
             self.assertEqual([], check())
             evidence = fixture / "evidence.toml"
             original = evidence.read_text(encoding="utf-8")
             evidence.unlink()
             self.assertTrue(check(), "missing evidence accepted")
-            evidence.write_text(original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8", newline="\n")
+            evidence.write_text(
+                original.replace("integer-format-fallback", "uncovered-shape"), encoding="utf-8", newline="\n"
+            )
             self.assertTrue(check(), "a cover naming another key accepted")
-            evidence.write_text(original.replace("witness-search-integer-format/README.md", "missing-search.md"), encoding="utf-8", newline="\n")
+            evidence.write_text(
+                original.replace("witness-search-integer-format/README.md", "missing-search.md"),
+                encoding="utf-8",
+                newline="\n",
+            )
             self.assertTrue(check(), "missing search accepted")
-            (root / "docs/openapi-surface/invalid-search.md").write_text("No search table.\n", encoding="utf-8", newline="\n")
-            evidence.write_text(original.replace("witness-search-integer-format/README.md", "invalid-search.md"), encoding="utf-8", newline="\n")
+            (root / "docs/openapi-surface/invalid-search.md").write_text(
+                "No search table.\n", encoding="utf-8", newline="\n"
+            )
+            evidence.write_text(
+                original.replace("witness-search-integer-format/README.md", "invalid-search.md"),
+                encoding="utf-8",
+                newline="\n",
+            )
             self.assertTrue(check(), "unparsable search accepted")
             evidence.write_text(original, encoding="utf-8", newline="\n")
             self.assertEqual([], check())
@@ -11005,9 +11197,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         directory = tempfile.mkdtemp()
         self.addCleanup(shutil.rmtree, directory)
         self.root = Path(directory)
-        self.capabilities = source_capabilities(
-            RankedBacklogTests.DOC.read_text(encoding="utf-8")
-        )
+        self.capabilities = source_capabilities(RankedBacklogTests.DOC.read_text(encoding="utf-8"))
         self.sources = list(DECLARED_SOURCES)
         self.count_override = {}
         self.rejected_override = {}
@@ -11033,31 +11223,21 @@ class CompactWitnessRecordTests(unittest.TestCase):
                 "disposition": "rejected",
                 "evidence": "census.jsonl:1",
             }
-            with (directory / "records.tsv").open(
-                "w", encoding="utf-8", newline=""
-            ) as stream:
-                writer = csv.DictWriter(
-                    stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t"
-                )
+            with (directory / "records.tsv").open("w", encoding="utf-8", newline="") as stream:
+                writer = csv.DictWriter(stream, fieldnames=COMPACT_RECORD_FIELDS, delimiter="\t")
                 writer.writeheader()
                 writer.writerow(row)
             if source not in _index_module.SOURCES:
                 continue
             central.append(
                 {
-                    **{
-                        name: row[name]
-                        for name in COMPACT_RECORD_FIELDS
-                        if name != "evidence"
-                    },
+                    **{name: row[name] for name in COMPACT_RECORD_FIELDS if name != "evidence"},
                     "record": f"witness-search-{source}/records.tsv:2",
                 }
             )
         directory = self.root / "witness-search-github"
         directory.mkdir(exist_ok=True)
-        with (directory / "candidates.tsv").open(
-            "w", encoding="utf-8", newline=""
-        ) as stream:
+        with (directory / "candidates.tsv").open("w", encoding="utf-8", newline="") as stream:
             writer = csv.DictWriter(
                 stream,
                 fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"),
@@ -11085,13 +11265,12 @@ class CompactWitnessRecordTests(unittest.TestCase):
             f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
             "| key | outcome | search | note |\n|---|---|---|---|\n"
             f"| `{self.KEY}` | `search-incomplete` | {'; '.join(segments)} | pending |\n",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         read = compact_search_lines(region.read_text(encoding="utf-8"))
         self.assertEqual([self.KEY], list(read))
-        return compact_record_failures(
-            self.KEY, read[self.KEY], self.root, self.capabilities
-        )
+        return compact_record_failures(self.KEY, read[self.KEY], self.root, self.capabilities)
 
     def test_compact_record_reconciles(self) -> None:
         self.assertEqual([], self.failures())
@@ -11146,7 +11325,7 @@ class CompactWitnessRecordTests(unittest.TestCase):
         source = "sourcegraph"
         path = self.root / f"witness-search-{source}/records.tsv"
         with path.open(encoding="utf-8", newline="") as stream:
-            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+            row = next(iter(csv.DictReader(stream, delimiter="\t")))
         row["disposition"] = "witness-found"
         for field in ("licence_screen", "revision_screen", "fern_screen"):
             row[field] = "pass"
@@ -11182,20 +11361,23 @@ class CompactWitnessRecordTests(unittest.TestCase):
                 f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
                 "| key | outcome | search | note |\n|---|---|---|---|\n"
                 f"| `{self.KEY}` | `witness-found` | {'; '.join(segments)} | measured |\n",
-                encoding="utf-8", newline="\n",
+                encoding="utf-8",
+                newline="\n",
             )
             line = compact_search_lines(region.read_text(encoding="utf-8"))[self.KEY]
             return compact_record_failures(self.KEY, line, self.root, self.capabilities)
 
         self.assertIn("omits its witness candidate and revision", "\n".join(reconcile("")))
         self.assertEqual([], reconcile(f"witness `{row['candidate']}` at `{row['revision']}`"))
-        self.assertIn("omits its witness candidate and revision", "\n".join(reconcile(f"witness `{row['candidate']}` at `wrong`")))
+        self.assertIn(
+            "omits its witness candidate and revision", "\n".join(reconcile(f"witness `{row['candidate']}` at `wrong`"))
+        )
 
     def test_same_candidate_at_two_revisions_is_retained(self) -> None:
         source = "sourcegraph"
         path = self.root / f"witness-search-{source}/records.tsv"
         with path.open(encoding="utf-8", newline="") as stream:
-            row = list(csv.DictReader(stream, delimiter="\t"))[0]
+            row = next(iter(csv.DictReader(stream, delimiter="\t")))
         row["revision"] = "c" * 40
         row["digest"] = "d" * 64
         with path.open("a", encoding="utf-8", newline="") as stream:
@@ -11203,8 +11385,10 @@ class CompactWitnessRecordTests(unittest.TestCase):
         central = self.root / "witness-search-github/candidates.tsv"
         with central.open("a", encoding="utf-8", newline="") as stream:
             csv.DictWriter(stream, fieldnames=(*COMPACT_RECORD_FIELDS[:-1], "record"), delimiter="\t").writerow(
-                {**{field: row[field] for field in COMPACT_RECORD_FIELDS if field != "evidence"},
-                 "record": f"witness-search-{source}/records.tsv:3"}
+                {
+                    **{field: row[field] for field in COMPACT_RECORD_FIELDS if field != "evidence"},
+                    "record": f"witness-search-{source}/records.tsv:3",
+                }
             )
         self.count_override[source] = 2
         self.rejected_override[source] = 2
@@ -11236,7 +11420,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     KEY = "sample-shape"
     COMMIT = "0f1e2d3c4b5a69788796a5b4c3d2e1f00f1e2d3c"
     # source -> (queries, walk, candidates, screens, evidence rows beyond the table's)
-    LINES = {
+    LINES: ClassVar = {
         "apis.guru": (
             "—",
             f"`APIs-guru/openapi-directory` at `{COMMIT}` → 2 documents",
@@ -11255,7 +11439,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             [("document", "apis/openapi/c.example/openapi.json", "census 3", "census.tsv")],
         ),
         "github-code-search": (
-            "`\"x-sample\" filename:openapi.yaml` → 1; `\"x-sample\" filename:openapi.json` → 0",
+            '`"x-sample" filename:openapi.yaml` → 1; `"x-sample" filename:openapi.json` → 0',
             "—",
             "`d-org/d-repo/openapi.yaml`",
             "—",
@@ -11269,7 +11453,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             [("document", "spec/openapi.yaml", "census 0", "census.tsv")],
         ),
         "sourcegraph": (
-            "`file:openapi.yaml content:\"x-sample\"` → 0; `file:openapi.json content:\"x-sample\"` → 0",
+            '`file:openapi.yaml content:"x-sample"` → 0; `file:openapi.json content:"x-sample"` → 0',
             "—",
             "—",
             "—",
@@ -11283,7 +11467,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             [("document", "f.example/openapi.yaml", "census 0", "census.tsv")],
         ),
     }
-    CANDIDATE_CENSUS = {
+    CANDIDATE_CENSUS: ClassVar = {
         "apis/openapi/c.example/openapi.json": "census 3",
         "d-org/d-repo/openapi.yaml": "census 0",
     }
@@ -11307,8 +11491,12 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
                     rows.append(("screen", f"{candidate} {screen}", outcome, "screens.md"))
             documents = [record for record in extra if record[0] == "document"]
             extra = [record for record in extra if record[0] != "document"]
-            self.write_evidence(source, rows + extra + [record for record in documents
-                                                        if record[2].startswith("census ") and record[2] != "census 0"])
+            self.write_evidence(
+                source,
+                rows
+                + extra
+                + [record for record in documents if record[2].startswith("census ") and record[2] != "census 0"],
+            )
             if parsed:
                 listing = ["walk\tdocument\trevision\tsha256\tmatched_keys\tstatus"]
                 for _kind, document, result, _file in documents:
@@ -11324,8 +11512,10 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
                     "\n".join(manifest) + "\n", encoding="utf-8", newline="\n"
                 )
                 with self.evidence(source).open("a", encoding="utf-8", newline="\n") as index:
-                    index.write("\t".join((self.KEY, "walk", f"{parsed[0]}@{parsed[1]}",
-                                           parsed[2], "acquisition-manifest.tsv")) + "\n")
+                    index.write(
+                        "\t".join((self.KEY, "walk", f"{parsed[0]}@{parsed[1]}", parsed[2], "acquisition-manifest.tsv"))
+                        + "\n"
+                    )
 
     def write_evidence(self, source: str, rows: list[tuple[str, str, str, str]]) -> None:
         directory = self.root / f"witness-search-{source}"
@@ -11351,7 +11541,8 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             f"{EXHAUSTIVE_SEARCH_HEADING}\n\n"
             "| key | source | outcome | queries | walk | candidates | screens |\n"
             "|---|---|---|---|---|---|---|\n" + "\n".join(lines) + "\n",
-            encoding="utf-8", newline="\n",
+            encoding="utf-8",
+            newline="\n",
         )
         read = exhaustive_search_lines(region.read_text(encoding="utf-8"))
         self.assertEqual([self.KEY], list(read), "the sample table no longer parses")
@@ -11386,8 +11577,13 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             fixture = f"apis/openapi/f{number}.example/openapi.json"
             rows.append((self.KEY, "candidate", fixture, "census 2", "screens.jsonl"))
             rows.extend((self.KEY, "screen", f"{fixture} {screen}", "passed", "screens.jsonl") for screen in SCREENS)
-            screens.append({"key": self.KEY, "candidate": fixture,
-                            "declined": f"{search.FIXTURE_DECLINE} — `f/example` at `{self.COMMIT}`, `test/openapi.json`"})
+            screens.append(
+                {
+                    "key": self.KEY,
+                    "candidate": fixture,
+                    "declined": f"{search.FIXTURE_DECLINE} — `f/example` at `{self.COMMIT}`, `test/openapi.json`",
+                }
+            )
             self.table["jentic"][2] += f"; `{unreaching}`; `{fixture}`"
             self.table["jentic"][3] += f"; `{fixture}` licence `passed` ref `passed` fern `passed`"
         with self.evidence("jentic").open("a", encoding="utf-8", newline="\n") as index:
@@ -11408,7 +11604,9 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         reads: Counter[str] = Counter()
         read_text = Path.read_text
 
-        def counted(path: Path, *args: object, **kwargs: object) -> str:
+        # Any: forwarded untouched to `Path.read_text`, whose parameters differ by
+        # Python version (`newline` is 3.13+), so no one signature fits them all.
+        def counted(path: Path, *args: Any, **kwargs: Any) -> str:
             if path.is_relative_to(self.root) and path.parent != self.root:
                 reads[path.relative_to(self.root).as_posix()] += 1
             return read_text(path, *args, **kwargs)
@@ -11435,16 +11633,25 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
             Path.read_text = read_text
             self.assertEqual([], failures, f"{2 * stop} candidates")
             self.assertTrue(reads, "the gate read no evidence file; the count observes nothing")
-            line = next(cells for cells in exhaustive_search_lines(
-                (self.root / "sample.md").read_text(encoding="utf-8"))[self.KEY] if "jentic" in cells[1])
+            line = next(
+                cells
+                for cells in exhaustive_search_lines((self.root / "sample.md").read_text(encoding="utf-8"))[self.KEY]
+                if "jentic" in cells[1]
+            )
             records = Passes([r for r in evidence_records(directory) if r["key"] == self.KEY])
-            self.assertEqual([], exhaustive_line_failures(
-                self.KEY, "jentic", line, records, self.capabilities["jentic"], True, directory
-            ))
+            self.assertEqual(
+                [],
+                exhaustive_line_failures(
+                    self.KEY, "jentic", line, records, self.capabilities["jentic"], True, directory
+                ),
+            )
             measured.append((dict(reads), records.passes))
         self.assertEqual(measured[0], measured[-1], "the readings grow with the candidates")
-        self.assertEqual({}, {path: n for path, n in measured[-1][0].items() if n > 1},
-                         "an evidence file read more than once in one call")
+        self.assertEqual(
+            {},
+            {path: n for path, n in measured[-1][0].items() if n > 1},
+            "an evidence file read more than once in one call",
+        )
 
     def test_a_record_dropping_a_declared_source_is_refused(self) -> None:
         del self.table["sourcegraph"]
@@ -11452,13 +11659,13 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
 
     def test_a_record_reading_a_declared_source_unanswered_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (
-            "`file:openapi.yaml content:\"x-sample\"` → unanswered: HTTP 502 on every "
-            "attempt; `file:openapi.json content:\"x-sample\"` → 0"
+            '`file:openapi.yaml content:"x-sample"` → unanswered: HTTP 502 on every '
+            'attempt; `file:openapi.json content:"x-sample"` → 0'
         )
         self.refused("reads `sourcegraph` `unanswered` under an `exhausted` outcome")
 
     def test_one_query_phrasing_for_a_text_query_source_is_refused(self) -> None:
-        self.table["sourcegraph"][0] = "`file:openapi.yaml content:\"x-sample\"` → 0"
+        self.table["sourcegraph"][0] = '`file:openapi.yaml content:"x-sample"` → 0'
         self.refused("records 1 query phrasing(s) for `sourcegraph`")
 
     def test_two_phrasings_that_are_the_same_string_are_refused(self) -> None:
@@ -11485,9 +11692,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     def test_a_walked_document_with_no_census_output_or_reason_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         text = census.read_text(encoding="utf-8")
-        census.write_text(
-            text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8", newline="\n"
-        )
+        census.write_text(text.replace("unreadable: duplicate mapping key", "skipped"), encoding="utf-8", newline="\n")
         self.refused("neither a census-selector output nor a recorded reason")
 
     def test_a_walked_document_absent_from_compact_census_is_refused(self) -> None:
@@ -11505,8 +11710,11 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     def test_a_fabricated_path_swapped_for_a_real_one_is_refused(self) -> None:
         census = self.root / "witness-search-apis.guru" / "enumeration.tsv"
         text = census.read_text(encoding="utf-8")
-        census.write_text(text.replace("APIs/b.example/1.0/openapi.yaml",
-                                       "APIs/invented.example/1.0/openapi.yaml"), encoding="utf-8", newline="\n")
+        census.write_text(
+            text.replace("APIs/b.example/1.0/openapi.yaml", "APIs/invented.example/1.0/openapi.yaml"),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.refused("enumeration path set differs from pinned acquisition manifest")
 
     def test_a_census_digest_disagreeing_with_acquisition_is_refused(self) -> None:
@@ -11518,14 +11726,18 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     def test_a_matched_census_row_without_its_positive_record_is_refused(self) -> None:
         index = self.evidence("jentic")
         lines = index.read_text(encoding="utf-8").splitlines()
-        index.write_text("\n".join(line for line in lines if "\tdocument\t" not in line) + "\n",
-                         encoding="utf-8", newline="\n")
+        index.write_text(
+            "\n".join(line for line in lines if "\tdocument\t" not in line) + "\n", encoding="utf-8", newline="\n"
+        )
         self.refused("matched in enumeration.tsv but has no one positive records.tsv row")
 
     def test_a_positive_record_without_its_census_match_is_refused(self) -> None:
         census = self.root / "witness-search-jentic" / "enumeration.tsv"
-        census.write_text(census.read_text(encoding="utf-8").replace(f"\t{self.KEY}\treadable", "\t\treadable"),
-                          encoding="utf-8", newline="\n")
+        census.write_text(
+            census.read_text(encoding="utf-8").replace(f"\t{self.KEY}\treadable", "\t\treadable"),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.refused("records.tsv claims apis/openapi/c.example/openapi.json without an enumeration.tsv match")
 
     def test_a_candidate_with_no_census_confirmation_is_refused(self) -> None:
@@ -11538,8 +11750,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
     def test_candidate_failures_remain_outstanding_without_becoming_absence(self) -> None:
         path = self.evidence("github-code-search")
         original = path.read_text(encoding="utf-8")
-        for result in ("parse-failure: duplicate mapping key",
-                       "acquisition-failure: HTTP 503 after attempt budget"):
+        for result in ("parse-failure: duplicate mapping key", "acquisition-failure: HTTP 503 after attempt budget"):
             with self.subTest(result=result):
                 path.write_text(original.replace("census 0", result), encoding="utf-8", newline="\n")
                 self.outcome = "search-incomplete"
@@ -11548,9 +11759,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
                 self.refused("outstanding " + result)
 
     def test_a_declaring_candidate_screened_on_fewer_than_three_screens_is_refused(self) -> None:
-        self.table["jentic"][3] = (
-            "`apis/openapi/c.example/openapi.json` licence `failed: AGPL-3.0` ref `passed`"
-        )
+        self.table["jentic"][3] = "`apis/openapi/c.example/openapi.json` licence `failed: AGPL-3.0` ref `passed`"
         self.refused("screens candidate `apis/openapi/c.example/openapi.json` in `jentic` on ['licence', 'ref']")
 
     def test_a_candidate_passing_every_screen_is_a_witness_unless_declined_as_a_test_fixture(self) -> None:
@@ -11558,11 +11767,18 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         self.table["jentic"][3] = screens
         path = self.evidence("jentic")
         # Filed as the arm search files a screen: its records name screens.jsonl.
-        path.write_text(path.read_text(encoding="utf-8").replace("failed: AGPL-3.0", "passed")
-                        .replace("\tscreens.md", "\tscreens.jsonl"), encoding="utf-8", newline="\n")
+        path.write_text(
+            path.read_text(encoding="utf-8")
+            .replace("failed: AGPL-3.0", "passed")
+            .replace("\tscreens.md", "\tscreens.jsonl"),
+            encoding="utf-8",
+            newline="\n",
+        )
         (self.root / "witness-search-jentic" / "screens.md").unlink()
         self.refused("keeps `apis/openapi/c.example/openapi.json`, which passes all three screens")
-        spec = importlib.util.spec_from_file_location("search", REPO / "tools" / "surface-census" / "golden-reach-search.py")
+        spec = importlib.util.spec_from_file_location(
+            "search", REPO / "tools" / "surface-census" / "golden-reach-search.py"
+        )
         assert spec and spec.loader
         search = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(search)
@@ -11587,9 +11803,14 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
         path.write_text(original, encoding="utf-8", newline="\n")
         self.refused("which passes all three screens")
         note = golden_reach_search().NOT_REACHING.format(build="4828cc2b93f0")
-        path.write_text(original.replace("\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3",
-                                         f"\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3 — {note}"),
-                        encoding="utf-8", newline="\n")
+        path.write_text(
+            original.replace(
+                "\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3",
+                f"\tcandidate\tapis/openapi/c.example/openapi.json\tcensus 3 — {note}",
+            ),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.refused("which witness-search-jentic/probe.jsonl does not carry")
         probes = self.root / "witness-search-jentic" / "probe.jsonl"
         probe = {"key": self.KEY, "candidate": "apis/openapi/c.example/openapi.json", "build": "4828cc2b93f0"}
@@ -11602,7 +11823,7 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
 
     def test_a_table_cell_its_evidence_does_not_carry_is_refused(self) -> None:
         self.table["sourcegraph"][0] = (
-            "`file:openapi.yaml content:\"x-sample\"` → 4; `file:openapi.json content:\"x-sample\"` → 0"
+            '`file:openapi.yaml content:"x-sample"` → 4; `file:openapi.json content:"x-sample"` → 0'
         )
         self.refused("which witness-search-sourcegraph/records.tsv does not carry")
 
@@ -11646,14 +11867,13 @@ class ExhaustiveSearchRecordTests(unittest.TestCase):
 
     def test_a_rate_limit_cap_recorded_unanswered_is_refused_at_any_outcome(self) -> None:
         self.table["github-code-search"][0] = (
-            "`\"x-sample\" filename:openapi.yaml` → unanswered: HTTP 403 API rate limit "
-            "exceeded; `\"x-sample\" filename:openapi.json` → 0"
+            '`"x-sample" filename:openapi.yaml` → unanswered: HTTP 403 API rate limit '
+            'exceeded; `"x-sample" filename:openapi.json` → 0'
         )
         for outcome in (EXHAUSTED, SEARCH_INCOMPLETE):
             with self.subTest(outcome=outcome):
                 self.outcome = outcome
                 self.refused("reads `github-code-search` unanswered for a rate-limit cap")
-
 
 
 DOCUMENT = """openapi: 3.0.3
@@ -11697,9 +11917,7 @@ components:
 
 def component_document(name: str, schema_names: list[str]) -> str:
     """One source document whose `components.schemas` declares `schema_names`."""
-    schemas = "\n".join(
-        f"    {json.dumps(key)}: {{type: object}}" for key in schema_names
-    )
+    schemas = "\n".join(f"    {json.dumps(key)}: {{type: object}}" for key in schema_names)
     return COMPONENTS_DOCUMENT.format(name=name, schemas=schemas)
 
 
@@ -11741,13 +11959,19 @@ class PredicateSelectorTests(unittest.TestCase):
     def test_a_multi_tag_operation_is_counted_once_per_operation(self) -> None:
         """`operation.tags:multiple`: the array's members, which the field cannot show."""
         sources = {
-            "two-tagged": document("two-tagged", [
-                ("/widgets", ["tags: [alpha, beta]", "tags: [alpha, beta, gamma]"]),
-                ("/gadgets", ["tags: [alpha]"]),
-            ]),
-            "single-tagged": document("single-tagged", [
-                ("/widgets", ["tags: [alpha]", "tags: []"]),
-            ]),
+            "two-tagged": document(
+                "two-tagged",
+                [
+                    ("/widgets", ["tags: [alpha, beta]", "tags: [alpha, beta, gamma]"]),
+                    ("/gadgets", ["tags: [alpha]"]),
+                ],
+            ),
+            "single-tagged": document(
+                "single-tagged",
+                [
+                    ("/widgets", ["tags: [alpha]", "tags: []"]),
+                ],
+            ),
         }
         self.assertEqual({"two-tagged": 2}, self.counts(sources, "operation.tags:multiple"))
         # The field selector still counts every declaration, multiple or not: the
@@ -11760,16 +11984,25 @@ class PredicateSelectorTests(unittest.TestCase):
     def test_a_duplicated_operation_id_counts_every_operation_that_writes_it(self) -> None:
         """`operation.operationId:duplicate`: two values compared, not two declarations."""
         sources = {
-            "repeated-id": document("repeated-id", [
-                ("/widgets", ["operationId: listWidgets", "operationId: listWidgets"]),
-                ("/gadgets", ["operationId: listGadgets"]),
-            ]),
-            "thrice-repeated-id": document("thrice-repeated-id", [
-                ("/widgets", ["operationId: one", "operationId: one", "operationId: one"]),
-            ]),
-            "distinct-ids": document("distinct-ids", [
-                ("/widgets", ["operationId: listWidgets", "operationId: createWidget"]),
-            ]),
+            "repeated-id": document(
+                "repeated-id",
+                [
+                    ("/widgets", ["operationId: listWidgets", "operationId: listWidgets"]),
+                    ("/gadgets", ["operationId: listGadgets"]),
+                ],
+            ),
+            "thrice-repeated-id": document(
+                "thrice-repeated-id",
+                [
+                    ("/widgets", ["operationId: one", "operationId: one", "operationId: one"]),
+                ],
+            ),
+            "distinct-ids": document(
+                "distinct-ids",
+                [
+                    ("/widgets", ["operationId: listWidgets", "operationId: createWidget"]),
+                ],
+            ),
         }
         self.assertEqual(
             {"repeated-id": 2, "thrice-repeated-id": 3},
@@ -11805,20 +12038,29 @@ class PredicateSelectorTests(unittest.TestCase):
     def test_a_normalized_path_collision_counts_every_colliding_key(self) -> None:
         """`openapi.paths:normalized-collision`: the map keys the grammar excludes."""
         sources = {
-            "colliding-paths": document("colliding-paths", [
-                ("/users/{userId}", ["operationId: a"]),
-                ("/users/{user_id}", ["operationId: b"]),
-                ("/gadgets", ["operationId: c"]),
-            ]),
-            "three-colliding-paths": document("three-colliding-paths", [
-                ("/z/{itemId}", ["operationId: a"]),
-                ("/z/{item_id}", ["operationId: b"]),
-                ("/z/{itemID}", ["operationId: c"]),
-            ]),
-            "distinct-paths": document("distinct-paths", [
-                ("/users/{userId}", ["operationId: a"]),
-                ("/users/{ownerId}", ["operationId: b"]),
-            ]),
+            "colliding-paths": document(
+                "colliding-paths",
+                [
+                    ("/users/{userId}", ["operationId: a"]),
+                    ("/users/{user_id}", ["operationId: b"]),
+                    ("/gadgets", ["operationId: c"]),
+                ],
+            ),
+            "three-colliding-paths": document(
+                "three-colliding-paths",
+                [
+                    ("/z/{itemId}", ["operationId: a"]),
+                    ("/z/{item_id}", ["operationId: b"]),
+                    ("/z/{itemID}", ["operationId: c"]),
+                ],
+            ),
+            "distinct-paths": document(
+                "distinct-paths",
+                [
+                    ("/users/{userId}", ["operationId: a"]),
+                    ("/users/{ownerId}", ["operationId: b"]),
+                ],
+            ),
         }
         self.assertEqual(
             {"colliding-paths": 2, "three-colliding-paths": 3},
@@ -11841,12 +12083,9 @@ class PredicateSelectorTests(unittest.TestCase):
         ("variable-position", ["/{id}/users", "/users/{id}"], 0),
         ("segment-count", ["/users/{id}", "/users/{id}/roles"], 0),
         ("literal-not-a-variable", ["/users/{id}", "/users/id"], 0),
-        ("literals-and-two-variables",
-         ["/a/{fooBar}/b/{baz-qux}", "/a/{foo_bar}/b/{bazQux}"], 2),
-        ("literal-segment-differs",
-         ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/c/{bazQux}"], 0),
-        ("one-variable-differs",
-         ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/b/{quxBaz}"], 0),
+        ("literals-and-two-variables", ["/a/{fooBar}/b/{baz-qux}", "/a/{foo_bar}/b/{bazQux}"], 2),
+        ("literal-segment-differs", ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/c/{bazQux}"], 0),
+        ("one-variable-differs", ["/a/{fooBar}/b/{bazQux}", "/a/{fooBar}/b/{quxBaz}"], 0),
         ("reserved-name", ["/x/{list}", "/x/{list_}"], 2),
         ("reserved-name-control", ["/x/{list}", "/x/{lists}"], 0),
         ("digit-leading-name", ["/x/{2fa-enabled}", "/x/{2fa_enabled}"], 2),
@@ -11879,23 +12118,35 @@ class PredicateSelectorTests(unittest.TestCase):
         the second assertion on `one-template` and on `mixed`.
         """
         sources = {
-            "no-template": document("no-template", [
-                ("/widgets", ["operationId: a"]),
-                ("/gadgets", ["operationId: b"]),
-            ]),
-            "one-template": document("one-template", [
-                ("/widgets/{id}", ["operationId: a"]),
-                ("/gadgets", ["operationId: b"]),
-            ]),
-            "several-templates": document("several-templates", [
-                ("/users/{userId}/roles/{roleId}", ["operationId: a"]),
-            ]),
-            "mixed": document("mixed", [
-                ("/widgets", ["operationId: a"]),
-                ("/widgets/{id}", ["operationId: b"]),
-                ("/users/{userId}/roles/{roleId}", ["operationId: c"]),
-                ("/a/{x}/b/{y}/c/{z}", ["operationId: d"]),
-            ]),
+            "no-template": document(
+                "no-template",
+                [
+                    ("/widgets", ["operationId: a"]),
+                    ("/gadgets", ["operationId: b"]),
+                ],
+            ),
+            "one-template": document(
+                "one-template",
+                [
+                    ("/widgets/{id}", ["operationId: a"]),
+                    ("/gadgets", ["operationId: b"]),
+                ],
+            ),
+            "several-templates": document(
+                "several-templates",
+                [
+                    ("/users/{userId}/roles/{roleId}", ["operationId: a"]),
+                ],
+            ),
+            "mixed": document(
+                "mixed",
+                [
+                    ("/widgets", ["operationId: a"]),
+                    ("/widgets/{id}", ["operationId: b"]),
+                    ("/users/{userId}/roles/{roleId}", ["operationId: c"]),
+                    ("/a/{x}/b/{y}/c/{z}", ["operationId: d"]),
+                ],
+            ),
         }
         self.assertEqual(
             {"one-template": 1, "several-templates": 1, "mixed": 3},
@@ -11938,22 +12189,16 @@ class PredicateSelectorTests(unittest.TestCase):
         ):
             with self.subTest(selector=selector):
                 self.assertEqual({}, self.counts({"callbacks": source}, selector))
-        self.assertEqual(
-            {"callbacks": 1}, self.counts({"callbacks": source}, "operation.callbacks")
-        )
+        self.assertEqual({"callbacks": 1}, self.counts({"callbacks": source}, "operation.callbacks"))
 
     def test_a_component_name_collision_counts_every_colliding_key(self) -> None:
         """`components.schemas:normalized-collision`: the other excluded map key."""
         sources = {
-            "colliding-names": component_document(
-                "colliding-names", ["OBRate1_0", "OB_Rate1_0", "Widget"]
-            ),
+            "colliding-names": component_document("colliding-names", ["OBRate1_0", "OB_Rate1_0", "Widget"]),
             "three-colliding-names": component_document(
                 "three-colliding-names", ["ob_rate1_0", "OBRate1_0", "obRate1-0"]
             ),
-            "distinct-names": component_document(
-                "distinct-names", ["OBRate1_0", "OBRate2_0"]
-            ),
+            "distinct-names": component_document("distinct-names", ["OBRate1_0", "OBRate2_0"]),
         }
         self.assertEqual(
             {"colliding-names": 2, "three-colliding-names": 3},
@@ -11985,10 +12230,7 @@ class PredicateSelectorTests(unittest.TestCase):
 
     def test_the_class_name_normalization_is_croziers_own(self) -> None:
         """Every case crozier's `naming::class_name` distinguishes, in one run."""
-        sources = {
-            name: component_document(name, names)
-            for name, names, _expected in self.CLASS_NAME_CASES
-        }
+        sources = {name: component_document(name, names) for name, names, _expected in self.CLASS_NAME_CASES}
         self.assertEqual(
             {name: expected for name, _n, expected in self.CLASS_NAME_CASES if expected},
             self.counts(sources, "components.schemas:normalized-collision"),
@@ -11999,7 +12241,8 @@ class PredicateSelectorTests(unittest.TestCase):
         # No path key at all: three of the predicates read every Paths Object key
         # and one of the three counts any key there is, so a document with routes
         # cannot be the one that declares none.
-        plain = {"plain": """\
+        plain = {
+            "plain": """\
             openapi: 3.0.3
             info: {title: plain, version: "1"}
             paths: {}
@@ -12007,7 +12250,8 @@ class PredicateSelectorTests(unittest.TestCase):
               schemas:
                 Widget:
                   description: a widget
-            """}
+            """
+        }
         completed = self.census(plain, *sorted(census.PREDICATES))
         self.assertEqual({}, rows(completed))
         for selector in census.PREDICATES:
@@ -12049,33 +12293,47 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
     """
 
     REGIONS = REPO / "docs" / "openapi-surface"
-    CATEGORIES = {"golden", "limitations", "handwritten", "gap"}
+    CATEGORIES: ClassVar = {"golden", "limitations", "handwritten", "gap"}
     PAIR = re.compile(r"`([^`]+)` \((\d+)\)")
-    PREFIXES = {
-        "OpenAPI Object": "openapi", "Info Object": "info", "Contact Object": "info.contact",
-        "License Object": "info.license", "Server Object": "server",
-        "Server Variable Object": "server.variables", "Path Item Object": "pathItem",
-        "Operation Object": "operation", "Tag Object": "tag",
-        "External Documentation Object": "externalDocs", "Components Object": "components",
+    PREFIXES: ClassVar = {
+        "OpenAPI Object": "openapi",
+        "Info Object": "info",
+        "Contact Object": "info.contact",
+        "License Object": "info.license",
+        "Server Object": "server",
+        "Server Variable Object": "server.variables",
+        "Path Item Object": "pathItem",
+        "Operation Object": "operation",
+        "Tag Object": "tag",
+        "External Documentation Object": "externalDocs",
+        "Components Object": "components",
         "Reference Object": "reference",
     }
     # Rows whose cells are not one field selector's per-source list; each is
     # reconciled by its own case below.
-    SPECIAL = {
-        "missing-operation-id", "non-identifier-operation-id", "untagged-operation",
-        "multi-tagged-operation", "duplicate-operation-id", "duplicate-normalized-paths",
-        "templated-path-segment", "several-path-template-variables",
-        "path-leading-literal-segment", "path-template-before-literal-segment",
-        "path-all-segments-templated", "nonascii-info-title", "server-description-multiword",
-        "pathitem-ref", "relative-file-ref",
+    SPECIAL: ClassVar = {
+        "missing-operation-id",
+        "non-identifier-operation-id",
+        "untagged-operation",
+        "multi-tagged-operation",
+        "duplicate-operation-id",
+        "duplicate-normalized-paths",
+        "templated-path-segment",
+        "several-path-template-variables",
+        "path-leading-literal-segment",
+        "path-template-before-literal-segment",
+        "path-all-segments-templated",
+        "nonascii-info-title",
+        "server-description-multiword",
+        "pathitem-ref",
+        "relative-file-ref",
     }
 
     @classmethod
     def entries(cls, text: str) -> dict[str, list[str]]:
         rows = {}
         for line in text.splitlines():
-            cells = [cell.strip().replace("\x00", "\\|")
-                     for cell in line.replace("\\|", "\x00").split("|")[1:-1]]
+            cells = [cell.strip().replace("\x00", "\\|") for cell in line.replace("\\|", "\x00").split("|")[1:-1]]
             if len(cells) == 8 and cells[3] in cls.CATEGORIES:
                 rows[cells[0]] = cells
         return rows
@@ -12086,7 +12344,11 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         cls.rows = cls.entries(cls.text)
         completed = subprocess.run(
             [sys.executable, str(SCRIPT), "--json"],
-            cwd=REPO, capture_output=True, text=True, timeout=REGISTRY_WALK_TIMEOUT, encoding="utf-8",
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            timeout=REGISTRY_WALK_TIMEOUT,
+            encoding="utf-8",
         )
         assert completed.returncode == 0, completed.stderr
         cls.payload = json.loads(completed.stdout)
@@ -12103,6 +12365,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             self.text,
         )
         self.assertIsNotNone(stated, "document-paths.md no longer states its snapshot digest")
+        assert stated is not None
         original = sum(1 for source in self.payload["sources"] if source["origin"] == "vendored")
         self.assertEqual(
             (len(self.payload["sources"]), original, len(self.payload["sources"]) - original),
@@ -12111,7 +12374,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             "cells from `just surface-census --json` and re-pin its snapshot digest with them",
         )
         self.assertEqual(
-            stated.group(1), self.digest,
+            stated.group(1),
+            self.digest,
             "the census changed without document-paths.md's snapshot: run `just surface-census "
             "--json`, re-transcribe every census cell this test reconciles from that one walk, "
             "and replace the digest with the SHA-256 of its canonical JSON",
@@ -12128,6 +12392,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         index = (REPO / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
         join = re.search(r"grep -oP '([^']+)' docs/fern-limitations\.md", index)
         self.assertIsNotNone(join, "the index no longer documents the canonical ledger join")
+        assert join is not None
         ledger = (REPO / "docs" / "fern-limitations.md").read_text(encoding="utf-8")
         # The documented join is a `grep -P` pattern; `\K` drops what precedes it
         # from the match, which a group around what follows it reproduces.
@@ -12140,11 +12405,15 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             with self.subTest(key=key):
                 self.assertIn(key, canonical, f"missing limitations key: {key}")
                 row = next(
-                    (line for line in ledger.splitlines()
-                     if line.startswith(f"| `{key}` |") and len(line.split("|")[1:-1]) == 5),
+                    (
+                        line
+                        for line in ledger.splitlines()
+                        if line.startswith(f"| `{key}` |") and len(line.split("|")[1:-1]) == 5
+                    ),
                     None,
                 )
                 self.assertIsNotNone(row, f"no five-column docs/fern-limitations.md row for {key}")
+                assert row is not None
                 cells = [cell.strip().replace("**", "") for cell in row.split("|")[1:-1]]
                 self.assertEqual(verdict, cells[3], f"verdict drift for {key}")
 
@@ -12169,48 +12438,62 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             obj, field = re.sub(r" \([^)]*\)$", "", cells[2]).split(".", 1)
             selector = f"{self.PREFIXES[obj]}.{field}"
             with self.subTest(key=key):
-                self.assertEqual(measured.get(selector, {}),
-                                 {n: int(c) for n, c in pair.findall(cells[4])})
+                self.assertEqual(measured.get(selector, {}), {n: int(c) for n, c in pair.findall(cells[4])})
             count += 1
         methods = [f"pathItem.{m}" for m in ("get", "put", "post", "delete", "options", "head", "patch", "trace")]
         fixtures = {row["fixture"] for row in self.payload["rows"]}
-        for key, field in (("missing-operation-id", "operation.operationId"),
-                           ("untagged-operation", "operation.tags")):
+        for key, field in (("missing-operation-id", "operation.operationId"), ("untagged-operation", "operation.tags")):
             expected = {}
             for fixture in fixtures:
-                absent = sum(measured.get(m, {}).get(fixture, 0) for m in methods) - measured.get(field, {}).get(fixture, 0)
+                absent = sum(measured.get(m, {}).get(fixture, 0) for m in methods) - measured.get(field, {}).get(
+                    fixture, 0
+                )
                 if absent:
                     expected[fixture] = absent
             with self.subTest(key=key):
                 self.assertEqual(expected, {n: int(c) for n, c in pair.findall(rows[key][4])})
             count += 1
-        self.assertEqual({"operation-id-non-identifier": 2},
-                         {n: int(c) for n, c in pair.findall(rows["non-identifier-operation-id"][4])})
+        self.assertEqual(
+            {"operation-id-non-identifier": 2},
+            {n: int(c) for n, c in pair.findall(rows["non-identifier-operation-id"][4])},
+        )
         self.assertEqual(2, measured["operation.operationId"]["operation-id-non-identifier"])
         count += 1
-        for key, selector in (("pathitem-ref", "pathItem.$ref"),
-                              ("relative-file-ref", "pathItem.$ref:relative-file"),
-                              ("nonascii-info-title", "info.title:non-ascii")):
+        for key, selector in (
+            ("pathitem-ref", "pathItem.$ref"),
+            ("relative-file-ref", "pathItem.$ref:relative-file"),
+            ("nonascii-info-title", "info.title:non-ascii"),
+        ):
             with self.subTest(key=key):
                 transcribed = {n: int(c) for n, c in pair.findall(rows[key][4])}
                 self.assertEqual(measured.get(selector, {}), transcribed)
             count += 1
         multi = measured["operation.tags:multiple"]
-        stated = re.search(r"`operation\.tags:multiple`: (\d+) declaration sites across (\d+) registered "
-                           r"golden sources — (.+?)\. No ledger", rows["multi-tagged-operation"][4])
+        stated = re.search(
+            r"`operation\.tags:multiple`: (\d+) declaration sites across (\d+) registered "
+            r"golden sources — (.+?)\. No ledger",
+            rows["multi-tagged-operation"][4],
+        )
         self.assertIsNotNone(stated, "multi-tagged-operation no longer states its measurement")
-        self.assertEqual((sum(multi.values()), len(multi), multi),
-                         (int(stated.group(1)), int(stated.group(2)),
-                          {n: int(c) for n, c in pair.findall(stated.group(3))}))
+        assert stated is not None
+        self.assertEqual(
+            (sum(multi.values()), len(multi), multi),
+            (int(stated.group(1)), int(stated.group(2)), {n: int(c) for n, c in pair.findall(stated.group(3))}),
+        )
         count += 1
-        for key, selector in (("duplicate-operation-id", "operation.operationId:duplicate"),
-                              ("duplicate-normalized-paths", "openapi.paths:normalized-collision")):
+        for key, selector in (
+            ("duplicate-operation-id", "operation.operationId:duplicate"),
+            ("duplicate-normalized-paths", "openapi.paths:normalized-collision"),
+        ):
             with self.subTest(key=key):
                 self.assertIn(f"`{selector}`", rows[key][4])
-                self.assertEqual(measured.get(selector, {}), {
-                    n: int(c) for n, c in re.findall(
-                        r"`([a-z0-9.-]+)` \(corpus row \d+, \*\*(\d+)\*\* sites", rows[key][4])
-                })
+                self.assertEqual(
+                    measured.get(selector, {}),
+                    {
+                        n: int(c)
+                        for n, c in re.findall(r"`([a-z0-9.-]+)` \(corpus row \d+, \*\*(\d+)\*\* sites", rows[key][4])
+                    },
+                )
             count += 1
         for key, selector, size in (
             ("templated-path-segment", "openapi.paths:templated-key", 8),
@@ -12220,13 +12503,15 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             ("path-all-segments-templated", "openapi.paths:all-segments-templated", 5),
         ):
             reported = measured[selector]
-            stated = re.search(rf"census `{re.escape(selector)}`: (\d+) declaration sites across (\d+) "
-                               r"registered golden sources.*?(?:eight|five)? ?largest (?:are|being) (.+?)\. ",
-                               rows[key][4])
+            stated = re.search(
+                rf"census `{re.escape(selector)}`: (\d+) declaration sites across (\d+) "
+                r"registered golden sources.*?(?:eight|five)? ?largest (?:are|being) (.+?)\. ",
+                rows[key][4],
+            )
             with self.subTest(key=key):
                 self.assertIsNotNone(stated, f"{key} no longer states its measurement")
-                self.assertEqual((sum(reported.values()), len(reported)),
-                                 (int(stated.group(1)), int(stated.group(2))))
+                assert stated is not None
+                self.assertEqual((sum(reported.values()), len(reported)), (int(stated.group(1)), int(stated.group(2))))
                 largest = dict(sorted(reported.items(), key=lambda item: (-item[1], item[0]))[:size])
                 self.assertEqual(largest, {n: int(c) for n, c in pair.findall(stated.group(3))})
             count += 1
@@ -12245,6 +12530,7 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             self.text,
         )
         self.assertIsNotNone(stated, "document-paths no longer states the counts this check reconciles")
+        assert stated is not None
         self.assertEqual((census_rows, ledger_keys, gaps), tuple(int(g) for g in stated.groups()))
 
     def test_extension_tail_joins_and_counts_match_the_registered_source_walk(self) -> None:
@@ -12254,8 +12540,10 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
         paths = set(self.measured["openapi.paths"])
         webhooks = set(self.measured["openapi.webhooks"])
         ignore_selectors = (
-            "operation.x-fern-ignore", "operation.x-crozier-ignore",
-            "schema.x-fern-ignore", "schema.x-crozier-ignore",
+            "operation.x-fern-ignore",
+            "operation.x-crozier-ignore",
+            "schema.x-fern-ignore",
+            "schema.x-crozier-ignore",
         )
         ignored = Counter()
         for selector in ignore_selectors:
@@ -12266,8 +12554,8 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
             "info-summary": self.measured["info.summary"],
             "license-identifier": self.measured["info.license.identifier"],
             "reference-description": self.measured["reference.description"],
-            "paths-absent": {name: 1 for name in sources - paths},
-            "webhooks-without-paths": {name: 1 for name in webhooks - paths},
+            "paths-absent": dict.fromkeys(sources - paths, 1),
+            "webhooks-without-paths": dict.fromkeys(webhooks - paths, 1),
             "x-fern-or-crozier-ignore": dict(ignored),
         }
         for key, witnesses in expected.items():
@@ -12275,18 +12563,25 @@ class DocumentPathsSnapshotTests(unittest.TestCase):
                 cell = rows[key][4]
                 stated = re.search(r": (\d+) declarations across (\d+) registered golden sources;", cell)
                 self.assertIsNotNone(stated, f"{key} must state its measured counts")
-                self.assertEqual((sum(witnesses.values()), len(witnesses)),
-                                 tuple(int(value) for value in stated.groups()))
+                assert stated is not None
+                self.assertEqual(
+                    (sum(witnesses.values()), len(witnesses)), tuple(int(value) for value in stated.groups())
+                )
                 self.assertEqual(witnesses, {name: int(count) for name, count in self.PAIR.findall(cell)})
-        self.assertIn(f"Of the {len(sources)} registered golden sources, {len(paths)} declare paths",
-                      rows["paths-absent"][4])
-        self.assertIn(f"The other {len(webhooks & paths)} webhook declarers also declare paths",
-                      rows["webhooks-without-paths"][4])
-        self.assertIn(f"All {sum(ignored.values())} declarations are on operations under the Fern spelling",
-                      rows["x-fern-or-crozier-ignore"][4])
+        self.assertIn(
+            f"Of the {len(sources)} registered golden sources, {len(paths)} declare paths", rows["paths-absent"][4]
+        )
+        self.assertIn(
+            f"The other {len(webhooks & paths)} webhook declarers also declare paths", rows["webhooks-without-paths"][4]
+        )
+        self.assertIn(
+            f"All {sum(ignored.values())} declarations are on operations under the Fern spelling",
+            rows["x-fern-or-crozier-ignore"][4],
+        )
         for selector in ignore_selectors[1:]:
-            self.assertEqual({}, self.measured.get(selector, {}),
-                             "the cell's zero-declaration claim must change with this selector")
+            self.assertEqual(
+                {}, self.measured.get(selector, {}), "the cell's zero-declaration claim must change with this selector"
+            )
 
 
 class NamingMirrorTests(unittest.TestCase):
@@ -12314,9 +12609,7 @@ class NamingMirrorTests(unittest.TestCase):
             (self.unescape(wire), self.unescape(expected))
             for wire, expected in pattern.findall(self.NAMING.read_text(encoding="utf-8"))
         ]
-        self.assertGreater(
-            len(found), minimum, f"src/naming.rs no longer pins {function} case by case"
-        )
+        self.assertGreater(len(found), minimum, f"src/naming.rs no longer pins {function} case by case")
         return found
 
     def test_the_port_reproduces_croziers_own_field_name_expectations(self) -> None:
@@ -12340,19 +12633,19 @@ class NamingMirrorTests(unittest.TestCase):
         lines = self.NAMING.read_text(encoding="utf-8").splitlines()
         for name, pinned in census.NAMING_PORT_DIGESTS.items():
             if name == "DEBURRED_LATIN":
-                body = self.NAMING.read_text(encoding="utf-8").split(
-                    "const DEBURRED_LATIN:", 1
-                )[1].split("];", 1)[0]
+                body = self.NAMING.read_text(encoding="utf-8").split("const DEBURRED_LATIN:", 1)[1].split("];", 1)[0]
                 actual = hashlib.sha256(body.encode("utf-8")).hexdigest()[:16]
                 entries = re.findall(r"\('(.+?)', \"(.+?)\"\)", body)
                 exceptions = {
-                    char: folded for char, folded in entries
+                    char: folded
+                    for char, folded in entries
                     if unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8") != folded
                 }
                 self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
             else:
                 kept = [
-                    " ".join(line.split()) for line in rust_function_body(lines, name)
+                    " ".join(line.split())
+                    for line in rust_function_body(lines, name)
                     if line.strip() and not line.strip().startswith("//")
                 ]
                 actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
@@ -12394,12 +12687,14 @@ class NamingMirrorTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
             kept = [
-                " ".join(line.split()) for line in rust_function_body(lines, name)
+                " ".join(line.split())
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
                 )
 
@@ -12413,12 +12708,14 @@ class NamingMirrorTests(unittest.TestCase):
         for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
             kept = [
-                " ".join(line.split()) for line in rust_function_body(lines, name)
+                " ".join(line.split())
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's port of {path}'s {name}",
                 )
 
@@ -12432,12 +12729,14 @@ class NamingMirrorTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.UNION_PORT_DIGESTS.items():
             kept = [
-                " ".join(line.split()) for line in rust_function_body(lines, name)
+                " ".join(line.split())
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's union port of src/ir.rs's {name}",
                 )
 
@@ -12452,16 +12751,19 @@ class NamingMirrorTests(unittest.TestCase):
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
             owner, _, method = name.rpartition("::")
             if owner:
-                start = next(index for index, line in enumerate(lines)
-                             if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line))
+                start = next(
+                    index
+                    for index, line in enumerate(lines)
+                    if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line)
+                )
                 body = rust_function_body(lines[start:], method)
             else:
                 body = rust_function_body(lines, name)
-            kept = [" ".join(line.split()) for line in body
-                    if line.strip() and not line.strip().startswith("//")]
+            kept = [" ".join(line.split()) for line in body if line.strip() and not line.strip().startswith("//")]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's scalar port of {path}'s {name}",
                 )
 
@@ -12475,12 +12777,14 @@ class NamingMirrorTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
             kept = [
-                " ".join(line.split()) for line in rust_function_body(lines, name)
+                " ".join(line.split())
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's schema or response port of src/ir.rs's {name}",
                 )
 
@@ -12494,12 +12798,14 @@ class NamingMirrorTests(unittest.TestCase):
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
             kept = [
-                " ".join(line.split()) for line in rust_function_body(lines, name)
+                " ".join(line.split())
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
                 self.assertEqual(
-                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's parameter port of src/ir.rs's {name}",
                 )
 
@@ -12558,14 +12864,17 @@ class NamingMirrorTests(unittest.TestCase):
 
 def _root_document(root: dict, **components: dict) -> dict:
     return {
-        "openapi": "3.1.0", "info": {"title": "control", "version": "1"}, "paths": {},
+        "openapi": "3.1.0",
+        "info": {"title": "control", "version": "1"},
+        "paths": {},
         "components": {"schemas": {"Root": root, **components}},
     }
 
 
 def _operation_document(operation: dict, *, url: str = "/things/{id}", components: dict | None = None) -> dict:
     document = {
-        "openapi": "3.0.3", "info": {"title": "control", "version": "1"},
+        "openapi": "3.0.3",
+        "info": {"title": "control", "version": "1"},
         "paths": {url: {"get": {"responses": {"200": {"description": "ok"}}, **operation}}},
     }
     if components:
@@ -12578,6 +12887,8 @@ def _enum(*values: str) -> dict:
 
 
 _PET = {"type": "object", "properties": {"name": {"type": "string"}}}
+
+
 def _json_body(media: dict) -> dict:
     return {"requestBody": {"content": {"application/json": media}}}
 
@@ -12593,7 +12904,7 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
     so a predicate that read the wrong property passes neither half.
     """
 
-    CASES: dict[str, tuple[dict, dict]] = {
+    CASES: ClassVar[dict[str, tuple[dict, dict]]] = {
         "schema.enum:deburred-member": (_enum("SUBSTÂNCIA"), _enum("SUBSTANCIA")),
         "schema.enum:letter-run-member": (_enum("u.s. virgin islands"), _enum("us virgin islands")),
         "schema.enum:alphanumeric-join-member": (_enum("a b12"), _enum("ab b12")),
@@ -12640,10 +12951,14 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             _root_document({"type": "array", "example": [[1]]}),
         ),
         "schema.example:temporal-duplicate-element": (
-            _root_document({"type": "array", "items": {"type": "string", "format": "date"},
-                            "example": ["2020-01-01", "2020-01-01"]}),
-            _root_document({"type": "array", "items": {"type": "string"},
-                            "example": ["2020-01-01", "2020-01-01"]}),
+            _root_document(
+                {
+                    "type": "array",
+                    "items": {"type": "string", "format": "date"},
+                    "example": ["2020-01-01", "2020-01-01"],
+                }
+            ),
+            _root_document({"type": "array", "items": {"type": "string"}, "example": ["2020-01-01", "2020-01-01"]}),
         ),
         "schema.example:union-ref-sentinel": (
             _root_document({"oneOf": [{"type": "string"}, {"type": "array"}], "example": {"$ref": "x"}}),
@@ -12675,51 +12990,80 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
         ),
         "schema.example:on-ref-to-object": (
             _root_document({"$ref": "#/components/schemas/T", "example": {"name": "x"}}, T=_PET),
-            _root_document({"$ref": "#/components/schemas/T", "example": {"name": "x"}},
-                           T={"oneOf": [_PET, {"type": "string"}]}),
+            _root_document(
+                {"$ref": "#/components/schemas/T", "example": {"name": "x"}}, T={"oneOf": [_PET, {"type": "string"}]}
+            ),
         ),
         "schema.example:on-ref-to-enum": (
             _root_document({"$ref": "#/components/schemas/T", "example": "a"}, T={"type": "string", "enum": ["a"]}),
             _root_document({"$ref": "#/components/schemas/T", "example": "a"}, T={"type": "string"}),
         ),
         "schema.example:on-ref-to-union": (
-            _root_document({"$ref": "#/components/schemas/T", "example": "a"},
-                           T={"anyOf": [{"type": "string"}, {"type": "integer"}]}),
-            _root_document({"$ref": "#/components/schemas/T", "example": "a"},
-                           T={"allOf": [{"type": "string"}]}),
+            _root_document(
+                {"$ref": "#/components/schemas/T", "example": "a"},
+                T={"anyOf": [{"type": "string"}, {"type": "integer"}]},
+            ),
+            _root_document({"$ref": "#/components/schemas/T", "example": "a"}, T={"allOf": [{"type": "string"}]}),
         ),
         "schema.example:on-ref-to-alias": (
-            _root_document({"$ref": "#/components/schemas/T", "example": ["a"]},
-                           T={"type": "array", "items": {"type": "string"}}),
-            _root_document({"$ref": "#/components/schemas/T"},
-                           T={"type": "array", "items": {"type": "string"}}),
+            _root_document(
+                {"$ref": "#/components/schemas/T", "example": ["a"]}, T={"type": "array", "items": {"type": "string"}}
+            ),
+            _root_document({"$ref": "#/components/schemas/T"}, T={"type": "array", "items": {"type": "string"}}),
         ),
         "schema.properties:optional-example": (
             _root_document({"properties": {"a": {"type": "string", "example": "x"}}, "required": []}),
             _root_document({"properties": {"a": {"type": "string", "example": "x"}}, "required": ["a"]}),
         ),
         "parameter.example:non-scalar-query": (
-            _operation_document({"parameters": [
-                {"name": "f", "in": "query", "schema": {"type": "object"}, "example": {"a": 1}}]}),
-            _operation_document({"parameters": [
-                {"name": "f", "in": "query", "schema": {"type": "array", "items": {"type": "string"}},
-                 "example": ["a"]}]}),
+            _operation_document(
+                {"parameters": [{"name": "f", "in": "query", "schema": {"type": "object"}, "example": {"a": 1}}]}
+            ),
+            _operation_document(
+                {
+                    "parameters": [
+                        {
+                            "name": "f",
+                            "in": "query",
+                            "schema": {"type": "array", "items": {"type": "string"}},
+                            "example": ["a"],
+                        }
+                    ]
+                }
+            ),
         ),
         "mediaType.examples:named-beside-example": (
             _operation_document(_json_body({"example": {"a": 1}, "examples": {"one": {"value": {"a": 2}}}})),
             _operation_document(_json_body({"example": {"a": 1}, "examples": {"one": {"summary": "no value"}}})),
         ),
         "mediaType.examples:named-only": (
-            _operation_document(_json_body({"examples": {"one": {"$ref": "#/components/examples/E"}}}),
-                                components={"examples": {"E": {"value": {"a": 1}}}}),
-            _operation_document({"requestBody": {"content": {"text/plain": {
-                "examples": {"one": {"value": "a"}}}}}}),
+            _operation_document(
+                _json_body({"examples": {"one": {"$ref": "#/components/examples/E"}}}),
+                components={"examples": {"E": {"value": {"a": 1}}}},
+            ),
+            _operation_document({"requestBody": {"content": {"text/plain": {"examples": {"one": {"value": "a"}}}}}}),
         ),
         "operation.responses:wildcard-binary": (
-            _operation_document({"responses": {"200": {"description": "ok", "content": {
-                "*/*": {"schema": {"type": "string", "format": "binary"}}}}}}),
-            _operation_document({"responses": {"200": {"description": "ok", "content": {
-                "application/octet-stream": {"schema": {"type": "string", "format": "binary"}}}}}}),
+            _operation_document(
+                {
+                    "responses": {
+                        "200": {
+                            "description": "ok",
+                            "content": {"*/*": {"schema": {"type": "string", "format": "binary"}}},
+                        }
+                    }
+                }
+            ),
+            _operation_document(
+                {
+                    "responses": {
+                        "200": {
+                            "description": "ok",
+                            "content": {"application/octet-stream": {"schema": {"type": "string", "format": "binary"}}},
+                        }
+                    }
+                }
+            ),
         ),
         # A negative offset is a value Fern's appended `Z` breaks; a positive one
         # it reads.
@@ -12732,47 +13076,77 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
         "mediaType.schema:allof-parent-body": (
             _operation_document(
                 _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
-                components={"schemas": {
-                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
-                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
-                                    {"$ref": "#/components/schemas/Base"}]},
-                    "Child": {"allOf": [{"$ref": "#/components/schemas/S"}]},
-                }},
+                components={
+                    "schemas": {
+                        "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                        "S": {
+                            "allOf": [
+                                {"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                {"$ref": "#/components/schemas/Base"},
+                            ]
+                        },
+                        "Child": {"allOf": [{"$ref": "#/components/schemas/S"}]},
+                    }
+                },
             ),
             _operation_document(
                 _json_body({"schema": {"$ref": "#/components/schemas/S"}, "example": {"own": "a", "base": "b"}}),
-                components={"schemas": {
-                    "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
-                    "S": {"allOf": [{"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
-                                    {"$ref": "#/components/schemas/Base"}]},
-                }},
+                components={
+                    "schemas": {
+                        "Base": {"type": "object", "required": ["base"], "properties": {"base": {"type": "string"}}},
+                        "S": {
+                            "allOf": [
+                                {"type": "object", "required": ["own"], "properties": {"own": {"type": "string"}}},
+                                {"$ref": "#/components/schemas/Base"},
+                            ]
+                        },
+                    }
+                },
             ),
         ),
         # `null` for a nested optional property, beside `null` at the top level.
         "mediaType.example:nested-null-member": (
-            _operation_document(_json_body({
-                "schema": {"type": "object", "properties": {"inner": {
-                    "type": "object", "properties": {"note": {"type": "string"}}}}},
-                "example": {"inner": {"note": None}},
-            })),
-            _operation_document(_json_body({
-                "schema": {"type": "object", "properties": {"note": {"type": "string"}}},
-                "example": {"note": None},
-            })),
+            _operation_document(
+                _json_body(
+                    {
+                        "schema": {
+                            "type": "object",
+                            "properties": {"inner": {"type": "object", "properties": {"note": {"type": "string"}}}},
+                        },
+                        "example": {"inner": {"note": None}},
+                    }
+                )
+            ),
+            _operation_document(
+                _json_body(
+                    {
+                        "schema": {"type": "object", "properties": {"note": {"type": "string"}}},
+                        "example": {"note": None},
+                    }
+                )
+            ),
         ),
         # A property whose own schema is deprecated, beside a `$ref` carrying
         # the mark as a sibling, which leaves the property in Fern's example.
         "mediaType.example:deprecated-property": (
-            _operation_document(_json_body({
-                "schema": {"type": "object", "properties": {"old": {"type": "string", "deprecated": True}}},
-                "example": {"old": "x"},
-            })),
             _operation_document(
-                _json_body({
-                    "schema": {"type": "object", "properties": {
-                        "old": {"$ref": "#/components/schemas/Old", "deprecated": True}}},
-                    "example": {"old": "x"},
-                }),
+                _json_body(
+                    {
+                        "schema": {"type": "object", "properties": {"old": {"type": "string", "deprecated": True}}},
+                        "example": {"old": "x"},
+                    }
+                )
+            ),
+            _operation_document(
+                _json_body(
+                    {
+                        "schema": {
+                            "type": "object",
+                            "properties": {"old": {"$ref": "#/components/schemas/Old", "deprecated": True}},
+                        },
+                        "example": {"old": "x"},
+                    }
+                ),
                 components={"schemas": {"Old": {"type": "string"}}},
             ),
         ),
@@ -12790,10 +13164,7 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
                 arguments += ["--selector", selector]
             completed = run(*arguments)
         assert completed.returncode == 0, completed.stderr
-        cls.reported = {
-            (row["selector"], row["fixture"]): row["count"]
-            for row in json.loads(completed.stdout)["rows"]
-        }
+        cls.reported = {(row["selector"], row["fixture"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
 
     def test_the_cases_are_exactly_the_family(self) -> None:
         self.assertEqual(NAMING_AND_EXAMPLE_BRANCH_PREDICATES, set(self.CASES))
@@ -12814,14 +13185,21 @@ class NamingAndExampleBranchDiscriminationTests(unittest.TestCase):
             root = Path(directory)
             for name, body in (("named", named), ("grouped", grouped), ("stripped", stripped)):
                 write_json_fixture(root, name, body)
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", "operation.operationId:digit-leading-method")
+            completed = run(
+                "--vendored-only",
+                "--fixtures-root",
+                str(root),
+                "--selector",
+                "operation.operationId:digit-leading-method",
+            )
         self.assertEqual(0, completed.returncode, completed.stderr)
         # `auth_2fa` under tag `auth` leaves the method `2fa`; `auth_2fa_check`
         # strips the tag segment and joins the digit-led word (`2fa_check`).
         self.assertEqual(
-            {("operation.operationId:digit-leading-method", "grouped"): 1,
-             ("operation.operationId:digit-leading-method", "stripped"): 1},
+            {
+                ("operation.operationId:digit-leading-method", "grouped"): 1,
+                ("operation.operationId:digit-leading-method", "stripped"): 1,
+            },
             rows(completed),
         )
 
@@ -12830,13 +13208,12 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
     """The real CLI must distinguish each example, enum-member and schema-name
     spelling from a nearby decoy."""
 
-    ENUM_CASES = {
+    ENUM_CASES: ClassVar = {
         "empty-member": ([""], ["a"]),
         "empty-identifier-member": (["!"], ["a"]),
         "wildcard-member": (["*"], ["a"]),
         "apostrophe-member": (["don't"], ["dont"]),
-        "digit-word-member": (["6a9dfcad-600b-46c8-9e08-ce6e5057921e"],
-                              ["98777886-76d0-44c8-865e-bb40e669e934"]),
+        "digit-word-member": (["6a9dfcad-600b-46c8-9e08-ce6e5057921e"], ["98777886-76d0-44c8-865e-bb40e669e934"]),
         "numeric-prefix-member": (["10bps"], ["2bps"]),
         "leading-zero-member": (["01"], ["10"]),
         "leading-digit-identifier": (["10001"], ["1"]),
@@ -12845,77 +13222,100 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
         "normalized-collision": (["foo-bar", "foo_bar"], ["foo", "bar"]),
         "numeric-member": ([7], ["7"]),
     }
-    EXAMPLE_VALUES = {
-        "object": {}, "array": [], "string": "value", "number": 3,
-        "boolean": True, "null": None,
+    EXAMPLE_VALUES: ClassVar = {
+        "object": {},
+        "array": [],
+        "string": "value",
+        "number": 3,
+        "boolean": True,
+        "null": None,
     }
 
     @staticmethod
     def source(schema: dict) -> str:
-        return json.dumps({
-            "openapi": "3.1.0", "info": {"title": "control", "version": "1"},
-            "paths": {}, "components": {"schemas": {"Control": schema}},
-        })
+        return json.dumps(
+            {
+                "openapi": "3.1.0",
+                "info": {"title": "control", "version": "1"},
+                "paths": {},
+                "components": {"schemas": {"Control": schema}},
+            }
+        )
 
     def count_pair(self, selector: str, positive: dict, decoy: dict) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             write_fixture(root, "positive", self.source(positive))
             write_fixture(root, "decoy", self.source(decoy))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
 
     def test_each_enum_member_branch_has_a_positive_and_decoy(self) -> None:
         for predicate, (positive, decoy) in self.ENUM_CASES.items():
             with self.subTest(predicate=predicate):
-                self.count_pair("schema.enum:" + predicate,
-                                {"enum": positive}, {"enum": decoy})
+                self.count_pair("schema.enum:" + predicate, {"enum": positive}, {"enum": decoy})
 
     def test_each_example_kind_has_a_positive_and_decoy(self) -> None:
         for kind, value in self.EXAMPLE_VALUES.items():
             with self.subTest(kind=kind):
                 decoy = [] if kind != "array" else {}
-                self.count_pair("schema.example=" + kind,
-                                {"examples": [None]} if kind == "null" else {"example": value},
-                                {"example": None} if kind == "null" else {"example": decoy})
+                self.count_pair(
+                    "schema.example=" + kind,
+                    {"examples": [None]} if kind == "null" else {"example": value},
+                    {"example": None} if kind == "null" else {"example": decoy},
+                )
 
     def test_explicit_null_falls_through_to_first_examples_member(self) -> None:
-        self.count_pair("schema.example=object",
-                        {"example": None, "examples": [{"answer": 42}]},
-                        {"example": "scalar", "examples": [{"answer": 42}]})
+        self.count_pair(
+            "schema.example=object",
+            {"example": None, "examples": [{"answer": 42}]},
+            {"example": "scalar", "examples": [{"answer": 42}]},
+        )
 
     def test_named_example_object_map_selects_its_first_value(self) -> None:
-        self.count_pair("schema.example=object",
-                        {"examples": {"first": {"value": {"answer": 42}}}},
-                        {"examples": {"first": {"value": "scalar"}}})
+        self.count_pair(
+            "schema.example=object",
+            {"examples": {"first": {"value": {"answer": 42}}}},
+            {"examples": {"first": {"value": "scalar"}}},
+        )
 
     def test_scalar_examples_is_one_member_list(self) -> None:
-        self.count_pair("schema.example=string",
-                        {"examples": "scalar"}, {"examples": []})
+        self.count_pair("schema.example=string", {"examples": "scalar"}, {"examples": []})
 
     def test_schema_name_sanitization_has_a_positive_and_decoy(self) -> None:
         selector = "components.schemas:nonidentifier-name"
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, name in (
-                ("positive", "Café"), ("decoy", "Cafe"),
-                ("numeric", "123"), ("digit-leading", "1Foo"),
+                ("positive", "Café"),
+                ("decoy", "Cafe"),
+                ("numeric", "123"),
+                ("digit-leading", "1Foo"),
             ):
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
-                    "paths": {}, "components": {"schemas": {name: {"type": "string"}}},
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": {name: {"type": "string"}}},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
 
     def test_new_value_rows_cite_the_offline_census_own_counts(self) -> None:
         selectors = (
-            {name for name in census.PREDICATES if name.startswith("schema.enum:")
-             and name != "schema.enum:string-valued"}
+            {
+                name
+                for name in census.PREDICATES
+                if name.startswith("schema.enum:") and name != "schema.enum:string-valued"
+            }
             | {"components.schemas:nonidentifier-name"}
             | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
         )
@@ -12929,17 +13329,15 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
             if match and match.group(1) in selectors:
                 evidence[match.group(1)] = cells[4]
         self.assertEqual(selectors, set(evidence))
-        completed = run("--vendored-only", "--json",
-                        *(arg for selector in sorted(selectors)
-                          for arg in ("--selector", selector)))
+        completed = run(
+            "--vendored-only", "--json", *(arg for selector in sorted(selectors) for arg in ("--selector", selector))
+        )
         self.assertEqual(0, completed.returncode, completed.stderr)
-        reported = {
-            (row["selector"], row["fixture"]): row["count"]
-            for row in json.loads(completed.stdout)["rows"]
+        reported = {(row["selector"], row["fixture"]): row["count"] for row in json.loads(completed.stdout)["rows"]}
+        vendored = {
+            source.fixture
+            for source in census.registered_sources(FIXTURES, REPO / "tests/fixtures/corpus-sources", True)
         }
-        vendored = {source.fixture for source in census.registered_sources(
-            FIXTURES, REPO / "tests/fixtures/corpus-sources", True
-        )}
         checked = 0
         for selector, cell in evidence.items():
             for fixture, count in re.findall(r"`([a-z0-9][a-z0-9.\-_]*)` \((\d+)\)", cell):
@@ -12961,12 +13359,19 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, document in documents.items():
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
-                    "paths": {}, **document,
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            **document,
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
 
@@ -12978,6 +13383,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         self-recursive `Harbor`. The decoys reach two cycles in sorted order, name
         the downstream cycle themselves, or compose a union beside `properties`.
         """
+
         def ref(name: str) -> dict:
             return {"$ref": f"#/components/schemas/{name}"}
 
@@ -12985,35 +13391,49 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             """An object whose one property references the component `name`."""
             return {"type": "object", "properties": {field: ref(name)}}
 
-        positive = {"components": {"schemas": {
-            "Timetable": {"type": "object", "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
-            "Wharf": linked("annex", "Wharf"),
-            "Buoy": {"type": "object", "properties": {"tethered": {"type": "array", "items": ref("Buoy")}}},
-            "Roster": {"type": "object", "properties": {"captain": ref("Captain")}},
-            "Captain": linked("vessel", "Vessel"),
-            "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Harbor")}},
-            "Harbor": linked("district", "Harbor"),
-        }}}
-        decoys = {"components": {"schemas": {
-            "Sorted": {"type": "object", "properties": {"buoy": ref("Buoy"), "wharf": ref("Wharf")}},
-            "Union": {"type": "object", "oneOf": [ref("Buoy")],
-                      "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
-            "Wharf": linked("annex", "Wharf"),
-            "Buoy": linked("tethered", "Buoy"),
-            "Fleet": {"type": "object", "properties": {"captain": ref("Captain"), "port": ref("Yard")}},
-            "Captain": linked("vessel", "Vessel"),
-            "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Yard")}},
-            "Yard": linked("district", "Yard"),
-            "x-Ignored": linked("annex", "Wharf"),
-        }}}
+        positive = {
+            "components": {
+                "schemas": {
+                    "Timetable": {"type": "object", "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")}},
+                    "Wharf": linked("annex", "Wharf"),
+                    "Buoy": {"type": "object", "properties": {"tethered": {"type": "array", "items": ref("Buoy")}}},
+                    "Roster": {"type": "object", "properties": {"captain": ref("Captain")}},
+                    "Captain": linked("vessel", "Vessel"),
+                    "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Harbor")}},
+                    "Harbor": linked("district", "Harbor"),
+                }
+            }
+        }
+        decoys = {
+            "components": {
+                "schemas": {
+                    "Sorted": {"type": "object", "properties": {"buoy": ref("Buoy"), "wharf": ref("Wharf")}},
+                    "Union": {
+                        "type": "object",
+                        "oneOf": [ref("Buoy")],
+                        "properties": {"wharf": ref("Wharf"), "buoy": ref("Buoy")},
+                    },
+                    "Wharf": linked("annex", "Wharf"),
+                    "Buoy": linked("tethered", "Buoy"),
+                    "Fleet": {"type": "object", "properties": {"captain": ref("Captain"), "port": ref("Yard")}},
+                    "Captain": linked("vessel", "Vessel"),
+                    "Vessel": {"type": "object", "properties": {"skipper": ref("Captain"), "port": ref("Yard")}},
+                    "Yard": linked("district", "Yard"),
+                    "x-Ignored": linked("annex", "Wharf"),
+                }
+            }
+        }
         unsorted = "components.schemas:fields-reach-cycles-unsorted"
-        self.assertEqual({(unsorted, "positive"): 1},
-                         self.census_one(unsorted, {"positive": positive, "decoys": decoys}))
+        self.assertEqual(
+            {(unsorted, "positive"): 1}, self.census_one(unsorted, {"positive": positive, "decoys": decoys})
+        )
         chained = "components.schemas:cycle-into-cycle"
         # `Roster` and `Captain`; in the decoys `Captain` alone, as `Fleet` names
         # `Yard` itself, and `Vessel` names the downstream cycle directly in both.
-        self.assertEqual({(chained, "positive"): 2, (chained, "decoys"): 1},
-                         self.census_one(chained, {"positive": positive, "decoys": decoys}))
+        self.assertEqual(
+            {(chained, "positive"): 2, (chained, "decoys"): 1},
+            self.census_one(chained, {"positive": positive, "decoys": decoys}),
+        )
 
     def test_closed_empty_object_property_counts_inline_body_properties(self) -> None:
         """`mediaType.schema:closed-empty-object-property`, request bodies only.
@@ -13025,29 +13445,47 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         closed = {"type": "object", "additionalProperties": False}
 
         def operation(body: dict, responses: dict) -> dict:
-            return {"post": {
-                "requestBody": {"content": {"application/json": {"schema": body}}},
-                "responses": {code: {"description": "d", "content": {"application/json": {"schema": schema}}}
-                              for code, schema in responses.items()},
-            }}
+            return {
+                "post": {
+                    "requestBody": {"content": {"application/json": {"schema": body}}},
+                    "responses": {
+                        code: {"description": "d", "content": {"application/json": {"schema": schema}}}
+                        for code, schema in responses.items()
+                    },
+                }
+            }
 
         documents = {
-            "positive": {"paths": {"/a": operation(
-                {"type": "object", "properties": {
-                    "profile": closed, "notes": closed, "inferred": {"additionalProperties": False},
-                    "kiln": {"type": "string"},
-                }},
-                {"200": {"type": "string"}},
-            )}},
+            "positive": {
+                "paths": {
+                    "/a": operation(
+                        {
+                            "type": "object",
+                            "properties": {
+                                "profile": closed,
+                                "notes": closed,
+                                "inferred": {"additionalProperties": False},
+                                "kiln": {"type": "string"},
+                            },
+                        },
+                        {"200": {"type": "string"}},
+                    )
+                }
+            },
             "decoys": {
-                "paths": {"/b": operation(
-                    {"type": "object", "properties": {
-                        "declared": {**closed, "properties": {}},
-                        "open": {"type": "object"},
-                        "shared": {"$ref": "#/components/schemas/Closed"},
-                    }},
-                    {"200": closed, "404": closed},
-                )},
+                "paths": {
+                    "/b": operation(
+                        {
+                            "type": "object",
+                            "properties": {
+                                "declared": {**closed, "properties": {}},
+                                "open": {"type": "object"},
+                                "shared": {"$ref": "#/components/schemas/Closed"},
+                            },
+                        },
+                        {"200": closed, "404": closed},
+                    )
+                },
                 "components": {"schemas": {"Closed": closed}},
             },
         }
@@ -13061,18 +13499,29 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         `null` before a real type are decoys; a list leading with one of the five
         counts, as `TypeField::primary` reads its first non-`null` member.
         """
+
         def holder(types: list) -> dict:
-            return {"components": {"schemas": {"Holder": {"type": "object", "properties": {
-                f"p{index}": {"type": kind} for index, kind in enumerate(types)
-            }}}}}
+            return {
+                "components": {
+                    "schemas": {
+                        "Holder": {
+                            "type": "object",
+                            "properties": {f"p{index}": {"type": kind} for index, kind in enumerate(types)},
+                        }
+                    }
+                }
+            }
 
         selector = "schema.type:misspelled-scalar"
         self.assertEqual(
             {(selector, "positive"): 6},
-            self.census_one(selector, {
-                "positive": holder(["double", "int32", "long", "bool", "decimal", ["null", "long"]]),
-                "decoys": holder(["float", "int", "number", "integer", "boolean", ["null", "number"]]),
-            }),
+            self.census_one(
+                selector,
+                {
+                    "positive": holder(["double", "int32", "long", "bool", "decimal", ["null", "long"]]),
+                    "decoys": holder(["float", "int", "number", "integer", "boolean", ["null", "number"]]),
+                },
+            ),
         )
 
     def test_same_primitive_union_counts_a_component_and_not_its_near_misses(self) -> None:
@@ -13088,17 +13537,25 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         documents = {
             "positive": {
                 "Code": strings,
-                "Port": {"oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1},
-                                   {"type": "integer", "maximum": 9}]},
-                "Weight": {"oneOf": [{"type": "number", "format": "uint64"},
-                                      {"type": "integer"}]},
-                "Settings": {"oneOf": [{"type": "string", "format": "json-string"},
-                                        {"type": "string", "format": "json-string"}]},
-                "Calibrated": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"},
-                                          {"type": "boolean", "x-crozier-type": "literal<true>"}]},
-                "MissingOverride": {"oneOf": [
-                    {"type": "boolean", "x-crozier-type": None, "x-fern-type": "literal<true>"},
-                    {"type": "boolean", "x-crozier-type": "literal<true>"}]},
+                "Port": {
+                    "oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "maximum": 9}]
+                },
+                "Weight": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "Settings": {
+                    "oneOf": [{"type": "string", "format": "json-string"}, {"type": "string", "format": "json-string"}]
+                },
+                "Calibrated": {
+                    "oneOf": [
+                        {"type": "boolean", "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-crozier-type": "literal<true>"},
+                    ]
+                },
+                "MissingOverride": {
+                    "oneOf": [
+                        {"type": "boolean", "x-crozier-type": None, "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-crozier-type": "literal<true>"},
+                    ]
+                },
             },
             "decoys": {
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
@@ -13107,25 +13564,32 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},
-                "JsonText": {"oneOf": [{"type": "string", "format": "json-string"},
-                                       {"type": "string"}]},
-                "LiteralBool": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"},
-                                           {"type": "boolean"}]},
-                "CanonicalLiteral": {"oneOf": [
-                    {"type": "boolean", "x-crozier-type": "literal<false>",
-                     "x-fern-type": "literal<true>"},
-                    {"type": "boolean", "x-fern-type": "literal<true>"}]},
+                "JsonText": {"oneOf": [{"type": "string", "format": "json-string"}, {"type": "string"}]},
+                "LiteralBool": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"}, {"type": "boolean"}]},
+                "CanonicalLiteral": {
+                    "oneOf": [
+                        {"type": "boolean", "x-crozier-type": "literal<false>", "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-fern-type": "literal<true>"},
+                    ]
+                },
             },
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, schemas in documents.items():
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
-                    "paths": {}, "components": {"schemas": schemas},
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 6}, rows(completed))
 
@@ -13157,14 +13621,23 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, parameters in documents.items():
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.1.0", "info": {"title": fixture, "version": "1"},
-                    "paths": {"/items": {"get": {"parameters": parameters,
-                                                 "responses": {"204": {"description": "ok"}}}}},
-                    "components": {"schemas": {"Code": union}},
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {
+                                "/items": {
+                                    "get": {"parameters": parameters, "responses": {"204": {"description": "ok"}}}
+                                }
+                            },
+                            "components": {"schemas": {"Code": union}},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 2}, rows(completed))
 
@@ -13181,14 +13654,16 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         def document(name: str, carried: int, default: str = "north", total: int = 4) -> dict:
             header = {"name": name, "in": "header", "schema": {"type": "string", "default": default}}
             return {
-                "openapi": "3.1.0", "info": {"title": name, "version": "1"},
-                "components": {"securitySchemes": {
-                    "key": {"type": "apiKey", "in": "header", "name": "X-Key"}}},
+                "openapi": "3.1.0",
+                "info": {"title": name, "version": "1"},
+                "components": {"securitySchemes": {"key": {"type": "apiKey", "in": "header", "name": "X-Key"}}},
                 "paths": {
-                    f"/op{index}": {"get": {
-                        "parameters": [header] if index < carried else [],
-                        "responses": {"204": {"description": "ok"}},
-                    }}
+                    f"/op{index}": {
+                        "get": {
+                            "parameters": [header] if index < carried else [],
+                            "responses": {"204": {"description": "ok"}},
+                        }
+                    }
                     for index in range(total)
                 },
             }
@@ -13205,8 +13680,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             root = Path(directory)
             for fixture, body in documents.items():
                 write_fixture(root, fixture, json.dumps(body))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 3}, rows(completed))
 
@@ -13220,9 +13694,11 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         selector = "schema.anyOf:discriminated-union"
 
         def member(tag: str) -> dict:
-            return {"type": "object", "required": ["size"], "properties": {
-                "kind": {"type": "string", "enum": [tag], "default": tag},
-                "size": {"type": "number"}}}
+            return {
+                "type": "object",
+                "required": ["size"],
+                "properties": {"kind": {"type": "string", "enum": [tag], "default": tag}, "size": {"type": "number"}},
+            }
 
         refs = [{"$ref": "#/components/schemas/Circle"}, {"$ref": "#/components/schemas/Square"}]
         documents = {
@@ -13233,15 +13709,25 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, extra in documents.items():
-                schemas = {"Circle": member("circle"), "Square": member("square"),
-                           "Blank": {"type": "object", "properties": {"size": {"type": "number"}}},
-                           **extra}
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.0.3", "info": {"title": fixture, "version": "1"},
-                    "paths": {}, "components": {"schemas": schemas},
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector)
+                schemas = {
+                    "Circle": member("circle"),
+                    "Square": member("square"),
+                    "Blank": {"type": "object", "properties": {"size": {"type": "number"}}},
+                    **extra,
+                }
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": schemas},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual({(selector, "positive"): 1}, rows(completed))
 
@@ -13256,33 +13742,41 @@ class ShapePredicateSelectorControls(unittest.TestCase):
         selector = "securityScheme:$ref"
         scheme = {"type": "apiKey", "in": "header", "name": "X-Key"}
         documents = {
-            "positive": {"securitySchemes": {
-                "key": scheme,
-                "alias": {"$ref": "#/components/securitySchemes/key"},
-                "remote": {"$ref": "../openapi.yaml#/components/securitySchemes/key"},
-            }},
+            "positive": {
+                "securitySchemes": {
+                    "key": scheme,
+                    "alias": {"$ref": "#/components/securitySchemes/key"},
+                    "remote": {"$ref": "../openapi.yaml#/components/securitySchemes/key"},
+                }
+            },
             "inline": {"securitySchemes": {"key": scheme, "other": dict(scheme)}},
             "elsewhere": {
                 "securitySchemes": {"key": scheme},
-                "parameters": {"p": {"name": "p", "in": "query"},
-                               "q": {"$ref": "#/components/parameters/p"}},
-                "responses": {"ok": {"$ref": "#/components/responses/other"},
-                              "other": {"description": "ok"}},
+                "parameters": {"p": {"name": "p", "in": "query"}, "q": {"$ref": "#/components/parameters/p"}},
+                "responses": {"ok": {"$ref": "#/components/responses/other"}, "other": {"description": "ok"}},
             },
         }
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, components in documents.items():
-                write_fixture(root, fixture, json.dumps({
-                    "openapi": "3.0.3", "info": {"title": fixture, "version": "1"},
-                    "paths": {}, "components": components,
-                }))
-            completed = run("--vendored-only", "--fixtures-root", str(root),
-                            "--selector", selector, "--selector", "reference.$ref")
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.0.3",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": components,
+                        }
+                    ),
+                )
+            completed = run(
+                "--vendored-only", "--fixtures-root", str(root), "--selector", selector, "--selector", "reference.$ref"
+            )
         self.assertEqual(0, completed.returncode, completed.stderr)
         self.assertEqual(
-            {(selector, "positive"): 2, ("reference.$ref", "positive"): 2,
-             ("reference.$ref", "elsewhere"): 2},
+            {(selector, "positive"): 2, ("reference.$ref", "positive"): 2, ("reference.$ref", "elsewhere"): 2},
             rows(completed),
         )
 
@@ -13315,9 +13809,7 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for fixture, document in documents.items():
-                write_fixture(root, fixture, json.dumps(
-                    {"info": {"title": fixture, "version": "1"}, **document}
-                ))
+                write_fixture(root, fixture, json.dumps({"info": {"title": fixture, "version": "1"}, **document}))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
@@ -13325,19 +13817,25 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
     def test_success_selection_prefers_200_and_skips_unusable_media(self) -> None:
         selector = "operation.responses:schemaless-text-success"
         text = {"description": "text", "content": {"text/plain": {}}}
-        json_response = {"description": "json", "content": {
-            "application/json": {"schema": {"type": "string"}}}}
+        json_response = {"description": "json", "content": {"application/json": {"schema": {"type": "string"}}}}
         documents = {
-            "positive": {"paths": {
-                "/preferred": {"get": self.operation(responses={"201": json_response, "200": text})},
-                "/fallback": {"get": self.operation(responses={
-                    "200": {"description": "unusable", "content": {"/*": {}}}, "201": text})},
-                "/default": {"get": self.operation(responses={"default": text})},
-                "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
-            }},
-            "decoys": {"paths": {
-                "/preferred": {"get": self.operation(responses={"201": text, "200": json_response})},
-            }},
+            "positive": {
+                "paths": {
+                    "/preferred": {"get": self.operation(responses={"201": json_response, "200": text})},
+                    "/fallback": {
+                        "get": self.operation(
+                            responses={"200": {"description": "unusable", "content": {"/*": {}}}, "201": text}
+                        )
+                    },
+                    "/default": {"get": self.operation(responses={"default": text})},
+                    "/empty": {"get": self.operation(responses={"200": {"description": "empty"}, "201": text})},
+                }
+            },
+            "decoys": {
+                "paths": {
+                    "/preferred": {"get": self.operation(responses={"201": text, "200": json_response})},
+                }
+            },
         }
         self.assertEqual({(selector, "positive"): 4}, self.census(selector, documents))
 
@@ -13346,42 +13844,76 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         empty = {"description": "empty"}
         created = {"description": "created", "content": {"application/json": {"schema": {"type": "string"}}}}
         documents = {
-            "positive": {"paths": {
-                "/inline": {"post": self.operation(responses={"200": empty, "201": created})},
-                "/shared": {"post": self.operation(responses={
-                    "200": {"$ref": "#/components/responses/Empty"},
-                    "201": {"$ref": "#/components/responses/Created"}})},
-            }, "components": {"responses": {"Empty": empty, "Created": created}}},
-            "decoys": {"paths": {
-                "/typed": {"post": self.operation(responses={"200": created, "201": created})},
-                "/only": {"post": self.operation(responses={"200": empty})},
-                "/both-empty": {"post": self.operation(responses={"200": empty, "201": empty})},
-                "/unresolved": {"post": self.operation(responses={
-                    "200": {"$ref": "#/components/responses/Missing"}, "201": created})},
-            }},
+            "positive": {
+                "paths": {
+                    "/inline": {"post": self.operation(responses={"200": empty, "201": created})},
+                    "/shared": {
+                        "post": self.operation(
+                            responses={
+                                "200": {"$ref": "#/components/responses/Empty"},
+                                "201": {"$ref": "#/components/responses/Created"},
+                            }
+                        )
+                    },
+                },
+                "components": {"responses": {"Empty": empty, "Created": created}},
+            },
+            "decoys": {
+                "paths": {
+                    "/typed": {"post": self.operation(responses={"200": created, "201": created})},
+                    "/only": {"post": self.operation(responses={"200": empty})},
+                    "/both-empty": {"post": self.operation(responses={"200": empty, "201": empty})},
+                    "/unresolved": {
+                        "post": self.operation(
+                            responses={"200": {"$ref": "#/components/responses/Missing"}, "201": created}
+                        )
+                    },
+                }
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"
-        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}
+
+        def ref(name):
+            return {"$ref": f"#/components/schemas/{name}"}
+
         model = {"type": "object", "properties": {"seed": {"type": "string"}}}
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/sow": {"post": self.operation(body=self.json_body(ref("Body_sow")))},
-            }, "components": {"schemas": {"Body_sow": model}}},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/export": {"get": self.operation(body=self.json_body(ref("Body_export")))},
-                "/echo": {"post": self.operation(
-                    body=self.json_body(ref("Body_echo")),
-                    responses=self.success({"application/json": {"schema": ref("Body_echo")}}),
-                )},
-                "/plain": {"post": self.operation(body=self.json_body(ref("Sowing")))},
-                "/upload": {"post": self.operation(body={"content": {
-                    "multipart/form-data": {"schema": ref("Body_upload")}}})},
-            }, "components": {"schemas": {
-                "Body_export": model, "Body_echo": model, "Sowing": model, "Body_upload": model,
-            }}},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/sow": {"post": self.operation(body=self.json_body(ref("Body_sow")))},
+                },
+                "components": {"schemas": {"Body_sow": model}},
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/export": {"get": self.operation(body=self.json_body(ref("Body_export")))},
+                    "/echo": {
+                        "post": self.operation(
+                            body=self.json_body(ref("Body_echo")),
+                            responses=self.success({"application/json": {"schema": ref("Body_echo")}}),
+                        )
+                    },
+                    "/plain": {"post": self.operation(body=self.json_body(ref("Sowing")))},
+                    "/upload": {
+                        "post": self.operation(
+                            body={"content": {"multipart/form-data": {"schema": ref("Body_upload")}}}
+                        )
+                    },
+                },
+                "components": {
+                    "schemas": {
+                        "Body_export": model,
+                        "Body_echo": model,
+                        "Sowing": model,
+                        "Body_upload": model,
+                    }
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
 
@@ -13390,24 +13922,45 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         titled = {"title": "Order", "type": "array", "items": {"type": "string"}}
         query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/order": {"put": self.operation(body=self.json_body(titled))},
-                "/tags": {"put": self.operation(body=self.json_body(
-                    {"title": "Tags", "type": "object", "additionalProperties": {"type": "string"}}))},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/untitled": {"put": self.operation(body=self.json_body(
-                    {"type": "array", "items": {"type": "string"}}))},
-                "/queried": {"put": self.operation(body=self.json_body(titled), parameters=query)},
-                "/{shelf}": {"parameters": [{"name": "shelf", "in": "path", "required": True,
-                                              "schema": {"type": "string"}}],
-                             "put": self.operation(body=self.json_body(titled))},
-                "/object": {"put": self.operation(body=self.json_body(
-                    {"title": "Filter", "type": "object", "properties": {"q": {"type": "string"}}}))},
-            }},
-            "later": {"openapi": "3.1.0", "paths": {
-                "/order": {"put": self.operation(body=self.json_body(titled))},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/order": {"put": self.operation(body=self.json_body(titled))},
+                    "/tags": {
+                        "put": self.operation(
+                            body=self.json_body(
+                                {"title": "Tags", "type": "object", "additionalProperties": {"type": "string"}}
+                            )
+                        )
+                    },
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/untitled": {
+                        "put": self.operation(body=self.json_body({"type": "array", "items": {"type": "string"}}))
+                    },
+                    "/queried": {"put": self.operation(body=self.json_body(titled), parameters=query)},
+                    "/{shelf}": {
+                        "parameters": [{"name": "shelf", "in": "path", "required": True, "schema": {"type": "string"}}],
+                        "put": self.operation(body=self.json_body(titled)),
+                    },
+                    "/object": {
+                        "put": self.operation(
+                            body=self.json_body(
+                                {"title": "Filter", "type": "object", "properties": {"q": {"type": "string"}}}
+                            )
+                        )
+                    },
+                },
+            },
+            "later": {
+                "openapi": "3.1.0",
+                "paths": {
+                    "/order": {"put": self.operation(body=self.json_body(titled))},
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
@@ -13416,14 +13969,21 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         empty = self.success({"application/json": {"schema": {}}})
         documents = {
             "positive": {"openapi": "3.0.2", "paths": {"/a": {"delete": self.operation(empty)}}},
-            "decoys": {"openapi": "3.0.2", "paths": {
-                "/ref": {"get": self.operation({"200": {"$ref": "#/components/responses/Ok"}})},
-                "/typed": {"get": self.operation(self.success(
-                    {"application/json": {"schema": {"type": "object"}}}))},
-                "/both": {"get": self.operation(self.success(
-                    {"application/json": {"schema": {}}, "text/plain": {}}))},
-            }, "components": {"responses": {"Ok": {
-                "description": "ok", "content": {"application/json": {"schema": {}}}}}}},
+            "decoys": {
+                "openapi": "3.0.2",
+                "paths": {
+                    "/ref": {"get": self.operation({"200": {"$ref": "#/components/responses/Ok"}})},
+                    "/typed": {
+                        "get": self.operation(self.success({"application/json": {"schema": {"type": "object"}}}))
+                    },
+                    "/both": {
+                        "get": self.operation(self.success({"application/json": {"schema": {}}, "text/plain": {}}))
+                    },
+                },
+                "components": {
+                    "responses": {"Ok": {"description": "ok", "content": {"application/json": {"schema": {}}}}}
+                },
+            },
             "later": {"openapi": "3.1.0", "paths": {"/a": {"delete": self.operation(empty)}}},
         }
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
@@ -13431,36 +13991,56 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
     def test_a_schemaless_text_success_counts_without_json_beside_it(self) -> None:
         selector = "operation.responses:schemaless-text-success"
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/csv": {"get": self.operation(self.success({"text/csv": {}}))},
-                "/log": {"get": self.operation(self.success({"text/plain; charset=utf-8": {}}))},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/typed": {"get": self.operation(self.success(
-                    {"text/csv": {"schema": {"type": "string"}}}))},
-                "/events": {"get": self.operation(self.success({"text/event-stream": {}}))},
-                "/either": {"get": self.operation(self.success(
-                    {"application/json": {"schema": {"type": "object"}}, "text/csv": {}}))},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/csv": {"get": self.operation(self.success({"text/csv": {}}))},
+                    "/log": {"get": self.operation(self.success({"text/plain; charset=utf-8": {}}))},
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/typed": {"get": self.operation(self.success({"text/csv": {"schema": {"type": "string"}}}))},
+                    "/events": {"get": self.operation(self.success({"text/event-stream": {}}))},
+                    "/either": {
+                        "get": self.operation(
+                            self.success({"application/json": {"schema": {"type": "object"}}, "text/csv": {}})
+                        )
+                    },
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
     def test_a_schemaless_download_counts_audio_video_and_pdf_only(self) -> None:
         selector = "operation.responses:schemaless-download-success"
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
-                "/mp4": {"get": self.operation(self.success({"video/mp4": {}}))},
-                "/pdf": {"get": self.operation(self.success({"application/pdf": {}}))},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/png": {"get": self.operation(self.success({"image/png": {}}))},
-                "/zip": {"get": self.operation(self.success({"application/zip": {}}))},
-                "/typed": {"get": self.operation(self.success(
-                    {"audio/mpeg": {"schema": {"type": "string", "format": "binary"}}}))},
-                "/either": {"get": self.operation(self.success(
-                    {"application/json": {"schema": {"type": "object"}}, "audio/mpeg": {}}))},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
+                    "/mp4": {"get": self.operation(self.success({"video/mp4": {}}))},
+                    "/pdf": {"get": self.operation(self.success({"application/pdf": {}}))},
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/png": {"get": self.operation(self.success({"image/png": {}}))},
+                    "/zip": {"get": self.operation(self.success({"application/zip": {}}))},
+                    "/typed": {
+                        "get": self.operation(
+                            self.success({"audio/mpeg": {"schema": {"type": "string", "format": "binary"}}})
+                        )
+                    },
+                    "/either": {
+                        "get": self.operation(
+                            self.success({"application/json": {"schema": {"type": "object"}}, "audio/mpeg": {}})
+                        )
+                    },
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
 
@@ -13468,14 +14048,37 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.responses:suffixed-status-key"
         described = {"description": "refused"}
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
-                "200": {"description": "ok"}, "429 (live)": described, "404abc": described,
-                "4xx": described,
-            })}}},
-            "decoys": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
-                "200": {"description": "ok"}, "429": described, "4XX": described,
-                "default": described, "x-200:err message": described,
-            })}}},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/a": {
+                        "post": self.operation(
+                            {
+                                "200": {"description": "ok"},
+                                "429 (live)": described,
+                                "404abc": described,
+                                "4xx": described,
+                            }
+                        )
+                    }
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/a": {
+                        "post": self.operation(
+                            {
+                                "200": {"description": "ok"},
+                                "429": described,
+                                "4XX": described,
+                                "default": described,
+                                "x-200:err message": described,
+                            }
+                        )
+                    }
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 3}, self.census(selector, documents))
 
@@ -13483,29 +14086,65 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.responses:space-suffixed-status-key"
         described = {"description": "refused"}
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
-                "200": {"description": "ok"}, "429 (live)": described, "503 maintenance": described,
-            })}}},
-            "decoys": {"openapi": "3.0.3", "paths": {"/a": {"post": self.operation({
-                "200": {"description": "ok"}, "404abc": described, "409 ": described,
-                "404-file": described, "4xx": described, "4291 (x)": described,
-            })}}},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/a": {
+                        "post": self.operation(
+                            {
+                                "200": {"description": "ok"},
+                                "429 (live)": described,
+                                "503 maintenance": described,
+                            }
+                        )
+                    }
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/a": {
+                        "post": self.operation(
+                            {
+                                "200": {"description": "ok"},
+                                "404abc": described,
+                                "409 ": described,
+                                "404-file": described,
+                                "4xx": described,
+                                "4291 (x)": described,
+                            }
+                        )
+                    }
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
     def test_a_schemaless_wav_success_counts_audio_wav_alone(self) -> None:
         selector = "operation.responses:schemaless-wav-success"
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/wav": {"get": self.operation(self.success({"audio/wav": {}}))},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
-                "/typed": {"get": self.operation(self.success(
-                    {"audio/wav": {"schema": {"type": "string", "format": "binary"}}}))},
-                "/either": {"get": self.operation(self.success(
-                    {"application/json": {"schema": {"type": "object"}}, "audio/wav": {}}))},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/wav": {"get": self.operation(self.success({"audio/wav": {}}))},
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/mp3": {"get": self.operation(self.success({"audio/mpeg": {}}))},
+                    "/typed": {
+                        "get": self.operation(
+                            self.success({"audio/wav": {"schema": {"type": "string", "format": "binary"}}})
+                        )
+                    },
+                    "/either": {
+                        "get": self.operation(
+                            self.success({"application/json": {"schema": {"type": "object"}}, "audio/wav": {}})
+                        )
+                    },
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
 
@@ -13513,23 +14152,43 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.requestBody:plain-string-map"
         plain = {"type": "object", "additionalProperties": {"type": "string"}}
         schemas = {
-            "Labels": plain, "Alias": {"$ref": "#/components/schemas/Labels"},
+            "Labels": plain,
+            "Alias": {"$ref": "#/components/schemas/Labels"},
             "Value": {"type": "string"},
             "ReferencedValue": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Value"}},
             "CycleA": {"$ref": "#/components/schemas/CycleB"},
             "CycleB": {"$ref": "#/components/schemas/CycleA"},
         }
         positive = {
-            "openapi": "3.0.3", "paths": {
+            "openapi": "3.0.3",
+            "paths": {
                 "/inline": {"post": self.operation(body=self.json_body(plain))},
                 "/alias": {"put": self.operation(body=self.json_body({"$ref": "#/components/schemas/Alias"}))},
-                "/value": {"patch": self.operation(body=self.json_body({"$ref": "#/components/schemas/ReferencedValue"}))},
-                "/suffix": {"post": self.operation(body={"content": {"application/merge-patch+json": {"schema": plain}}})},
+                "/value": {
+                    "patch": self.operation(body=self.json_body({"$ref": "#/components/schemas/ReferencedValue"}))
+                },
+                "/suffix": {
+                    "post": self.operation(body={"content": {"application/merge-patch+json": {"schema": plain}}})
+                },
                 "/body": {"post": self.operation(body={"$ref": "#/components/requestBodies/Alias"})},
-                "/twice": {"put": self.operation(body={"content": {
-                    "application/json": {"schema": plain}, "application/merge-patch+json": {"schema": plain}}})},
-            }, "components": {"schemas": schemas, "requestBodies": {
-                "Alias": {"$ref": "#/components/requestBodies/Labels"}, "Labels": self.json_body(plain)}},
+                "/twice": {
+                    "put": self.operation(
+                        body={
+                            "content": {
+                                "application/json": {"schema": plain},
+                                "application/merge-patch+json": {"schema": plain},
+                            }
+                        }
+                    )
+                },
+            },
+            "components": {
+                "schemas": schemas,
+                "requestBodies": {
+                    "Alias": {"$ref": "#/components/requestBodies/Labels"},
+                    "Labels": self.json_body(plain),
+                },
+            },
         }
         near_misses = [
             {**plain, "properties": {"label": {"type": "string"}}},
@@ -13547,12 +14206,18 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             {**plain, "additionalProperties": {"$ref": "#/components/schemas/CycleA"}},
         ]
         decoys = {
-            "openapi": "3.1.0", "paths": {
+            "openapi": "3.1.0",
+            "paths": {
                 f"/near-{number}": {"post": self.operation(body=self.json_body(schema))}
                 for number, schema in enumerate(near_misses)
-            }, "components": {"schemas": schemas, "requestBodies": {
-                "CycleA": {"$ref": "#/components/requestBodies/CycleB"},
-                "CycleB": {"$ref": "#/components/requestBodies/CycleA"}}},
+            },
+            "components": {
+                "schemas": schemas,
+                "requestBodies": {
+                    "CycleA": {"$ref": "#/components/requestBodies/CycleB"},
+                    "CycleB": {"$ref": "#/components/requestBodies/CycleA"},
+                },
+            },
         }
         decoys["paths"]["/body-cycle"] = {"post": self.operation(body={"$ref": "#/components/requestBodies/CycleA"})}
         decoys["paths"]["/text"] = {"post": self.operation(body={"content": {"text/plain": {"schema": plain}}})}
@@ -13561,16 +14226,23 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
     def test_a_schemaless_json_request_body_counts_only_when_no_media_declares_a_schema(self) -> None:
         selector = "operation.requestBody:schemaless-json"
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/import": {"post": self.operation(body={"content": {"application/json": {}}})},
-                "/merge": {"post": self.operation(body={"content": {"application/merge-patch+json": {}}})},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/any": {"post": self.operation(body={"content": {"application/json": {"schema": {}}}})},
-                "/form": {"post": self.operation(body={"content": {
-                    "application/json": {}, "multipart/form-data": {}}})},
-                "/text": {"post": self.operation(body={"content": {"text/plain": {}}})},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/import": {"post": self.operation(body={"content": {"application/json": {}}})},
+                    "/merge": {"post": self.operation(body={"content": {"application/merge-patch+json": {}}})},
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/any": {"post": self.operation(body={"content": {"application/json": {"schema": {}}}})},
+                    "/form": {
+                        "post": self.operation(body={"content": {"application/json": {}, "multipart/form-data": {}}})
+                    },
+                    "/text": {"post": self.operation(body={"content": {"text/plain": {}}})},
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
@@ -13578,19 +14250,32 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.requestBody:blank-description-optional-object"
         optional = {"type": "object", "properties": {"q": {"type": "string"}}}
         required = {"type": "object", "required": ["q"], "properties": {"q": {"type": "string"}}}
-        blank = lambda schema: {"description": "", "content": {"application/json": {"schema": schema}}}
+
+        def blank(schema):
+            return {"description": "", "content": {"application/json": {"schema": schema}}}
+
         query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/inline": {"post": self.operation(body=blank(optional))},
-                "/ref": {"post": self.operation(body=blank({"$ref": "#/components/schemas/Filter"}))},
-            }, "components": {"schemas": {"Filter": optional}}},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/required": {"post": self.operation(body=blank(required))},
-                "/described": {"post": self.operation(body={
-                    "description": "terms", "content": {"application/json": {"schema": optional}}})},
-                "/queried": {"post": self.operation(body=blank(optional), parameters=query)},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/inline": {"post": self.operation(body=blank(optional))},
+                    "/ref": {"post": self.operation(body=blank({"$ref": "#/components/schemas/Filter"}))},
+                },
+                "components": {"schemas": {"Filter": optional}},
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/required": {"post": self.operation(body=blank(required))},
+                    "/described": {
+                        "post": self.operation(
+                            body={"description": "terms", "content": {"application/json": {"schema": optional}}}
+                        )
+                    },
+                    "/queried": {"post": self.operation(body=blank(optional), parameters=query)},
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
@@ -13598,21 +14283,34 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         selector = "operation.requestBody:described-inline-scalar"
         query = [{"name": "dry", "in": "query", "schema": {"type": "boolean"}}]
         documents = {
-            "positive": {"openapi": "3.0.3", "paths": {
-                "/label": {"put": self.operation(body=self.json_body(
-                    {"type": "string", "description": "a label"}))},
-                "/level": {"put": self.operation(body=self.json_body(
-                    {"type": "number", "description": "a level"}))},
-            }},
-            "decoys": {"openapi": "3.0.3", "paths": {
-                "/titled": {"put": self.operation(body=self.json_body({"type": "string", "title": "Label"}))},
-                "/mode": {"put": self.operation(body=self.json_body(
-                    {"type": "string", "enum": ["a"], "description": "a mode"}))},
-                "/queried": {"put": self.operation(body=self.json_body(
-                    {"type": "string", "description": "a label"}), parameters=query)},
-                "/object": {"put": self.operation(body=self.json_body(
-                    {"type": "object", "description": "a bag"}))},
-            }},
+            "positive": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/label": {
+                        "put": self.operation(body=self.json_body({"type": "string", "description": "a label"}))
+                    },
+                    "/level": {
+                        "put": self.operation(body=self.json_body({"type": "number", "description": "a level"}))
+                    },
+                },
+            },
+            "decoys": {
+                "openapi": "3.0.3",
+                "paths": {
+                    "/titled": {"put": self.operation(body=self.json_body({"type": "string", "title": "Label"}))},
+                    "/mode": {
+                        "put": self.operation(
+                            body=self.json_body({"type": "string", "enum": ["a"], "description": "a mode"})
+                        )
+                    },
+                    "/queried": {
+                        "put": self.operation(
+                            body=self.json_body({"type": "string", "description": "a label"}), parameters=query
+                        )
+                    },
+                    "/object": {"put": self.operation(body=self.json_body({"type": "object", "description": "a bag"}))},
+                },
+            },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
@@ -13623,19 +14321,23 @@ class ParityProofIndexTests(unittest.TestCase):
     def test_the_proof_index_matches_the_departure_catalog_and_real_gate_tests(self) -> None:
         index = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
         section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
-        rows = [cells for line in section.splitlines()
-                if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}]
+        rows = [
+            cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
+        ]
         self.assertEqual(34, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
-        indexed = [name.strip() for row in rows if row[6] != "—"
-                   for name in row[6].strip("`").split(",")]
+        indexed = [name.strip() for row in rows if row[6] != "—" for name in row[6].strip("`").split(",")]
         self.assertEqual(defects, set(indexed))
         self.assertEqual(len(indexed), len(set(indexed)), "a defect belongs to exactly one gap")
-        test_sources = "\n".join(path.read_text(encoding="utf-8") for path in
-                                 [REPO / "crates/crozier-e2e/tests/e2e.rs",
-                                  *(REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")])
+        test_sources = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in [
+                REPO / "crates/crozier-e2e/tests/e2e.rs",
+                *(REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs"),
+            ]
+        )
         for row in rows:
             with self.subTest(gap=row[0]):
                 for proof in row[4].split(";"):
@@ -13645,6 +14347,7 @@ class ParityProofIndexTests(unittest.TestCase):
                 for test in row[5].strip("`").split(";"):
                     name = test.strip().rsplit("::", 1)[-1]
                     self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
+
 
 class HandwrittenE2eCoversTests(unittest.TestCase):
     """The additive multi-file cover uses real committed inputs and gate API."""
@@ -13675,10 +14378,14 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 (root / "crates/crozier-e2e/tests/e2e.rs").write_text("", encoding="utf-8")
             elif missing == "loopback":
                 target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(target.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8")
+                target.write_text(
+                    target.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8"
+                )
             elif missing == "comparison":
                 target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(target.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8")
+                target.write_text(
+                    target.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8"
+                )
             elif missing == "evidence":
                 (root / paths[3]).unlink()
             elif missing == "search":
@@ -13690,13 +14397,24 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 target.write_text(target.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
             elif missing == "fields":
                 target = root / paths[0]
-                target.write_text(target.read_text().replace('fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"', 'fixture = ""'), encoding="utf-8")
+                target.write_text(
+                    target.read_text().replace(
+                        'fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"',
+                        'fixture = ""',
+                    ),
+                    encoding="utf-8",
+                )
             elif missing == "row":
                 target = root / paths[1]
                 target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
             elif missing == "golden-binding":
                 target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(target.read_text().replace('format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'), encoding="utf-8")
+                target.write_text(
+                    target.read_text().replace(
+                        'format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'
+                    ),
+                    encoding="utf-8",
+                )
             elif missing in ("registry-syntax", "kind", "duplicate", "verdict"):
                 target = root / paths[0]
                 text = target.read_text()
@@ -13705,21 +14423,44 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 elif missing == "kind":
                     text = text.replace('kind = "handwritten-e2e"', 'kind = "unknown"')
                 elif missing == "duplicate":
-                    text = text.replace('key = "remote-ref-at-use-site-inlined"', 'key = "remote-document-local-pointer-resolved-against-root"')
+                    text = text.replace(
+                        'key = "remote-ref-at-use-site-inlined"',
+                        'key = "remote-document-local-pointer-resolved-against-root"',
+                    )
                 else:
                     text = text.replace('verdict = "search-incomplete"', 'verdict = "unknown"')
                 target.write_text(text, encoding="utf-8")
             rows = gate.region_rows(root)
             if completeness:
-                entries = {key: ("schemas", cells) for key, (_path, cells) in rows.items()
-                           if key in ("remote-document-local-pointer-resolved-against-root", "remote-ref-at-use-site-inlined")}
-                return completeness_failures(entries, {"schemas": (root / paths[1]).read_text(encoding="utf-8")}, {}, root=root)
+                entries = {
+                    key: ("schemas", cells)
+                    for key, (_path, cells) in rows.items()
+                    if key in ("remote-document-local-pointer-resolved-against-root", "remote-ref-at-use-site-inlined")
+                }
+                return completeness_failures(
+                    entries, {"schemas": (root / paths[1]).read_text(encoding="utf-8")}, {}, root=root
+                )
             _keys, failures = gate.e2e_cover_failures(root, rows)
             return failures
 
     def test_completeness_reads_the_committed_multi_file_covers(self) -> None:
         self.assertEqual(self.check(completeness=True), [])
-        for missing in ("fixture", "test", "loopback", "comparison", "evidence", "search", "golden", "version", "fields", "golden-binding", "registry-syntax", "kind", "duplicate", "verdict"):
+        for missing in (
+            "fixture",
+            "test",
+            "loopback",
+            "comparison",
+            "evidence",
+            "search",
+            "golden",
+            "version",
+            "fields",
+            "golden-binding",
+            "registry-syntax",
+            "kind",
+            "duplicate",
+            "verdict",
+        ):
             with self.subTest(missing=missing):
                 self.assertTrue(self.check(missing, completeness=True))
 

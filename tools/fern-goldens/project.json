@@ -10,7 +10,10 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/fern-goldens/tests/fern_goldens_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens/tests/fern_goldens_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/fern-goldens/test/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -20,10 +23,14 @@
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/scripts/lib.sh",
-        "{workspaceRoot}/tests/fixtures/**/*"
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/fern-goldens/test"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs fern-goldens"
@@ -31,6 +38,54 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/fern-goldens tools/fern-goldens/fern-goldens"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/fern-goldens tools/fern-goldens/fern-goldens"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{projectRoot}/fern-goldens",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/fern-goldens tools/fern-goldens/fern-goldens"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{projectRoot}/fern-goldens",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/fern-goldens tools/fern-goldens/fern-goldens"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{projectRoot}/fern-goldens",
+        "pythonTooling"
       ]
     }
   }

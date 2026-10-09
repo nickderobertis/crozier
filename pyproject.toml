@@ -39,3 +39,169 @@ Changelog = "https://github.com/nickderobertis/crozier/blob/main/CHANGELOG.md"
 
 [tool.maturin]
 bindings = "bin"
+
+# The repository's Python tooling, as one uv workspace (one `uv.lock`). Nothing
+# below this line is read by maturin or reaches the published distribution's
+# metadata: these tables configure uv, ruff, ty, pytest and coverage for the
+# workspace members, each of which is also an Nx project (its project.json sits
+# beside its pyproject.toml). See docs/python-tooling.md.
+
+[tool.uv]
+# The root project is the maturin-built `crozier` binary wheel. `uv sync` and
+# `uv run` here exist for the tooling workspace, so uv must neither build that
+# wheel (it would compile the Rust crate) nor install it into the tooling
+# venv; `maturin build`, `maturin sdist` and `pip install crozier` ignore this.
+package = false
+
+[tool.uv.workspace]
+members = [
+    # Tooling projects: format, lint, typecheck, and a `test` whose coverage
+    # `python-workspace:coverage` combines and holds to the floor.
+    "screenshots",
+    "tools/corpus",
+    "tools/corpus-fetch",
+    "tools/corpus-licensing",
+    "tools/fern-goldens",
+    "tools/fern-goldens-git",
+    "tools/fern-refusals",
+    "tools/fern-refusals-strict",
+    "tools/llmlint",
+    "tools/llmlint-resolution",
+    "tools/python-workspace",
+    "tools/surface-census",
+    "tools/surface-reach",
+    "tools/witness-search",
+    "tools/witness-search-git",
+    # Promoted tiers holding Python harnesses: format, lint and typecheck only;
+    # their suites keep their own runners (see each one's AGENTS.md).
+    "tests/census_fallback",
+    "tests/corpus_match",
+    "tests/corpus_match_selection",
+    "tests/live_e2e",
+    "tests/runtime",
+]
+
+# The tooling's quality toolchain, resolved once in uv.lock. ruff follows
+# `.ruff-version` exactly (why: AGENTS.md's Python departures);
+# `python-workspace:test` fails when they differ.
+[dependency-groups]
+dev = [
+    "coverage>=7.16",
+    "pytest>=9.1",
+    "pytest-cov>=7",
+    "ruff==0.11.5",
+    "ty>=0.0.85",
+]
+
+# Paths no formatter, linter or type checker here may read or rewrite: Fern's
+# vendored output and probe expectations, the templates crozier copies verbatim
+# into generated SDKs, and departure evidence. No tooling project contains them;
+# the exclusion holds for a run over the whole tree too.
+[tool.ruff]
+line-length = 120
+# The scripts are also run by the host's bare `python3` (recipes, promoted
+# tiers, PEP 723 `uv run --script`), so the source stays valid on 3.11.
+target-version = "py311"
+force-exclude = true
+extend-exclude = [
+    "tests/fixtures",
+    "docs",
+    "assets/core",
+    "assets/scaffolding",
+    "templates",
+]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "B", "UP", "SIM", "C4", "PIE", "RUF",
+    # Injection and unsafe deserialization (references/languages/python.md):
+    # exec/eval, pickle, yaml.load without SafeLoader, shell=True, SQL strings.
+    "S102", "S301", "S307", "S506", "S602", "S604", "S605", "S608",
+    "T10",
+]
+ignore = [
+    # Line length is the formatter's: what it cannot wrap (a long string or URL) stays.
+    "E501",
+    # `isinstance(x, (A, B))` over `A | B`: ruff itself deprecated this rule, the
+    # union form being slower at runtime and no clearer.
+    "UP038",
+]
+# The en dash (page ranges) and multiplication sign (fixture × endpoint) are the
+# repository's prose typography, matched against its Markdown; neither is a
+# look-alike typed by mistake.
+allowed-confusables = ["–", "×"]
+
+[tool.ty.environment]
+# The same 3.11 floor the source keeps for the host's bare `python3`.
+python-version = "3.11"
+# Directories whose modules other projects import by putting them on sys.path
+# at run time (a script's helpers, a suite's shared fixtures), so ty resolves
+# those imports the way the interpreter does.
+extra-paths = [
+    "tools/corpus",
+    "tools/corpus/tests",
+    "tools/fern-goldens/tests",
+    "tools/fern-refusals/tests",
+    "tools/llmlint/tests",
+    "tools/surface-census/tests",
+    "tools/witness-search/tests",
+]
+
+[tool.ty.analysis]
+# Imported only where they exist at run time, and deliberately absent from the
+# workspace venv: ruamel.yaml is the census fallback's parser pin, installed by
+# `uv run --script` from a script's PEP 723 header (a suite asserts the refusal
+# when it is missing), and `fern` is the SDK the runtime suite generates and
+# puts on sys.path itself.
+allowed-unresolved-imports = ["ruamel.**", "fern.**"]
+
+[tool.ty.src]
+exclude = [
+    "tests/fixtures",
+    "docs",
+    "assets/core",
+    "assets/scaffolding",
+    "templates",
+]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.pytest.ini_options]
+addopts = ["-p", "no:cacheprovider"]
+
+# Line coverage over the tooling projects (the first block of workspace members),
+# measured per `test` target and combined by `python-workspace:coverage`, which
+# holds the union to the floor AGENTS.md records. The promoted tiers' harnesses
+# are not here: their suites run where those tiers' toolchains are.
+[tool.coverage.run]
+parallel = true
+relative_files = true
+# Scripts the suites drive as subprocesses (most of them) are measured too.
+patch = ["subprocess"]
+# Patterns, not `source` directories: many suites run a COPY of a script from a
+# scratch root laid out like this repository, which `source` would not measure.
+# `[tool.coverage.paths]` folds those copies back onto the real files.
+include = ["*/screenshots/*", "*/tools/*"]
+# The test files themselves (and the helpers beside them under tests/) are what
+# measures, not what is measured.
+omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
+
+# One entry per tooling project: its directory first (the denominator
+# `coverage_gate.py` counts), then the spelling of a copy under any scratch root.
+[tool.coverage.paths]
+"screenshots" = ["screenshots/", "*/screenshots/"]
+"corpus" = ["tools/corpus/", "*/tools/corpus/"]
+"corpus-fetch" = ["tools/corpus-fetch/", "*/tools/corpus-fetch/"]
+"corpus-licensing" = ["tools/corpus-licensing/", "*/tools/corpus-licensing/"]
+"fern-goldens" = ["tools/fern-goldens/", "*/tools/fern-goldens/"]
+"fern-goldens-git" = ["tools/fern-goldens-git/", "*/tools/fern-goldens-git/"]
+"fern-refusals" = ["tools/fern-refusals/", "*/tools/fern-refusals/"]
+"fern-refusals-strict" = ["tools/fern-refusals-strict/", "*/tools/fern-refusals-strict/"]
+"llmlint" = ["tools/llmlint/", "*/tools/llmlint/"]
+"llmlint-resolution" = ["tools/llmlint-resolution/", "*/tools/llmlint-resolution/"]
+"python-workspace" = ["tools/python-workspace/", "*/tools/python-workspace/"]
+"surface-census" = ["tools/surface-census/", "*/tools/surface-census/"]
+"surface-reach" = ["tools/surface-reach/", "*/tools/surface-reach/"]
+"witness-search" = ["tools/witness-search/", "*/tools/witness-search/"]
+"witness-search-git" = ["tools/witness-search-git/", "*/tools/witness-search-git/"]

@@ -53,7 +53,7 @@ import tempfile
 import threading
 from collections import defaultdict
 from pathlib import Path
-from typing import IO, Any, NamedTuple
+from typing import IO, Any, NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS_DIR = REPO / "docs" / "openapi-surface"
@@ -72,8 +72,11 @@ def _report_module():
     spec = importlib.util.spec_from_file_location(
         "fixtures_coverage_report", REPO / "tools" / "surface-census" / "fixtures-coverage-report.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/fixtures-coverage-report.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
@@ -81,7 +84,7 @@ def _report_module():
 REPORT = _report_module()
 
 
-def fail(message: str) -> None:
+def fail(message: str) -> NoReturn:
     raise SystemExit(f"golden-reach: {message}")
 
 
@@ -89,8 +92,11 @@ def _region_keys_module():
     spec = importlib.util.spec_from_file_location(
         "golden_reach_region_keys", REPO / "tools" / "surface-census" / "witness-search-region-keys.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/witness-search-region-keys.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     spec.loader.exec_module(module)
     return module
 
@@ -107,8 +113,6 @@ def golden_rows(regions_dir: Path = REGIONS_DIR) -> dict[str, str]:
             if cells[3].strip("`") == "golden":
                 out[cells[0].strip("`")] = path.stem
     return out
-
-
 
 
 class Site(NamedTuple):
@@ -150,7 +154,9 @@ class SiteRow(NamedTuple):
 def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
     """`key -> (selectors, site specs, note)` from the tab-separated declaration table."""
     if not path.is_file():
-        fail(f"{path} is missing; it declares every golden row's selectors and sites — restore it from git (`git checkout -- {path}`)")
+        fail(
+            f"{path} is missing; it declares every golden row's selectors and sites — restore it from git (`git checkout -- {path}`)"
+        )
     lines = path.read_text(encoding="utf-8").splitlines()
     header = ["key", "selectors", "sites", "note"]
     if not lines or lines[0].split("\t") != header:
@@ -159,16 +165,18 @@ def read_sites_table(path: Path = SITES_TABLE) -> dict[str, SiteRow]:
     for number, line in enumerate(lines[1:], start=2):
         fields = line.split("\t")
         if len(fields) != 4:
-            fail(f"{path}:{number} has {len(fields)} fields, not 4; give it `key`, `selectors`, `sites` and `note`, tab-separated, as the header names them")
+            fail(
+                f"{path}:{number} has {len(fields)} fields, not 4; give it `key`, `selectors`, `sites` and `note`, tab-separated, as the header names them"
+            )
         key, selectors, sites, note = fields
         if key in rows:
             fail(f"{path}:{number} declares {key} twice; merge the two rows' sites into one row")
         selector_list = tuple(s.strip() for s in selectors.split(",") if s.strip())
         if not selector_list:
-            fail(f"{path}:{number} ({key}) names no census selector; give it the selector(s) its region row's census cell names, comma-separated")
-        site_list = () if sites.strip() == "none" else tuple(
-            s.strip() for s in _split_sites(sites) if s.strip()
-        )
+            fail(
+                f"{path}:{number} ({key}) names no census selector; give it the selector(s) its region row's census cell names, comma-separated"
+            )
+        site_list = () if sites.strip() == "none" else tuple(s.strip() for s in _split_sites(sites) if s.strip())
         if not site_list and sites.strip() != "none":
             fail(f"{path}:{number} ({key}) names no site; write `none` for a feature crozier reads nowhere")
         rows[key] = SiteRow(key, selector_list, site_list, note.strip())
@@ -199,7 +207,9 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
     """Inclusive 1-indexed spans of every `fn` named by `item` (`name` or `Type::name`)."""
     owner, _, name = item.rpartition("::")
     fn = re.compile(rf"^\s*(?:pub(?:\([a-z]+\))?\s+)?(?:const\s+)?fn\s+{re.escape(name)}\b")
-    impl = re.compile(r"^(?:impl(?:<[^>]*>)?\s+(?:[A-Za-z_][A-Za-z0-9_<>, ]*\s+for\s+)?(?P<type>[A-Za-z_][A-Za-z0-9_]*))")
+    impl = re.compile(
+        r"^(?:impl(?:<[^>]*>)?\s+(?:[A-Za-z_][A-Za-z0-9_<>, ]*\s+for\s+)?(?P<type>[A-Za-z_][A-Za-z0-9_]*))"
+    )
     spans = []
     current_impl: tuple[str, int] | None = None
     for index, line in enumerate(lines):
@@ -218,7 +228,9 @@ def _function_spans(lines: list[str], item: str) -> list[tuple[int, int]]:
             continue
         end = REPORT._item_end_line(lines, index - 1)
         if end is None:
-            fail(f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name}")
+            fail(
+                f"cannot bound the body of `fn {name}` at line {index + 1}; check its braces balance (`cargo check`), or name a different site in {SITES_TABLE.name}"
+            )
         spans.append((index + 1, end))
     return spans
 
@@ -233,25 +245,26 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     """
     match = _SITE.match(spec)
     if SITE_SEPARATOR in spec:
-        fail(f"site {spec!r} contains {SITE_SEPARATOR!r}, which separates sites in the ledger; "
-             f"rewrite its regex in {SITES_TABLE.name} without that sequence (`\\s*;\\s*` matches it)")
+        fail(
+            f"site {spec!r} contains {SITE_SEPARATOR!r}, which separates sites in the ledger; "
+            f"rewrite its regex in {SITES_TABLE.name} without that sequence (`\\s*;\\s*` matches it)"
+        )
     if "|" in spec:
         # The spec is quoted in a markdown table cell, where a pipe — escaped or
         # not — splits the row for any reader that does not unescape it first.
         fail(f"site {spec!r} contains `|`; write `\\x7c` for a literal pipe in its regex")
     if not match:
-        fail(f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`; "
-             f"rewrite it in {SITES_TABLE.name} in one of those forms")
+        fail(
+            f"site {spec!r} is not `src/<file>.rs::<fn>`, `::<Type>::<fn>`, or either with `[<regex>]`; "
+            f"rewrite it in {SITES_TABLE.name} in one of those forms"
+        )
     path = repo_root / match.group("file")
     if not path.is_file():
         fail(f"site {spec!r} names {match.group('file')}, which does not exist; correct its path in {SITES_TABLE.name}")
     lines = path.read_text(encoding="utf-8").splitlines()
     spans = _function_spans(lines, match.group("item"))
     if len(spans) != 1:
-        fail(
-            f"site {spec!r} matches {len(spans)} functions; name exactly one "
-            f"(qualify a method as `Type::name`)"
-        )
+        fail(f"site {spec!r} matches {len(spans)} functions; name exactly one (qualify a method as `Type::name`)")
     start, end = spans[0]
     arm = match.group("arm")
     if arm is None:
@@ -260,11 +273,16 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
     pattern = re.compile(arm[1:] if line_only else arm)
     hits = [n for n in range(start, end + 1) if pattern.search(lines[n - 1])]
     if len(hits) != 1:
-        fail(f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1; "
-             f"anchor it (`^`, a leading-space count, more of the line) in {SITES_TABLE.name} until one line matches")
+        fail(
+            f"site {spec!r}: the arm regex matches {len(hits)} lines of its function, not 1; "
+            f"anchor it (`^`, a leading-space count, more of the line) in {SITES_TABLE.name} until one line matches"
+        )
     first = hits[0]
     if line_only:
-        column = pattern.search(lines[first - 1]).start() + 1
+        found = pattern.search(lines[first - 1])
+        # `hits` holds only the lines the pattern matches.
+        assert found is not None
+        column = found.start() + 1
         return Site(spec, match.group("file"), first, first, column, 1 << 30)
     opening = _opening_line(lines, first, end)
     if opening is None:
@@ -286,7 +304,9 @@ def resolve_site(spec: str, repo_root: Path = REPO) -> Site:
         open_col = lines[opening - 1].index("{") + 1
         arm_end = REPORT._item_end_line(lines, opening - 2)
     if arm_end is None or arm_end > end:
-        fail(f"site {spec!r}: cannot bound the block opened on line {opening}; anchor the arm regex on a line that opens a balanced block, or use `[=regex]` for a one-line arm")
+        fail(
+            f"site {spec!r}: cannot bound the block opened on line {opening}; anchor the arm regex on a line that opens a balanced block, or use `[=regex]` for a one-line arm"
+        )
     arrow = code.find("=>")
     if arrow != -1 and arrow < open_col:
         # A match arm: its body starts after `=>`, whether that body is a block
@@ -312,17 +332,11 @@ def _opening_line(lines: list[str], first: int, end: int) -> int | None:
     return None
 
 
-
-
 def _llvm_tool(name: str) -> str:
-    sysroot = subprocess.run(
-        ["rustc", "--print", "sysroot"], check=True, capture_output=True, text=True
-    ).stdout.strip()
+    sysroot = subprocess.run(["rustc", "--print", "sysroot"], check=True, capture_output=True, text=True).stdout.strip()
     host = next(
         line.split(":", 1)[1].strip()
-        for line in subprocess.run(
-            ["rustc", "-vV"], check=True, capture_output=True, text=True
-        ).stdout.splitlines()
+        for line in subprocess.run(["rustc", "-vV"], check=True, capture_output=True, text=True).stdout.splitlines()
         if line.startswith("host:")
     )
     tool = Path(sysroot) / "lib" / "rustlib" / host / "bin" / f"{name}{EXE}"
@@ -350,9 +364,7 @@ def run_llvm(argv: list[str], stdout: IO[str] | None = None) -> None:
 
 def _instrumented_binaries(repo_root: Path) -> tuple[Path, Path]:
     deps = repo_root / "target" / "llvm-cov-target" / "debug" / "deps"
-    candidates = [
-        p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == EXE
-    ]
+    candidates = [p for p in deps.glob("e2e-*") if p.is_file() and os.access(p, os.X_OK) and p.suffix == EXE]
     if not candidates:
         fail(f"no instrumented e2e binary under {deps} — run `just golden-reach`, which builds it")
     e2e = max(candidates, key=lambda p: p.stat().st_mtime)
@@ -376,11 +388,15 @@ def uncommitted_changes(repo_root: Path) -> list[str]:
     `HEAD` would silently include."""
     status = subprocess.run(
         ["git", "status", "--porcelain", "--untracked-files=no"],
-        cwd=repo_root, capture_output=True, text=True,
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
     )
     if status.returncode != 0:
-        fail(f"git status exited {status.returncode}: {status.stderr.strip()[-400:]} — "
-             "run `just golden-reach` from inside this repository's checkout")
+        fail(
+            f"git status exited {status.returncode}: {status.stderr.strip()[-400:]} — "
+            "run `just golden-reach` from inside this repository's checkout"
+        )
     return [line[3:] for line in status.stdout.splitlines() if line.strip()]
 
 
@@ -406,20 +422,34 @@ def measure(args: argparse.Namespace) -> int:
             "commit them first so the ledger's measured commit is the tree measured"
         )
     build = subprocess.run(
-        ["cargo", "llvm-cov", "--locked", "--no-report", "nextest", "--workspace", "-E",
-         "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)"],
-        cwd=repo_root, capture_output=True, text=True,
+        [
+            "cargo",
+            "llvm-cov",
+            "--locked",
+            "--no-report",
+            "nextest",
+            "--workspace",
+            "-E",
+            "binary(e2e) and test(=every_feature_target_has_its_own_golden_test)",
+        ],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
     )
     if build.returncode != 0:
         sys.stderr.write(build.stdout[-4000:] + build.stderr[-4000:])
         fail("the instrumented build failed (its output is above); fix what it names and re-run `just golden-reach`")
     e2e, crozier = _instrumented_binaries(repo_root)
     listed = subprocess.run(
-        [str(e2e), "--list", "--format", "terse"], cwd=repo_root,
-        capture_output=True, text=True,
+        [str(e2e), "--list", "--format", "terse"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
     )
     if listed.returncode != 0:
-        fail(f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `just golden-reach`")
+        fail(
+            f"{e2e} --list exited {listed.returncode}: {listed.stderr.strip()[-400:]} — rebuild it with `just golden-reach`"
+        )
     listing = listed.stdout
     golden_test = _census_module().GOLDEN_TEST
     tests = sorted(
@@ -428,7 +458,7 @@ def measure(args: argparse.Namespace) -> int:
         if line.endswith(": test") and golden_test.search(line)
     )
     if args.tests:
-        selected = re.compile(args.tests)
+        selected: re.Pattern[str] = re.compile(args.tests)
         tests = [t for t in tests if selected.search(t)]
     if not tests:
         fail(
@@ -454,7 +484,9 @@ def measure(args: argparse.Namespace) -> int:
             raw = Path(scratch)
             run = subprocess.run(
                 [str(e2e), "--exact", test, "--test-threads", "1", "--quiet"],
-                cwd=repo_root, capture_output=True, text=True,
+                cwd=repo_root,
+                capture_output=True,
+                text=True,
                 env=dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
             )
             if run.returncode != 0:
@@ -465,8 +497,7 @@ def measure(args: argparse.Namespace) -> int:
             export = raw / "export.json"
             with export.open("w", encoding="utf-8") as sink:
                 run_llvm(
-                    [llvm_cov, "export", "-format=text", f"-instr-profile={merged}",
-                     str(crozier), "-object", str(e2e)],
+                    [llvm_cov, "export", "-format=text", f"-instr-profile={merged}", str(crozier), "-object", str(e2e)],
                     stdout=sink,
                 )
             universe, hit = _covered(export, repo_root)
@@ -504,8 +535,6 @@ def measure(args: argparse.Namespace) -> int:
     return 0
 
 
-
-
 def census_witnesses(census: dict, selectors: tuple[str, ...]) -> dict[str, int]:
     """fixture -> declared sites, over every census selector `selectors` names (globs allowed).
 
@@ -523,7 +552,9 @@ def census_witnesses(census: dict, selectors: tuple[str, ...]) -> dict[str, int]
         if pattern.startswith("fixture="):
             fixture = pattern.removeprefix("fixture=")
             if fixture not in sources:
-                fail(f"`{pattern}` names no registered source; correct the `fixture=` selector in {SITES_TABLE.name} to a CORPUS.md name")
+                fail(
+                    f"`{pattern}` names no registered source; correct the `fixture=` selector in {SITES_TABLE.name} to a CORPUS.md name"
+                )
             named[fixture] = 0
             continue
         hits = {name for name in names if fnmatch.fnmatchcase(name, pattern)}
@@ -592,7 +623,9 @@ def compute(
             site = resolve_site(spec, repo_root)
             found = frozenset(r for r in universe.get(site.file, set()) if site.holds(r))
             if not found:
-                fail(f"site {spec} spans no production counter region; it handles nothing measurable. Point it at the arm that handles the feature, or re-run `just golden-reach` if src/ moved since the measurement")
+                fail(
+                    f"site {spec} spans no production counter region; it handles nothing measurable. Point it at the arm that handles the feature, or re-run `just golden-reach` if src/ moved since the measurement"
+                )
             inside[spec] = found
             for test, files in coverage.items():
                 executed_by[spec, test] = found & files.get(site.file, frozenset())
@@ -665,9 +698,7 @@ def reach_cell(reach: Reach, rank: int, regions_dir: Path | None = None) -> str:
     )
 
 
-LEDGER_HEADER = (
-    "rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites\tnote"
-)
+LEDGER_HEADER = "rank\tkey\tregion\tunreached_sites\tunreached_regions\tregions\twitnesses\toutside\tsites\tnote"
 
 
 def ledger_text(reaches: list[Reach], provenance: str) -> str:
@@ -684,9 +715,7 @@ def ledger_text(reaches: list[Reach], provenance: str) -> str:
                     str(reach.regions),
                     ",".join(reach.witnesses) or "-",
                     ",".join(reach.outside) or "-",
-                    SITE_SEPARATOR.join(
-                        f"{spec}={hit}/{total}" for spec, hit, total in reach.sites
-                    ) or "none",
+                    SITE_SEPARATOR.join(f"{spec}={hit}/{total}" for spec, hit, total in reach.sites) or "none",
                     reach.note or "-",
                 ]
             )
@@ -704,8 +733,10 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     for number, line in enumerate(lines[2:], start=3):
         fields = line.split("\t")
         if len(fields) != columns:
-            fail(f"{path}:{number} has {len(fields)} tab-separated fields, not {columns}; "
-                 "regenerate it with `just golden-reach-report`")
+            fail(
+                f"{path}:{number} has {len(fields)} tab-separated fields, not {columns}; "
+                "regenerate it with `just golden-reach-report`"
+            )
         rank, key, region, _us, _ur, _regions, witnesses, outside, sites, note = fields
         parsed = []
         try:
@@ -716,8 +747,10 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
                     parsed.append((spec, int(hit), int(total)))
             rank_number = int(rank)
         except ValueError:
-            fail(f"{path}:{number} carries a rank or a `site=hit/total` count that is not a number; "
-                 "regenerate it with `just golden-reach-report`")
+            fail(
+                f"{path}:{number} carries a rank or a `site=hit/total` count that is not a number; "
+                "regenerate it with `just golden-reach-report`"
+            )
         out.append(
             (
                 rank_number,
@@ -780,8 +813,11 @@ def _census_module():
     spec = importlib.util.spec_from_file_location(
         "openapi_surface_census", REPO / "tools" / "surface-census" / "openapi-surface-census.py"
     )
+    if spec is None or spec.loader is None:
+        raise SystemExit(
+            "golden-reach: cannot load tools/surface-census/openapi-surface-census.py; restore it from git"
+        )
     module = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
     sys.modules.setdefault("openapi_surface_census", module)
     spec.loader.exec_module(module)
     return module
@@ -793,16 +829,23 @@ def load_regions(path: Path) -> dict[str, set[tuple[int, ...]]]:
         raw = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         fail(f"{path} is unreadable ({error}); re-run `just golden-reach` to measure again")
+
     def region(r: Any) -> bool:
         # llvm-cov's spans: 1-based line and column pairs, the end not before the start.
-        return (isinstance(r, list) and len(r) == 4 and all(type(n) is int and n >= 1 for n in r)
-                and (r[0], r[1]) <= (r[2], r[3]))
+        return (
+            isinstance(r, list)
+            and len(r) == 4
+            and all(type(n) is int and n >= 1 for n in r)
+            and (r[0], r[1]) <= (r[2], r[3])
+        )
 
     if not isinstance(raw, dict) or not all(
         isinstance(regions, list) and all(region(r) for r in regions) for regions in raw.values()
     ):
-        fail(f"{path} is not a map of files to [line, col, line, col] regions (1-based, end after start); "
-             "re-run `just golden-reach` to measure again")
+        fail(
+            f"{path} is not a map of files to [line, col, line, col] regions (1-based, end after start); "
+            "re-run `just golden-reach` to measure again"
+        )
     return {f: {tuple(r) for r in regions} for f, regions in raw.items()}
 
 
@@ -829,9 +872,11 @@ def load_census(path: Path) -> dict[str, Any]:
         )
     )
     if not shaped:
-        fail(f"{path} is not the census's `--json` output (`sources` naming string fixtures, and `rows` of "
-             "string `selector` and `fixture` with a non-negative integer `count`); "
-             "re-run `just golden-reach` to write it again")
+        fail(
+            f"{path} is not the census's `--json` output (`sources` naming string fixtures, and `rows` of "
+            "string `selector` and `fixture` with a non-negative integer `count`); "
+            "re-run `just golden-reach` to write it again"
+        )
     return census
 
 
@@ -886,14 +931,14 @@ def report(args: argparse.Namespace) -> int:
 
 
 def sites(args: argparse.Namespace) -> int:
-    table = read_sites_table(
-        args.table or args.repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"
-    )
+    table = read_sites_table(args.table or args.repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv")
     if args.census:
         census = load_census(Path(args.census))
         for row in table.values():
             if not census_witnesses(census, row.selectors):
-                fail(f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or re-run `just golden-reach` if the census is stale")
+                fail(
+                    f"{row.key}: no registered source declares any of {', '.join(row.selectors)}; correct its selectors in {SITES_TABLE.name}, or re-run `just golden-reach` if the census is stale"
+                )
     seen = set()
     for row in table.values():
         for spec in row.sites:
