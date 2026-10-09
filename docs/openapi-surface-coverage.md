@@ -1159,8 +1159,8 @@ can express. Three conventions that derivation applies, stated once:
   would count a variant declaring `type: object` beside a scalar example, an empty
   `examples`, or an object whose values are themselves schema declarations, and
   `hoist_union_variant` sent all three to `base_type_ref` while it still hoisted
-  a bare object with a concrete example. One-hundred-and-six of the
-  one-hundred-and-six cases below survive this test; the other zero name the
+  a bare object with a concrete example. One-hundred-and-ten of the
+  one-hundred-and-ten cases below survive this test; the other zero name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts

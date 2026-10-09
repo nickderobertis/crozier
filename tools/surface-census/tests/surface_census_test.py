@@ -2780,6 +2780,7 @@ class GrammarContractTests(unittest.TestCase):
             83: "eighty-three",
             89: "eighty-nine",
             107: "one-hundred-and-seven",
+            110: "one-hundred-and-ten",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -3274,6 +3275,10 @@ class ConjunctionCensusTests(unittest.TestCase):
             "tag-based-grouping": 2,
             "writeonly-fields": 1,
         },
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -3742,6 +3747,17 @@ NULLABLE_ONE_OF = {"oneOf": [{"type": "null"}, {"type": "string"}]}
 NULLABLE_ANY_OF = {"anyOf": [{"type": "null"}, {"type": "string"}]}
 TWO_ONE_OF = {"oneOf": [{"type": "string"}, {"type": "integer"}]}
 TWO_ANY_OF = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+MAP_OF_TWO_ONE_OF = {"type": "object", "additionalProperties": TWO_ONE_OF}
+MAP_OF_TWO_ANY_OF = {"type": "object", "additionalProperties": TWO_ANY_OF}
+# The same maps over structured members, which no closing union residual counts.
+MAP_OF_TWO_ONE_OF_STRUCTS = {
+    "type": "object",
+    "additionalProperties": {"oneOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},
+}
+MAP_OF_TWO_ANY_OF_STRUCTS = {
+    "type": "object",
+    "additionalProperties": {"anyOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},
+}
 
 
 def array_of(items: dict) -> dict:
@@ -3941,6 +3957,10 @@ NEGATION_SELECTORS = frozenset(
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
         "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
     }
 )
 
@@ -4051,6 +4071,20 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "prop_type_ref case 7b's `const` fallback",
             "select": ("schema", {"const": "alpha"}),
             "near": ("schema", {"const": 1}),
+        },
+        {
+            "selector": "schema.oneOf:several-non-null-members",
+            "slug": "one-of-several-non-null",
+            "branch": "the arity `hoist_union_variant` case 14 reads off a map's value",
+            "select": ("schema", TWO_ONE_OF),
+            "near": ("schema", NULLABLE_ONE_OF),
+        },
+        {
+            "selector": "schema.anyOf:several-non-null-members",
+            "slug": "any-of-several-non-null",
+            "branch": "the same arity, `anyOf` spelling",
+            "select": ("schema", TWO_ANY_OF),
+            "near": ("schema", NULLABLE_ANY_OF),
         },
         {
             "selector": "schema.additionalProperties=false",
@@ -6150,6 +6184,45 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                 "Target": {"type": "string"},
             },
             "overlap_selector": "schema.properties>schema.allOf:annotated-ref",
+        },
+        # --- hoist_union_variant, cases 14a to 14d: the map member's union value.
+        # Each node is one the closing residual of its head (case 12a or 12b)
+        # also counts, since that residual does not negate a subtree condition.
+        {
+            "selector": "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "huv-14a",
+            "branch": "hoist_union_variant case 14a",
+            "select": {"Root": {"oneOf": [MAP_OF_TWO_ONE_OF]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "additionalProperties": NULLABLE_ONE_OF}]}},
+            "overlap": {"Root": {"oneOf": [MAP_OF_TWO_ONE_OF_STRUCTS]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "huv-14b",
+            "branch": "hoist_union_variant case 14b",
+            "select": {"Root": {"oneOf": [MAP_OF_TWO_ANY_OF]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "additionalProperties": {**TWO_ANY_OF, **TWO_ONE_OF}}]}},
+            "overlap": {"Root": {"oneOf": [MAP_OF_TWO_ANY_OF]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "huv-14c",
+            "branch": "hoist_union_variant case 14c",
+            "select": {"Root": {"anyOf": [MAP_OF_TWO_ONE_OF]}},
+            "near": {"Root": {"anyOf": [{**MAP_OF_TWO_ONE_OF, **STRUCT}]}},
+            "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ONE_OF]}},
+            "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "huv-14d",
+            "branch": "hoist_union_variant case 14d",
+            "select": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF]}},
+            "near": {"Root": {"anyOf": [{**MAP_OF_TWO_ANY_OF, "type": "string"}]}},
+            "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF_STRUCTS]}},
+            "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         },
         {
             "selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
