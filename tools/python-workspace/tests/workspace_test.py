@@ -82,6 +82,18 @@ class EveryMeasuredProjectIsAWorkspaceProject(unittest.TestCase):
         self.assertEqual(measured - {aggregate["name"]}, set(aggregate["implicitDependencies"]))
         self.assertEqual(["^test", "test"], aggregate["targets"]["coverage"]["dependsOn"])
 
+    def test_this_suite_reruns_when_any_manifest_it_reads_changes(self) -> None:
+        # The suite reads every measured project's project.json and pyproject.toml;
+        # one missing from its inputs would leave a stale verdict cached.
+        aggregate = json.loads((REPO / "tools" / "python-workspace" / "project.json").read_text(encoding="utf-8"))
+        inputs = set(aggregate["targets"]["test"]["inputs"])
+        for source in measured_directories():
+            if source == "tools/python-workspace":
+                continue
+            for manifest in ("project.json", "pyproject.toml"):
+                with self.subTest(source=source, manifest=manifest):
+                    self.assertIn(f"{{workspaceRoot}}/{source}/{manifest}", inputs)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -44,7 +44,7 @@ __pycache__/
 /.nx
 
 # The Python tooling workspace's venv (`uv sync`) and the coverage data its
-# `test` targets write and `python-coverage:coverage` combines.
+# `test` targets write and `python-workspace:coverage` combines.
 /.venv
 /.coverage-data
 /.ruff_cache

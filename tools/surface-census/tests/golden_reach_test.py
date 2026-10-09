@@ -403,6 +403,8 @@ _search_spec = importlib.util.spec_from_file_location(
     "golden_reach_search", REPO / "tools" / "surface-census" / "golden-reach-search.py"
 )
 assert _search_spec and _search_spec.loader
+# `Any`, not `ModuleType`: the cases rebind the script's own globals (its evidence
+# and source paths), an assignment ty refuses on a plain module.
 golden_reach_search: Any = importlib.util.module_from_spec(_search_spec)
 sys.modules["golden_reach_search"] = golden_reach_search
 _search_spec.loader.exec_module(golden_reach_search)

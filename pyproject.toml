@@ -40,13 +40,11 @@ Changelog = "https://github.com/nickderobertis/crozier/blob/main/CHANGELOG.md"
 [tool.maturin]
 bindings = "bin"
 
-# ---------------------------------------------------------------------------
 # The repository's Python tooling, as one uv workspace (one `uv.lock`). Nothing
 # below this line is read by maturin or reaches the published distribution's
 # metadata: these tables configure uv, ruff, ty, pytest and coverage for the
 # workspace members, each of which is also an Nx project (its project.json sits
-# beside its pyproject.toml). See AGENTS.md "Python tooling".
-# ---------------------------------------------------------------------------
+# beside its pyproject.toml). See docs/python-tooling.md.
 
 [tool.uv]
 # The root project is the maturin-built `crozier` binary wheel. `uv sync` and

@@ -38,10 +38,6 @@ out of the affected tier.
 - **No skip.** Missing Python / venv / deps fails the test (see
   `runtime_python_env`): the tier exists to run it, so it never passes unrun.
 
-- **Python checks, and a departure from `languages/python.md`:** this tier's Python
-  is a uv workspace member (`pyproject.toml` here) with `format` (ruff format),
-  `lint` (ruff check) and `typecheck` (ty), which need nothing beyond the
-  workspace. Its `test` keeps its own runner and is not a pytest-with-coverage
-  target, and its files are outside the combined Python coverage floor: they are
-  harnesses for a suite that needs this promoted tier's toolchain, which the
-  check legs computing the floor do not carry. See `docs/python-tooling.md`.
+- Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
+  these files stay out of the combined coverage floor, because its suite needs
+  the generated SDKs' PyPI venv.

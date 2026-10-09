@@ -218,11 +218,27 @@ source = { virtual = "tests/census_fallback" }
 name = "crozier-corpus"
 version = "0.0.0"
 source = { virtual = "tools/corpus" }
+dependencies = [
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-surface-census", virtual = "tools/surface-census" }]
 
 [[package]]
 name = "crozier-corpus-fetch"
 version = "0.0.0"
 source = { virtual = "tools/corpus-fetch" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+]
 
 [[package]]
 name = "crozier-corpus-licensing"
@@ -238,21 +254,59 @@ source = { virtual = "tests/corpus_match" }
 name = "crozier-fern-goldens"
 version = "0.0.0"
 source = { virtual = "tools/fern-goldens" }
+dependencies = [
+    { name = "crozier-corpus" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-corpus", virtual = "tools/corpus" }]
 
 [[package]]
 name = "crozier-fern-goldens-git"
 version = "0.0.0"
 source = { virtual = "tools/fern-goldens-git" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-fern-goldens" },
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-fern-goldens", virtual = "tools/fern-goldens" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+]
 
 [[package]]
 name = "crozier-fern-refusals"
 version = "0.0.0"
 source = { virtual = "tools/fern-refusals" }
+dependencies = [
+    { name = "crozier-witness-search" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-witness-search", virtual = "tools/witness-search" }]
 
 [[package]]
 name = "crozier-fern-refusals-strict"
 version = "0.0.0"
 source = { virtual = "tools/fern-refusals-strict" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-fern-refusals" },
+    { name = "crozier-surface-census" },
+    { name = "crozier-witness-search" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-fern-refusals", virtual = "tools/fern-refusals" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+    { name = "crozier-witness-search", virtual = "tools/witness-search" },
+]
 
 [[package]]
 name = "crozier-live-e2e"
@@ -277,11 +331,23 @@ requires-dist = [
 name = "crozier-llmlint-resolution"
 version = "0.0.0"
 source = { virtual = "tools/llmlint-resolution" }
+dependencies = [
+    { name = "crozier-llmlint-tooling" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-llmlint-tooling", virtual = "tools/llmlint" }]
 
 [[package]]
 name = "crozier-llmlint-tooling"
 version = "0.0.0"
 source = { virtual = "tools/llmlint" }
+dependencies = [
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-surface-census", virtual = "tools/surface-census" }]
 
 [[package]]
 name = "crozier-python-workspace"
@@ -325,26 +391,60 @@ name = "crozier-surface-census"
 version = "0.0.0"
 source = { virtual = "tools/surface-census" }
 dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-llmlint-tooling" },
+    { name = "crozier-witness-search" },
     { name = "pyyaml" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "pyyaml", specifier = ">=6" }]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-llmlint-tooling", virtual = "tools/llmlint" },
+    { name = "crozier-witness-search", virtual = "tools/witness-search" },
+    { name = "pyyaml", specifier = ">=6" },
+]
 
 [[package]]
 name = "crozier-surface-reach"
 version = "0.0.0"
 source = { virtual = "tools/surface-reach" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+]
 
 [[package]]
 name = "crozier-witness-search"
 version = "0.0.0"
 source = { virtual = "tools/witness-search" }
+dependencies = [
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "crozier-surface-census", virtual = "tools/surface-census" }]
 
 [[package]]
 name = "crozier-witness-search-git"
 version = "0.0.0"
 source = { virtual = "tools/witness-search-git" }
+dependencies = [
+    { name = "crozier-surface-census" },
+    { name = "crozier-witness-search" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+    { name = "crozier-witness-search", virtual = "tools/witness-search" },
+]
 
 [[package]]
 name = "h11"

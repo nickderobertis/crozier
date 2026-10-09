@@ -1,12 +1,20 @@
 # The `fern-refusals-strict` Nx project's uv workspace member (the workspace is declared in
 # the root pyproject.toml). It publishes nothing: there is no [build-system],
-# and `package = false` keeps uv from trying to build or install it.
+# and `package = false` keeps uv from trying to build or install it. Its
+# workspace dependencies are the members whose Python it imports, loads by path
+# or runs (often as a copy in a scratch root).
 [project]
 name = "crozier-fern-refusals-strict"
 version = "0.0.0"
 description = "The fern-refusals suite that drives the real crozier binary."
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["crozier-corpus", "crozier-fern-refusals", "crozier-surface-census", "crozier-witness-search"]
 
 [tool.uv]
 package = false
+
+[tool.uv.sources]
+crozier-corpus = { workspace = true }
+crozier-fern-refusals = { workspace = true }
+crozier-surface-census = { workspace = true }
+crozier-witness-search = { workspace = true }

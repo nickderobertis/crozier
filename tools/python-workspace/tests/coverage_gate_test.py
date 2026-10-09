@@ -214,6 +214,22 @@ class TheGateRefusesWhatItCannotMeasure(ScratchWorkspace):
         self.assertEqual(1, refused.returncode, refused.stdout + refused.stderr)
         self.assertIn("names no project directories", refused.stderr)
 
+    def test_a_malformed_configuration_is_named_not_misread(self) -> None:
+        self.measure()
+        for config, message in (
+            (CONFIG + "\n[[broken", "pyproject.toml is not TOML"),
+            (CONFIG.replace('proj = ["proj/", "*/proj/"]', 'proj = "proj/"'), "[tool.coverage.paths] proj is 'proj/'"),
+            (CONFIG.replace('proj = ["proj/", "*/proj/"]', "proj = []"), "[tool.coverage.paths] proj is []"),
+            (CONFIG.replace('omit = ["*/tests/*"]', 'omit = "*/tests/*"'), "[tool.coverage.run] omit is '*/tests/*'"),
+        ):
+            with self.subTest(message=message):
+                (self.root / "pyproject.toml").write_text(config, encoding="utf-8")
+                refused = self.gate("--fail-under", "95")
+                self.assertEqual(1, refused.returncode, refused.stdout + refused.stderr)
+                self.assertIn(message, refused.stderr)
+                self.assertIn("fix the coverage configuration in pyproject.toml", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+
     def test_a_floor_that_is_not_a_percentage_is_refused(self) -> None:
         for floor in ("0", "101", "ninety"):
             with self.subTest(floor=floor):

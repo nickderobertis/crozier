@@ -109,10 +109,6 @@ the wire suite's posture so the mock e2e can never silently no-op in the gate.
 `tests/live_e2e/run.sh` additionally gates each tool with an actionable error when
 invoked directly.
 
-- **Python checks, and a departure from `languages/python.md`:** this tier's Python
-  is a uv workspace member (`pyproject.toml` here) with `format` (ruff format),
-  `lint` (ruff check) and `typecheck` (ty), which need nothing beyond the
-  workspace. Its `test` keeps its own runner and is not a pytest-with-coverage
-  target, and its files are outside the combined Python coverage floor: they are
-  harnesses for a suite that needs this promoted tier's toolchain, which the
-  check legs computing the floor do not carry. See `docs/python-tooling.md`.
+- Python: `format`, `lint` and `typecheck` only. `test` keeps its own runner and
+  these files stay out of the combined coverage floor, because its suite needs
+  Prism and a PyPI venv.

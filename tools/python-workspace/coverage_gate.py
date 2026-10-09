@@ -39,6 +39,7 @@ import sys
 import tempfile
 import tomllib
 from pathlib import Path
+from typing import TypeGuard
 
 from coverage import CoverageData
 
@@ -110,15 +111,32 @@ def by_project(analysis: dict[Path, tuple[int, int]], sources: list[str]) -> lis
     return lines
 
 
+def strings(value: object) -> TypeGuard[list[str]]:
+    return isinstance(value, list) and all(isinstance(item, str) and item for item in value)
+
+
 def coverage_config(root: Path) -> tuple[list[str], list[str]]:
     """Each tooling project's directory (the first path of each `[tool.coverage.paths]`
-    entry) and the `[tool.coverage.run] omit` patterns, from `root/pyproject.toml`."""
-    manifest = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    entry) and the `[tool.coverage.run] omit` patterns, from `root/pyproject.toml`.
+
+    Raises ValueError naming the first setting that is not the shape coverage reads.
+    """
+    try:
+        manifest = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    except tomllib.TOMLDecodeError as error:
+        raise ValueError(f"pyproject.toml is not TOML: {error}") from error
     settings = manifest.get("tool", {}).get("coverage", {})
-    paths = settings.get("paths", {})
-    sources = [entries[0].rstrip("/") for entries in paths.values() if isinstance(entries, list) and entries]
-    omit = list(settings.get("run", {}).get("omit", []))
-    return sources, omit
+    paths = settings.get("paths", {}) if isinstance(settings, dict) else None
+    if not isinstance(paths, dict):
+        raise ValueError("[tool.coverage.paths] is not a table")
+    for name, entries in paths.items():
+        if not strings(entries) or not entries:
+            raise ValueError(f"[tool.coverage.paths] {name} is {entries!r}, not a list of paths")
+    run = settings.get("run", {})
+    omit = run.get("omit", []) if isinstance(run, dict) else None
+    if not strings(omit):
+        raise ValueError(f"[tool.coverage.run] omit is {omit!r}, not a list of patterns")
+    return [entries[0].rstrip("/") for entries in paths.values()], list(omit)
 
 
 def main(argv: list[str]) -> int:
@@ -133,7 +151,10 @@ def main(argv: list[str]) -> int:
     root = Path.cwd()
     if not (root / "pyproject.toml").is_file():
         return fail(f"no pyproject.toml in {root}", "run the gate from the repository root")
-    sources, omit = coverage_config(root)
+    try:
+        sources, omit = coverage_config(root)
+    except ValueError as error:
+        return fail(str(error), "fix the coverage configuration in pyproject.toml")
     if not sources:
         return fail(
             "the coverage configuration names no project directories",

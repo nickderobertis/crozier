@@ -92,12 +92,21 @@ and surfacing the rest as follow-ups:
   - **Bench tier** — performance is a goal, but the informational Criterion/
     hyperfine tier is deferred until there's a hot path worth tracking; it never
     gates, so its absence costs no correctness.
-  - **Departures from `languages/python.md`'s defaults** (each reason in
-    [`docs/python-tooling.md`](docs/python-tooling.md#departures-from-languagespythonmd)):
-    source kept valid on 3.11 though the venv runs 3.14; the tooling ruff pinned
-    to `.ruff-version`; stdlib-only scripts, so no Pydantic boundary models or
-    async clients; the promoted tiers' harnesses get format, lint and typecheck
-    but keep their own runners and stay out of the coverage floor.
+  - **Departures from `languages/python.md`'s defaults:**
+    - Source valid on 3.11 (ruff `target-version`, ty `python-version`) though
+      the venv runs 3.14: recipes, promoted tiers and PEP 723 stages also run the
+      scripts under the host's `python3`, and the workspace `requires-python`
+      steers the interpreter `uv venv` picks for the e2e suite's SDK envs.
+    - The tooling ruff is pinned to `.ruff-version`: `uv run` puts the venv's
+      ruff first on PATH, where crozier's generation shells out to it.
+    - No Pydantic boundary models or async clients: the census and witness
+      scripts stay stdlib-only so they run installless and no parser's version
+      moves their measurements; their explicit checks are the validation.
+    - The promoted tiers' harnesses get format, lint and typecheck only; their
+      suites need Prism, PyPI or a release build, so they keep their runners and
+      stay out of the coverage floor. `golden_reach_test.py` keeps its runner
+      too ([`tools/surface-census/AGENTS.md`](tools/surface-census/AGENTS.md)).
+    - The coverage floor is 88%, not 95% (see "Tests are context engineering").
 
 ## Command surface
 
@@ -306,7 +315,7 @@ assert its absence), and `probe-differential-isolation.py`, which only the Rust
 e2e harness drives. It holds on the Linux and macOS check legs and the sweep; the
 Windows leg runs every suite without the floor, because the suites skip their
 POSIX-only cases there. Raise it as those lines get reached; never lower it
-without a new measurement here. Details: [`docs/python-tooling.md`](docs/python-tooling.md#floor).
+without a new measurement here.
 
 ## Keeping the allowlist current
 

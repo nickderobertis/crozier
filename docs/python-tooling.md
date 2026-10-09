@@ -50,7 +50,7 @@ extensionless `#!…python` scripts alike, whether or not any test runs it; only
 the test files under `tests/` are omitted. It runs the `coverage` CLI in child
 processes: a second `coverage.Coverage` inside a measured process stops that
 process's own data from being saved, which once hid the gate's own runs from its
-suite. The floor and the measurement it rests on are recorded in [Floor](#floor).
+suite. The floor and the measurement it rests on are recorded in `AGENTS.md`.
 
 ## ruff and ty
 
@@ -74,61 +74,16 @@ suite. The floor and the measurement it rests on are recorded in [Floor](#floor)
   `templates/` are excluded from ruff and ty even on a whole-tree run; no Python
   project contains them.
 
-## Departures from `languages/python.md`
+## Measuring
 
-- **Source valid on 3.11; the venv runs 3.14.** Recipes, the promoted tiers and
-  PEP 723 `uv run --script` stages also run these scripts under the host's own
-  `python3`, so ruff's `target-version` and ty's `python-version` are 3.11, and
-  the members declare `requires-python = ">=3.11"`. The workspace's
-  `requires-python` also steers which interpreter `uv venv` picks for the
-  generated-SDK environments the e2e suite builds, so it is not raised to 3.14.
-- **Stdlib-only scripts: no Pydantic boundary models, no async clients.** The
-  census and witness tooling runs under bare `python3` and inside
-  `uv run --script` stages with no installs, and its measurements must not
-  depend on a third-party parser's version; boundary validation is the scripts'
-  explicit checks, each tested.
-- **The promoted tiers' harnesses** keep their own runners (`run.sh`, the e2e
-  crate's SDK venv) and stay out of the coverage denominator: their suites need
-  Prism, PyPI or a release build that the check legs computing the floor do not
-  carry. Each tier's `AGENTS.md` records it.
-- **`test` is a no-op over `test-*` pieces** where a project's suites read
-  different inputs (crozier-nx's split), so a change re-runs only the suite that
-  reads it. Each piece is pytest with coverage.
+`just test` (or `just nx run python-workspace:coverage`) runs every tooling
+suite and the gate. To read the per-project split after it:
 
-## Floor
-
-**88%**, measured on 2026-10-08 (Linux): **88.62%**, 12411 of 14004 lines across
-34 files. It is a floor to ratchet up, not a target; never lower it without a new
-measurement recorded here and in `AGENTS.md`.
-
-| project | covered / lines | % |
-| --- | --- | --- |
-| screenshots | 134 / 138 | 97.10 |
-| corpus | 991 / 1063 | 93.23 |
-| corpus-licensing | 50 / 50 | 100.00 |
-| fern-goldens | 665 / 793 | 83.86 |
-| fern-refusals | 746 / 782 | 95.40 |
-| llmlint-tooling (`tools/llmlint`) | 245 / 263 | 93.16 |
-| python-workspace | 123 / 127 | 96.85 |
-| surface-census | 5379 / 6058 | 88.79 |
-| witness-search | 4078 / 4730 | 86.22 |
+    uv run --locked --all-packages python tools/python-workspace/coverage_gate.py --fail-under 88 --by-project
 
 The projects holding only suites (corpus-fetch, fern-goldens-git,
-fern-refusals-strict, llmlint-resolution, surface-reach, witness-search-git)
-count toward the projects whose scripts they drive.
-
-Two files are 0% in this tier by structure (526 lines):
-`tools/witness-search/witness-search-recensus.py`, whose suite needs ruamel.yaml
-at the census fallback's pin and runs in the promoted census-fallback tier (the
-pin stays out of the workspace venv because the golden-reach suites assert the
-refusal when it is absent); and `tools/surface-census/probe-differential-isolation.py`,
-which only the Rust e2e harness drives, under a bare `python3`. Without them the
-rest measures 92.08%. The largest other gaps: `golden-reach-search.py` (282 lines
-missed), `fern-goldens` (124, the Docker/Fern lifecycle), `golden-reach.py` (94),
-`handwritten-fixtures.py` (87).
-
-**Platforms.** The floor holds on the Linux and macOS check legs and in the
-sweep. The Windows check leg excludes `python-workspace` (ci.yml's Check step),
-so every tooling suite still runs there but the aggregate does not: the suites
-skip their POSIX-only cases on Windows (stub binaries are shell scripts), so its
-number would be lower, and it has not been measured.
+fern-refusals-strict, llmlint-resolution, surface-reach, witness-search-git) count
+toward the projects whose scripts they drive. Beyond the two files the floor's
+record names, the largest gaps at the recorded measurement were
+`golden-reach-search.py` (282 lines missed), `fern-goldens` (124, the Docker/Fern
+lifecycle), `golden-reach.py` (94) and `handwritten-fixtures.py` (87).
