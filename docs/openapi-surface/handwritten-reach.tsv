@@ -71,6 +71,9 @@ ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::ref_to_class["properti
 ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]	5	6
 skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
-survey-map-value-union	additional-properties-schema	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	43	44
+survey-map-value-union	additional-properties-schema	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
+survey-map-value-union	anyof-map-variant-anyof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
+survey-map-value-union	anyof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
+survey-map-value-union	oneof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
 thermostat-nullable-member	nullable	src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]	2	2
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2
