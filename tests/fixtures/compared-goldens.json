@@ -15,6 +15,8 @@
     "docs/fern-measurements/clients-extensions/grid-valve-console-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/harbour-pilot-regions-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected": {},
     "docs/fern-measurements/clients-extensions/lamp-room-log-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ledger-records-offset-flat/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ledger-records-offset-literals/fern-expected": {},

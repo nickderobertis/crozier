@@ -3870,13 +3870,7 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
 
 /// Every credential of `auth`, in constructor order.
 fn auth_credentials(auth: &Auth) -> Vec<&Credential> {
-    match auth {
-        Auth::ApiKey { credential, .. } | Auth::Bearer { credential, .. } => vec![credential],
-        Auth::Basic {
-            username, password, ..
-        } => vec![username, password],
-        Auth::None => Vec::new(),
-    }
+    auth.credentials()
 }
 
 /// The credential arguments in a worked `Examples` client instantiation, e.g.
@@ -3886,10 +3880,17 @@ fn auth_example_args(auth: &Auth) -> Vec<String> {
     auth_credentials(auth)
         .into_iter()
         .map(|credential| {
+            // A keyword's escape (`class_`) is not in the placeholder: Fern
+            // writes `class_="YOUR_CLASS"`.
+            let stem = credential
+                .param
+                .strip_suffix('_')
+                .filter(|stem| naming::is_python_keyword(stem))
+                .unwrap_or(&credential.param);
             format!(
                 "{}=\"YOUR_{}\"",
                 credential.param,
-                credential.param.to_ascii_uppercase()
+                stem.to_ascii_uppercase()
             )
         })
         .collect()
@@ -5549,11 +5550,6 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     lines.join("\n")
 }
 
-/// Append an endpoint's httpx call arguments (indent 12) to `lines` — the query
-/// `params` dict, the serialized request body, the `headers` dict,
-/// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
-/// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
-/// path ([`raw_stream_body`]) so both serialize a body identically.
 /// A request's `base_url` argument in a multi-URL environment: the URL of the
 /// environment field the operation reads (`get_environment().archive`).
 fn environment_base_url(ep: &Endpoint) -> Option<String> {
@@ -5592,6 +5588,11 @@ fn retries_disabled_preamble(ep: &Endpoint) -> Vec<String> {
     ]
 }
 
+/// Append an endpoint's httpx call arguments (indent 12) to `lines` — the query
+/// `params` dict, the serialized request body, the `headers` dict,
+/// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
+/// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
+/// path ([`raw_stream_body`]) so both serialize a body identically.
 fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mut Imports) {
     // Query parameters map wire name to the Python argument in a `params` dict. An
     // object/union-typed parameter serializes through the convert wrapper (Fern

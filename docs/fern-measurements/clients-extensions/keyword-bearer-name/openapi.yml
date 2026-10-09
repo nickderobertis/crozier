@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+servers:
+  - url: https://main.test
+security: [{Bearer: []}]
+paths:
+  /ping:
+    get:
+      operationId: ping
+      responses: {'204': {description: ok}}
+components:
+  securitySchemes:
+    Bearer: {type: http, scheme: bearer, x-fern-bearer: {name: class}}

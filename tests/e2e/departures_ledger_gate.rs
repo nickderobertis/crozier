@@ -309,8 +309,10 @@ fn a_malformed_ledger_is_refused() {
         );
     }
     // A file rule's departure records a whole file at line 0.
+    // llmlint: ignore-block[tests_mirror_real_usage] The departure-ledger gate is code of this e2e binary, not of crozier: `load_departure_ledger`, `corpus_golden_ledger` and the tree comparisons are the entry points the golden gates themselves call, and neither the CLI nor src/ exposes one, so this test drives them directly over a scratch repository it authors.
     let whole = format!("{GOLDEN}\t{WRAPPER}\t0\tempty-namespace-package");
     loaded(repository(&ledger_text(&format!("{whole}\n"))).path());
+    // llmlint: ignore-end[tests_mirror_real_usage]
     let missing = tempfile::tempdir().unwrap();
     write(
         missing.path(),

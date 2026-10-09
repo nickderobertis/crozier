@@ -1448,12 +1448,6 @@ fn repeated_credential_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>
     Ok(differing_window(pair.fern, pair.crozier))
 }
 
-/// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
-/// its pager documentation is undone — the `Pagination` table-of-contents entry,
-/// the `## Pagination` section, and the raw-response snippet walking a `pager`
-/// written back as the raw client's call — where crozier's tree has no pager to
-/// document (Fern's flat tree, whose paginated methods return the page model).
-/// The region is the two files' differing window.
 /// `empty-namespace-package`: the package root's `client.py` and `__init__.py`,
 /// where Fern wrote the empty namespace's client and package marker, are
 /// crozier's root client and package whole.
@@ -1479,6 +1473,12 @@ fn empty_namespace_package_file(context: &Context, rel: &str, side: Side) -> boo
     }
 }
 
+/// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
+/// its pager documentation is undone — the `Pagination` table-of-contents entry,
+/// the `## Pagination` section, and the raw-response snippet walking a `pager`
+/// written back as the raw client's call — where crozier's tree has no pager to
+/// document (Fern's flat tree, whose paginated methods return the page model).
+/// The region is the two files' differing window.
 fn flat_pagination_pager_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "README.md" || pair.crozier.contains(&"## Pagination") {
         return Ok(None);

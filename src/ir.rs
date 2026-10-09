@@ -228,7 +228,26 @@ pub struct Environment {
     /// `enum.Enum`; otherwise each member is an object whose `base` field is its
     /// server and whose other fields are these, and each endpoint names its field
     /// ([`EndpointExtensions::environment_field`]).
+    // llmlint: ignore[invalid_states_unrepresentable] The two forms share every other field of `Environment`, and an empty list is exactly Fern's own switch: it writes the multi-URL class precisely when an operation names a server, so a separate variant would duplicate the shared fields to restate this one test.
     pub urls: Vec<(String, String)>,
+}
+
+/// The field of a multi-URL environment an operation's requests read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnvironmentField {
+    /// The document's own server URL.
+    Base,
+    /// The field an operation server's name declares (`archive`, `class_`).
+    Named(String),
+}
+
+impl std::fmt::Display for EnvironmentField {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EnvironmentField::Base => f.write_str("base"),
+            EnvironmentField::Named(field) => f.write_str(field),
+        }
+    }
 }
 
 /// One variable from the default server's URL template.
@@ -326,7 +345,7 @@ fn operation_server_urls(doc: &OpenApi) -> Vec<(String, String)> {
                 let Some(name) = server.server_name() else {
                     continue;
                 };
-                let field = naming::to_snake_case(name);
+                let field = python_parameter_name(name);
                 if !urls.iter().any(|(known, _)| *known == field) {
                     urls.push((field, resolve_server_url(server)));
                 }
@@ -339,12 +358,73 @@ fn operation_server_urls(doc: &OpenApi) -> Vec<(String, String)> {
 /// The environment field an operation's requests read in a multi-URL
 /// environment: its first named server's, unless that server is the
 /// document's own, which is `base` — as is every operation declaring none.
-fn environment_field(doc: &OpenApi, op: &Operation) -> String {
+fn environment_field(doc: &OpenApi, op: &Operation) -> EnvironmentField {
     op.servers
         .first()
         .filter(|server| doc.servers.first().is_none_or(|own| own.url != server.url))
         .and_then(|server| server.server_name())
-        .map_or_else(|| "base".to_string(), naming::to_snake_case)
+        .map_or(EnvironmentField::Base, |name| {
+            EnvironmentField::Named(python_parameter_name(name))
+        })
+}
+
+/// A declared name as Fern writes a Python parameter or attribute from it:
+/// snake_case with illegal characters `_`, a digit-led name `_`-prefixed and a
+/// keyword `_`-suffixed (`class` is `class_`).
+fn python_parameter_name(name: &str) -> String {
+    let name = naming::sanitize_identifier(&naming::to_snake_case(name));
+    if naming::is_python_keyword(&name) {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
+impl Ir {
+    /// Why a name an extension declares cannot be emitted, if one cannot: a
+    /// server name whose environment member starts with a digit, which Fern's
+    /// examples write as an attribute that is not Python (`Environment.1ST`); an
+    /// operation server named `base`, the environment field holding the
+    /// document's own URL; or a credential named like one of the root client's
+    /// own constructor parameters. Fern's output for each breaks, loses or
+    /// renames what the author declared, so crozier asks for another name.
+    #[must_use]
+    pub fn extension_name_conflict(&self) -> Option<String> {
+        if let Some(environment) = &self.environment {
+            let members = std::iter::once(&environment.default.0)
+                .chain(environment.others.iter().map(|(name, _)| name));
+            if let Some(member) = members
+                .into_iter()
+                .find(|name| name.starts_with(|c: char| c.is_ascii_digit()))
+            {
+                return Some(format!(
+                    "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
+                     environment member `{member}`, which starts with a digit and is no Python \
+                     identifier; give that server a name starting with a letter"
+                ));
+            }
+            if environment.urls.iter().any(|(field, _)| field == "base") {
+                return Some(
+                    "an operation server's `x-fern-server-name` (or `x-crozier-server-name`) \
+                     names the environment field `base`, which holds the document's own server \
+                     URL; give that server another name"
+                        .to_string(),
+                );
+            }
+        }
+        self.auth
+            .credentials()
+            .into_iter()
+            .find(|credential| ROOT_CLIENT_PARAMETERS.contains(&credential.param.as_str()))
+            .map(|credential| {
+                format!(
+                    "a security scheme names its credential `{0}`, which is the client \
+                     constructor's own `{0}` parameter; name it otherwise with the scheme's \
+                     `x-crozier-*` (or `x-fern-*`) naming extension",
+                    credential.param
+                )
+            })
+    }
 }
 
 /// The root client's own keyword parameters, which a server URL variable cannot
@@ -829,6 +909,20 @@ pub enum Auth {
     None,
 }
 
+impl Auth {
+    /// Every credential, in constructor order.
+    #[must_use]
+    pub fn credentials(&self) -> Vec<&Credential> {
+        match self {
+            Auth::ApiKey { credential, .. } | Auth::Bearer { credential, .. } => vec![credential],
+            Auth::Basic {
+                username, password, ..
+            } => vec![username, password],
+            Auth::None => Vec::new(),
+        }
+    }
+}
+
 /// Derive the [`Auth`] model: the first supported declared scheme selects the
 /// credential shape, and the credential is required when every operation is
 /// authenticated. Unsupported schemes (such as cookie api keys) are skipped when
@@ -945,6 +1039,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Credential {
     /// The parameter's Python name (`token`, `lift_pass`).
+    // llmlint: ignore[invalid_states_unrepresentable] A credential is built only by `Credential::named` (which normalizes a declared name to a Python identifier, escaping keywords) and `Credential::plain` (crozier's literal defaults), and `Ir::extension_name_conflict` refuses a name colliding with the constructor's own parameters; a newtype would retype a string twenty-five emitter sites format.
     pub param: String,
     /// The environment variable the root client reads it from, if any.
     pub env: Option<String>,
@@ -955,10 +1050,10 @@ impl Credential {
     #[must_use]
     pub fn named(default: &str, naming: &crate::openapi::CredentialNaming) -> Self {
         Credential {
-            param: naming.name.as_deref().map_or_else(
-                || default.to_string(),
-                |name| naming::sanitize_identifier(&naming::to_snake_case(name)),
-            ),
+            param: naming
+                .name
+                .as_deref()
+                .map_or_else(|| default.to_string(), python_parameter_name),
             env: naming.env.clone(),
         }
     }
@@ -1593,7 +1688,7 @@ pub struct EndpointExtensions {
     pub pagination_declared: bool,
     /// In a multi-URL environment, the field whose URL the operation's requests
     /// go to (`base`, or an operation server's name); `None` otherwise.
-    pub environment_field: Option<String>,
+    pub environment_field: Option<EnvironmentField>,
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -4003,6 +4098,7 @@ pub struct EndpointPagination {
     pub advance: PageAdvance,
     /// The Python name of the request parameter the advance writes: the cursor,
     /// or the offset.
+    // llmlint: ignore[names_match_behavior] The field predates the offset form and the standing ruling for this change forbids renaming existing IR fields; its doc comment states that it names the offset parameter too.
     pub cursor_param: String,
     /// The element type of the item list, which parameterizes the pager.
     pub item_type: TypeRef,
@@ -14039,6 +14135,14 @@ mod tests {
     }
 
     #[test]
+    fn declared_names_become_python_parameters_as_fern_writes_them() {
+        assert_eq!(super::python_parameter_name("Archive Host"), "archive_host");
+        assert_eq!(super::python_parameter_name("class"), "class_");
+        assert_eq!(super::python_parameter_name("2fa"), "_2fa");
+        assert_eq!(super::python_parameter_name("lift-pass"), "lift_pass");
+    }
+
+    #[test]
     fn operation_servers_make_environment_fields_and_pick_each_requests_field() {
         let doc: OpenApi = serde_json::from_value(serde_json::json!({
             "servers": [{"url": "https://lockers.test/v2"}],
@@ -14065,10 +14169,15 @@ mod tests {
         );
         let field =
             |route: &str| super::environment_field(&doc, doc.paths[route].get.as_ref().unwrap());
-        assert_eq!(field("/lockers"), "base");
-        assert_eq!(field("/archive"), "archive_host");
+        assert_eq!(field("/lockers"), super::EnvironmentField::Base);
+        assert_eq!(
+            field("/archive"),
+            super::EnvironmentField::Named("archive_host".to_string())
+        );
         // A first server that is the document's own reads `base`.
-        assert_eq!(field("/own"), "base");
+        assert_eq!(field("/own"), super::EnvironmentField::Base);
+        assert_eq!(field("/archive").to_string(), "archive_host");
+        assert_eq!(super::EnvironmentField::Base.to_string(), "base");
     }
 
     #[test]

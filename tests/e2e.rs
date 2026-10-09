@@ -2026,6 +2026,16 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "keyword-bearer-name",
+        "docs/fern-measurements/clients-extensions/keyword-bearer-name/openapi.yml",
+        &[],
+    ),
+    (
+        "keyword-server-field",
+        "docs/fern-measurements/clients-extensions/keyword-server-field/openapi.yml",
+        &[],
+    ),
+    (
         "lamp-room-log-literals",
         "docs/openapi-surface/handwritten/lamp-room-log/openapi.yml",
         &["--enum-type", "literals"],
@@ -2859,6 +2869,81 @@ fn server_extensions_read_crozier_spelling_over_fern() {
             );
         }
     }
+}
+
+/// A name an extension declares that crozier cannot emit as Fern's SDK is
+/// refused at the boundary, exit 1 with the conflict named and nothing written:
+/// a server name making a digit-led environment member, an operation server
+/// named `base` (the document's own URL), and a credential named like a client
+/// constructor parameter. A keyword name is escaped instead, as Fern escapes it
+/// (`class` is `class_`), and generates.
+#[test]
+fn extension_names_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, body: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!("openapi: 3.0.3\ninfo: {{title: Names, version: '1'}}\n{body}"),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let ping = |servers: &str| {
+        format!("paths:\n  /ping:\n    get:\n      operationId: ping\n{servers}      responses: {{'204': {{description: ok}}}}\n")
+    };
+    let cases = [
+        (
+            "digit-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 1st\n{}",
+                ping("")
+            ),
+            "makes the environment member `1ST`, which starts with a digit",
+        ),
+        (
+            "base-field",
+            format!(
+                "servers:\n  - url: https://main.test\n{}",
+                ping("      servers:\n        - url: https://other.test\n          x-fern-server-name: base\n")
+            ),
+            "names the environment field `base`",
+        ),
+        (
+            "timeout-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-crozier-bearer: {{name: timeout}}}}\n",
+                ping("")
+            ),
+            "names its credential `timeout`, which is the client constructor's own `timeout` parameter",
+        ),
+    ];
+    for (name, body, says) in cases {
+        let (assert, out) = generate(name, &body);
+        assert
+            .failure()
+            .code(1)
+            .stderr(predicates::str::contains(says));
+        assert!(
+            !out.join("src").exists(),
+            "{name}: a refused document writes nothing"
+        );
+    }
+    let (assert, out) = generate(
+        "keyword",
+        &format!(
+            "servers:\n  - url: https://main.test\n{}",
+            ping("      servers:\n        - url: https://kw.test\n          x-crozier-server-name: class\n")
+        ),
+    );
+    assert.success();
+    let environment =
+        std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+    assert!(
+        environment.contains("def __init__(self, *, base: str, class_: str):"),
+        "{environment}"
+    );
 }
 
 /// An operation's own named server takes its name from either spelling, the
@@ -16967,8 +17052,8 @@ print("ok")
 /// the empty string, or an `operationId` with an empty dotted prefix — is
 /// importable and callable the way `README.md` documents it:
 /// `from fern import FernApi` and `client._.<method>()`, sync and async, the
-/// hoisted response type importable from `fern._`, each request sent through
-/// a mock transport. Fern's own committed tree for the fixture fails that
+/// hoisted response type importable from `fern._`, each request answered by a
+/// local server. Fern's own committed tree for the fixture fails that
 /// import (the `empty-namespace-package` departure).
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
@@ -16986,25 +17071,35 @@ fn sdk_env_empty_namespace_package_imports_and_answers_its_documented_call() {
         format!(
             r#"
 import asyncio
-
-import httpx
+import http.server
+import json
+import threading
 
 from fern import AsyncFernApi, FernApi
 
 sent = []
 
 
-def answer(request):
-    sent.append(str(request.url))
-    if request.url.path == "/lamps":
-        return httpx.Response(200, json=[{{"id": "l-1", "colour": "red"}}])
-    return httpx.Response(200, json={{"default": "en"}})
+class Lamps(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        sent.append(self.path)
+        answer = [{{"id": "l-1", "colour": "red"}}] if self.path.startswith("/lamps") else {{"default": "en"}}
+        body = json.dumps(answer).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
 
 
-client = FernApi(base_url="https://lamps.test", httpx_client=httpx.Client(transport=httpx.MockTransport(answer)))
-asynchronous = AsyncFernApi(
-    base_url="https://lamps.test", httpx_client=httpx.AsyncClient(transport=httpx.MockTransport(answer))
-)
+server = http.server.HTTPServer(("127.0.0.1", 0), Lamps)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+base_url = f"http://127.0.0.1:{{server.server_port}}"
+client = FernApi(base_url=base_url)
+asynchronous = AsyncFernApi(base_url=base_url)
 {call}
 print(sent)
 "#
@@ -17028,13 +17123,9 @@ assert asyncio.run(asynchronous._.getlocales()).default == "en"
         (
             lamps.join("openapi.yml"),
             lamp_call,
-            "['https://lamps.test/lamps?colour=red', 'https://lamps.test/lamps']",
+            "['/lamps?colour=red', '/lamps']",
         ),
-        (
-            dotted.clone(),
-            dotted_call,
-            "['https://lamps.test/Locales/', 'https://lamps.test/Locales/']",
-        ),
+        (dotted.clone(), dotted_call, "['/Locales/', '/Locales/']"),
     ] {
         let sdk = dir.path().join(spec.file_stem().expect("a spec name"));
         crozier_clean_env()

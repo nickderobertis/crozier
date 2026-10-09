@@ -99,6 +99,16 @@ docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fer
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/impedance-complex-reading-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-bearer-name/fern-expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/keyword-server-field/fern-expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/lamp-room-log-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/lamp-room-log-literals/fern-expected	src/fern/_/__init__.py	0	empty-namespace-package
 docs/fern-measurements/clients-extensions/lamp-room-log-literals/fern-expected	src/fern/_/client.py	0	empty-namespace-package
