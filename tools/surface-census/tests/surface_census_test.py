@@ -12441,6 +12441,30 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-read the census's union port of src/ir.rs's {name}",
                 )
 
+    def test_the_scalar_ports_track_their_rust_helpers(self) -> None:
+        """`number_prim` and the Boolean literal override behind `same_primitive_unions`.
+
+        Each helper is pinned by the same normalized-body digest, read from the
+        file that declares it, so an edit there fails here until the port is read
+        again. `Type::method` is bounded inside `impl ... for Type`.
+        """
+        for (path, name), pinned in census.SCALAR_PORT_DIGESTS.items():
+            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
+            owner, _, method = name.rpartition("::")
+            if owner:
+                start = next(index for index, line in enumerate(lines)
+                             if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line))
+                body = rust_function_body(lines[start:], method)
+            else:
+                body = rust_function_body(lines, name)
+            kept = [" ".join(line.split()) for line in body
+                    if line.strip() and not line.strip().startswith("//")]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned, hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's scalar port of {path}'s {name}",
+                )
+
     def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
         """Closed object and success selection ports.
 

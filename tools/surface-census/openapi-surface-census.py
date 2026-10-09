@@ -3154,6 +3154,20 @@ UNION_PORT_DIGESTS = {
 }
 
 
+# `Census.same_primitive_unions`'s scalar arms also port helpers `base_type_ref`
+# calls but does not contain: `number_prim` and `int_prim` (a number's integer
+# formats, and which of them is a long), and the Boolean literal override, read
+# through `Schema::bool_literal` and the spellings `LiteralTypeOverride::from`
+# accepts. The offline tier pins each by the same
+# normalized-body digest; `Type::method` names the method of `impl ... for Type`.
+SCALAR_PORT_DIGESTS = {
+    ("src/ir.rs", "number_prim"): "c9732240eb18acac",
+    ("src/ir.rs", "int_prim"): "f99116f9f8a7240f",
+    ("src/openapi.rs", "bool_literal"): "9ae8fdd0eba9b349",
+    ("src/openapi.rs", "LiteralTypeOverride::from"): "6b29bbd32bbd4fb1",
+}
+
+
 # Schema and response ports share the Rust-body drift gate used by the union ports.
 SCHEMA_RESPONSE_PORT_DIGESTS = {
     "is_closed_empty_object": "eb83d5799078bfd2",
