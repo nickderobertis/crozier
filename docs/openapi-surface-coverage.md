@@ -2419,15 +2419,17 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 #### Every unreached arm, and its search verdict
 
+<!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
 The golden rows split in two. **425** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **71** carry at least one handling site no golden-only witness executes: 86 unreached arms in all. Every one is named below with the verdict its linked arm-search record
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **71** carry at least one handling site no golden-only witness executes: 86 unreached arms in all. By the verdict each arm's linked record states, 54 read `exhausted`, 24 read `search-incomplete`, 1 read `config-gated`, and 7 have no arm search.
+<!-- END GENERATED ARM COUNTS -->
+Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources, or `not searched` where no arm
-search has run. 54 read `exhausted`: each of those arms' six-source searches
-owes nothing and found no registrable real-world document that executes it.
-Twenty-four read `search-incomplete`: the ignored-schema arm, the four
-`parameter-schema` arms, the path and header parameter-lowering arms, and
-seventeen arms of the twelve keys the union repairs added sites to. Three of the
-seventeen are earlier arms whose six-source searches read `exhausted` — the
+search has run. An `exhausted` arm's six-source search owes nothing and found
+no registrable real-world document that executes it. The `search-incomplete`
+arms are the ignored-schema arm, the four `parameter-schema` arms, the path and
+header parameter-lowering arms, and the arms of the keys the union repairs added
+sites to. Three of those are earlier arms whose six-source searches read `exhausted` — the
 `nested_array_element` arms of `oneof-discriminated-union` and
 `items-oneof-element` and the head lookup of
 `ref-pointer-undeclared-component-head` — and whose key now also holds a
@@ -2439,7 +2441,7 @@ generation. `discriminator-mapping` reads `config-gated` only on its
 behind `audiences`. The two union arms its record's **Successor arms** section
 names read `search-incomplete`, the verdict their covers cite:
 `handwritten-reach.tsv` measures the setting-free `kitchen-nested-mapping-target`
-fixture executing both, so no setting gates them. Seven have no arm search:
+fixture executing both, so no setting gates them. Of the arms with no arm search,
 three example arms remain named gaps (`schema-example-empty-object`,
 `schema-example-object-on-map` and `schema-example-outside-enum`); four root-body
 format or typed-query arms are instead covered by independent fixtures whose
@@ -2512,6 +2514,7 @@ why. The changes that took the arm off:
   `e8e8dbfb8`, before #322's own changes to `src/ir.rs`. main re-measured
   on its own source gives the same numbers this tree does.
 
+<!-- BEGIN GENERATED ARM TABLE: run `just golden-reach-arms` -->
 | rank | key | unreached site | regions | search verdict | hand-written cover |
 |---|---|---|---|---|---|
 | 1 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{]` | 21 | `search-incomplete` | `query-union-array-enum-member` |
@@ -2600,6 +2603,7 @@ why. The changes that took the arm off:
 | 69 | `format-uri-reference` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 70 | `format-uri-template` | `src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]` | 1 | `exhausted` | `format-scalar-bodies` |
 | 71 | `property-oneof-residual` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | 1 | `search-incomplete` | `atlas-untagged-inline-discriminator` |
+<!-- END GENERATED ARM TABLE -->
 
 **Configuration-gated arms.** An arm only a generation setting reaches is
 not searched for. Contract B's probe runs each declarer through `crozier

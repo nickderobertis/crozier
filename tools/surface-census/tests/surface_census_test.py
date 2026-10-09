@@ -1884,52 +1884,15 @@ def is_config_gated(text: str) -> bool:
     return CONFIG_GATE_HEADING in text.splitlines()
 
 
+@functools.cache
+def golden_reach_script():
+    """`tools/surface-census/golden-reach.py`, which derives each arm's verdict for the coverage index."""
+    return load_script("tools/surface-census/golden-reach.py")
+
+
 def config_gated_verdict(text: str, key: str) -> str | None:
-    """The verdict a `config-gated` record states for `key`, off its gate table."""
-    if not is_config_gated(text):
-        return None
-    body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
-    stated = {
-        cells[3].strip("`")
-        for cells in (table_cells(line, 4) for line in body.splitlines())
-        if cells and cells[0].strip("`") == key
-    }
-    return stated.pop() if len(stated) == 1 else None
-
-
-def config_gated_arm_verdict(key: str, site: str, text: str, root: Path) -> str | None:
-    """The verdict a `config-gated` record's key gives one of its arms, by measurement.
-
-    The gate table's verdict is the measured gate's: it holds for an arm
-    `handwritten-config-gates.tsv` records with and without the setting. Any
-    other arm of the key joined it later and is gated only if measured so: it
-    reads the verdict its hand-written covers cite, and only when
-    `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
-    executing it. Otherwise no one verdict is stated (`None`).
-    """
-    regions = root / "docs" / "openapi-surface"
-    with (regions / "handwritten-config-gates.tsv").open(encoding="utf-8", newline="") as handle:
-        gated = {
-            row["site"] for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE) if row["key"] == key
-        }
-    if site in gated:
-        return config_gated_verdict(text, key)
-    verdicts: set[str] = set()
-    ungated: set[str] = set()
-    for evidence in sorted((regions / "handwritten").glob("*/evidence.toml")):
-        with evidence.open("rb") as handle:
-            declared = tomllib.load(handle)
-        for cover in declared.get("covers", []):
-            if cover["key"] == key and cover.get("arm") == site:
-                verdicts.add(cover["verdict"])
-                if not declared.get("audiences"):
-                    ungated.add(evidence.parent.name)
-    with (regions / "handwritten-reach.tsv").open(encoding="utf-8", newline="") as handle:
-        executed = any(
-            row["fixture"] in ungated and row["key"] == key and row["site"] == site and int(row["regions_executed"])
-            for row in csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-        )
-    return verdicts.pop() if executed and len(verdicts) == 1 else None
+    """The verdict a `config-gated` record states for `key`, off its gate table (the script's reading)."""
+    return golden_reach_script().config_gated_verdict(text, key)
 
 
 def config_gated_record_failures(
@@ -2067,6 +2030,89 @@ def config_gated_record_failures(
                             f"{key}: `queries.tsv` holds a `{source}` phrasing for the key, so it was queried"
                         )
     return failures
+
+
+class ConfigGatedArmVerdictTests(unittest.TestCase):
+    """`golden-reach.py arms` over a scratch tree: a gated key's verdict is per arm, by measurement."""
+
+    KEY = "tag-mapping"
+    GATED = "src/openapi.rs::walk[if gated \\{]"
+    LATER = "src/ir.rs::lower[if later \\{]"
+
+    def tree(self, executed: int) -> Path:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        regions = root / "docs" / "openapi-surface"
+        (regions / "golden-reach-witnesses" / "searches").mkdir(parents=True)
+        (regions / "golden-reach-witnesses" / "searches" / f"{self.KEY}.md").write_text(
+            f"# Arm search\n\n### Configuration gate\n\n| key | setting | gate | verdict |\n|---|---|---|---|\n"
+            f"| `{self.KEY}` | `audiences` | `src/openapi.rs::filter` | `config-gated` |\n",
+            encoding="utf-8",
+        )
+        header = "fixture\tkey\tsite\tsetting\tregions_executed\tregions\n"
+        (regions / "handwritten-config-gates.tsv").write_text(
+            header
+            + f"gated\t{self.KEY}\t{self.GATED}\t-\t0\t9\ngated\t{self.KEY}\t{self.GATED}\taudiences=public\t9\t9\n",
+            encoding="utf-8",
+        )
+        (regions / "handwritten-reach.tsv").write_text(
+            f"fixture\tkey\tsite\tregions_executed\tregions\nplain\t{self.KEY}\t{self.LATER}\t{executed}\t20\n",
+            encoding="utf-8",
+        )
+        for fixture, audiences, arm, verdict in (
+            ("gated", 'audiences = ["public"]\n', self.GATED, "config-gated"),
+            ("plain", "", self.LATER, "search-incomplete"),
+        ):
+            (regions / "handwritten" / fixture).mkdir(parents=True)
+            (regions / "handwritten" / fixture / "evidence.toml").write_text(
+                f'{audiences}\n[[covers]]\nkey = "{self.KEY}"\narm = \'{arm}\'\nverdict = "{verdict}"\n',
+                encoding="utf-8",
+            )
+        (regions / "golden-reach.tsv").write_text(
+            "# golden-reach ledger: scratch\n"
+            + golden_reach_script().LEDGER_HEADER
+            + f"\n1\t{self.KEY}\tschemas\t2\t29\t29\t-\t-\t{self.GATED}=0/9 ; {self.LATER}=0/20\t-\n",
+            encoding="utf-8",
+        )
+        (root / "docs" / "openapi-surface-coverage.md").write_text(
+            "# Index\n\n#### Every unreached arm, and its search verdict\n\n"
+            f"{golden_reach_script().ARM_COUNTS_BEGIN}\n{golden_reach_script().ARM_COUNTS_END}\n\n"
+            f"{golden_reach_script().ARM_TABLE_BEGIN}\n{golden_reach_script().ARM_TABLE_END}\n",
+            encoding="utf-8",
+        )
+        return root
+
+    def arms(self, root: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools" / "surface-census" / "golden-reach.py"),
+                "--repo-root",
+                str(root),
+                "arms",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_only_the_measured_gate_reads_config_gated(self) -> None:
+        root = self.tree(executed=20)
+        first = self.arms(root)
+        self.assertEqual(0, first.returncode, first.stderr)
+        doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+        self.assertIn(f"| 1 | `{self.KEY}` | `{self.GATED}` | 9 | `config-gated` | `gated` |", doc)
+        self.assertIn(f"| 1 | `{self.KEY}` | `{self.LATER}` | 20 | `search-incomplete` | `plain` |", doc)
+        self.assertIn("2 unreached arms in all", doc)
+        self.assertIn("0 read `exhausted`, 1 read `search-incomplete`, 1 read `config-gated`, and 0 have", doc)
+        second = self.arms(root)
+        self.assertIn("unchanged", second.stdout)
+        self.assertEqual(doc, (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8"))
+
+    def test_a_later_arm_no_setting_free_run_executes_states_no_verdict(self) -> None:
+        run = self.arms(self.tree(executed=0))
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn(f"states no one verdict for `{self.LATER}`", run.stderr)
 
 
 class ConfigGatedRecordTests(unittest.TestCase):
@@ -10107,63 +10153,37 @@ class RankedBacklogTests(unittest.TestCase):
     REACH_ARMS = "#### Every unreached arm, and its search verdict"
 
     def test_every_unreached_arm_is_named_with_its_search_verdict(self) -> None:
-        """The report splits golden rows by reach and names every unreached arm.
+        """The arm counts and arm table are `just golden-reach-arms`'s output over the committed tree.
 
-        Each row of the arm table is one handling site the ledger records no
-        golden-only witness executing, with the verdict its linked arm-search
-        record states; the two counts before it are the ledger's own.
+        `golden-reach.py`'s `arm_rows` names each handling site the ledger records
+        no golden-only witness executing, in rank order, with the verdict its
+        linked arm-search record states; restating the index from the committed
+        ledger, records, covers and measurements must change nothing, so a hand
+        edit or a stale section fails here.
         """
+        module = golden_reach_script()
         ledger = self.reach_ledger()
-        # The hand-written column: each fixture whose arm-level cover names the
-        # arm. It proves less than a real specification, so the arm stays here.
-        covering: dict[tuple[str, str], set[str]] = {}
-        for fixture, key, arm in handwritten_covers():
-            if arm:
-                covering.setdefault((key, arm), set()).add(fixture)
-        expected = []
-        for rank, reach in ledger:
-            if not reach.unreached_sites:
-                continue
-            record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
-            if record.is_file():
-                text = record.read_text(encoding="utf-8")
-                outcomes = {line[2].strip("`") for line in exhaustive_search_lines(text).get(reach.key, [])}
-                if not is_config_gated(text):
-                    self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
-            else:
-                text = None
-            for spec, hit, total in reach.sites:
-                if hit:
-                    continue
-                if text is None:
-                    # No record is no search, which is its own reason, never a
-                    # search's verdict.
-                    cell = f"{NOT_SEARCHED} — no arm search has run"
-                else:
-                    # A gated key's verdict is per arm: only a measured gate gates.
-                    verdict = (
-                        next(iter(outcomes))
-                        if not is_config_gated(text)
-                        else config_gated_arm_verdict(reach.key, spec, text, REPO)
-                    )
-                    self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), f"{reach.key}: {spec}")
-                    cell = f"`{verdict}`"
-                expected.append(
-                    [
-                        str(rank),
-                        f"`{reach.key}`",
-                        f"`{spec}`",
-                        str(total),
-                        cell,
-                        ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
-                    ]
-                )
-        self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 6))
+        rows = module.arm_rows(ledger, self.REGIONS)
+        self.assertEqual(
+            [
+                (str(rank), f"`{reach.key}`", f"`{spec}`", str(total))
+                for rank, reach in ledger
+                for spec, hit, total in reach.sites
+                if not hit
+            ],
+            [tuple(row[:4]) for row in rows],
+        )
+        self.assertEqual(rows, self.reach_table(self.REACH_ARMS, 6))
+        self.assertEqual(
+            self.doc,
+            module.render_arm_sections(self.doc, ledger, self.REGIONS, self.DOC),
+            "the generated arm sections are stale; run `just golden-reach-arms`",
+        )
         flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
         partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
         self.assertIn(f"**{len(ledger) - partial}** reach every handling site", flat)
         self.assertIn(f"**{partial}** carry at least one handling site", flat)
-        self.assertIn(f"{len(expected)} unreached arms in all", flat)
+        self.assertIn(f"{len(rows)} unreached arms in all", flat)
 
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
         """Six declared sources, both capabilities each, each one cited."""
