@@ -14405,7 +14405,7 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
                 self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
 
     def test_path_order_predicate_requires_31_and_operation_only_untitled_parameters(self) -> None:
-        parameters: list[dict[str, Any]] = [
+        parameters = [
             {"name": name, "in": "path", "required": True, "schema": {"type": "string"}}
             for name in ["sensor", "station"]
         ]
@@ -14418,7 +14418,7 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
             "openapi": "3.1.0",
             "paths": {"/stations/{station}/sensors/{sensor}": {"parameters": [parameters[0]], "get": operation}},
         }
-        titled = [{**parameter, "schema": {**parameter["schema"], "title": "Route value"}} for parameter in parameters]
+        titled = [{**parameter, "schema": {"type": "string", "title": "Route value"}} for parameter in parameters]
         documents["titled"] = {
             "openapi": "3.1.0",
             "paths": {"/stations/{station}/sensors/{sensor}": {"get": self.operation(parameters=titled)}},
