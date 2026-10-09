@@ -1548,8 +1548,9 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 33 rows are the 27 generator categories, the base-path and string-map
-example gaps, and the four additional scenarios the parameter fix closed.
+These 34 rows are the 27 generator categories, the base-path and string-map
+example gaps, the four additional scenarios the parameter fix closed, and the
+union scenario whose Markdown example the union fix corrects.
 Other scenarios remain in a separate follow-on plan and are not proof claims
 here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
@@ -1597,6 +1598,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | required-and-nullable-query-param-made-optional | Required nullable query schema becomes an optional method argument | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | — |
 | query-array-nullable-items-optional | Nullable query-array items stripped from signature; incompatible documentation type/example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | `nullable-items-docs` |
 | single-operation-required-header-promoted | Required header on a sole operation promoted to the client | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected | `parameter_lowering_measurements_match_fern` | — |
+| nested-oneof-mapping-target-wrapped-as-value | Discriminator mapping target that is itself a union, held whole as the wrapper's `value`; uncompilable Markdown example corrected | Fern behaviour + Fern defect | `fix-unions` | docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected | `handwritten_fixtures_match_fern_goldens` | `union-value-wrapper-docs-example` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
