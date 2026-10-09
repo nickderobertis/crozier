@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 593 features. By category, 493 are `golden`, 52
-`limitations`, 26 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 607 features. By category, 494 are `golden`, 52
+`limitations`, 39 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 593
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 607
 split four ways:
 
-- **491 carry byte-match evidence against a registered real-world
+- **492 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **26 rest on a hand-written fixture, a weaker proof than a real
+- **39 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Twenty-one read `search-incomplete`. Of those,
+  decided and none is registrable. Thirty-four read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -71,6 +71,10 @@ split four ways:
   [search](openapi-surface/witness-search-parameter-lowering/README.md) read the
   documents already acquired for the coverage searches, issued no live query,
   and found each `none-registrable`.
+  The thirteen parameter extension and serialization shapes read
+  `search-incomplete` on their
+  [search](openapi-surface/witness-search-parameters-extension-evidence/README.md),
+  which screened the candidate real specifications it names against Fern.
   Three more — `cycle-into-cycle`,
   `request-body-property-closed-empty-object` and `type-misspelled-scalar` —
   have not been searched at any declared source either; their
@@ -83,7 +87,7 @@ split four ways:
   converter example that fails publisher provenance.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  491 and never count as a real-specification match.
+  492 and never count as a real-specification match.
 - **10 remain unproven.** 8 are the `FIXTURE` `gap` rows. Each is a feature the
   naming and example predicates of #361 brought inside the census that no
   registered golden source declares, and none has had a witness search, so each
@@ -99,7 +103,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-491 + 66 + 26 + 10 = 593.
+492 + 66 + 39 + 10 = 607.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 493 `golden` rows declare 941 handling sites in
@@ -206,13 +210,13 @@ real-specification match.
   hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/), [`parity-property-anyof-composed-members`](openapi-surface/authored-probes/parity-property-anyof-composed-members/), [`parity-required-query-array-examples`](openapi-surface/authored-probes/parity-required-query-array-examples/), [`parity-unrequired-tag-variant-classes`](openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/). The `parity-property-` and `parity-unrequired-` cases vary the shapes registered corpus rows 311 and 312 witness once each: an inner `oneOf` and `anyOf` beside a sibling, each with and without a discriminator, and unrequired tags with no `default` under `oneOf` and `anyOf`. `parity-required-query-array-examples` varies the required query array that registered goldens declare on each side of the measured rule — corpus row 316 for a JSON response, `amazonaws.com-cloudformation` for `text/xml` and `query-parameters-openapi` for a required object parameter beside it — in three operations that differ in the decisive attribute alone.
 
 Where crozier deliberately differs from Fern is decided per refusal class in
-[`fern-refusals/`](fern-refusals/README.md). Each of its 37 classes is decided
+[`fern-refusals/`](fern-refusals/README.md). Each of its 39 classes is decided
 `refuse`: crozier refuses those documents with or without `fern-strict`, so no
 class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 593 are what a selector over a
+**What the census still cannot enumerate.** The 607 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -306,7 +310,9 @@ repairs added (`cycle-into-cycle`, `request-body-property-closed-empty-object`,
 hand-written fixtures cover (`query-array-items-union`,
 `header-subset-string-default` and `base-path-extension`), each a `handwritten`
 row, to 590. The contentless 200 beside a 201 with content adds
-`response-contentless-200-with-created`, one more `handwritten` row, for **593**. Counting only the
+`response-contentless-200-with-created`, one more `handwritten` row, to 593. The
+parameter extension and serialization shapes add thirteen `handwritten` rows and
+`single-operation-required-header`, a `golden` row, for **607**. Counting only the
 registered rows whose Fern golden crozier byte-matches as golden sources (#352)
 moved no row's category: every `golden` row's declarers include one.
 
@@ -444,7 +450,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-108, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+116, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -658,6 +664,31 @@ drift gate over the pair:
   quarters but not all of the document's operations and is neither a header the
   transport or an apiKey scheme owns nor `Authorization`: the header
   `global_headers` promotes as a one-value `Literal`.
+- `parameter.in:absent` — one per inline Parameter Object with a name and an
+  inline schema but no `in` field: the parameter `build_endpoint` skips.
+- `parameter.schema:nullable-array-explode-false` — one per optional form-style
+  query Parameter Object writing `explode: false` whose inline schema is a
+  `nullable: true` array of strings: the list sent unjoined.
+- `parameter.schema:nullable-array-items-oas-three-zero` — one per query Parameter Object
+  of an OpenAPI 3.0 document whose inline array schema's inline `items` is a
+  `nullable: true` scalar: the item nullability the query type drops.
+- `parameter.schema:required-nullable-scalar-oas-three-zero` — one per required query
+  Parameter Object of an OpenAPI 3.0 document whose inline scalar schema is
+  `nullable: true`: the required parameter lowered as optional.
+- `parameter.schema:date-union-query-oneof` — one per query Parameter Object
+  whose inline `oneOf` has an integer member and a `format: date` string
+  member: the union the query serializer converts.
+- `parameter.schema:promoted-date-header` — one per `format: date` header
+  Parameter Object whose name rides at least three quarters of the document's
+  operations and is neither a header the transport or an apiKey scheme owns nor
+  `Authorization`: the client field typed `dt.date`.
+- `parameter.schema:single-required-header` — one per required header
+  Parameter Object of a document with exactly one operation: the header
+  `global_headers` promotes to a required constructor field.
+- `operation.parameters:path-order-oas-three-one` — one per Operation Object of an
+  OpenAPI 3.1 document declaring two or more untitled path parameters in an
+  order other than its URL template's, with no path-level path parameter: the
+  signature `build_endpoint` orders by template position.
 - `mediaType.examples:named-beside-example` and `mediaType.examples:named-only`
   — one per request body's selected JSON media type writing a named example that
   resolves to a value, beside a non-null `example` (which `reference.md` then
@@ -876,7 +907,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 108 are node-local**, which is what makes them one family:
+**Seventy-four of the 116 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -885,13 +916,15 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-seven — `operation.operationId:duplicate`,
+forty-two — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
 `schema.anyOf:discriminated-union`,
 `schema.discriminator:inheritance-union`,
 `parameter.schema:subset-header-string-default`,
+`parameter.schema:promoted-date-header`,
+`parameter.schema:single-required-header`,
 `operation.operationId:digit-leading-method`,
 `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
 `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
@@ -910,14 +943,17 @@ thirty-seven — `operation.operationId:duplicate`,
 `operation.requestBody:described-inline-scalar`,
 `operation.requestBody:plain-string-map`,
 `operation.responses:contentless-two-hundred-with-created`,
+`parameter.schema:nullable-array-items-oas-three-zero`,
+`parameter.schema:required-nullable-scalar-oas-three-zero`,
+`operation.parameters:path-order-oas-three-one`,
 `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
 `mediaType.example:deprecated-property`,
 `components.schemas:fields-reach-cycles-unsorted`,
 `components.schemas:cycle-into-cycle` and
 `mediaType.schema:closed-empty-object-property` — read the document beyond the
-node, and say so in their own sentence. The first nine and the two cycle
+node, and say so in their own sentence. The first eleven and the two cycle
 readings compare one document's own values against each other; the next
-twenty-two read where the node stands (an operation's route, a request body's
+twenty-five read where the node stands (an operation's route, a request body's
 selected media type, the document's version) or resolve one local
 `#/components/...` reference; the last four read a request body's selected
 media type and resolve the `#/components/schemas/...` references reached by its
@@ -1521,8 +1557,8 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 33 rows are the 27 generator categories, the base-path and string-map
-example gaps, and the four additional scenarios the parameter fix closed.
+These 35 rows are the 27 generator categories, the base-path and string-map
+example gaps, and the six additional scenarios the parameter fix closed.
 Other scenarios remain in a separate follow-on plan and are not proof claims
 here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
@@ -1570,6 +1606,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | required-and-nullable-query-param-made-optional | Required nullable query schema becomes an optional method argument | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | — |
 | query-array-nullable-items-optional | Nullable query-array items stripped from signature; incompatible documentation type/example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | `nullable-items-docs` |
 | single-operation-required-header-promoted | Required header on a sole operation promoted to the client | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected | `parameter_lowering_measurements_match_fern` | — |
+| client-header-date-format-typed-str | Promoted date header typed `dt.date` on the client; invalid constructor example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-date/fern-expected | `handwritten_fixtures_match_fern_goldens` | `date-header-constructor-example` |
+| sdk-variables-extension-ignored | SDK-variable path parameters lifted to the client; constructor and method documentation corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-variable/fern-expected | `handwritten_fixtures_match_fern_goldens` | `sdk-variable-docs-examples` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -1719,8 +1757,8 @@ The six region files, read as one body of work. Two measurements feed it:
   registered rows whose committed Fern golden crozier byte-matches: the tree
   acquires 260 sources (corpus rows through 332, after the withdrawals of rows
   224 and 223, with the `crozier-property-name` feature target), and the walk
-  reads the **243** registered sources, of which
-  **243** carry a committed golden; the 17 others carry none and are acquisition
+  reads the **244** registered sources, of which
+  **244** carry a committed golden; the 17 others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1758,16 +1796,16 @@ for either; each bullet below says where its number comes from.
 
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [`parameters`](openapi-surface/parameters.md) | 73 | 52 | 19 | 2 | 0 | 0 | 0 | 0 |
+| [`parameters`](openapi-surface/parameters.md) | 87 | 53 | 19 | 15 | 0 | 0 | 0 | 0 |
 | [`schemas`](openapi-surface/schemas.md) | 288 | 248 | 14 | 17 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 57 | 46 | 5 | 6 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
 | [`document-paths`](openapi-surface/document-paths.md) | 72 | 68 | 3 | 0 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 53 | 38 | 2 | 1 | 12 | 0 | 0 | 12 |
-| **total** | **593** | **493** | **52** | **26** | **22** | **8** | **0** | **14** |
+| **total** | **607** | **494** | **52** | **39** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **593** features and landed each in exactly one category:
-**493** `golden`, **52** `limitations`, **26** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **607** features and landed each in exactly one category:
+**494** `golden`, **52** `limitations`, **39** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1918,7 +1956,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 593 rows carry 593 distinct
+**Each feature is classified exactly once.** The 607 rows carry 607 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -2090,7 +2128,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 593](#what-the-walk-enumerated) is a
+[the walk's 607](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
@@ -2380,8 +2418,8 @@ The golden rows split in two. **425** reach every handling site their
 states under Contract B's six declared sources, or `not searched` where no arm
 search has run. 57 read `exhausted`: each of those arms' six-source searches
 owes nothing and found no registrable real-world document that executes it.
-Eleven read `search-incomplete`: the ignored-schema arm, the four bounded
-root-body or typed-query covers, and the six parameter-lowering covers. Their
+Ten read `search-incomplete`: the ignored-schema arm and the nine
+parameter-lowering covers. Their
 records keep the source-search obligations separate from certified generation. `discriminator-mapping`'s
 `collect_schema_refs` arm reads `config-gated`. Twenty-two have no arm search:
 three example arms remain named gaps (`schema-example-empty-object`,
@@ -2682,7 +2720,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**56** golden rows rest on one document: a single golden-only witness declares
+**57** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -2709,6 +2747,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-uri-template` | `schemas` | `openlinksw-osdb` |
 | `request-body-string-map` | `bodies-media` | `confluent-kafka-connect` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
+| `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
 | `property-oneof-nullable-pair` | `schemas` | `discord-com` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
 | `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |

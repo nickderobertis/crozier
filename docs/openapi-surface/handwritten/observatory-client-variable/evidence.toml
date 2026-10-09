@@ -1,0 +1,22 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "3f053d457c33d8a4f091cb5f31ad7aded60653efab8e76967ec031f26a557b5b"
+
+[[covers]]
+key = "sdk-variables-extension"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+
+[[covers]]
+key = "sdk-variable-parameter-extension"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+
+[[covers]]
+key = "parameter-in-path"
+arm = 'src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]'
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

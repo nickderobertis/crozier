@@ -30,7 +30,9 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
             operation.route
         );
         let found = doc
-            .empty_body_request_examples(&operation)
+            .version_header_redeclared(&operation)
+            .or_else(|| doc.header_default_override(&operation))
+            .or_else(|| doc.empty_body_request_examples(&operation))
             .or_else(|| doc.header_name_fallback(&operation))
             .or_else(|| doc.nullable_parent_example(&operation))
             .or_else(|| doc.read_only_shadows_required_parent(&operation))
@@ -73,6 +75,60 @@ fn is_type(schema: &Value, ty: &str) -> bool {
 /// `type: object`, or no `type` at all.
 fn object_or_untyped(schema: &Value) -> bool {
     schema.get("type").is_none() || is_type(schema, "object")
+}
+
+#[cfg(test)]
+mod parameter_refusal_tests {
+    use super::*;
+
+    #[test]
+    fn required_header_overrides_and_version_conflicts_name_the_element() {
+        for (source, class, header) in [
+            (
+                include_str!(
+                    "../../docs/fern-refusals/header-default-differs-across-operations/probe.yml"
+                ),
+                "header-default-differs-across-operations",
+                "X-Projection",
+            ),
+            (
+                include_str!(
+                    "../../docs/fern-refusals/version-header-redeclared-as-parameter/probe.yml"
+                ),
+                "version-header-redeclared-as-parameter",
+                "X-Calibration-Revision",
+            ),
+        ] {
+            let root: Value = serde_yaml_ng::from_str(source).unwrap();
+            let (found, element) = first_violation(&root).expect("the measured refusal");
+            assert_eq!(found.id(), class);
+            assert!(element.contains(header), "{element}");
+        }
+    }
+
+    #[test]
+    fn matching_defaults_and_distinct_version_headers_are_valid_controls() {
+        let mut defaults: Value = serde_yaml_ng::from_str(include_str!(
+            "../../docs/fern-refusals/header-default-differs-across-operations/probe.yml"
+        ))
+        .unwrap();
+        defaults["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
+            Value::String("radial".into());
+        assert!(first_violation(&defaults).is_none());
+        let mut version: Value = serde_yaml_ng::from_str(include_str!(
+            "../../docs/fern-refusals/version-header-redeclared-as-parameter/probe.yml"
+        ))
+        .unwrap();
+        version["x-crozier-version"] = serde_yaml_ng::from_str("header: X-Other-Revision").unwrap();
+        assert!(first_violation(&version).is_none());
+        version["x-crozier-version"] = version["x-fern-version"].clone();
+        assert_eq!(
+            first_violation(&version).unwrap().0.id(),
+            "version-header-redeclared-as-parameter"
+        );
+        version["paths"]["/measurements"]["get"]["parameters"][0]["required"] = Value::Bool(false);
+        assert!(first_violation(&version).is_none());
+    }
 }
 
 fn has_composition(schema: &Value) -> bool {
@@ -217,6 +273,68 @@ impl<'a> Doc<'a> {
     fn request_media(&self, operation: &Operation<'a>) -> Option<&'a Value> {
         let body = self.resolve(operation.op.get("requestBody")?)?;
         json_media(body.get("content"))
+    }
+
+    /// A version header and an ordinary parameter cannot own the same header.
+    fn version_header_redeclared(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        let header = crate::openapi::refusal_version_header(self.root)?;
+        self.parameters(operation)
+            .into_iter()
+            .find_map(|parameter| {
+                (str_of(parameter, "in") == Some("header")
+                    && str_of(parameter, "name") == Some(header)
+                    && parameter.get("required").and_then(Value::as_bool) == Some(true))
+                .then(|| {
+                    (
+                        Class::VersionHeaderRedeclaredAsParameter,
+                        format!("header {header} conflicts with version header"),
+                    )
+                })
+            })
+    }
+
+    /// Fern checks the path header's example against the operation override's
+    /// default. Restrict this refusal to distinct declared string defaults.
+    fn header_default_override(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        let inherited = operation.item.get("parameters")?.as_sequence()?;
+        let local = operation.op.get("parameters")?.as_sequence()?;
+        for parameter in inherited {
+            let Some(parameter) = self.resolve(parameter) else {
+                continue;
+            };
+            if str_of(parameter, "in") != Some("header")
+                || parameter.get("required").and_then(Value::as_bool) != Some(true)
+            {
+                continue;
+            }
+            let Some(name) = str_of(parameter, "name") else {
+                continue;
+            };
+            let Some(default) = parameter
+                .get("schema")
+                .and_then(|schema| str_of(schema, "default"))
+            else {
+                continue;
+            };
+            for replacement in local {
+                let Some(replacement) = self.resolve(replacement) else {
+                    continue;
+                };
+                if str_of(replacement, "in") == Some("header")
+                    && str_of(replacement, "name") == Some(name)
+                    && replacement
+                        .get("schema")
+                        .and_then(|schema| str_of(schema, "default"))
+                        .is_some_and(|value| value != default)
+                {
+                    return Some((
+                        Class::HeaderDefaultDiffersAcrossOperations,
+                        format!("header {name} operation default overrides path default"),
+                    ));
+                }
+            }
+        }
+        None
     }
 
     fn parameters(&self, operation: &Operation<'a>) -> Vec<&'a Value> {

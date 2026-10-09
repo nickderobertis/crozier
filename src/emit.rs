@@ -2461,6 +2461,23 @@ fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
     }
 }
 
+/// A constructor example matching the header's type. Date fields use Fern's
+/// measured date-example form instead of an invalid string placeholder.
+fn global_header_example(header: &GlobalHeader) -> String {
+    if header.py_type() == HeaderType::Date {
+        format!(
+            "{}=datetime.date.fromisoformat(\"2023-01-15\")",
+            header.py_name
+        )
+    } else {
+        format!(
+            "{}=\"YOUR_{}\"",
+            header.py_name,
+            header.py_name.to_uppercase()
+        )
+    }
+}
+
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
 /// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
 /// not wrap these advanced README calls,
@@ -3935,7 +3952,15 @@ fn client_wrapper_file(
     // survives `ruff format` and the e2e comment-strip folds it to the blank lines
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
-    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    if global_headers
+        .iter()
+        .any(|header| matches!(header.py_type(), HeaderType::Date))
+    {
+        c.push_str("\n\nimport datetime as dt");
+    } else {
+        c.push('\n');
+    }
+    c.push_str("\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
@@ -4826,12 +4851,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                     qp.py_name.clone(),
                 );
             }
-            optional_arg(
+            let mut parameter = optional_arg(
                 raw_type_str(&qp.type_ref, imports),
                 qp.argument_required(),
                 qp.docstring.clone(),
                 qp.py_name.clone(),
-            )
+            );
+            if let Some(default) = &qp.default {
+                parameter.default = Some(default.clone());
+            }
+            parameter
         })
         .collect();
     let header: Vec<DocParam> = ep
@@ -6306,6 +6335,12 @@ fn root_client_file(
         default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    if global_headers
+        .iter()
+        .any(|header| matches!(header.py_type(), HeaderType::Date))
+    {
+        imports.add_plain_as("datetime", "dt");
+    }
     imports.add_plain("typing");
     imports.add_plain("httpx");
     imports.add_core("client_wrapper", "AsyncClientWrapper");
@@ -6644,13 +6679,11 @@ fn root_client_class(
     let client_param_example: String = client_path_parameters
         .iter()
         .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
-        .chain(global_headers.iter().map(|h| {
-            format!(
-                "        {}=\"YOUR_{}\",\n",
-                h.py_name,
-                h.py_name.to_uppercase()
-            )
-        }))
+        .chain(
+            global_headers
+                .iter()
+                .map(|header| format!("        {},\n", global_header_example(header))),
+        )
         .collect();
     let client_param_wrapper: String = client_path_parameters
         .iter()
@@ -6710,6 +6743,7 @@ fn root_client_class(
         client_param_doc,
         client_param_ctor,
         client_param_example,
+        client_example_imports: if global_headers.iter().any(|header| header.py_type() == HeaderType::Date) { "    import datetime\n\n" } else { "" }.to_string(),
         client_param_wrapper,
         tr_doc,
         tr_ctor,
@@ -6805,6 +6839,8 @@ struct RootClientView {
     client_param_doc: String,
     client_param_ctor: String,
     client_param_example: String,
+    /// Imports needed by the constructor's worked example.
+    client_example_imports: String,
     client_param_wrapper: String,
     /// Defaulted global-header lines (empty without any): the docstring
     /// `Parameters` entries, the constructor parameters and the client-wrapper call
@@ -9600,6 +9636,14 @@ fn build_example_inner(
     }
 
     ctx.documentation = documentation;
+    if !documentation
+        && ctx
+            .global_headers
+            .iter()
+            .any(|header| header.py_type() == HeaderType::Date)
+    {
+        ctx.uses_datetime = true;
+    }
     ctx.reference = reference;
     ctx.field_examples_ignored = ep.importer_example_missing;
     // A `*/*` binary download whose parameters carry a DECLARED example documents
@@ -10492,11 +10536,7 @@ fn build_example_inner(
             client_args.push(format!("    {},", client_path_parameter_example(parameter)));
         }
         for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
-            client_args.push(format!(
-                "    {}=\"YOUR_{}\",",
-                h.py_name,
-                h.py_name.to_uppercase()
-            ));
+            client_args.push(format!("    {},", global_header_example(h)));
         }
         for arg in auth_example_args(ctx.auth) {
             client_args.push(format!("    {arg},"));
@@ -11595,6 +11635,7 @@ mod tests {
             client_param_doc: String::new(),
             client_param_ctor: String::new(),
             client_param_example: String::new(),
+            client_example_imports: String::new(),
             client_param_wrapper: String::new(),
             tr_doc: String::new(),
             tr_ctor: String::new(),
@@ -12805,6 +12846,7 @@ mod tests {
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: true,
             allow_multiple: true,
@@ -12851,6 +12893,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14004,6 +14047,7 @@ mod tests {
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14019,6 +14063,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14392,6 +14437,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: false,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14441,6 +14487,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14456,6 +14503,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14471,6 +14519,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14520,6 +14569,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14775,6 +14825,133 @@ mod parameter_lowering_tests {
                 )
             })
             .collect()
+    }
+
+    #[test]
+    fn extension_parameters_keep_their_wire_names_and_defaults() {
+        let document: Value = serde_json::from_str(include_str!(
+            "../docs/openapi-surface/handwritten/observatory-query-extensions/openapi.yml"
+        ))
+        .unwrap();
+        let generated = files(document);
+        let client = &generated["src/api/client.py"];
+        let raw = &generated["src/api/raw_client.py"];
+        assert!(
+            client.contains("band: typing.Optional[str] = None"),
+            "{client}"
+        );
+        assert!(
+            client.contains("size: typing.Optional[int] = \"12\""),
+            "{client}"
+        );
+        assert!(raw.contains("\"channel\": band"), "{raw}");
+    }
+
+    #[test]
+    fn document_fields_and_nullable_arrays_reach_emitter_consumers() {
+        for (source, expected) in [
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-date/openapi.yml"
+                ),
+                "sampling_day: typing.Optional[dt.date] = None",
+            ),
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-headers/openapi.yml"
+                ),
+                "station: str",
+            ),
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-variable/openapi.yml"
+                ),
+                "station_code: str",
+            ),
+        ] {
+            let generated = files(serde_json::from_str(source).unwrap());
+            assert!(
+                generated["src/api/client.py"].contains(expected),
+                "{expected}"
+            );
+        }
+        let generated = files(
+            serde_json::from_str(include_str!(
+                "../docs/openapi-surface/handwritten/observatory-nullable-query/openapi.yml"
+            ))
+            .unwrap(),
+        );
+        assert!(generated["src/api/raw_client.py"].contains("\"kinds\": kinds"));
+        assert!(!generated["src/api/raw_client.py"].contains("join(map"));
+    }
+
+    fn departure_guard(case: &str, rel: &str, id: &str) {
+        let case_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/openapi-surface/handwritten")
+            .join(case);
+        let document: Value =
+            serde_json::from_str(&std::fs::read_to_string(case_root.join("openapi.yml")).unwrap())
+                .unwrap();
+        let doc: crate::openapi::OpenApi = serde_json::from_value(document).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            "openapi.yml".into(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .unwrap();
+        let generated = super::generate(&crate::ir::build(&doc, &config)).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        for file in generated {
+            let path = out.path().join(file.path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, file.contents).unwrap();
+        }
+        let expected = case_root.join("fern-expected");
+        let context = crate::departures::Context::from_trees(&expected, out.path());
+        let reference = std::fs::read_to_string(expected.join(rel)).unwrap();
+        let actual = std::fs::read_to_string(out.path().join(rel)).unwrap();
+        let compared = crate::parity::compare_file(&context, rel, &actual, &reference).unwrap();
+        assert!(compared.matches());
+        assert!(compared
+            .departures
+            .iter()
+            .any(|departure| departure.id == id));
+        let changed = actual.replacen(
+            if rel.ends_with(".py") {
+                "import typing"
+            } else {
+                "# Reference"
+            },
+            "unexplained adjacent change",
+            1,
+        );
+        assert!(
+            !crate::parity::compare_file(&context, rel, &changed, &reference)
+                .unwrap()
+                .matches()
+        );
+    }
+
+    #[test]
+    fn sdk_variable_documentation_departure_rejects_an_adjacent_mismatch() {
+        departure_guard(
+            "observatory-client-variable",
+            "reference.md",
+            "sdk-variable-docs-examples",
+        );
+    }
+
+    #[test]
+    fn date_header_example_departure_rejects_an_adjacent_mismatch() {
+        departure_guard(
+            "observatory-client-date",
+            "src/fern/client.py",
+            "date-header-constructor-example",
+        );
     }
 
     #[test]

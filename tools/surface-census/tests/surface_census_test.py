@@ -2353,6 +2353,8 @@ class GrammarContractTests(unittest.TestCase):
             "schema.anyOf:discriminated-union",
             "schema.discriminator:inheritance-union",
             "parameter.schema:subset-header-string-default",
+            "parameter.schema:promoted-date-header",
+            "parameter.schema:single-required-header",
             # Read where the node stands, or resolve one local reference (#361).
             "operation.operationId:digit-leading-method",
             "operation.responses:wildcard-binary",
@@ -2376,6 +2378,10 @@ class GrammarContractTests(unittest.TestCase):
             "components.schemas:fields-reach-cycles-unsorted",
             "components.schemas:cycle-into-cycle",
             "mediaType.schema:closed-empty-object-property",
+            # Read the document's version, or an operation's route.
+            "parameter.schema:nullable-array-items-oas-three-zero",
+            "parameter.schema:required-nullable-scalar-oas-three-zero",
+            "operation.parameters:path-order-oas-three-one",
         }
     )
 
@@ -2407,6 +2413,7 @@ class GrammarContractTests(unittest.TestCase):
             "Sixty-nine": 69,
             "Seventy": 70,
             "Seventy-one": 71,
+            "Seventy-four": 74,
             "four": 4,
             "five": 5,
             "six": 6,
@@ -2426,6 +2433,7 @@ class GrammarContractTests(unittest.TestCase):
             "thirty-five": 35,
             "thirty-six": 36,
             "thirty-seven": 37,
+            "forty-two": 42,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
@@ -3840,6 +3848,22 @@ POINTER_FORM_PREDICATES = frozenset(
 )
 
 
+# The parameter-lowering shapes discriminated against their near misses by
+# `ParameterExtensionShapeSelectors` through the census CLI.
+PARAMETER_EXTENSION_SHAPE_PREDICATES = frozenset(
+    {
+        "parameter.in:absent",
+        "parameter.schema:nullable-array-explode-false",
+        "parameter.schema:nullable-array-items-oas-three-zero",
+        "parameter.schema:required-nullable-scalar-oas-three-zero",
+        "parameter.schema:date-union-query-oneof",
+        "parameter.schema:promoted-date-header",
+        "parameter.schema:single-required-header",
+        "operation.parameters:path-order-oas-three-one",
+    }
+)
+
+
 # The naming and example branches #361 brought inside the census, discriminated
 # by `NamingAndExampleBranchDiscriminationTests`: the enum_words and
 # numeric_enum_identifier arms, the operationId leading-digit prefix, and the
@@ -4466,6 +4490,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "parameter.schema:query-items-union",
             "parameter.schema:subset-header-string-default",
         }
+        - PARAMETER_EXTENSION_SHAPE_PREDICATES
         - BODY_AND_RESPONSE_PREDICATES
         - NAMING_AND_EXAMPLE_BRANCH_PREDICATES
     )
@@ -14345,6 +14370,117 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
 
+class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
+    """Exact authored shapes and neighboring non-triggers through the census CLI."""
+
+    def test_parameter_shape_predicates_select_only_the_complete_trigger(self) -> None:
+        cases = [
+            ("parameter.in:absent", {"name": "search", "schema": {"type": "string"}}, {"in": "query"}),
+            (
+                "parameter.schema:nullable-array-explode-false",
+                {
+                    "name": "tags",
+                    "in": "query",
+                    "explode": False,
+                    "schema": {"type": "array", "nullable": True, "items": {"type": "string"}},
+                },
+                {"explode": True},
+            ),
+            (
+                "parameter.schema:nullable-array-items-oas-three-zero",
+                {
+                    "name": "tags",
+                    "in": "query",
+                    "schema": {"type": "array", "items": {"type": "string", "nullable": True}},
+                },
+                {"schema": {"type": "array", "items": {"type": "string"}}},
+            ),
+            (
+                "parameter.schema:required-nullable-scalar-oas-three-zero",
+                {"name": "region", "in": "query", "required": True, "schema": {"type": "string", "nullable": True}},
+                {"required": False},
+            ),
+            (
+                "parameter.schema:date-union-query-oneof",
+                {
+                    "name": "since",
+                    "in": "query",
+                    "schema": {"oneOf": [{"type": "integer"}, {"type": "string", "format": "date"}]},
+                },
+                {"schema": {"oneOf": [{"type": "integer"}, {"type": "string"}]}},
+            ),
+            (
+                "parameter.schema:promoted-date-header",
+                {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}},
+                {"schema": {"type": "string"}},
+            ),
+            (
+                "parameter.schema:single-required-header",
+                {"name": "X-Key", "in": "header", "required": True, "schema": {"type": "string"}},
+                {"required": False},
+            ),
+        ]
+        for selector, parameter, near in cases:
+            with self.subTest(selector=selector):
+                documents = {}
+                for name, value in [("positive", parameter), ("near", {**parameter, **near})]:
+                    documents[name] = {
+                        "openapi": "3.0.3",
+                        "paths": {"/signals": {"get": self.operation(parameters=[value])}},
+                    }
+                self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_path_order_predicate_requires_31_and_operation_only_untitled_parameters(self) -> None:
+        parameters = [
+            {"name": name, "in": "path", "required": True, "schema": {"type": "string"}}
+            for name in ["sensor", "station"]
+        ]
+        operation = self.operation(parameters=parameters)
+        documents = {
+            "positive": {"openapi": "3.1.0", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}},
+            "near": {"openapi": "3.0.3", "paths": {"/stations/{station}/sensors/{sensor}": {"get": operation}}},
+        }
+        documents["path-level"] = {
+            "openapi": "3.1.0",
+            "paths": {"/stations/{station}/sensors/{sensor}": {"parameters": [parameters[0]], "get": operation}},
+        }
+        titled = [{**parameter, "schema": {"type": "string", "title": "Route value"}} for parameter in parameters]
+        documents["titled"] = {
+            "openapi": "3.1.0",
+            "paths": {"/stations/{station}/sensors/{sensor}": {"get": self.operation(parameters=titled)}},
+        }
+        selector = "operation.parameters:path-order-oas-three-one"
+        self.assertEqual({(selector, "positive"): 1}, self.census(selector, documents))
+
+    def test_date_header_promotion_requires_frequency_and_unowned_header(self) -> None:
+        header = {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}}
+
+        def document(carried: int, name: str = "X-Date", kind: str = "string") -> dict:
+            parameter = {**header, "name": name, "schema": {"type": kind, "format": "date"}}
+            return {
+                "openapi": "3.0.3",
+                "paths": {
+                    f"/signals/{index}": {"get": self.operation(parameters=[parameter] if index < carried else [])}
+                    for index in range(4)
+                },
+            }
+
+        documents = {
+            "threshold": document(3),
+            "below": document(2),
+            "excluded": document(4, "Content-Type"),
+            "owned": document(4),
+            # The generator types only a string `format: date` header as a date.
+            "integer": document(4, kind="integer"),
+        }
+        documents["owned"]["components"] = {
+            "securitySchemes": {"DateKey": {"type": "apiKey", "in": "header", "name": "X-Date"}}
+        }
+        documents["owned"]["security"] = [{"DateKey": []}]
+        selector = "parameter.schema:promoted-date-header"
+        self.assertEqual({(selector, "threshold"): 3}, self.census(selector, documents))
+
+
 class ParityProofIndexTests(unittest.TestCase):
     """The public proof index names complete goldens and every catalogued defect once."""
 
@@ -14354,7 +14490,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(33, len(rows))
+        self.assertEqual(35, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
