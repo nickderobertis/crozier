@@ -7565,6 +7565,30 @@ class FlowCollectionRegressionTests(unittest.TestCase):
                 self.assertIn("a flow collection is used as a mapping key", str(raised.exception))
 
 
+def stage_windows_runtime(destination: Path, *, base_prefix: Path, base_executable: str | None) -> Path:
+    """Copy the base Windows installation's interpreter and runtime into `destination`.
+
+    The base installation, never `sys.executable`'s directory: under a virtual
+    environment that is `Scripts\\`, whose `python.exe` is a launcher that needs
+    the venv's `pyvenv.cfg` and has no adjacent `Lib` or DLLs.
+    """
+    executable = Path(base_executable) if base_executable else base_prefix / "python.exe"
+    interpreter = destination / "python.exe"
+    shutil.copy2(executable, interpreter)
+    # PATH is deliberately restricted, so retain the real runtime's adjacent DLLs
+    # as well as its executable.
+    for library in base_prefix.glob("*.dll"):
+        shutil.copy2(library, destination / library.name)
+    # A copied Windows executable also needs its standard library when no
+    # installed Python directory remains on PATH.
+    shutil.copytree(
+        base_prefix / "Lib",
+        destination / "Lib",
+        ignore=shutil.ignore_patterns("site-packages", "__pycache__"),
+    )
+    return interpreter
+
+
 class CensusInterpreterCase(unittest.TestCase):
     """Pin the census interpreter's repository provenance."""
 
@@ -7629,18 +7653,10 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
                 # the real executable, which a copy elsewhere would lose.
                 interpreter.symlink_to(Path(sys.executable).resolve())
             else:
-                shutil.copy2(Path(sys.executable).resolve(), interpreter)
-                # PATH is deliberately restricted, so retain the real runtime's
-                # adjacent DLLs as well as its executable.
-                runtime = Path(sys.executable).resolve().parent
-                for library in runtime.glob("*.dll"):
-                    shutil.copy2(library, Path(directory) / library.name)
-                # A copied Windows executable also needs its standard library
-                # when no installed Python directory remains on PATH.
-                shutil.copytree(
-                    runtime / "Lib",
-                    Path(directory) / "Lib",
-                    ignore=shutil.ignore_patterns("site-packages", "__pycache__"),
+                stage_windows_runtime(
+                    Path(directory),
+                    base_prefix=Path(sys.base_prefix),
+                    base_executable=getattr(sys, "_base_executable", None),
                 )
             completed = self.resolve(path=self.shell_path(Path(directory)))
             self.assertEqual(0, completed.returncode, completed.stderr)
@@ -7660,6 +7676,35 @@ class PortableCensusInterpreterTests(CensusInterpreterCase):
             )
             self.assertEqual(0, invoked.returncode, invoked.stderr)
             self.assertEqual("3", invoked.stdout.strip())
+
+
+class WindowsRuntimeStagingTests(unittest.TestCase):
+    """Stage the base installation, not a venv launcher's directory, on any host."""
+
+    def test_a_venv_launcher_layout_stages_the_base_installations_standard_library(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            # Windows' layouts: the base install holds python.exe, its DLLs and
+            # Lib; a venv's Scripts\python.exe launcher has none of them beside it.
+            base = root / "Python314"
+            (base / "Lib" / "site-packages").mkdir(parents=True)
+            (base / "Lib" / "os.py").write_text("# base stdlib\n", encoding="utf-8")
+            (base / "python.exe").write_bytes(b"base interpreter")
+            (base / "python314.dll").write_bytes(b"base runtime")
+            scripts = root / "venv" / "Scripts"
+            scripts.mkdir(parents=True)
+            (scripts / "python.exe").write_bytes(b"venv launcher")
+            for base_executable in (str(base / "python.exe"), None):
+                with self.subTest(base_executable=base_executable):
+                    staged = root / f"staged-{base_executable is None}"
+                    staged.mkdir()
+                    interpreter = stage_windows_runtime(staged, base_prefix=base, base_executable=base_executable)
+                    self.assertEqual(b"base interpreter", interpreter.read_bytes())
+                    self.assertEqual("# base stdlib\n", (staged / "Lib" / "os.py").read_text(encoding="utf-8"))
+                    self.assertEqual(b"base runtime", (staged / "python314.dll").read_bytes())
+                    self.assertFalse((staged / "Lib" / "site-packages").exists())
 
 
 @unittest.skipIf(
