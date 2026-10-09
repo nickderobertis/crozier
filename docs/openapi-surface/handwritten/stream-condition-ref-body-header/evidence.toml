@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "a17185969a7e63a2e707d1e293cff3ba4547c03cd7ced76b848f453e3acb0602"
+
+[[covers]]
+key = "fern-streaming-condition-ref-body-header"
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"

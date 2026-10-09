@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-108, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+112, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -681,6 +681,25 @@ drift gate over the pair:
   whose 200 response declares no content while its 201 declares content,
   resolving local Response Object references. `success_response_with_content`
   selects the latter body, preserving a 200 with content as the first choice.
+- `operation.responses:event-stream-binary` — one per Operation Object whose
+  success response's `text/event-stream` media type has a schema resolving to
+  `{type: string, format: binary}` through local `components.schemas`
+  references: the body `is_streaming` of `src/ir.rs` downloads as bytes rather
+  than decoding as events.
+- `operation.responses:event-stream-inline-const-union` — one per Operation
+  Object whose success response's `text/event-stream` schema is written inline as
+  a `oneOf` of at least two inline objects, each tagging a string property with a
+  `const`, with no `discriminator`: the chunk `stream_chunk_view` of `src/ir.rs`
+  hoists as a discriminated union.
+- `operation.responses:event-stream-item-schema-ref` — one per Operation Object
+  whose success response's `text/event-stream` media type declares no `schema`
+  and an `itemSchema` that is a local `components.schemas` reference: the
+  per-item schema `MediaType` of `src/openapi.rs` types each streamed event from.
+- `operation.responses:event-stream-event-dispatch` — one per Operation Object
+  whose success response's `text/event-stream` schema is a reference to a `oneOf`
+  of references discriminated on `event`, every variant declaring exactly the
+  properties `event` and `data`: the stream `sse_event_dispatch` of `src/ir.rs`
+  dispatches on the SSE `event` field.
 - `operation.responses:empty-schema-success-oas-three-zero` — one per Operation Object of
   an OpenAPI 3.0 document whose success response, declared inline rather than by
   a Response `$ref`, holds an `application/json` media type whose `schema` is the
@@ -876,7 +895,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 108 are node-local**, which is what makes them one family:
+**Seventy-one of the 112 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -885,7 +904,7 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-seven — `operation.operationId:duplicate`,
+forty-one — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -910,6 +929,10 @@ thirty-seven — `operation.operationId:duplicate`,
 `operation.requestBody:described-inline-scalar`,
 `operation.requestBody:plain-string-map`,
 `operation.responses:contentless-two-hundred-with-created`,
+`operation.responses:event-stream-binary`,
+`operation.responses:event-stream-inline-const-union`,
+`operation.responses:event-stream-item-schema-ref`,
+`operation.responses:event-stream-event-dispatch`,
 `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
 `mediaType.example:deprecated-property`,
 `components.schemas:fields-reach-cycles-unsorted`,
@@ -917,7 +940,7 @@ thirty-seven — `operation.operationId:duplicate`,
 `mediaType.schema:closed-empty-object-property` — read the document beyond the
 node, and say so in their own sentence. The first nine and the two cycle
 readings compare one document's own values against each other; the next
-twenty-two read where the node stands (an operation's route, a request body's
+twenty-six read where the node stands (an operation's route, a request body's
 selected media type, the document's version) or resolve one local
 `#/components/...` reference; the last four read a request body's selected
 media type and resolve the `#/components/schemas/...` references reached by its

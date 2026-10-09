@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Ferry Movements
+  version: 1.2.0
+paths:
+  /routes/{routeId}/movements:
+    get:
+      operationId: watchMovements
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Departures and arrivals on the route.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Movement'
+components:
+  schemas:
+    Movement:
+      oneOf:
+        - $ref: '#/components/schemas/Departure'
+        - $ref: '#/components/schemas/Arrival'
+      discriminator:
+        propertyName: event
+        mapping:
+          departed: '#/components/schemas/Departure'
+          arrived: '#/components/schemas/Arrival'
+    Departure:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          enum:
+            - departed
+        data:
+          $ref: '#/components/schemas/Berth'
+    Arrival:
+      type: object
+      required:
+        - event
+        - data
+      properties:
+        event:
+          type: string
+          enum:
+            - arrived
+        data:
+          $ref: '#/components/schemas/Berth'
+    Berth:
+      type: object
+      properties:
+        terminal:
+          type: string
+        minutesLate:
+          type: integer

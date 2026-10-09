@@ -1109,6 +1109,30 @@ PREDICATES = {
         "its 201 declares content, resolving local Response Object references: "
         "`success_response_with_content` of `src/ir.rs` selects the latter body"
     ),
+    "operation.responses:event-stream-binary": (
+        "one per Operation Object whose success response's `text/event-stream` media "
+        "type has a schema resolving to `{type: string, format: binary}`, through local "
+        "`components.schemas` references: the body `is_streaming` of `src/ir.rs` "
+        "downloads as bytes rather than decoding as events"
+    ),
+    "operation.responses:event-stream-inline-const-union": (
+        "one per Operation Object whose success response's `text/event-stream` schema "
+        "is written inline as a `oneOf` of at least two inline objects, each tagging a "
+        "string property with a `const`, with no `discriminator`: the chunk "
+        "`stream_chunk_view` of `src/ir.rs` hoists as a discriminated union"
+    ),
+    "operation.responses:event-stream-item-schema-ref": (
+        "one per Operation Object whose success response's `text/event-stream` media "
+        "type declares no `schema` and an `itemSchema` that is a local "
+        "`components.schemas` reference: the per-item schema `MediaType` of "
+        "`src/openapi.rs` types each streamed event from"
+    ),
+    "operation.responses:event-stream-event-dispatch": (
+        "one per Operation Object whose success response's `text/event-stream` schema "
+        "is a reference to a `oneOf` of references discriminated on `event`, every "
+        "variant declaring exactly the properties `event` and `data`: the stream "
+        "`sse_event_dispatch` of `src/ir.rs` dispatches on the SSE `event` field"
+    ),
     "operation.responses:empty-schema-success-oas-three-zero": (
         "one per Operation Object of an OpenAPI 3.0 document whose success response, "
         "declared inline rather than by a Response `$ref`, holds an `application/json` "
@@ -4635,6 +4659,7 @@ class Census:
                     found.append("operation.responses:schemaless-download-success")
                 if schemaless(lambda base: base == "audio/wav"):
                     found.append("operation.responses:schemaless-wav-success")
+        found += self.event_stream_predicates(success_content)
         responses = operation.get("responses")
         for code in responses if isinstance(responses, dict) else []:
             text = str(code)
@@ -4645,6 +4670,61 @@ class Census:
                 found.append("operation.responses:suffixed-status-key")
             if re.fullmatch(r"\d{3} +\S.*", text, re.S):
                 found.append("operation.responses:space-suffixed-status-key")
+        return found
+
+    def event_stream_predicates(self, success_content: Any) -> list[str]:
+        """The predicates of a success response's `text/event-stream` media type:
+        how `is_streaming`, `stream_chunk_view` and `sse_event_dispatch` of
+        `src/ir.rs` read it, resolving local `components.schemas` references."""
+        media = success_content.get("text/event-stream") if isinstance(success_content, dict) else None
+        if not isinstance(media, dict):
+            return []
+        found: list[str] = []
+        schema = media.get("schema")
+        item = media.get("itemSchema")
+        if (
+            schema is None and isinstance(item, dict) and isinstance(item.get("$ref"), str)
+            and item["$ref"].startswith(_COMPONENT_SCHEMAS_PREFIX)
+        ):
+            found.append("operation.responses:event-stream-item-schema-ref")
+        resolved = self.resolved_schema(schema)
+        if (
+            isinstance(resolved, dict) and primary_type(resolved.get("type")) == "string"
+            and resolved.get("format") == "binary"
+        ):
+            found.append("operation.responses:event-stream-binary")
+        if isinstance(schema, dict) and "$ref" not in schema and "discriminator" not in schema:
+            members = schema.get("oneOf")
+
+            def const_tagged(member: Any) -> bool:
+                properties = member.get("properties") if isinstance(member, dict) else None
+                return (
+                    isinstance(member, dict) and "$ref" not in member
+                    and isinstance(properties, dict)
+                    and any(
+                        isinstance(value, dict) and primary_type(value.get("type")) == "string"
+                        and isinstance(value.get("const"), str)
+                        for value in properties.values()
+                    )
+                )
+
+            if isinstance(members, list) and len(members) >= 2 and all(map(const_tagged, members)):
+                found.append("operation.responses:event-stream-inline-const-union")
+        union = self.resolved_schema(schema) if isinstance(schema, dict) and "$ref" in schema else None
+        discriminator = union.get("discriminator") if isinstance(union, dict) else None
+        variants = union.get("oneOf") if isinstance(union, dict) else None
+        if (
+            isinstance(discriminator, dict) and discriminator.get("propertyName") == "event"
+            and isinstance(variants, list) and variants
+            and all(
+                isinstance(variant, dict) and isinstance(variant.get("$ref"), str)
+                and isinstance(self.component_target(variant["$ref"]), dict)
+                and isinstance(self.component_target(variant["$ref"]).get("properties"), dict)
+                and set(self.component_target(variant["$ref"])["properties"]) == {"event", "data"}
+                for variant in variants
+            )
+        ):
+            found.append("operation.responses:event-stream-event-dispatch")
         return found
 
     def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:

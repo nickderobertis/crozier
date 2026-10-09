@@ -296,3 +296,4 @@ CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e huatuo_no
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e lootlog_battlelog_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e ego_microservices_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e netgsm_sms_matches_fern_output
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e zylon_private_gpt_matches_fern_output

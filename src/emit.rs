@@ -3106,24 +3106,19 @@ fn reference_entry(
                 .map_or(usize::MAX, |field| field.reference_order)
         });
         // The field a stream condition fixes is not a method argument, but the
-        // reference documents it — as a bare `typing.Literal`, ahead of the rest
-        // when the body is a component `$ref`, and in its declared place among
-        // an inline body's fields.
+        // reference documents it — as a bare `typing.Literal`, after the required
+        // fields and ahead of the optional ones.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
-                let at = if ep.body_schema_shape == BodySchemaShape::Ref {
-                    0
-                } else {
-                    reference_body
-                        .iter()
-                        .position(|param| {
-                            fields
-                                .iter()
-                                .find(|other| other.py_name == param.name)
-                                .is_none_or(|other| other.reference_order > field.reference_order)
-                        })
-                        .unwrap_or(reference_body.len())
-                };
+                let at = reference_body
+                    .iter()
+                    .position(|param| {
+                        fields
+                            .iter()
+                            .find(|other| other.py_name == param.name)
+                            .is_none_or(|other| other.optional)
+                    })
+                    .unwrap_or(reference_body.len());
                 reference_body.insert(
                     at,
                     DocParam {
@@ -3263,7 +3258,14 @@ fn reference_entry(
         } else {
             ""
         },
-        return_type: reference_return_type(ep, &mp.inner),
+        return_type: reference_return_type(
+            ep,
+            &mp.inner,
+            &sse_chunk(
+                ep,
+                &mut Imports::at(RefLoc::Client(module.to_string()), tag_types),
+            ),
+        ),
         description: ep
             .docstring
             .as_ref()
@@ -3309,8 +3311,16 @@ fn reference_param_annotation(annotation: &str) -> String {
 /// rather than with the `dt.` alias the generated Python imports them under —
 /// the same prose spelling [`reference_param_annotation`] applies to the
 /// parameter rows, so no golden's `reference.md` ever carries a `dt.` type.
-fn reference_return_type(ep: &Endpoint, response: &str) -> String {
-    let rendered = if ep.binary_response || ep.streaming {
+///
+/// A stream is headed with the iterator its method returns, `chunk` typed —
+/// where Fern heads every stream `typing.Iterator[bytes]` (the
+/// `stream-reference-return-type` departure); a binary download does return
+/// `typing.Iterator[bytes]`.
+fn reference_return_type(ep: &Endpoint, response: &str, chunk: &str) -> String {
+    let streamed = format!("typing.Iterator[{chunk}]");
+    let rendered = if ep.streaming {
+        streamed.as_str()
+    } else if ep.binary_response {
         "typing.Iterator[bytes]"
     } else {
         response
@@ -10149,6 +10159,13 @@ fn build_example_inner(
                     example_fields.sort_by_key(|field| field.declaration_order);
                 }
             }
+            // The field a stream condition fixes is no argument, so no example
+            // passes it, even where the schema's own example writes it.
+            example_fields.retain(|field| {
+                ep.stream_condition
+                    .as_ref()
+                    .is_none_or(|(wire, _)| *wire != field.wire_name)
+            });
             for f in example_fields {
                 let supplied_example = f
                     .example
@@ -10382,11 +10399,23 @@ fn build_example_inner(
         } else {
             args
         };
-        let rendered = Example::Call(receiver, args).render(call_indent);
+        let example = Example::Call(receiver, args);
+        let rendered = example.render(call_indent);
         if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
+            // Fern's snippet formatter (ruff at width 80) parenthesizes the
+            // assignment's right-hand side when `response = <call>(` overflows
+            // and the call's opening line fits once indented a level deeper.
+            let head = rendered.lines().next().unwrap_or_default();
+            let assigned = if pad.len() + "response = ".len() + head.len() > 80
+                && pad.len() + 4 + head.len() <= 80
+            {
+                format!("(\n{pad}    {}\n{pad})", example.render(call_indent + 4))
+            } else {
+                rendered
+            };
             format!(
-                "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
+                "{pad}response = {assigned}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
             )
         } else if ep.pagination.is_some() && !documentation {
             // A pager's worked example shows both ways of consuming it: item by
@@ -12301,20 +12330,20 @@ mod tests {
         // The `<summary>` line is prose, so it uses Fern's full spelling rather
         // than the `dt.` alias the generated Python imports the types under.
         assert_eq!(
-            super::reference_return_type(&endpoint, "dt.datetime"),
+            super::reference_return_type(&endpoint, "dt.datetime", "bytes"),
             " -> datetime.datetime"
         );
         assert_eq!(
-            super::reference_return_type(&endpoint, "typing.Optional[dt.date]"),
+            super::reference_return_type(&endpoint, "typing.Optional[dt.date]", "bytes"),
             " -> typing.Optional[datetime.date]"
         );
         // A type that merely contains `dt` as part of a name is untouched, and a
         // `None` response still renders no suffix at all.
         assert_eq!(
-            super::reference_return_type(&endpoint, "UpdtStatus"),
+            super::reference_return_type(&endpoint, "UpdtStatus", "bytes"),
             " -> UpdtStatus"
         );
-        assert_eq!(super::reference_return_type(&endpoint, "None"), "");
+        assert_eq!(super::reference_return_type(&endpoint, "None", "bytes"), "");
     }
 
     #[test]

@@ -12,7 +12,7 @@
 //! reference ([`render_reference`]), the defect rule, and how a fix adds an
 //! entry.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io::Write;
 use std::process::{Command, Stdio};
 use std::sync::OnceLock;
@@ -287,6 +287,7 @@ pub struct Context {
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
+    crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
 }
 
 impl Context {
@@ -314,6 +315,7 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
+            crozier_returns: OnceLock::from(method_returns(crozier.iter().copied())),
         }
     }
 
@@ -382,6 +384,23 @@ impl Context {
             };
             let text = std::fs::read_to_string(root.join("reference.md")).unwrap_or_default();
             nullable_item_parameters([text.as_str()])
+        })
+    }
+
+    /// The return annotation of each method crozier's modules define, keyed by
+    /// `(module path, method name)`: the first `def` of the name in the module,
+    /// which in a `client.py` is the sync client's.
+    pub fn crozier_method_returns(&self) -> &BTreeMap<(String, String), String> {
+        self.crozier_returns.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return BTreeMap::new();
+            };
+            let sources = python_sources(root);
+            method_returns(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
         })
     }
 
@@ -549,6 +568,49 @@ fn classes<'a>(sources: impl IntoIterator<Item = (&'a str, &'a str)>) -> BTreeSe
         .collect()
 }
 
+/// The return annotation of each method the `.py` files among `sources` define
+/// at class level (four spaces in), keyed by `(path, name)`; the first `def` of a
+/// name in a module wins. A signature ruff wraps over several lines is read to
+/// the line closing it.
+fn method_returns<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> BTreeMap<(String, String), String> {
+    let mut out = BTreeMap::new();
+    for (path, text) in sources {
+        if !path.ends_with(".py") {
+            continue;
+        }
+        let lines: Vec<&str> = text.lines().collect();
+        for (index, line) in lines.iter().enumerate() {
+            let Some(rest) = line
+                .strip_prefix("    def ")
+                .or_else(|| line.strip_prefix("    async def "))
+            else {
+                continue;
+            };
+            let name: String = rest
+                .chars()
+                .take_while(|c| c.is_alphanumeric() || *c == '_')
+                .collect();
+            let Some(end) = lines[index..]
+                .iter()
+                .position(|line| line.ends_with(':') && !line.starts_with("     "))
+            else {
+                continue;
+            };
+            let signature: String = lines[index..=index + end]
+                .iter()
+                .map(|line| line.trim())
+                .collect();
+            if let Some((_, annotation)) = signature.rsplit_once(") -> ") {
+                out.entry((path.to_string(), name))
+                    .or_insert_with(|| annotation.trim_end_matches(':').to_string());
+            }
+        }
+    }
+    out
+}
+
 /// One file pair as the rules see it: its `/`-separated path relative to the
 /// SDK root, both sides' lines once the comparison's mechanics have run (Python
 /// comments stripped, line numbers unchanged), and the trees' [`Context`].
@@ -595,7 +657,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 11] = [
+pub const RULE_IDS: [&str; 12] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
@@ -607,6 +669,7 @@ pub const RULE_IDS: [&str; 11] = [
     "readme-client-class-casing",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
+    "stream-reference-return-type",
 ];
 
 /// The rule of the catalog entry `id`, if crozier has one.
@@ -649,6 +712,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "readme-client-class-casing" => Rule {
             line: Some(readme_client_class_casing),
+            ..none
+        },
+        "stream-reference-return-type" => Rule {
+            line: Some(stream_reference_return_type),
             ..none
         },
         "sdk-identity-header-prefix" => Rule {
@@ -1242,6 +1309,51 @@ fn readme_client_class_casing(pair: &Pair<'_>, fern: &str, crozier: &str) -> boo
     renamed > 0
 }
 
+/// `stream-reference-return-type`: a `reference.md` heading line,
+/// `<details><summary><code>client.….<a href="PATH">NAME</a>(…) -> T</code></summary>`,
+/// equal on both sides but for its return annotation: Fern's
+/// `typing.Iterator[bytes]`, crozier's another `typing.Iterator[…]` — which is
+/// exactly what crozier's module `PATH` declares its method `NAME` returns.
+fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    const OPEN: &str = "<details><summary><code>client.";
+    const CLOSE: &str = "</code></summary>";
+    const FERN: &str = " -> typing.Iterator[bytes]";
+    if pair.rel != "reference.md" || !fern.starts_with(OPEN) {
+        return false;
+    }
+    let Some(head) = fern
+        .strip_suffix(CLOSE)
+        .and_then(|line| line.strip_suffix(FERN))
+    else {
+        return false;
+    };
+    let Some(annotation) = crozier
+        .strip_suffix(CLOSE)
+        .and_then(|line| line.strip_prefix(head))
+        .and_then(|rest| rest.strip_prefix(" -> "))
+    else {
+        return false;
+    };
+    if !annotation.starts_with("typing.Iterator[") || annotation == "typing.Iterator[bytes]" {
+        return false;
+    }
+    let Some((path, rest)) = head
+        .split_once("<a href=\"")
+        .and_then(|(_, rest)| rest.split_once("\">"))
+    else {
+        return false;
+    };
+    let Some((method, _)) = rest.split_once("</a>") else {
+        return false;
+    };
+    // `reference.md` links the packaged module (`src/<package>/…`); crozier's
+    // tree holds it at the same relative path.
+    pair.context
+        .crozier_method_returns()
+        .get(&(path.to_string(), method.to_string()))
+        .is_some_and(|declared| declared.replace("dt.", "datetime.") == annotation)
+}
+
 /// `NAME` of an argument line `<indent>NAME=<value>,` whose `NAME` is one of
 /// `names`.
 fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l str> {
@@ -1819,6 +1931,70 @@ mod tests {
         );
         assert!(trees.crozier_classes().is_empty());
         assert!(Context::default().reference_classes().is_empty());
+    }
+
+    #[test]
+    fn the_stream_heading_rule_holds_only_on_the_declared_iterator() {
+        let client = "class FernApi:\n    def watch(\n        self, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> typing.Iterator[Tick]:\n        pass\n    def at(self) -> typing.Iterator[dt.datetime]:\n        pass\n    def raw(self) -> typing.Iterator[bytes]:\n        pass\nclass AsyncFernApi:\n    async def watch(self) -> typing.AsyncIterator[Tick]:\n        pass\n";
+        let context = Context::from_sources(
+            [("src/fern/client.py", client)],
+            [("src/fern/client.py", client)],
+        );
+        let lines: [&str; 0] = [];
+        let pair = Pair {
+            rel: "reference.md",
+            fern: &lines,
+            crozier: &lines,
+            context: &context,
+        };
+        let heading = |method: &str, annotation: &str| {
+            format!("<details><summary><code>client.<a href=\"src/fern/client.py\">{method}</a>(...) -> {annotation}</code></summary>")
+        };
+        let holds = |fern: &str, crozier: &str| stream_reference_return_type(&pair, fern, crozier);
+        let fern = heading("watch", "typing.Iterator[bytes]");
+        assert!(holds(&fern, &heading("watch", "typing.Iterator[Tick]")));
+        // The datetime prose spelling of a `dt.` annotation is the same type.
+        assert!(holds(
+            &heading("at", "typing.Iterator[bytes]"),
+            &heading("at", "typing.Iterator[datetime.datetime]")
+        ));
+        // Not the type the method declares, not an iterator, the method's own
+        // `bytes`, an undefined method, another heading or another file: no.
+        assert!(!holds(&fern, &heading("watch", "typing.Iterator[Other]")));
+        assert!(!holds(&fern, &heading("watch", "Tick")));
+        assert!(!holds(
+            &heading("raw", "typing.Iterator[bytes]"),
+            &heading("raw", "typing.Iterator[bytes]")
+        ));
+        assert!(!holds(
+            &heading("missing", "typing.Iterator[bytes]"),
+            &heading("missing", "typing.Iterator[Tick]")
+        ));
+        assert!(!holds(&fern, &heading("other", "typing.Iterator[Tick]")));
+        assert!(!holds(
+            &heading("watch", "Tick"),
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
+        let readme = Pair {
+            rel: "README.md",
+            ..pair
+        };
+        assert!(!stream_reference_return_type(
+            &readme,
+            &fern,
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
+        // A file compared on its own has no tree to read the method from.
+        let alone = Context::default();
+        let alone = Pair {
+            context: &alone,
+            ..pair
+        };
+        assert!(!stream_reference_return_type(
+            &alone,
+            &fern,
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
     }
 
     #[test]

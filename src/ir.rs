@@ -2662,21 +2662,36 @@ fn endpoints(
     (out, tag_types)
 }
 
-/// The base method name a `stream-condition` operation splits from: the
-/// extension-declared name, else the one its `operationId` derives (Fern names
-/// `operationId: analyze`'s halves `analyze_stream` / `analyze`). The
-/// `"stream"` fallback is for an operation declaring neither, and is
-/// meaningful only inside that split.
-fn stream_condition_base_method_name(op: &Operation, http_method: &str, path: &str) -> String {
-    if op.sdk_method_name().is_some()
-        || op
-            .operation_id
-            .as_deref()
-            .is_some_and(|id| !id.trim().is_empty())
-    {
-        endpoint_method_name(op, http_method, path)
+/// The two method names a `stream-condition` operation splits into: the
+/// streaming half's and the buffered half's. An extension-declared name names
+/// both (`compose_stream` / `compose`). Without one, the buffered half takes the
+/// name the operation's own derivation gives it while the streaming half is the
+/// whole `operationId` snake-cased: measured at Fern 5.20.0, privateGPT's
+/// tagged FastAPI id `prompt_completion_v1_completions_post` splits into
+/// `prompt_completion_v1completions_post_stream` and `prompt_completion`. The
+/// `stream` fallback is for an operation declaring neither, and is meaningful
+/// only inside that split.
+fn stream_condition_method_names(
+    op: &Operation,
+    http_method: &str,
+    path: &str,
+) -> (String, String) {
+    let id = op
+        .operation_id
+        .as_deref()
+        .map(str::trim)
+        .unwrap_or_default();
+    if op.sdk_method_name().is_some() {
+        let base = endpoint_method_name(op, http_method, path);
+        (format!("{base}_stream"), base)
+    } else if !id.is_empty() {
+        let stream = naming::sanitize_identifier(&naming::to_snake_case(id));
+        (
+            format!("{stream}_stream"),
+            endpoint_method_name(op, http_method, path),
+        )
     } else {
-        "stream".to_string()
+        ("stream_stream".to_string(), "stream".to_string())
     }
 }
 
@@ -2782,7 +2797,7 @@ fn stream_condition_variants(
     let Some(condition) = streaming.condition_property() else {
         return vec![None];
     };
-    let base = stream_condition_base_method_name(op, http_method, path);
+    let (stream_method_name, base) = stream_condition_method_names(op, http_method, path);
     let sse_media = success_response_entry(op)
         .is_some_and(|response| response.content.contains_key("text/event-stream"));
     let mut variants = Vec::new();
@@ -2821,11 +2836,11 @@ fn stream_condition_variants(
         variants.push(Some(StreamSplit {
             operation,
             method_name: if stream {
-                format!("{base}_stream")
+                stream_method_name.clone()
             } else {
                 base.clone()
             },
-            stream_method_name: format!("{base}_stream"),
+            stream_method_name: stream_method_name.clone(),
             condition: condition.to_string(),
             streaming: stream,
         }));

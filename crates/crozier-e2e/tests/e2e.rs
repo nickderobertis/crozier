@@ -5117,6 +5117,7 @@ const CORPORA: &[&Corpus] = &[
     &WAYLAY_QUERIES,
     &CONFLUENT_KAFKA_CONNECT,
     &NETGSM_SMS,
+    &ZYLON_PRIVATE_GPT,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -8163,6 +8164,20 @@ const NETGSM_SMS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
+/// revision declaring `x-fern-streaming`: two `stream-condition` operations with
+/// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
+const ZYLON_PRIVATE_GPT: Corpus = Corpus {
+    api: "zylon-private-gpt",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -8908,6 +8923,11 @@ fn confluent_kafka_connect_matches_fern_output() {
 #[test]
 fn netgsm_sms_matches_fern_output() {
     assert_committed_corpus_matches(&NETGSM_SMS);
+}
+
+#[test]
+fn zylon_private_gpt_matches_fern_output() {
+    assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
 }
 
 #[test]

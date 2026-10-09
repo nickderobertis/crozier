@@ -523,3 +523,11 @@ Additional SMS request specification:
     The repository's LICENSE at that revision permits redistribution under
     MIT; corpus row 332 records the immutable reference. The unmodified source
     and Fern-generated output are vendored, with Python comments stripped as above.
+
+Additional streaming specification:
+
+  * PrivateGPT API: the publisher's own description at
+    https://raw.githubusercontent.com/zylon-ai/private-gpt/8119842ae6f1f5ecfaf42b06fa0d1ffec675def4/fern/openapi/openapi.json.
+    The repository's LICENSE at that revision grants Apache-2.0 redistribution;
+    corpus row 1600 records the immutable reference. The unmodified source and
+    Fern-generated output are vendored, with Python comments stripped as above.

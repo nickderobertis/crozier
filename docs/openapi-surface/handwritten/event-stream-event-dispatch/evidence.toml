@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "065242b7800fc36ef70cf8278104b0cad97f316a41a4b99655547d98fbfd9c89"
+
+[[covers]]
+key = "media-type-event-stream-event-dispatch"
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"

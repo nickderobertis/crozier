@@ -2275,6 +2275,10 @@ BODY_AND_RESPONSE_PREDICATES = frozenset({
     "operation.requestBody:blank-description-optional-object",
     "operation.requestBody:described-inline-scalar",
     "operation.requestBody:plain-string-map",
+    "operation.responses:event-stream-binary",
+    "operation.responses:event-stream-inline-const-union",
+    "operation.responses:event-stream-item-schema-ref",
+    "operation.responses:event-stream-event-dispatch",
 })
 
 
@@ -2461,6 +2465,7 @@ class GrammarContractTests(unittest.TestCase):
             "twenty-three": 23, "twenty-four": 24,
             "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
             "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
+            "forty-one": 41,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -13375,6 +13380,65 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             }},
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_event_stream_predicates_count_their_shape_and_not_its_near_misses(self) -> None:
+        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}
+        sse = lambda media: self.success({"text/event-stream": media})
+        tagged = lambda value, extra: {"type": "object", "properties": {
+            "trend": {"type": "string", "const": value}, extra: {"type": "number"}}}
+        variant = lambda value, *extra: {"type": "object", "properties": {
+            "event": {"type": "string", "enum": [value]}, "data": ref("Berth"),
+            **{name: {"type": "integer"} for name in extra}}}
+        union = lambda prop, *variants: {"oneOf": [ref(name) for name in variants],
+                                         "discriminator": {"propertyName": prop}}
+        schemas = {
+            "Blob": {"type": "string", "format": "binary"},
+            "Sample": {"type": "object", "properties": {"altitude": {"type": "number"}}},
+            "Berth": {"type": "object", "properties": {"terminal": {"type": "string"}}},
+            "Departure": variant("departed"), "Arrival": variant("arrived"),
+            "Late": variant("late", "minutes"),
+            "Movement": union("event", "Departure", "Arrival"),
+            "Typed": union("type", "Departure", "Arrival"),
+            "Mixed": union("event", "Departure", "Late"),
+        }
+        shapes = {
+            "operation.responses:event-stream-binary": (
+                [sse({"schema": {"type": "string", "format": "binary"}}),
+                 sse({"schema": ref("Blob")})],
+                [sse({"schema": {"type": "string"}}),
+                 self.success({"application/octet-stream": {"schema": ref("Blob")}})],
+            ),
+            "operation.responses:event-stream-inline-const-union": (
+                [sse({"schema": {"oneOf": [tagged("flood", "height"), tagged("ebb", "slack")]}})],
+                [sse({"schema": {"oneOf": [tagged("flood", "height")]}}),
+                 sse({"schema": {"oneOf": [tagged("flood", "height"), ref("Sample")]}}),
+                 sse({"schema": {"oneOf": [tagged("flood", "height"), tagged("ebb", "slack")],
+                                 "discriminator": {"propertyName": "trend"}}})],
+            ),
+            "operation.responses:event-stream-item-schema-ref": (
+                [sse({"itemSchema": ref("Sample")})],
+                [sse({"schema": ref("Sample")}),
+                 sse({"schema": ref("Sample"), "itemSchema": ref("Sample")}),
+                 sse({"itemSchema": {"type": "object"}})],
+            ),
+            "operation.responses:event-stream-event-dispatch": (
+                [sse({"schema": ref("Movement")})],
+                [sse({"schema": ref("Typed")}), sse({"schema": ref("Mixed")}),
+                 self.success({"application/json": {"schema": ref("Movement")}})],
+            ),
+        }
+        for selector, (positives, decoys) in shapes.items():
+            with self.subTest(selector=selector):
+                documents = {
+                    name: {"openapi": "3.1.0", "paths": {
+                        f"/{name}/{index}": {"get": self.operation(responses=responses)}
+                        for index, responses in enumerate(cases)
+                    }, "components": {"schemas": schemas}}
+                    for name, cases in (("positive", positives), ("decoys", decoys))
+                }
+                self.assertEqual(
+                    {(selector, "positive"): len(positives)}, self.census(selector, documents)
+                )
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"

@@ -1052,6 +1052,12 @@
     "tests/fixtures/zoonk/expected": {},
     "tests/fixtures/zulip-jentic-entry/expected": {},
     "tests/fixtures/zulip-jentic/expected": {},
-    "tests/fixtures/zulip/expected": {}
+    "tests/fixtures/zulip/expected": {},
+    "tests/fixtures/zylon-private-gpt/expected": {},
+    "tests/fixtures/zylon-private-gpt/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    }
   }
 }

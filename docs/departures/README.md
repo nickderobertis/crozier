@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 7 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 8 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -266,5 +266,14 @@ when the two differ.
 - **crozier writes:** `X-Crozier-SDK-Name` naming crozier's project name and `X-Crozier-SDK-Version` carrying crozier's fixed packaged version, `0.0.0`.
 - **Why:** crozier always writes the packaged wrapper's identity pair from its own settings; which name and version a reference was published under is release metadata outside the generated code.
 - **Evidence:** [`docs/departures/evidence/sdk-name-version-headers.md`](../../docs/departures/evidence/sdk-name-version-headers.md)
+
+### `stream-reference-return-type`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A streaming method (Server-Sent Events or newline-delimited JSON) whose chunk type is not `bytes`: its heading line in `reference.md`.
+- **Fern writes:** The heading's return annotation `-> typing.Iterator[bytes]`, whatever the method yields.
+- **crozier writes:** The annotation the sync method declares, `-> typing.Iterator[T]` for its chunk type `T`.
+- **Why:** The docs contradict the generated code: `reference.md` documents a return type the method does not have, since iterating it yields parsed `T` chunks, never `bytes`.
+- **Evidence:** [`docs/departures/evidence/stream-reference-return-type.md`](../../docs/departures/evidence/stream-reference-return-type.md)
 
 <!-- END GENERATED CATALOG -->

@@ -206,3 +206,20 @@
     settings; which name and version a reference was published under is
     release metadata outside the generated code.
   evidence: docs/departures/evidence/sdk-name-version-headers.md
+
+- id: stream-reference-return-type
+  kind: fern-defect
+  trigger: >-
+    A streaming method (Server-Sent Events or newline-delimited JSON) whose
+    chunk type is not `bytes`: its heading line in `reference.md`.
+  fern: >-
+    The heading's return annotation `-> typing.Iterator[bytes]`, whatever the
+    method yields.
+  crozier: >-
+    The annotation the sync method declares, `-> typing.Iterator[T]` for its
+    chunk type `T`.
+  reason: >-
+    The docs contradict the generated code: `reference.md` documents a return
+    type the method does not have, since iterating it yields parsed `T`
+    chunks, never `bytes`.
+  evidence: docs/departures/evidence/stream-reference-return-type.md
