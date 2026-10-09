@@ -2081,6 +2081,16 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "relay-station-header-names",
+        "docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml",
+        &[],
+    ),
+    (
+        "relay-station-shared-name",
+        "docs/fern-measurements/clients-extensions/relay-station-shared-name/openapi.yml",
+        &[],
+    ),
+    (
         "rfid-door-panel-literals",
         "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
         &["--enum-type", "literals"],
@@ -2868,6 +2878,93 @@ fn server_extensions_read_crozier_spelling_over_fern() {
                 "{name}: `{text}` survives:\n{environment}"
             );
         }
+    }
+}
+
+/// A second header `apiKey` scheme takes its constructor field from its own
+/// `x-fern-header` or `x-crozier-header`, crozier's value winning on the node:
+/// written in crozier's spelling alone, or beside a different Fern value, the
+/// certified `relay-station-header-names` document generates the same tree. A
+/// second scheme whose field would be a client constructor parameter, declared
+/// (`timeout`) or derived from its header (`Timeout`), is refused, exit 1 and
+/// nothing written.
+#[test]
+fn additional_header_scheme_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let certified =
+        std::fs::read_to_string(Path::new(env!("CARGO_MANIFEST_DIR")).join(
+            "docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml",
+        ))
+        .expect("certified spec");
+    let fern = "x-fern-header: {name: relayPass, prefix: Station, env: STATION_TOKEN}";
+    assert!(
+        certified.contains(fern),
+        "the certified spec declares {fern}"
+    );
+    let generate = |name: &str, spec_text: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, spec_text).expect("write spec");
+        let out = dir.path().join(name);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let tree = |out: &Path| -> Vec<(String, String)> {
+        walk_files(out)
+            .into_iter()
+            .map(|rel| {
+                let text = std::fs::read_to_string(out.join(&rel)).expect("generated file");
+                (rel, text)
+            })
+            .collect()
+    };
+    let (assert, reference) = generate("fern", &certified);
+    assert.success();
+    let wrapper = std::fs::read_to_string(reference.join("src/fern/core/client_wrapper.py"))
+        .expect("wrapper");
+    assert!(
+        wrapper.contains("headers[\"X-Station-Token\"] = self._relay_pass"),
+        "{wrapper}"
+    );
+    for (name, extensions) in [
+        ("crozier", fern.replace("x-fern-header", "x-crozier-header")),
+        (
+            "conflict",
+            format!(
+                "x-fern-header: {{name: wrongName}}, {}",
+                fern.replace("x-fern-header", "x-crozier-header")
+            ),
+        ),
+    ] {
+        let (assert, out) = generate(name, &certified.replace(fern, &extensions));
+        assert.success();
+        assert_eq!(tree(&reference), tree(&out), "{name}: the tree differs");
+    }
+    for (name, extensions, says) in [
+        (
+            "declared-timeout",
+            "x-crozier-header: {name: timeout}".to_string(),
+            "names its credential `timeout`",
+        ),
+        (
+            "derived-timeout",
+            String::new(),
+            "names its credential `timeout`",
+        ),
+    ] {
+        let mut text = certified.replace(fern, &extensions);
+        if extensions.is_empty() {
+            text = text
+                .replace(", }", "}")
+                .replace("X-Station-Token", "Timeout");
+        }
+        let (assert, out) = generate(name, &text);
+        assert
+            .failure()
+            .code(1)
+            .stderr(predicates::str::contains(says));
+        assert!(
+            !out.join("src").exists(),
+            "{name}: a refused document writes nothing"
+        );
     }
 }
 
@@ -17198,6 +17295,87 @@ assert asyncio.run(asynchronous._.getlocales()).default == "en"
             );
         }
     }
+}
+
+/// A second header `apiKey` scheme named and env-defaulted by `x-fern-header`
+/// behaves as the certified `relay-station-header-names` SDK documents it: the
+/// `relay_pass` field defaults to `STATION_TOKEN` and is sent bare in
+/// `X-Station-Token` beside the primary key; an explicit `relay_pass` wins; and
+/// with neither, constructing the client raises `ApiError`. Each request is
+/// answered by a local server.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_additional_header_scheme_reads_its_declared_name_and_environment() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml");
+    let script = r#"
+import http.server
+import json
+import os
+import threading
+
+from fern import FernApi
+from fern.core.api_error import ApiError
+
+seen = []
+
+
+class Station(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        seen.append((self.headers.get("X-Primary-Key"), self.headers.get("X-Station-Token")))
+        body = json.dumps(["r-1"]).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Station)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+base_url = f"http://127.0.0.1:{server.server_port}"
+assert FernApi(base_url=base_url, api_key="k").list_readings() == ["r-1"]
+assert FernApi(base_url=base_url, api_key="k", relay_pass="explicit").list_readings() == ["r-1"]
+del os.environ["STATION_TOKEN"]
+try:
+    FernApi(base_url=base_url, api_key="k", relay_pass=None)
+except ApiError as error:
+    missing = "STATION_TOKEN" in str(error.body)
+else:
+    missing = False
+print(seen, missing)
+"#;
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+    let run = std::process::Command::new(&py)
+        .args(["-c", script])
+        .current_dir(sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .env("STATION_TOKEN", "from-env")
+        .output()
+        .expect("drive the generated client");
+    assert!(
+        run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&run.stdout).trim(),
+        "[('k', 'from-env'), ('k', 'explicit')] True"
+    );
 }
 
 /// An idempotent operation sends the idempotency header its caller gives and

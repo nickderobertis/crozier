@@ -467,16 +467,23 @@ impl Ir {
                 ));
             }
         }
+        // An additional header scheme's credential is a promoted header.
+        let declared_headers = self
+            .global_headers
+            .iter()
+            .filter_map(|header| header.credential.as_ref())
+            .map(|credential| credential.param.as_str());
         self.auth
             .credentials()
             .into_iter()
-            .find(|credential| ROOT_CLIENT_PARAMETERS.contains(&credential.param.as_str()))
-            .map(|credential| {
+            .map(|credential| credential.param.as_str())
+            .chain(declared_headers)
+            .find(|param| ROOT_CLIENT_PARAMETERS.contains(param))
+            .map(|param| {
                 format!(
-                    "a security scheme names its credential `{0}`, which is the client \
-                     constructor's own `{0}` parameter; name it otherwise with the scheme's \
-                     `x-crozier-*` (or `x-fern-*`) naming extension",
-                    credential.param
+                    "a security scheme names its credential `{param}`, which is the client \
+                     constructor's own `{param}` parameter; name it otherwise with the \
+                     scheme's `x-crozier-*` (or `x-fern-*`) naming extension"
                 )
             })
     }
@@ -572,6 +579,12 @@ pub struct GlobalHeader {
     pub py_name: String,
     /// Whether, and how, the constructor field must be given.
     pub presence: HeaderPresence,
+    /// The credential this header carries when an additional header `apiKey`
+    /// scheme promotes it: its parameter (this field's `py_name`) and the
+    /// environment variable `x-fern-header: {env: …}` (or crozier's spelling)
+    /// defaults it to, a required field then checked once the client is built.
+    /// `None` for a header an operation parameter promotes.
+    pub credential: Option<Credential>,
 }
 
 /// How a promoted header's constructor field is given. The type is that of the
@@ -782,12 +795,14 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(header_param_stem(&wire_name)),
                 wire_name,
                 presence,
+                credential: None,
             }
         })
         .collect();
     // Fern also treats additional header apiKey security schemes as SDK-wide
     // constructor fields. The first apiKey scheme is the auth credential
-    // (`api_key`); subsequent header schemes are named from their wire header.
+    // (`api_key`); subsequent header schemes are named from their wire header,
+    // unless their header extension names them.
     // An api-key header may also ride every operation as an explicit parameter.
     // Removing it from `seen` above and appending the scheme-derived field here
     // avoids a duplicate while preserving Fern's grouping (ordinary headers,
@@ -859,10 +874,18 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             if is_transport_managed_header(wire_name) {
                 return None;
             }
+            // A scheme's `x-fern-header` (or `x-crozier-header`, which wins on
+            // the node) names the field and its environment default, as Fern
+            // reads it; its `prefix` Fern does not send on an additional header.
+            let credential = Credential::named(
+                &naming::field_name(header_param_stem(wire_name)),
+                &scheme.header_credential(),
+            );
             Some(GlobalHeader {
-                py_name: naming::field_name(header_param_stem(wire_name)),
+                py_name: credential.param.clone(),
                 wire_name: wire_name.clone(),
                 presence: HeaderPresence::Required(HeaderType::Str),
+                credential: Some(credential),
             })
         })
         .collect()

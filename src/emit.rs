@@ -3851,12 +3851,7 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
         .iter()
         .filter(|(credential, _, required)| *required && declared(credential))
         .filter_map(|(credential, _, _)| {
-            let env = credential.env.as_ref()?;
-            Some(format!(
-                "        if {0} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {0} or setting {1}\")\n",
-                credential.param,
-                escape_py_str(env)
-            ))
+            Some(env_check(&credential.param, credential.env.as_ref()?))
         })
         .collect();
     AuthClient {
@@ -3866,6 +3861,21 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
         example_line,
         check,
     }
+}
+
+/// The root client's check that a required credential read from the
+/// environment variable `env` was given one way or the other.
+fn env_check(param: &str, env: &str) -> String {
+    format!(
+        "        if {param} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {param} or setting {}\")\n",
+        escape_py_str(env)
+    )
+}
+
+/// The environment variable a promoted header's constructor field defaults to:
+/// an additional header `apiKey` scheme's declared `env`.
+fn header_env(header: &GlobalHeader) -> Option<&str> {
+    header.credential.as_ref()?.env.as_deref()
 }
 
 /// Every credential of `auth`, in constructor order.
@@ -6549,6 +6559,9 @@ fn root_client_file(
     if auth_credentials(auth)
         .iter()
         .any(|credential| credential.env.is_some())
+        || global_headers
+            .iter()
+            .any(|header| header_env(header).is_some())
     {
         imports.add_plain("os");
         imports.add_core("api_error", "ApiError");
@@ -6878,7 +6891,7 @@ fn root_client_class(
             format!("    {} : {ty}\n", parameter.py_name)
         })
         .chain(global_headers.iter().map(|h| {
-            let ty = if h.required() {
+            let ty = if h.required() && header_env(h).is_none() {
                 global_header_annotation(h)
             } else {
                 format!("typing.Optional[{}]", global_header_annotation(h))
@@ -6893,7 +6906,14 @@ fn root_client_class(
             distinct_global_header_params(global_headers)
                 .into_iter()
                 .map(|h| {
-                    if h.required() {
+                    if let Some(env) = header_env(h) {
+                        format!(
+                            "        {}: typing.Optional[{}] = os.getenv(\"{}\"),\n",
+                            h.py_name,
+                            global_header_annotation(h),
+                            escape_py_str(env)
+                        )
+                    } else if h.required() {
                         format!("        {}: {},\n", h.py_name, global_header_annotation(h))
                     } else {
                         format!(
@@ -6966,7 +6986,14 @@ fn root_client_class(
         wrapper_arg: a.wrapper_arg,
         doc_param: a.doc_param,
         example_line: a.example_line,
-        auth_check: a.check,
+        auth_check: distinct_global_header_params(global_headers)
+            .into_iter()
+            .filter(|h| h.required())
+            .filter_map(|h| {
+                Some(env_check(&h.py_name, header_env(h)?))
+            })
+            .collect::<String>()
+            + &a.check,
         base_url_doc,
         env_doc,
         server_variable_doc,
@@ -14412,6 +14439,7 @@ mod tests {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
             presence: crate::ir::HeaderPresence::Required(HeaderType::Str),
+            credential: None,
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;

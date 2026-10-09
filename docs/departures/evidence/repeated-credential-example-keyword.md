@@ -18,7 +18,11 @@ Two crozier-authored documents:
 The registered corpus golden `openepcis-dpp-ready` (corpus row 93 in
 [`CORPUS.md`](../../../tests/fixtures/CORPUS.md)) carries the same construct
 from a real specification: its `X-API-KEY` and `API-KEY` header schemes both
-become the client's `api_key`.
+become the client's `api_key`. The measurement case
+[`relay-station-shared-name`](../../fern-measurements/clients-extensions/relay-station-shared-name/openapi.yml)
+reaches it through the header extension: two header schemes at distinct
+headers, both named `token` by `x-fern-header`, and Fern's examples pass
+`token` twice; `clients_extensions_measurements_match_fern` holds its rows.
 
 ## Fern's output
 

@@ -26,6 +26,8 @@
     "docs/fern-measurements/clients-extensions/meter-reader-gateway-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/orbit-ground-stations-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/parcel-courier-desk-literals/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/relay-station-header-names/fern-expected": {},
+    "docs/fern-measurements/clients-extensions/relay-station-shared-name/fern-expected": {},
     "docs/fern-measurements/clients-extensions/rfid-door-panel-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/signal-box-relays-literals/fern-expected": {},
     "docs/fern-measurements/clients-extensions/ski-lift-gates-literals/fern-expected": {},

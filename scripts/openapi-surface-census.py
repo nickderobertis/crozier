@@ -4359,7 +4359,7 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # are: an edit there fails until the port is read again.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "c0c3d57f9ea6b36a",
-    "global_headers": "7ff243e98bd3c60e",
+    "global_headers": "67ffc7524d4a6d3f",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
