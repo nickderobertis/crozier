@@ -18,10 +18,8 @@ use super::{
     GoldenLedger, HANDWRITTEN_DIR,
 };
 
-/// Where the cases live.
 pub(super) const LITERALS_MODE_DIR: &str = "docs/fern-measurements/literals-mode";
 
-/// The tree each case commits.
 pub(super) const TREE: &str = "fern-expected";
 
 /// The overlay manifest `tools/fern-goldens/golden_overlay.py` writes.
@@ -93,7 +91,12 @@ impl Case {
 /// literals, and it has exactly one document — its own, or its hand-written
 /// fixture's, never both.
 fn cases() -> Result<Vec<Case>, Vec<String>> {
-    let root = repo_root().join(LITERALS_MODE_DIR);
+    cases_in(repo_root())
+}
+
+/// [`cases`] over the checkout at `repo`.
+fn cases_in(repo: &Path) -> Result<Vec<Case>, Vec<String>> {
+    let root = repo.join(LITERALS_MODE_DIR);
     let mut dirs: Vec<PathBuf> = std::fs::read_dir(&root)
         .map_err(|error| vec![format!("{LITERALS_MODE_DIR}: {error}")])?
         .filter_map(Result::ok)
@@ -137,17 +140,21 @@ fn cases() -> Result<Vec<Case>, Vec<String>> {
                 ));
             }
         }
-        let removed: Vec<String> = manifest["removed"]
-            .as_array()
-            .map(|removed| {
-                removed
-                    .iter()
-                    .filter_map(|rel| rel.as_str().map(str::to_string))
-                    .collect()
-            })
-            .unwrap_or_default();
+        let Some(removed) = manifest["removed"].as_array().and_then(|removed| {
+            removed
+                .iter()
+                .map(|rel| rel.as_str().map(str::to_string))
+                .collect::<Option<Vec<String>>>()
+        }) else {
+            failures.push(format!(
+                "{name}: {TREE}/{MANIFEST} has no `removed` list of paths ({}); regenerate the \
+                 case with tools/fern-goldens/generate-fern-fixture.sh --enum-type literals",
+                manifest["removed"]
+            ));
+            continue;
+        };
         let own_spec = dir.join("openapi.yml");
-        let fixture = repo_root().join(HANDWRITTEN_DIR).join(&name);
+        let fixture = repo.join(HANDWRITTEN_DIR).join(&name);
         let case = match (own_spec.is_file(), fixture.join("fern-expected").is_dir()) {
             (true, false) if removed.is_empty() => Case {
                 name,
@@ -336,5 +343,34 @@ fn an_overlay_case_carries_only_the_files_literals_changes() {
                 case.name
             );
         }
+    }
+}
+
+/// A manifest whose `removed` is not a list of paths is refused, naming the
+/// case, rather than read as removing nothing.
+#[test]
+fn a_manifest_without_a_removed_list_is_refused() {
+    let repo = tempfile::tempdir().expect("scratch checkout");
+    let case = repo.path().join(LITERALS_MODE_DIR).join("sample-shape");
+    std::fs::create_dir_all(case.join(TREE)).expect("case tree");
+    std::fs::write(case.join("openapi.yml"), "openapi: 3.0.3\n").expect("document");
+    let (cli, sdk) = probe_fern_pins();
+    for removed in ["\"src/fern/core/enum.py\"", "[1]"] {
+        std::fs::write(
+            case.join(TREE).join(MANIFEST),
+            format!(
+                "{{\"fern_cli_version\": \"{cli}\", \"fern_python_sdk_version\": \"{sdk}\", \
+                 \"enum_type\": \"literals\", \"base\": \"expected\", \"removed\": {removed}}}"
+            ),
+        )
+        .expect("manifest");
+        let failures = cases_in(repo.path()).err().expect("the case is refused");
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.starts_with("sample-shape:")
+                    && failure.contains("has no `removed` list of paths")),
+            "{failures:?}"
+        );
     }
 }
