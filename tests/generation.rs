@@ -14573,6 +14573,9 @@ fn streaming_extension_forms_frame_the_stream_as_declared() {
             ("{ format: sse }", JSON_MEDIA, Some("sse")),
             ("{}", SSE_MEDIA, Some("sse")),
             ("{}", JSON_MEDIA, None),
+            // `false` declares no stream, so an SSE-only response still
+            // streams events on its media type, as Fern 5.20.0 does.
+            ("false", SSE_MEDIA, Some("sse")),
         ] {
             let files = render(&streaming_operation(
                 &format!("      {spelling}: {value}"),
@@ -14698,6 +14701,16 @@ fn event_stream_schemas_decide_download_item_type_and_heading() {
         item["reference.md"].contains("feed_items</a>() -> typing.Iterator[Chunk]</code>"),
         "{}",
         item["reference.md"]
+    );
+    // A `schema` declared beside `itemSchema` types the events, as at Fern 5.20.0.
+    let both = render(&streaming_operation(
+        "",
+        r##"{ text/event-stream: { schema: { $ref: "#/components/schemas/Chunk" }, itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
+    ));
+    assert!(
+        both["src/acme/client.py"].contains("-> typing.Iterator[Chunk]:"),
+        "{}",
+        both["src/acme/client.py"]
     );
 }
 

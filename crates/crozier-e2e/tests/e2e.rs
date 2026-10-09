@@ -20789,7 +20789,7 @@ fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_stream_reference_heading_states_the_returned_iterator() {
-    let script = repo_root().join("docs/departures/evidence/stream-reference-return-type.py");
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/stream_reference_heading.py");
     let fixture = repo_root()
         .join(HANDWRITTEN_DIR)
         .join("streaming-extension-terminator");

@@ -7,7 +7,8 @@ use indexmap::IndexMap;
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{
-    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, TypeField,
+    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, Streaming,
+    StreamingMapping, TypeField,
 };
 
 /// Which arm of this module ran, asked of the generator rather than of its
@@ -1373,8 +1374,9 @@ pub struct Endpoint {
     /// type's own schema. `None` when that media declares no schema, which Fern
     /// yields as `typing.Any`.
     pub stream_chunk: Option<TypeRef>,
-    /// How a streaming response frames its chunks; read only when `streaming`.
-    pub stream_protocol: StreamProtocol,
+    /// How a streaming response frames its chunks: present exactly when
+    /// `streaming` is.
+    pub stream_protocol: Option<StreamProtocol>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
     /// Whether the success body is Markdown text. Fern types it as `str` but
@@ -2794,7 +2796,8 @@ fn stream_condition_variants(
     let Some(streaming) = op.streaming() else {
         return vec![None];
     };
-    let Some(condition) = streaming.condition_property() else {
+    let (Some(condition), Some(mapping)) = (streaming.condition_property(), streaming.mapping())
+    else {
         return vec![None];
     };
     let (stream_method_name, base) = stream_condition_method_names(op, http_method, path);
@@ -2808,10 +2811,11 @@ fn stream_condition_variants(
         // framing, the buffered half none — which is what makes the ordinary
         // streaming/buffered resolution downstream pick the right one.
         operation.set_streaming(stream.then(|| {
-            let mut half = streaming.clone();
-            half.stream_condition = None;
-            half.format = Some(if streaming.is_sse() { "sse" } else { "json" }.into());
-            half
+            Streaming::Mapping(Box::new(StreamingMapping {
+                format: Some(if streaming.is_sse() { "sse" } else { "json" }.into()),
+                terminator: streaming.terminator().map(str::to_string),
+                ..StreamingMapping::default()
+            }))
         }));
         if let Some(response) = success_response_entry_mut(&mut operation) {
             // A stream whose response declares no `text/event-stream` media
@@ -2824,9 +2828,9 @@ fn stream_condition_variants(
             response.content.retain(|name, _| name == media);
             if let Some(entry) = response.content.get_mut(media) {
                 let schema = if stream {
-                    streaming.response_stream.clone()
+                    mapping.response_stream.clone()
                 } else {
-                    streaming.response.clone()
+                    mapping.response.clone()
                 };
                 if let Some(schema) = schema {
                     entry.schema = Some(schema);
@@ -3890,7 +3894,7 @@ fn build_endpoint(
             .map_or_else(String::new, reference_description_suffix),
         streaming,
         stream_chunk,
-        stream_protocol: stream_protocol(doc, op),
+        stream_protocol: streaming.then(|| stream_protocol(doc, op)),
         text_response: has_text_response(op),
         // A Markdown media type beside a download listed before it is not the
         // body: the method streams the download and documents its path
@@ -4568,7 +4572,9 @@ fn stream_protocol(doc: &OpenApi, op: &Operation) -> StreamProtocol {
             StreamProtocol::JsonLines
         }
         streaming => StreamProtocol::Sse {
-            terminator: streaming.and_then(|streaming| streaming.terminator.clone()),
+            terminator: streaming
+                .and_then(crate::openapi::Streaming::terminator)
+                .map(str::to_string),
             events: sse_event_dispatch(doc, op),
         },
     }

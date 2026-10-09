@@ -20,34 +20,29 @@ it.
 
 ## Why it is a defect
 
-The [journey](stream-reference-return-type.py) imports the generated package and
-reads the method's declared return annotation. It then iterates a real stream:
-two `StepResult` events and the terminator, served through httpx's transport
-boundary. It compares both with the method's `reference.md` heading. Run from
-the repository root:
+The [journey](../../../crates/crozier-e2e/tests/e2e/stream_reference_heading.py)
+imports the generated package and reads the method's declared return annotation.
+It then iterates a real stream: two `StepResult` events and the terminator,
+served by a local HTTP server. It compares both with the method's
+`reference.md` heading. `just test-sdk-env` runs it as
+`sdk_env_stream_reference_heading_states_the_returned_iterator` in
+`crates/crozier-e2e/tests/e2e.rs`, three ways.
 
-```sh
-PYTHONDONTWRITEBYTECODE=1 uv run -q --no-project --python 3.12 --with httpx --with pydantic \
-  python docs/departures/evidence/stream-reference-return-type.py \
-  docs/openapi-surface/handwritten/streaming-extension-terminator/fern-expected contradicts
-```
-
-Result, exit 0:
+Over Fern's tree, expecting the heading to contradict the method, it exits 0:
 
 ```text
 reference.md heads follow_build_log `-> typing.Iterator[bytes]`; the method declares `-> typing.Iterator[StepResult]`; iterating yields ['StepResult']
 ```
 
-The same run expecting `agrees` exits 1 against Fern's tree. That is the
-induced failure showing the assertion detects the defect. `reference.md`
-documents a return type the method does not have, which the defect rule names.
+Over Fern's tree, expecting agreement, it exits 1. That is the induced failure
+showing the assertion detects the defect. `reference.md` documents a return
+type the method does not have, which the defect rule names.
 
 ## crozier's output
 
-crozier heads the method with the iterator its sync signature declares. Generate
-crozier's SDK from the same document with package `fern` and project
-`default_package_name`, and run the journey on that SDK's root expecting
-`agrees`. Result, exit 0:
+crozier heads the method with the iterator its sync signature declares. Over
+crozier's SDK, generated from the same document with package `fern` and project
+`default_package_name` and expecting agreement, the journey exits 0:
 
 ```text
 reference.md heads follow_build_log `-> typing.Iterator[StepResult]`; the method declares `-> typing.Iterator[StepResult]`; iterating yields ['StepResult']

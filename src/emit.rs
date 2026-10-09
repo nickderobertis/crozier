@@ -5999,7 +5999,10 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     call.push("        ) as _response:".to_string());
 
     let inner_return = format!("{wrapper}(response=_response, data=_iter())");
-    let iter_body = match &ep.stream_protocol {
+    let iter_body = match ep.stream_protocol.as_ref().unwrap_or(&StreamProtocol::Sse {
+        terminator: None,
+        events: Vec::new(),
+    }) {
         StreamProtocol::Sse { terminator, events } if !events.is_empty() => {
             imports.add_plain("json");
             imports.add_from("logging", "warning");
@@ -12071,10 +12074,7 @@ mod tests {
             reference_description_suffix: String::new(),
             streaming: false,
             stream_chunk: None,
-            stream_protocol: crate::ir::StreamProtocol::Sse {
-                terminator: None,
-                events: Vec::new(),
-            },
+            stream_protocol: None,
             text_response: false,
             markdown_response: false,
             binary_response: false,

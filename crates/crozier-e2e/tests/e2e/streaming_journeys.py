@@ -3,36 +3,48 @@
 Usage: streaming_journeys.py <fixture> <generated SDK src directory>
 
 Each journey serves real response bodies -- Server-Sent Events, newline-delimited
-JSON or raw bytes -- through httpx's transport boundary to the generated client
-of one streaming fixture. It checks what each method sends, what it yields or
-returns, that a declared stream end stops it, and that an error status raises
-`ApiError` with the next call recovering. Nothing of crozier's or of the
-generated SDK is replaced: the clients are constructed with an `httpx` client
-whose transport is the local handler. Prints `<fixture>: ok` and exits 0 when
-every assertion holds.
+JSON or raw bytes -- from a local HTTP server to the generated client of one
+streaming fixture, over real sockets. It checks what each method sends, what it
+yields or returns, that a declared stream end stops it, and that an error status
+raises `ApiError` with the next call recovering. Nothing of crozier's or of the
+generated SDK is replaced: the clients are the SDK's own, pointed at the server's
+address. Prints `<fixture>: ok` and exits 0 when every assertion holds.
 """
 
 import asyncio
 import json
+import pathlib
 import sys
-
-import httpx
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlsplit
 
 USAGE = "usage: streaming_journeys.py <fixture> <generated SDK src directory>"
 if len(sys.argv) != 3:
     sys.exit(USAGE)
 FIXTURE, SRC = sys.argv[1:]
+if not (pathlib.Path(SRC) / "fern" / "__init__.py").is_file():
+    sys.exit(f"{SRC}: no generated `fern` package here; pass the SDK's src directory\n{USAGE}")
 sys.path.insert(0, SRC)
 
 import fern  # noqa: E402 - importable once the SDK's src is on sys.path
 from fern.core.api_error import ApiError  # noqa: E402
 
-BASE = "https://stream.test"
+if pathlib.Path(fern.__file__).resolve().parent != (pathlib.Path(SRC) / "fern").resolve():
+    sys.exit(f"`fern` imported from {fern.__file__}, not from {SRC}\n{USAGE}")
 
 
-def answer(*args, **kwargs):
-    """A response built afresh for each request, as a server answers."""
-    return lambda request: httpx.Response(*args, **kwargs)
+def answer(status, headers=None, text=None, json=None, content=None):
+    """One response the server sends: its status, headers and body bytes."""
+    headers = dict(headers or {})
+    if json is not None:
+        body = globals()["json"].dumps(json).encode()
+        headers.setdefault("content-type", "application/json")
+    elif text is not None:
+        body = text.encode()
+    else:
+        body = content or b""
+    return status, headers, body
 
 
 def sse(*events):
@@ -51,65 +63,91 @@ def json_lines(*lines):
     return answer(200, headers={"content-type": "application/json"}, text="\n".join(lines) + "\n")
 
 
-def failure(request):
-    return httpx.Response(400, json={"message": "rejected"})
+failure = answer(400, json={"message": "rejected"})
 
 
 class Wire:
-    """The local transport: answers each request in turn and records it."""
+    """The local server: answers each request in turn and records it."""
 
-    def __init__(self, *answers):
+    def __init__(self):
+        self.answers = []
+        self.sent = []
+        wire = self
+
+        class Handler(BaseHTTPRequestHandler):
+            def handle_one(self):
+                raw = self.rfile.read(int(self.headers.get("Content-Length", "0")))
+                url = urlsplit(self.path)
+                wire.sent.append(
+                    {
+                        "method": self.command,
+                        "path": url.path,
+                        "query": {key: values[0] for key, values in parse_qs(url.query).items()},
+                        "content_type": self.headers.get("Content-Type"),
+                        "json": json.loads(raw) if raw else None,
+                    }
+                )
+                status, headers, body = wire.answers.pop(0)
+                self.send_response(status)
+                for name, value in headers.items():
+                    self.send_header(name, value)
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            do_GET = do_POST = handle_one
+
+            def log_message(self, *args):
+                pass
+
+        self.server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
+
+    def serve(self, *answers):
         self.answers = list(answers)
         self.sent = []
+        return self
 
-    def __call__(self, request):
-        body = request.content
-        self.sent.append(
-            {
-                "method": request.method,
-                "path": request.url.path,
-                "query": dict(request.url.params),
-                "content_type": request.headers.get("content-type"),
-                "json": json.loads(body) if body else None,
-            }
-        )
-        return self.answers.pop(0)(request)
+
+WIRE = Wire()
 
 
 def sync_client(wire):
-    return fern.FernApi(base_url=BASE, max_retries=0, httpx_client=httpx.Client(transport=httpx.MockTransport(wire)))
+    return fern.FernApi(base_url=wire.base, max_retries=0)
 
 
 def async_client(wire):
-    return fern.AsyncFernApi(
-        base_url=BASE, max_retries=0, httpx_client=httpx.AsyncClient(transport=httpx.MockTransport(wire))
-    )
+    return fern.AsyncFernApi(base_url=wire.base, max_retries=0)
 
 
 def both(call, *answers, collect=list):
-    """Run `call(client)` with the sync client and then the async one, each against
-    its own copy of `answers`; return both results and both wires."""
-    sync_wire = Wire(*answers)
-    sync_result = collect(call(sync_client(sync_wire)))
+    """Run `call(client)` with the sync client and then the async one, each served
+    its own copy of `answers`; return each result with the requests it sent."""
+    sync_result = collect(call(sync_client(WIRE.serve(*answers))))
+    sync_sent = list(WIRE.sent)
 
     async def drive():
-        wire = Wire(*answers)
-        result = call(async_client(wire))
+        result = call(async_client(WIRE.serve(*answers)))
         if hasattr(result, "__aiter__"):
-            result = [chunk async for chunk in result]
-        else:
-            result = await result
-        return result, wire
+            return [chunk async for chunk in result]
+        return await result
 
-    async_result, async_wire = asyncio.run(drive())
-    return (sync_result, sync_wire), (async_result, async_wire)
+    async_result = asyncio.run(drive())
+    return (sync_result, Sent(sync_sent)), (async_result, Sent(list(WIRE.sent)))
+
+
+class Sent:
+    """The requests one run sent, as `wire.sent`."""
+
+    def __init__(self, sent):
+        self.sent = sent
 
 
 def raises_then_recovers(call, recovered, success):
     """A 400 raises `ApiError` carrying the body; the next call on the same client
     succeeds with `recovered(result)` true -- sync and async."""
-    wire = Wire(failure, success)
-    client = sync_client(wire)
+    client = sync_client(WIRE.serve(failure, success))
     try:
         list(call(client))
     except ApiError as error:
@@ -119,8 +157,7 @@ def raises_then_recovers(call, recovered, success):
     assert recovered(list(call(client)))
 
     async def drive():
-        wire = Wire(failure, success)
-        client = async_client(wire)
+        client = async_client(WIRE.serve(failure, success))
         try:
             [chunk async for chunk in call(client)]
         except ApiError as error:

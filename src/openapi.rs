@@ -695,55 +695,39 @@ pub(crate) struct CrozierNaming {
 }
 
 /// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
-/// streams. An operation that declares a `stream-condition` generates *two*
-/// methods — one that sets the condition and streams, one that clears it and
-/// returns the buffered response.
-///
-/// Besides the mapping, the extension may be a boolean: `true` streams the
-/// success response as newline-delimited JSON, as a mapping declaring
-/// `format: json` does; `false` declares no stream at all (see
-/// [`Streaming::declares_stream`]).
-#[derive(Debug, Default, Clone)]
-pub struct Streaming {
+/// streams, written as a boolean or as a mapping. `true` streams the success
+/// response as newline-delimited JSON, as a mapping declaring `format: json`
+/// does; `false` declares no stream at all (see [`Streaming::declares_stream`]).
+#[derive(Debug, Clone)]
+pub enum Streaming {
+    /// The boolean form.
+    Flag(bool),
+    /// The mapping form, boxed: it embeds two schemas a boolean never carries.
+    Mapping(Box<StreamingMapping>),
+}
+
+/// The mapping form of the streaming extension. An operation that declares a
+/// `stream-condition` generates *two* methods — one that sets the condition and
+/// streams, one that clears it and returns the buffered response.
+#[derive(Debug, Default, Clone, Deserialize)]
+pub struct StreamingMapping {
     /// The stream encoding: `sse`, or `json` for newline-delimited JSON.
+    #[serde(default)]
     pub format: Option<String>,
     /// The buffered response schema, used when the condition is cleared.
+    #[serde(default)]
     pub response: Option<Schema>,
     /// The streamed chunk schema, used when the condition is set.
+    #[serde(rename = "response-stream", default)]
     pub response_stream: Option<Schema>,
     /// The request property that selects between the two forms
     /// (`$request.stream`).
+    #[serde(rename = "stream-condition", default)]
     pub stream_condition: Option<String>,
     /// The SSE `data` payload that ends the stream (`[DONE]`). Absent, an
     /// event without data ends it.
+    #[serde(default)]
     pub terminator: Option<String>,
-    /// How the extension was written: the boolean form, or a mapping.
-    form: StreamingForm,
-}
-
-/// The two spellings of the streaming extension's value.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-enum StreamingForm {
-    /// A mapping (`{format: sse, …}`).
-    #[default]
-    Mapping,
-    /// The boolean `true`/`false`.
-    Flag(bool),
-}
-
-/// The mapping form of the streaming extension, as written.
-#[derive(Deserialize)]
-struct StreamingMapping {
-    #[serde(default)]
-    format: Option<String>,
-    #[serde(default)]
-    response: Option<Schema>,
-    #[serde(rename = "response-stream", default)]
-    response_stream: Option<Schema>,
-    #[serde(rename = "stream-condition", default)]
-    stream_condition: Option<String>,
-    #[serde(default)]
-    terminator: Option<String>,
 }
 
 impl<'de> Deserialize<'de> for Streaming {
@@ -760,26 +744,14 @@ impl<'de> Deserialize<'de> for Streaming {
                 self,
                 flag: bool,
             ) -> std::result::Result<Streaming, E> {
-                Ok(Streaming {
-                    form: StreamingForm::Flag(flag),
-                    ..Streaming::default()
-                })
+                Ok(Streaming::Flag(flag))
             }
             fn visit_map<A: MapAccess<'de>>(
                 self,
                 map: A,
             ) -> std::result::Result<Streaming, A::Error> {
-                let mapping = StreamingMapping::deserialize(
-                    serde::de::value::MapAccessDeserializer::new(map),
-                )?;
-                Ok(Streaming {
-                    format: mapping.format,
-                    response: mapping.response,
-                    response_stream: mapping.response_stream,
-                    stream_condition: mapping.stream_condition,
-                    terminator: mapping.terminator,
-                    form: StreamingForm::Mapping,
-                })
+                StreamingMapping::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                    .map(|mapping| Streaming::Mapping(Box::new(mapping)))
             }
         }
         deserializer.deserialize_any(StreamingVisitor)
@@ -791,7 +763,16 @@ impl Streaming {
     /// `false` declares none, so the operation is an ordinary buffered call.
     #[must_use]
     pub fn declares_stream(&self) -> bool {
-        self.form != StreamingForm::Flag(false)
+        !matches!(self, Streaming::Flag(false))
+    }
+
+    /// The mapping, when the extension is written as one.
+    #[must_use]
+    pub fn mapping(&self) -> Option<&StreamingMapping> {
+        match self {
+            Streaming::Mapping(mapping) => Some(mapping),
+            Streaming::Flag(_) => None,
+        }
     }
 
     /// Whether the stream is Server-Sent Events rather than newline-delimited
@@ -800,7 +781,8 @@ impl Streaming {
     /// JSON lines, whatever media types the response declares.
     #[must_use]
     pub fn is_sse(&self) -> bool {
-        self.form == StreamingForm::Mapping && self.format.as_deref() == Some("sse")
+        self.mapping()
+            .is_some_and(|mapping| mapping.format.as_deref() == Some("sse"))
     }
 
     /// Whether the extension makes the operation stream without a
@@ -811,18 +793,29 @@ impl Streaming {
     /// one).
     #[must_use]
     pub fn streams_unconditionally(&self) -> bool {
-        self.condition_property().is_none()
-            && (self.form == StreamingForm::Flag(true) || self.format.is_some())
+        match self {
+            Streaming::Flag(flag) => *flag,
+            Streaming::Mapping(mapping) => {
+                self.condition_property().is_none() && mapping.format.is_some()
+            }
+        }
     }
 
     /// The request property the condition names, with its `$request.` prefix
     /// stripped. `None` when the operation streams unconditionally.
     #[must_use]
     pub fn condition_property(&self) -> Option<&str> {
-        self.stream_condition
+        self.mapping()?
+            .stream_condition
             .as_deref()
             .map(strip_selector_prefix)
             .filter(|property| !property.is_empty())
+    }
+
+    /// The SSE `data` payload that ends the stream, when one is declared.
+    #[must_use]
+    pub fn terminator(&self) -> Option<&str> {
+        self.mapping()?.terminator.as_deref()
     }
 }
 
