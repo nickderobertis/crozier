@@ -19,6 +19,7 @@ import pathlib
 import sys
 import threading
 from dataclasses import dataclass, field
+from typing import NamedTuple
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlsplit
 
@@ -70,11 +71,25 @@ def answer(status, headers=None, text=None, json=None, content=None):
     return Answer(status, headers, body)
 
 
+class Named(NamedTuple):
+    """An SSE event that carries an `event:` field beside its `data`."""
+
+    event: str
+    data: object
+
+
+class Run(NamedTuple):
+    """What one client's run of a call returned, and the requests it sent."""
+
+    result: object
+    sent: list[Request]
+
+
 def sse(*events):
-    """A `text/event-stream` body: each event is `data` or `(event, data)`."""
+    """A `text/event-stream` body: each event is its `data`, or `Named`."""
     lines = []
     for event in events:
-        name, data = event if isinstance(event, tuple) else (None, event)
+        name, data = (event.event, event.data) if isinstance(event, Named) else (None, event)
         if name:
             lines.append(f"event: {name}")
         lines.append(f"data: {data if isinstance(data, str) else json.dumps(data)}")
@@ -136,10 +151,9 @@ class Wire:
 WIRE = Wire()
 
 
-# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is half of the generated SDK under test, not this script's own choice of HTTP client: every journey drives it and `async_client`'s `AsyncFernApi` alike, because the task is proving both halves of each streaming method.
+# llmlint: ignore-block[async_typed_clients_at_boundaries] The synchronous `FernApi` is half of the generated SDK under test, not this script's own choice of HTTP client: `both` and `raises_then_recovers` drive it and `async_client`'s `AsyncFernApi` alike, because the task is proving both halves of each streaming method.
 def sync_client(wire):
     return fern.FernApi(base_url=wire.base, max_retries=0)
-# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 def async_client(wire):
@@ -159,7 +173,7 @@ def both(call, *answers, collect=list):
         return await result
 
     async_result = asyncio.run(drive())
-    return (sync_result, sync_sent), (async_result, list(WIRE.sent))
+    return Run(sync_result, sync_sent), Run(async_result, list(WIRE.sent))
 
 
 def raises_then_recovers(call, recovered, success):
@@ -185,6 +199,7 @@ def raises_then_recovers(call, recovered, success):
         assert recovered([chunk async for chunk in call(client)])
 
     asyncio.run(drive())
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
 
 
 def terminator():
@@ -222,9 +237,9 @@ def event_dispatch():
     # Each event's `event` field selects the model its JSON `data` parses as; an
     # event no branch names is skipped.
     events = sse(
-        ("departed", {"data": {"terminal": "North", "minutesLate": 3}}),
-        ("docked", {"data": {"terminal": "nowhere"}}),
-        ("arrived", {"data": {"terminal": "South"}}),
+        Named("departed", {"data": {"terminal": "North", "minutesLate": 3}}),
+        Named("docked", {"data": {"terminal": "nowhere"}}),
+        Named("arrived", {"data": {"terminal": "South"}}),
     )
     call = lambda client: client.watch_movements("r-2")
     for chunks, sent in both(call, events):
@@ -236,17 +251,17 @@ def event_dispatch():
     # A named event whose data is not JSON, or does not fit its model, is
     # skipped with a warning, and the events after it still arrive.
     damaged = sse(
-        ("departed", "{not json"),
-        ("arrived", {"data": "not a berth"}),
-        ("arrived", {"data": {"terminal": "East"}}),
+        Named("departed", "{not json"),
+        Named("arrived", {"data": "not a berth"}),
+        Named("arrived", {"data": {"terminal": "East"}}),
     )
     for chunks, _sent in both(call, damaged):
         assert [(type(chunk).__name__, chunk.data.terminal) for chunk in chunks] == [("Arrival", "East")], chunks
     # With no mapping, each variant's `const` names the event it is parsed for.
     gangway = sse(
-        ("raised", {"data": {"terminal": "West"}}),
-        ("boarding", {"data": {"terminal": "nowhere"}}),
-        ("lowered", {"data": {"terminal": "West", "minutesLate": 1}}),
+        Named("raised", {"data": {"terminal": "West"}}),
+        Named("boarding", {"data": {"terminal": "nowhere"}}),
+        Named("lowered", {"data": {"terminal": "West", "minutesLate": 1}}),
     )
     call = lambda client: client.watch_gangway("t-4")
     for chunks, sent in both(call, gangway):
