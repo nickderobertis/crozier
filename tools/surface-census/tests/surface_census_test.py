@@ -2117,6 +2117,17 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("re-run `just handwritten-reach`", run.stderr)
 
+    def test_a_cover_whose_audiences_are_not_names_is_refused(self) -> None:
+        root = self.tree(executed=20)
+        evidence = root / "docs" / "openapi-surface" / "handwritten" / "gated" / "evidence.toml"
+        evidence.write_text(
+            evidence.read_text(encoding="utf-8").replace('["public"]', "[false]"),
+            encoding="utf-8",
+        )
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("`audiences` must be an array of audience names", run.stderr)
+
     def test_a_later_arm_no_setting_free_run_executes_states_no_verdict(self) -> None:
         run = self.arms(self.tree(executed=0))
         self.assertNotEqual(0, run.returncode)
@@ -3838,7 +3849,8 @@ TWO_ONE_OF = {"oneOf": [{"type": "string"}, {"type": "integer"}]}
 TWO_ANY_OF = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
 MAP_OF_TWO_ONE_OF = {"type": "object", "additionalProperties": TWO_ONE_OF}
 MAP_OF_TWO_ANY_OF = {"type": "object", "additionalProperties": TWO_ANY_OF}
-# The same maps over structured members, which no closing union residual counts.
+# The same maps over structured members: no case 14 selector counts them, so
+# each case's overlap document is one only the closing residual counts.
 MAP_OF_TWO_ONE_OF_STRUCTS = {
     "type": "object",
     "additionalProperties": {"oneOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},

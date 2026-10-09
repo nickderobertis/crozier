@@ -41,7 +41,6 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
-import csv
 import fnmatch
 import importlib.util
 import json
@@ -876,16 +875,50 @@ def config_gated_verdict(text: str, key: str) -> str | None:
     return stated.pop() if len(stated) == 1 else None
 
 
-def _measurements(path: Path, columns: tuple[str, ...], counts: tuple[str, ...]) -> list[dict[str, str]]:
-    """A `just handwritten-reach` TSV's rows, refused unless it has `columns` and whole-number `counts`."""
+class Measurement(NamedTuple):
+    """One row of a `just handwritten-reach` ledger: a fixture's run over one arm."""
+
+    fixture: str
+    key: str
+    site: str
+    setting: str | None  # `handwritten-config-gates.tsv`'s setting column; `-` is no setting
+    regions_executed: int
+    regions: int
+
+
+REACH_COLUMNS = ("fixture", "key", "site", "regions_executed", "regions")
+GATE_COLUMNS = ("fixture", "key", "site", "setting", "regions_executed", "regions")
+
+
+def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]:
+    """A `just handwritten-reach` TSV as typed rows, refused unless every row fills `columns` exactly."""
     with path.open(encoding="utf-8", newline="") as handle:
-        reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
-        if tuple(reader.fieldnames or ()) != columns:
-            fail(f"{path} has columns {reader.fieldnames}, not {list(columns)}; re-run `just handwritten-reach`")
-        rows = list(reader)
-    for number, row in enumerate(rows, start=2):
-        if not all((row[column] or "").isdigit() for column in counts):
-            fail(f"{path}:{number} carries a count that is not a whole number; re-run `just handwritten-reach`")
+        lines = handle.read().splitlines()
+    if not lines or tuple(lines[0].split("\t")) != columns:
+        fail(f"{path} does not start with the columns {list(columns)}; re-run `just handwritten-reach`")
+    rows = []
+    for number, line in enumerate(lines[1:], start=2):
+        cells = line.split("\t")
+        row = dict(zip(columns, cells, strict=False))
+        if (
+            len(cells) != len(columns)
+            or not all(row[name] for name in columns)
+            or not (row["regions_executed"].isdigit() and row["regions"].isdigit())
+        ):
+            fail(
+                f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; "
+                "re-run `just handwritten-reach`"
+            )
+        rows.append(
+            Measurement(
+                row["fixture"],
+                row["key"],
+                row["site"],
+                row.get("setting"),
+                int(row["regions_executed"]),
+                int(row["regions"]),
+            )
+        )
     return rows
 
 
@@ -897,8 +930,14 @@ def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
             declared = tomllib.load(handle)
         audiences = declared.get("audiences", [])
         entries = declared.get("covers", [])
-        if not isinstance(audiences, list) or not isinstance(entries, list):
-            fail(f"{path}: `audiences` and `covers` must be arrays; correct it, then re-run")
+        if (
+            not isinstance(audiences, list)
+            or not all(isinstance(name, str) and name for name in audiences)
+            or not isinstance(entries, list)
+        ):
+            fail(
+                f"{path}: `audiences` must be an array of audience names and `covers` an array; correct it, then re-run"
+            )
         for cover in entries:
             arm = cover.get("arm") if isinstance(cover, dict) else None
             if (
@@ -926,26 +965,17 @@ def config_gated_arm_verdict(
     `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
     executing it. Otherwise no one verdict is stated (`None`).
     """
-    gates = _measurements(
-        regions_dir / "handwritten-config-gates.tsv",
-        ("fixture", "key", "site", "setting", "regions_executed", "regions"),
-        ("regions_executed", "regions"),
-    )
-    if site in {row["site"] for row in gates if row["key"] == key}:
+    gates = read_measurements(regions_dir / "handwritten-config-gates.tsv", GATE_COLUMNS)
+    if site in {row.site for row in gates if row.key == key}:
         stated = config_gated_verdict(text, key)
         return None if stated is None else _verdict(stated, f"{key}'s gate table")
     citing = [
         c for c in (handwritten_covers(regions_dir) if covers is None else covers) if (c.key, c.arm) == (key, site)
     ]
     ungated = {c.fixture for c in citing if not c.set_up}
-    reach = _measurements(
-        regions_dir / "handwritten-reach.tsv",
-        ("fixture", "key", "site", "regions_executed", "regions"),
-        ("regions_executed", "regions"),
-    )
     executed = any(
-        row["fixture"] in ungated and (row["key"], row["site"]) == (key, site) and int(row["regions_executed"])
-        for row in reach
+        row.fixture in ungated and (row.key, row.site) == (key, site) and row.regions_executed
+        for row in read_measurements(regions_dir / "handwritten-reach.tsv", REACH_COLUMNS)
     )
     verdicts = {c.verdict for c in citing}
     return verdicts.pop() if executed and len(verdicts) == 1 else None

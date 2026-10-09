@@ -324,6 +324,36 @@ class ReportTests(unittest.TestCase):
         self.assertIn("; arm search [record](golden-reach-witnesses/searches/flag-set.md)", cells["flag-set"][5])
         self.assertNotIn("arm search", cells["flag-orphan"][5])
 
+    def test_report_restates_the_coverage_index_arm_sections_from_the_ledger_it_writes(self) -> None:
+        index = self.repo / "docs" / "openapi-surface-coverage.md"
+        index.write_text(
+            "# Index\n\n"
+            f"{golden_reach.ARM_COUNTS_BEGIN}\nstale\n{golden_reach.ARM_COUNTS_END}\n\n"
+            f"{golden_reach.ARM_TABLE_BEGIN}\nstale\n{golden_reach.ARM_TABLE_END}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        run = self.run_report("--write")
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn("arm sections restated", run.stdout)
+        text = index.read_text(encoding="utf-8")
+        self.assertNotIn("stale", text)
+        # `flag-orphan` (rank 1) and `flag-set` (rank 2) each leave one arm unreached; neither is searched.
+        self.assertIn(
+            "| 1 | `flag-orphan` | `src/demo.rs::unrelated` | 1 | `not searched` — no arm search has run | — |", text
+        )
+        self.assertIn(
+            "| 2 | `flag-set` | `src/demo.rs::handles[\\} else \\{]` | 1 | `not searched` — no arm search has run | — |",
+            text,
+        )
+        self.assertIn("**1** reach every handling site", text)
+        self.assertIn("**2** carry at least one handling site", text)
+        self.assertIn("2 unreached arms in all", text)
+        self.assertIn("0 read `exhausted`, 0 read `search-incomplete`, 0 read `config-gated`, and 2 have", text)
+        again = self.run_report("--write")
+        self.assertIn("arm sections unchanged", again.stdout)
+        self.assertEqual(text, index.read_text(encoding="utf-8"))
+
     def test_a_row_declared_only_by_a_source_without_a_golden_says_so(self) -> None:
         self.assertEqual(0, self.run_report("--write").returncode)
         cell = self.cells()["flag-orphan"][5]
