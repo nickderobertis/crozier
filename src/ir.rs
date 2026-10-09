@@ -939,6 +939,7 @@ pub enum Auth {
         /// The credential's parameter (`api_key` unless the scheme names it).
         credential: Credential,
         /// The text the key is sent behind (`f"Meter {self.meter_token}"`).
+        // llmlint: ignore[invalid_states_unrepresentable] Fern takes the prefix verbatim, so any declared text is the value; the one text crozier cannot emit, a brace, is refused at the boundary by `Ir::unemittable_extension` before any file is written, and a newtype would restate that one check.
         prefix: Option<String>,
     },
     /// A bearer `token` (str or callable), sent as `Authorization: Bearer`.
@@ -4172,6 +4173,7 @@ pub enum PageAdvance {
         /// The cursor attribute itself, e.g. the `next_page_token` of
         /// `["pagination", "next_page_token"]`. Split from its container at
         /// construction so the pair cannot represent a chain with no cursor.
+        // llmlint: ignore[invalid_states_unrepresentable] The leaf is the last segment `str::split` yields over the declared response path, so a cursor always exists, each segment passing through `naming::model_field_name` like every other model attribute crozier emits; it is the pre-existing `next_cursor_leaf` the manager's ruling on this change kept as it is.
         leaf: String,
     },
     /// The offset form (`x-fern-pagination: {offset: …, results: …}`): the
