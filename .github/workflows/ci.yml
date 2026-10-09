@@ -181,7 +181,9 @@ jobs:
       # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
       - name: Install ruff
         run: ./scripts/install-ruff.sh
-      # cargo is preinstalled and honors rust-toolchain.toml on first use. The
+      # cargo is preinstalled; this job never bootstraps, so the gate installs the
+      # toolchain rust-toolchain.toml pins once before any target starts, rather
+      # than letting two parallel cargo builds race to install it. The
       # `live-e2e` project builds the release binary its suite drives; `corpus-match`
       # byte-compares against Fern from committed sources (and proves it with sockets
       # denied and no cache); `census-fallback` holds the parser fallback to the

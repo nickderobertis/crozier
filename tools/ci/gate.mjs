@@ -225,6 +225,32 @@ function projectTags() {
   }
 }
 
+// Every cargo a target runs auto-installs the toolchain rust-toolchain.toml pins
+// when it is missing, into the one rustup home they share; two targets doing so
+// at once (crozier:build and live-e2e's release build, on a runner that never
+// bootstrapped) break each other's install. So the gate installs it once, before
+// any target starts, and offline when it is already there. Without rustup no
+// cargo installs anything, so there is nothing to do.
+function onPath(name) {
+  const names = process.platform === "win32" ? [`${name}.exe`, `${name}.cmd`] : [name];
+  return (process.env.PATH ?? "").split(process.platform === "win32" ? ";" : ":").some((dir) => dir && names.some((n) => existsSync(join(dir, n))));
+}
+
+function ensureRustToolchain() {
+  if (!existsSync(join(ROOT, "rust-toolchain.toml")) || !onPath("rustup")) return "";
+  const args = ["toolchain", "install", "--no-self-update"];
+  const run = spawnSync("rustup", args, { cwd: ROOT, encoding: "utf8", shell: process.platform === "win32" });
+  const output = `$ rustup ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}${run.error ? `${run.error.message}\n` : ""}`;
+  if (run.status !== 0) {
+    process.stderr.write(output);
+    die(
+      "could not install the Rust toolchain rust-toolchain.toml pins (rustup's output above); no target ran",
+      "check that static.rust-lang.org is reachable and rustup is 1.28 or later ('rustup self update'), then rerun",
+    );
+  }
+  return output;
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
   const base = options.sweep ? undefined : resolveBase();
@@ -287,11 +313,12 @@ function main() {
     console.log(`${TOOL}: would run: nx ${args.join(" ")}`);
     return;
   }
+  const toolchain = ensureRustToolchain();
   const logDir = join(ROOT, ".nx", "logs");
   mkdirSync(logDir, { recursive: true });
   const log = join(logDir, `gate-${process.pid}.log`);
   const run = spawnSync(nxBin(), args, { cwd: ROOT, env: NX_ENV, encoding: "utf8", maxBuffer: 1024 * 1024 * 1024, shell: process.platform === "win32" });
-  writeFileSync(log, `$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
+  writeFileSync(log, `${toolchain}$ nx ${args.join(" ")}\n${run.stdout ?? ""}${run.stderr ?? ""}`);
   if (run.status !== 0) {
     // Exit only once the replay has drained: a pipe takes one buffer's worth
     // (64 KiB on Linux) and an exit drops the rest — the failing target's own
