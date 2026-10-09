@@ -14429,13 +14429,12 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
     def test_date_header_promotion_requires_frequency_and_unowned_header(self) -> None:
         header = {"name": "X-Date", "in": "header", "schema": {"type": "string", "format": "date"}}
 
-        def document(carried: int, name: str = "X-Date") -> dict:
+        def document(carried: int, name: str = "X-Date", kind: str = "string") -> dict:
+            parameter = {**header, "name": name, "schema": {"type": kind, "format": "date"}}
             return {
                 "openapi": "3.0.3",
                 "paths": {
-                    f"/signals/{index}": {
-                        "get": self.operation(parameters=[{**header, "name": name}] if index < carried else [])
-                    }
+                    f"/signals/{index}": {"get": self.operation(parameters=[parameter] if index < carried else [])}
                     for index in range(4)
                 },
             }
@@ -14445,6 +14444,8 @@ class ParameterExtensionShapeSelectors(BodyAndResponseSelectorControls):
             "below": document(2),
             "excluded": document(4, "Content-Type"),
             "owned": document(4),
+            # The generator types only a string `format: date` header as a date.
+            "integer": document(4, kind="integer"),
         }
         documents["owned"]["components"] = {
             "securitySchemes": {"DateKey": {"type": "apiKey", "in": "header", "name": "X-Date"}}

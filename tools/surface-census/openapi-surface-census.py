@@ -5000,7 +5000,8 @@ class Census:
             if self.operation_total == 1 and node.get("required") is True:
                 found.append("parameter.schema:single-required-header")
             if (
-                schema.get("format") == "date"
+                primary_type(schema.get("type")) == "string"
+                and schema.get("format") == "date"
                 and isinstance(name, str)
                 and name.lower() not in UNPROMOTED_HEADERS
                 and name not in self.api_key_headers
