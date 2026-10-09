@@ -76,6 +76,7 @@ members = [
     # their suites keep their own runners (see each one's AGENTS.md).
     "tests/census_fallback",
     "tests/corpus_match",
+    "tests/corpus_match_selection",
     "tests/live_e2e",
     "tests/runtime",
 ]

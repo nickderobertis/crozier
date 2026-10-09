@@ -24,8 +24,8 @@ failing on any finding.
   `screenshots`, and `python-workspace`. Each declares `format` (`ruff format
   --check`), `lint` (its existing lints plus `lint-ruff`: `ruff check`),
   `typecheck` (`ty check`) and `test` (pytest with coverage on).
-- **Promoted tiers** (`census-fallback`, `corpus-match`, `live-e2e`, `runtime`)
-  are workspace members with `format`, `lint` and `typecheck` only; see the
+- **Promoted tiers** (`census-fallback`, `corpus-match`,
+  `corpus-match-selection`, `live-e2e`, `runtime`) are workspace members with `format`, `lint` and `typecheck` only; see the
   departures below.
 
 ## Tests and the coverage floor

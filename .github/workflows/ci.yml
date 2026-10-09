@@ -181,12 +181,20 @@ jobs:
       # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
       - name: Install ruff
         run: ./scripts/install-ruff.sh
-      # cargo is preinstalled; this job never bootstraps, so the gate installs the
-      # toolchain rust-toolchain.toml pins once before any target starts, rather
-      # than letting two parallel cargo builds race to install it. The
-      # `live-e2e` project builds the release binary its suite drives; `corpus-match`
-      # byte-compares against Fern from committed sources (and proves it with sockets
-      # denied and no cache); `census-fallback` holds the parser fallback to the
+      # Install the rust-toolchain.toml toolchain once, before the gate: left to
+      # first use, the gate's parallel cargo tasks each start the same rustup
+      # install and race on its download directory.
+      - name: Install the pinned Rust toolchain
+        run: just install-toolchain
+      # The corpus-match recipes run their golden inventory under nextest.
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      # The `live-e2e` project builds the release binary its suite drives;
+      # `corpus-match` byte-compares against Fern from committed sources (and proves it with sockets
+      # denied and no cache); `corpus-match-selection` proves that byte-match's nextest
+      # selection is its inventory; `census-fallback` holds the parser fallback to the
       # pinned ruamel.yaml. Each runs when the change reaches it, and on the release
       # pull request always.
       # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
@@ -194,7 +202,7 @@ jobs:
       - name: Live e2e, corpus byte-match and census fallback
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=live-e2e,corpus-match,census-fallback
+        run: just ci-check --projects=live-e2e,corpus-match,corpus-match-selection,census-fallback
       # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate

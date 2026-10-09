@@ -10,6 +10,7 @@ members = [
     "crozier-corpus-fetch",
     "crozier-corpus-licensing",
     "crozier-corpus-match",
+    "crozier-corpus-match-selection",
     "crozier-fern-goldens",
     "crozier-fern-goldens-git",
     "crozier-fern-refusals",
@@ -269,6 +270,11 @@ requires-dist = [
     { name = "crozier-surface-census", virtual = "tools/surface-census" },
     { name = "crozier-witness-search", virtual = "tools/witness-search" },
 ]
+
+[[package]]
+name = "crozier-corpus-match-selection"
+version = "0.0.0"
+source = { virtual = "tests/corpus_match_selection" }
 
 [[package]]
 name = "crozier-fern-goldens"
