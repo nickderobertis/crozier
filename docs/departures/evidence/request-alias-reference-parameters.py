@@ -1,4 +1,4 @@
-# llmlint: ignore[new_code_lands_in_a_project] This certified-output proof is invoked by the Cargo e2e SDK-environment gate; crozier uses Cargo and just, with no Nx projects.
+# llmlint: ignore-file[new_code_lands_in_a_project] Departure evidence stays beside its note in docs/departures/evidence, as body-query-parameter-value.py does; crozier-e2e runs it and reads this folder through its e2eReads input.
 """Bind advertised arguments and execute actual flattened alias body methods.
 
 Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;

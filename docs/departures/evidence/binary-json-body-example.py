@@ -1,4 +1,4 @@
-# llmlint: ignore[new_code_lands_in_a_project] This certified-output proof is invoked by the Cargo e2e SDK-environment gate; crozier uses Cargo and just, with no Nx projects.
+# llmlint: ignore-file[new_code_lands_in_a_project] Departure evidence stays beside its note in docs/departures/evidence, as body-query-parameter-value.py does; crozier-e2e runs it and reads this folder through its e2eReads input.
 """Check example types against actual generated SDK annotations and JSON transport.
 
 Exit 0 prints one JSON proof result; exit 1 means the proof or SDK import failed;
@@ -20,6 +20,8 @@ from pathlib import Path
 
 import httpx
 from pydantic import TypeAdapter, ValidationError
+
+METHODS = {"vault": "deposit_bundle", "depository": "deposit_parcel"}
 
 
 def check(root: Path, group: str, method: str, expected: str) -> None:
@@ -106,10 +108,12 @@ def check(root: Path, group: str, method: str, expected: str) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_src", type=Path)
-    parser.add_argument("group", choices=("vault", "depository"))
-    parser.add_argument("method", choices=("deposit_bundle", "deposit_parcel"))
+    parser.add_argument("group", choices=tuple(METHODS))
+    parser.add_argument("method", choices=tuple(METHODS.values()))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     args = parser.parse_args()
+    if METHODS[args.group] != args.method:
+        parser.error(f"method for group {args.group} must be {METHODS[args.group]}")
     if not (args.sdk_src / "fern/__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     check(args.sdk_src, args.group, args.method, args.examples)

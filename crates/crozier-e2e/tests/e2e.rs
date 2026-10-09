@@ -3823,6 +3823,15 @@ fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
     let root = repo_root();
     let script = root.join("docs/departures/evidence/binary-json-body-example.py");
     let python = runtime_python_env().expect("SDK runtime environment");
+    Command::new(&python)
+        .arg(&script)
+        .arg(root)
+        .args(["vault", "deposit_parcel", "--examples", "valid"])
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "method for group vault must be deposit_bundle",
+        ));
     for (shape, group, method) in [
         ("json-request-shapes", "vault", "deposit_bundle"),
         ("json-binary-path", "depository", "deposit_parcel"),
