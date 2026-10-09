@@ -106,6 +106,9 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
         "format: uuid",
         "pattern: ^.*$",
         "not: { enum: [recording] }",
+        "allOf: [{ type: string }]",
+        "anyOf: [{ minLength: 1 }]",
+        "oneOf: [{ maxLength: 20 }]",
     ] {
         let further_constraint = source.replace(
             "    Phase:\n      type: string\n",
@@ -118,6 +121,12 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
             "target {target}"
         );
     }
+    // An empty composition carries no constraint, so discarding it keeps the correction.
+    let empty_composition = source.replace(
+        "    Phase:\n      type: string\n",
+        "    Phase:\n      type: string\n      allOf: []\n",
+    );
+    assert!(render(&empty_composition)["README.md"].contains("phase=MeasurementPhase.RECORDING,"));
     let no_valid = source.replace("^(?!preparation$).*$", "^excluded$");
     assert!(render(&no_valid)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
 }

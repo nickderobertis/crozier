@@ -38,3 +38,41 @@ are the synchronous and asynchronous README examples, both endpoint reference
 examples, and both endpoints’ synchronous and asynchronous client docstrings. The Python-enums
 invocation reads each actual imported enum member's wire value; the literals
 invocation reads each actual AST string argument.
+
+## Where the correction declines
+
+The replacement is checked against the pattern only, so crozier declines it,
+writing Fern's first member byte for byte, whenever the enum or the scalar
+member carries any other string constraint: `minLength`, `maxLength`, `const`,
+`not`, `format`, a pattern on the enum itself, or a composition. Load
+normalization drops `allOf`, `anyOf` and `oneOf` from string-typed nodes, as
+Fern does when it generates the plain type, but the constraints inside them
+still bind the value. The node records that it lost one.
+
+The independently authored
+`docs/fern-measurements/models-refs-composed-narrowing/dossier-status` source
+shows why. `DossierStatus` (`draft`, `sealed`) holds `maxLength: 5` in an
+`allOf`, and the `Dossier.standing` use site adds `^(?!draft$).*$`. Before this
+decline, crozier wrote `standing=DossierStanding.SEALED,` (literals:
+`standing="sealed",`). Validating both values against the complete original
+schema with jsonschema 4.26.0 reported:
+
+```text
+'draft': 'draft' does not match '^(?!draft$).*$'
+'sealed': 'sealed' is too long
+```
+
+Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 certified both enum modes
+of that source (`fern-expected` beside it for `python_enums`, and
+`docs/fern-measurements/models-refs-literals/dossier-status` for the default
+literals). crozier now matches both trees with no `pattern-narrowed-enum-example`
+departure. `composed_narrowing_declines_the_example_correction_and_matches_certified_fern`
+in `crates/crozier-e2e/tests/e2e.rs` byte-compares them and holds the controls.
+Without the composition, crozier still corrects the example to `sealed`. Moving
+the constraint onto the node, or into `anyOf`, declines the correction. The
+comparison accepts the replacement only against the composition-free source.
+
+**This is a known limitation, not a parity claim.** Declining is conservative.
+Where a dropped composition would still admit some enum member, for example
+`maxLength: 6` above, crozier keeps Fern's first member, which the pattern
+rejects, rather than select that valid member.

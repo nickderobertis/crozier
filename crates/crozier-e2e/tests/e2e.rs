@@ -812,6 +812,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (HANDWRITTEN_DIR, "fern-expected"),
         (MODELS_REFS_LITERALS_DIR, "fern-expected"),
         (MODELS_REFS_REMOTE_DIR, "fern-expected"),
+        (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -2437,6 +2438,8 @@ fn unwritten_module_imports_names_a_missing_module() {
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
 const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
 const MODELS_REFS_REMOTE_DIR: &str = "docs/fern-measurements/models-refs-remote";
+const MODELS_REFS_COMPOSED_NARROWING_DIR: &str =
+    "docs/fern-measurements/models-refs-composed-narrowing";
 
 /// Every hand-written generation fixture, found by listing
 /// `docs/openapi-surface/handwritten/` and nothing else, held to the contract
@@ -21173,6 +21176,110 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
             String::from_utf8_lossy(&run.stderr)
         );
     }
+}
+
+#[test]
+fn composed_narrowing_declines_the_example_correction_and_matches_certified_fern() {
+    // `DossierStatus` holds `maxLength: 5` in an `allOf` that load normalization
+    // drops from the string node. Fern's `draft` fails the use-site pattern, and
+    // the only replacement, `sealed`, fails that length, so crozier keeps Fern's
+    // example rather than claim a valid one.
+    let root = repo_root();
+    let fixture = root
+        .join(MODELS_REFS_COMPOSED_NARROWING_DIR)
+        .join("dossier-status");
+    let spec = fixture.join("openapi.yml");
+    let source = spec.to_str().expect("UTF-8 fixture path");
+    let composition = "      allOf:\n      - maxLength: 5\n";
+    let text = std::fs::read_to_string(&spec).unwrap();
+    assert!(text.contains(composition));
+    for (mode, golden) in [
+        (
+            None,
+            format!("{MODELS_REFS_COMPOSED_NARROWING_DIR}/dossier-status/fern-expected"),
+        ),
+        (
+            Some("literals"),
+            format!("{MODELS_REFS_LITERALS_DIR}/dossier-status/fern-expected"),
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("composed narrowing SDK");
+        let mut command = probe_command(&spec, out.path());
+        if let Some(mode) = mode {
+            command.args(["--enum-type", mode]);
+        }
+        command.assert().success();
+        let readme = std::fs::read_to_string(out.path().join("README.md")).unwrap();
+        let declined = if mode.is_some() {
+            "standing=\"draft\","
+        } else {
+            "standing=DossierStanding.DRAFT,"
+        };
+        assert!(readme.contains(declined), "{readme}");
+        let ledger = departure_ledger()
+            .golden(&golden, &[])
+            .expect("composed narrowing golden");
+        let failures = golden_tree_failures(
+            "composed narrowing",
+            source,
+            &ledger,
+            &root.join(&golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+
+    // The correction is declined only for the discarded composition: without it,
+    // or with the constraint moved where it is visible, the use-site pattern
+    // still selects `sealed` or keeps Fern's member as the constraint requires.
+    let work = tempfile::tempdir().expect("composed narrowing controls");
+    for (changed, expected) in [
+        (
+            text.replace(composition, ""),
+            "standing=DossierStanding.SEALED,",
+        ),
+        (
+            text.replace(composition, "      anyOf:\n      - maxLength: 5\n"),
+            "standing=DossierStanding.DRAFT,",
+        ),
+        (
+            text.replace(composition, "      maxLength: 5\n"),
+            "standing=DossierStanding.DRAFT,",
+        ),
+    ] {
+        assert_ne!(changed, text);
+        let control = work.path().join("openapi.yml");
+        std::fs::write(&control, &changed).unwrap();
+        let out = work.path().join("sdk");
+        let _ = std::fs::remove_dir_all(&out);
+        probe_command(&control, &out).assert().success();
+        let readme = std::fs::read_to_string(out.join("README.md")).unwrap();
+        assert!(readme.contains(expected), "{expected}\n{readme}");
+    }
+
+    // Departure normalization reads the same complete source: Fern's example
+    // against the replacement is accepted only where no composition was dropped.
+    let golden = fixture.join("fern-expected");
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let corrected = reference.replace(
+        "standing=DossierStanding.DRAFT,",
+        "standing=DossierStanding.SEALED,",
+    );
+    assert_ne!(corrected, reference);
+    let composed = Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    assert!(
+        parity::compare_file(&composed, "README.md", &corrected, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let plain_spec = work.path().join("plain.yml");
+    std::fs::write(&plain_spec, text.replace(composition, "")).unwrap();
+    let plain = Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&plain_spec).unwrap());
+    let accepted = parity::compare_file(&plain, "README.md", &corrected, &reference).unwrap();
+    assert!(accepted.matches(), "{:?}", accepted.diff());
 }
 
 #[test]

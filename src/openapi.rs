@@ -1211,6 +1211,12 @@ pub struct Schema {
     /// the origin has to outlive the rewrite.
     #[serde(skip)]
     pub unresolved_reference: bool,
+    /// Set when `normalize_empty_compositions` discarded a non-empty composition
+    /// from this scalar-typed node. Not a wire field. Fern generates the plain
+    /// type too, but a constraint inside the composition still binds the value,
+    /// so a correction that cannot see it must decline.
+    #[serde(skip)]
+    pub(crate) discarded_composition: bool,
 }
 
 impl Schema {
@@ -2153,6 +2159,9 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 node.ty.as_ref().and_then(TypeField::primary),
                 Some("string" | "integer" | "number" | "boolean")
             ) {
+                node.discarded_composition |= [&node.one_of, &node.any_of, &node.all_of]
+                    .into_iter()
+                    .any(Option::is_some);
                 node.one_of = None;
                 node.any_of = None;
                 node.all_of = None;

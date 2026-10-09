@@ -13198,11 +13198,11 @@ fn scalar_narrowed_enum_type(
 /// values: the scalar allOf member constrains those values at this use site.
 fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
     let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
-    // A pattern-only correction cannot certify additional string constraints.
-    // Both nodes are string-typed, so `normalize_empty_compositions` has already
-    // discarded any composition on them, as Fern does.
+    // A pattern-only correction cannot certify additional string constraints,
+    // including any held in a composition load normalization discarded.
     if [target, member].iter().any(|node| {
-        node.min_length.is_some()
+        node.discarded_composition
+            || node.min_length.is_some()
             || node.max_length.is_some()
             || node.const_value.is_some()
             || node.not_schema.is_some()

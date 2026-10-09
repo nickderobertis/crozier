@@ -16,6 +16,11 @@ docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_w
 docs/departures/evidence/readme-client-class-casing/fern-reference	core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	16	readme-client-class-casing
 docs/departures/evidence/readme-client-class-casing/fern-reference	reference.md	19	readme-client-class-casing
+docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -40,6 +45,12 @@ docs/fern-measurements/models-refs-literals/compass-member-notes/fern-expected	s
 docs/fern-measurements/models-refs-literals/compass-member-notes/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/compass-member-notes/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/compass-member-notes/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/models-refs-literals/dossier-status/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/garden-crown/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/models-refs-literals/garden-crown/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/models-refs-literals/garden-crown/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

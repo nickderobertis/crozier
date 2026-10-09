@@ -1,10 +1,12 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
+    "docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/compass-member-notes/fern-expected": {},
+    "docs/fern-measurements/models-refs-literals/dossier-status/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/garden-crown/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/gauge-public-fields/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/library-records/fern-expected": {},
