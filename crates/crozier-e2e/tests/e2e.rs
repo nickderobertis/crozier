@@ -2417,6 +2417,74 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
+/// An inline schema's type name reads crozier's spelling on its own and wins
+/// over a conflicting Fern spelling on the same node: written as
+/// `x-crozier-type-name` alone, or beside a different `x-fern-type-name`, the
+/// `film-shot-planner` fixture generates the tree its Fern spelling does, which
+/// `handwritten_fixtures_match_fern_goldens` holds to Fern's. The losing Fern
+/// names appear nowhere.
+#[test]
+fn inline_type_names_read_crozier_spelling_over_fern() {
+    let fixture = std::fs::read_to_string(
+        repo_root().join("docs/openapi-surface/handwritten/film-shot-planner/openapi.yml"),
+    )
+    .expect("the film-shot-planner fixture");
+    let declared = ["ShotSize", "LensSpec"];
+    for name in declared {
+        assert!(
+            fixture.contains(&format!("x-fern-type-name: {name}\n")),
+            "the fixture declares {name} inline"
+        );
+    }
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |case: &str, text: &str| {
+        let spec = dir.path().join(format!("{case}.yml"));
+        std::fs::write(&spec, text).expect("write spec");
+        let out = dir.path().join(case);
+        probe_command(&spec, &out).assert().success();
+        walk_files(&out)
+            .into_iter()
+            .map(|rel| {
+                let text = std::fs::read_to_string(out.join(&rel)).expect("generated file");
+                (rel, text)
+            })
+            .collect::<Vec<_>>()
+    };
+    let reference = generate("fern", &fixture);
+    assert!(
+        reference
+            .iter()
+            .any(|(rel, _)| rel.ends_with("types/shot_size.py")),
+        "the Fern spelling names the inline enum ShotSize"
+    );
+    let mut crozier = fixture.clone();
+    let mut conflict = fixture.clone();
+    for name in declared {
+        let fern = format!("x-fern-type-name: {name}\n");
+        let indent = fixture
+            .lines()
+            .find(|line| line.trim_start() == fern.trim_end())
+            .map(|line| &line[..line.len() - line.trim_start().len()])
+            .expect("the declaration line");
+        crozier = crozier.replace(&fern, &format!("x-crozier-type-name: {name}\n"));
+        conflict = conflict.replace(
+            &fern,
+            &format!("x-fern-type-name: Decoy{name}\n{indent}x-crozier-type-name: {name}\n"),
+        );
+    }
+    for (case, text) in [("crozier", crozier), ("conflict", conflict)] {
+        let tree = generate(case, &text);
+        assert_eq!(
+            reference, tree,
+            "{case}: the tree differs from the Fern spelling's"
+        );
+        assert!(
+            tree.iter().all(|(_, text)| !text.contains("Decoy")),
+            "{case}: a losing Fern name survives"
+        );
+    }
+}
+
 /// Every authored-probe measurement, found by listing
 /// `docs/openapi-surface/authored-probes/` and nothing else: crozier's output
 /// over each case's `openapi.yml` byte-matches the `fern-expected/` tree pinned
