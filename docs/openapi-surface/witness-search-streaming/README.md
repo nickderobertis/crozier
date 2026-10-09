@@ -78,6 +78,8 @@ These are search candidates; only row 1600 is a registered real-specification ma
 | `fern-streaming-condition-ref-body-header` | `search-incomplete` | no registered source or fetched document declares it with an unrequired body; the bounded pages exhaust no search source |
 | `fern-streaming-condition-shared-body` | `search-incomplete` | none of the 243 registered sources or 116 fetched documents declares it, but the bounded pages exhaust no search source |
 | `fern-streaming-condition-union-body` | `search-incomplete` | none of the 243 registered sources or 116 fetched documents declares it, but the bounded pages exhaust no search source |
+| `media-type-event-stream` | `search-incomplete` | no registered golden reaches the arms `src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]` and `src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]`, and the only declaring document a golden could come from, Tabstack, is deferred; the bounded pages exhaust no search source |
+| `fern-streaming-extension` | `search-incomplete` | no registered golden reaches the arms `src/emit.rs::sse_end[=\x7cend\x7c format!]` and `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]`, and no fetched document declaring a terminator or a stream-condition union body is registrable; the bounded pages exhaust no search source |
 | `fern-streaming-condition-json-lines` | `witness-found` | registered as corpus row 1600, `zylon-private-gpt` |
 | `fern-streaming-condition-operation-id` | `witness-found` | registered as corpus row 1600, `zylon-private-gpt` |
 
@@ -98,6 +100,8 @@ node can register declares a key below.
 | `fern-streaming-condition-ref-body-header` | `none-registrable` | `operation.x-fern-streaming` | 0 in 243 registered sources; 0 in 116 candidates | `stream-condition-ref-body-header` |
 | `fern-streaming-condition-shared-body` | `none-registrable` | `operation.x-fern-streaming` | 0 in 243 registered sources; 0 in 116 candidates | `stream-condition-shared-body` |
 | `fern-streaming-condition-union-body` | `none-registrable` | `operation.x-fern-streaming` | 0 in 243 registered sources; 0 in 116 candidates | `stream-condition-union-body` |
+| `media-type-event-stream` | `none-registrable` | `operation.responses:event-stream-event-dispatch` | the two arms: 0 registered sources; Tabstack deferred | `event-stream-event-dispatch` |
+| `fern-streaming-extension` | `none-registrable` | `operation.x-fern-streaming` | the two arms: 0 registered sources; 2 terminator candidates, both examples; 0 union-body candidates | `streaming-extension-terminator`, `stream-condition-union-body` |
 
 Each fixture is weaker evidence than a real specification. It declares only its
 key's shape, and it is not a corpus registration.

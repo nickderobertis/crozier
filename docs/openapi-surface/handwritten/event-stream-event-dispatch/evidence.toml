@@ -7,3 +7,17 @@ key = "media-type-event-stream-event-dispatch"
 search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+
+[[covers]]
+key = "media-type-event-stream"
+arm = 'src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]'
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+
+[[covers]]
+key = "media-type-event-stream"
+arm = 'src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]'
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"

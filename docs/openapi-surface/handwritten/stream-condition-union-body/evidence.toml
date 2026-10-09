@@ -7,3 +7,10 @@ key = "fern-streaming-condition-union-body"
 search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+
+[[covers]]
+key = "fern-streaming-extension"
+arm = 'src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]'
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"

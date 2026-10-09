@@ -7,3 +7,10 @@ key = "fern-streaming-terminator"
 search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-streaming/README.md"
+
+[[covers]]
+key = "fern-streaming-extension"
+arm = 'src/emit.rs::sse_end[=\x7cend\x7c format!]'
+search = "docs/openapi-surface/witness-search-streaming/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-streaming/README.md"
