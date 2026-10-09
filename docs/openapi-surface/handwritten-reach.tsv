@@ -42,7 +42,7 @@ json-binary-path	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	format-binary	src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]	2	2
 json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
-json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	13	14
+json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	22
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
 multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
 multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
