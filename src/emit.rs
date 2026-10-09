@@ -10850,7 +10850,6 @@ fn documentation_client_example_args(
         })
 }
 
-/// The keyword of a `name=value` example argument.
 fn keyword_name(arg: &str) -> &str {
     arg.split_once('=').map_or(arg, |(name, _)| name)
 }

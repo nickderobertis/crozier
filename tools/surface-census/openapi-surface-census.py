@@ -2946,6 +2946,12 @@ def is_reserved(name: str) -> bool:
     return name in _PYTHON_KEYWORDS or name in _RESERVED_BUILTINS
 
 
+def is_reserved_method(name: str) -> bool:
+    """`naming::is_reserved_method`: reserved, save the `list` and `set` builtins
+    Fern leaves unsuffixed as method names."""
+    return is_reserved(name) and name not in {"list", "set"}
+
+
 def field_name(wire_name: str) -> str:
     """`naming::field_name`: the Python identifier crozier gives a wire name."""
     snake = _field_snake_case(wire_name)
@@ -3065,7 +3071,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(
     )
 )
 
-# The enum-member predicates mirror these Rust functions. The offline tier
+# The enum-member and reserved-method predicates mirror these Rust functions. The offline tier
 # recomputes each normalized-body digest and the DEBURRED_LATIN table digest,
 # so an upstream branch or mapping edit requires a fresh case reading here.
 NAMING_PORT_DIGESTS = {
@@ -3085,6 +3091,7 @@ NAMING_PORT_DIGESTS = {
     "to_snake_case": "3c9366b3588a08c6",
     "class_name": "c91fec9908234a17",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
+    "is_reserved_method": "6c7d2d1e00b4d9a6",
 }
 
 
@@ -3438,8 +3445,7 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     else:
         method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
-    reserved = is_reserved(ident) and ident not in {"list", "set"}
-    return (f"{ident}_" if reserved else ident), prefixed
+    return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
 
 # `sdk_group_segments` and `sdk_method_named` port `Operation` accessors, and the
@@ -3534,50 +3540,51 @@ def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
         if not isinstance(scheme, dict):
             continue
         kind, http = scheme.get("type"), str(scheme.get("scheme") or "")
-        if kind == "apiKey" and scheme.get("in") == "header":
-            header = _extension(scheme, "header")
-            if isinstance(header, dict) and isinstance(header.get("name"), str) and header["name"].strip():
-                found.append("securityScheme.x-fern-header:named")
-            name = str(scheme.get("name") or "").lower()
-            offered = (
-                {
-                    scheme_name
-                    for requirement in document.get("security") or []
-                    if isinstance(requirement, dict)
-                    for scheme_name in requirement
-                }
-                if isinstance(document.get("security"), list)
-                else set()
-            )
-            if (
-                name in headers_seen
-                and name.removeprefix("x-").replace("-", "_") == "api_key"
-                and sum(
-                    1
-                    for key, other in schemes.items()
-                    if key in offered and isinstance(other, dict) and str(other.get("name") or "").lower() == name
-                )
-                >= 2
-            ):
-                found.append("components.securitySchemes:duplicate-api-key-header")
-            headers_seen.add(name)
         if kind == "http" and http.lower() in ("bearer", "basic") and http != http.lower():
             found.append("securityScheme.scheme:capitalised-http")
-        if kind == "http" and http.lower() == "bearer":
-            bearer = _extension(scheme, "bearer")
-            if isinstance(bearer, dict) and isinstance(bearer.get("name"), str) and bearer["name"].strip():
-                found.append("securityScheme.x-fern-bearer:named")
-            variable = _extension(scheme, "token-variable-name")
-            if isinstance(variable, str) and variable.strip() and supported and supported[0] is scheme:
-                found.append("securityScheme.x-fern-token-variable-name:bearer")
-        if kind == "http" and http.lower() == "basic":
-            basic = _extension(scheme, "basic")
-            if isinstance(basic, dict) and any(
-                isinstance(part, dict)
-                and any(isinstance(part.get(key), str) and part[key].strip() for key in ("name", "env"))
-                for part in (basic.get("username"), basic.get("password"))
-            ):
-                found.append("securityScheme.x-fern-basic:named-or-env")
+        match (kind, scheme.get("in"), http.lower()):
+            case ("apiKey", "header", _):
+                header = _extension(scheme, "header")
+                if isinstance(header, dict) and isinstance(header.get("name"), str) and header["name"].strip():
+                    found.append("securityScheme.x-fern-header:named")
+                name = str(scheme.get("name") or "").lower()
+                offered = (
+                    {
+                        scheme_name
+                        for requirement in document.get("security") or []
+                        if isinstance(requirement, dict)
+                        for scheme_name in requirement
+                    }
+                    if isinstance(document.get("security"), list)
+                    else set()
+                )
+                if (
+                    name in headers_seen
+                    and name.removeprefix("x-").replace("-", "_") == "api_key"
+                    and sum(
+                        1
+                        for key, other in schemes.items()
+                        if key in offered and isinstance(other, dict) and str(other.get("name") or "").lower() == name
+                    )
+                    >= 2
+                ):
+                    found.append("components.securitySchemes:duplicate-api-key-header")
+                headers_seen.add(name)
+            case ("http", _, "bearer"):
+                bearer = _extension(scheme, "bearer")
+                if isinstance(bearer, dict) and isinstance(bearer.get("name"), str) and bearer["name"].strip():
+                    found.append("securityScheme.x-fern-bearer:named")
+                variable = _extension(scheme, "token-variable-name")
+                if isinstance(variable, str) and variable.strip() and supported and supported[0] is scheme:
+                    found.append("securityScheme.x-fern-token-variable-name:bearer")
+            case ("http", _, "basic"):
+                basic = _extension(scheme, "basic")
+                if isinstance(basic, dict) and any(
+                    isinstance(part, dict)
+                    and any(isinstance(part.get(key), str) and part[key].strip() for key in ("name", "env"))
+                    for part in (basic.get("username"), basic.get("password"))
+                ):
+                    found.append("securityScheme.x-fern-basic:named-or-env")
     schemas = _mapping(components.get("schemas"))
     for schema in schemas.values():
         if not isinstance(schema, dict):
@@ -3847,8 +3854,7 @@ def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | Non
     if tag is None or not method or "-" in method or not _matches_tag_spelling(prefix, tag):
         return None
     ident, prefixed = _sanitized(_ascii_lower(method))
-    reserved = is_reserved(ident) and ident not in {"list", "set"}
-    return (f"{ident}_" if reserved else ident), prefixed
+    return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
 
 def normalized_path(template: str) -> str:
