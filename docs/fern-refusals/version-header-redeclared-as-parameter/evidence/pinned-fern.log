@@ -1,0 +1,16 @@
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-160-certified-SDK-parity-scenarios/scratch/1216328-3/refusal-measurements/version-header-redeclared-as-parameter/raw
+[api]: crozier-reference Started.
+[api]: crozier-reference fernapi/fern-python-sdk Started.
+[api]: crozier-reference __package__.yml -> service -> endpoints -> listMeasurements -> examples[0] -> headers
+                         __package__.yml
+                         [error] Unexpected header "X-Calibration-Revision"
+                         
+::error title=[api]%3A crozier-reference::__package__.yml -> service -> endpoints -> listMeasurements -> examples[0] -> headers%0A__package__.yml%0A[error] Unexpected header "X-Calibration-Revision"
+[api]: crozier-reference Found 1 errors and 0 warnings in 0.612 seconds.
+::error title=[api]%3A crozier-reference::Found 1 errors and 0 warnings in 0.612 seconds.
+[api]: crozier-reference Failed.
+[api]: crozier-reference fernapi/fern-python-sdk Failed.

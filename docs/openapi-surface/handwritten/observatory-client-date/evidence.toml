@@ -1,0 +1,16 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "4b139d95c6a23ce584270e29d3d1d4de60fdfea408f25be8c3040e6b086e976c"
+
+[[covers]]
+key = "client-header-date-format"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
+
+[[covers]]
+key = "parameter-in-header"
+arm = 'src/ir.rs::header_py_type[=^\s*HeaderType::Date]'
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

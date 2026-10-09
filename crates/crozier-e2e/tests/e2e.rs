@@ -2792,6 +2792,657 @@ fn parameter_lowering_measurements_match_fern() {
     assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
+/// Complete certified trees for the parameter extension and serialization
+/// shapes. These inputs contain no enums: both modes must preserve all bytes,
+/// apart from the catalogued generator-configuration provenance.
+#[test]
+fn parameter_extension_shapes_match_complete_goldens_in_both_enum_modes() {
+    let root = repo_root().join("docs/openapi-surface/handwritten");
+    let mut failures = Vec::new();
+    for case in [
+        "declared-rename-control",
+        "observatory-query-extensions",
+        "observatory-client-date",
+        "observatory-client-headers",
+        "observatory-client-variable",
+        "observatory-nullable-query",
+        "observatory-route-order",
+        "observatory-unlocated-parameter",
+        "observatory-base-path",
+        "warehouse-header-token",
+    ] {
+        for mode in ["literals", "python-enums"] {
+            let expected = root.join(case).join("fern-expected");
+            let literal_tree = tempfile::tempdir().unwrap();
+            let comparison_root = if mode == "literals" {
+                for rel in walk_files(&expected) {
+                    if rel == "src/fern/core/enum.py" {
+                        continue;
+                    }
+                    let dest = literal_tree.path().join(&rel);
+                    std::fs::create_dir_all(dest.parent().unwrap()).unwrap();
+                    std::fs::copy(expected.join(&rel), dest).unwrap();
+                }
+                let overlay = repo_root().join("docs/fern-measurements/parameter-literals");
+                std::fs::copy(
+                    overlay.join(if case == "warehouse-header-token" {
+                        "warehouse-header-token.metadata.json"
+                    } else {
+                        "metadata.json"
+                    }),
+                    literal_tree.path().join(".fern/metadata.json"),
+                )
+                .unwrap();
+                let digests: serde_json::Value = serde_json::from_str(
+                    &std::fs::read_to_string(overlay.join("certified-trees.json")).unwrap(),
+                )
+                .unwrap();
+                assert_eq!(
+                    probe_artifact_digest(literal_tree.path()).unwrap(),
+                    digests[case].as_str().unwrap()
+                );
+                literal_tree.path()
+            } else {
+                expected.as_path()
+            };
+            let out = tempfile::tempdir().unwrap();
+            probe_command(&root.join(case).join("openapi.yml"), out.path())
+                .args(["--enum-type", mode])
+                .assert()
+                .success();
+            let ledger = departure_ledger()
+                .golden(&golden_path(&expected), &[])
+                .unwrap();
+            failures.extend(golden_tree_failures(
+                case,
+                &format!("{case}, enum-type={mode}"),
+                &ledger,
+                comparison_root,
+                out.path(),
+            ));
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+}
+
+fn documented_parameter_extension(stem: &str, placement: &str) -> (String, String) {
+    let reference = std::fs::read_to_string(repo_root().join("docs/fern-reference.md")).unwrap();
+    let prefix = format!("| `x-fern-{stem}` |");
+    let row = reference
+        .lines()
+        .find(|row| row.starts_with(&prefix))
+        .unwrap();
+    let columns: Vec<_> = row.split('|').map(str::trim).collect();
+    assert!(
+        columns[3]
+            .split(',')
+            .map(str::trim)
+            .any(|node| node == placement),
+        "extension {stem} must document its exercised node {placement}: {row}"
+    );
+    (
+        columns[1].trim_matches('`').to_owned(),
+        columns[2].trim_matches('`').to_owned(),
+    )
+}
+
+/// Renaming an argument, ignoring a parameter, supplying a default, and lifting
+/// a client variable or header all accept the canonical spelling and prefer it
+/// when the same node carries conflicting Fern values.
+#[test]
+fn parameter_extension_aliases_match_and_win() {
+    fn aliases(value: &mut serde_json::Value, conflict: bool) {
+        match value {
+            serde_json::Value::Object(object) => {
+                let keys: Vec<_> = object.keys().cloned().collect();
+                for key in keys {
+                    if let Some(stem) = key.strip_prefix("x-fern-") {
+                        let original = object.remove(&key).unwrap();
+                        let replacement = match stem {
+                            "ignore" => serde_json::json!(false),
+                            "default" => serde_json::json!("99"),
+                            "parameter-name" => serde_json::json!("other_band"),
+                            "sdk-variable" => serde_json::json!("otherStation"),
+                            "sdk-variables" => serde_json::json!({"otherStation": "string"}),
+                            "global-headers" => {
+                                serde_json::json!([{"header": "X-Other", "name": "other"}])
+                            }
+                            _ => panic!("unmeasured extension {key}"),
+                        };
+                        let placement = match stem {
+                            "default" => "query parameter",
+                            "sdk-variable" => "path parameter",
+                            "sdk-variables" | "global-headers" => "document",
+                            _ => "parameter",
+                        };
+                        let (documented_fern, canonical) =
+                            documented_parameter_extension(stem, placement);
+                        assert_eq!(documented_fern, key);
+                        object.insert(canonical, original);
+                        if conflict {
+                            object.insert(key, replacement);
+                        }
+                    }
+                }
+                for child in object.values_mut() {
+                    aliases(child, conflict);
+                }
+            }
+            serde_json::Value::Array(values) => {
+                for child in values {
+                    aliases(child, conflict);
+                }
+            }
+            _ => {}
+        }
+    }
+    let root = repo_root().join("docs/openapi-surface/handwritten");
+    for name in [
+        "observatory-query-extensions",
+        "observatory-client-headers",
+        "observatory-client-variable",
+        "warehouse-header-token",
+    ] {
+        let case = root.join(name);
+        let original: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(case.join("openapi.yml")).unwrap())
+                .unwrap();
+        for conflict in [false, true] {
+            let mut document = original.clone();
+            aliases(&mut document, conflict);
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+            let expected = case.join("fern-expected");
+            let failures =
+                filtered_tree_failures(name, &golden_path(&expected), &spec, &expected, &[]);
+            assert!(
+                failures.is_empty(),
+                "{name}, conflict={conflict}: {}",
+                failures.join("\n\n")
+            );
+        }
+    }
+}
+
+#[test]
+fn global_header_wire_names_match_certified_pass_through_for_both_aliases() {
+    let root = repo_root().join("docs/openapi-surface/handwritten/warehouse-header-token");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
+    for mode in ["fern", "crozier", "canonical-wins"] {
+        let mut document = original.clone();
+        if mode != "fern" {
+            let header = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-global-headers")
+                .unwrap();
+            document["x-crozier-global-headers"] = header;
+            if mode == "canonical-wins" {
+                document["x-fern-global-headers"] =
+                    serde_json::json!([{"header": "X-Other", "name": "other"}]);
+            }
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("header-wire-name.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+        let expected = root.join("fern-expected");
+        let failures = filtered_tree_failures(mode, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n\n"));
+    }
+}
+
+#[test]
+fn inherited_parameter_ignore_and_operation_overrides_match_complete_golden() {
+    let root = repo_root().join("docs/openapi-surface/handwritten/observatory-query-extensions");
+    let original: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(root.join("openapi.yml")).unwrap()).unwrap();
+    for mode in ["inherited-ignore", "operation-ignore", "operation-unignore"] {
+        let mut document = original.clone();
+        let parameters = document["paths"]["/signals"]["get"]["parameters"]
+            .as_array_mut()
+            .unwrap();
+        let inherited = if mode == "operation-unignore" {
+            parameters[0]["x-crozier-ignore"] = serde_json::json!(false);
+            let mut parameter = parameters[0].clone();
+            parameter["x-crozier-ignore"] = serde_json::json!(true);
+            parameter
+        } else {
+            let parameter = parameters
+                .iter()
+                .find(|parameter| parameter["name"] == "obsolete")
+                .unwrap()
+                .clone();
+            if mode == "inherited-ignore" {
+                parameters.retain(|parameter| parameter["name"] != "obsolete");
+                parameter
+            } else {
+                let mut parameter = parameter;
+                parameter["x-fern-ignore"] = serde_json::json!(false);
+                parameter
+            }
+        };
+        document["paths"]["/signals"]["parameters"] = serde_json::json!([inherited]);
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("inherited-ignore.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+        let expected = root.join("fern-expected");
+        let failures = filtered_tree_failures(mode, &golden_path(&expected), &spec, &expected, &[]);
+        assert!(failures.is_empty(), "{mode}: {}", failures.join("\n\n"));
+    }
+}
+
+#[test]
+fn parameter_header_refusals_keep_adjacent_controls_generating() {
+    let root = repo_root().join("docs/fern-refusals");
+    let (fern_version, crozier_version) = documented_parameter_extension("version", "document");
+    for name in [
+        "header-default-differs-across-operations",
+        "version-header-redeclared-as-parameter",
+    ] {
+        let mut document: serde_json::Value = serde_json::from_str(
+            &std::fs::read_to_string(root.join(name).join("probe.yml")).unwrap(),
+        )
+        .unwrap();
+        for spelling in ["fern", "crozier"] {
+            if name == "version-header-redeclared-as-parameter" && spelling == "crozier" {
+                let value = document
+                    .as_object_mut()
+                    .unwrap()
+                    .remove(&fern_version)
+                    .unwrap();
+                document[&crozier_version] = value;
+            }
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("probe.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier_clean_env, &spec, strict).unwrap();
+                assert_eq!(run.code, Some(1), "{}", run.stderr);
+                assert!(run.files.is_empty());
+                assert!(
+                    run.stderr.contains(name) && run.stderr.contains("header X-"),
+                    "{}",
+                    run.stderr
+                );
+            }
+        }
+        if name == "version-header-redeclared-as-parameter" {
+            let mut preferred = document.clone();
+            preferred[&fern_version] = preferred[&crozier_version].clone();
+            preferred[&crozier_version]["header"] = serde_json::json!("X-Independent-Revision");
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("canonical-wins.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&preferred).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier_clean_env, &spec, strict).unwrap();
+                assert_eq!(run.code, Some(0), "{}", run.stderr);
+                assert!(!run.files.is_empty());
+            }
+        }
+        if name == "version-header-redeclared-as-parameter" {
+            let mut optional = document.clone();
+            optional["paths"]["/measurements"]["get"]["parameters"][0]["required"] =
+                serde_json::json!(false);
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("optional-header-control.json");
+            std::fs::write(&spec, serde_json::to_vec_pretty(&optional).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier_clean_env, &spec, strict).unwrap();
+                assert_eq!(run.code, Some(0), "{}", run.stderr);
+                assert!(!run.files.is_empty());
+            }
+        }
+        if name == "header-default-differs-across-operations" {
+            document["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
+                serde_json::json!("radial");
+        } else {
+            document.as_object_mut().unwrap().remove(&crozier_version);
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("control.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+        for strict in [false, true] {
+            let run = refusal_run(&crozier_clean_env, &spec, strict).unwrap();
+            assert_eq!(run.code, Some(0), "{}", run.stderr);
+            assert!(!run.files.is_empty());
+        }
+    }
+}
+
+#[test]
+fn parameter_departures_reject_unexplained_complete_tree_differences() {
+    fn copy_tree(source: &Path, target: &Path) {
+        for rel in walk_files(source) {
+            let dest = target.join(&rel);
+            std::fs::create_dir_all(dest.parent().unwrap()).unwrap();
+            std::fs::copy(source.join(rel), dest).unwrap();
+        }
+    }
+    let root = repo_root().join("docs/openapi-surface/handwritten");
+    let mut date_client = String::new();
+    for (case, id, file, from, to) in [
+        (
+            "observatory-client-date",
+            "date-header-constructor-example",
+            "src/fern/client.py",
+            "import typing",
+            "import typing\nUNEXPLAINED_VALUE = 17",
+        ),
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            "client.list_signals()",
+            "client.list_unrelated(...)",
+        ),
+    ] {
+        let expected = root.join(case).join("fern-expected");
+        let actual = tempfile::tempdir().unwrap();
+        probe_command(&root.join(case).join("openapi.yml"), actual.path())
+            .assert()
+            .success();
+        let positive =
+            crozier::parity::compare_trees(&expected, actual.path(), None, true).unwrap();
+        assert!(
+            positive.differences.is_empty(),
+            "{case}: {:?}",
+            positive.differences
+        );
+        assert!(positive
+            .departures
+            .iter()
+            .any(|departure| departure.id == id));
+        if case == "observatory-client-date" {
+            date_client =
+                std::fs::read_to_string(actual.path().join("src/fern/client.py")).unwrap();
+        }
+        let edited = tempfile::tempdir().unwrap();
+        copy_tree(&expected, edited.path());
+        let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
+        assert!(text.contains(from));
+        std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+        let negative =
+            crozier::parity::compare_trees(edited.path(), actual.path(), None, true).unwrap();
+        assert!(negative.differences.iter().any(|(path, _)| path == file));
+        assert!(!negative
+            .departures
+            .iter()
+            .any(|departure| departure.file == file && departure.id == id));
+    }
+
+    // A temporal-looking constructor example on a string header cannot use the
+    // date correction, even when the rest of the complete SDK is identical.
+    let mut document: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join("observatory-client-date/openapi.yml")).unwrap(),
+    )
+    .unwrap();
+    document["paths"]["/signals"]["get"]["parameters"][0]["schema"]
+        .as_object_mut()
+        .unwrap()
+        .remove("format");
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("string-header.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&document).unwrap()).unwrap();
+    let actual = tempfile::tempdir().unwrap();
+    probe_command(&spec, actual.path()).assert().success();
+    let reference = tempfile::tempdir().unwrap();
+    copy_tree(actual.path(), reference.path());
+    assert!(
+        crozier::parity::compare_trees(reference.path(), actual.path(), None, true)
+            .unwrap()
+            .differences
+            .is_empty()
+    );
+    let file = "src/fern/client.py";
+    assert!(date_client.contains("import datetime as dt"));
+    let corrupt = date_client
+        .replace("import datetime as dt\n", "")
+        .replace("dt.date", "str");
+    // Reproduce an emitter regression: temporal constructor examples on an
+    // otherwise string-typed client must remain an unexplained difference.
+    std::fs::write(actual.path().join(file), corrupt).unwrap();
+    let negative =
+        crozier::parity::compare_trees(reference.path(), actual.path(), None, true).unwrap();
+    assert!(negative.differences.iter().any(|(path, _)| path == file));
+    assert!(!negative
+        .departures
+        .iter()
+        .any(|departure| departure.id == "date-header-constructor-example"));
+}
+
+fn parameter_wire_server_python() -> &'static str {
+    r#"
+import threading
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import httpx
+
+def start_wire_server(answer):
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            pass
+        def respond(self):
+            content = self.rfile.read(int(self.headers.get('Content-Length', '0')))
+            request = httpx.Request(
+                self.command, f'http://127.0.0.1:{self.server.server_port}{self.path}',
+                headers=list(self.headers.items()), content=content,
+            )
+            response = answer(request)
+            self.send_response(response.status_code)
+            for key, value in response.headers.items():
+                if key.lower() != 'content-length':
+                    self.send_header(key, value)
+            self.send_header('Content-Length', str(len(response.content)))
+            self.send_header('Connection', 'close')
+            self.end_headers()
+            self.wfile.write(response.content)
+        do_GET = respond
+        do_POST = respond
+        do_PUT = respond
+    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    worker = threading.Thread(target=server.serve_forever, daemon=True)
+    worker.start()
+    return server, worker, f'http://127.0.0.1:{server.server_port}'
+"#
+}
+
+/// The generated methods use their public signatures and the declared wire
+/// names, including default values and repeated nullable-array query entries.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_parameter_extensions_and_serialization_reach_the_wire() {
+    let root = repo_root().join("docs/openapi-surface/handwritten");
+    for case in [
+        "observatory-query-extensions",
+        "observatory-client-date",
+        "observatory-client-headers",
+        "observatory-client-variable",
+        "observatory-nullable-query",
+        "observatory-route-order",
+        "observatory-unlocated-parameter",
+        "observatory-base-path",
+    ] {
+        let dir = tempfile::tempdir().unwrap();
+        let sdk = dir.path().join("sdk");
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(root.join(case).join("openapi.yml"))
+            .arg("--output")
+            .arg(&sdk)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml")).unwrap();
+        let script = r#"
+import datetime
+import inspect
+import os
+import httpx
+from fern import FernApi
+
+case = os.environ['PARAMETER_CASE']
+sent = []
+def answer(request):
+    sent.append(request)
+    return httpx.Response(200, json=['signal'])
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, httpx_client=httpx.Client(trust_env=False))
+if case.endswith('client-date'):
+    ctor['sampling_day'] = datetime.date(2026, 4, 9)
+elif case.endswith('client-headers'):
+    ctor['station'] = 'north'
+elif case.endswith('client-variable'):
+    ctor['station_code'] = 'north'
+if case.endswith(('client-headers', 'client-variable')):
+    absent = dict(ctor)
+    absent.pop('station' if case.endswith('client-headers') else 'station_code')
+    try:
+        FernApi(**absent)
+    except TypeError:
+        pass
+    else:
+        raise AssertionError('required constructor field was optional')
+client = FernApi(**ctor)
+method = client.list_signals
+signature = inspect.signature(method)
+args, kwargs = (), {}
+if case.endswith('query-extensions'):
+    assert signature.parameters['size'].default == '12', signature
+    assert 'obsolete' not in signature.parameters and 'channel' not in signature.parameters, signature
+    kwargs['band'] = 'thermal'
+elif case.endswith('nullable-query'):
+    kwargs['kinds'] = ['thermal', 'visible']
+elif case.endswith('base-path'):
+    assert 'cycle' not in signature.parameters
+    assert inspect.signature(FernApi).parameters['cycle'].default == 'night'
+elif case.endswith('route-order'):
+    assert list(signature.parameters)[:2] == ['station', 'sensor'], signature
+    args = ('north', 'camera')
+assert method(*args, **kwargs) == ['signal']
+request = sent[-1]
+if case.endswith('query-extensions'):
+    assert list(request.url.params.multi_items()) == [('channel', 'thermal'), ('size', '12')], request.url
+    assert method(band='visible', size=7) == ['signal']
+    assert sent[-1].url.params['size'] == '7'
+    try:
+        method(obsolete='no')
+    except TypeError:
+        pass
+    else:
+        raise AssertionError('ignored argument accepted')
+elif case.endswith('client-date'):
+    assert request.headers['X-Sampling-Day'] == '2026-04-09', request.headers
+    without_date = dict(ctor)
+    without_date.pop('sampling_day')
+    assert FernApi(**without_date).list_signals() == ['signal']
+    assert 'X-Sampling-Day' not in sent[-1].headers
+elif case.endswith('client-headers'):
+    assert request.headers['X-Station'] == 'north', request.headers
+elif case.endswith('client-variable'):
+    assert request.url.path == '/stations/north/signals', request.url
+    assert 'station_code' not in signature.parameters
+elif case.endswith('nullable-query'):
+    assert list(request.url.params.multi_items()) == [('kinds', 'thermal'), ('kinds', 'visible')], request.url
+    assert signature.parameters['region'].default is None, signature
+    assert 'typing.Optional[str], typing.Sequence[typing.Optional[str]]' not in str(signature), signature
+    assert method(region='coastal', labels=['red', 'blue'], since=datetime.date(2026, 4, 9)) == ['signal']
+    assert list(sent[-1].url.params.multi_items()) == [('region', 'coastal'), ('labels', 'red'), ('labels', 'blue'), ('since', '2026-04-09')], sent[-1].url
+    assert method(since=7) == ['signal']
+    assert sent[-1].url.params['since'] == '7'
+elif case.endswith('base-path'):
+    assert request.url.path == '/night/signals', request.url
+    overridden = FernApi(**ctor, cycle='dawn')
+    assert overridden.list_signals() == ['signal']
+    assert sent[-1].url.path == '/dawn/signals'
+elif case.endswith('route-order'):
+    assert request.url.path == '/stations/north/sensors/camera', request.url
+else:
+    assert list(signature.parameters) == ['request_options'], signature
+    assert not request.url.params
+server.shutdown()
+server.server_close()
+worker.join()
+print('ok')
+"#;
+        let script = format!("{}\n{script}", parameter_wire_server_python());
+        let run = std::process::Command::new(&py)
+            .args(["-c", &script])
+            .current_dir(sdk.join("src"))
+            .env("PARAMETER_CASE", case)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        assert!(
+            run.status.success(),
+            "{case}: {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
+    }
+}
+
+/// Required headers on a publisher document's sole operation are constructor
+/// arguments; sending the public method writes them to the HTTP request.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_single_operation_headers_reach_the_wire() {
+    let sdk = generate_corpus(&AWS_MOBILEANALYTICS);
+    let py = sdk_python_env(&sdk.path().join("pyproject.toml")).unwrap();
+    let script = r#"
+import inspect
+import httpx
+from fern import FernApi
+sent = []
+def answer(request):
+    sent.append(request)
+    return httpx.Response(202)
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, api_key='token', httpx_client=httpx.Client(trust_env=False))
+try:
+    FernApi(**ctor)
+except TypeError as exc:
+    assert 'amz_client_context' in str(exc)
+else:
+    raise AssertionError('required constructor header was optional')
+client = FernApi(**ctor, amz_client_context='station-north')
+assert 'amz_client_context' not in inspect.signature(client.put_events).parameters
+assert client.put_events(events=[]) is None
+assert sent[-1].headers['X-Amz-Client-Context'] == 'station-north', sent[-1].headers
+assert sent[-1].url.path == '/2014-06-05/events', sent[-1].url
+try:
+    client.put_events(events=[], amz_client_context='wrong')
+except TypeError:
+    pass
+else:
+    raise AssertionError('lifted header accepted by method')
+server.shutdown()
+server.server_close()
+worker.join()
+print('ok')
+"#;
+    let script = format!("{}\n{script}", parameter_wire_server_python());
+    let run = std::process::Command::new(py)
+        .args(["-c", &script])
+        .current_dir(sdk.path().join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    assert!(
+        run.status.success(),
+        "{}{}",
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
+}
+
 /// `x-crozier-base-path` is `x-fern-base-path` under crozier's own spelling: on
 /// its own it generates the tree Fern measured for the `x-fern-base-path`
 /// document, and beside an `x-fern-base-path` naming another base path it wins,
@@ -5125,6 +5776,7 @@ const CORPORA: &[&Corpus] = &[
     &APIDECK_ECOSYSTEM_CLIENT_CLASS_NAME,
     &YOURBRAND_TICKETING,
     &LOOTLOG_BATTLELOG,
+    &AWS_MOBILEANALYTICS,
     &EGO_MICROSERVICES,
 ];
 
@@ -7783,6 +8435,23 @@ const LOOTLOG_BATTLELOG: Corpus = Corpus {
     extra_fields: None,
     unmatched: &[],
 };
+
+/// AWS Mobile Analytics — row 1800; required headers on its only operation.
+const AWS_MOBILEANALYTICS: Corpus = Corpus {
+    api: "aws-mobileanalytics",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn aws_mobileanalytics_matches_fern_output() {
+    assert_committed_corpus_matches(&AWS_MOBILEANALYTICS);
+}
 
 /// Ego's microservices API — corpus row 318, the publisher's own description.
 /// Its paginated listings' query `offset` and `limit` are `anyOf: [integer, $ref
@@ -12406,15 +13075,15 @@ fn multiline_path_parameter_docs_remain_indented() {
 }
 
 #[test]
-fn path_parameters_preserve_declaration_order() {
+fn path_parameters_follow_url_template_order() {
     let (_dir, out) = generate_ok(
         "openapi: 3.1.0\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets/{id}/{slug}:\n    get:\n      operationId: getWidget\n      tags: [widgets]\n      parameters:\n        - { name: slug, in: path, required: true, schema: { type: string } }\n        - { name: id, in: path, required: true, schema: { type: integer } }\n      responses:\n        '204': { description: Found }\n",
     );
     let client = std::fs::read_to_string(out.join("src/acme/widgets/client.py"))
         .expect("client is generated");
     assert!(
-        client.contains("self, slug: str, id: int,"),
-        "path arguments should preserve parameter declaration order: {client}"
+        client.contains("self, id: int, slug: str,"),
+        "path arguments should follow URL-template order: {client}"
     );
 }
 
@@ -18650,6 +19319,47 @@ fn enum_default_refusal_recovers_with_a_retained_default() {
     }
 }
 
+#[test]
+fn global_header_constructor_name_refusals_accept_both_aliases_and_canonical_precedence() {
+    let root = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for probe in [
+        "global-header-empty-name-probe.yml",
+        "global-header-punctuation-name-probe.yml",
+    ] {
+        let original: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(root.join(probe)).unwrap()).unwrap();
+        for conflict in [false, true] {
+            let mut document = original.clone();
+            let headers = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-global-headers")
+                .unwrap();
+            let name = headers[0]["name"].as_str().unwrap().to_owned();
+            document["x-crozier-global-headers"] = headers;
+            if conflict {
+                document["x-fern-global-headers"] =
+                    serde_json::json!([{"header": "X-Other", "name": "other"}]);
+            }
+            let scratch = tempfile::tempdir().unwrap();
+            let spec = scratch.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures(
+                    "generator-lint-failure",
+                    &run,
+                    &format!("constructor name {name:?}"),
+                    strict,
+                );
+                assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            }
+        }
+    }
+}
+
 /// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
 /// `ruff check` rejects is refused in both modes, naming the element, while
 /// every measured near-miss Fern generates from writes the same SDK in both.
@@ -18663,6 +19373,8 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
             "probe.yml",
             "type Event variants \"user:account_deleted\" and \"user_account:deleted\" are both Event_UserAccountDeleted",
         ),
+        ("global-header-punctuation-name-probe.yml", "global header \"X-Ledger\" constructor name \"/\""),
+        ("global-header-empty-name-probe.yml", "global header \"X-Ledger\" constructor name \"\""),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
         (
             "tag-suffix-collision-probe.yml",
@@ -19502,7 +20214,7 @@ fn inferred_path_and_body_parameter_names_share_collision_validation() {
 }
 
 #[test]
-fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
+fn declared_parameter_names_deconflict_refusals_and_generation() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let probe = std::fs::read_to_string(
@@ -19534,8 +20246,6 @@ fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
             }
             let result = command.output().unwrap();
             let stderr = String::from_utf8(result.stderr).unwrap();
-            // Parameter-only baseline generation still fails at ruff. The
-            // body case already generates; this node changes neither outcome.
             assert!(
                 !stderr.contains("request-property-camelcase-collision"),
                 "{stderr}"
@@ -19544,16 +20254,15 @@ fn declared_parameter_names_deconflict_refusals_without_repairing_generation() {
                 assert_eq!(result.status.code(), Some(0), "{stderr}");
                 assert!(output.join("pyproject.toml").is_file());
             } else {
-                assert_eq!(result.status.code(), Some(1), "{stderr}");
-                // ruff words this per version ("Duplicate parameter" at the
-                // pinned .ruff-version, "Duplicate keyword argument" later).
+                assert_eq!(result.status.code(), Some(0), "{stderr}");
+                assert!(output.join("pyproject.toml").is_file());
+                let client = std::fs::read_to_string(output.join("src/probe/client.py")).unwrap();
+                let raw = std::fs::read_to_string(output.join("src/probe/raw_client.py")).unwrap();
                 assert!(
-                    stderr.contains("with ruff failed")
-                        && stderr.contains("Duplicate")
-                        && stderr.contains("\"account_id\""),
-                    "{stderr}"
+                    client.contains("other_account: typing.Optional[str] = None"),
+                    "{client}"
                 );
-                assert!(!output.exists());
+                assert!(raw.contains("\"accountId\": other_account"), "{raw}");
             }
         }
     }
@@ -20691,5 +21400,102 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
             String::from_utf8_lossy(&run.stdout),
             String::from_utf8_lossy(&run.stderr)
         );
+    }
+}
+
+#[path = "../../../tests/support/parameter_controls.rs"]
+mod parameter_controls;
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_parameter_lifting_controls_reach_the_wire() {
+    for case in parameter_controls::CASES {
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("api.json");
+        std::fs::write(
+            &spec,
+            serde_json::to_vec(&parameter_controls::document(case)).unwrap(),
+        )
+        .unwrap();
+        let sdk = dir.path().join("sdk");
+        probe_command(&spec, &sdk).assert().success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml")).unwrap();
+        let script = format!(
+            "{}\n{}",
+            parameter_wire_server_python(),
+            r#"
+import inspect
+import os
+import httpx
+from fern import FernApi
+case = os.environ['PARAMETER_CONTROL']
+sent = []
+def answer(request):
+    sent.append(request)
+    return httpx.Response(200, json=['signal'])
+server, worker, base_url = start_wire_server(answer)
+ctor = dict(base_url=base_url, httpx_client=httpx.Client(trust_env=False))
+if case in ('promoted-header', 'security-header'):
+    ctor['station'] = 'north'
+if case == 'security-header':
+    ctor['api_key'] = 'primary-token'
+if case == 'repeated-variable':
+    ctor['station_code'] = 'north'
+if case == 'base-collision':
+    ctor['cycle'] = 'day'
+client = FernApi(**ctor)
+method = client.list_signals
+parameters = inspect.signature(method).parameters
+if case == 'missing-variable':
+    assert 'station_code' in parameters
+    assert 'station_code' not in inspect.signature(FernApi).parameters
+    assert method(station_code='north') == ['signal']
+elif case == 'renamed-path':
+    assert 'area_code' in parameters and 'station_code' not in parameters
+    assert method(area_code='north') == ['signal']
+else:
+    assert method() == ['signal']
+if case in ('promoted-header', 'security-header'):
+    assert 'station' not in parameters
+    assert sent[-1].headers['X-Station'] == 'north'
+    assert sent[-1].url.path == '/signals'
+    if case == 'security-header':
+        assert sent[-1].headers['X-Primary'] == 'primary-token'
+elif case == 'base-collision':
+    assert 'cycle' not in parameters
+    assert sent[-1].url.path == '/day/signals'
+else:
+    assert sent[-1].url.path == '/stations/north/signals'
+if case == 'repeated-variable':
+    assert 'station_code' not in parameters
+    assert client.list_readings() == ['signal']
+    assert sent[-1].url.path == '/stations/north/readings'
+try:
+    method(unexpected_argument='wrong')
+except TypeError:
+    pass
+else:
+    raise AssertionError('unexpected argument accepted')
+server.shutdown()
+server.server_close()
+worker.join(timeout=2)
+assert not worker.is_alive()
+print('ok')
+"#
+        );
+        let run = std::process::Command::new(&py)
+            .args(["-c", &script])
+            .current_dir(sdk.join("src"))
+            .env("PARAMETER_CONTROL", case)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        assert!(
+            run.status.success(),
+            "{case}: {}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
     }
 }

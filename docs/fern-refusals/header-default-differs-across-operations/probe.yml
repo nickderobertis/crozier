@@ -1,0 +1,74 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Calibration Atlas",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://atlas.example.net"
+    }
+  ],
+  "paths": {
+    "/measurements": {
+      "parameters": [
+        {
+          "name": "X-Projection",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "default": "radial"
+          }
+        }
+      ],
+      "get": {
+        "operationId": "listMeasurements",
+        "responses": {
+          "200": {
+            "description": "Measurements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "replaceMeasurements",
+        "parameters": [
+          {
+            "name": "X-Projection",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "linear"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Measurements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

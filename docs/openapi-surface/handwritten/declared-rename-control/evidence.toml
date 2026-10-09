@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "09f9c8faa96bef058e55b037d5e7273a42deaaa0d86310ef1371d0f51bf1c6e7"
+
+[[covers]]
+key = "parameter-name-extension"
+search = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"
