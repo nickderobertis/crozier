@@ -145,6 +145,39 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
     );
 }
 
+/// Every gate leg holds what its projects run before `just ci-check` starts
+/// them: cargo-nextest, which the e2e and corpus-match targets run under, and a
+/// toolchain installed once — by `just bootstrap`, or by `rustup toolchain
+/// install` where the leg skips bootstrap — so the gate's parallel cargo tasks
+/// never race one first-use rustup install.
+#[test]
+fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
+    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    for name in ["check", "sdk-env", "live-e2e"] {
+        let steps = steps(job(&workflow, name));
+        let gate = steps
+            .iter()
+            .position(|step| text(step, "run").is_some_and(|run| run.starts_with("just ci-check")))
+            .unwrap_or_else(|| panic!("{name} runs no `just ci-check` step"));
+        let before = &steps[..gate];
+        assert!(
+            before.iter().any(|step| {
+                text(step, "uses").is_some_and(|uses| uses.starts_with("taiki-e/install-action"))
+                    && step
+                        .get("with")
+                        .and_then(|with| text(with, "tool"))
+                        .is_some_and(|tools| tools.split(',').any(|tool| tool == "cargo-nextest"))
+            }),
+            "{name}: cargo-nextest is installed before the gate"
+        );
+        assert!(
+            before.iter().any(|step| text(step, "run")
+                .is_some_and(|run| run == "just bootstrap" || run == "rustup toolchain install")),
+            "{name}: the pinned toolchain is installed once before the gate"
+        );
+    }
+}
+
 /// A hand-cut Release can tag any commit, so release.yml re-gates it with the
 /// full sweep over everything the check matrix gates.
 #[test]

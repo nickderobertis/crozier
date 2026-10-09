@@ -171,9 +171,18 @@ jobs:
       # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
       - name: Install ruff
         run: ./scripts/install-ruff.sh
-      # cargo is preinstalled and honors rust-toolchain.toml on first use. The
-      # `live-e2e` project builds the release binary its suite drives; `corpus-match`
-      # byte-compares against Fern from committed sources (and proves it with sockets
+      # Install the rust-toolchain.toml toolchain once, before the gate: left to
+      # first use, the gate's parallel cargo tasks each start the same rustup
+      # install and race on its download directory.
+      - name: Install the pinned Rust toolchain
+        run: rustup toolchain install
+      # The corpus-match recipes run their golden inventory under nextest.
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      # The `live-e2e` project builds the release binary its suite drives;
+      # `corpus-match` byte-compares against Fern from committed sources (and proves it with sockets
       # denied and no cache); `corpus-match-selection` proves that byte-match's nextest
       # selection is its inventory; `census-fallback` holds the parser fallback to the
       # pinned ruamel.yaml; `screenshots` tests the demo renderer with Pillow from
