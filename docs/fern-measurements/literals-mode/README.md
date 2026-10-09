@@ -3,12 +3,9 @@
 Each case is one shape crozier and Fern generate identically, measured with
 `pydantic_config.enum_type` unset — Fern's own default, `literals` — the mode
 the shape was first observed in. The documents were written for the purpose;
-none is a real specification, and none settles a coverage row. Which shapes
-also have a real-specification golden, and the search behind each hand-written
-document, is
-[the witness search](../../openapi-surface/witness-search-prove-matches/README.md).
+none is a real specification, and none settles a coverage row.
 
-Each `expected-literals/` is the output of
+Each `fern-expected/` is the output of
 `tools/fern-goldens/generate-fern-fixture.sh --enum-type literals` at Fern CLI
 5.67.1 and `fernapi/fern-python-sdk` 5.20.0, comment-stripped by
 `crozier internal-strip`, and never edited. Where the case's document is a
@@ -16,7 +13,7 @@ hand-written fixture, the script reduced Fern's tree to an overlay of that
 fixture's `fern-expected/` (Fern's `python_enums` tree): the files whose bytes
 differ, plus `.crozier-overlay.json` naming the files Fern omits. Where the
 case carries its own `openapi.yml`, the script reduced it against nothing, so
-`expected-literals/` is the complete tree and its manifest removes nothing.
+`fern-expected/` is the complete tree and its manifest removes nothing.
 
 `literals_mode_measurements_match_fern` in
 [`../../../crates/crozier-e2e/tests/e2e/literals_mode.rs`](../../../crates/crozier-e2e/tests/e2e/literals_mode.rs)
@@ -63,7 +60,7 @@ The thirtieth shape, `stream-error-status-raises-typed-error`, is not measured
 here: Fern's `reference.md` documents every server-sent-event method as
 returning `typing.Iterator[bytes]` while the method returns its event type, a
 Fern defect crozier does not yet correct, so no tree of it is committed until
-that correction lands ([the record](../../openapi-surface/witness-search-prove-matches/README.md#blocked)).
+that correction lands.
 
 Two cases carry their own document because crozier's `python_enums` output
 over it still differs from Fern's, so no hand-written fixture gates it:

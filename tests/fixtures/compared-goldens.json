@@ -1,147 +1,147 @@
 {
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
-    "docs/fern-measurements/literals-mode/bigint-format-string-typed-str/expected-literals": {
+    "docs/fern-measurements/literals-mode/bigint-format-string-typed-str/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/described-ref-oneof-alias-without-docstring/expected-literals": {
+    "docs/fern-measurements/literals-mode/described-ref-oneof-alias-without-docstring/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/discriminated-variant-date-value-snippet/expected-literals": {
+    "docs/fern-measurements/literals-mode/discriminated-variant-date-value-snippet/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/dotted-mapping-key-variant-class-name/expected-literals": {
+    "docs/fern-measurements/literals-mode/dotted-mapping-key-variant-class-name/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/empty-path-segment-double-slash-kept/expected-literals": {
+    "docs/fern-measurements/literals-mode/empty-path-segment-double-slash-kept/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/enum-extension-names-dropped-under-literals/expected-literals": {
+    "docs/fern-measurements/literals-mode/enum-extension-names-dropped-under-literals/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/enum-header-params-stringified/expected-literals": {
+    "docs/fern-measurements/literals-mode/enum-header-params-stringified/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/enum-union-body-example-first-member-value/expected-literals": {
+    "docs/fern-measurements/literals-mode/enum-union-body-example-first-member-value/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/group-path-ending-in-api-nested-package/expected-literals": {
+    "docs/fern-measurements/literals-mode/group-path-ending-in-api-nested-package/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/literal-enum-description-omitted/expected-literals": {
+    "docs/fern-measurements/literals-mode/literal-enum-description-omitted/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/literal-enum-value-quote-escaping/expected-literals": {
+    "docs/fern-measurements/literals-mode/literal-enum-value-quote-escaping/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/literal-prefixed-integer-path-segment/expected-literals": {
+    "docs/fern-measurements/literals-mode/literal-prefixed-integer-path-segment/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/multipart-inline-object-part-json-encoded/expected-literals": {
+    "docs/fern-measurements/literals-mode/multipart-inline-object-part-json-encoded/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/multipart-part-encoding-charset-tuple/expected-literals": {
+    "docs/fern-measurements/literals-mode/multipart-part-encoding-charset-tuple/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/multipart-single-value-enum-part-kept-optional/expected-literals": {
+    "docs/fern-measurements/literals-mode/multipart-single-value-enum-part-kept-optional/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/oneof-duplicate-members-collapsed/expected-literals": {
+    "docs/fern-measurements/literals-mode/oneof-duplicate-members-collapsed/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/open-object-body-example-extra-keys-dropped/expected-literals": {
+    "docs/fern-measurements/literals-mode/open-object-body-example-extra-keys-dropped/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/patch-inline-nullable-unrequired-props-omit/expected-literals": {
+    "docs/fern-measurements/literals-mode/patch-inline-nullable-unrequired-props-omit/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/query-param-ref-to-enum-or-array-union-converted/expected-literals": {
+    "docs/fern-measurements/literals-mode/query-param-ref-to-enum-or-array-union-converted/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/required-and-nullable-property-defaults-none/expected-literals": {
+    "docs/fern-measurements/literals-mode/required-and-nullable-property-defaults-none/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/required-param-and-body-defaults-ignored/expected-literals": {
+    "docs/fern-measurements/literals-mode/required-param-and-body-defaults-ignored/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/expected-literals": {
+    "docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/string-body-example-backslash-escaped/expected-literals": {
+    "docs/fern-measurements/literals-mode/string-body-example-backslash-escaped/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped/expected-literals": {
+    "docs/fern-measurements/literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/union-of-enum-ref-const-and-string-members/expected-literals": {
+    "docs/fern-measurements/literals-mode/union-of-enum-ref-const-and-string-members/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/union-of-two-enum-refs-alias/expected-literals": {
+    "docs/fern-measurements/literals-mode/union-of-two-enum-refs-alias/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/variant-nullable-value-optional-default-none/expected-literals": {
+    "docs/fern-measurements/literals-mode/variant-nullable-value-optional-default-none/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/expected-literals": {
+    "docs/fern-measurements/literals-mode/variant-optional-const-discriminant-merged/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/variant-own-fields-before-allof-parent-fields/expected-literals": {
+    "docs/fern-measurements/literals-mode/variant-own-fields-before-allof-parent-fields/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
       ]

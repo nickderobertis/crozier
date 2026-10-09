@@ -79,34 +79,33 @@ already carries a byte-matched golden.
 
 ## Verdicts
 
-The hand-written fixture of each key below cites this table. The selector is
-the key's census selector in
-[`../witness-search-keys.tsv`](../witness-search-keys.tsv); the census
-grammar has no predicate for the shapes themselves, so each is the nearest
-selector the fixture declares, and the detector above is what the search ran.
+The hand-written fixture of each key below cites this table. Each key's census
+selector, in [`../witness-search-keys.tsv`](../witness-search-keys.tsv), is the
+nearest one its fixture declares: the census grammar has no predicate for these
+shapes, so the detector above is what the search ran.
 
-| key | outcome | selector | strict declarers |
-|---|---|---|---|
-| `bigint-format-string-typed-str` | `search-incomplete` | `schema.format=bigint` | 0 |
-| `described-ref-oneof-alias-without-docstring` | `search-incomplete` | `schema.description` | 5 APIs.guru, 5 registered |
-| `discriminated-variant-date-value-snippet` | `search-incomplete` | `schema.format=date` | 0 |
-| `empty-path-segment-double-slash-kept` | `search-incomplete` | `openapi.paths:several-template-expressions` | 2 APIs.guru |
-| `enum-union-body-example-first-member-value` | `search-incomplete` | `schema.enum:string-valued` | 0 |
-| `group-path-ending-in-api-nested-package` | `search-incomplete` | `operation.x-fern-sdk-group-name` | 0 |
-| `literal-enum-value-quote-escaping` | `search-incomplete` | `schema.enum:apostrophe-member` | 0 |
-| `literal-prefixed-integer-path-segment` | `search-incomplete` | `openapi.paths:templated-key` | 1 APIs.guru |
-| `multipart-inline-object-part-json-encoded` | `search-incomplete` | `requestBody.content` | 3 APIs.guru, 1 registered |
-| `multipart-part-encoding-charset-tuple` | `search-incomplete` | `mediaType.encoding.contentType` | 0 |
-| `oneof-duplicate-members-collapsed` | `search-incomplete` | `schema.oneOf` | 0 |
-| `patch-inline-nullable-unrequired-props-omit` | `search-incomplete` | `pathItem.patch` | 2 APIs.guru, 1 registered |
-| `query-param-ref-to-enum-or-array-union-converted` | `search-incomplete` | `schema.items` | 0 |
-| `required-param-and-body-defaults-ignored` | `search-incomplete` | `schema.default` | 0 |
-| `string-body-example-backslash-escaped` | `search-incomplete` | `mediaType.example` | 0 |
-| `undiscriminated-ref-oneof-sibling-properties-dropped` | `search-incomplete` | `schema.properties:non-empty` | 1 APIs.guru |
-| `union-of-enum-ref-const-and-string-members` | `search-incomplete` | `schema.const:string-valued` | 0 |
-| `union-of-two-enum-refs-alias` | `search-incomplete` | `schema.$ref:resolves-to-component` | 0 |
-| `variant-nullable-value-optional-default-none` | `search-incomplete` | `schema.nullable` | 3 registered |
-| `variant-own-fields-before-allof-parent-fields` | `search-incomplete` | `schema.allOf:sole-member` | 1 APIs.guru |
+| key | outcome | strict declarers |
+|---|---|---|
+| `bigint-format-string-typed-str` | `search-incomplete` | 0 |
+| `described-ref-oneof-alias-without-docstring` | `search-incomplete` | 5 APIs.guru, 5 registered |
+| `discriminated-variant-date-value-snippet` | `search-incomplete` | 0 |
+| `empty-path-segment-double-slash-kept` | `search-incomplete` | 2 APIs.guru |
+| `enum-union-body-example-first-member-value` | `search-incomplete` | 0 |
+| `group-path-ending-in-api-nested-package` | `search-incomplete` | 0 |
+| `literal-enum-value-quote-escaping` | `search-incomplete` | 0 |
+| `literal-prefixed-integer-path-segment` | `search-incomplete` | 1 APIs.guru |
+| `multipart-inline-object-part-json-encoded` | `search-incomplete` | 3 APIs.guru, 1 registered |
+| `multipart-part-encoding-charset-tuple` | `search-incomplete` | 0 |
+| `oneof-duplicate-members-collapsed` | `search-incomplete` | 0 |
+| `patch-inline-nullable-unrequired-props-omit` | `search-incomplete` | 2 APIs.guru, 1 registered |
+| `query-param-ref-to-enum-or-array-union-converted` | `search-incomplete` | 0 |
+| `required-param-and-body-defaults-ignored` | `search-incomplete` | 0 |
+| `string-body-example-backslash-escaped` | `search-incomplete` | 0 |
+| `undiscriminated-ref-oneof-sibling-properties-dropped` | `search-incomplete` | 1 APIs.guru |
+| `union-of-enum-ref-const-and-string-members` | `search-incomplete` | 0 |
+| `union-of-two-enum-refs-alias` | `search-incomplete` | 0 |
+| `variant-nullable-value-optional-default-none` | `search-incomplete` | 3 registered |
+| `variant-own-fields-before-allof-parent-fields` | `search-incomplete` | 1 APIs.guru |
 
 ## Renewed search
 
