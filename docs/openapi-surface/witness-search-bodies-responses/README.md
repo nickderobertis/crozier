@@ -11,9 +11,9 @@ found in a registrable document is registered in
 
 ## Bounded search
 
-Ten selectors of `scripts/openapi-surface-census.py`, two GitHub code-search
+Ten selectors of `tools/surface-census/openapi-surface-census.py`, two GitHub code-search
 phrasings each, issued between 2026-10-05 and 2026-10-06 through
-`scripts/rate_limit_guard.py` and recorded with their counts in
+`tools/witness-search/rate_limit_guard.py` and recorded with their counts in
 [`queries.tsv`](queries.tsv). The first page of each phrasing (at most 100
 results) was downloaded at its indexed commit from `raw.githubusercontent.com`,
 1,469 distinct documents in all. Every one was read by the census, one document

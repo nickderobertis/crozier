@@ -2,7 +2,9 @@
 # Print the Python interpreter the census tooling must run under, or fail saying
 # why there is none. `just surface-census` and `just test-surface-census` both
 # call this instead of spelling `python3`, so neither can silently borrow another
-# project's environment.
+# project's environment. Given arguments, it runs them under that interpreter
+# instead (`sh scripts/census-python.sh SCRIPT ARGS...`): the form an Nx target
+# can spell on every OS, since Windows runs a target's command under cmd.exe.
 #
 # Why this exists: a bare `python3` is whatever PATH happens to offer first, and
 # an activated virtualenv from an unrelated checkout wins that race. The census
@@ -14,7 +16,35 @@
 # crozier is a Rust project: it has no committed virtualenv and needs none. So
 # the interpreter it wants is a plain system Python 3, and a repo-local `.venv`
 # is honoured only if someone has deliberately made one here.
+# Started as `sh` (a POSIX shell, or bash in POSIX mode — macOS's /bin/sh), the
+# selection below needs bash proper.
+needs_bash() {
+  command -v bash >/dev/null 2>&1 || {
+    echo "census-python: bash is not on PATH — it selects the interpreter; install bash (Git Bash on Windows), then re-run" >&2
+    exit 127
+  }
+  exec bash "$0" "$@"
+}
+if [ -z "${BASH_VERSION:-}" ]; then needs_bash "$@"; fi
+case ":${SHELLOPTS:-}:" in *:posix:*) needs_bash "$@" ;; esac
 set -euo pipefail
+
+found() { # found INTERPRETER [ARGS...]: print it, or run ARGS under it
+  local interpreter="$1"
+  shift
+  if [ "$#" -gt 0 ]; then
+    # Asked before the `exec` rather than after it fails: bash 3.2, macOS's, ends
+    # a `set -e` shell at a failed `exec`, `shopt -s execfail` or not.
+    "$interpreter" -c '' >/dev/null 2>&1 || {
+      echo "census-python: could not run $interpreter — repair or reinstall that Python (remove" \
+           "$repo_root/.venv if it is that one, to fall back to the system python3), then re-run" >&2
+      exit 126
+    }
+    exec "$interpreter" "$@"
+  fi
+  printf '%s\n' "$interpreter"
+  exit 0
+}
 
 script_dir="${0%/*}"
 [ "$script_dir" != "$0" ] || script_dir=.
@@ -25,8 +55,7 @@ for local_python in \
   "$repo_root/.venv/Scripts/python.exe"
 do
   if [ -x "$local_python" ]; then
-    printf '%s\n' "$local_python"
-    exit 0
+    found "$local_python" "$@"
   fi
 done
 
@@ -40,8 +69,7 @@ while IFS= read -r candidate; do
   base="$("$candidate" -c 'import sys; print(sys.base_prefix)' 2>/dev/null)" || continue
   [ -n "$prefix" ] && [ -n "$base" ] || continue
   if [ "$prefix" = "$base" ]; then
-    printf '%s\n' "$candidate"
-    exit 0
+    found "$candidate" "$@"
   fi
   [ -n "$foreign" ] || foreign="$candidate"
 done < <(type -a -p python3 python 2>/dev/null || true)

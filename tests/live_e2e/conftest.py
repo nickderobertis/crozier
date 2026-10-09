@@ -53,7 +53,7 @@ PRISM_PKG = "@stoplight/prism-cli@5.14.2"
 @dataclass(frozen=True)
 class Fixture:
     """A corpus to drive live, plus the naming flags `crozier` is generated with —
-    the runtime-behavior analog of the byte-diff `Corpus` in `tests/e2e.rs`. The
+    the runtime-behavior analog of the byte-diff `Corpus` in `crates/crozier-e2e/tests/e2e.rs`. The
     generated package must be importable as `fern` for the `reference.md` snippets
     to run, so `package_name` is `fern`.
 
@@ -216,7 +216,7 @@ def _spec_path(fixture: Fixture, work: Path) -> Path:
     if not fixture.registered_source:
         return _FIXTURES / fixture.name / "openapi.yml"
     result = subprocess.run(
-        [sys.executable, str(_FIXTURES.parent.parent / "scripts/corpus_sources.py"),
+        [sys.executable, str(_FIXTURES.parent.parent / "tools/corpus/corpus_sources.py"),
          "prepare", "--fixture", fixture.name, "--output", str(work / "source")],
         check=True, capture_output=True, text=True, encoding="utf-8",
     )

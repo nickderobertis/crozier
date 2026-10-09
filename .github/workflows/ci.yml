@@ -1,5 +1,9 @@
-# Prove the artifact from a clean checkout: bootstrap, then the full gate, on the
-# real platform matrix. See docs/matching.md and AGENTS.md.
+# Prove the artifact from a clean checkout: bootstrap, then the gate, on the real
+# platform matrix. Every gate job runs `just ci-check`, which picks the tier the
+# event owes (tools/ci/ci-tier.mjs): the broader tier (`check --sweep`) on the
+# release-plz release pull request, the affected tier against an explicitly
+# derived base on every other pull request and on a push to main. Each job scopes
+# it to the projects its runner holds the toolchain for. See AGENTS.md.
 
 name: ci
 
@@ -31,10 +35,23 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
 
+      # Full history: the affected tier's base is a merge base or the commit a
+      # push replaced, and either must be in the checkout.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install just
         uses: extractions/setup-just@v2
+
+      # Nx, the orchestrator the gate runs through, is pinned in bun.lock; bootstrap
+      # installs it with bun, on Node.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
 
       # rustup honors rust-toolchain.toml (channel + components) on first cargo
       # use, so the pinned toolchain is the single source of truth. Pre-install
@@ -51,15 +68,18 @@ jobs:
       - name: Bootstrap
         run: just bootstrap
 
+      # Every project but the promoted tiers, which run in the jobs below.
       - name: Check
-        run: just check
+        env:
+          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
+        run: just ci-check --exclude=tag:tier:promoted
 
   # The SDK Python-environment tier, SEPARATE from the offline `just check`: the
   # e2e journeys that build a generated SDK's virtualenv from PyPI and run mypy or
   # pytest in it (the runtime wire suite, the own-pin type-check, the shared env's
   # concurrent build, and the fern-refusals gate's `wire_test.py` condition). Same
   # OS matrix as `check`, since the env and mypy-cache locking are per-platform.
-  # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
+  # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
   sdk-env:
     name: sdk-env (${{ matrix.os }})
     needs: check
@@ -73,8 +93,16 @@ jobs:
         if: runner.os == 'Windows'
         run: git config --global core.longpaths true
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Install just
         uses: extractions/setup-just@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
@@ -84,8 +112,13 @@ jobs:
       - uses: astral-sh/setup-uv@v8.3.2
       - name: Bootstrap
         run: just bootstrap
+      # The `sdk-env` and `runtime` projects, when the change reaches them (every
+      # time, on the release pull request).
       - name: SDK Python-environment tier
-        run: just test-sdk-env
+        env:
+          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
+        run: just ci-check --projects=sdk-env,runtime
+  # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Single stable required-status context aggregating the matrix, so branch
   # protection lists one `gate` name instead of every per-OS leg. Fails unless
@@ -116,6 +149,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: extractions/setup-just@v2
       # Prism (the mock server) is a Node CLI; install the pinned version globally so
       # `prism` is on PATH (conftest prefers it over an `npx` fetch). The version is
@@ -123,7 +158,12 @@ jobs:
       # the pin can never drift between the workflow and the suite.
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Install Nx (bun.lock)
+        run: just install-nx
       - run: npm install -g "$(grep -oP '^PRISM_PKG = "\K[^"]+' tests/live_e2e/conftest.py)"
       # uv backs the test venv (httpx/pydantic/pytest/pyyaml) and the ruff install.
       - uses: astral-sh/setup-uv@v8.3.2
@@ -131,18 +171,20 @@ jobs:
       # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
       - name: Install ruff
         run: ./scripts/install-ruff.sh
-      # cargo is preinstalled and honors rust-toolchain.toml on first use; the recipe
-      # builds the release binary the suite drives.
-      - name: Live e2e
-        run: just test-live-e2e
-      # Byte-compare against Fern using committed sources, including reference trees.
-      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] This task requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
-      - name: Corpus byte-match
-        run: just test-corpus-offline
-      # Registered corpus sources and the parser samples are committed; this fetches no specification.
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This existing parser-agreement tier needs uv to install the pinned ruamel.yaml, so it stays in the separate live-e2e job; it reads only committed specifications and loopback servers.
-      - name: Census fallback agreement
-        run: just test-census-fallback
+      # cargo is preinstalled and honors rust-toolchain.toml on first use. The
+      # `live-e2e` project builds the release binary its suite drives; `corpus-match`
+      # byte-compares against Fern from committed sources (and proves it with sockets
+      # denied and no cache); `census-fallback` holds the parser fallback to the
+      # pinned ruamel.yaml; `screenshots` tests the demo renderer with Pillow from
+      # PyPI. Each runs when the change reaches it, and on the release pull request
+      # always.
+      # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] The corpus-match offline proof requires a real recipe run with sockets denied and no cache. The normal check cannot prove absence of network dependencies; this distinct environment proof deliberately repeats byte comparison.
+      # llmlint: ignore-block[external_service_suite_stays_out_of_the_affected_tier] The census-fallback tier needs uv to install the pinned ruamel.yaml, so it runs in this separate leg rather than the check matrix; it reads only committed specifications and loopback servers.
+      - name: Live e2e, corpus byte-match, census fallback and screenshot renderer
+        env:
+          CROZIER_PUSH_BEFORE: ${{ github.event.before }}
+        run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
+      # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate
   # (honoring Cargo.toml's `include`) and compiles from that tarball. This is the
@@ -222,12 +264,19 @@ jobs:
       # CLAUDE_CODE_OAUTH_TOKEN below.
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
       - run: npm install -g @anthropic-ai/claude-code
       - name: Install oneharness + llmlint
         run: |
           ./scripts/setup-llmlint.sh
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # This job skips `just bootstrap`, so it installs Nx itself: without it
+      # `just test-llmlint-plugins` cannot start.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Install Nx (bun.lock)
+        run: just install-nx
       # Prove the rule set still resolves with its origin unreachable — the exact
       # failure that used to fail this required check on a flaked connection.
       # CROZIER_REQUIRE_LLMLINT turns the "llmlint absent" skip into a failure,

@@ -1,4 +1,3 @@
-// llmlint: ignore[new_code_lands_in_a_project] This Rust module is registered through src/lib.rs in the existing Cargo crate; this repository has no Nx workspace or project definitions.
 //! Refuse name shapes whose baseline SDK fails the refusal registry's bar.
 
 use crate::openapi::{AdditionalProperties, OpenApi, Schema};

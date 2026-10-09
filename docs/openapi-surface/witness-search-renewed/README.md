@@ -24,7 +24,7 @@ reads `exhausted`.
 ## The routes
 
 Every GitHub request went through
-[`scripts/rate_limit_guard.py`](../../../scripts/rate_limit_guard.py): REST
+[`tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py): REST
 only, no GraphQL, each bucket held at or below 70%. Every Sourcegraph request
 went through the guard's paced Sourcegraph lane. No bucket reached the cap and
 no wait was made. The guard's per-call record is
@@ -42,13 +42,13 @@ and result is [`requests.jsonl`](requests.jsonl).
 | `publisher-revision` | github-publisher-trees | for the two publishers whose documents passed the licence and revision screens and failed only Fern's: `GET https://api.github.com/repos/<repo>`, `GET https://api.github.com/repos/<repo>/commits?path=<path>&per_page=100`, then `GET https://api.github.com/repos/<repo>/contents/<path>?ref=<commit>` and `GET https://api.github.com/repos/<repo>/git/blobs/<blob>` for each revision, kept where the bytes hash to the blob. `APWG/ecx2-openapi-doc` `ecx2-openapi.yaml`, every revision in its history; `OpenRailAssociation/osrd` `editoast/openapi.yaml` at the current head of `dev`, with the root listing at that commit for its licence | 2026-09-30T21:11:21Z – 21:12:42Z, and 21:23:48Z for OSRD's root listing | APWG: 31 commits, 31 revisions read. 9 declare `property-sole-anyof-composed-member`, 17 declare none of the six keys, and the full YAML parser refuses 5, which are JSON pasted into YAML. OSRD: its head `776d7c44` declares `property-sole-oneof-composed-member` once |
 
 Each document was censused with
-[`witness-search-recensus.py`](../../../scripts/witness-search-recensus.py)'s
+[`witness-search-recensus.py`](../../../tools/witness-search/witness-search-recensus.py)'s
 `read_document`, the pinned `ruamel.yaml` 0.19.1 reading, with each key's
 selector from [`../witness-search-keys.tsv`](../witness-search-keys.tsv). Each
 census-confirmed document was screened by Fern at CLI 5.67.1 and
 `fernapi/fern-python-sdk` 5.20.0: `fern check`, then `fern generate --group
 python-sdk --local --preview`, in a workspace scaffolded as
-[`generate-fern-fixture.sh`](../../../scripts/generate-fern-fixture.sh) scaffolds
+[`generate-fern-fixture.sh`](../../../tools/fern-goldens/generate-fern-fixture.sh) scaffolds
 one.
 
 ## The per-key outcomes
@@ -92,6 +92,6 @@ request that lists or describes rather than reads a document.
 ## What would still move a key
 
 A refused document that GitHub or a mirror serves again. Re-request the seven
-with `scripts/witness-search-recensus.py reacquire-head --again` and
+with `tools/witness-search/witness-search-recensus.py reacquire-head --again` and
 `reacquire-namesake --again`. Also, a Fern that generates APWG's eCX
 description or OSRD's editoast description.

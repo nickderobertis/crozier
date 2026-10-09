@@ -1,0 +1,58 @@
+{
+  "name": "github-action",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:rust",
+    "lang:bash"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-github-action -- --check"
+      },
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-github-action"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo clippy -p crozier-github-action --all-targets --all-features --locked -- -D warnings",
+          "node scripts/check-project-boundaries.mjs github-action"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "boundaries"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-github-action"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/action.yml",
+        "{workspaceRoot}/docs/github-action.md",
+        "{workspaceRoot}/docs/examples/**/*",
+        "{workspaceRoot}/docs/fern-reference.md"
+      ]
+    }
+  }
+}

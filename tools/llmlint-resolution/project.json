@@ -1,0 +1,42 @@
+{
+  "name": "llmlint-resolution",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/llmlint-resolution/tests/llmlint_resolution_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/llmlint.yml",
+        "{workspaceRoot}/llmlint-plugins/**/*",
+        "{workspaceRoot}/tools/llmlint/tests/llmlint_plugins_test.py",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/justfile",
+        {
+          "env": "CROZIER_REQUIRE_LLMLINT"
+        },
+        {
+          "runtime": "llmlint --version || echo llmlint-absent"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs llmlint-resolution"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

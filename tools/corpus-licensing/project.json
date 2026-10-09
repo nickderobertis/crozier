@@ -1,0 +1,51 @@
+{
+  "name": "corpus-licensing",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "lint-licensing": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus-licensing/corpus-licensing-drift.py"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/corpus-licensing-drift.py",
+        "{workspaceRoot}/**/*.md"
+      ]
+    },
+    "lint-boundaries": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-licensing"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-licensing",
+        "lint-boundaries"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/corpus-licensing/tests/corpus_licensing_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/**/*.md"
+      ]
+    }
+  }
+}

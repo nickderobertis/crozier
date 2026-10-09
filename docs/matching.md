@@ -38,7 +38,7 @@ local diagnostic recipes are documented in
 
 ## How the comparison works
 
-The e2e (`tests/e2e.rs`) runs the compiled binary over a fixture's `openapi.yml`
+The e2e (`crates/crozier-e2e/tests/e2e.rs`) runs the compiled binary over a fixture's `openapi.yml`
 and compares crozier's output tree with `tests/fixtures/<api>/expected/**`. The
 flat goldens (`expected-flat/`, see [The flat layout](#the-flat-layout)) are
 compared the same way against `crozier generate --layout flat`.
@@ -71,7 +71,7 @@ exactly, except:
 
 **Every registered corpus reproduces its whole committed Fern golden
 byte-for-byte at `fernapi/fern-python-sdk:5.20.0`.** Every `Corpus` in
-`tests/e2e.rs` carries an empty `unmatched` list; that file is the measured
+`crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list; that file is the measured
 truth, and this document holds the judgment about *why* each shape generates the
 way it does. Per-corpus file counts deliberately live only next to the data they
 describe, so prose here cannot drift away from them.
@@ -86,7 +86,7 @@ an entry that already matches. Registration alone would not be enough — a corp
 no test drives, or a committed-source corpus missing from `just test-corpus-match`,
 would skip silently everywhere — so
 `every_registered_corpus_is_wired_into_the_gate` derives both wirings from
-`tests/e2e.rs` and the `justfile` and fails when either is absent.
+`crates/crozier-e2e/tests/e2e.rs` and the `justfile` and fails when either is absent.
 `just fixtures-gaps` re-measures every corpus and
 prints the census; `fixtures-candidates` remains an alias. `just fixtures-diff`
 prints normalized diffs for investigation. See
@@ -418,7 +418,7 @@ The refresh also **closed** two shape divergences:
   rows already used.
 
 The per-corpus measurement lives in the `CORPORA`/`FEATURE_TARGETS` data in
-`tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
+`crates/crozier-e2e/tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
 The configured `audience-filter`, `audience-filter-strict`, `client-class-name`,
 `pydantic-extra-fields`, and `eos.local-extra-fields-forbid` fixtures are on
 5.20.0 like the rest.
@@ -661,7 +661,7 @@ together as a batch of deliberately harder, feature-diverse targets. All five pa
 `fern check` (the prerequisite — Fern must accept the raw spec, and the largest raw
 public specs do not: `github.com`, `box.com`, and `atlassian.com-jira` each fail its
 gate, and `conjur.local` hits a ref-resolution error, so all four are out). Each
-`Corpus` is registered in `tests/e2e.rs` with the usual committed-source guard, so
+`Corpus` is registered in `crates/crozier-e2e/tests/e2e.rs` with the usual committed-source guard, so
 the offline `check` gate skips a missing committed source while
 `just test-corpus-match` enforces them. All five now match byte-for-byte.
 
@@ -751,7 +751,7 @@ arity-driven — `(...)` whenever the demonstrated method takes any argument, `(
 only for an argument-free method — which is refresh rule 1 above; the earlier
 body-shape-driven rule was fitted to pre-5.20 goldens. Each shape has a
 hand-authored **feature-coverage
-target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `tests/e2e.rs`),
+target** under `tests/fixtures/` (a `FEATURE_TARGETS` corpus in `crates/crozier-e2e/tests/e2e.rs`),
 with the full Fern `expected/` tree committed and compared in its entirety; the
 smoke test additionally asserts crozier consumes every spec without panicking. To
 reproduce the
@@ -1080,7 +1080,7 @@ operationIds and property names. Real vendor specs are messier, and four shapes
 that used to make crozier emit invalid Python or hard-error now generate legal —
 and byte-matched — output. Each has its own feature-coverage
 corpus (`digit-leading-property`, `operation-id-non-identifier`,
-`bracketed-property-names`, `missing-operation-id`), registered in `tests/e2e.rs`.
+`bracketed-property-names`, `missing-operation-id`), registered in `crates/crozier-e2e/tests/e2e.rs`.
 
 - **Digit-leading property name** (`2fa_enabled`). [`naming::field_name`] prefixes
   `f_` when the snake-cased name would start with a digit, and the wire name is
@@ -1319,7 +1319,7 @@ byte-match target like the rest of the corpus.
   `truefoundry-trueforge-5adde28` goldens pin `x-fern-ignore` on operations; the
   `x-crozier-ignore` spelling and the schema-level marker are covered by the
   pipeline tests (`tests/generation.rs`) and a real-binary journey
-  (`tests/e2e.rs::ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid`),
+  (`crates/crozier-e2e/tests/e2e.rs::ignore_extension_prunes_marked_ops_through_the_binary_and_stays_valid`),
   which assert the marked ops are gone, their exclusive types stay, and the SDK
   still compiles.
 
@@ -1377,7 +1377,7 @@ Three shapes are decided by manager-authored probes measured at the pin. Each
 is a case directory under `docs/openapi-surface/authored-probes/`, prefixed
 with its ticket number. A case holds the probe, Fern's `fern.log` and, where
 Fern generated, its comment-stripped `fern-expected/` tree.
-`naming_authored_probes_match_pinned_fern` in `tests/e2e.rs` holds crozier, in
+`naming_authored_probes_match_pinned_fern` in `crates/crozier-e2e/tests/e2e.rs` holds crozier, in
 both modes, to the tree or to a refusal. No real-specification search has been
 run for any of the three, and none is a hand-written fixture, so their evidence
 tier is undecided and they are not coverage.
@@ -1427,7 +1427,7 @@ while the open union takes it. What changes, all measured against Fern 5.20.0:
 The module renderer and the example writer both read the one `Ir.enum_type`, so
 they agree on every enum's shape. A targeted set of corpora reaching every enum
 shape carries the literals golden it is held to (`expected-literals/`, an
-overlay of `expected/`), compared by `tests/e2e/overlay_goldens.rs`. Fern's third mode, `forward_compatible_python_enums`,
+overlay of `expected/`), compared by `crates/crozier-e2e/tests/e2e/overlay_goldens.rs`. Fern's third mode, `forward_compatible_python_enums`,
 has no crozier counterpart.
 
 ## Enum name sanitization (issue #50)
@@ -1627,7 +1627,7 @@ and crozier's flat output reproduces each:
 One further difference is an artifact of where Fern runs rather than of the
 layout. Fern stamps `originGitCommit` and `originGitCommitIsDirty` into
 `.fern/metadata.json` when its workspace sits inside a git repository.
-`scripts/generate-fern-fixture.sh` runs Fern in a temporary directory outside
+`tools/fern-goldens/generate-fern-fixture.sh` runs Fern in a temporary directory outside
 any repository in both modes, so no golden carries either key.
 
 **Names.** Fern names the module, the `{Organization}Api` client class and the
@@ -1666,7 +1666,7 @@ goldens keep the `fern` organization.
 
 **The flat goldens.** A fixture's flat golden sits beside its packaged one as
 `tests/fixtures/<fixture>/expected-flat/`. It is produced by
-`scripts/generate-fern-fixture.sh --layout flat` (or by the Fern goldens
+`tools/fern-goldens/generate-fern-fixture.sh --layout flat` (or by the Fern goldens
 workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
 as `expected/` is, with `"layout": "flat"` added to its
 `.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
@@ -1685,7 +1685,7 @@ flat tree:
 The distribution and organization variants use the registered Swagger Petstore
 source named by their `flat-goldens.txt` rows. They add goldens without adding
 source documents to the census. The corpus gate
-runs one `*_flat_matches_fern` test per golden (`tests/e2e.rs::FLAT_GOLDENS`,
+runs one `*_flat_matches_fern` test per golden (`crates/crozier-e2e/tests/e2e.rs::FLAT_GOLDENS`,
 held to the table and to the directories on disk). `just fixtures-gaps` and
 `just fixtures-diff` report the flat goldens after the packaged ones, labelled
 `(expected-flat)`. A flat golden has no `unmatched` list: every difference is a
@@ -1778,7 +1778,7 @@ are not the same document.
 [`tests/fixtures/corpus-remote-ref-pins.tsv`](../tests/fixtures/corpus-remote-ref-pins.tsv)
 records, per corpus row, one `mutable_url -> pinned_url` substitution per
 reference plus the SHA-256 of the bytes the pinned URL serves, and
-`scripts/fetch-corpus.sh` applies the row's records to the fetched document
+`tools/corpus/fetch-corpus.sh` applies the row's records to the fetched document
 *before* publishing it into `.local/corpus/`. So the document every consumer sees
 — crozier's byte-match and Fern's own generation alike — is **upstream's bytes
 plus exactly that one recorded substitution**, not upstream's bytes. What the row
@@ -1786,7 +1786,7 @@ now depends on is the seven `ethereum/execution-apis` blobs at
 `80d0a6ee6c129a29c507c35b0245a16c5a81b9d3`, which cannot change.
 
 Two guards keep that true rather than aspirational.
-[`scripts/corpus_remote_ref_pins.py`](../scripts/corpus_remote_ref_pins.py) is the
+[`tools/corpus/corpus_remote_ref_pins.py`](../tools/corpus/corpus_remote_ref_pins.py) is the
 manifest's one reader, and it refuses to publish *any* row's document — pinned or
 not — that carries an absolute-URL `$ref` naming something other than a
 40-character commit on `raw.githubusercontent.com`, so the next row to reference a
@@ -1930,7 +1930,7 @@ Torrentarr's six `image/*` responses over `{type: string, format: binary}` reach
 crozier already matched. AGCO's enums cost one naming rule: Fern safe-names the
 `visit` parameter of a `FLOAT` member to `float_`, so `float` joins
 `naming::is_reserved`'s builtin set beside `bool`, `int`, `list` and the rest.
-`scripts/openapi-surface-census.py` mirrors that set for its normalized-path
+`tools/surface-census/openapi-surface-census.py` mirrors that set for its normalized-path
 predicate and gains the same word.
 
 **A body whose referenced schema survives the public type layer sends no explicit
@@ -2256,7 +2256,8 @@ the method a Markdown one.
 
 ## Coverage note
 
-The gate measures coverage with `cargo llvm-cov --fail-under-lines 95`, which
+The gate measures coverage with `cargo llvm-cov` (`crozier:test` writes the
+profiles; `workspace:coverage` reports them with `--fail-under-lines 95`), which
 runs on every CI platform. It cannot run in every sandbox (some restrict the
 linker features the LLVM profile runtime needs, and ptrace-based tools need
 privileges those sandboxes withhold); when developing in such an environment, run

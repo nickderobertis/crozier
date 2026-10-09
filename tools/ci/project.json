@@ -1,0 +1,59 @@
+{
+  "name": "ci",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:rust"
+  ],
+  "targets": {
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo fmt -p crozier-ci -- --check"
+      },
+      "configurations": {
+        "write": {
+          "command": "cargo fmt -p crozier-ci"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cargo clippy -p crozier-ci --all-targets --all-features --locked -- -D warnings",
+          "node scripts/check-project-boundaries.mjs ci"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "boundaries"
+      ]
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "cargo nextest run --locked -p crozier-ci"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "cargo",
+        "{workspaceRoot}/.github/**/*",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/scripts/update-major-tag.sh",
+        "{workspaceRoot}/scripts/install.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern-goldens",
+        "{workspaceRoot}/release-plz.toml"
+      ]
+    }
+  }
+}

@@ -7,7 +7,7 @@ fixtures. No Fern output was edited.
 
 Each run used organization `fern`, `pydantic_config.enum_type: python_enums`,
 `CI=true`, `GITHUB_ACTIONS=true` and the preview-only dummy token used by
-`scripts/generate-fern-fixture.sh`. `GIT_CEILING_DIRECTORIES` was set to the
+`tools/fern-goldens/generate-fern-fixture.sh`. `GIT_CEILING_DIRECTORIES` was set to the
 measurement directory so Git discovery stopped there; the generated metadata
 contains no source revision.
 The command was:
