@@ -479,7 +479,9 @@ class FullYamlTest(unittest.TestCase):
     def test_a_census_walk_past_its_bound_or_its_depth_is_refused(self) -> None:
         # Aliases cost the parser nothing and the walk everything: eleven levels of eight
         # shared `allOf` members is 8^11 schemas to walk, and a 1,500-link chain kept under an
-        # `x-` extension is one schema 1,500 levels deep.
+        # `x-` extension is one schema 1,500 levels deep. Each is read in a run of its own: the
+        # bomb at a 2 s bound no runner walks 8^11 schemas inside, the chain at the default
+        # bound, so only its depth can refuse it however slow the runner is.
         bomb = [
             "openapi: 3.0.3",
             "info: {title: t, version: '1'}",
@@ -493,52 +495,48 @@ class FullYamlTest(unittest.TestCase):
         chain += [f"  - &l{n} {{type: array, items: *l{n - 1}}}" for n in range(1, 1500)]
         chain += ["components:", "  schemas:", "    Deep: *l1499"]
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "evidence"
-            evidence = root / "witness-search-sourcegraph"
-            keys_file(evidence)
-            cache = Path(tmp) / "cache"
-            (cache / "documents").mkdir(parents=True)
-            rows = []
-            for name, text in (("bomb", bomb), ("chain", chain)):
+            refused = {}
+            for name, text, bound in (("bomb", bomb, ("--timeout", "2")), ("chain", chain, ())):
+                root = Path(tmp) / name / "evidence"
+                evidence = root / "witness-search-sourcegraph"
+                keys_file(evidence)
+                cache = Path(tmp) / name / "cache"
+                (cache / "documents").mkdir(parents=True)
                 data = ("\n".join(text) + "\n").encode("utf-8")
                 digest = hashlib.sha256(data).hexdigest()
                 (cache / "documents" / f"{digest}.yaml").write_bytes(data)
-                rows.append(
-                    {
-                        "source": "sourcegraph",
-                        "key": KEY,
-                        "repository": f"github.com/example/{name}",
-                        "path": "a.yaml",
-                        "commit": "c" * 40,
-                        "sha256": digest,
-                        "disposition": "parse-failure",
-                    }
-                )
-            (evidence / "candidates.jsonl").write_text(
-                "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n"
-            )
-            completed = run(
-                "--evidence-root",
-                str(root),
-                "full-yaml",
-                "--source",
-                "sourcegraph",
-                "--cache",
-                str(cache),
-                "--timeout",
-                "2",
-            )
-            self.assertEqual(0, completed.returncode, completed.stderr)
-            refused = {
-                r["repository"].rsplit("/", 1)[1]: r
-                for _, r in INDEX.jsonl(evidence / "candidates.jsonl")
-                if r.get("loader")
-            }
-            self.assertEqual({"census-refused"}, {r["disposition"] for r in refused.values()})
+                row = {
+                    "source": "sourcegraph",
+                    "key": KEY,
+                    "repository": f"github.com/example/{name}",
+                    "path": "a.yaml",
+                    "commit": "c" * 40,
+                    "sha256": digest,
+                    "disposition": "parse-failure",
+                }
+                (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+                try:
+                    completed = run(
+                        "--evidence-root",
+                        str(root),
+                        "full-yaml",
+                        "--source",
+                        "sourcegraph",
+                        "--cache",
+                        str(cache),
+                        *bound,
+                    )
+                except subprocess.TimeoutExpired:
+                    self.fail(f"the census walk over the {name} was not ended by its bound or its depth")
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                [refused[name]] = [r for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")]
+                self.assertEqual("census-refused", refused[name]["disposition"], refused[name])
+                self.assertIn(f"sha256 {digest}", refused[name]["diagnostic"])
             self.assertTrue(
                 refused["bomb"]["diagnostic"].startswith(
                     "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 2 s; sha256 "
-                )
+                ),
+                refused["bomb"]["diagnostic"],
             )
             self.assertTrue(
                 refused["chain"]["diagnostic"].startswith(
@@ -546,7 +544,6 @@ class FullYamlTest(unittest.TestCase):
                 ),
                 refused["chain"]["diagnostic"],
             )
-            self.assertIn(f"sha256 {rows[1]['sha256']}", refused["chain"]["diagnostic"])
 
     def test_an_absent_copy_and_a_bad_bound_name_their_repair(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
