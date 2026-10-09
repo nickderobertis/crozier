@@ -1,0 +1,42 @@
+{
+  "name": "fern-goldens-git",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens-git/tests/fern_goldens_git_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tools/fern-goldens/fern-goldens",
+        "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
+        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",
+        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
+        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
+        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
+        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
+        "{workspaceRoot}/scripts/lib.sh",
+        "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/justfile"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs fern-goldens-git"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}

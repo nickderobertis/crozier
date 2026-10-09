@@ -341,8 +341,8 @@ and Crozier byte comparison before any surface promotion.
 Re-derive into scratch to compare the current authority with this frozen baseline:
 
 ```sh
-python3 scripts/witness-scrape-wide.py derive --report "$ONEPIPELINE_NODE_SCRATCH_DIR/refreshed-baseline"
-python3 scripts/witness-scrape-wide.py validate --report docs/openapi-surface/witness-scrape-wide --inventory docs/openapi-surface/witness-scrape-wide/inventory.json.gz
+python3 tools/witness-search/witness-scrape-wide.py derive --report "$ONEPIPELINE_NODE_SCRATCH_DIR/refreshed-baseline"
+python3 tools/witness-search/witness-scrape-wide.py validate --report docs/openapi-surface/witness-scrape-wide --inventory docs/openapi-surface/witness-scrape-wide/inventory.json.gz
 ```
 
 For a fresh, separately recorded acquisition, the fetchable inventory supplies
@@ -350,7 +350,7 @@ expected hashes and immutable artifact coordinates. Cached bytes are reused only
 when their digest verifies. Failure outcomes remain in the output:
 
 ```sh
-python3 scripts/witness-scrape-wide.py acquire --inventory docs/openapi-surface/witness-scrape-wide/inventory.json.gz --cache "$ONEPIPELINE_NODE_SCRATCH_DIR/replay-cache" --contract docs/openapi-surface/witness-scrape-wide/keys.md --output "$ONEPIPELINE_NODE_SCRATCH_DIR/replay.json" --workers 8
+python3 tools/witness-search/witness-scrape-wide.py acquire --inventory docs/openapi-surface/witness-scrape-wide/inventory.json.gz --cache "$ONEPIPELINE_NODE_SCRATCH_DIR/replay-cache" --contract docs/openapi-surface/witness-scrape-wide/keys.md --output "$ONEPIPELINE_NODE_SCRATCH_DIR/replay.json" --workers 8
 ```
 
 `index-tree` reproduces the all-version join through `versions()` using the saved

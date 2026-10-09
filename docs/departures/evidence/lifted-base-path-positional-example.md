@@ -56,4 +56,4 @@ the pair matches and reports this departure at each line;
 those are the trees' `lifted-base-path-positional-example` rows in
 `tests/fixtures/departures-ledger.tsv`, and
 `compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference`
-in `tests/e2e/compare.rs` drives it.
+in `crates/crozier-e2e/tests/e2e/compare.rs` drives it.

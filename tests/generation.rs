@@ -1,5 +1,5 @@
 //! In-process integration tests over the generation pipeline. Unlike the binary
-//! e2e (`tests/e2e.rs`), these call the library directly so they are measured by
+//! e2e (`crates/crozier-e2e/tests/e2e.rs`), these call the library directly so they are measured by
 //! coverage; they exercise the type-mapping and emit branches a single fixture
 //! cannot, while still driving real parsing over real temp files.
 
@@ -14,7 +14,7 @@ use crozier::{generate, render_files, GenerateArgs};
     reason = "this binary loads, validates and checks the ledger; the overlay, recording, \
               merging and inventory-rendering helpers belong to the e2e gate, which uses the rest"
 )]
-#[path = "e2e/departures_ledger.rs"]
+#[path = "support/departures_ledger.rs"]
 mod departures_ledger;
 
 /// Write `spec` to a temp `.yml` and render it in-process, returning
@@ -14561,7 +14561,7 @@ fn global_header_constructor_names_are_checked_before_python_emission() {
     }
 }
 
-#[path = "e2e/parameter_controls.rs"]
+#[path = "support/parameter_controls.rs"]
 mod parameter_controls;
 
 #[test]

@@ -5,7 +5,7 @@
 The registered-source walk read all 238 golden sources at `29eda6cfc`,
 resolving local Response Object references. No operation declares a contentless
 200 beside a 201 with content. A bounded extra GitHub code search used
-`scripts/witness-search-github.py`'s guarded `Acquirer`: two phrasings in both
+`tools/witness-search/witness-search-github.py`'s guarded `Acquirer`: two phrasings in both
 serializations, first broad and then restricted to documents smaller than
 4,096 bytes. The tool partitioned those searches because each exceeded its
 1,000-result window. The bounded pass then used its guarded `github_json`

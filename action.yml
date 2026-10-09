@@ -67,7 +67,7 @@ outputs:
 
 # Every value reaches a `run:` script through `env`, never interpolated into it,
 # where it would be shell source rather than data. The logic lives in
-# scripts/action/, which tests/e2e/action.rs runs outside GitHub.
+# tools/github-action/, which crates/crozier-e2e/tests/e2e/action.rs runs outside GitHub.
 runs:
   using: composite
   steps:
@@ -76,7 +76,7 @@ runs:
       shell: bash
       env:
         VERSION: ${{ inputs.version }}
-      run: bash "$GITHUB_ACTION_PATH/scripts/action/install.sh"
+      run: bash "$GITHUB_ACTION_PATH/tools/github-action/install.sh"
 
     - name: Run crozier compare
       id: compare
@@ -85,7 +85,7 @@ runs:
         CROZIER: ${{ steps.install.outputs.bin }}
         COMPARE_PATHS: ${{ inputs.paths }}
         REFERENCE_COMMAND: ${{ inputs.reference-command }}
-      run: bash "$GITHUB_ACTION_PATH/scripts/action/compare.sh"
+      run: bash "$GITHUB_ACTION_PATH/tools/github-action/compare.sh"
 
     - name: Upload the diffs
       if: ${{ steps.compare.outputs.mismatched != '' && steps.compare.outputs.mismatched != '0' }}
@@ -99,4 +99,4 @@ runs:
       shell: bash
       env:
         EXIT_CODE: ${{ steps.compare.outputs.exit-code }}
-      run: bash "$GITHUB_ACTION_PATH/scripts/action/finish.sh"
+      run: bash "$GITHUB_ACTION_PATH/tools/github-action/finish.sh"

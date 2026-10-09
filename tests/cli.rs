@@ -1,6 +1,6 @@
 //! In-process CLI tests. These call `crozier::cli::run_from` directly (not the
 //! binary), so they are measured by coverage and exercise the dispatch and error
-//! branches. The binary itself is driven end-to-end in `tests/e2e.rs`.
+//! branches. The binary itself is driven end-to-end in `crates/crozier-e2e/tests/e2e.rs`.
 
 use crozier::cli::run_from;
 

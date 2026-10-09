@@ -95,7 +95,7 @@ fixed-field row's count is a selector taken straight from that output.
 The two free-keyed maps need one step more, because the selector grammar
 deliberately emits no selector for a map key: the media types keying a content
 map and the status codes keying a Responses Object are *names*, not fields. Both
-were counted by importing `scripts/openapi-surface-census.py` and subclassing its
+were counted by importing `tools/surface-census/openapi-surface-census.py` and subclassing its
 `Census` with two hooks over the same loader, source registry and walk — one in
 `descend` recording the keys of every `MAP` of `mediaType`, one in `walk`
 recording the keys of every `responses` node other than `default`. Nothing else
@@ -116,8 +116,8 @@ of the gap was visible in the `encoding-object` row of
 `contentType` and 58 `headers` where the census reached 22 and 13; the repaired
 walk reaches 99 and 58, so the two instruments now agree exactly.
 
-`scripts/openapi-surface-census.py` now takes the free-map descent for a
-non-string key, and `FreeMapKeyWalkTests` in `tests/surface_census_test.py`
+`tools/surface-census/openapi-surface-census.py` now takes the free-map descent for a
+non-string key, and `FreeMapKeyWalkTests` in `tools/surface-census/tests/surface_census_test.py`
 fails if it stops doing so. Twelve cells above carry the repaired numbers,
 applied as the difference the repair makes to each source rather than as a
 re-transcription of the whole walk, so a count that moved here moved because the
@@ -196,14 +196,14 @@ and a real `fern generate --group python-sdk --preview` against
 `fernapi/fern-python-sdk` **5.20.0** — the version every
 `tests/fixtures/*/expected/.crozier-fern-golden.json` records — with Fern CLI
 **5.67.1** pinned in `fern.config.json` and `pydantic_config.enum_type:
-python_enums`, over the workspace shape `scripts/generate-fern-fixture.sh`
+python_enums`, over the workspace shape `tools/fern-goldens/generate-fern-fixture.sh`
 scaffolds. Both halves are recorded because this repository's rejected ledger is
 full of documents that pass the first and are refused by the second, so a check
 alone is not an acceptance.
 
 **The instrument, and that it can see what it is looking for.** Every count below
 that reads a document rather than a search result is
-`scripts/openapi-surface-census.py`'s own loader and object-model walk,
+`tools/surface-census/openapi-surface-census.py`'s own loader and object-model walk,
 subclassed exactly as `## Method notes` above describes — one hook in `descend`
 recording the keys of every `MAP` of `mediaType`, and a key counted only when it
 matches ``^[A-Za-z0-9!#$%&'*+.^_`|~-]+/\*$`` and is not `*/*`. A media range is not

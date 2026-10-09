@@ -1,0 +1,15 @@
+# The gate's and the workflows' host-tool journeys: suites that drive the real
+# git, just, Nx and cargo over scratch repositories, kept out of the offline
+# `ci` project so an edit there never pays for them. Test-only and never
+# published; its own Nx project (`ci-journeys`). See AGENTS.md.
+[package]
+name = "crozier-ci-journeys"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+serde_yaml_ng = { workspace = true }
+tempfile = { workspace = true }

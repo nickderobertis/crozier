@@ -11,7 +11,7 @@ trust:
   query parameter `owner`. `ListSorted` takes `sortDirection` as
   `oneOf: [{nullable: true, oneOf: [$ref SortDirection]}]`, YourBrand's shape.
 - [`measurement.json`](measurement.json) — the pinned run
-  `scripts/witness_screen.py`'s `fern_screen_document` took: Fern CLI and
+  `tools/witness-search/witness_screen.py`'s `fern_screen_document` took: Fern CLI and
   `fernapi/fern-python-sdk` versions, both exit statuses, and the SHA-256 of
   each redacted log.
 - [`fern.log`](fern.log) — those redacted logs.

@@ -26,7 +26,7 @@ Nothing in a case is edited after the measurement. A divergence is repaired in
 ## The gate
 
 `authored_probe_measurements_match_fern` in
-[`../../../tests/e2e.rs`](../../../tests/e2e.rs) lists this directory, holds
+[`../../../crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs) lists this directory, holds
 each case to the layout above, and byte-compares crozier's output over its
 `openapi.yml` (`--package-name fern`) against `fern-expected/` under the
 corpus gate's normalization.

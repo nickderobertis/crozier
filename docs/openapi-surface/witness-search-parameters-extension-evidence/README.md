@@ -15,7 +15,7 @@ checkout. 7,400 parsed as OpenAPI 3.x documents. Purpose-written tool examples
 are excluded from real witness admission. No new search endpoint was queried.
 The six publisher descriptions selected for renewed certification are recorded
 with immutable full revisions and source digests below. The public sources were
-re-fetched through `scripts/rate_limit_guard.py`; every request reserved the
+re-fetched through `tools/witness-search/rate_limit_guard.py`; every request reserved the
 core bucket at its standing 70% cap. No GraphQL, Postman or SwaggerHub acquisition
 was used. Remaining candidates are unverified, so this is a bounded renewal,
 not an exhaustive absence claim.

@@ -10,7 +10,7 @@ the rest.
 ## Adding a fixture
 
 Add one numbered [`CORPUS.md`](CORPUS.md) row and source URL per feature branch,
-then wire a `Corpus` with `unmatched: &[]` into `tests/e2e.rs`, plus its
+then wire a `Corpus` with `unmatched: &[]` into `crates/crozier-e2e/tests/e2e.rs`, plus its
 `#[test]` and its `just test-corpus-match` line —
 `every_registered_corpus_is_wired_into_the_gate` fails without both, because a
 corpus nothing runs is not coverage. Generate the golden with **Route A**, the
@@ -30,7 +30,7 @@ publication, and rerun contract is in
 
 **One non-default Fern setting is corpus-wide.** Every `expected/` golden — managed or
 hand-authored — is generated with `pydantic_config.enum_type: python_enums`,
-which `scripts/generate-fern-fixture.sh` writes into `generators.yml`
+which `tools/fern-goldens/generate-fern-fixture.sh` writes into `generators.yml`
 unconditionally for *all* fixtures rather than per row. It is not a column of the
 config table below and no fixture opts out; Fern records it in each golden's
 `.fern/metadata.json` (`generatorConfig`), and because crozier renders that enum
@@ -40,7 +40,7 @@ there by the `fern-metadata-generator-config` departure
 hand-rolled `fern generate`, or the golden silently comes back in Fern's
 out-of-the-box open-`Literal`-union enum shape. That shape has its own goldens,
 `expected-literals/` overlays for crozier's `enum-type: literals`, from
-`scripts/fern-overlay-goldens.sh --enum-type literals` ([`fern-goldens.md`](../../docs/fern-goldens.md#literal-enum-goldens)).
+`tools/fern-goldens/fern-overlay-goldens.sh --enum-type literals` ([`fern-goldens.md`](../../docs/fern-goldens.md#literal-enum-goldens)).
 
 Per-fixture non-default settings live in **one shared table**,
 [`fern-generator-config.txt`](fern-generator-config.txt) — a single file for the
@@ -158,7 +158,7 @@ accepted each of those documents, so nothing removes them from the registration
 route, and a deleted tree would leave no measured reason for the gap. A residual
 is enumerated, never suppressed: every divergent file is named in that corpus's
 `unmatched`, every file crozier emits that its golden lacks is named in
-`tests/e2e.rs`'s `crozier_only_files`, and both lists fail the gate the moment one
+`crates/crozier-e2e/tests/e2e.rs`'s `crozier_only_files`, and both lists fail the gate the moment one
 of their entries starts matching or stops being emitted. Outside those three, a
 non-empty list means work in flight rather than an accepted state.
 `just fixtures-gaps` generates every available corpus and reports the exact
@@ -183,8 +183,9 @@ workflow to publish a provenanced golden so it rejoins byte comparison.
 answer *"what does no golden exercise at all?"* — and nothing else in the repo
 distinguishes "a committed Fern golden proves this" from "a crozier test asserts
 crozier agrees with its own expectation". `just fixtures-coverage` measures three
-tiers against one instrumented build and prints them side by side, per `src/`
-file, in counter regions and lines:
+tiers against one instrumented build and writes them side by side to
+`report.txt` in its `--out` directory (`.local/fixtures-coverage/` by default),
+per `src/` file, in counter regions and lines:
 
 | tier | what a covered region there means |
 |---|---|
@@ -228,7 +229,7 @@ included (one test each), so `just golden-reach` can run it one golden at a time
 and answer the per-row question the per-file block cannot: which of a `golden`
 census row's handling sites *its own* witnesses execute. A new corpus row moves
 that ledger; re-run it after registering one. An owned row's still-unreached
-site is searched for with `scripts/golden-reach-search.py`, whose candidates are
+site is searched for with `tools/surface-census/golden-reach-search.py`, whose candidates are
 the declarers an instrumented `crozier generate` shows executing the site — not
 every declarer; a candidate declaring a `gap` selector, or one crozier cannot
 generate yet, is handed off in

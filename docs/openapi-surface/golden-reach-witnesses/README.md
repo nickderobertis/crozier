@@ -8,8 +8,8 @@ the corpus rows it registered are `CORPUS.md` batch 19.
 - `acquisitions.jsonl` — every document, licence file, repository record and
   commit this search read from GitHub, one line per call, with its URL, HTTP
   status, and for a fetched body its SHA-256 and size. Every call went through
-  [`../../../scripts/rate_limit_guard.py`](../../../scripts/rate_limit_guard.py) by way
-  of `scripts/witness-acquire-github.py`.
+  [`../../../tools/witness-search/rate_limit_guard.py`](../../../tools/witness-search/rate_limit_guard.py) by way
+  of `tools/witness-search/witness-acquire-github.py`.
 - `rate-limit-calls.jsonl` — the guard's own record of each admitted call: host,
   REST bucket, the reservation it held, and the response status. A wait the guard
   made would be in `rate-limit-waits.jsonl`; none of these calls needed one, so
@@ -23,7 +23,7 @@ screened candidate Fern refused is recorded, with the diagnostic Fern printed, i
 
 Each owned `golden` row with a handling site still unreached has an arm search:
 the six declared sources searched for a real-world document that declares the
-row and executes the site. `scripts/golden-reach-search.py` does each stage and
+row and executes the site. `tools/surface-census/golden-reach-search.py` does each stage and
 files it here.
 
 - `searches/<key>.md` — the row's record, linked from its reach cell: one
@@ -57,7 +57,7 @@ files it here.
   `openapi` or `swagger` version. A refused document is no description a
   witness could be, so it is not outstanding; one only the census fails on
   stays outstanding as the census's own bug until `recensus` reads it.
-  `refuse` writes it (run as `uv run scripts/golden-reach-search.py refuse`,
+  `refuse` writes it (run as `uv run tools/surface-census/golden-reach-search.py refuse`,
   whose inline metadata pins ruamel.yaml), and a refusal never makes a search
   `exhausted` on its own.
 - `<source>/census-fallback.tsv` — the documents the census's stdlib loader
@@ -95,14 +95,14 @@ files it here.
 - `<source>/fern-rescreen.jsonl` — Fern's screen taken again, measured, for each
   reaching declarer whose licence and ref pass and whose earlier Fern screen
   recorded no exit status: `fern-rescreen` runs `fern check` in the workspace
-  `scripts/generate-fern-fixture.sh` scaffolds, and where that exits 0, `fern
+  `tools/fern-goldens/generate-fern-fixture.sh` scaffolds, and where that exits 0, `fern
   generate`, at the Fern CLI and python-sdk versions the goldens'
   `.fern/metadata.json` record. Each line names the document
   and its digest, each command's exit status, the first diagnostic Fern
   printed and the digest of its full output, and the screen is re-filed from it.
 - `<source>/screens.jsonl` — each screen as it was filed, with its evidence.
   `screen` files one only through the measured screening stage,
-  [`scripts/witness_screen.py`](../../../scripts/witness_screen.py): the
+  [`tools/witness-search/witness_screen.py`](../../../tools/witness-search/witness_screen.py): the
   candidate read at its pinned commit through the guarded raw route, its licence
   read against the corpus rule, pinned Fern run over it. Each row's `measured`
   record holds every outcome's pins, exit status and redacted log, the logs
@@ -121,7 +121,7 @@ files it here.
   calls against the 5,000 limit), and each came back identical — status, SPDX
   identifier, licence path and blob — so no screen moves.
 - `<source>/queries.jsonl`, `candidates.jsonl` and the guard's logs — the
-  text-query sources' calls, as `scripts/witness-search-github.py`'s acquirer
+  text-query sources' calls, as `tools/witness-search/witness-search-github.py`'s acquirer
   writes them. Raw downloads at an exact commit sit outside the REST guard by
   ruling and record their commit and digest.
 - `queries.tsv` — the two phrasings each text-query source was given per row.

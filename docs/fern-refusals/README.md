@@ -4,7 +4,7 @@ The classes of input Fern (CLI 5.67.1, `fernapi/fern-python-sdk` 5.20.0)
 refuses, crashes on, or falsely reports success over, and what crozier does with
 each. crozier's default is to generate wherever its output is valid and useful;
 `fern-strict` refuses as Fern does. This directory is the one statement of which inputs that covers. The gate
-(`tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and
+(`crates/crozier-e2e/tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and
 nothing but the steps below writes it.
 
 ## The contract
@@ -124,17 +124,17 @@ into
 [`confirmations.tsv`](../openapi-surface/fern-refusals/confirmations.tsv), and
 `check` fails if any of them generates where its class says Fern refuses.
 
-`scripts/fern-refusals.py` builds the tables:
+`tools/fern-refusals/fern-refusals.py` builds the tables:
 
 ```sh
-scripts/fern-refusals.py select            # the population, offline
+tools/fern-refusals/fern-refusals.py select            # the population, offline
 just fern-refusals-measure                 # rebuild the release binary, then measure: fetch, run Fern and crozier (network, Docker)
-scripts/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
-scripts/fern-refusals.py confirm           # sample each class's real documents through fern generate
-scripts/fern-refusals.py check             # offline drift check; tests/fern_refusals_test.py runs it
+tools/fern-refusals/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
+tools/fern-refusals/fern-refusals.py confirm           # sample each class's real documents through fern generate
+tools/fern-refusals/fern-refusals.py check             # offline drift check; tools/fern-refusals/tests/fern_refusals_test.py runs it
 ```
 
-`measure` fetches through `scripts/rate_limit_guard.py`'s paced raw lane,
+`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane,
 reuses a committed screen's `fern check` log where its record states the exit,
 and otherwise runs `fern check` — then `fern generate` unless the check named a
 class — in a scratch workspace outside any checkout, writing each log to

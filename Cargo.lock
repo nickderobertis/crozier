@@ -153,13 +153,11 @@ checksum = "1d07550c9036bf2ae0c684c4297d503f838287c83c53686d05370d0e139ae570"
 
 [[package]]
 name = "crozier"
-version = "0.0.107"
+version = "0.0.108"
 dependencies = [
- "assert_cmd",
  "clap",
  "indexmap",
  "minijinja",
- "predicates",
  "schemars",
  "serde",
  "serde_json",
@@ -167,6 +165,42 @@ dependencies = [
  "tempfile",
  "thiserror",
  "toml",
+]
+
+[[package]]
+name = "crozier-ci"
+version = "0.0.0"
+dependencies = [
+ "serde_yaml_ng",
+ "tempfile",
+]
+
+[[package]]
+name = "crozier-ci-journeys"
+version = "0.0.0"
+dependencies = [
+ "serde_yaml_ng",
+ "tempfile",
+]
+
+[[package]]
+name = "crozier-e2e"
+version = "0.0.0"
+dependencies = [
+ "assert_cmd",
+ "crozier",
+ "predicates",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "tempfile",
+]
+
+[[package]]
+name = "crozier-github-action"
+version = "0.0.0"
+dependencies = [
+ "serde_yaml_ng",
 ]
 
 [[package]]

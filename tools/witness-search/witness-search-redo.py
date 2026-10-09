@@ -1,0 +1,363 @@
+#!/usr/bin/env python3
+"""Validate the two non-authoritative witness-search redo shards.
+
+Exit status: 0 when the shards validate (or reconcile); 1 when any check
+fails, each failure on stderr, or the contract cannot be read; 2 on a usage
+error.
+"""
+
+from __future__ import annotations
+
+import argparse
+import importlib.util
+import re
+import sys
+from pathlib import Path
+
+SOURCES = {
+    "catalogue-portals": ("apis.guru", "jentic", "vendor-portals"),
+    "code-platforms": ("sourcegraph", "github-code-search", "swaggerhub", "postman"),
+}
+FIELDS = (
+    "key",
+    "selector",
+    "source",
+    "query",
+    "result",
+    "candidates",
+    "provenance",
+    "licence-screen",
+    "fern-screen",
+)
+ALL_SOURCES = sum(SOURCES.values(), ())
+EMPTY = {"", "—"}
+# The region-row categories, in the index's precedence order; RankedBacklogTests
+# holds every parser's copy to the one the index documents.
+CATEGORIES = ("golden", "limitations", "handwritten", "gap")
+
+
+def table(text: str, heading: str) -> list[list[str]]:
+    body = text.split(heading, 1)[1] if heading in text else ""
+    rows = []
+    for line in body.splitlines():
+        if line.startswith("| "):
+            rows.append([cell.strip() for cell in line.strip().strip("|").split("|")])
+    return rows
+
+
+def value(cell: str) -> str:
+    """Strip the code span used around atomic record values."""
+    return cell.strip().strip("`")
+
+
+def schema_rows(text: str) -> dict[str, list[list[str]]]:
+    """Parse bare or code-spanned keys from authoritative eight-cell entry rows."""
+    found: dict[str, list[list[str]]] = {}
+    for line in text.splitlines():
+        if not line.startswith("| "):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        if (
+            len(cells) == 8
+            and value(cells[0]) != "key"
+            and value(cells[3]) in CATEGORIES
+        ):
+            found.setdefault(value(cells[0]), []).append(cells)
+    return found
+
+
+def authoritative_details(
+    row: list[str],
+) -> tuple[str | None, dict[str, tuple[str, str]]]:
+    """Read outcome and seven query/results from this row only."""
+    cell = " | ".join(row)
+    outcome = re.search(r"search outcome `([^`]+)`", cell)
+    details: dict[str, tuple[str, str]] = {}
+    pattern = re.compile(
+        r"\*\*([^*]+)\*\*\s+(`[^`]+`)\s+(?:→|->)\s+(`?unanswered`?|\d+)"
+    )
+    for source, query, result in pattern.findall(cell):
+        details[value(source)] = (query, value(result))
+    return (outcome.group(1) if outcome else None), details
+
+
+def contract_keys(path: Path) -> dict[str, str]:
+    """Each owned key's frozen selector, refused unless the contract's table is well formed.
+
+    The `## Owned keys` table must have a `key | selector` header and at least
+    one row, and each row two nonempty cells and a key no other row names."""
+    rows = table(path.read_text(encoding="utf-8"), "## Owned keys")
+    if not rows or [value(cell) for cell in rows[0]] != ["key", "selector"]:
+        raise ValueError(f"{path}: no `## Owned keys` table with a `key | selector` header")
+    keys: dict[str, str] = {}
+    for number, row in enumerate(rows[1:], 1):
+        if len(row) != 2 or not all(value(cell) for cell in row):
+            raise ValueError(f"{path}: owned key row {number} is not two nonempty key and selector cells: {row}")
+        key, selector = map(value, row)
+        if key in keys:
+            raise ValueError(f"{path}: owned key {key} is named twice")
+        keys[key] = selector
+    if not keys:
+        raise ValueError(f"{path}: the `## Owned keys` table owns no key")
+    return keys
+
+
+def validate_shard(path: Path, contract: Path) -> list[str]:
+    text = path.read_text(encoding="utf-8")
+    failures: list[str] = []
+    match = re.search(r"^shard: `([^`]+)`$", text, re.M)
+    shard = match.group(1) if match else ""
+    if shard not in SOURCES:
+        return [f"{path}: missing or unknown shard declaration"]
+    keys = contract_keys(contract)
+    # The section alone: `table` reads to the end of the document, and the
+    # records table below it is no owned-key row.
+    section = text.split("## Owned keys", 1)[1].split("\n## ", 1)[0] if "## Owned keys" in text else ""
+    owned = table("## Owned keys" + section, "## Owned keys")[1:]
+    malformed = [row for row in owned if len(row) != 1 or not value(row[0])]
+    if malformed:
+        failures.append(f"{path}: owned key row {malformed[0]} is not one key cell")
+    declared = {row[0].strip("`") for row in owned if len(row) == 1}
+    if declared != set(keys):
+        failures.append(f"{path}: owned keys omitted {sorted(set(keys) - declared)}")
+    rows = table(text, "## Records")
+    if not rows or tuple(cell.strip("`") for cell in rows[0]) != FIELDS:
+        failures.append(f"{path}: records header is not the shared record shape")
+        return failures
+    seen: set[tuple[str, str]] = set()
+    for number, row in enumerate(rows[1:], 1):
+        if len(row) != len(FIELDS):
+            failures.append(
+                f"{path}: record {number} has {len(row)} fields, expected {len(FIELDS)}"
+            )
+            continue
+        key, selector, source, query, result, candidates, provenance, licence, fern = (
+            row
+        )
+        key, selector, source, result = map(value, (key, selector, source, result))
+        pair = (key, source)
+        if pair in seen:
+            failures.append(f"{path}: duplicate source/key record {source}/{key}")
+        seen.add(pair)
+        if key not in keys:
+            failures.append(f"{path}: unknown key {key}")
+        elif selector != keys[key]:
+            failures.append(f"{path}: {key} has the wrong selector")
+        if source not in SOURCES[shard]:
+            failures.append(f"{path}: source {source} is not owned by {shard}")
+        if not (query.startswith("`") and query.endswith("`") and len(query) > 2):
+            failures.append(f"{path}: {source}/{key} is missing a rerunnable query")
+        if result != "unanswered" and not re.fullmatch(r"\d+", result):
+            failures.append(
+                f"{path}: {source}/{key} result must be a nonnegative integer or unanswered"
+            )
+            continue
+        supporting = tuple(
+            value(cell) for cell in (candidates, provenance, licence, fern)
+        )
+        if result == "unanswered" and any(cell not in EMPTY for cell in supporting):
+            failures.append(
+                f"{path}: {source}/{key} unanswered result has supporting fields"
+            )
+        elif result == "0" and any(cell not in EMPTY for cell in supporting):
+            failures.append(
+                f"{path}: {source}/{key} zero result has candidate evidence"
+            )
+        elif result.isdigit() and int(result) > 0:
+            labels = (
+                "candidates",
+                "immutable provenance",
+                "licence screen",
+                "Fern screen",
+            )
+            missing = [
+                label for label, cell in zip(labels, supporting) if cell in EMPTY
+            ]
+            if missing:
+                failures.append(
+                    f"{path}: {source}/{key} positive result is missing {missing}"
+                )
+    return failures
+
+
+def validate_documents(paths: list[Path], contract: Path) -> list[str]:
+    failures = [failure for path in paths for failure in validate_shard(path, contract)]
+    seen: dict[tuple[str, str], Path] = {}
+    for path in paths:
+        for row in table(path.read_text(encoding="utf-8"), "## Records")[1:]:
+            if len(row) != len(FIELDS):
+                continue
+            pair = (value(row[0]), value(row[2]))
+            if pair in seen:
+                failures.append(
+                    f"duplicate source/key record {pair[1]}/{pair[0]} across "
+                    f"{seen[pair]} and {path}"
+                )
+            else:
+                seen[pair] = path
+    return failures
+
+
+def screened_keys(path: Path, *, artifact: str | None = None) -> set[str]:
+    """A declaration count is not proof that an artifact passed all four screens."""
+    found: set[str] = set()
+    for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+        if not line.startswith("| `"):
+            continue
+        cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+        # An artifact row is eight cells; one of another width would otherwise be
+        # read as no witness at all, and the evidence would pass as empty.
+        if len(cells) != 8:
+            raise ValueError(f"{path}:{number}: a candidate row has {len(cells)} cells, not the 8 of "
+                             "artifact | keys | four screens | disposition | evidence")
+        if value(cells[6]) != "witness-found":
+            continue
+        if artifact is not None and value(cells[0]) != artifact:
+            continue
+        if not all(cell.startswith("passed:") for cell in cells[2:6]):
+            continue
+        keys = set(re.findall(r"`([^`]+)`", cells[1]))
+        if "discarded keys:" in cells[5]:
+            keys -= set(re.findall(r"`([^`]+)`", cells[5].split("discarded keys:", 1)[1]))
+        found.update(keys)
+    return found
+
+
+def shard_records(paths: list[Path]) -> dict[tuple[str, str], list[str]]:
+    """`(key, source)` -> its first record row across the shards."""
+    records: dict[tuple[str, str], list[str]] = {}
+    for path in paths:
+        for row in table(path.read_text(encoding="utf-8"), "## Records")[1:]:
+            if len(row) == len(FIELDS):
+                pair = (value(row[0]), value(row[2]))
+                if pair not in records:
+                    records[pair] = row
+    return records
+
+
+def frozen_outcomes(
+    keys: dict[str, str],
+    records: dict[tuple[str, str], list[str]],
+    candidates: Path,
+    supplement_candidates: tuple[Path, ...] = (),
+) -> dict[str, str]:
+    """Each owned key's outcome, as the shards and the candidate screens decide it."""
+    witnesses = screened_keys(candidates)
+    for supplement in supplement_candidates:
+        witnesses.update(screened_keys(supplement))
+    outcomes = {}
+    for key in keys:
+        answered = all(
+            value(records[(key, source)][4]) != "unanswered" for source in ALL_SOURCES
+        )
+        outcomes[key] = (
+            "witness-found"
+            if key in witnesses
+            else "none-found"
+            if answered
+            and all(value(records[(key, source)][4]) == "0" for source in ALL_SOURCES)
+            else "search-incomplete"
+            if not answered
+            else "witness-blocked"
+        )
+    return outcomes
+
+
+def handwritten_module():
+    """The hand-written fixture gate, whose record reading a `handwritten` row is held to."""
+    path = Path(__file__).resolve().parents[2] / "tools" / "surface-census" / "handwritten-fixtures.py"
+    spec = importlib.util.spec_from_file_location("redo_handwritten_fixtures", path)
+    assert spec and spec.loader
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def reconcile(paths: list[Path], contract: Path, schemas: Path, candidates: Path, supplement_candidates: tuple[Path, ...] = ()) -> list[str]:
+    failures = validate_documents(paths, contract)
+    keys = contract_keys(contract)
+    records = shard_records(paths)
+    missing = sorted(
+        (key, source)
+        for key in keys
+        for source in ALL_SOURCES
+        if (key, source) not in records
+    )
+    if missing:
+        failures.append(f"reconciliation: missing source/key coverage {missing}")
+        return failures
+    outcomes = frozen_outcomes(keys, records, candidates, supplement_candidates)
+    rows = schema_rows(schemas.read_text(encoding="utf-8"))
+    for key in keys:
+        expected = outcomes[key]
+        owned_rows = rows.get(key, [])
+        if len(owned_rows) != 1:
+            failures.append(
+                f"reconciliation: schemas.md has {len(owned_rows)} rows for {key}"
+            )
+            continue
+        if value(owned_rows[0][3]) == "handwritten":
+            # The amendment schemas.md states beside the frozen record (this
+            # contract's own files are byte-pinned): a row a hand-written fixture
+            # covers carries no inline history. Its `search:` link must resolve
+            # to the key's Contract B record and state that record's verdict;
+            # the shard records above stay reconciled as for every key.
+            failures.extend(
+                f"reconciliation: schemas.md row {failure}"
+                for failure in handwritten_module().evidence_cell_failures(schemas, key, owned_rows[0][4])
+            )
+            continue
+        outcome, details = authoritative_details(owned_rows[0])
+        if outcome != expected:
+            failures.append(
+                f"reconciliation: schemas.md row {key} records outcome {outcome!r}, expected {expected!r}"
+            )
+        missing_details = sorted(set(ALL_SOURCES) - set(details))
+        if missing_details:
+            failures.append(
+                f"reconciliation: schemas.md row {key} omits source details {missing_details}"
+            )
+        for source in sorted(set(ALL_SOURCES) & set(details)):
+            shard_query = records[(key, source)][3]
+            shard_result = value(records[(key, source)][4])
+            if details[source] != (shard_query, shard_result):
+                failures.append(
+                    f"reconciliation: schemas.md row {key} mismatches {source} query/result"
+                )
+    return failures
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("contract", type=Path)
+    parser.add_argument("shards", nargs="+", type=Path)
+    parser.add_argument("--reconcile", action="store_true")
+    parser.add_argument("--schemas", type=Path)
+    parser.add_argument("--candidates", type=Path, help="four-screen record (default: beside CONTRACT)")
+    parser.add_argument("--supplement-candidates", type=Path, action="append", default=[],
+                        help="additional four-screen records; repeatable, historical inputs unchanged")
+    args = parser.parse_args()
+    for supplement in args.supplement_candidates:
+        if not supplement.is_file():
+            parser.error(f"--supplement-candidates requires a candidate file: {supplement}")
+    if args.reconcile and args.schemas is None:
+        parser.error("--reconcile requires --schemas PATH")
+    try:
+        failures = (
+            reconcile(args.shards, args.contract, args.schemas, args.candidates or args.contract.with_name("candidates.md"), tuple(args.supplement_candidates))
+            if args.reconcile
+            else validate_documents(args.shards, args.contract)
+        )
+    except (OSError, ValueError) as error:
+        print(f"witness-search-redo: {error} — repair the contract, or restore the committed one, and rerun",
+              file=sys.stderr)
+        return 1
+    if failures:
+        print("\n".join(failures), file=sys.stderr)
+        return 1
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
