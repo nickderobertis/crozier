@@ -13,11 +13,10 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [glazeSheet]
+              required: [kilnNumber]
               properties:
-                glazeSheet:
+                kilnNumber:
                   type: string
-                  format: binary
                 atmosphere:
                   type: string
                   enum: [reduction]

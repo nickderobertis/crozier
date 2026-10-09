@@ -4,7 +4,6 @@ import json
 import typing
 from json.decoder import JSONDecodeError
 
-from .. import core
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
@@ -25,17 +24,16 @@ class RawSpecimensClient:
     def upload_specimen(
         self,
         *,
-        image: core.File,
         label: UploadSpecimenRequestLabel,
+        notes: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
-        image : core.File
-            See core.File for more documentation
-
         label : UploadSpecimenRequestLabel
+
+        notes : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -49,10 +47,9 @@ class RawSpecimensClient:
             method="POST",
             data={
                 "label": json.dumps(jsonable_encoder(label)),
+                "notes": notes,
             },
-            files={
-                "image": image,
-            },
+            files={},
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,
@@ -77,17 +74,16 @@ class AsyncRawSpecimensClient:
     async def upload_specimen(
         self,
         *,
-        image: core.File,
         label: UploadSpecimenRequestLabel,
+        notes: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
-        image : core.File
-            See core.File for more documentation
-
         label : UploadSpecimenRequestLabel
+
+        notes : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -101,10 +97,9 @@ class AsyncRawSpecimensClient:
             method="POST",
             data={
                 "label": json.dumps(jsonable_encoder(label)),
+                "notes": notes,
             },
-            files={
-                "image": image,
-            },
+            files={},
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,

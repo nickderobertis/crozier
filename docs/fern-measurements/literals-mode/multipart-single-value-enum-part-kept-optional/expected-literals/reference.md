@@ -20,7 +20,7 @@ client = FernApi(
 )
 
 client.firings.book_firing(
-    glaze_sheet="example_glazeSheet",
+    kiln_number="kilnNumber",
 )
 
 ```
@@ -37,7 +37,7 @@ client.firings.book_firing(
 <dl>
 <dd>
 
-**glaze_sheet:** `core.File` 
+**kiln_number:** `str` 
     
 </dd>
 </dl>

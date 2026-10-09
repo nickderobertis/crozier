@@ -1,4 +1,4 @@
-# Thirty parity shapes, measured under Fern's default enum type
+# Twenty-nine parity shapes, measured under Fern's default enum type
 
 Each case is one shape crozier and Fern generate identically, measured with
 `pydantic_config.enum_type` unset — Fern's own default, `literals` — the mode
@@ -51,7 +51,6 @@ under the corpus gate's normalization, every departure held to
 | `required-and-nullable-property-defaults-none` | a required `nullable: true` property is `Optional[...] = None` | [document](required-and-nullable-property-defaults-none/openapi.yml) | complete tree |
 | `required-param-and-body-defaults-ignored` | a required query integer and a required body string keep no default despite declaring one | [hand-written fixture](../../openapi-surface/handwritten/required-param-and-body-defaults-ignored/) | overlay |
 | `snake-case-component-name-pascal-class` | a component named `honey_yield` is `class HoneyYield` in `types/honey_yield.py` | [document](snake-case-component-name-pascal-class/openapi.yml) | complete tree |
-| `stream-error-status-raises-typed-error` | an event stream's JSON `400` typed `string` raises `BadRequestError` after reading the response | [hand-written fixture](../../openapi-surface/handwritten/stream-error-status-raises-typed-error/) | overlay |
 | `string-body-example-backslash-escaped` | a string body example holding `\n` and `\t` is written with each backslash escaped | [hand-written fixture](../../openapi-surface/handwritten/string-body-example-backslash-escaped/) | overlay |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | properties beside an undiscriminated `oneOf` of two `$ref`s are dropped from the union alias | [hand-written fixture](../../openapi-surface/handwritten/undiscriminated-ref-oneof-sibling-properties-dropped/) | overlay |
 | `union-of-enum-ref-const-and-string-members` | a union of an enum `$ref`, a string `const` and a plain string is `typing.Union[Mordant, ShadeOne, str]` | [hand-written fixture](../../openapi-surface/handwritten/union-of-enum-ref-const-and-string-members/) | overlay |
@@ -59,6 +58,12 @@ under the corpus gate's normalization, every departure held to
 | `variant-nullable-value-optional-default-none` | a variant's required nullable value and its unrequired one are both `Optional[...] = None` | [hand-written fixture](../../openapi-surface/handwritten/variant-nullable-value-optional-default-none/) | overlay |
 | `variant-optional-const-discriminant-merged` | a variant's optional `const` named like the discriminator leaves only the variant literal, first | [document](variant-optional-const-discriminant-merged/openapi.yml) | complete tree |
 | `variant-own-fields-before-allof-parent-fields` | a variant's own field comes before the field its `allOf` parent adds | [hand-written fixture](../../openapi-surface/handwritten/variant-own-fields-before-allof-parent-fields/) | overlay |
+
+The thirtieth shape, `stream-error-status-raises-typed-error`, is not measured
+here: Fern's `reference.md` documents every server-sent-event method as
+returning `typing.Iterator[bytes]` while the method returns its event type, a
+Fern defect crozier does not yet correct, so no tree of it is committed until
+that correction lands ([the record](../../openapi-surface/witness-search-prove-matches/README.md#blocked)).
 
 Two cases carry their own document because crozier's `python_enums` output
 over it still differs from Fern's, so no hand-written fixture gates it:

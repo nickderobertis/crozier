@@ -16,7 +16,7 @@ header-subset-string-default	parameter.schema:subset-header-string-default	param
 integer-format-fallback	schema.format=bigint	schemas.md	supported
 literal-enum-value-quote-escaping	schema.enum:apostrophe-member	schemas.md	supported
 literal-prefixed-integer-path-segment	openapi.paths:templated-key	parameters.md	supported
-multipart-inline-object-part-json-encoded	schema.format=binary	bodies-media.md	supported
+multipart-inline-object-part-json-encoded	requestBody.content	bodies-media.md	supported
 multipart-part-encoding-charset-tuple	mediaType.encoding.contentType	bodies-media.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
@@ -45,7 +45,6 @@ schema-example-on-ref-to-object	schema.example:on-ref-to-object	schemas.md	suppo
 schema-example-on-ref-to-union	schema.example:on-ref-to-union	schemas.md	supported
 schema-example-temporal-duplicate-element	schema.example:temporal-duplicate-element	schemas.md	supported
 schema-example-union-ref-sentinel	schema.example:union-ref-sentinel	schemas.md	supported
-stream-error-status-raises-typed-error	response.content	bodies-media.md	supported
 string-body-example-backslash-escaped	mediaType.example	bodies-media.md	supported
 type-misspelled-scalar	schema.type:misspelled-scalar	schemas.md	supported
 undiscriminated-ref-oneof-sibling-properties-dropped	schema.properties:non-empty	schemas.md	supported

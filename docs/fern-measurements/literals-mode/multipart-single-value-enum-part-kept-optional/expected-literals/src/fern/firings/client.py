@@ -2,7 +2,6 @@
 
 import typing
 
-from .. import core
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawFiringsClient, RawFiringsClient
@@ -30,15 +29,14 @@ class FiringsClient:
     def book_firing(
         self,
         *,
-        glaze_sheet: core.File,
+        kiln_number: str,
         atmosphere: typing.Optional[BookFiringRequestAtmosphere] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        glaze_sheet : core.File
-            See core.File for more documentation
+        kiln_number : str
 
         atmosphere : typing.Optional[BookFiringRequestAtmosphere]
 
@@ -56,10 +54,12 @@ class FiringsClient:
         client = FernApi(
             base_url="https://yourhost.com/path/to/api",
         )
-        client.firings.book_firing()
+        client.firings.book_firing(
+            kiln_number="kilnNumber",
+        )
         """
         _response = self._raw_client.book_firing(
-            glaze_sheet=glaze_sheet, atmosphere=atmosphere, request_options=request_options
+            kiln_number=kiln_number, atmosphere=atmosphere, request_options=request_options
         )
         return _response.data
 
@@ -82,15 +82,14 @@ class AsyncFiringsClient:
     async def book_firing(
         self,
         *,
-        glaze_sheet: core.File,
+        kiln_number: str,
         atmosphere: typing.Optional[BookFiringRequestAtmosphere] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        glaze_sheet : core.File
-            See core.File for more documentation
+        kiln_number : str
 
         atmosphere : typing.Optional[BookFiringRequestAtmosphere]
 
@@ -113,12 +112,14 @@ class AsyncFiringsClient:
 
 
         async def main() -> None:
-            await client.firings.book_firing()
+            await client.firings.book_firing(
+                kiln_number="kilnNumber",
+            )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.book_firing(
-            glaze_sheet=glaze_sheet, atmosphere=atmosphere, request_options=request_options
+            kiln_number=kiln_number, atmosphere=atmosphere, request_options=request_options
         )
         return _response.data

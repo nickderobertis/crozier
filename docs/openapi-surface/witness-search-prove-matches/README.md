@@ -95,13 +95,12 @@ selector the fixture declares, and the detector above is what the search ran.
 | `group-path-ending-in-api-nested-package` | `search-incomplete` | `operation.x-fern-sdk-group-name` | 0 |
 | `literal-enum-value-quote-escaping` | `search-incomplete` | `schema.enum:apostrophe-member` | 0 |
 | `literal-prefixed-integer-path-segment` | `search-incomplete` | `openapi.paths:templated-key` | 1 APIs.guru |
-| `multipart-inline-object-part-json-encoded` | `search-incomplete` | `schema.format=binary` | 3 APIs.guru, 1 registered |
+| `multipart-inline-object-part-json-encoded` | `search-incomplete` | `requestBody.content` | 3 APIs.guru, 1 registered |
 | `multipart-part-encoding-charset-tuple` | `search-incomplete` | `mediaType.encoding.contentType` | 0 |
 | `oneof-duplicate-members-collapsed` | `search-incomplete` | `schema.oneOf` | 0 |
 | `patch-inline-nullable-unrequired-props-omit` | `search-incomplete` | `pathItem.patch` | 2 APIs.guru, 1 registered |
 | `query-param-ref-to-enum-or-array-union-converted` | `search-incomplete` | `schema.items` | 0 |
 | `required-param-and-body-defaults-ignored` | `search-incomplete` | `schema.default` | 0 |
-| `stream-error-status-raises-typed-error` | `search-incomplete` | `response.content` | 5 registered |
 | `string-body-example-backslash-escaped` | `search-incomplete` | `mediaType.example` | 0 |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `search-incomplete` | `schema.properties:non-empty` | 1 APIs.guru |
 | `union-of-enum-ref-const-and-string-members` | `search-incomplete` | `schema.const:string-valued` | 0 |
@@ -123,19 +122,38 @@ What became of every strict declarer of a key above, and why none is a witness.
 | `group-path-ending-in-api-nested-package` | `none-registrable` | no document declares it |
 | `literal-enum-value-quote-escaping` | `none-registrable` | no document declares it; 27 APIs.guru and 4 registered documents quote or escape some values but carry no value with both quotes, a backslash and a non-ASCII character together |
 | `literal-prefixed-integer-path-segment` | `none-registrable` | its one declarer, `mist.com/0.37.7`, is refused by Fern (`CORPUS.md` drops `mist.com` on its duplicate `device_mac` request property); 25 documents type the parameter as a string |
-| `multipart-inline-object-part-json-encoded` | `none-registrable` | every declarer is refused by Fern: `box.com` and `mist.com` (each dropped in `CORPUS.md`) and `gerermesaffaires.com/1.0.6` (a `personId` request-property collision) |
+| `multipart-inline-object-part-json-encoded` | `none-registrable` | every declarer is refused by Fern: `box.com` and `mist.com` (each dropped in `CORPUS.md`) and `gerermesaffaires.com/1.0.6` (a `personId` request-property collision); so are the two that declare the inline object part with no file part beside it, `stripe.com/2022-11-15` (21 errors, first a string example on an object) and `zoom.us/2.0.0` (unparseable date examples, a camelCase request-property collision and unnameable enum values) |
 | `multipart-part-encoding-charset-tuple` | `none-registrable` | no document declares it; three APIs.guru documents and one registered one name a part content type without a `charset` |
 | `oneof-duplicate-members-collapsed` | `none-registrable` | no document declares it; the six that repeat a member repeat a `$ref` |
 | `patch-inline-nullable-unrequired-props-omit` | `none-registrable` | `loket.nl/V2` crashes Fern's generator container (its formatter cannot parse the code it wrote) and `vercel.com/0.0.1` is refused by Fern (duplicate request property names); the registered `discord-com` declares every property nullable as an OpenAPI 3.1 `type: [..., "null"]` array, not the `nullable: true` spelling the shape is about |
 | `query-param-ref-to-enum-or-array-union-converted` | `none-registrable` | no document declares it |
 | `required-param-and-body-defaults-ignored` | `none-registrable` | no document declares both halves; 32 APIs.guru and 6 registered documents declare one |
-| `stream-error-status-raises-typed-error` | `none-registrable` | the five registered declarers (`dot-ai`, `standrig`, `truefoundry-trueforge`, `truefoundry-trueforge-5adde28`, `zoonk`) type their `400` body as an object, never the bare `type: string` whose `parse_obj_as(type_=str, …)` is the shape |
 | `string-body-example-backslash-escaped` | `none-registrable` | no document declares it |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `none-registrable` | its one declarer, `rebilly.com/2.1`, is licensed under Rebilly's own API License Agreement, a proprietary grant the corpus cannot redistribute |
 | `union-of-enum-ref-const-and-string-members` | `none-registrable` | no document declares it; two registered documents pair an enum `$ref` with one of the other two members only |
 | `union-of-two-enum-refs-alias` | `none-registrable` | no document declares it |
 | `variant-nullable-value-optional-default-none` | `none-registrable` | the registered `tlon-notes`, `truefoundry-trueforge` and `truefoundry-trueforge-5adde28` spell the nullable value as an OpenAPI 3.1 `type` array, not `nullable: true` |
 | `variant-own-fields-before-allof-parent-fields` | `none-registrable` | its one declarer, `apple.com/sirikit-cloud-media/1.0.2`, is refused by Fern (a missing `method` discriminant) |
+
+## Blocked
+
+`stream-error-status-raises-typed-error` is not proven here. Fern's
+`reference.md` heading documents every server-sent-event method as returning
+`typing.Iterator[bytes]` while the generated method returns its event type
+(`typing.Iterator[Rotation]` in the document this search measured), and crozier
+reproduces it; that heading is a Fern defect whose correction is not yet on
+the default branch, so no tree carrying it is committed, in either enum mode.
+Its search found no witness either: the five registered declarers
+(`dot-ai`, `standrig`, `truefoundry-trueforge`, `truefoundry-trueforge-5adde28`,
+`zoonk`) type their `400` body as an object, never the bare `type: string`
+whose `parse_obj_as(type_=str, …)` is the shape, and no APIs.guru document
+declares the trigger.
+
+The hand-written fixture of `multipart-inline-object-part-json-encoded`
+carries the inline object part without a file part. With a required file part
+beside it, Fern's worked calls leave the file argument out, an example that
+does not bind and a Fern defect of its own, so the fixture isolates the JSON
+encoding the shape is about.
 
 ## The real witnesses
 

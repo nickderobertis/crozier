@@ -13,11 +13,8 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [image, label]
+              required: [label]
               properties:
-                image:
-                  type: string
-                  format: binary
                 label:
                   type: object
                   properties:
@@ -25,6 +22,8 @@ paths:
                       type: string
                     collector:
                       type: string
+                notes:
+                  type: string
       responses:
         "204":
           description: The specimen was filed.

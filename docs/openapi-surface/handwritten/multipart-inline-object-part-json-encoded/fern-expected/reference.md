@@ -21,7 +21,6 @@ client = FernApi(
 )
 
 client.specimens.upload_specimen(
-    image="example_image",
     label=UploadSpecimenRequestLabel(),
 )
 
@@ -39,7 +38,7 @@ client.specimens.upload_specimen(
 <dl>
 <dd>
 
-**image:** `core.File` 
+**label:** `UploadSpecimenRequestLabel` 
     
 </dd>
 </dl>
@@ -47,7 +46,7 @@ client.specimens.upload_specimen(
 <dl>
 <dd>
 
-**label:** `UploadSpecimenRequestLabel` 
+**notes:** `typing.Optional[str]` 
     
 </dd>
 </dl>

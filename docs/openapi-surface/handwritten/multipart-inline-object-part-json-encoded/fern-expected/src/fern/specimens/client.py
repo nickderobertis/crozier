@@ -2,7 +2,6 @@
 
 import typing
 
-from .. import core
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from .raw_client import AsyncRawSpecimensClient, RawSpecimensClient
@@ -30,17 +29,16 @@ class SpecimensClient:
     def upload_specimen(
         self,
         *,
-        image: core.File,
         label: UploadSpecimenRequestLabel,
+        notes: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        image : core.File
-            See core.File for more documentation
-
         label : UploadSpecimenRequestLabel
+
+        notes : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -62,7 +60,7 @@ class SpecimensClient:
             label=UploadSpecimenRequestLabel(),
         )
         """
-        _response = self._raw_client.upload_specimen(image=image, label=label, request_options=request_options)
+        _response = self._raw_client.upload_specimen(label=label, notes=notes, request_options=request_options)
         return _response.data
 
 
@@ -84,17 +82,16 @@ class AsyncSpecimensClient:
     async def upload_specimen(
         self,
         *,
-        image: core.File,
         label: UploadSpecimenRequestLabel,
+        notes: typing.Optional[str] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
-        image : core.File
-            See core.File for more documentation
-
         label : UploadSpecimenRequestLabel
+
+        notes : typing.Optional[str]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -124,5 +121,5 @@ class AsyncSpecimensClient:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.upload_specimen(image=image, label=label, request_options=request_options)
+        _response = await self._raw_client.upload_specimen(label=label, notes=notes, request_options=request_options)
         return _response.data

@@ -41,7 +41,7 @@ client = FernApi(
 )
 
 client.firings.book_firing(
-    glaze_sheet="example_glazeSheet",
+    kiln_number="kilnNumber",
 )
 ```
 
@@ -61,7 +61,7 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.firings.book_firing(
-        glaze_sheet="example_glazeSheet",
+        kiln_number="kilnNumber",
     )
 
 

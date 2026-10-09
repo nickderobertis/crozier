@@ -3,7 +3,6 @@
 import typing
 from json.decoder import JSONDecodeError
 
-from .. import core
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
@@ -23,15 +22,14 @@ class RawFiringsClient:
     def book_firing(
         self,
         *,
-        glaze_sheet: core.File,
+        kiln_number: str,
         atmosphere: typing.Optional[BookFiringRequestAtmosphere] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
-        glaze_sheet : core.File
-            See core.File for more documentation
+        kiln_number : str
 
         atmosphere : typing.Optional[BookFiringRequestAtmosphere]
 
@@ -46,11 +44,10 @@ class RawFiringsClient:
             "firings",
             method="POST",
             data={
+                "kilnNumber": kiln_number,
                 "atmosphere": atmosphere,
             },
-            files={
-                "glazeSheet": glaze_sheet,
-            },
+            files={},
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,
@@ -75,15 +72,14 @@ class AsyncRawFiringsClient:
     async def book_firing(
         self,
         *,
-        glaze_sheet: core.File,
+        kiln_number: str,
         atmosphere: typing.Optional[BookFiringRequestAtmosphere] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
-        glaze_sheet : core.File
-            See core.File for more documentation
+        kiln_number : str
 
         atmosphere : typing.Optional[BookFiringRequestAtmosphere]
 
@@ -98,11 +94,10 @@ class AsyncRawFiringsClient:
             "firings",
             method="POST",
             data={
+                "kilnNumber": kiln_number,
                 "atmosphere": atmosphere,
             },
-            files={
-                "glazeSheet": glaze_sheet,
-            },
+            files={},
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,
