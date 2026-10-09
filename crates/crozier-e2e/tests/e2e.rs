@@ -49,6 +49,11 @@ mod overlay_goldens;
 #[path = "e2e/literals_mode.rs"]
 mod literals_mode;
 
+/// The registered real specifications proving parity shapes, held to the
+/// shapes they declare.
+#[path = "e2e/real_witnesses.rs"]
+mod real_witnesses;
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]

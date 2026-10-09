@@ -153,7 +153,7 @@ no hand-written fixture.
 | `variant-optional-const-discriminant-merged` | corpus row 75, `letta`: `SystemMessage` declares `message_type` as an optional `const`, and `LettaStreamingResponse_SystemMessage` carries only the variant's literal, first | `tests/fixtures/letta/expected` | `letta_matches_fern_output` |
 
 `prove_matches_real_witnesses_declare_their_shapes` in
-[`../../../crates/crozier-e2e/tests/e2e.rs`](../../../crates/crozier-e2e/tests/e2e.rs)
+[`../../../crates/crozier-e2e/tests/e2e/real_witnesses.rs`](../../../crates/crozier-e2e/tests/e2e/real_witnesses.rs)
 holds each row to its source and golden, so a regenerated golden or a moved
 schema that stops declaring the shape fails rather than leaving the claim
 standing.
