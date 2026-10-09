@@ -7,7 +7,8 @@ a golden that fails fails the recipe by name.
 The variants run the script's own text with one inventory swapped in, as
 `bash -c TEXT PATH` so `$0` is still the real script and it runs in this checkout.
 
-Run: `just test-corpus-offline` (the `corpus-match` project's `test-offline`).
+Run: `just nx run corpus-match:test-selection` (part of the project's `test`).
+It builds and runs the real nextest and crozier, so it stays out of `test-offline`.
 """
 from __future__ import annotations
 

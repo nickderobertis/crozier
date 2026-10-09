@@ -65,8 +65,7 @@
         "commands": [
           "python3 tests/corpus_match/corpus_offline_test.py",
           "python3 tests/corpus_match/corpus_offline_recovery_test.py",
-          "python3 tests/corpus_match/match_usage_test.py",
-          "python3 tests/corpus_match/match_selection_test.py"
+          "python3 tests/corpus_match/match_usage_test.py"
         ],
         "parallel": false
       },
@@ -91,12 +90,35 @@
       ],
       "parallelism": false
     },
+    "test-selection": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/corpus_match/match_selection_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "generator",
+        "default"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
         "test-match",
         "test-strict",
-        "test-offline"
+        "test-offline",
+        "test-selection"
       ]
     },
     "lint": {
