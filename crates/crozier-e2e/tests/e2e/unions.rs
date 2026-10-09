@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 
 use super::{
     departure_ledger, golden_path, golden_tree_failures, probe_artifact_digest, probe_command,
-    refusal_run, refused_failures, repo_root, walk_files, HANDWRITTEN_DIR,
+    refusal_run, refused_failures, repo_root, walk_files, GoldenLedger, HANDWRITTEN_DIR,
 };
 
 /// Every hand-written union fixture, each with a literals overlay under
@@ -37,14 +37,26 @@ const LITERALS_DIR: &str = "docs/fern-measurements/union-literals";
 /// The overlay manifest.
 const MANIFEST: &str = ".crozier-overlay.json";
 
+/// Every literals overlay the comparisons read, as the inventory of compared
+/// goldens records it: its repository-relative path and the file in it no
+/// comparison reads (its manifest).
+pub(super) fn compared() -> Vec<(String, Vec<String>)> {
+    FIXTURES
+        .iter()
+        .map(|name| (format!("{LITERALS_DIR}/{name}"), vec![MANIFEST.to_string()]))
+        .collect()
+}
+
 fn fixture(name: &str) -> PathBuf {
     repo_root().join(HANDWRITTEN_DIR).join(name)
 }
 
 /// `fixture`'s literals tree: `fern-expected/` less the files the manifest
 /// removes, with the overlay laid over it, held to the manifest's digest of the
-/// complete tree Fern generated.
-fn literals_tree(name: &str) -> Result<tempfile::TempDir, String> {
+/// complete tree Fern generated; and the ledger that tree is held to — the
+/// overlay's own rows for the files it carries, `fern-expected/`'s for the
+/// rest.
+fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String> {
     let overlay = repo_root().join(LITERALS_DIR).join(name);
     let text = std::fs::read_to_string(overlay.join(MANIFEST))
         .map_err(|error| format!("{name}: cannot read its literals manifest: {error}"))?;
@@ -94,12 +106,33 @@ fn literals_tree(name: &str) -> Result<tempfile::TempDir, String> {
             manifest["digest"]
         ));
     }
-    Ok(tree)
+    let own = walk_files(&overlay)
+        .into_iter()
+        .filter(|rel| rel != MANIFEST)
+        .collect();
+    let removed: Vec<String> = removed.iter().map(|rel| (*rel).to_string()).collect();
+    let ledger = departure_ledger()
+        .golden(&format!("{LITERALS_DIR}/{name}"), &[])
+        .and_then(|own_rows| {
+            Ok(own_rows.inherit(
+                departure_ledger().golden(&golden_path(&base), &[])?,
+                own,
+                &removed,
+            ))
+        })
+        .map_err(|failures| failures.join("\n"))?;
+    Ok((tree, ledger))
 }
 
 /// Every way crozier's output over `spec` under `enum_type` fails to match the
-/// Fern tree `expected` that `fixture`'s ledger rows belong to.
-fn tree_failures(name: &str, spec: &Path, expected: &Path, enum_type: &str) -> Vec<String> {
+/// Fern tree `expected`, held to `ledger`.
+fn tree_failures(
+    name: &str,
+    spec: &Path,
+    expected: &Path,
+    enum_type: &str,
+    ledger: &GoldenLedger,
+) -> Vec<String> {
     let out = tempfile::tempdir().expect("tempdir");
     let result = probe_command(spec, out.path())
         .args(["--enum-type", enum_type])
@@ -111,18 +144,18 @@ fn tree_failures(name: &str, spec: &Path, expected: &Path, enum_type: &str) -> V
             String::from_utf8_lossy(&result.stderr)
         )];
     }
-    let golden = golden_path(&fixture(name).join("fern-expected"));
-    let ledger = match departure_ledger().golden(&golden, &[]) {
-        Ok(ledger) => ledger,
-        Err(failures) => return failures,
-    };
     golden_tree_failures(
         name,
         &format!("{}, enum-type={enum_type}", spec.display()),
-        &ledger,
+        ledger,
         expected,
         out.path(),
     )
+}
+
+/// The ledger rows `fixture`'s committed python-enums tree is held to.
+fn fern_expected_ledger(name: &str) -> Result<GoldenLedger, Vec<String>> {
+    departure_ledger().golden(&golden_path(&fixture(name).join("fern-expected")), &[])
 }
 
 /// Each fixture's complete certified tree, Python enums and literals, byte-equal
@@ -133,14 +166,11 @@ fn union_shapes_match_complete_goldens_in_both_enum_modes() {
     let mut failures = Vec::new();
     for name in FIXTURES {
         let spec = fixture(name).join("openapi.yml");
-        failures.extend(tree_failures(
-            name,
-            &spec,
-            &fixture(name).join("fern-expected"),
-            "python-enums",
-        ));
+        failures.extend(matches_golden(name, &spec));
         match literals_tree(name) {
-            Ok(tree) => failures.extend(tree_failures(name, &spec, tree.path(), "literals")),
+            Ok((tree, ledger)) => {
+                failures.extend(tree_failures(name, &spec, tree.path(), "literals", &ledger))
+            }
             Err(error) => failures.push(error),
         }
     }
@@ -196,12 +226,16 @@ fn respell(text: &str, stem: &str, with: impl Fn(&str, &str) -> String) -> Strin
 
 /// The fixture's certified tree against crozier over `spec`, Python enums.
 fn matches_golden(name: &str, spec: &Path) -> Vec<String> {
-    tree_failures(
-        name,
-        spec,
-        &fixture(name).join("fern-expected"),
-        "python-enums",
-    )
+    match fern_expected_ledger(name) {
+        Ok(ledger) => tree_failures(
+            name,
+            spec,
+            &fixture(name).join("fern-expected"),
+            "python-enums",
+            &ledger,
+        ),
+        Err(failures) => failures,
+    }
 }
 
 /// `x-crozier-discriminated` and the discriminator's `x-crozier-property-name`

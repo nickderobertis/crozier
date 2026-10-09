@@ -19,6 +19,71 @@
     "docs/fern-measurements/parameter-lowering/query-union-placement/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/query-union-temporal-member/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected": {},
+    "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/bakery-get-body-member": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/ferry-mapping-outside-schemas": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/greenhouse-undiscriminated-unions": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/harbor-nullable-inline-object": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/kitchen-nested-mapping-target": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/library-union-shared-fields": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/museum-titled-array-items": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/pharmacy-nullable-scalar-unions": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/quiz-nullable-response-union": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/survey-map-value-union": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/telescope-renamed-discriminant": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/union-literals/thermostat-nullable-member": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "docs/openapi-surface/authored-probes/353-method-optional-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-method-required-array/fern-expected": {},
     "docs/openapi-surface/authored-probes/353-promoted-required-array/fern-expected": {},

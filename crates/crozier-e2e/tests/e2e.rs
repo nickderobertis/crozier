@@ -771,8 +771,9 @@ fn load_departure_ledger(root: &Path) -> Result<Ledger, Vec<String>> {
 
 /// The inventory of compared goldens, derived from the comparisons' own
 /// registrations under `root`: each registered corpus's `expected/` and each
-/// overlay golden of one, with that corpus's file-level carve-outs; each flat
-/// golden; each probe, authored-probe, hand-written and measured
+/// overlay golden of one, with that corpus's file-level carve-outs; each union
+/// fixture's literals overlay; each flat golden; each probe, authored-probe,
+/// hand-written and measured
 /// parameter-lowering tree; and each Fern
 /// reference tree a departure's evidence holds, which `crozier compare` reads in
 /// `departures_ledger_gate`. An overlay
@@ -803,6 +804,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden {
                 excluded,
                 carve_outs: recorded_carve_outs(corpus),
+            },
+        );
+    }
+    for (golden, excluded) in unions::compared() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded,
+                carve_outs: Default::default(),
             },
         );
     }
