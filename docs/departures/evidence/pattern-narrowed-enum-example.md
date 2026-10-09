@@ -23,8 +23,8 @@ arguments, altered annotations or another rejected replacement do not match.
 Executed on 2026-10-08 with Python 3.14.7, jsonschema 4.26.0 and PyYAML 6.0.3:
 
 ```sh
-python docs/departures/evidence/pattern-narrowed-enum-example.py docs/openapi-surface/handwritten/measurement-phase/fern-expected docs/openapi-surface/handwritten/measurement-phase/openapi.yml
-python docs/departures/evidence/pattern-narrowed-enum-example.py docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected docs/openapi-surface/handwritten/measurement-phase/openapi.yml
+python crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py docs/openapi-surface/handwritten/measurement-phase/fern-expected docs/openapi-surface/handwritten/measurement-phase/openapi.yml
+python crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected docs/openapi-surface/handwritten/measurement-phase/openapi.yml
 ```
 
 Both invocations reported:

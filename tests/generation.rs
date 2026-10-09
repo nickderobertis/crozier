@@ -14869,36 +14869,6 @@ components:
 }
 
 #[test]
-fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
-    let script = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/departures/evidence/pattern-narrowed-enum-example.py");
-    let python = ["python3", "python"]
-        .into_iter()
-        .find(|candidate| {
-            std::process::Command::new(candidate)
-                .arg("--version")
-                .output()
-                .is_ok_and(|output| output.status.success())
-        })
-        .expect("Python 3 required for repository evidence tools");
-    let run = |args: &[&str]| {
-        std::process::Command::new(python)
-            .arg(&script)
-            .args(args)
-            .output()
-            .unwrap()
-    };
-    assert!(run(&["--help"]).status.success());
-    let missing = run(&[]);
-    assert!(!missing.status.success());
-    assert!(String::from_utf8_lossy(&missing.stderr).contains("usage:"));
-    let absent = run(&["absent-sdk", "absent-source"]);
-    assert!(!absent.status.success());
-    assert!(String::from_utf8_lossy(&absent.stderr).contains("supply the complete SDK"));
-    assert!(run(&["--help"]).status.success());
-}
-
-#[test]
 fn literal_boolean_request_and_path_examples_preserve_the_declared_value() {
     let mut source = serde_json::json!({
         "openapi":"3.0.3", "info":{"title":"Marker Controls","version":"1.0.0"},

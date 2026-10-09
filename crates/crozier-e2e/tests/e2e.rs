@@ -21176,11 +21176,42 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
 }
 
 #[test]
+fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
+    let script =
+        repo_root().join("crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py");
+    let python = ["python3", "python"]
+        .into_iter()
+        .find(|candidate| {
+            std::process::Command::new(candidate)
+                .arg("--version")
+                .output()
+                .is_ok_and(|output| output.status.success())
+        })
+        .expect("Python 3 required for repository evidence tools");
+    let run = |args: &[&str]| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    assert!(run(&["--help"]).status.success());
+    let missing = run(&[]);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("usage:"));
+    let absent = run(&["absent-sdk", "absent-source"]);
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("supply the complete SDK"));
+    assert!(run(&["--help"]).status.success());
+}
+
+#[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {
     let root = repo_root();
     let fixture = root.join("docs/openapi-surface/handwritten/measurement-phase");
-    let script = root.join("docs/departures/evidence/pattern-narrowed-enum-example.py");
+    let script =
+        root.join("crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py");
     let mut requirements = pyproject_requirements(
         &std::fs::read_to_string(fixture.join("fern-expected/pyproject.toml")).unwrap(),
     );

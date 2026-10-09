@@ -1,4 +1,3 @@
-# llmlint: ignore[new_code_lands_in_a_project] This Cargo/just repository has no Nx graph. The real sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers journey runs this checker through the existing just test-sdk-env tier.
 """Validate the certified pattern-narrowing example fault without sending requests."""
 
 import argparse
