@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Typesetter
+  version: 1.0.0
+paths:
+  /galleys:
+    post:
+      operationId: setGalley
+      tags: [galleys]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+            example: 'head\nbody\tfoot'
+      responses:
+        "204":
+          description: The galley was set.

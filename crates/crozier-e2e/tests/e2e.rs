@@ -44,6 +44,11 @@ mod default_max_retries;
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
 
+/// The parity shapes measured under Fern's default `enum_type`, against
+/// crozier's `--enum-type literals`.
+#[path = "e2e/literals_mode.rs"]
+mod literals_mode;
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -824,6 +829,24 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
                 add(
                     format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
                     departures_ledger::ComparedGolden::default(),
+                );
+            }
+        }
+    }
+    if let Ok(entries) = std::fs::read_dir(root.join(literals_mode::LITERALS_MODE_DIR)) {
+        for entry in entries.filter_map(Result::ok) {
+            if entry.path().join(literals_mode::TREE).is_dir() {
+                add(
+                    format!(
+                        "{}/{}/{}",
+                        literals_mode::LITERALS_MODE_DIR,
+                        entry.file_name().to_string_lossy(),
+                        literals_mode::TREE
+                    ),
+                    departures_ledger::ComparedGolden {
+                        excluded: vec![literals_mode::MANIFEST.to_string()],
+                        carve_outs: Default::default(),
+                    },
                 );
             }
         }

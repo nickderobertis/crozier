@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Rope Walk
+  version: 1.0.0
+paths:
+  /coils:
+    post:
+      operationId: orderCoil
+      tags: [coils]
+      parameters:
+        - name: lengthM
+          in: query
+          required: true
+          schema:
+            type: integer
+            default: 120
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [fibre]
+              properties:
+                fibre:
+                  type: string
+                  default: manila
+      responses:
+        "204":
+          description: The coil was ordered.

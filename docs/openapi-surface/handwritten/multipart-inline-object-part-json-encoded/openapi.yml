@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Herbarium Intake
+  version: 1.0.0
+paths:
+  /specimens:
+    post:
+      operationId: uploadSpecimen
+      tags: [specimens]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [image, label]
+              properties:
+                image:
+                  type: string
+                  format: binary
+                label:
+                  type: object
+                  properties:
+                    genus:
+                      type: string
+                    collector:
+                      type: string
+      responses:
+        "204":
+          description: The specimen was filed.

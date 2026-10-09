@@ -1,0 +1,18 @@
+openapi: 3.0.3
+info:
+  title: Chart Room
+  version: 1.0.0
+paths:
+  /charts/sheet-n{sheet}:
+    get:
+      operationId: fetchSheet
+      tags: [charts]
+      parameters:
+        - name: sheet
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: The sheet was found.

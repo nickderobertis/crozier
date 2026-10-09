@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Pottery Kiln
+  version: 1.0.0
+paths:
+  /firings:
+    post:
+      operationId: bookFiring
+      tags: [firings]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [glazeSheet]
+              properties:
+                glazeSheet:
+                  type: string
+                  format: binary
+                atmosphere:
+                  type: string
+                  enum: [reduction]
+      responses:
+        "204":
+          description: The firing was booked.

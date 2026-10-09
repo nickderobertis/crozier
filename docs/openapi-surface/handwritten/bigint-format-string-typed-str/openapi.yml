@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Starlight Survey
+  version: 1.0.0
+paths:
+  /exposures/{exposureId}:
+    get:
+      operationId: fetchExposure
+      tags: [exposures]
+      parameters:
+        - name: exposureId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One exposure and its photon tally.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exposure"
+components:
+  schemas:
+    Exposure:
+      type: object
+      required: [photons]
+      properties:
+        photons:
+          type: string
+          format: bigint
+        filterBand:
+          type: string

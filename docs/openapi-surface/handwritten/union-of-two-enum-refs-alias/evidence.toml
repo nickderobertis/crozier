@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "81673cbaad61f49b86f7585db7cde05db5e869341788a1abc866ba8d8d975462"
+
+[[covers]]
+key = "union-of-two-enum-refs-alias"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

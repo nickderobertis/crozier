@@ -1,0 +1,48 @@
+openapi: 3.1.0
+info:
+  title: Stove Shop
+  version: 1.0.0
+paths:
+  /stoves/{stoveId}:
+    get:
+      operationId: fetchStove
+      tags: [stoves]
+      parameters:
+        - name: stoveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The stove.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Stove"
+components:
+  schemas:
+    WoodStove:
+      type: object
+      required: [flueCm]
+      properties:
+        flueCm:
+          type: integer
+        burns:
+          type: string
+          const: wood
+    PelletStove:
+      type: object
+      required: [hopperKg]
+      properties:
+        hopperKg:
+          type: number
+    Stove:
+      oneOf:
+        - $ref: "#/components/schemas/WoodStove"
+        - $ref: "#/components/schemas/PelletStove"
+      discriminator:
+        propertyName: burns
+        mapping:
+          wood: "#/components/schemas/WoodStove"
+          pellet: "#/components/schemas/PelletStove"
