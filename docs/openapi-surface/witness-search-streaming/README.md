@@ -37,11 +37,14 @@ declare a key, and [`screens.tsv`](screens.tsv) screens each of them:
   revision `8119842ae6f1f5ecfaf42b06fa0d1ffec675def4` is corpus row 1600,
   `zylon-private-gpt`. It is the last revision before the publisher's 2026
   revamp dropped the extension.
-- **Deferred.** Mozilla's Tabstack API (`Mozilla-Ocho/tabstack-cli`, MIT) declares
-  `media-type-event-stream-event-dispatch` completely, and Fern generates it.
-  crozier's event-field dispatch blocks in its `automate` and `research` raw
-  clients match the certified pair byte for byte. The rest of its tree differs
-  outside the streaming seam in four classes:
+- **Deferred.** Mozilla's Tabstack API (`Mozilla-Ocho/tabstack-cli`, MIT) is an
+  admissible, complete candidate. It is the publisher's own description, its
+  repository licence is one [`docs/corpus-licensing.md`](../../corpus-licensing.md)
+  admits, and it declares `media-type-event-stream-event-dispatch` completely.
+  Fern generates it. crozier's event-field dispatch blocks in its `automate` and
+  `research` raw clients match the certified pair byte for byte. Its registration
+  is deferred to a follow-up because its complete golden depends on seams outside
+  streaming, which other work owns. The rest of its tree differs in four classes:
   - an `operationId` read with its tag (`automateV1` under `Automate` is Fern's
     `automate_v1`);
   - deep inline union variant hoisting;
