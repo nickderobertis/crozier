@@ -894,7 +894,7 @@ class FernRuns(unittest.TestCase):
 class DiagnosticExtraction(unittest.TestCase):
     """What `diagnostics` reads off a Fern log, over the generator's own lines."""
 
-    module: Any
+    module: ModuleType
 
     @classmethod
     def setUpClass(cls) -> None:
