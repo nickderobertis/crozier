@@ -36,7 +36,6 @@ const LITERALS_DIR: &str = "docs/fern-measurements/union-literals";
 /// The directory in each fixture's entry that holds Fern's overlay tree.
 const OVERLAY_DIR: &str = "fern-expected";
 
-/// The overlay manifest.
 const MANIFEST: &str = ".crozier-overlay.json";
 
 /// Every literals overlay the comparisons read, as the inventory of compared

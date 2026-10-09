@@ -12544,7 +12544,7 @@ fn overlapping_all_of_fields_flatten_the_base_model() {
 }
 
 #[test]
-fn nested_and_union_nullability_is_preserved() {
+fn nested_nullability_is_preserved_and_a_nullable_scalar_union_stays_bare() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        labels:\n          type: array\n          items: { type: string, nullable: true }\n        roles:\n          type: array\n          items:\n            type: object\n            nullable: true\n            properties:\n              name: { type: string }\n    Schedule:\n      nullable: true\n      anyOf:\n        - { type: integer }\n        - { type: string }\n",
     );

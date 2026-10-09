@@ -15,9 +15,8 @@ PastryCourse`, where `GrillCourse` is itself a `oneOf` of the `$ref`s
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (the certified pair), in
-the workspace [`../../openapi-surface/probes/AGENTS.md`](../../openapi-surface/probes/AGENTS.md#re-running-one)
-prescribes, generates the fixture's committed
+Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (the certified pair)
+generates the fixture's committed
 [`fern-expected/`](../../openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected/).
 Its `Course_Grill` wrapper is `value: GrillCourse` beside
 `station: typing.Literal["grill"]`, and the method docstrings in
@@ -31,15 +30,12 @@ Markdown writers instead write:
 
 ## Why it is a defect
 
-The snippets do not compile. Running
-[`union-value-wrapper-docs-example.py`](union-value-wrapper-docs-example.py)
-over the committed Fern tree and crozier's tree for the same document (with
-`pydantic`, `httpx` and `typing_extensions` available):
+The snippets do not compile.
+[`union-value-wrapper-docs-example.py`](union-value-wrapper-docs-example.py),
+which `just test-sdk-env` runs over the committed Fern tree and crozier's tree
+for the same document (the journey named at the end of this note), prints:
 
 ```text
-$ uv run --no-project --with "pydantic>=2" --with httpx --with typing_extensions \
-    python docs/departures/evidence/union-value-wrapper-docs-example.py \
-    docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected <crozier tree>
 fern README.md block 1: SyntaxError: expected argument value expression (line 9: 'grill=,')
 fern README.md block 2: SyntaxError: expected argument value expression (line 13: 'grill=,')
 fern reference.md block 1: SyntaxError: expected argument value expression (line 9: 'grill=,')

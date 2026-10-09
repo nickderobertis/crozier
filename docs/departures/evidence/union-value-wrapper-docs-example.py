@@ -1,3 +1,4 @@
+# llmlint: ignore[new_code_lands_in_a_project] Executable departure evidence lives beside its note, as body-query-parameter-value.py does; Nx still runs and skips it, because sdk-env's `test` target, whose sdk_env_union_value_wrapper_docs_examples_compile_only_in_crozier journey runs it, takes docs/departures/** as an input through goldenReads. tests/sdk_env/AGENTS.md keeps journey code out of that project.
 """`union-value-wrapper-docs-example`: compile every `Course_Grill` snippet of
 Fern's README.md and reference.md, then compile crozier's and bind its request
 argument to the generated client's `fire_ticket`.
