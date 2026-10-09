@@ -711,9 +711,9 @@ pub enum Streaming {
 /// streams, one that clears it and returns the buffered response.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct StreamingMapping {
-    /// The stream encoding: `sse`, or `json` for newline-delimited JSON.
+    /// The stream encoding.
     #[serde(default)]
-    pub format: Option<String>,
+    pub format: Option<StreamFormat>,
     /// The buffered response schema, used when the condition is cleared.
     #[serde(default)]
     pub response: Option<Schema>,
@@ -728,6 +728,16 @@ pub struct StreamingMapping {
     /// event without data ends it.
     #[serde(default)]
     pub terminator: Option<String>,
+}
+
+/// How a declared stream is framed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StreamFormat {
+    /// Server-Sent Events (`sse`).
+    Sse,
+    /// Newline-delimited JSON (`json`).
+    Json,
 }
 
 impl<'de> Deserialize<'de> for Streaming {
@@ -782,7 +792,7 @@ impl Streaming {
     #[must_use]
     pub fn is_sse(&self) -> bool {
         self.mapping()
-            .is_some_and(|mapping| mapping.format.as_deref() == Some("sse"))
+            .is_some_and(|mapping| mapping.format == Some(StreamFormat::Sse))
     }
 
     /// Whether the extension makes the operation stream without a

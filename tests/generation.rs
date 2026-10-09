@@ -14650,6 +14650,21 @@ fn the_crozier_streaming_spelling_wins_a_conflict() {
     assert!(!raw.contains("[B]"), "{raw}");
 }
 
+/// A format other than `sse` or `json` is a parse error naming the extension.
+#[test]
+fn an_unknown_streaming_format_is_refused() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        streaming_operation("      x-fern-streaming: { format: websocket }", JSON_MEDIA),
+    )
+    .unwrap();
+    let error = crozier::openapi::load(&path).unwrap_err().to_string();
+    assert!(error.contains("x-fern-streaming"), "{error}");
+    assert!(error.contains("websocket"), "{error}");
+}
+
 /// Neither a boolean nor a mapping is a parse error naming the extension.
 #[test]
 fn a_streaming_extension_of_another_type_is_refused() {

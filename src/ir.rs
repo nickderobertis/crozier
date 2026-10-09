@@ -7,8 +7,8 @@ use indexmap::IndexMap;
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{
-    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, Streaming,
-    StreamingMapping, TypeField,
+    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, StreamFormat,
+    Streaming, StreamingMapping, TypeField,
 };
 
 /// Which arm of this module ran, asked of the generator rather than of its
@@ -2813,7 +2813,11 @@ fn stream_condition_variants(
         // streaming/buffered resolution downstream pick the right one.
         operation.set_streaming(stream.then(|| {
             Streaming::Mapping(Box::new(StreamingMapping {
-                format: Some(if streaming.is_sse() { "sse" } else { "json" }.into()),
+                format: Some(if streaming.is_sse() {
+                    StreamFormat::Sse
+                } else {
+                    StreamFormat::Json
+                }),
                 terminator: streaming.terminator().map(str::to_string),
                 ..StreamingMapping::default()
             }))
