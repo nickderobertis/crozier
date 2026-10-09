@@ -9752,23 +9752,19 @@ impl Builder<'_> {
                             sole
                         }
                     }
+                    (false, _) if !schema_accepts_none(schema, self.schemas) => {
+                        TypeRef::Union(members)
+                    }
                     // A 3.0 `nullable: true` beside two or more plain scalars is
                     // not read onto the alias: the hand-written
                     // `pharmacy-nullable-scalar-unions` fixture's `Dose` is
                     // `{nullable: true, oneOf: [integer, string]}` and Fern's
                     // alias is `typing.Union[int, str]`.
                     (false, _) if variants.iter().all(is_plain_scalar) => {
-                        // The 3.0 `nullable` stays off the alias (see above).
+                        // The nullability stays off the alias (see above).
                         TypeRef::Union(members)
                     }
-                    (false, _) => {
-                        let target = TypeRef::Union(members);
-                        if schema_accepts_none(schema, self.schemas) {
-                            optional_type_ref(target)
-                        } else {
-                            target
-                        }
-                    }
+                    (false, _) => optional_type_ref(TypeRef::Union(members)),
                 };
                 self.types.push(TypeDecl::Alias(AliasType {
                     reach_refs,
