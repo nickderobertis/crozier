@@ -13703,7 +13703,7 @@ class ParityProofIndexTests(unittest.TestCase):
         section = index.split("## Parity repair proof index", 1)[1].split("### Handed-off real witnesses", 1)[0]
         rows = [cells for line in section.splitlines()
                 if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}]
-        self.assertEqual(33, len(rows))
+        self.assertEqual(34, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
