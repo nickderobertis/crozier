@@ -122,7 +122,7 @@ three ways:
   the arm, and crozier byte-matches the tree Fern generated from it. That is the
   same weaker proof as the `handwritten` rows, so each of the 78 is still
   one of the 86 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 52 read `exhausted`, 25 read `search-incomplete`
+  The cited records of 49 read `exhausted`, 28 read `search-incomplete`
   and 1 read `config-gated`. The bounded replacement searches preserve their
   limits. The config-gated `discriminator-mapping` arm runs only under an
   audience filter, which no search probe sets.
@@ -3314,7 +3314,7 @@ all four, so the order can be checked rather than trusted.
   Fern's own check refuses), left this list when corpus row 144 registered a
   witness Fern accepts.
 
-**The median blind-spot count of this list is 835** — seven entries name
+**The median blind-spot count of this list is 912** — seven entries name
 `src/emit.rs` and one `src/naming.rs`, and 0 of the 8 entries name no `src/`
 file at all. 0 of the 8 ranked entries reach no blind region. Criteria 1 to 4
 separate three groups: the six example arms naming one `src/emit.rs` place,
@@ -3324,14 +3324,14 @@ Criterion 5 orders the six.
 
 | # | key | region | 1. crozier sites | 2. blind spots | 3. artifacts | 4. witnesses |
 |---|---|---|---|---|---|---|
-| 1 | [`schema-example-array-null-element`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
-| 2 | [`schema-example-fractional-on-integer`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
-| 3 | [`schema-example-on-ref-to-enum`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
-| 4 | [`schema-example-on-ref-to-union`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
-| 5 | [`schema-example-temporal-duplicate-element`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
-| 6 | [`schema-example-union-ref-sentinel`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
+| 1 | [`schema-example-array-null-element`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
+| 2 | [`schema-example-fractional-on-integer`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
+| 3 | [`schema-example-on-ref-to-enum`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
+| 4 | [`schema-example-on-ref-to-union`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
+| 5 | [`schema-example-temporal-duplicate-element`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
+| 6 | [`schema-example-union-ref-sentinel`](openapi-surface/schemas.md) | `schemas` | **1** (`src/emit.rs` 1) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
 | 7 | [`operation-id-digit-leading-method`](openapi-surface/document-paths.md) | `document-paths` | **1** (`src/naming.rs` 1) | **42** (`src/naming.rs` 38) | **3** (client.py, raw_client.py, reference.md) | **0** |
-| 8 | [`schema-example-on-ref-to-object`](openapi-surface/schemas.md) | `schemas` | **2** (`src/emit.rs` 2) | **835** (`src/emit.rs` 405) | **2** (client.py, reference.md) | **0** |
+| 8 | [`schema-example-on-ref-to-object`](openapi-surface/schemas.md) | `schemas` | **2** (`src/emit.rs` 2) | **912** (`src/emit.rs` 912) | **2** (client.py, reference.md) | **0** |
 
 ### Generated shapes with no registrable witness
 
@@ -3517,22 +3517,22 @@ two are joined below, in the report's own columns: **printed** is the count
 `just fixtures-coverage` reports for the file and the one criterion 2 ranks on,
 and **by tier** is the breakdown it reports beside it. Printed sums the two
 non-golden tiers, so a region both tiers reach counts twice — the report's own
-`total 6909 region(s) across 23 file(s)` line is the de-duplicated union, and the
+`total 7320 region(s) across 23 file(s)` line is the de-duplicated union, and the
 functions named in each verdict are counted from that union.
 
 | `src/` file | printed | by tier | ranked gaps pointing at it | verdict |
 |---|---:|---:|---|---|
 | `src/settings.rs` | 1312 | all-e2e 654, non-e2e 658 | none | **Neither.** Generator settings and source precedence are held by configuration journeys, outside the OpenAPI feature census. Measured union: 678 regions. Largest function contributions: `explain` 233, `merge` 46, `resolve` 44. |
+| `src/departures.rs` | 1304 | all-e2e 567, non-e2e 737 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 743 regions. Largest function contributions: `union_value_wrapper_docs_example` 133, `nullable_items_docs` 96, `crozier_classes` 50, `from_sources` 50. |
 | `src/document_refusals/examples.rs` | 1242 | all-e2e 619, non-e2e 623 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 623 regions. Largest function contributions: `validate` 97, `fern_examples` 85, `merged_member_enum` 57. |
 | `src/document_refusals.rs` | 1238 | all-e2e 603, non-e2e 635 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 637 regions. Largest function contributions: `example_without_discriminant` 66, `check_sdk` 66, `imported_reference_scheme` 55. |
+| `src/ir.rs` | 1238 | all-e2e 573, non-e2e 665 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 753 regions. Largest function contributions: `hoist_union_variant` 121, `discriminated_union` 76, `resolve_schema_pointer` 49. 76 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/compare/mod.rs` | 1206 | all-e2e 568, non-e2e 638 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 639 regions. Largest function contributions: `check_generator` 242, `run` 100, `check_config` 53. |
-| `src/departures.rs` | 1011 | all-e2e 423, non-e2e 588 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 593 regions. Largest function contributions: `nullable_items_docs` 96, `from_sources` 46, `crozier_docs_without_lifted` 43. |
-| `src/emit.rs` | 835 | all-e2e 316, non-e2e 519 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 535 regions. Largest function contributions: `build_example_inner` 52, `clean_flat_tree` 43, `path_object_value` 39. 5 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/ir.rs` | 822 | all-e2e 365, non-e2e 457 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 545 regions. Largest function contributions: `hoist_union_variant` 55, `resolve_schema_pointer` 49, `field_type_ref` 43. 76 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | 736 | all-e2e 332, non-e2e 404 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 407 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 2 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/emit.rs` | 912 | all-e2e 355, non-e2e 557 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 573 regions. Largest function contributions: `build_example_inner` 83, `clean_flat_tree` 43, `path_object_value` 39. 5 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | 744 | all-e2e 336, non-e2e 408 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 411 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 2 of [the 86 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/name_refusals.rs` | 674 | all-e2e 347, non-e2e 327 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 347 regions. Largest function contributions: `source_refusals` 121, `validate_ir` 46, `source_request_properties` 44. |
+| `src/document_refusals/type_not_defined.rs` | 601 | all-e2e 296, non-e2e 305 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 305 regions. Largest function contributions: `api_file_reference` 125, `declares_type` 53, `body_declares_type` 39. |
 | `src/compare/report.rs` | 596 | all-e2e 260, non-e2e 336 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 336 regions. Largest function contributions: `render_result` 95, `render` 77, `nullable` 44. |
-| `src/document_refusals/type_not_defined.rs` | 579 | all-e2e 285, non-e2e 294 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 294 regions. Largest function contributions: `api_file_reference` 102, `declares_type` 53, `body_declares_type` 39. |
 | `src/parity.rs` | 422 | all-e2e 199, non-e2e 223 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 223 regions. Largest function contributions: `unified_diff` 83, `compare_trees` 79, `file_difference` 47. |
 | `src/compare/discover.rs` | 408 | all-e2e 203, non-e2e 205 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 206 regions. Largest function contributions: `discover` 68, `configs_in_tree` 51, `walk_without_git` 39. |
 | `src/cli.rs` | 392 | all-e2e 178, non-e2e 214 | none | **Neither.** CLI dispatch and configuration presentation are held by subprocess journeys. Measured union: 217 regions. Largest function contributions: `do_config` 60, `run_other` 43, `do_compare` 30. |
@@ -3548,7 +3548,7 @@ functions named in each verdict are counted from that union.
 
 **Where the two backlogs agree.** Seven `FIXTURE` gaps point at `src/emit.rs`
 and the digit-leading method gap points at `src/naming.rs`. Their criterion-2
-scores are this measurement's printed counts, 835 and 42. The other files
+scores are this measurement's printed counts, 912 and 42. The other files
 have no ranked `FIXTURE` gap pointing at them; their per-arm proof and refusal
 measurements are independent of that backlog.
 
@@ -3556,9 +3556,9 @@ measurements are independent of that backlog.
 region is work only crozier's own tests hold; it is not automatically an OpenAPI
 feature awaiting a corpus witness. Configuration, comparison, rendering and
 refusal boundaries occupy much of this block. The two largest unranked files,
-`src/document_refusals/examples.rs`, `src/settings.rs`,
-together 2,554 of the block's 12,506 printed regions, are
-configuration and refusal code. Successful corpus goldens cannot prove every
+`src/departures.rs` and `src/settings.rs`,
+together 2,616 of the block's 13,322 printed regions, are
+comparison and configuration code. Successful corpus goldens cannot prove every
 failure path there. The table's verdicts distinguish those boundaries from
 lowering and example combinations that a new real specification could reach.
 
@@ -4695,8 +4695,8 @@ the recipe, a stale table fails the gate.
 So refreshing is: run the recipe, then bring the table to what it printed.
 
 **The cells in the join table now come from one run**: `just fixtures-coverage`
-on **2026-10-08**, with production `src/` unchanged from commit `509917e7b94f`.
-It measures 243 golden-only tests and their union with 349 other e2e tests,
+on **2026-10-09**, with production `src/` unchanged from commit `4f27b04b1a11`.
+It measures 245 golden-only tests and their union with 374 other e2e tests,
 plus the non-e2e tier. The printed columns and function contributions above
 are derived from those exports, with test code excluded. The per-row reach
 cells remain a separate per-test measurement (`just golden-reach`), whose
