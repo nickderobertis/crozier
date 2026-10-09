@@ -308,6 +308,9 @@ fn a_malformed_ledger_is_refused() {
             "the line is not a positive number",
         );
     }
+    // A file rule's departure records a whole file at line 0.
+    let whole = format!("{GOLDEN}\t{WRAPPER}\t0\tempty-namespace-package");
+    loaded(repository(&ledger_text(&format!("{whole}\n"))).path());
     let missing = tempfile::tempdir().unwrap();
     write(
         missing.path(),

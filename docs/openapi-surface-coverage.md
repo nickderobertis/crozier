@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 619 features. By category, 493 are `golden`, 52
-`limitations`, 52 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 620 features. By category, 493 are `golden`, 52
+`limitations`, 53 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 619
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 620
 split four ways:
 
 - **492 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `tests/e2e.rs` compares
   crozier against.
-- **52 rest on a hand-written fixture, a weaker proof than a real
+- **53 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Forty-seven read `search-incomplete`. Of those,
+  decided and none is registrable. Forty-eight read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -99,7 +99,7 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-492 + 66 + 52 + 9 = 619.
+492 + 66 + 53 + 9 = 620.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 493 `golden` rows declare 915 handling sites in
@@ -212,7 +212,7 @@ class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 619 are what a selector over a
+**What the census still cannot enumerate.** The 620 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -1539,9 +1539,9 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 35 rows are the 27 generator categories, the base-path and string-map
+These 36 rows are the 27 generator categories, the base-path and string-map
 example gaps, the four additional scenarios the parameter fix closed, and the
-two clients-and-extensions scenarios whose correction is a Fern defect. Other
+three clients-and-extensions scenarios whose correction is a Fern defect. Other
 scenarios are not proof claims here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
@@ -1590,6 +1590,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | single-operation-required-header-promoted | Required header on a sole operation promoted to the client | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected | `parameter_lowering_measurements_match_fern` | — |
 | duplicate-api-key-header-schemes-fail-formatting | Two header credentials sharing one constructor parameter, declared once; repeated-keyword examples corrected | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/twin-key-relay/fern-expected; tests/fixtures/openepcis-dpp-ready/expected | `handwritten_fixtures_match_fern_goldens; openepcis_dpp_ready_matches_fern_output` | `repeated-credential-example-keyword` |
 | pagination-extension-offset-form-ignored | Offset pagination as a pager; flat-tree README pager documentation corrected | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/ledger-records-offset/fern-expected; docs/fern-measurements/clients-extensions/ledger-records-offset-flat/fern-expected | `handwritten_fixtures_match_fern_goldens; clients_extensions_measurements_match_fern` | `flat-pagination-pager-docs` |
+| empty-tag-becomes-subpackage | Empty-namespace (`_`) sub-client written as a package beside an importable root client | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/lamp-room-log/fern-expected; tests/fixtures/bungie.net/expected | `handwritten_fixtures_match_fern_goldens; bungie_matches_fern_output` | `empty-namespace-package` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -1782,12 +1783,12 @@ for either; each bullet below says where its number comes from.
 | [`schemas`](openapi-surface/schemas.md) | 292 | 248 | 14 | 21 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 57 | 46 | 5 | 6 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 78 | 68 | 3 | 6 | 1 | 1 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 79 | 68 | 3 | 7 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 63 | 38 | 2 | 11 | 12 | 0 | 0 | 12 |
-| **total** | **619** | **493** | **52** | **52** | **22** | **8** | **0** | **14** |
+| **total** | **620** | **493** | **52** | **53** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **619** features and landed each in exactly one category:
-**493** `golden`, **52** `limitations`, **52** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **620** features and landed each in exactly one category:
+**493** `golden`, **52** `limitations`, **53** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1938,7 +1939,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 619 rows carry 619 distinct
+**Each feature is classified exactly once.** The 620 rows carry 620 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -2110,7 +2111,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 619](#what-the-walk-enumerated) is a
+[the walk's 620](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107

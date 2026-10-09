@@ -373,14 +373,23 @@ pub fn parse(text: &str) -> Result<Vec<Row>, Vec<String>> {
         let fields: Vec<&str> = line.split('\t').collect();
         match fields[..] {
             [golden, file, number, departure] => match number.parse::<usize>() {
-                Ok(number) if number > 0 => rows.push(Row {
-                    golden: golden.to_string(),
-                    file: file.to_string(),
-                    line: number,
-                    departure: departure.to_string(),
-                }),
+                // Line 0 is a whole file only one side has, which only a file
+                // rule accounts for.
+                Ok(number)
+                    if number > 0
+                        || crozier::departures::rule(departure)
+                            .is_some_and(|rule| rule.file.is_some()) =>
+                {
+                    rows.push(Row {
+                        golden: golden.to_string(),
+                        file: file.to_string(),
+                        line: number,
+                        departure: departure.to_string(),
+                    })
+                }
                 _ => failures.push(format!(
-                    "{LEDGER}:{}: `{line}`: the line is not a positive number",
+                    "{LEDGER}:{}: `{line}`: the line is not a positive number (0, a whole \
+                     file, is a file rule's)",
                     index + 2
                 )),
             },
@@ -484,6 +493,9 @@ fn validation_failures(root: &Path, inventory: &Inventory, rows: &[Row]) -> Vec<
         });
         match files {
             Ok(files) if files.contains(&row.file) => {}
+            // Line 0 is a whole file only one side has, so it may be one only
+            // crozier writes; the comparison holds it like any other row.
+            Ok(_) if row.line == 0 => {}
             Ok(_) => failures.push(format!(
                 "{LEDGER}: `{shown}` names file `{}`, which no comparison of golden `{}` reads",
                 row.file, row.golden

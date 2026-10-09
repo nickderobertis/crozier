@@ -60,11 +60,16 @@ an empty field, or evidence outside `docs/departures/evidence/`.
    replaced with Fern's.
 4. **The verdict**: what remains is compared exactly. Any difference no rule
    explained fails the file — even on a line, or in a file, where a departure
-   applied. A rule never excuses a whole file.
+   applied. No rule excuses a file both sides have.
+
+A **file rule** accounts for a whole file only one side has, and only where it
+has checked what stands in its place: `empty-namespace-package` accepts a file
+crozier writes under `_/` only when it is Fern's root-level copy unchanged.
 
 Every departure applied is reported by catalog id, file, and crozier's 1-based
 line: the first line of crozier's replacement, or, where crozier writes no line,
-the line before which Fern's stand.
+the line before which Fern's stand; a file rule's departure is reported at line
+0.
 
 ## Comparison mechanics outside the catalog
 
@@ -81,7 +86,7 @@ Two normalizations remain outside the catalog, because they record no departure:
   this is the comment rule's residue, not a difference in code.
 
 The tree rules are mechanics too: the comparison is bidirectional (a file on
-only one side is a difference), a symbolic link is refused rather than followed,
+only one side is a difference unless a file rule accounts for it), a symbolic link is refused rather than followed,
 and a committed golden's `.crozier-fern-golden.json` provenance record is not
 part of either tree.
 
@@ -112,12 +117,14 @@ when:
 - a row is **stale**: the engine no longer applies that departure there;
 - a departure is **unrecorded**: the engine applies it and no row records it;
 - a row names a departure the catalog does not hold, a golden no comparison
-  reads, a file that is not a plain relative path inside its golden, or a file
-  no comparison of that golden reads;
+  reads, a file that is not a plain relative path inside its golden, or (at a
+  line other than 0) a file no comparison of that golden reads;
 - a row names a file the comparison also carves out at file level (an
   `unmatched` entry, a crozier-only file, a file pinned to crozier's own bytes);
 - a row repeats the one before it, or is out of order;
-- the ledger is not the header and four-field rows with a positive line.
+- the ledger is not the header and four-field rows with a positive line, or
+  line 0 for a file rule's departure: a whole file only one side has, which may
+  be one only crozier writes.
 
 An overlay golden takes its base golden's rows for every file it inherits
 unchanged. [`tests/fixtures/compared-goldens.json`](../../tests/fixtures/compared-goldens.json)
@@ -162,7 +169,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 9 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 10 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -194,6 +201,15 @@ when the two differ.
 - **crozier writes:** Method snippets and parameter lists without it.
 - **Why:** The examples contradict the generated code: the method has no such argument, so the documented call raises `TypeError` for an unexpected keyword argument, and `reference.md` documents an argument the method does not have.
 - **Evidence:** [`docs/departures/evidence/constant-header-docs-arguments.md`](../../docs/departures/evidence/constant-header-docs-arguments.md)
+
+### `empty-namespace-package`
+
+- **Kind:** `fern-defect`
+- **Trigger:** Operations Fern groups under the empty namespace it calls `_`: tagged only with the empty string, or an `operationId` with an empty dotted prefix (`.GetThing`).
+- **Fern writes:** The `_` package's files written at the package root rather than under `_/`: the root `client.py`, `raw_client.py` and `__init__.py` are the `_` sub-client's and its package marker (importing `..core` from above the package), its hoisted types sit in the root `types/`, the root client is lost, and docstring examples call `client..method()`; `README.md` and `reference.md` call `client._.method()` and link `src/<package>/_/client.py`.
+- **crozier writes:** The same `_` package under `_/` (its `client.py` but for its examples, `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the root `client.py` and `__init__.py` the root client and package exporting it with a `_` property, and examples calling `client._.method()`.
+- **Why:** The tree cannot be imported: the root package exports no client and its `client.py` imports from above the top-level package, so the documented `from <package> import <Client>` and `client._.method()` raise `ImportError`.
+- **Evidence:** [`docs/departures/evidence/empty-namespace-package.md`](../../docs/departures/evidence/empty-namespace-package.md)
 
 ### `fern-metadata-generator-config`
 

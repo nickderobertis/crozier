@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Lamp Room Log
+  version: 1.0.0
+servers:
+  - url: https://lamps.test
+paths:
+  /lamps:
+    get:
+      operationId: listLamps
+      tags: [""]
+      parameters:
+        - name: colour
+          in: query
+          schema:
+            $ref: '#/components/schemas/LampColour'
+      responses:
+        '200':
+          description: The lamps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lamp'
+components:
+  schemas:
+    LampColour:
+      type: string
+      enum: [white, red, green]
+    Lamp:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        colour:
+          $ref: '#/components/schemas/LampColour'

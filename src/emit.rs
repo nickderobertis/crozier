@@ -410,10 +410,7 @@ impl Imports {
         let depth = match &self.loc {
             RefLoc::PackageRoot => 0,
             RefLoc::RootTypes | RefLoc::Errors => 1,
-            // Fern's explicit empty dotted namespace writes its client files at the
-            // package root but imports `core` as though they sat in a tag package,
-            // so a nameless client module still counts as one level deep.
-            RefLoc::Client(module) => module_depth(module).max(1),
+            RefLoc::Client(module) => module_depth(module),
             RefLoc::TagTypes(module) => module_depth(module) + 1,
         };
         ".".repeat(depth + 1)
@@ -437,12 +434,9 @@ impl Imports {
         let root = self.root_prefix();
         match self.tag_types.get(class) {
             // A package-root type lives at `{pkg}.types.{m}`; so does a tag type
-            // whose owning tag is the package root itself. The empty dotted
-            // namespace reads that one from where its files actually sit, at the
-            // package root, rather than from the tag depth its `core` imports use.
+            // whose owning tag is the package root itself.
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
                 _ => format!("{root}types.{m}"),
             },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
@@ -1624,7 +1618,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
             let repair = repair_map.get(decl.name());
-            let empty_namespace = ir.empty_endpoint_namespace && *module == "_";
             let location = if module.is_empty() {
                 RefLoc::RootTypes
             } else {
@@ -1640,18 +1633,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 repair,
             )?;
             files.push(GeneratedFile {
-                path: if empty_namespace {
-                    PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module()))
-                } else {
-                    PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module()))
-                },
+                path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
                 contents: file,
             });
         }
         // The root `types/` package has one aggregator, written below over the
         // component types *and* these hoisted ones; a second one here would land
         // on the same path and lose whichever was written first.
-        if !(module.is_empty() || ir.empty_endpoint_namespace && *module == "_") {
+        if !module.is_empty() {
             files.push(tag_types_init_file(&env, pkg, module, decls)?);
         }
     }
@@ -1688,9 +1677,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // hoisted inline types, in which case it is a lazy loader re-exporting them,
     // or it has nested sub-packages, in which case it is a lazy loader over those.
     for module in ir.endpoint_modules.iter().chain(parent_modules.iter()) {
-        if ir.empty_endpoint_namespace && module == "_" {
-            continue;
-        }
         let child_types = |names: &[String]| -> Vec<(String, Vec<String>)> {
             names
                 .iter()
@@ -1738,7 +1724,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         .keys()
         .filter(|module| {
             !module.is_empty()
-                && **module != "_"
                 && !ir.endpoint_modules.iter().any(|m| m == *module)
                 && !parent_modules.iter().any(|m| m == *module)
         })
@@ -1769,7 +1754,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             "",
             &root_eps,
             &tag_map,
-            false,
         )?);
     }
 
@@ -1785,10 +1769,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
-            if ir.empty_endpoint_namespace && module == "_" {
-                emittable_modules.push(module);
-                continue;
-            }
             files.push(raw_client_file(
                 &env,
                 pkg,
@@ -1796,7 +1776,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 module,
                 &eps,
                 &tag_map,
-                false,
             )?);
             let cx = ClientCtx {
                 yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -1811,7 +1790,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
                 client_path_parameters: &ir.client_path_parameters,
-                empty_namespace: false,
                 sdk_first_party: packaged || pkg == "fern",
                 children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
@@ -1831,7 +1809,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             module,
             &[],
             &tag_map,
-            false,
         )?);
         let cx = ClientCtx {
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -1846,7 +1823,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &tag_map,
             global_headers: &ir.global_headers,
             client_path_parameters: &ir.client_path_parameters,
-            empty_namespace: false,
             sdk_first_party: packaged || pkg == "fern",
             children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
         };
@@ -1912,69 +1888,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|module| !module.contains('/')),
     );
     files.push(root_init_file(&env, pkg, ir, &init_modules)?);
-
-    // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
-    // endpoint namespace. Its empty tag package lands at the package root and is
-    // emitted after the ordinary root surface, so `client.py` and `__init__.py`
-    // are intentionally overwritten by the tag-client variants. Preserve that
-    // observable (if unusual) file collision for compatibility.
-    let empty_namespace_eps: Vec<&Endpoint> = ir
-        .endpoints
-        .iter()
-        .filter(|endpoint| endpoint.module == "_")
-        .collect();
-    let empty_namespace_emittable = ir.empty_endpoint_namespace
-        && !empty_namespace_eps.is_empty()
-        && empty_namespace_eps
-            .iter()
-            .all(|endpoint| endpoint.emittable);
-    if empty_namespace_emittable {
-        let mut empty_namespace_tag_map = tag_map.clone();
-        for name in &ir.empty_namespace_types {
-            empty_namespace_tag_map.insert(name.clone(), String::new());
-        }
-        files.push(raw_client_file(
-            &env,
-            pkg,
-            &ir.client_name,
-            "",
-            &empty_namespace_eps,
-            &empty_namespace_tag_map,
-            true,
-        )?);
-        let cx = ClientCtx {
-            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
-            pkg,
-            client_name: &ir.client_name,
-            module: "",
-            types: &ir.types,
-            enum_type: ir.enum_type,
-            tag_decls: &ir.tag_types,
-            auth: &ir.auth,
-            has_environment: ir.environment.is_some(),
-            tag_types: &empty_namespace_tag_map,
-            global_headers: &ir.global_headers,
-            client_path_parameters: &ir.client_path_parameters,
-            empty_namespace: true,
-            sdk_first_party: packaged || pkg == "fern",
-            children: &[],
-        };
-        files.push(client_file(&env, &cx, &empty_namespace_eps)?);
-        let empty_namespace_types: Vec<&TypeDecl> = ir
-            .tag_types
-            .iter()
-            .filter(|decl| decl.module == "_")
-            .map(|decl| &decl.decl)
-            .collect();
-        files.push(tag_pkg_init_file(
-            &env,
-            pkg,
-            "",
-            &empty_namespace_types,
-            &[],
-            &[],
-        )?);
-    }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
     // per-endpoint `reference.md`.
@@ -6836,7 +6749,6 @@ fn root_client_methods(
         tag_types: tag_map,
         global_headers,
         client_path_parameters,
-        empty_namespace: false,
         sdk_first_party: true,
         children: &[],
     };
@@ -7323,8 +7235,6 @@ struct ClientCtx<'a> {
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
     client_path_parameters: &'a [ClientPathParameter],
-    /// Whether this tag client is Fern's explicit empty dotted namespace.
-    empty_namespace: bool,
     /// Whether Fern's isort pass files the SDK's own imports as first-party; see
     /// [`ExampleCtx::sdk_first_party`].
     sdk_first_party: bool,
@@ -7622,15 +7532,8 @@ fn client_stream_docstring(
         untyped_arguments: BTreeSet::new(),
         sdk_first_party: cx.sdk_first_party,
     };
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -7756,17 +7659,7 @@ fn client_binary_stream_docstring(
         sdk_first_party: cx.sdk_first_party,
     };
     if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
-        .then(|| {
-            build_example(
-                ep,
-                is_async,
-                cx.module,
-                cx.pkg,
-                cx.client_name,
-                &mut ctx,
-                cx.empty_namespace,
-            )
-        })
+        .then(|| build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx))
         .flatten()
     {
         lines.push(String::new());
@@ -7858,15 +7751,8 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -9851,7 +9737,6 @@ fn build_example(
     pkg: &str,
     client_name: &str,
     ctx: &mut ExampleCtx,
-    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     build_example_inner(
         ep,
@@ -9864,7 +9749,6 @@ fn build_example(
         false,
         None,
         false,
-        empty_namespace,
     )
 }
 
@@ -9895,7 +9779,6 @@ fn build_documentation_example(
         true,
         environment,
         reference,
-        false,
     )
 }
 
@@ -9931,7 +9814,6 @@ fn build_example_inner(
     documentation: bool,
     environment: Option<&crate::ir::Environment>,
     reference: bool,
-    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
@@ -10645,13 +10527,7 @@ fn build_example_inner(
     } else {
         &ep.method_name
     };
-    let receiver = if empty_namespace {
-        format!(
-            "{}client..{}",
-            if is_async { "await " } else { "" },
-            method_name
-        )
-    } else if module.is_empty() {
+    let receiver = if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
@@ -10839,16 +10715,7 @@ fn build_example_inner(
     if !ctx.has_environment {
         client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    let client_block = if empty_namespace && !client_args.is_empty() {
-        vec![format!(
-            "client = {example_name}({} )",
-            client_args
-                .iter()
-                .map(|argument| argument.trim())
-                .collect::<Vec<_>>()
-                .join(" ")
-        )]
-    } else if client_args.is_empty() {
+    let client_block = if client_args.is_empty() {
         vec![format!("client = {example_name}()")]
     } else {
         let mut block = vec![format!("client = {example_name}(")];
@@ -10880,16 +10747,12 @@ fn build_example_inner(
     out.push(String::new());
     out.extend(client_block);
     if is_async {
-        if !empty_namespace {
-            out.push(String::new());
-            out.push(String::new());
-        }
+        out.push(String::new());
+        out.push(String::new());
         out.push("async def main() -> None:".to_string());
         out.extend(call.split('\n').map(String::from));
-        if !empty_namespace {
-            out.push(String::new());
-            out.push(String::new());
-        }
+        out.push(String::new());
+        out.push(String::new());
         out.push("asyncio.run(main())".to_string());
     } else {
         out.extend(call.split('\n').map(String::from));
@@ -11216,11 +11079,8 @@ fn raw_client_file(
     module: &str,
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
-    empty_namespace: bool,
 ) -> Result<GeneratedFile> {
-    let loc = if empty_namespace {
-        RefLoc::Client(String::new())
-    } else if module.is_empty() {
+    let loc = if module.is_empty() {
         RefLoc::PackageRoot
     } else {
         RefLoc::Client(module.to_string())
@@ -11244,17 +11104,17 @@ fn raw_client_file(
         imports.add_core("request_options", "RequestOptions");
     }
 
-    let class_stem = if module.is_empty() && !empty_namespace {
+    let class_stem = if module.is_empty() {
         root_client_name.to_string()
     } else {
         naming::to_pascal_case(module_stem(module))
     };
-    let sync_class = if module.is_empty() && !empty_namespace {
+    let sync_class = if module.is_empty() {
         format!("Raw{class_stem}")
     } else {
         format!("Raw{class_stem}Client")
     };
-    let async_class_name = if module.is_empty() && !empty_namespace {
+    let async_class_name = if module.is_empty() {
         format!("AsyncRaw{class_stem}")
     } else {
         format!("AsyncRaw{class_stem}Client")
@@ -12182,13 +12042,13 @@ mod tests {
         }));
         let auth = Auth::None;
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("endpoint has an example")
             .join("\n");
         assert!(!rendered.contains("request="), "{rendered}");
         ep.openapi_31 = false;
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("legacy endpoint has an example")
             .join("\n");
         assert!(!rendered.contains("request="), "{rendered}");
@@ -12198,7 +12058,7 @@ mod tests {
             body.required = true;
         }
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("required unknown body has an example")
             .join("\n");
         assert!(
@@ -12569,8 +12429,6 @@ mod tests {
             types: Vec::new(),
             tag_types: Vec::new(),
             endpoint_modules,
-            empty_endpoint_namespace: false,
-            empty_namespace_types: Vec::new(),
             endpoint_module_titles: Default::default(),
             endpoints,
             errors: Vec::new(),
@@ -14554,7 +14412,7 @@ mod tests {
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("wildcard request has a worked example")
             .join("\n");
         let trace = rendered.find("trace=\"trace-1\"").unwrap();
@@ -14633,7 +14491,7 @@ mod tests {
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("inline request has an async example")
             .join("\n");
         assert!(rendered.contains("import asyncio"), "{rendered}");
@@ -14706,7 +14564,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_none(),
             "a list path parameter beside a body suppresses the example"
@@ -14722,7 +14579,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_some(),
             "a scalar path parameter beside a body keeps it"
@@ -14739,7 +14595,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_some(),
             "a list path parameter with no body keeps it"
@@ -14814,7 +14669,7 @@ mod tests {
         let auth = Auth::None;
         let types = [alias];
         let mut ctx = example_ctx(&types, &[], &auth);
-        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx)
             .expect("referenced request has an executable example")
             .join("\n");
         assert!(executable.contains("eps_bearer_setup=[\"epsBearerSetup\", \"epsBearerSetup\"]"));
@@ -14832,7 +14687,7 @@ mod tests {
         ep.request_body_required = false;
         ep.request_body_has_multipart_related = false;
         let mut ctx = example_ctx(&types, &[], &auth);
-        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx)
             .expect("optional request has an example")
             .join("\n");
         assert!(optional.contains("_5g_mm_cause_value=0"), "{optional}");
@@ -14878,7 +14733,7 @@ mod tests {
     }
 
     #[test]
-    fn generation_covers_root_and_explicit_empty_endpoint_namespaces() {
+    fn the_empty_namespace_is_an_importable_underscore_package() {
         let mut root = endpoint("/root", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
         root.openapi_31 = true;
         root.module.clear();
@@ -14905,9 +14760,7 @@ mod tests {
         explicit_empty.method_name = "empty".to_string();
 
         let mut ir = ir_with(vec![root, explicit_empty]);
-        ir.empty_endpoint_namespace = true;
         ir.endpoint_modules = vec!["_".to_string()];
-        ir.empty_namespace_types = vec!["EmptyResult".to_string()];
         ir.tag_types = vec![TagTypeDecl {
             module: "_".to_string(),
             decl: TypeDecl::Alias(AliasType {
@@ -14918,15 +14771,33 @@ mod tests {
                 docstring: None,
             }),
         }];
-        let files = generate(&ir).expect("root and explicit empty namespaces generate");
-        assert!(files
+        let files = generate(&ir).expect("root and empty namespaces generate");
+        let file = |rel: &str| {
+            files
+                .iter()
+                .find(|file| file.path == std::path::Path::new(rel))
+                .unwrap_or_else(|| panic!("{rel} is not generated"))
+        };
+        // The `_` namespace is a package of its own, its types inside it, and
+        // the root client reaches it through a `_` property.
+        for rel in [
+            "src/fern/_/__init__.py",
+            "src/fern/_/client.py",
+            "src/fern/_/raw_client.py",
+            "src/fern/_/types/empty_result.py",
+            "src/fern/raw_client.py",
+        ] {
+            file(rel);
+        }
+        assert!(!files
             .iter()
-            .any(|file| file.path.ends_with("src/fern/client.py")));
-        assert!(files
-            .iter()
-            .any(|file| file.path.ends_with("src/fern/raw_client.py")));
-        assert!(files.iter().any(|file| file.path.ends_with("README.md")));
-        assert!(files.iter().any(|file| file.path.ends_with("reference.md")));
+            .any(|file| file.path == std::path::Path::new("src/fern/types/empty_result.py")));
+        let root = &file("src/fern/client.py").contents;
+        assert!(root.contains("class FernApi:") && root.contains("    def _(self):"));
+        assert!(file("src/fern/_/client.py")
+            .contents
+            .contains("from ..core.client_wrapper import"));
+        assert!(file("reference.md").contents.contains("client._.empty("));
     }
 
     #[test]
@@ -14981,7 +14852,7 @@ mod tests {
         ];
 
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("bodyless query endpoint has a worked example")
             .join("\n");
         // Whether an optional query example survives at all is decided while
@@ -15078,7 +14949,6 @@ mod tests {
             tag_types: &tags,
             global_headers: &[],
             client_path_parameters: &[],
-            empty_namespace: false,
             sdk_first_party: true,
             children: &[],
         };

@@ -2039,10 +2039,10 @@ pub fn check_sdk(
         let route = format!("{} {}", endpoint.http_method, endpoint.path);
         // F811: a root-client method and a sub-client property of one name.
         if endpoint.module.is_empty()
-            && ir.endpoint_modules.iter().any(|module| {
-                module.split('/').next() == Some(endpoint.method_name.as_str())
-                    && !(ir.empty_endpoint_namespace && module == "_")
-            })
+            && ir
+                .endpoint_modules
+                .iter()
+                .any(|module| module.split('/').next() == Some(endpoint.method_name.as_str()))
         {
             return refusal(
                 path,

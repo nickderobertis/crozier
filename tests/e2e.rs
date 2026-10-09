@@ -1111,6 +1111,12 @@ fn assert_generated_tree_matches(
         if c.unmatched.contains(&rel.as_str()) {
             continue;
         }
+        if !out.join(&rel).is_file() {
+            if let Some(id) = parity::file_departure(&context, &rel, parity::Side::Reference) {
+                observed.push((rel, 0, id.to_string()));
+                continue;
+            }
+        }
         let generated = std::fs::read_to_string(out.join(&rel))
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(expected_root.join(&rel))
@@ -1133,17 +1139,20 @@ fn assert_generated_tree_matches(
             );
         }
     }
-    let failures = ledger.check(&observed, &|_| true);
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
-
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
     // merely because the golden lacks it.
     for rel in walk_files(out) {
-        assert!(
-            expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()),
-            "Crozier emitted {rel}, but the Fern fixture has no corresponding file"
-        );
+        if expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()) {
+            continue;
+        }
+        let id =
+            parity::file_departure(&context, &rel, parity::Side::Crozier).unwrap_or_else(|| {
+                panic!("Crozier emitted {rel}, but the Fern fixture has no corresponding file")
+            });
+        observed.push((rel, 0, id.to_string()));
     }
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     // The declared crozier-only set is held to the same staleness contract as
     // `unmatched`: a listed file that reached the golden must enter byte
@@ -1682,28 +1691,47 @@ fn golden_tree_failures(
     out: &Path,
 ) -> Vec<String> {
     let mut failures = Vec::new();
-    let expected_files = walk_files(expected_root);
-    let generated_files = walk_files(out);
-    if generated_files != expected_files {
+    let expected_files: std::collections::BTreeSet<String> =
+        walk_files(expected_root).into_iter().collect();
+    let generated_files: std::collections::BTreeSet<String> = walk_files(out).into_iter().collect();
+    let context = Context::from_trees(expected_root, out);
+    let mut observed = Vec::new();
+    // A file only one side has is a difference unless a catalog file rule
+    // accounts for it.
+    let only = expected_files
+        .difference(&generated_files)
+        .map(|rel| (rel, parity::Side::Reference))
+        .chain(
+            generated_files
+                .difference(&expected_files)
+                .map(|rel| (rel, parity::Side::Crozier)),
+        );
+    let mut unexplained = Vec::new();
+    for (rel, side) in only {
+        match parity::file_departure(&context, rel, side) {
+            Some(id) => observed.push((rel.clone(), 0, id.to_string())),
+            None => unexplained.push(rel.as_str()),
+        }
+    }
+    if !unexplained.is_empty() {
         failures.push(format!(
-            "{key}: crozier's file set over {source} differs from {}",
-            expected_root.display()
+            "{key}: crozier's file set over {source} differs from {} at {}",
+            expected_root.display(),
+            unexplained.join(", ")
         ));
         return failures;
     }
-    let context = Context::from_trees(expected_root, out);
-    let mut observed = Vec::new();
-    for rel in expected_files {
-        let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
-        let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
-        let compared = match parity::compare_file(&context, &rel, &generated, &expected) {
+    for rel in expected_files.intersection(&generated_files) {
+        let generated = std::fs::read_to_string(out.join(rel)).unwrap_or_default();
+        let expected = std::fs::read_to_string(expected_root.join(rel)).unwrap_or_default();
+        let compared = match parity::compare_file(&context, rel, &generated, &expected) {
             Ok(compared) => compared,
             Err(error) => {
                 failures.push(format!("{key}: {rel}: {error}"));
                 continue;
             }
         };
-        observed.extend(observed_in(&rel, &compared));
+        observed.extend(observed_in(rel, &compared));
         if let Some(diff) = compared.diff() {
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
@@ -1995,6 +2023,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
         "impedance-complex-reading-literals",
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "lamp-room-log-literals",
+        "docs/openapi-surface/handwritten/lamp-room-log/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -11076,33 +11109,33 @@ fn spaced_operation_id_generates_valid_python() {
 }
 
 #[test]
-fn empty_dotted_operation_namespace_overwrites_the_root_surface() {
+fn empty_dotted_operation_namespace_is_an_underscore_package_beside_the_root_client() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: .ListWidgets\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  count: { type: integer }\n",
     );
+    let read =
+        |rel: &str| std::fs::read_to_string(out.join(rel)).unwrap_or_else(|e| panic!("{rel}: {e}"));
+    // The `_` package sits under `_/`, its hoisted type inside it, where Fern
+    // writes it over the package root (the `empty-namespace-package` departure).
+    let client = read("src/acme/_/client.py");
     assert!(
-        !out.join("src/acme/_").exists(),
-        "an explicit empty namespace must not invent an underscore package"
+        client.contains("class Client:") && client.contains("def listwidgets("),
+        "{client}"
     );
-    let client =
-        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
-    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
-        .expect("root raw client is generated");
-    let init = std::fs::read_to_string(out.join("src/acme/__init__.py"))
-        .expect("package initializer is generated");
+    assert!(read("src/acme/_/raw_client.py").contains("class RawClient:"));
+    assert!(out
+        .join("src/acme/_/types/list_widgets_response.py")
+        .is_file());
+    assert!(read("src/acme/_/__init__.py").contains("ListWidgetsResponse"));
+    let root = read("src/acme/client.py");
     assert!(
-        client.contains("class Client:")
-            && client.contains("def listwidgets(")
-            && !client.contains("class AcmeApi:")
-            && raw.contains("class RawClient:")
-            && out
-                .join("src/acme/types/list_widgets_response.py")
-                .is_file()
-            && init.contains("ListWidgetsResponse")
-            && !init.contains("AcmeApi")
-            && !init.contains("__version__"),
-        "Fern's empty tag package should overwrite the ordinary root files: {client}\n{init}"
+        root.contains("class AcmeApi:") && root.contains("    def _(self):"),
+        "{root}"
     );
+    assert!(read("src/acme/__init__.py").contains("\"AcmeApi\": \".client\""));
+    assert!(!out.join("src/acme/raw_client.py").exists());
+    assert!(!out.join("src/acme/types/list_widgets_response.py").exists());
+    assert_valid_python(&out);
 }
 
 #[test]
@@ -16928,6 +16961,126 @@ print("ok")
         String::from_utf8_lossy(&run.stderr)
     );
     assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
+}
+
+/// An operation Fern groups under the empty namespace `_` — tagged only with
+/// the empty string, or an `operationId` with an empty dotted prefix — is
+/// importable and callable the way `README.md` documents it:
+/// `from fern import FernApi` and `client._.<method>()`, sync and async, the
+/// hoisted response type importable from `fern._`, each request sent through
+/// a mock transport. Fern's own committed tree for the fixture fails that
+/// import (the `empty-namespace-package` departure).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_empty_namespace_package_imports_and_answers_its_documented_call() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let lamps = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/lamp-room-log");
+    let dotted = dir.path().join("dotted.yml");
+    std::fs::write(
+        &dotted,
+        "openapi: 3.0.3\ninfo: {title: Lamps, version: '1'}\npaths:\n  /Locales/:\n    get:\n      operationId: .GetLocales\n      tags: ['']\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  default: {type: string}\n",
+    )
+    .expect("write the dotted spec");
+    let script = |call: &str| {
+        format!(
+            r#"
+import asyncio
+
+import httpx
+
+from fern import AsyncFernApi, FernApi
+
+sent = []
+
+
+def answer(request):
+    sent.append(str(request.url))
+    if request.url.path == "/lamps":
+        return httpx.Response(200, json=[{{"id": "l-1", "colour": "red"}}])
+    return httpx.Response(200, json={{"default": "en"}})
+
+
+client = FernApi(base_url="https://lamps.test", httpx_client=httpx.Client(transport=httpx.MockTransport(answer)))
+asynchronous = AsyncFernApi(
+    base_url="https://lamps.test", httpx_client=httpx.AsyncClient(transport=httpx.MockTransport(answer))
+)
+{call}
+print(sent)
+"#
+        )
+    };
+    let lamp_call = r#"
+from fern import LampColour
+
+lamps = client._.list_lamps(colour=LampColour.RED)
+assert [(lamp.id, lamp.colour) for lamp in lamps] == [("l-1", LampColour.RED)], lamps
+assert asyncio.run(asynchronous._.list_lamps())[0].id == "l-1"
+"#;
+    let dotted_call = r#"
+from fern._ import GetLocalesResponse
+
+locales = client._.getlocales()
+assert isinstance(locales, GetLocalesResponse) and locales.default == "en", locales
+assert asyncio.run(asynchronous._.getlocales()).default == "en"
+"#;
+    for (spec, call, sent) in [
+        (
+            lamps.join("openapi.yml"),
+            lamp_call,
+            "['https://lamps.test/lamps?colour=red', 'https://lamps.test/lamps']",
+        ),
+        (
+            dotted.clone(),
+            dotted_call,
+            "['https://lamps.test/Locales/', 'https://lamps.test/Locales/']",
+        ),
+    ] {
+        let sdk = dir.path().join(spec.file_stem().expect("a spec name"));
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml"))
+            .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+        let run = std::process::Command::new(&py)
+            .args(["-c", &script(call)])
+            .current_dir(sdk.join("src"))
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("drive the generated client");
+        assert!(
+            run.status.success(),
+            "{}: {}",
+            spec.display(),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), sent);
+
+        // Fern's tree for the fixture fails the documented import; a copy is
+        // imported so the committed golden gains no bytecode.
+        if call == lamp_call {
+            let fern_src = dir.path().join("fern-src");
+            copy_dir(&lamps.join("fern-expected/src"), &fern_src);
+            let fern = std::process::Command::new(&py)
+                .args(["-c", &script(call)])
+                .current_dir(&fern_src)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .expect("import Fern's tree");
+            let stderr = String::from_utf8_lossy(&fern.stderr);
+            assert!(
+                !fern.status.success()
+                    && stderr
+                        .contains("ImportError: cannot import name 'AsyncFernApi' from 'fern'"),
+                "{stderr}"
+            );
+        }
+    }
 }
 
 /// An idempotent operation sends the idempotency header its caller gives and

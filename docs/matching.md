@@ -551,9 +551,11 @@ corpora stay byte-identical — none of them exercised these paths):
 
 1. **Operation grouping for dotted corpus APIs** (`src/ir.rs`) — operations Fern
    groups under its empty `_` namespace (an operationId such as `.GetAvailableLocales`)
-   are now emitted, flattened onto the package root as `src/fern/raw_client.py` plus
-   the root `client.py` methods ([`emit`]'s `empty_endpoint_namespace`), and wired into
-   the `__init__` exports; crozier previously omitted that group entirely.
+   are now emitted; crozier previously omitted that group entirely. Fern writes
+   that `_` package over the package root, which leaves the tree unimportable, so
+   crozier writes it under `_/` beside a root client exposing it: the
+   `fern-defect` departure
+   [`empty-namespace-package`](departures/evidence/empty-namespace-package.md).
 2. **Named per-operation response types** (`src/ir.rs`, `src/emit.rs`,
    `src/openapi.rs`) — Fern synthesizes a `<OperationId>Response` type from each
    operation's inline response body (Bungie's standard

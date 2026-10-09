@@ -63,6 +63,31 @@
     not have.
   evidence: docs/departures/evidence/constant-header-docs-arguments.md
 
+- id: empty-namespace-package
+  kind: fern-defect
+  trigger: >-
+    Operations Fern groups under the empty namespace it calls `_`: tagged only
+    with the empty string, or an `operationId` with an empty dotted prefix
+    (`.GetThing`).
+  fern: >-
+    The `_` package's files written at the package root rather than under
+    `_/`: the root `client.py`, `raw_client.py` and `__init__.py` are the `_`
+    sub-client's and its package marker (importing `..core` from above the
+    package), its hoisted types sit in the root `types/`, the root client is
+    lost, and docstring examples call `client..method()`; `README.md` and
+    `reference.md` call `client._.method()` and link `src/<package>/_/client.py`.
+  crozier: >-
+    The same `_` package under `_/` (its `client.py` but for its examples,
+    `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the
+    root `client.py` and `__init__.py` the root client and package exporting
+    it with a `_` property, and examples calling `client._.method()`.
+  reason: >-
+    The tree cannot be imported: the root package exports no client and its
+    `client.py` imports from above the top-level package, so the documented
+    `from <package> import <Client>` and `client._.method()` raise
+    `ImportError`.
+  evidence: docs/departures/evidence/empty-namespace-package.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-

@@ -12,6 +12,7 @@ oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&sc
 oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union	schemas.md	supported
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported
+operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported
 operation-id-digit-leading-method	operation.operationId:digit-leading-method	document-paths.md	supported

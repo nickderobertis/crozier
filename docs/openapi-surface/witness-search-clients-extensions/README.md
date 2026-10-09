@@ -302,6 +302,20 @@ byte-matches. It is a partial witness: each of its operations lists two named
 servers, the first the document's own URL, so every request reads `base`; an
 operation reaching its own named URL, the missing portion, is the fixture's.
 
+## Empty-string tag
+
+The shape: an operation tagged only with the empty string and no SDK group name (`operation.tags:empty-string`). Fern groups it under an empty namespace it calls `_`, documents `client._.list_lamps()` and links `src/fern/_/client.py`, but writes that package's files over the package root, so the tree cannot be imported; crozier writes the `_` package under `_/` beside a root client exposing it (the `empty-namespace-package` departure).
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-empty-tag` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+The registered `bungie.net` tags four operations with the empty string, but
+their `operationId`s begin with `.`, which names the `_` group on its own, so
+the selector leaves them out. Its golden shows the same package written over
+the root, and the same departure holds it: `bungie_matches_fern_output`
+compares every other file byte for byte.
+
 ## Results
 
 | key | result | fixture |
@@ -332,3 +346,4 @@ operation reaching its own named URL, the missing portion, is the fixture's.
 | `schema-x-tags` | `none-registrable` | `vineyard-cellar-glossary` |
 | `webhook-inline-json-body-named` | `none-registrable` | `courier-delivery-hooks` |
 | `operation-servers-named` | `none-registrable` | `locker-archive-hosts` |
+| `operation-empty-tag` | `none-registrable` | `lamp-room-log` |

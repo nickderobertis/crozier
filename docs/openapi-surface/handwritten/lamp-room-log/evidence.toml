@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "2ad9d610dbff4f73994d3bc37d9b232a10fab8faecb71c6fd05fb9f477c15538"
+
+[[covers]]
+key = "operation-empty-tag"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#empty-string-tag"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
