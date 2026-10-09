@@ -5561,6 +5561,15 @@ fn resolve_request_body(
             {
                 if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
                     for mut field in parent {
+                        // A parent field an own field redeclares is refused by
+                        // `name_refusals`; never append it as a second argument.
+                        if fields
+                            .iter()
+                            .take(own_count)
+                            .any(|own| own.wire_name == field.wire_name)
+                        {
+                            continue;
+                        }
                         let inherited_order = fields.len() - own_count;
                         field.reference_order = inherited_order;
                         field.declaration_order = inherited_order;
@@ -21135,5 +21144,35 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str))
         );
         assert!(!ir.endpoints[0].response_may_be_empty);
+    }
+    #[test]
+    fn an_inline_body_never_appends_a_parent_field_an_own_field_redeclares() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Orchard Workshop", "version": "1"},
+            "components": {"schemas": {"RunSettings": {
+                "type": "object", "required": ["station", "lane"],
+                "properties": {
+                    "station": {"type": "string", "readOnly": true},
+                    "lane": {"type": "string"}
+                }
+            }}},
+            "paths": {"/runs": {"post": {
+                "operationId": "submitRun",
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object", "required": ["station"],
+                    "properties": {"station": {"type": "string"}},
+                    "allOf": [{"$ref": "#/components/schemas/RunSettings"}]
+                }}}},
+                "responses": {"204": {"description": "Submitted"}}
+            }}}
+        }));
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("the inline body flattens");
+        };
+        let wires: Vec<&str> = fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect();
+        assert_eq!(wires, ["station", "lane"]);
     }
 }

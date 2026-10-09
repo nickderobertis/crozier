@@ -21,16 +21,25 @@ The real-binary test
 `inline_request_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli`
 requires the writable overlap to fail with `request-property-name-collision`,
 then restores the disjoint source and checks that both own and inherited
-arguments and the inherited wire value are emitted. The read-only difference
-is outside the owned shape and is recorded for a separate refusal decision.
+arguments and the inherited wire value are emitted.
 
-A fresh `origin/main` build at
-`5f224026330dd25fdc54d3bdf90fe6be0ef32b3c` generated 44 files for the
-read-only source (exit 0); its raw client compiles and emits the own station
-argument and description once per sync/async method. After removing this
-branch's added duplicate-field filter, a fresh branch build refuses that same
-source (exit 1): ruff reports `Duplicate keyword argument "station"` while
-formatting `src/fern/client.py`. This is a refusal diagnostic difference,
-not an accepted golden or a claim that crozier matches Fern's diagnostic.
-The adjacent boundary-validation gap is recorded for follow-up; the owned
-certified inputs retain disjoint own and inherited fields.
+The read-only overlap is refused under the same class, by manager ruling, in
+default and `--fern-strict` mode and in the source-level fallback a malformed
+sibling schema reaches. The refusal applies only to an inline body with its own
+non-readOnly `properties` beside an `allOf` `$ref` parent declaring the same
+name. Every other read-only shape stays exempt, as the class evaluation's
+accepted controls require.
+`inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli`
+drives the committed read-only source. It requires exit 1, the class line
+naming `POST /runs` and `"station"`, no ruff diagnostic and no output tree. It
+then renames the own field and requires a generated SDK that declares each
+argument once and compiles. Independently, the request-body flattening never
+appends a parent field whose wire name an own field already holds.
+
+`origin/main` at `5f224026330dd25fdc54d3bdf90fe6be0ef32b3c` generated 44 files
+for the read-only source (exit 0), because it did not flatten inherited fields.
+Before this repair, the branch reached ruff with `Duplicate keyword argument
+"station"` (exit 1). The branch now refuses with
+`request-property-name-collision` before rendering, as pinned Fern does. This
+is a refusal-class agreement, not an accepted golden or a claim that crozier
+matches Fern's diagnostic text.

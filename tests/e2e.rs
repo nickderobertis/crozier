@@ -2840,6 +2840,91 @@ fn inline_request_parent_overlap_refuses_and_disjoint_fields_recover_through_the
 }
 
 #[test]
+fn inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let overlap: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join(
+            "docs/fern-measurements/bodies-responses/inline-body-overlap-refusals/readonly-parent.openapi.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&overlap).unwrap()).unwrap();
+    // The inherited `RunSettings.station` is readOnly, yet the certified pair still
+    // refuses it beside the inline `station` (readonly-parent.fern.log). The refusal
+    // precedes rendering, so it never surfaces as a formatter error.
+    for strict in [false, true] {
+        let out = input.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let assert = command.assert().failure().code(1);
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        assert!(
+            stderr.contains(
+                "request-property-name-collision: POST /runs body property \"station\" collides"
+            ),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!stderr.contains("ruff"), "{stderr}");
+        assert!(!out.exists(), "a refusal writes no output");
+    }
+    // The source-level fallback, reached when another schema fails to parse,
+    // classifies the same overlap rather than leaving only the parser's diagnostic.
+    let mut malformed = overlap.clone();
+    malformed["components"]["schemas"]["Malformed"] =
+        serde_json::json!({"type": "string", "nullable": 1});
+    std::fs::write(&spec, serde_json::to_vec_pretty(&malformed).unwrap()).unwrap();
+    let out = input.path().join("sdk-malformed");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "request-property-name-collision: POST /runs body property \"station\" collides",
+        ));
+    assert!(!out.exists(), "a refusal writes no output");
+    // Renaming the own field leaves the read-only parent field disjoint, and the
+    // body generates with each argument declared once.
+    let mut disjoint = overlap.clone();
+    let body = &mut disjoint["paths"]["/runs"]["post"]["requestBody"]["content"]
+        ["application/json"]["schema"];
+    let own = body["properties"]["station"].take();
+    let properties = body["properties"].as_object_mut().unwrap();
+    properties.remove("station");
+    properties.insert("bench".to_owned(), own);
+    body["required"] = serde_json::json!(["cycles", "bench"]);
+    std::fs::write(&spec, serde_json::to_vec_pretty(&disjoint).unwrap()).unwrap();
+    let out = input.path().join("sdk-disjoint");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(out.join("src/fern/raw_client.py")).unwrap();
+    assert_eq!(client.matches("bench: str,").count(), 2, "{client}");
+    assert_eq!(client.matches("\"bench\": bench,").count(), 2, "{client}");
+    assert!(client.matches("station: ").count() <= 2, "{client}");
+    assert_valid_python(&out);
+}
+
+#[test]
 fn multipart_object_alias_cycles_and_unknown_refs_recover_through_the_cli() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let original: serde_json::Value = serde_json::from_str(

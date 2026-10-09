@@ -140,6 +140,7 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
                     &media["schema"],
                     &mut std::collections::HashSet::new(),
                     &mut fields,
+                    true,
                 );
                 let inherited = source_target(source, &media["schema"])["allOf"]
                     .as_sequence()
@@ -149,6 +150,38 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
                     if !names.insert(name.clone()) && inherited {
                         return Err(refusal(&args.spec, Class::RequestPropertyNameCollision, format!("{} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase())));
                     }
+                }
+                // The flattened inline shape also refuses a readOnly parent field
+                // an own property redeclares, as `validate_names` does.
+                let target = source_target(source, &media["schema"]);
+                let mut own = Vec::new();
+                for (key, property) in target["properties"].as_mapping().into_iter().flatten() {
+                    if source_target(source, property)["readOnly"].as_bool() != Some(true) {
+                        if let Some(wire) = key.as_str() {
+                            own.push(request_property_name(property).unwrap_or(wire).to_owned());
+                        }
+                    }
+                }
+                let mut parents = Vec::new();
+                for member in target["allOf"]
+                    .as_sequence()
+                    .into_iter()
+                    .flatten()
+                    .filter(|member| member["$ref"].is_string())
+                {
+                    source_request_properties(
+                        source,
+                        member,
+                        &mut std::collections::HashSet::new(),
+                        &mut parents,
+                        false,
+                    );
+                }
+                if let Some(name) = own
+                    .iter()
+                    .find(|name| parents.iter().any(|(_, parent)| parent == *name))
+                {
+                    return Err(refusal(&args.spec, Class::RequestPropertyNameCollision, format!("{} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase())));
                 }
             }
         }
@@ -161,6 +194,7 @@ fn source_request_properties(
     node: &serde_yaml_ng::Value,
     visited: &mut std::collections::HashSet<String>,
     fields: &mut Vec<(String, String)>,
+    request_only: bool,
 ) {
     if let Some(reference) = node["$ref"].as_str() {
         if !visited.insert(reference.to_owned()) {
@@ -172,7 +206,7 @@ fn source_request_properties(
         return;
     }
     for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
-        if source_target(source, property)["readOnly"].as_bool() == Some(true) {
+        if request_only && source_target(source, property)["readOnly"].as_bool() == Some(true) {
             continue;
         }
         if let Some(wire) = key.as_str() {
@@ -183,7 +217,7 @@ fn source_request_properties(
         }
     }
     for member in node["allOf"].as_sequence().into_iter().flatten() {
-        source_request_properties(source, member, visited, fields);
+        source_request_properties(source, member, visited, fields, request_only);
     }
 }
 
@@ -340,6 +374,51 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                                 return Err(refusal(path, Class::RequestPropertyNameCollision, format!("{location} body property {name:?} collides with another request property; give the properties distinct declared names")));
                             }
                             names.push(name);
+                        }
+                        // An inline body with its own properties flattens its
+                        // `$ref` parents' fields beside them. Fern refuses an own
+                        // property a parent redeclares even when the parent's is
+                        // readOnly (bodies-responses inline-body-overlap-refusals).
+                        if !resolved.properties.is_empty() {
+                            let mut parent_names = Vec::new();
+                            for member in resolved
+                                .all_of
+                                .iter()
+                                .flatten()
+                                .filter(|member| member.reference.is_some())
+                            {
+                                collect_property_names(
+                                    member,
+                                    &doc.components.schemas,
+                                    &mut std::collections::HashSet::new(),
+                                    &mut parent_names,
+                                    false,
+                                );
+                            }
+                            let declared = |name: &str| {
+                                body_hints
+                                    .get(name)
+                                    .cloned()
+                                    .unwrap_or_else(|| name.to_owned())
+                            };
+                            let parent_names: std::collections::HashSet<String> =
+                                parent_names.into_iter().map(declared).collect();
+                            if let Some((name, _)) =
+                                resolved.properties.iter().find(|(name, property)| {
+                                    property.read_only != Some(true)
+                                        && property
+                                            .reference
+                                            .as_deref()
+                                            .and_then(|reference| {
+                                                reference.strip_prefix("#/components/schemas/")
+                                            })
+                                            .and_then(|name| doc.components.schemas.get(name))
+                                            .is_none_or(|target| target.read_only != Some(true))
+                                        && parent_names.contains(&declared(name))
+                                })
+                            {
+                                return Err(refusal(path, Class::RequestPropertyNameCollision, format!("{location} body property {:?} collides with another request property; give the properties distinct declared names", declared(name))));
+                            }
                         }
                     }
                 }
