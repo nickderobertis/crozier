@@ -104,8 +104,7 @@ and surfacing the rest as follow-ups:
       moves their measurements; their explicit checks are the validation.
     - The promoted tiers' harnesses get format, lint and typecheck only; their
       suites need Prism, PyPI or a release build, so they keep their runners and
-      stay out of the coverage floor. `golden_reach_test.py` keeps its runner
-      too ([`tools/surface-census/AGENTS.md`](tools/surface-census/AGENTS.md)).
+      stay out of the coverage floor.
     - The coverage floor is 88%, not 95% (see "Tests are context engineering").
 
 ## Command surface
