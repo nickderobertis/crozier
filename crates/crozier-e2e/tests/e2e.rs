@@ -17812,7 +17812,8 @@ fn component_group_names_read_crozier_spelling_over_fern() {
 /// A pagination contract over a response the document declares `nullable: true`
 /// is refused by default and under `--fern-strict`: exit 1, nothing written, and
 /// a line naming the class, the operation, the property read and the nullable
-/// component. The adjacent document without `nullable` generates its pager.
+/// component, for the cursor form and the offset form alike. The adjacent
+/// document without `nullable` generates its pager.
 #[test]
 fn paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control() {
     let probe = repo_root().join("docs/fern-refusals/paginated-nullable-response/probe.yml");
@@ -17825,6 +17826,34 @@ fn paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control
         }
         command.assert().failure().code(1).stderr(predicates::str::contains(
             "paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage",
+        ));
+        assert!(!out.exists() || std::fs::read_dir(&out).unwrap().next().is_none());
+    }
+    // The offset form reads no next cursor, so the element names the items it
+    // reads instead; Fern refuses it with the class's diagnostic too.
+    let offset = dir.path().join("offset.yml");
+    std::fs::write(
+        &offset,
+        std::fs::read_to_string(&probe)
+            .unwrap()
+            .replace(
+                "        cursor: $request.after\n        next_cursor: $response.next\n",
+                "        offset: $request.page\n",
+            )
+            .replace(
+                "        - name: after\n          in: query\n          schema:\n            type: string\n",
+                "        - name: page\n          in: query\n          schema:\n            type: integer\n",
+            ),
+    )
+    .unwrap();
+    for (name, strict) in [("offset-default", false), ("offset-strict", true)] {
+        let out = dir.path().join(name);
+        let mut command = probe_command(&offset, &out);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().failure().code(1).stderr(predicates::str::contains(
+            "paginated-nullable-response: GET /jobs pagination reads $response.jobs off nullable JobPage",
         ));
         assert!(!out.exists() || std::fs::read_dir(&out).unwrap().next().is_none());
     }
