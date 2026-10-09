@@ -2875,8 +2875,8 @@ fn server_extensions_read_crozier_spelling_over_fern() {
 /// refused at the boundary, exit 1 with the conflict named and nothing written:
 /// a server name making a digit-led environment member, an operation server
 /// named `base` (the document's own URL), a credential named like a client
-/// constructor parameter, and a header prefix with braces, which Fern writes
-/// into an f-string. A keyword name is escaped instead, as Fern escapes it
+/// constructor parameter, a header prefix with braces, which Fern writes into
+/// an f-string, and an idempotency header that is no HTTP header name. A keyword name is escaped instead, as Fern escapes it
 /// (`class` is `class_`), and generates.
 #[test]
 fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
@@ -2918,6 +2918,14 @@ fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 ping("")
             ),
             "header prefix `Key {x}` carries `{` or `}`",
+        ),
+        (
+            "quoted-idempotency-header",
+            format!(
+                "x-fern-idempotency-headers: [{{header: 'Idem\"pot'}}]\n{}",
+                ping("      x-fern-idempotent: true\n")
+            ),
+            "names `Idem\\\"pot`, which is no HTTP header name",
         ),
         (
             "timeout-credential",

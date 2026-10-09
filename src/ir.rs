@@ -387,12 +387,35 @@ impl Ir {
     /// examples write as an attribute that is not Python (`Environment.1ST`); an
     /// operation server named `base`, the environment field holding the
     /// document's own URL; or a credential named like one of the root client's
-    /// own constructor parameters; or a credential prefix carrying `{` or `}`,
+    /// own constructor parameters; an idempotency header that is no HTTP header
+    /// name, whose quotes or backslashes would break the generated literal; or a
+    /// credential prefix carrying `{` or `}`,
     /// which Fern writes into the header's f-string, where it is interpolation
     /// rather than text. Fern's output for each breaks, loses or renames what
     /// the author declared, so crozier asks for another value.
     #[must_use]
     pub fn unemittable_extension(&self) -> Option<String> {
+        // An HTTP header name is a token (RFC 9110 `tchar`), which no quote or
+        // backslash can break out of the generated string literal.
+        let token = |name: &str| {
+            !name.is_empty()
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || "!#$%&'*+-.^_`|~".contains(c))
+        };
+        if let Some(header) = self
+            .endpoints
+            .iter()
+            .flat_map(|endpoint| &endpoint.extensions.idempotency_headers)
+            .find(|header| !token(&header.wire_name))
+        {
+            return Some(format!(
+                "the document's `x-fern-idempotency-headers` (or `x-crozier-idempotency-headers`) \
+                 names `{}`, which is no HTTP header name; declare a header name of letters, \
+                 digits and `!#$%&'*+-.^_`|~` only",
+                header.wire_name.escape_debug()
+            ));
+        }
         if let Auth::ApiKey {
             prefix: Some(prefix),
             ..
