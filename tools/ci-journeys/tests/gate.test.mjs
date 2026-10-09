@@ -351,3 +351,17 @@ test("--sweep reruns a target the affected tier replays from cache, nested Nx in
   assert.equal(nested.status, 0, nested.output);
   assert.ok(ran(root, "a"), `the nested Nx under --sweep replayed a from cache: ${nested.output}`);
 });
+
+test("the gate loads Nx's plugins in its own process, not in workers that a busy runner can starve", (t) => {
+  const root = scratchWorkspace(t);
+  write(root, {
+    "a/record.cjs": "require('fs').writeFileSync('isolate-plugins', String(process.env.NX_ISOLATE_PLUGINS))\n",
+    "a/project.json": JSON.stringify({ name: "a", tags: ["type:tooling"], targets: { test: { command: "node a/record.cjs" } } }),
+  });
+  commitChange(root, "a/src.txt", "a changed\n");
+
+  const run = just(root, ["check"], { NX_BASE: undefined, NX_ISOLATE_PLUGINS: undefined });
+
+  assert.equal(run.status, 0, run.output);
+  assert.equal(readFileSync(join(root, "isolate-plugins"), "utf8"), "false", run.output);
+});

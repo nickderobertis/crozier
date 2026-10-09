@@ -168,8 +168,11 @@ function nxBin() {
 
 // Nx reads NX_BASE / NX_HEAD from its environment on its own, and hands them to a
 // shell: the gate passes the base it validated explicitly instead, so Nx never
-// sees the raw value.
-const NX_ENV = { ...process.env, NX_DAEMON: process.env.NX_DAEMON ?? "false", NX_NO_CLOUD: "true", NX_TUI: "false" };
+// sees the raw value. Nx's built-in plugins load in its own process, not in
+// workers: a gate nested in a busy Windows runner's tasks saw a worker miss Nx's
+// fixed 10-second load deadline (scripts/check-project-boundaries.mjs has the
+// same cause). nx.json adds no plugin.
+const NX_ENV = { ...process.env, NX_DAEMON: process.env.NX_DAEMON ?? "false", NX_ISOLATE_PLUGINS: process.env.NX_ISOLATE_PLUGINS ?? "false", NX_NO_CLOUD: "true", NX_TUI: "false" };
 delete NX_ENV.NX_BASE;
 delete NX_ENV.NX_HEAD;
 
