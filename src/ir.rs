@@ -4524,7 +4524,7 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
 /// over a lone `application/json`), and the boolean `false` streams nothing.
 /// Otherwise Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
-/// iterator of chunks, typed by [`stream_chunk_type`] — unless its schema is a
+/// iterator of chunks, typed through [`stream_chunk_view`] — unless its schema is a
 /// binary string, which Fern downloads as bytes like any other binary body.
 fn is_streaming(doc: &OpenApi, op: &Operation) -> bool {
     if op
