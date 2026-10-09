@@ -13,7 +13,10 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "python3 tools/fern-refusals-strict/tests/fern_refusals_strict_test.py"
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-refusals-strict/tests/fern_refusals_strict_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/fern-refusals-strict/test/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -30,10 +33,14 @@
         "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/**/*",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/fern-refusals-strict/test"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs fern-refusals-strict"
@@ -41,6 +48,52 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/fern-refusals-strict"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/fern-refusals-strict"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/fern-refusals-strict"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/fern-refusals-strict"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/fern-refusals/tests/*.py",
+        "pythonTooling"
       ]
     }
   }

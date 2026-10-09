@@ -21,8 +21,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "witness-search" / "tests"))
 
-import witness_search_github_test as github  # noqa: E402 - the shared fixtures' directory must be on sys.path first
-import witness_search_redo_test as redo  # noqa: E402 - the shared fixtures' directory must be on sys.path first
+import witness_search_github_test as github
+import witness_search_redo_test as redo
 
 REPO = github.REPO
 SEARCH = github.SEARCH
@@ -34,75 +34,125 @@ class ATreeIndexedFromARealRepository(redo.WideWitnessFixture, unittest.TestCase
 
     def test_index_tree_joins_every_version_to_verified_git_bytes(self) -> None:
         import hashlib
-        tree = self.work / 'tree'
+
+        tree = self.work / "tree"
         tree.mkdir()
+
         def git(*args):
-            return subprocess.run(['git', '-C', str(tree), *args], capture_output=True, errors="backslashreplace", encoding='utf-8', check=True)
-        git('init', '-q')
+            return subprocess.run(
+                ["git", "-C", str(tree), *args],
+                capture_output=True,
+                errors="backslashreplace",
+                encoding="utf-8",
+                check=True,
+            )
+
+        git("init", "-q")
         # The fixture represents literal publisher bytes, independent of the
         # host's Git defaults. The CRLF rejection is exercised explicitly below.
-        git('config', 'core.autocrlf', 'false')
-        git('config', 'user.name', 'Witness test')
-        git('config', 'user.email', 'witness@example.invalid')
-        path = tree / 'APIs/publisher/1/openapi.yaml'
+        git("config", "core.autocrlf", "false")
+        git("config", "user.name", "Witness test")
+        git("config", "user.email", "witness@example.invalid")
+        path = tree / "APIs/publisher/1/openapi.yaml"
         path.parent.mkdir(parents=True)
-        path.write_bytes('openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n'.encode('utf-8'))
-        git('add', 'APIs')
-        git('commit', '-qm', 'test: record publisher tree')
-        pin = git('rev-parse', 'HEAD').stdout.strip()
-        index = self.work / 'list.json'
-        index.write_text(json.dumps({'publisher': {'versions': {
-            '1': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.json', 'swaggerYamlUrl': 'https://api.apis.guru/v2/specs/publisher/1/openapi.yaml'},
-            '2': {'swaggerUrl': 'https://api.apis.guru/v2/specs/publisher/2/openapi.json'}
-        }}}), encoding='utf-8')
-        output = self.work / 'associated.json'
-        args = ('index-tree', '--index', index, '--index-sha256', hashlib.sha256(index.read_bytes()).hexdigest(),
-                '--tree', tree, '--ref', pin, '--prior-ref', pin, '--local-paths', '--output', output)
+        path.write_bytes("openapi: 3.0.3\ninfo: {title: réel, version: 1}\npaths: {}\n".encode())
+        git("add", "APIs")
+        git("commit", "-qm", "test: record publisher tree")
+        pin = git("rev-parse", "HEAD").stdout.strip()
+        index = self.work / "list.json"
+        index.write_text(
+            json.dumps(
+                {
+                    "publisher": {
+                        "versions": {
+                            "1": {
+                                "swaggerUrl": "https://api.apis.guru/v2/specs/publisher/1/openapi.json",
+                                "swaggerYamlUrl": "https://api.apis.guru/v2/specs/publisher/1/openapi.yaml",
+                            },
+                            "2": {"swaggerUrl": "https://api.apis.guru/v2/specs/publisher/2/openapi.json"},
+                        }
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        output = self.work / "associated.json"
+        args = (
+            "index-tree",
+            "--index",
+            index,
+            "--index-sha256",
+            hashlib.sha256(index.read_bytes()).hexdigest(),
+            "--tree",
+            tree,
+            "--ref",
+            pin,
+            "--prior-ref",
+            pin,
+            "--local-paths",
+            "--output",
+            output,
+        )
         wrong_pin = list(args)
-        wrong_pin[wrong_pin.index('--ref') + 1] = '0' * 40
+        wrong_pin[wrong_pin.index("--ref") + 1] = "0" * 40
         refused = self.cli(*wrong_pin)
         self.assertNotEqual(0, refused.returncode)
-        self.assertIn('tree commit differs from the requested pin', refused.stderr)
+        self.assertIn("tree commit differs from the requested pin", refused.stderr)
         self.assertFalse(output.exists())
         result = self.cli(*args)
         self.assertEqual(0, result.returncode, result.stderr)
-        measured = json.loads(output.read_text(encoding='utf-8'))
-        self.assertEqual(1, measured['schema_version'])
-        self.assertEqual(2, len(measured['sources']))
-        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured['sources'][0]['prior_sha256'])
-        self.assertIn('absent from pinned', measured['sources'][1]['tree_diagnostic'])
-        self.assertEqual(str(path.resolve()), measured['sources'][0].get('local_path'))
-        local_inventory = self.work / 'local-inventory.json'
-        local_inventory.write_text(json.dumps({'schema_version': 1, 'sources': [measured['sources'][0]]}), encoding='utf-8')
-        local_output = self.work / 'local-acquisition.json'
-        acquire = self.cli('acquire', '--inventory', local_inventory, '--cache', self.work / 'local-cache',
-                           '--contract', self.report / 'keys.md', '--output', local_output, '--workers', '2')
+        measured = json.loads(output.read_text(encoding="utf-8"))
+        self.assertEqual(1, measured["schema_version"])
+        self.assertEqual(2, len(measured["sources"]))
+        self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), measured["sources"][0]["prior_sha256"])
+        self.assertIn("absent from pinned", measured["sources"][1]["tree_diagnostic"])
+        self.assertEqual(str(path.resolve()), measured["sources"][0].get("local_path"))
+        local_inventory = self.work / "local-inventory.json"
+        local_inventory.write_text(
+            json.dumps({"schema_version": 1, "sources": [measured["sources"][0]]}), encoding="utf-8"
+        )
+        local_output = self.work / "local-acquisition.json"
+        acquire = self.cli(
+            "acquire",
+            "--inventory",
+            local_inventory,
+            "--cache",
+            self.work / "local-cache",
+            "--contract",
+            self.report / "keys.md",
+            "--output",
+            local_output,
+            "--workers",
+            "2",
+        )
         self.assertEqual(0, acquire.returncode, acquire.stderr)
-        acquired = json.loads(local_output.read_text(encoding='utf-8'))['sources'][0]
-        self.assertEqual('readable', acquired['status'])
-        self.assertEqual(measured['sources'][0]['sha256'], acquired['sha256'])
-        self.assertEqual(path.read_bytes(), (self.work / 'local-cache' / acquired['sha256']).read_bytes())
-        self.assertTrue(local_output.with_suffix('.census.tsv').read_text(encoding='utf-8').startswith('source\tkey\tselector'))
-        path.write_text('changed: bytes\n', encoding='utf-8')
+        acquired = json.loads(local_output.read_text(encoding="utf-8"))["sources"][0]
+        self.assertEqual("readable", acquired["status"])
+        self.assertEqual(measured["sources"][0]["sha256"], acquired["sha256"])
+        self.assertEqual(path.read_bytes(), (self.work / "local-cache" / acquired["sha256"]).read_bytes())
+        self.assertTrue(
+            local_output.with_suffix(".census.tsv").read_text(encoding="utf-8").startswith("source\tkey\tselector")
+        )
+        path.write_text("changed: bytes\n", encoding="utf-8")
         refused = self.cli(*args)
         self.assertNotEqual(0, refused.returncode)
-        self.assertIn('changed bytes', refused.stderr)
-        git('restore', 'APIs')
+        self.assertIn("changed bytes", refused.stderr)
+        git("restore", "APIs")
         self.assertEqual(0, self.cli(*args).returncode)
         original_bytes = path.read_bytes()
-        git('config', 'core.autocrlf', 'true')
-        path.write_bytes(original_bytes.replace(b'\n', b'\r\n'))
-        git('diff', '--quiet', 'HEAD', '--', 'APIs')
+        git("config", "core.autocrlf", "true")
+        path.write_bytes(original_bytes.replace(b"\n", b"\r\n"))
+        git("diff", "--quiet", "HEAD", "--", "APIs")
         refused = self.cli(*args)
         self.assertNotEqual(0, refused.returncode)
-        self.assertIn('changed literal bytes', refused.stderr)
-        git('config', 'core.autocrlf', 'false')
+        self.assertIn("changed literal bytes", refused.stderr)
+        git("config", "core.autocrlf", "false")
         path.write_bytes(original_bytes)
         self.assertEqual(0, self.cli(*args).returncode)
-        index.write_text('{}', encoding='utf-8')
+        index.write_text("{}", encoding="utf-8")
         refused = self.cli(*args)
         self.assertNotEqual(0, refused.returncode)
-        self.assertIn('catalogue digest changed', refused.stderr)
+        self.assertIn("catalogue digest changed", refused.stderr)
 
 
 class TheDefaultCacheStaysIgnored(github.WitnessSearchGithubFixture, unittest.TestCase):
@@ -114,7 +164,7 @@ class TheDefaultCacheStaysIgnored(github.WitnessSearchGithubFixture, unittest.Te
         The document carries this test's temporary directory name, so its digest
         names a cache file no other run writes, and that one file is removed after.
         """
-        document = DOCUMENT + f"# {self.root.name}\n".encode("utf-8")
+        document = DOCUMENT + f"# {self.root.name}\n".encode()
         self.server.state["raw_document"] = document
         digest = hashlib.sha256(document).hexdigest()
         cached = REPO / ".local" / "witness-search-cache" / "documents" / f"{digest}.yaml"
@@ -136,7 +186,10 @@ class LocatorAuditTests(unittest.TestCase):
     def run_audit(self, root):
         return subprocess.run(
             [sys.executable, str(REPO / "tools/witness-search/witness-locator-audit.py"), "--root", str(root)],
-            capture_output=True, text=True, check=False, encoding="utf-8",
+            capture_output=True,
+            text=True,
+            check=False,
+            encoding="utf-8",
         )
 
     def test_public_locator_failure_and_anonymous_recovery(self):
@@ -159,14 +212,24 @@ class LocatorAuditTests(unittest.TestCase):
                         refused = self.run_audit(root)
                         self.assertNotEqual(0, refused.returncode)
                         self.assertIn("public locator", refused.stderr)
-                        record.write_text(json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n", encoding="utf-8", newline="\n")
+                        record.write_text(
+                            json.dumps({"subject": repository + ":" + token + "@" + token}) + "\n",
+                            encoding="utf-8",
+                            newline="\n",
+                        )
                         recovered = self.run_audit(root)
                         self.assertEqual(0, recovered.returncode, recovered.stderr)
-                record.write_text(json.dumps({"repository": repository, "path": "description.json"}) + "\n", encoding="utf-8", newline="\n")
+                record.write_text(
+                    json.dumps({"repository": repository, "path": "description.json"}) + "\n",
+                    encoding="utf-8",
+                    newline="\n",
+                )
                 refused = self.run_audit(root)
                 self.assertNotEqual(0, refused.returncode)
                 self.assertIn("public path", refused.stderr)
-                record.write_text(json.dumps({"repository": repository, "path": token}) + "\n", encoding="utf-8", newline="\n")
+                record.write_text(
+                    json.dumps({"repository": repository, "path": token}) + "\n", encoding="utf-8", newline="\n"
+                )
                 self.assertEqual(0, self.run_audit(root).returncode)
 
     def test_quoted_input_notes_reject_then_recover(self):
@@ -222,9 +285,11 @@ class LocatorAuditTests(unittest.TestCase):
                 subprocess.run(["git", "init", "-q", str(root)], check=True)
                 record = root / ("docs/openapi-surface/records" + extension)
                 record.parent.mkdir(parents=True)
-                def write(text):
+
+                def write(text, record=record, extension=extension):
                     data = text.encode("utf-8")
                     record.write_bytes(gzip.compress(data) if extension.endswith(".gz") else data)
+
                 write(original)
                 subprocess.run(["git", "-C", str(root), "add", "docs"], check=True)
                 refused = self.run_audit(root)

@@ -67,6 +67,23 @@
       ]
     },
     {
+      "name": "languages/python",
+      "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/languages/python.llmlint.yml",
+      "pin": "1",
+      "file": "llmlint-plugins/languages/python.llmlint.yml",
+      "version": "1.4.1",
+      "sha256": "fdc7bc89fb5b8ae7d4bf1128eadbd920d10da56f4700c684f726da38e35e82be",
+      "rules": [
+        "async_typed_clients_at_boundaries",
+        "modern_domain_modeling",
+        "no_injection_from_untrusted_input",
+        "projects_stay_in_one_uv_workspace",
+        "protocol_based_seams",
+        "structural_pattern_matching",
+        "test_tiers_split_by_project_not_by_marker"
+      ]
+    },
+    {
       "name": "ci",
       "url": "https://raw.githubusercontent.com/nickderobertis/dero-skills/main/skills/bootstrap/create-repo/assets/llmlint/ci.llmlint.yml",
       "pin": "1",
@@ -97,7 +114,7 @@
       "url": "https://raw.githubusercontent.com/nickderobertis/llmlint/main/assets/config_lint.yml",
       "pin": "1",
       "bundled": true,
-      "captured_with_llmlint": "0.4.4",
+      "captured_with_llmlint": "0.4.7",
       "rules": [
         "description_and_relevance_are_concise",
         "description_omits_already_excluded_situations",

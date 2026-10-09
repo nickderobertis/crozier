@@ -55,8 +55,7 @@ ENTRIES = (
     " none | FIXTURE |\n"
 )
 LEDGER_HEADER = (
-    "| candidate | ref | license | counted in the fetched bytes |"
-    " what became of it |\n|---|---|---|---|---|"
+    "| candidate | ref | license | counted in the fetched bytes | what became of it |\n|---|---|---|---|---|"
 )
 
 
@@ -80,10 +79,7 @@ def record_line(
     why: str = "nothing grants redistribution, so the widening reaches nothing",
     declares: str = "`format-ipv6` = **1**",
     checked: str = "`fern check` at CLI 5.114.1 → **exit 0**, `All checks passed`",
-    generated: str = (
-        "`fern generate --group python-sdk --preview` at 5.20.0 → **exit 0**,"
-        " 12 `.py` files"
-    ),
+    generated: str = ("`fern generate --group python-sdk --preview` at 5.20.0 → **exit 0**, 12 `.py` files"),
 ) -> str:
     cells = [
         candidate,
@@ -101,6 +97,7 @@ def record_line(
 
 def load_gate():
     spec = importlib.util.spec_from_file_location("licence_rescreening_check", SCRIPT)
+    assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -108,17 +105,13 @@ def load_gate():
 
 def run_gate(root: Path = REPO, script: Path = SCRIPT):
     """The gate exactly as `just lint-licence-rescreening` runs it."""
-    return subprocess.run(
-        [sys.executable, str(script)], cwd=root, capture_output=True, text=True, encoding="utf-8"
-    )
+    return subprocess.run([sys.executable, str(script)], cwd=root, capture_output=True, text=True, encoding="utf-8")
 
 
 class TheGateHoldsTheFinishedRecord(unittest.TestCase):
     def test_the_committed_record_passes(self) -> None:
         result = run_gate()
-        self.assertEqual(
-            result.returncode, 0, f"{RECORD} does not hold:\n{result.stderr}"
-        )
+        self.assertEqual(result.returncode, 0, f"{RECORD} does not hold:\n{result.stderr}")
 
     def test_it_is_quiet_on_success(self) -> None:
         result = run_gate()
@@ -138,9 +131,7 @@ class TheGateHoldsTheFinishedRecord(unittest.TestCase):
         _, rows = gate.record_rows((REPO / RECORD).read_text(encoding="utf-8"))
         self.assertGreater(len(rows), 60, "the record lost most of its lines")
         for line, cells in rows:
-            self.assertNotIn(
-                "not run", " ".join(cells[-2:]), f"{RECORD}:{line} skips a Fern run"
-            )
+            self.assertNotIn("not run", " ".join(cells[-2:]), f"{RECORD}:{line} skips a Fern run")
 
 
 class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
@@ -166,9 +157,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
     def test_a_pooled_region_row_splits_into_its_members(self) -> None:
         """The ten SwaggerHub documents of one `schemas.md` row are ten."""
         gate = load_gate()
-        row = (REPO / "docs/openapi-surface/schemas.md").read_text(
-            encoding="utf-8"
-        ).split("\n")[1275]
+        row = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").split("\n")[1275]
         candidate = row.strip().strip("|").split(" | ")[0]
         self.assertEqual(len(gate.documents_in(candidate)), 10)
 
@@ -206,17 +195,11 @@ class TheGateStillDiscriminates(unittest.TestCase):
         for index, line in enumerate(schemas, start=1):
             if line in ledger:
                 rows[ledger.index(line)] = index
-        rendered = [
-            line.format(**{f"row{n}": rows[n] for n in rows}, row=rows.get(0, 0))
-            for line in lines
-        ]
+        rendered = [line.format(**{f"row{n}": rows[n] for n in rows}, row=rows.get(0, 0)) for line in lines]
         (root / RECORD).write_text(
-            "# probe\n\n## The record\n\n"
-            + RECORD_HEADER
-            + "\n"
-            + "\n".join(rendered)
-            + "\n",
-            encoding="utf-8", newline="\n",
+            "# probe\n\n## The record\n\n" + RECORD_HEADER + "\n" + "\n".join(rendered) + "\n",
+            encoding="utf-8",
+            newline="\n",
         )
         script = root / SCRIPT.relative_to(REPO)
         script.parent.mkdir(parents=True)
@@ -235,16 +218,13 @@ class TheGateStillDiscriminates(unittest.TestCase):
         self.assertEqual(
             result.returncode,
             0,
-            f"the reference tree does not pass, so the cases below prove"
-            f" nothing:\n{result.stderr}",
+            f"the reference tree does not pass, so the cases below prove nothing:\n{result.stderr}",
         )
 
     def test_a_grouped_line_fails(self) -> None:
         """Two documents on one line is the failure this record exists to avoid."""
         ledger = [ledger_row("`example/one` `openapi.yaml`; `example/two` `api.json`")]
-        lines = [
-            record_line(candidate="`example/one` `openapi.yaml`; `example/two` `api.json`")
-        ]
+        lines = [record_line(candidate="`example/one` `openapi.yaml`; `example/two` `api.json`")]
         result = self.gate_over(ledger, lines)
         self.assertEqual(result.returncode, 1)
         self.assertIn("names 2 documents, not 1", result.stderr)
@@ -391,19 +371,13 @@ class TheGateStillDiscriminates(unittest.TestCase):
         self.assertIn("names no fetch URL", result.stderr)
 
     def test_a_ref_with_no_fingerprint_fails(self) -> None:
-        result = self.gate_over(
-            *self.one(ref=f"commit `{SHA}`, at `https://example.test/openapi.yaml`")
-        )
+        result = self.gate_over(*self.one(ref=f"commit `{SHA}`, at `https://example.test/openapi.yaml`"))
         self.assertEqual(result.returncode, 1)
         self.assertIn("fingerprint", result.stderr)
 
     def test_an_unpinned_ref_fails(self) -> None:
         result = self.gate_over(
-            *self.one(
-                ref="at `https://example.test/openapi.yaml` (1,024 bytes, MD5 `"
-                + "a" * 32
-                + "`)"
-            )
+            *self.one(ref="at `https://example.test/openapi.yaml` (1,024 bytes, MD5 `" + "a" * 32 + "`)")
         )
         self.assertEqual(result.returncode, 1)
         self.assertIn("40-character commit", result.stderr)
@@ -413,34 +387,25 @@ class TheGateStillDiscriminates(unittest.TestCase):
             *self.one(
                 ref="no immutable ref — SwaggerHub republishes a version in place,"
                 " so the bytes can change without the address changing; fetched at"
-                " `https://example.test/swagger.json` (1,024 bytes, MD5 `"
-                + "a" * 32
-                + "`)"
+                " `https://example.test/swagger.json` (1,024 bytes, MD5 `" + "a" * 32 + "`)"
             )
         )
         self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_a_fern_check_recorded_as_not_run_fails(self) -> None:
-        result = self.gate_over(
-            *self.one(checked="`fern check` not run — the licence blocks it first")
-        )
+        result = self.gate_over(*self.one(checked="`fern check` not run — the licence blocks it first"))
         self.assertEqual(result.returncode, 1)
         self.assertIn("records `fern check` as `not run`", result.stderr)
 
     def test_a_generate_recorded_as_not_run_fails(self) -> None:
         result = self.gate_over(
-            *self.one(
-                generated="`fern generate --group python-sdk --preview` not run —"
-                " the same licence bar"
-            )
+            *self.one(generated="`fern generate --group python-sdk --preview` not run — the same licence bar")
         )
         self.assertEqual(result.returncode, 1)
         self.assertIn("as `not run`", result.stderr)
 
     def test_a_fern_run_with_no_exit_status_fails(self) -> None:
-        result = self.gate_over(
-            *self.one(checked="`fern check` at CLI 5.114.1 → `All checks passed`")
-        )
+        result = self.gate_over(*self.one(checked="`fern check` at CLI 5.114.1 → `All checks passed`"))
         self.assertEqual(result.returncode, 1)
         self.assertIn("carries no `fern check` exit status", result.stderr)
 
@@ -483,9 +448,7 @@ class TheRecordIsWhereTheGateSaysItIs(unittest.TestCase):
     def test_the_region_keys_it_validates_against_are_the_real_ones(self) -> None:
         keys = load_gate().region_keys(REPO)
         self.assertGreater(len(keys), 300, "the region walk found almost no keys")
-        self.assertEqual(
-            keys["parameter-style-spacedelimited-query-scalar"], "parameters"
-        )
+        self.assertEqual(keys["parameter-style-spacedelimited-query-scalar"], "parameters")
         self.assertEqual(keys["media-type-range"], "bodies-media")
         self.assertEqual(keys["duplicate-normalized-paths"], "document-paths")
         self.assertEqual(keys["http-hoba"], "security")
@@ -508,8 +471,10 @@ class TheGateAndItsTestsAreBothInTheDeterministicTier(unittest.TestCase):
         )
         self.assertEqual(
             targets["test-licence-rescreening"]["options"]["command"],
-            f"python3 {Path(__file__).resolve().relative_to(REPO).as_posix()}",
+            "uv run --locked --all-packages pytest --cov --cov-report= "
+            f"{Path(__file__).resolve().relative_to(REPO).as_posix()}",
         )
+
 
 if __name__ == "__main__":
     unittest.main()

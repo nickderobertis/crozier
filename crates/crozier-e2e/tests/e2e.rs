@@ -10607,14 +10607,13 @@ fn every_registered_corpus_is_wired_into_the_gate() {
         "no #[test] is named {}",
         overlay_goldens::CORPUS_TEST
     );
+    // The recipe lists it by its nextest path, inside `mod overlay_goldens`.
+    let overlay = format!("overlay_goldens::{}", overlay_goldens::CORPUS_TEST);
     assert!(
-        recipe
-            .iter()
-            .any(|listed| listed == overlay_goldens::CORPUS_TEST),
-        "{} is missing from `just test-corpus-match`",
-        overlay_goldens::CORPUS_TEST
+        recipe.contains(&overlay),
+        "{overlay} is missing from `just test-corpus-match`"
     );
-    enforced.insert(overlay_goldens::CORPUS_TEST.to_string());
+    enforced.insert(overlay);
 
     let listed: std::collections::BTreeSet<String> = recipe.iter().cloned().collect();
     assert_eq!(
@@ -10623,18 +10622,18 @@ fn every_registered_corpus_is_wired_into_the_gate() {
     );
 }
 
-/// The test names `just test-corpus-match` enforces, in run order: the
-/// `cargo test` lines of `tests/corpus_match/match.sh`, the script the
-/// `corpus-match` project's `test-match` target runs.
+/// The test names `just test-corpus-match` enforces, in listed order: the
+/// `inventory=(` array of `tests/corpus_match/match.sh`, the script the
+/// `corpus-match` project's `test-match` target runs, one nextest name per line.
 fn corpus_match_recipe(script: &str) -> Vec<String> {
     let tests: Vec<String> = script
         .lines()
-        .filter(|line| !line.trim_start().starts_with('#'))
-        .filter_map(|line| {
-            line.trim_end()
-                .rsplit_once("--test e2e ")
-                .map(|(_, test)| test.to_string())
-        })
+        .skip_while(|line| *line != "inventory=(")
+        .skip(1)
+        .take_while(|line| *line != ")")
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .map(str::to_string)
         .collect();
     assert!(
         !tests.is_empty(),

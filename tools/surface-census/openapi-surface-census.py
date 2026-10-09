@@ -52,18 +52,21 @@ import argparse
 import difflib
 import json
 import re
-import unicodedata
 import sys
+import unicodedata
 from collections import Counter, defaultdict
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Iterable, Iterator
+from typing import Any, NoReturn
 from urllib.parse import unquote
 
 # The corpus project owns the remote-ref pins; its directory is not on sys.path
 # for a script run from here, nor for the tests that load this one by path.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "tools" / "corpus"))
-import corpus_remote_ref_pins as corpus_pins  # noqa: E402 - importable only once tools/corpus is on sys.path
+import itertools
+
+import corpus_remote_ref_pins as corpus_pins
 
 # The corpus is half JSON and half YAML, and this script has to run inside
 # `just check` on the Linux/macOS/Windows matrix with nothing but the standard
@@ -98,9 +101,22 @@ _EXP = re.compile(r"[-+]?[0-9]+[eE][-+]?[0-9]+$")
 # part of the key or of the value.
 _KEY_END = re.compile(r":(?=\s|$)")
 _ESCAPES = {
-    "0": "\0", "a": "\a", "b": "\b", "t": "\t", "\t": "\t", "n": "\n",
-    "v": "\v", "f": "\f", "r": "\r", "e": "\x1b", " ": " ", '"': '"',
-    "/": "/", "\\": "\\", "N": "\x85", "_": "\xa0",
+    "0": "\0",
+    "a": "\a",
+    "b": "\b",
+    "t": "\t",
+    "\t": "\t",
+    "n": "\n",
+    "v": "\v",
+    "f": "\f",
+    "r": "\r",
+    "e": "\x1b",
+    " ": " ",
+    '"': '"',
+    "/": "/",
+    "\\": "\\",
+    "N": "\x85",
+    "_": "\xa0",
 }
 
 
@@ -124,7 +140,7 @@ class _YamlReader:
         self.pos = 0
         self.anchors: dict[str, Any] = {}
 
-    def fail(self, index: int, message: str) -> None:
+    def fail(self, index: int, message: str) -> NoReturn:
         raise DocumentError(self.path, index + 1, message)
 
     @staticmethod
@@ -260,10 +276,7 @@ class _YamlReader:
                 self.pos = line.index + 1
                 items.append(self.parse_block(indent + 1))
                 continue
-            if (
-                rest.startswith("- ") or rest == "-" or self.explicit(rest)
-                or self.split_key(rest) is not None
-            ):
+            if rest.startswith("- ") or rest == "-" or self.explicit(rest) or self.split_key(rest) is not None:
                 # A nested collection opening on the dash line: blank the dash so
                 # the item's own lines all sit at one indentation, then parse it
                 # as an ordinary block. Rewriting the line (rather than threading
@@ -299,7 +312,8 @@ class _YamlReader:
         following = self.peek()
         value = None
         if (
-            following is not None and following.indent == indent
+            following is not None
+            and following.indent == indent
             and (following.text == ":" or following.text.startswith(": "))
         ):
             value = self.indicated_node(following, indent)
@@ -308,10 +322,7 @@ class _YamlReader:
     def indicated_node(self, line: _Line, indent: int) -> Any:
         """The node after a one-character block indicator (`?` or `:`) on `line`."""
         rest = line.text[1:].lstrip(" ")
-        if rest and (
-            rest.startswith("- ") or rest == "-" or self.explicit(rest)
-            or self.split_key(rest) is not None
-        ):
+        if rest and (rest.startswith("- ") or rest == "-" or self.explicit(rest) or self.split_key(rest) is not None):
             # A compact collection opening on the indicator line: blank the
             # indicator, as `parse_sequence` blanks a dash, so the collection's
             # own lines sit at one indentation and keep their source indices.
@@ -324,7 +335,8 @@ class _YamlReader:
             if following is not None and following.indent > indent:
                 return self.parse_block(following.indent)
             if (
-                following is not None and following.indent == indent
+                following is not None
+                and following.indent == indent
                 and line.text[0] == ":"
                 and (following.text == "-" or following.text.startswith("- "))
             ):
@@ -335,9 +347,7 @@ class _YamlReader:
     def hashable_key(self, line: _Line, key: Any) -> Any:
         if isinstance(key, list):
             key = tuple(key)
-        if isinstance(key, dict) or (
-            isinstance(key, tuple) and any(isinstance(item, (dict, list)) for item in key)
-        ):
+        if isinstance(key, dict) or (isinstance(key, tuple) and any(isinstance(item, (dict, list)) for item in key)):
             self.fail(line.index, "a mapping or nested collection is used as a mapping key")
         return key
 
@@ -385,10 +395,7 @@ class _YamlReader:
             # more indented than the key to belong to it.
             nested = following is not None and (
                 following.indent > indent
-                or (
-                    following.indent == indent
-                    and (following.text == "-" or following.text.startswith("- "))
-                )
+                or (following.indent == indent and (following.text == "-" or following.text.startswith("- ")))
             )
             value = self.parse_block(following.indent) if nested else None
         elif rest[0] in "|>":
@@ -599,7 +606,8 @@ class _YamlReader:
             piece = self.strip_comment(self.lines[cursor]).strip()
             parts.append(piece)
             more, open_quote, last = self.flow_depth_open(
-                f"{open_quote} {piece}" if open_quote else piece, "" if open_quote else last)
+                f"{open_quote} {piece}" if open_quote else piece, "" if open_quote else last
+            )
             depth += more
             cursor += 1
         if depth != 0:
@@ -709,14 +717,14 @@ class _YamlReader:
             elif cursor < len(text) and text[cursor] not in ",]}":
                 # Another node right after this one (a stray closer is the stall
                 # guard's below).
-                self.fail(index, f"flow entries need a `,` between them, not {text[cursor:cursor + 12]!r}")
+                self.fail(index, f"flow entries need a `,` between them, not {text[cursor : cursor + 12]!r}")
             if cursor <= entered:
                 # `flow_node` stops at `,]}:` and so returns without consuming a
                 # delimiter it does not recognise here. Looping again from the
                 # same cursor would append forever and exhaust memory rather than
                 # report anything, so a round that consumed nothing is a parse
                 # error naming where it stalled.
-                self.fail(index, f"a flow collection stalls at {text[cursor:cursor + 1]!r}")
+                self.fail(index, f"a flow collection stalls at {text[cursor : cursor + 1]!r}")
 
     @staticmethod
     def skip_space(text: str, cursor: int) -> int:
@@ -795,156 +803,337 @@ def _kind(
 
 _SCHEMA_FIELDS: dict[str, Child | None] = {
     # 3.0 and 3.1 alike
-    "$ref": None, "title": None, "multipleOf": None, "maximum": None,
-    "exclusiveMaximum": None, "minimum": None, "exclusiveMinimum": None,
-    "maxLength": None, "minLength": None, "pattern": None, "maxItems": None,
-    "minItems": None, "uniqueItems": None, "maxProperties": None,
-    "minProperties": None, "required": None, "enum": None, "type": None,
-    "description": None, "format": None, "default": None, "readOnly": None,
-    "writeOnly": None, "example": None, "deprecated": None,
-    "allOf": Child(LIST, "schema"), "oneOf": Child(LIST, "schema"),
-    "anyOf": Child(LIST, "schema"), "not": Child(ONE, "schema"),
-    "items": Child(ONE, "schema"), "properties": Child(MAP, "schema"),
+    "$ref": None,
+    "title": None,
+    "multipleOf": None,
+    "maximum": None,
+    "exclusiveMaximum": None,
+    "minimum": None,
+    "exclusiveMinimum": None,
+    "maxLength": None,
+    "minLength": None,
+    "pattern": None,
+    "maxItems": None,
+    "minItems": None,
+    "uniqueItems": None,
+    "maxProperties": None,
+    "minProperties": None,
+    "required": None,
+    "enum": None,
+    "type": None,
+    "description": None,
+    "format": None,
+    "default": None,
+    "readOnly": None,
+    "writeOnly": None,
+    "example": None,
+    "deprecated": None,
+    "allOf": Child(LIST, "schema"),
+    "oneOf": Child(LIST, "schema"),
+    "anyOf": Child(LIST, "schema"),
+    "not": Child(ONE, "schema"),
+    "items": Child(ONE, "schema"),
+    "properties": Child(MAP, "schema"),
     "additionalProperties": Child(ONE, "schema"),
-    "discriminator": Child(ONE, "discriminator"), "xml": Child(ONE, "xml"),
+    "discriminator": Child(ONE, "discriminator"),
+    "xml": Child(ONE, "xml"),
     "externalDocs": Child(ONE, "externalDocs"),
     # 3.0 only
     "nullable": None,
     # 3.1 (JSON Schema 2020-12)
-    "$schema": None, "$id": None, "$anchor": None, "$comment": None,
-    "$dynamicRef": None, "$dynamicAnchor": None, "$vocabulary": None,
-    "const": None, "examples": None, "contentEncoding": None,
-    "contentMediaType": None, "dependentRequired": None, "maxContains": None,
+    "$schema": None,
+    "$id": None,
+    "$anchor": None,
+    "$comment": None,
+    "$dynamicRef": None,
+    "$dynamicAnchor": None,
+    "$vocabulary": None,
+    "const": None,
+    "examples": None,
+    "contentEncoding": None,
+    "contentMediaType": None,
+    "dependentRequired": None,
+    "maxContains": None,
     "minContains": None,
-    "$defs": Child(MAP, "schema"), "definitions": Child(MAP, "schema"),
-    "prefixItems": Child(LIST, "schema"), "contains": Child(ONE, "schema"),
+    "$defs": Child(MAP, "schema"),
+    "definitions": Child(MAP, "schema"),
+    "prefixItems": Child(LIST, "schema"),
+    "contains": Child(ONE, "schema"),
     "patternProperties": Child(MAP, "schema"),
     "propertyNames": Child(ONE, "schema"),
     "unevaluatedItems": Child(ONE, "schema"),
     "unevaluatedProperties": Child(ONE, "schema"),
-    "if": Child(ONE, "schema"), "then": Child(ONE, "schema"),
-    "else": Child(ONE, "schema"), "dependentSchemas": Child(MAP, "schema"),
+    "if": Child(ONE, "schema"),
+    "then": Child(ONE, "schema"),
+    "else": Child(ONE, "schema"),
+    "dependentSchemas": Child(MAP, "schema"),
     "contentSchema": Child(ONE, "schema"),
 }
 
 _PARAMETER_FIELDS: dict[str, Child | None] = {
-    "description": None, "required": None, "deprecated": None,
-    "allowEmptyValue": None, "style": None, "explode": None,
-    "allowReserved": None, "example": None,
-    "schema": Child(ONE, "schema"), "examples": Child(MAP, "example"),
+    "description": None,
+    "required": None,
+    "deprecated": None,
+    "allowEmptyValue": None,
+    "style": None,
+    "explode": None,
+    "allowReserved": None,
+    "example": None,
+    "schema": Child(ONE, "schema"),
+    "examples": Child(MAP, "example"),
     "content": Child(MAP, "mediaType"),
 }
 
 OBJECTS: dict[str, ObjectKind] = {
-    "openapi": _kind("openapi", True, {
-        "openapi": None, "jsonSchemaDialect": None,
-        "info": Child(ONE, "info"), "servers": Child(LIST, "server"),
-        "paths": Child(ONE, "paths"), "webhooks": Child(MAP, "pathItem"),
-        "components": Child(ONE, "components"),
-        "security": Child(LIST, "securityRequirement"),
-        "tags": Child(LIST, "tag"), "externalDocs": Child(ONE, "externalDocs"),
-    }),
-    "info": _kind("info", True, {
-        "title": None, "summary": None, "description": None,
-        "termsOfService": None, "version": None,
-        "contact": Child(ONE, "contact"), "license": Child(ONE, "license"),
-    }),
+    "openapi": _kind(
+        "openapi",
+        True,
+        {
+            "openapi": None,
+            "jsonSchemaDialect": None,
+            "info": Child(ONE, "info"),
+            "servers": Child(LIST, "server"),
+            "paths": Child(ONE, "paths"),
+            "webhooks": Child(MAP, "pathItem"),
+            "components": Child(ONE, "components"),
+            "security": Child(LIST, "securityRequirement"),
+            "tags": Child(LIST, "tag"),
+            "externalDocs": Child(ONE, "externalDocs"),
+        },
+    ),
+    "info": _kind(
+        "info",
+        True,
+        {
+            "title": None,
+            "summary": None,
+            "description": None,
+            "termsOfService": None,
+            "version": None,
+            "contact": Child(ONE, "contact"),
+            "license": Child(ONE, "license"),
+        },
+    ),
     "contact": _kind("contact", False, {"name": None, "url": None, "email": None}),
     "license": _kind("license", False, {"name": None, "identifier": None, "url": None}),
-    "server": _kind("server", True, {
-        "url": None, "description": None, "variables": Child(MAP, "serverVariable"),
-    }),
-    "serverVariable": _kind("serverVariable", False, {
-        "enum": None, "default": None, "description": None,
-    }),
-    "components": _kind("components", True, {
-        "schemas": Child(MAP, "schema"), "responses": Child(MAP, "response"),
-        "parameters": Child(MAP, "parameter"), "examples": Child(MAP, "example"),
-        "requestBodies": Child(MAP, "requestBody"), "headers": Child(MAP, "header"),
-        "securitySchemes": Child(MAP, "securityScheme"), "links": Child(MAP, "link"),
-        "callbacks": Child(MAP, "callback"), "pathItems": Child(MAP, "pathItem"),
-    }),
+    "server": _kind(
+        "server",
+        True,
+        {
+            "url": None,
+            "description": None,
+            "variables": Child(MAP, "serverVariable"),
+        },
+    ),
+    "serverVariable": _kind(
+        "serverVariable",
+        False,
+        {
+            "enum": None,
+            "default": None,
+            "description": None,
+        },
+    ),
+    "components": _kind(
+        "components",
+        True,
+        {
+            "schemas": Child(MAP, "schema"),
+            "responses": Child(MAP, "response"),
+            "parameters": Child(MAP, "parameter"),
+            "examples": Child(MAP, "example"),
+            "requestBodies": Child(MAP, "requestBody"),
+            "headers": Child(MAP, "header"),
+            "securitySchemes": Child(MAP, "securityScheme"),
+            "links": Child(MAP, "link"),
+            "callbacks": Child(MAP, "callback"),
+            "pathItems": Child(MAP, "pathItem"),
+        },
+    ),
     # The keys of a Paths Object are path templates, and the keys of a Callback
     # Object are runtime expressions: names, never fields. `free_map` is what
     # keeps them out of the census.
     "paths": _kind("paths", False, {}, free_map=Child(ONE, "pathItem")),
     "callback": _kind("callback", True, {}, free_map=Child(ONE, "pathItem")),
-    "pathItem": _kind("pathItem", True, {
-        "$ref": None, "summary": None, "description": None,
-        "get": Child(ONE, "operation"), "put": Child(ONE, "operation"),
-        "post": Child(ONE, "operation"), "delete": Child(ONE, "operation"),
-        "options": Child(ONE, "operation"), "head": Child(ONE, "operation"),
-        "patch": Child(ONE, "operation"), "trace": Child(ONE, "operation"),
-        "servers": Child(LIST, "server"), "parameters": Child(LIST, "parameter"),
-    }),
-    "operation": _kind("operation", True, {
-        "tags": None, "summary": None, "description": None, "operationId": None,
-        "deprecated": None,
-        "externalDocs": Child(ONE, "externalDocs"),
-        "parameters": Child(LIST, "parameter"),
-        "requestBody": Child(ONE, "requestBody"),
-        "responses": Child(ONE, "responses"),
-        "callbacks": Child(MAP, "callback"),
-        "security": Child(LIST, "securityRequirement"),
-        "servers": Child(LIST, "server"),
-    }),
+    "pathItem": _kind(
+        "pathItem",
+        True,
+        {
+            "$ref": None,
+            "summary": None,
+            "description": None,
+            "get": Child(ONE, "operation"),
+            "put": Child(ONE, "operation"),
+            "post": Child(ONE, "operation"),
+            "delete": Child(ONE, "operation"),
+            "options": Child(ONE, "operation"),
+            "head": Child(ONE, "operation"),
+            "patch": Child(ONE, "operation"),
+            "trace": Child(ONE, "operation"),
+            "servers": Child(LIST, "server"),
+            "parameters": Child(LIST, "parameter"),
+        },
+    ),
+    "operation": _kind(
+        "operation",
+        True,
+        {
+            "tags": None,
+            "summary": None,
+            "description": None,
+            "operationId": None,
+            "deprecated": None,
+            "externalDocs": Child(ONE, "externalDocs"),
+            "parameters": Child(LIST, "parameter"),
+            "requestBody": Child(ONE, "requestBody"),
+            "responses": Child(ONE, "responses"),
+            "callbacks": Child(MAP, "callback"),
+            "security": Child(LIST, "securityRequirement"),
+            "servers": Child(LIST, "server"),
+        },
+    ),
     "externalDocs": _kind("externalDocs", True, {"description": None, "url": None}),
     "parameter": _kind("parameter", True, {"name": None, "in": None, **_PARAMETER_FIELDS}),
     "header": _kind("header", True, dict(_PARAMETER_FIELDS)),
-    "requestBody": _kind("requestBody", True, {
-        "description": None, "required": None, "content": Child(MAP, "mediaType"),
-    }),
-    "mediaType": _kind("mediaType", True, {
-        "example": None, "schema": Child(ONE, "schema"),
-        "examples": Child(MAP, "example"), "encoding": Child(MAP, "encoding"),
-    }),
-    "encoding": _kind("encoding", False, {
-        "contentType": None, "style": None, "explode": None, "allowReserved": None,
-        "headers": Child(MAP, "header"),
-    }),
+    "requestBody": _kind(
+        "requestBody",
+        True,
+        {
+            "description": None,
+            "required": None,
+            "content": Child(MAP, "mediaType"),
+        },
+    ),
+    "mediaType": _kind(
+        "mediaType",
+        True,
+        {
+            "example": None,
+            "schema": Child(ONE, "schema"),
+            "examples": Child(MAP, "example"),
+            "encoding": Child(MAP, "encoding"),
+        },
+    ),
+    "encoding": _kind(
+        "encoding",
+        False,
+        {
+            "contentType": None,
+            "style": None,
+            "explode": None,
+            "allowReserved": None,
+            "headers": Child(MAP, "header"),
+        },
+    ),
     # The keys of a Responses Object are status codes; only `default` is a field.
-    "responses": _kind("responses", False, {
-        "default": Child(ONE, "response"),
-    }, free_map=Child(ONE, "response")),
-    "response": _kind("response", True, {
-        "description": None, "headers": Child(MAP, "header"),
-        "content": Child(MAP, "mediaType"), "links": Child(MAP, "link"),
-    }),
-    "example": _kind("example", True, {
-        "summary": None, "description": None, "value": None, "externalValue": None,
-    }),
-    "link": _kind("link", True, {
-        "operationRef": None, "operationId": None, "parameters": None,
-        "requestBody": None, "description": None, "server": Child(ONE, "server"),
-    }),
-    "tag": _kind("tag", True, {
-        "name": None, "description": None, "externalDocs": Child(ONE, "externalDocs"),
-    }),
+    "responses": _kind(
+        "responses",
+        False,
+        {
+            "default": Child(ONE, "response"),
+        },
+        free_map=Child(ONE, "response"),
+    ),
+    "response": _kind(
+        "response",
+        True,
+        {
+            "description": None,
+            "headers": Child(MAP, "header"),
+            "content": Child(MAP, "mediaType"),
+            "links": Child(MAP, "link"),
+        },
+    ),
+    "example": _kind(
+        "example",
+        True,
+        {
+            "summary": None,
+            "description": None,
+            "value": None,
+            "externalValue": None,
+        },
+    ),
+    "link": _kind(
+        "link",
+        True,
+        {
+            "operationRef": None,
+            "operationId": None,
+            "parameters": None,
+            "requestBody": None,
+            "description": None,
+            "server": Child(ONE, "server"),
+        },
+    ),
+    "tag": _kind(
+        "tag",
+        True,
+        {
+            "name": None,
+            "description": None,
+            "externalDocs": Child(ONE, "externalDocs"),
+        },
+    ),
     "schema": _kind("schema", True, _SCHEMA_FIELDS),
     "discriminator": _kind("discriminator", False, {"propertyName": None, "mapping": None}),
-    "xml": _kind("xml", False, {
-        "name": None, "namespace": None, "prefix": None, "attribute": None,
-        "wrapped": None,
-    }),
-    "securityScheme": _kind("securityScheme", True, {
-        "type": None, "description": None, "name": None, "in": None,
-        "scheme": None, "bearerFormat": None, "openIdConnectUrl": None,
-        "flows": Child(ONE, "oauthFlows"),
-    }),
-    "oauthFlows": _kind("oauthFlows", False, {
-        "implicit": Child(ONE, "oauthFlow"), "password": Child(ONE, "oauthFlow"),
-        "clientCredentials": Child(ONE, "oauthFlow"),
-        "authorizationCode": Child(ONE, "oauthFlow"),
-    }),
-    "oauthFlow": _kind("oauthFlow", False, {
-        "authorizationUrl": None, "tokenUrl": None, "refreshUrl": None, "scopes": None,
-    }),
+    "xml": _kind(
+        "xml",
+        False,
+        {
+            "name": None,
+            "namespace": None,
+            "prefix": None,
+            "attribute": None,
+            "wrapped": None,
+        },
+    ),
+    "securityScheme": _kind(
+        "securityScheme",
+        True,
+        {
+            "type": None,
+            "description": None,
+            "name": None,
+            "in": None,
+            "scheme": None,
+            "bearerFormat": None,
+            "openIdConnectUrl": None,
+            "flows": Child(ONE, "oauthFlows"),
+        },
+    ),
+    "oauthFlows": _kind(
+        "oauthFlows",
+        False,
+        {
+            "implicit": Child(ONE, "oauthFlow"),
+            "password": Child(ONE, "oauthFlow"),
+            "clientCredentials": Child(ONE, "oauthFlow"),
+            "authorizationCode": Child(ONE, "oauthFlow"),
+        },
+    ),
+    "oauthFlow": _kind(
+        "oauthFlow",
+        False,
+        {
+            "authorizationUrl": None,
+            "tokenUrl": None,
+            "refreshUrl": None,
+            "scopes": None,
+        },
+    ),
     # The keys of a Security Requirement Object are scheme names declared in
     # `components.securitySchemes`, so the object contributes no selector of its own.
     "securityRequirement": _kind("securityRequirement", True, {}),
-    "reference": _kind("reference", True, {
-        "$ref": None, "summary": None, "description": None,
-    }),
+    "reference": _kind(
+        "reference",
+        True,
+        {
+            "$ref": None,
+            "summary": None,
+            "description": None,
+        },
+    ),
 }
 
 # The closed list of fields that also emit a valued selector, `<selector>=<value>`.
@@ -953,10 +1142,18 @@ OBJECTS: dict[str, ObjectKind] = {
 # `schema.format` is here despite being an open set because a format is exactly
 # the kind of shape a generator either maps to a Python type or drops.
 VALUED = {
-    "openapi.openapi", "parameter.in", "parameter.style", "header.style",
-    "mediaType.encoding.style", "schema.type", "schema.format",
-    "securityScheme.type", "securityScheme.in", "securityScheme.scheme",
-    "schema.additionalProperties", "schema.example",
+    "openapi.openapi",
+    "parameter.in",
+    "parameter.style",
+    "header.style",
+    "mediaType.encoding.style",
+    "schema.type",
+    "schema.format",
+    "securityScheme.type",
+    "securityScheme.in",
+    "securityScheme.scheme",
+    "schema.additionalProperties",
+    "schema.example",
 }
 
 # The one exception to "a boolean value emits no valued selector".
@@ -1005,9 +1202,7 @@ PREDICATES = {
         "before an optional `#` fragment; the referring Path Item counts even "
         "when the target lies outside the registered source tree"
     ),
-    "info.title:non-ascii": (
-        "one per Info Object whose title contains a non-ASCII character"
-    ),
+    "info.title:non-ascii": ("one per Info Object whose title contains a non-ASCII character"),
     "schema.enum:empty-member": "one per Schema Object with an empty string enum member, which enum_words renders as empty",
     "schema.enum:empty-identifier-member": "one per Schema Object with a non-empty string enum member that normalizes to no identifier characters, which finalize_enum_ident changes to _",
     "schema.enum:wildcard-member": "one per Schema Object with a string enum member containing *, which enum_words spells all when it is the whole value and treats as a word boundary otherwise",
@@ -1207,9 +1402,7 @@ PREDICATES = {
         "than a Security Scheme Object, which `normalize_security_scheme_refs` of "
         "`src/openapi.rs` resolves"
     ),
-    "operation.tags:multiple": (
-        "one per Operation Object whose `tags` array holds more than one member"
-    ),
+    "operation.tags:multiple": ("one per Operation Object whose `tags` array holds more than one member"),
     "operation.operationId:duplicate": (
         "one per Operation Object whose `operationId` value is declared by more than "
         "one Operation Object of the same document, so a value written twice counts two"
@@ -1281,12 +1474,8 @@ PREDICATES = {
         "primary type is not `null`, beside at least one member whose primary type is "
         "`null`"
     ),
-    "schema.oneOf:sole-member": (
-        "one per Schema Object whose `oneOf` array holds exactly one member"
-    ),
-    "schema.anyOf:sole-member": (
-        "one per Schema Object whose `anyOf` array holds exactly one member"
-    ),
+    "schema.oneOf:sole-member": ("one per Schema Object whose `oneOf` array holds exactly one member"),
+    "schema.anyOf:sole-member": ("one per Schema Object whose `anyOf` array holds exactly one member"),
     "schema.enum:string-valued": (
         "one per Schema Object whose `enum` array yields at least one string value "
         "under crozier's own `string_enum_values` — the schema is `type: string`, or "
@@ -1648,9 +1837,7 @@ BLOCKS: dict[str, Block] = {
     "prop_type_ref": Block("schema.properties>"),
     # Its case 1 gate, and the resolution the gate performs but the row does not
     # spell: the arms inside read the schema the annotated `$ref` denotes.
-    "prop_type_ref/resolution": Block(
-        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>"
-    ),
+    "prop_type_ref/resolution": Block("schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>"),
     # Its composition gate, `one_of.as_ref().or(any_of.as_ref())`, twice.
     "prop_type_ref/oneOf": Block("schema.properties>", ("schema.oneOf",)),
     "prop_type_ref/anyOf": Block("schema.properties>", ("schema.anyOf",)),
@@ -1666,11 +1853,26 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("1a", selector="schema.$ref:cross-document"),
         Case("1b", selector="schema.$ref:same-document-foreign-pointer"),
         Case("2", selector="schema.$ref:undeclared-component-head"),
-        Case("3", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf"),
-        Case("4", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf"),
-        Case("5", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf"),
-        Case("6", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties"),
-        Case("7", selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items"),
+        Case(
+            "3",
+            selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=allOf",
+        ),
+        Case(
+            "4",
+            selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=oneOf",
+        ),
+        Case(
+            "5",
+            selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=anyOf",
+        ),
+        Case(
+            "6",
+            selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=properties",
+        ),
+        Case(
+            "7",
+            selector="schema.properties>schema.type:primary=array&schema.items>schema.$ref:pointer-walk-reaches=items",
+        ),
         Case("8", selector="schema.$ref:unnamed-segment"),
     ),
     "nested_array_element": (
@@ -1682,14 +1884,22 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("4", block="nested_array_element", selector="schema.items>schema.properties:non-empty"),
         Case("5", block="nested_array_element", selector="schema.items>!schema.type:primary-scalar&schema.allOf"),
         Case("6", block="nested_array_element", selector="schema.items>schema.additionalProperties=false"),
-        Case("6b", block="nested_array_element", selector="schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case(
+            "6b",
+            block="nested_array_element",
+            selector="schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
         Case("7", block="nested_array_element", selector="schema.items>schema.oneOf"),
         Case("8", block="nested_array_element", selector="schema.items>schema.anyOf"),
-        Case("9", block="nested_array_element", residual=(
-            "one per Schema Object whose `items` value declares none of the members "
-            "`nested_array_element`'s other cases carry, which is the residual arm "
-            "its closing `None` is"
-        )),
+        Case(
+            "9",
+            block="nested_array_element",
+            residual=(
+                "one per Schema Object whose `items` value declares none of the members "
+                "`nested_array_element`'s other cases carry, which is the residual arm "
+                "its closing `None` is"
+            ),
+        ),
     ),
     "hoist_union_variant": (
         Case("1", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.$ref"),
@@ -1698,28 +1908,116 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("2b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.enum:string-valued"),
         Case("2c", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.const:string-valued"),
         Case("2d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.const:string-valued"),
-        Case("3a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member"),
-        Case("3b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member"),
-        Case("3c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member"),
-        Case("3d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member"),
-        Case("4a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union"),
-        Case("4b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union"),
-        Case("4c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union"),
-        Case("4d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union"),
-        Case("5a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf"),
-        Case("5b", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf"),
-        Case("5c", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf"),
-        Case("5d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf"),
-        Case("6a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component"),
-        Case("6b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component"),
-        Case("7a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty"),
-        Case("7b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty"),
-        Case("7c", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
-        Case("7d", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false"),
-        Case("7e", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf"),
-        Case("7f", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf"),
-        Case("7g", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("7h", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case(
+            "3a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        Case(
+            "3b",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        ),
+        Case(
+            "3c",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        Case(
+            "3d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        ),
+        Case(
+            "4a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+        ),
+        Case(
+            "4b",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+        ),
+        Case(
+            "4c",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
+        ),
+        Case(
+            "4d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union",
+        ),
+        Case(
+            "5a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        Case(
+            "5b",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+        ),
+        Case(
+            "5c",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        Case(
+            "5d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
+        ),
+        Case(
+            "6a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+        ),
+        Case(
+            "6b",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component",
+        ),
+        Case(
+            "7a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        ),
+        Case(
+            "7b",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        ),
+        Case(
+            "7c",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+        ),
+        Case(
+            "7d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+        ),
+        Case(
+            "7e",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+        ),
+        Case(
+            "7f",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.type:primary-scalar&schema.allOf",
+        ),
+        Case(
+            "7g",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "7h",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
         # Numbered after the table was published, and listed where the body
         # reads it — between the `type: array` guard and case 8 — so the
         # numbers rows and tests already cite for cases 8 to 12 hold.
@@ -1731,72 +2029,190 @@ CASES: dict[str, tuple[Case, ...]] = {
         Case("8b", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.properties:non-empty"),
         Case("9", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.allOf"),
         Case("10", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.allOf"),
-        Case("10a", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("10b", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("10c", block="hoist_union_variant/oneOf", selector="schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
-        Case("10d", block="hoist_union_variant/anyOf", selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object"),
-        Case("12a", block="hoist_union_variant/oneOf", residual=(
-            "one per Schema Object one of whose `oneOf` members declares none of the "
-            "members `hoist_union_variant`'s other cases carry at the variant, which "
-            "is the residual arm its closing `base_type_ref` is"
-        )),
-        Case("12b", block="hoist_union_variant/anyOf", residual=(
-            "one per Schema Object one of whose `anyOf` members declares none of "
-            "them, the same residual arm reached through the other union head"
-        )),
+        Case(
+            "10a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "10b",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "10c",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "10d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "12a",
+            block="hoist_union_variant/oneOf",
+            residual=(
+                "one per Schema Object one of whose `oneOf` members declares none of the "
+                "members `hoist_union_variant`'s other cases carry at the variant, which "
+                "is the residual arm its closing `base_type_ref` is"
+            ),
+        ),
+        Case(
+            "12b",
+            block="hoist_union_variant/anyOf",
+            residual=(
+                "one per Schema Object one of whose `anyOf` members declares none of "
+                "them, the same residual arm reached through the other union head"
+            ),
+        ),
     ),
     "prop_type_ref": (
-        Case("1", block="prop_type_ref", selector="schema.properties>schema.allOf:annotated-ref", opens="prop_type_ref/resolution", falls_through=True),
-        Case("2a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued"),
-        Case("2b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued"),
-        Case("3a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf"),
-        Case("3b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf"),
-        Case("4a", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty"),
-        Case("4b", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf"),
-        Case("4c", block="prop_type_ref/resolution", selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false"),
-        Case("5", block="prop_type_ref/resolution", residual=(
-            "one per Schema Object one of whose properties is an annotated `$ref` "
-            "whose target declares none of the members the arms inside "
-            "`prop_type_ref`'s resolution gate read, which is the residual arm its "
-            "closing `full_type_ref_resolved` is"
-        )),
-        Case("6", block="prop_type_ref", selector="schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref"),
+        Case(
+            "1",
+            block="prop_type_ref",
+            selector="schema.properties>schema.allOf:annotated-ref",
+            opens="prop_type_ref/resolution",
+            falls_through=True,
+        ),
+        Case(
+            "2a",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.enum:string-valued",
+        ),
+        Case(
+            "2b",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.const:string-valued",
+        ),
+        Case(
+            "3a",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.oneOf",
+        ),
+        Case(
+            "3b",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.anyOf",
+        ),
+        Case(
+            "4a",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.properties:non-empty",
+        ),
+        Case(
+            "4b",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.allOf",
+        ),
+        Case(
+            "4c",
+            block="prop_type_ref/resolution",
+            selector="schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.additionalProperties=false",
+        ),
+        Case(
+            "5",
+            block="prop_type_ref/resolution",
+            residual=(
+                "one per Schema Object one of whose properties is an annotated `$ref` "
+                "whose target declares none of the members the arms inside "
+                "`prop_type_ref`'s resolution gate read, which is the residual arm its "
+                "closing `full_type_ref_resolved` is"
+            ),
+        ),
+        Case(
+            "6",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref",
+        ),
         Case("7a", block="prop_type_ref", selector="schema.properties>schema.enum:string-valued"),
         Case("7b", block="prop_type_ref", selector="schema.properties>schema.const:string-valued"),
         Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
         Case("8b", block="prop_type_ref", selector="schema.properties>!schema.type:primary-scalar&schema.allOf"),
-        Case("8c", block="prop_type_ref", selector="schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("8d", block="prop_type_ref", selector="schema.properties>schema.additionalProperties=false&schema.properties"),
+        Case(
+            "8c",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "8d",
+            block="prop_type_ref",
+            selector="schema.properties>schema.additionalProperties=false&schema.properties",
+        ),
         Case("9", block="prop_type_ref", selector="schema.properties>schema.oneOf", opens="prop_type_ref/oneOf"),
         Case("10", block="prop_type_ref", selector="schema.properties>schema.anyOf", opens="prop_type_ref/anyOf"),
         Case("11a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-non-null-member"),
         Case("11b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-non-null-member"),
-        Case("12a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty"),
-        Case("12b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty"),
-        Case("12c", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties"),
-        Case("12d", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties"),
-        Case("12e", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf"),
-        Case("12f", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf"),
-        Case("12g", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
-        Case("12h", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object"),
+        Case(
+            "12a",
+            block="prop_type_ref/oneOf",
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+        ),
+        Case(
+            "12b",
+            block="prop_type_ref/anyOf",
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        ),
+        Case(
+            "12c",
+            block="prop_type_ref/oneOf",
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
+        ),
+        Case(
+            "12d",
+            block="prop_type_ref/anyOf",
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
+        ),
+        Case(
+            "12e",
+            block="prop_type_ref/oneOf",
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.type:primary-scalar&schema.allOf",
+        ),
+        Case(
+            "12f",
+            block="prop_type_ref/anyOf",
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.type:primary-scalar&schema.allOf",
+        ),
+        Case(
+            "12g",
+            block="prop_type_ref/oneOf",
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
+        Case(
+            "12h",
+            block="prop_type_ref/anyOf",
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object",
+        ),
         Case("13a", block="prop_type_ref/oneOf", selector="schema.properties>schema.oneOf:discriminated-union"),
         Case("13b", block="prop_type_ref/anyOf", selector="schema.properties>schema.anyOf:discriminated-union"),
-        Case("14a", block="prop_type_ref/oneOf", residual=(
-            "one per Schema Object one of whose properties declares a `oneOf` that is "
-            "none of the shapes the arms inside `prop_type_ref`'s composition gate "
-            "read, which is the residual arm its closing union alias is"
-        )),
-        Case("14b", block="prop_type_ref/anyOf", residual=(
-            "one per Schema Object one of whose properties declares an `anyOf` that "
-            "is none of them, the same residual arm reached through the other "
-            "composition spelling"
-        )),
+        Case(
+            "14a",
+            block="prop_type_ref/oneOf",
+            residual=(
+                "one per Schema Object one of whose properties declares a `oneOf` that is "
+                "none of the shapes the arms inside `prop_type_ref`'s composition gate "
+                "read, which is the residual arm its closing union alias is"
+            ),
+        ),
+        Case(
+            "14b",
+            block="prop_type_ref/anyOf",
+            residual=(
+                "one per Schema Object one of whose properties declares an `anyOf` that "
+                "is none of them, the same residual arm reached through the other "
+                "composition spelling"
+            ),
+        ),
         Case("15", block="prop_type_ref", selector="schema.properties>schema.type:primary=array"),
-        Case("16", block="prop_type_ref", residual=(
-            "one per Schema Object one of whose properties declares none of the "
-            "members `prop_type_ref`'s own arms carry, which is the residual arm its "
-            "closing `base_type_ref` is"
-        )),
+        Case(
+            "16",
+            block="prop_type_ref",
+            residual=(
+                "one per Schema Object one of whose properties declares none of the "
+                "members `prop_type_ref`'s own arms carry, which is the residual arm its "
+                "closing `base_type_ref` is"
+            ),
+        ),
     ),
     "ref_to_class": (
         Case("1a", selector="schema.$ref:cross-document"),
@@ -1950,9 +2366,7 @@ MEMBER_ONLY_PREDICATES = {
 
 # One compiled conjunction: per group, the members that must hold and the members
 # that must not, and the descent leaving that group.
-CompiledConjunction = tuple[
-    tuple[tuple[frozenset[str], frozenset[str]], tuple[str, str] | None], ...
-]
+CompiledConjunction = tuple[tuple[tuple[frozenset[str], frozenset[str]], tuple[str, str] | None], ...]
 
 
 def conjunction_parts(text: str) -> list[tuple[list[str], str | None]]:
@@ -1993,10 +2407,18 @@ def descent_field(member: str) -> str | None:
     return field or None
 
 
+def compiled_descent(member: str, operator: str) -> tuple[str, str]:
+    """The descent a group's operator takes: the field its last member names."""
+    field = descent_field(member)
+    if field is None:
+        raise ValueError(f"{operator!r} binds to {member!r}, which names no field to descend through")
+    return field, operator
+
+
 def group_halves(members: Iterable[str]) -> tuple[frozenset[str], frozenset[str]]:
     """One group's members as the set that must hold and the set that must not."""
     positive = {member for member in members if not member.startswith(NEGATION)}
-    negated = {member[len(NEGATION):] for member in members if member.startswith(NEGATION)}
+    negated = {member[len(NEGATION) :] for member in members if member.startswith(NEGATION)}
     return frozenset(positive), frozenset(negated)
 
 
@@ -2012,7 +2434,7 @@ def compile_conjunction(text: str) -> CompiledConjunction:
     return tuple(
         (
             group_halves(members),
-            None if operator is None else (descent_field(members[-1]), operator),
+            None if operator is None else compiled_descent(members[-1], operator),
         )
         for members, operator in conjunction_parts(text)
     )
@@ -2090,6 +2512,8 @@ def residual_selector(function: str, residual: Case) -> str:
     with the same consequence: the residual counts what that case claims, and the
     hole is a row of the table saying so.
     """
+    # Every residual arm is filed under the block whose cases it complements.
+    assert residual.block is not None
     block = BLOCKS[residual.block]
     negated = set()
     for case in CASES[function]:
@@ -2099,7 +2523,7 @@ def residual_selector(function: str, residual: Case) -> str:
             continue
         if not case.selector.startswith(block.prefix):
             continue
-        member = case.selector[len(block.prefix):]
+        member = case.selector[len(block.prefix) :]
         if is_conjunction(member) or member in block.anchor:
             continue
         negated.add(NEGATION + member)
@@ -2122,7 +2546,11 @@ def case_verdict(function: str, case: Case) -> str:
     """What the case analysis's third column says for one case of the table."""
     if case.residual is not None:
         return RESIDUAL_SELECTORS[(function, case.number)]
-    return case.selector if case.hole is None else case.hole
+    if case.hole is not None:
+        return case.hole
+    # A case is a residual, a hole, or a selector; the first two returned above.
+    assert case.selector is not None
+    return case.selector
 
 
 # Declared conjunctions no case of the table is read off any more, each with why
@@ -2201,16 +2629,47 @@ def is_reference_node(node: dict[Any, Any], kind_name: str) -> bool:
 # `src/naming.rs`'s own unit tests pin, so crozier's casing cannot change without
 # failing a check here.
 
-_PYTHON_KEYWORDS = frozenset({
-    "False", "None", "True", "and", "as", "assert", "async", "await", "break",
-    "class", "continue", "def", "del", "elif", "else", "except", "finally",
-    "for", "from", "global", "if", "import", "in", "is", "lambda", "nonlocal",
-    "not", "or", "pass", "raise", "return", "try", "while", "with", "yield",
-})
-# Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
-_RESERVED_BUILTINS = frozenset(
-    {"all", "bool", "float", "int", "list", "long", "map", "set", "uuid"}
+_PYTHON_KEYWORDS = frozenset(
+    {
+        "False",
+        "None",
+        "True",
+        "and",
+        "as",
+        "assert",
+        "async",
+        "await",
+        "break",
+        "class",
+        "continue",
+        "def",
+        "del",
+        "elif",
+        "else",
+        "except",
+        "finally",
+        "for",
+        "from",
+        "global",
+        "if",
+        "import",
+        "in",
+        "is",
+        "lambda",
+        "nonlocal",
+        "not",
+        "or",
+        "pass",
+        "raise",
+        "return",
+        "try",
+        "while",
+        "with",
+        "yield",
+    }
 )
+# Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
+_RESERVED_BUILTINS = frozenset({"all", "bool", "float", "int", "list", "long", "map", "set", "uuid"})
 # A path template expression: `{userId}` in `/users/{userId}/roles`.
 _TEMPLATE_EXPRESSION = re.compile(r"\{([^{}]*)\}")
 
@@ -2249,12 +2708,7 @@ def split_words(text: str) -> list[str]:
             and bool(current)
             and (
                 (previous is not None and (_is_lower(previous) or _is_digit(previous)))
-                or (
-                    previous is not None
-                    and _is_upper(previous)
-                    and following is not None
-                    and _is_lower(following)
-                )
+                or (previous is not None and _is_upper(previous) and following is not None and _is_lower(following))
             )
         )
         if boundary:
@@ -2289,9 +2743,7 @@ def to_snake_case(text: str) -> str:
 
 def _fold_non_identifier(name: str) -> str:
     """`naming::fold_non_identifier`: every non-ASCII-alphanumeric is a boundary."""
-    return "".join(
-        char if (_is_alpha(char) or _is_digit(char)) else " " for char in name
-    )
+    return "".join(char if (_is_alpha(char) or _is_digit(char)) else " " for char in name)
 
 
 def _digit_suffix_absorbs_following(chars: list[str], digit_index: int) -> bool:
@@ -2315,11 +2767,7 @@ def _collapse_field_digit_boundaries(name: str) -> str:
     kept: list[str] = []
     for index, char in enumerate(chars):
         if char == "_" and (
-            (
-                index > 0
-                and _is_digit(chars[index - 1])
-                and _digit_suffix_absorbs_following(chars, index - 1)
-            )
+            (index > 0 and _is_digit(chars[index - 1]) and _digit_suffix_absorbs_following(chars, index - 1))
             or (index + 1 < len(chars) and _is_digit(chars[index + 1]))
         ):
             continue
@@ -2330,8 +2778,7 @@ def _collapse_field_digit_boundaries(name: str) -> str:
 def _field_snake_case(wire_name: str) -> str:
     """`naming::field_snake_case`: whitespace chunks fold independently."""
     chunks = (
-        _collapse_field_digit_boundaries(to_snake_case(_fold_non_identifier(chunk)))
-        for chunk in wire_name.split()
+        _collapse_field_digit_boundaries(to_snake_case(_fold_non_identifier(chunk))) for chunk in wire_name.split()
     )
     return "_".join(chunk for chunk in chunks if chunk)
 
@@ -2369,16 +2816,22 @@ def to_pascal_case(text: str) -> str:
 # `naming::class_name` spells a leading digit out, so a schema name that starts
 # with one still yields a legal class name (`5GmmCause` -> `FiveGmmCause`).
 _DIGIT_WORDS = (
-    "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
+    "Zero",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
 )
 
 
 def sanitize_identifier(name: str) -> str:
     """`naming::sanitize_identifier`: every other character becomes `_`."""
-    out = "".join(
-        char if (_is_alpha(char) or _is_digit(char) or char == "_") else "_"
-        for char in name
-    )
+    out = "".join(char if (_is_alpha(char) or _is_digit(char) or char == "_") else "_" for char in name)
     if out and _is_digit(out[0]):
         out = f"_{out}"
     return out
@@ -2386,8 +2839,19 @@ def sanitize_identifier(name: str) -> str:
 
 def numeric_class_name(value: int) -> str:
     """Mirror naming.rs's canonical numeric identifier expansion (0..9999)."""
-    small = (*_DIGIT_WORDS, "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen",
-             "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen")
+    small = (
+        *_DIGIT_WORDS,
+        "Ten",
+        "Eleven",
+        "Twelve",
+        "Thirteen",
+        "Fourteen",
+        "Fifteen",
+        "Sixteen",
+        "Seventeen",
+        "Eighteen",
+        "Nineteen",
+    )
     tens = ("", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety")
     if value < 20:
         return small[value]
@@ -2410,11 +2874,38 @@ def class_name(schema_key: str) -> str:
 
 # The entries in naming.rs's DEBURRED_LATIN that NFKD does not spell the same
 # way. NamingMirrorTests reconciles both the table and these exceptions.
-_ENUM_DEBURR_EXCEPTIONS = dict(zip(
-    "ÆÐØÞßæðøþĐđĦħıĸŁłŉŊŋŒœŦŧ",
-    ("Ae", "D", "O", "Th", "ss", "ae", "d", "o", "th", "D", "d",
-     "H", "h", "i", "k", "L", "l", "'n", "N", "n", "Oe", "oe", "T", "t"),
-))
+_ENUM_DEBURR_EXCEPTIONS = dict(
+    zip(
+        "ÆÐØÞßæðøþĐđĦħıĸŁłŉŊŋŒœŦŧ",
+        (
+            "Ae",
+            "D",
+            "O",
+            "Th",
+            "ss",
+            "ae",
+            "d",
+            "o",
+            "th",
+            "D",
+            "d",
+            "H",
+            "h",
+            "i",
+            "k",
+            "L",
+            "l",
+            "'n",
+            "N",
+            "n",
+            "Oe",
+            "oe",
+            "T",
+            "t",
+        ),
+        strict=False,
+    )
+)
 
 # The enum-member predicates mirror these Rust functions. The offline tier
 # recomputes each normalized-body digest and the DEBURRED_LATIN table digest,
@@ -2440,10 +2931,19 @@ NAMING_PORT_DIGESTS = {
 
 
 _WHOLE_VALUE_ENUM_WORDS = {
-    "<": "less_than", ">": "greater_than", ">=": "greater_than_or_equal_to",
-    "<=": "less_than_or_equal_to", "!=": "not_equals", "=": "equal_to",
-    "==": "equal_to", "*": "all", '""': "empty_string", "-": "hyphen",
-    "|": "pipe", ".": "dot", "/": "slash",
+    "<": "less_than",
+    ">": "greater_than",
+    ">=": "greater_than_or_equal_to",
+    "<=": "less_than_or_equal_to",
+    "!=": "not_equals",
+    "=": "equal_to",
+    "==": "equal_to",
+    "*": "all",
+    '""': "empty_string",
+    "-": "hyphen",
+    "|": "pipe",
+    ".": "dot",
+    "/": "slash",
 }
 
 
@@ -2467,8 +2967,9 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
     """
     trace = set() if trace is None else trace
     folded = "".join(
-        _ENUM_DEBURR_EXCEPTIONS[char] if char in _ENUM_DEBURR_EXCEPTIONS else
-        unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8")
+        _ENUM_DEBURR_EXCEPTIONS[char]
+        if char in _ENUM_DEBURR_EXCEPTIONS
+        else unicodedata.normalize("NFKD", char).encode("ascii", "ignore").decode("utf-8")
         if "\u00c0" <= char <= "\u017f" and unicodedata.normalize("NFKD", char).encode("ascii", "ignore")
         else char
         for char in value
@@ -2478,7 +2979,7 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
     uuid_parts = folded.split("-")
     if len(uuid_parts) == 5 and all(
         len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
-        for part, size in zip(uuid_parts, (8, 4, 4, 4, 12))
+        for part, size in zip(uuid_parts, (8, 4, 4, 4, 12), strict=False)
     ):
         words = split_words(folded)
         if words:
@@ -2491,12 +2992,18 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
         collapsed = _collapse_enum_digit_boundaries("_".join(words))
         chars = list(collapsed)
         return "".join(
-            char for index, char in enumerate(chars)
+            char
+            for index, char in enumerate(chars)
             if not (
-                char == "_" and index >= 2 and index + 2 < len(chars)
-                and chars[index - 2].isdigit() and chars[index - 1].isascii()
-                and chars[index - 1].isalpha() and chars[index + 1].isascii()
-                and chars[index + 1].isalpha() and chars[index + 2].isdigit()
+                char == "_"
+                and index >= 2
+                and index + 2 < len(chars)
+                and chars[index - 2].isdigit()
+                and chars[index - 1].isascii()
+                and chars[index - 1].isalpha()
+                and chars[index + 1].isascii()
+                and chars[index + 1].isalpha()
+                and chars[index + 2].isdigit()
             )
         )
     if not folded:
@@ -2512,17 +3019,16 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
         if number <= 9999:
             trace.add(_numeric_range(number))
             return numeric_enum_name(number)
-    spaced = "".join(
-        "" if char in "'\u2019" else
-        char if char.isascii() and char.isalnum() else " "
-        for char in folded
-    )
+    spaced = "".join("" if char in "'\u2019" else char if char.isascii() and char.isalnum() else " " for char in folded)
     words = split_words(spaced)
     value_leads_with_digit = bool(folded) and folded[0].isascii() and folded[0].isdigit()
     # Only a member *name* led by a zero-led digit run keeps the legal fallback:
     # a run the value itself starts with is spelled (`01_00_AM` is `ONE00AM`).
-    leading_zero = not value_leads_with_digit and "_" in folded and bool(words) and (
-        len(words[0]) > 1 and words[0][0] == "0" and words[0].isascii() and words[0].isdigit()
+    leading_zero = (
+        not value_leads_with_digit
+        and "_" in folded
+        and bool(words)
+        and (len(words[0]) > 1 and words[0][0] == "0" and words[0].isascii() and words[0].isdigit())
     )
     if words:
         first = words[0]
@@ -2556,12 +3062,14 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
         previous_single = single
     index = 1
     while index < len(merged):
-        previous, current = merged[index - 1:index + 1]
+        previous, current = merged[index - 1 : index + 1]
         short_letters = len(current) <= 2 and current.isascii() and current.isalpha()
-        numeric_letter = len(previous) > 1 and previous[-1].isalpha() and previous[:-1].isascii() and previous[:-1].isdigit()
+        numeric_letter = (
+            len(previous) > 1 and previous[-1].isalpha() and previous[:-1].isascii() and previous[:-1].isdigit()
+        )
         single_letter = len(previous) == 1 and previous.isascii() and previous.isalpha()
         letter_digits = len(current) > 1 and current[0].isalpha() and current[1:].isascii() and current[1:].isdigit()
-        if short_letters and numeric_letter or single_letter and letter_digits:
+        if (short_letters and numeric_letter) or (single_letter and letter_digits):
             merged[index - 1] += merged.pop(index)
             trace.add("alphanumeric-join")
         else:
@@ -2578,18 +3086,37 @@ def enum_identifier(value: str, trace: set[str] | None = None) -> str:
 def _collapse_enum_digit_boundaries(name: str) -> str:
     chars = list(name)
     return "".join(
-        char for index, char in enumerate(chars)
-        if char != "_" or not (
-            index > 0 and _is_digit(chars[index - 1])
-            or index + 1 < len(chars) and _is_digit(chars[index + 1])
-        )
+        char
+        for index, char in enumerate(chars)
+        if char != "_"
+        or not ((index > 0 and _is_digit(chars[index - 1])) or (index + 1 < len(chars) and _is_digit(chars[index + 1])))
     )
 
 
 def numeric_enum_name(value: int) -> str:
     """numeric_enum_identifier's canonical 0..9999 spelling."""
-    small = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-             "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen")
+    small = (
+        "zero",
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "eleven",
+        "twelve",
+        "thirteen",
+        "fourteen",
+        "fifteen",
+        "sixteen",
+        "seventeen",
+        "eighteen",
+        "nineteen",
+    )
     tens = ("", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety")
     if value < 20:
         return small[value]
@@ -2678,16 +3205,20 @@ def _module_from_grouped_id(text: str) -> str:
 
 def _fern_camel(name: str) -> bool:
     data = name.encode("utf-8")
-    return bool(data) and 97 <= data[0] <= 122 and all(
-        97 <= byte <= 122 or (65 <= byte <= 90 and index + 1 < len(data) and 97 <= data[index + 1] <= 122)
-        for index, byte in enumerate(data)
+    return (
+        bool(data)
+        and 97 <= data[0] <= 122
+        and all(
+            97 <= byte <= 122 or (65 <= byte <= 90 and index + 1 < len(data) and 97 <= data[index + 1] <= 122)
+            for index, byte in enumerate(data)
+        )
     )
 
 
 def _fern_location_tokens(name: str) -> list[str]:
     if _fern_camel(name):
         starts = [0, *(index for index, char in enumerate(name) if char in _ASCII_UPPER), len(name)]
-        words = [name[a:b] for a, b in zip(starts, starts[1:])]
+        words = [name[a:b] for a, b in itertools.pairwise(starts)]
     else:
         words = re.split(r"[^A-Za-z0-9]", name)
     return [_ascii_lower(word) for word in words if word]
@@ -2729,15 +3260,17 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
         data, head = text.encode("utf-8"), len(tag.encode("utf-8"))
         split = _byte_split(text, head)
         acronym = (
-            len(data) > head and split is not None and _ascii_lower(split[0]) == _ascii_lower(tag)
-            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1:]))
+            len(data) > head
+            and split is not None
+            and _ascii_lower(split[0]) == _ascii_lower(tag)
+            and any(65 <= a <= 90 and 65 <= b <= 90 for a, b in zip(data[head:], data[head + 1 :], strict=False))
         )
     if not tag_snake or acronym or (suffix is not None and _ascii_lower(suffix) == "info"):
         method = snake
     elif suffix is not None:
         method = to_snake_case(suffix)
     else:
-        method = snake[len(tag_snake) + 1:] if snake.startswith(f"{tag_snake}_") else snake
+        method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
     reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident == "all")
     return (f"{ident}_" if reserved else ident), prefixed
@@ -2777,9 +3310,7 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
         text = text[:-1]
     ends_on_template = text.endswith("}") and "{{" not in text
     if not ends_on_template and any(char in text for char in "{}/:"):
-        text = "".join(
-            char if char.isalnum() or char in "_." else " " for char in text
-        ).strip()
+        text = "".join(char if char.isalnum() or char in "_." else " " for char in text).strip()
     if "_" in text:
         head, digits = text.rsplit("_", 1)
         if digits and digits.isascii() and digits.isdigit() and "_" not in head and head and _is_ascii_alnum(head[-1]):
@@ -2811,7 +3342,7 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
             return _sanitized(to_snake_case(rest))
         tag_words, id_words = _fern_location_tokens(tag), _fern_location_tokens(text)
         if len(tag_words) >= 2 and len(id_words) > len(tag_words) and id_words[: len(tag_words)] == tag_words:
-            remainder = id_words[len(tag_words):]
+            remainder = id_words[len(tag_words) :]
             camel = remainder[0] + "".join(word[:1].upper() + word[1:] for word in remainder[1:])
             return _sanitized(to_snake_case(camel))
         if _alnum_lower(_module_from_grouped_id(text)) == _alnum_lower(tag):
@@ -2828,9 +3359,7 @@ def normalized_path(template: str) -> str:
     count are what distinguish two routes, so `/users/{userId}` normalizes to
     `/users/{user_id}` while `/{id}/users` and `/users/{id}` stay apart.
     """
-    return _TEMPLATE_EXPRESSION.sub(
-        lambda match: "{" + field_name(match.group(1)) + "}", template
-    )
+    return _TEMPLATE_EXPRESSION.sub(lambda match: "{" + field_name(match.group(1)) + "}", template)
 
 
 def primary_type(value: Any) -> str | None:
@@ -2879,9 +3408,7 @@ def path_segment_predicates(key: str) -> list[str]:
     or there is none to find.
     """
     segments = [segment for segment in key.split("/") if segment]
-    templated = [
-        segment.startswith("{") and segment.endswith("}") for segment in segments
-    ]
+    templated = [segment.startswith("{") and segment.endswith("}") for segment in segments]
     if not any(not is_template for is_template in templated):
         return ["openapi.paths:all-segments-templated"]
     if templated[0]:
@@ -2928,7 +3455,7 @@ def pointer_form_predicates(reference: str) -> list[str]:
         if document or not hash_mark:
             return ["schema.$ref:cross-document"]
         return ["schema.$ref:same-document-foreign-pointer"]
-    parts = reference[len(_COMPONENT_SCHEMAS_PREFIX):].split("/")
+    parts = reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
     found: set[str] = set()
     index = 1
     while index < len(parts):
@@ -3024,7 +3551,7 @@ def pointer_walk_predicates(reference: str, schemas: dict[Any, Any]) -> list[str
     """
     if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
         return []
-    parts = reference[len(_COMPONENT_SCHEMAS_PREFIX):].split("/")
+    parts = reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")
     if len(parts) < 2:
         # `let mut next = Some(parts.next()?)`: a bare `#/components/schemas/Foo`
         # resolves to nothing, so the loop is never entered and no arm is selected.
@@ -3079,7 +3606,14 @@ def pointer_walk_predicates(reference: str, schemas: dict[Any, Any]) -> list[str
 # `type: [null]` satisfies without naming a type; `properties` is not, because an
 # empty map is no declaration there.
 _TYPE_DETERMINING_FIELDS = (
-    "$ref", "oneOf", "anyOf", "allOf", "enum", "const", "additionalProperties", "items",
+    "$ref",
+    "oneOf",
+    "anyOf",
+    "allOf",
+    "enum",
+    "const",
+    "additionalProperties",
+    "items",
 )
 
 
@@ -3244,11 +3778,19 @@ def selected_example_kind(node: dict[Any, Any]) -> str | None:
 
 # The `enum_identifier` trace entries that are a `schema.enum:<entry>-member`
 # predicate of their own.
-_TRACED_ENUM_BRANCHES = frozenset({
-    "deburred", "letter-run", "alphanumeric-join", "digit-boundary",
-    "single-digit-prefix", "numeric-small", "numeric-tens", "numeric-hundreds",
-    "numeric-thousands",
-})
+_TRACED_ENUM_BRANCHES = frozenset(
+    {
+        "deburred",
+        "letter-run",
+        "alphanumeric-join",
+        "digit-boundary",
+        "single-digit-prefix",
+        "numeric-small",
+        "numeric-tens",
+        "numeric-hundreds",
+        "numeric-thousands",
+    }
+)
 
 
 def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
@@ -3277,7 +3819,10 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
         if any(len(word) > 1 and word[0] == "0" and word.isdigit() for word in words):
             found.add("schema.enum:leading-zero-member")
         parts = value.split("-")
-        if len(parts) == 5 and all(len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part) for part, size in zip(parts, (8, 4, 4, 4, 12))):
+        if len(parts) == 5 and all(
+            len(part) == size and all(char in "0123456789abcdefABCDEF" for char in part)
+            for part, size in zip(parts, (8, 4, 4, 4, 12), strict=False)
+        ):
             found.add("schema.enum:uuid-member")
             first = split_words(value)[0]
             if len(first) > 1 and first[0].isdigit() and not first[1].isdigit():
@@ -3332,12 +3877,15 @@ def example_content_predicates(node: dict[Any, Any]) -> list[str]:
         if any(isinstance(element, dict) for element in example):
             found.append("schema.example:array-object-element")
         items = node.get("items")
-        if isinstance(items, dict) and items.get("format") in {"date", "date-time"} and any(
-            element == other for index, element in enumerate(example) for other in example[:index]
+        if (
+            isinstance(items, dict)
+            and items.get("format") in {"date", "date-time"}
+            and any(element == other for index, element in enumerate(example) for other in example[:index])
         ):
             found.append("schema.example:temporal-duplicate-element")
     if (
-        isinstance(example, dict) and list(example) == ["$ref"]
+        isinstance(example, dict)
+        and list(example) == ["$ref"]
         and any(isinstance(node.get(field), list) for field in ("oneOf", "anyOf"))
     ):
         found.append("schema.example:union-ref-sentinel")
@@ -3356,9 +3904,7 @@ def example_content_predicates(node: dict[Any, Any]) -> list[str]:
         if any(isinstance(value, list) and not value for value in values):
             found.append("schema.example:empty-array-member")
         additional = node.get("additionalProperties")
-        if (additional is True or isinstance(additional, dict)) and not (
-            isinstance(properties, dict) and properties
-        ):
+        if (additional is True or isinstance(additional, dict)) and not (isinstance(properties, dict) and properties):
             found.append("schema.example:object-on-map")
     members = string_enum_values(node) if "enum" in node else None
     if isinstance(example, str) and members is not None and example not in members:
@@ -3408,10 +3954,7 @@ def example_is_schema_definition(example: Any) -> bool:
     if not isinstance(example, dict) or not example:
         return False
     schema_keys = {"type", "$ref", "properties", "allOf", "oneOf", "anyOf"}
-    return all(
-        isinstance(value, dict) and bool(schema_keys & value.keys())
-        for value in example.values()
-    )
+    return all(isinstance(value, dict) and bool(schema_keys & value.keys()) for value in example.values())
 
 
 def discriminant_value(node: Any) -> str | None:
@@ -3450,10 +3993,17 @@ def union_members(node: dict[Any, Any]) -> list[Any] | None:
 # function supports for a union referencing components are spelled in the `match`
 # `_candidate_tag_values` mirrors below, where the Rust spells them, because each
 # of the four asks something different of the member.
-_PRESERVED_CONST_DISCRIMINANTS = frozenset({
-    "approval", "approval_request_message", "message", "tool",
-    "tool_return_message", "stop_reason", "usage_statistics",
-})
+_PRESERVED_CONST_DISCRIMINANTS = frozenset(
+    {
+        "approval",
+        "approval_request_message",
+        "message",
+        "tool",
+        "tool_return_message",
+        "stop_reason",
+        "usage_statistics",
+    }
+)
 
 
 def _resolved_member(member: Any, schemas: dict[Any, Any]) -> Any:
@@ -3485,9 +4035,7 @@ def _resolved_member_strict(member: Any, schemas: dict[Any, Any]) -> dict[Any, A
     return target if isinstance(target, dict) else None
 
 
-def _inferred_discriminant_property(
-    node: dict[Any, Any], schemas: dict[Any, Any], enum_tag: bool = True
-) -> str | None:
+def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any], enum_tag: bool = True) -> str | None:
     """`inferred_discriminant_property_with` of `src/ir.rs`, condition for condition.
 
     The first resolved member's property *names* are the candidates, in the order
@@ -3502,14 +4050,8 @@ def _inferred_discriminant_property(
     members = union_members(node)
     if members is None:
         return None
-    references_components = any(
-        isinstance(member, dict) and isinstance(member.get("$ref"), str)
-        for member in members
-    )
-    only_references = all(
-        isinstance(member, dict) and isinstance(member.get("$ref"), str)
-        for member in members
-    )
+    references_components = any(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
+    only_references = all(isinstance(member, dict) and isinstance(member.get("$ref"), str) for member in members)
     resolved = [_resolved_member(member, schemas) for member in members]
     if not resolved or not isinstance(resolved[0], dict):
         return None
@@ -3555,10 +4097,7 @@ def _candidate_tag_values(
         if not isinstance(field, dict):
             return None
         enum_written = field["enum"] if written(field, "enum") else None
-        singleton_enum = (
-            not (any_of_head and untyped_enum_tag(field))
-            and len(string_enum_values(field) or []) == 1
-        )
+        singleton_enum = not (any_of_head and untyped_enum_tag(field)) and len(string_enum_values(field) or []) == 1
         tagged_by_enum = (
             candidate in required_names(variant)
             and singleton_enum
@@ -3571,11 +4110,8 @@ def _candidate_tag_values(
             if only_references and singleton_enum and candidate not in required_names(variant):
                 supported = True
             elif candidate == "type":
-                supported = (
-                    candidate in required_names(variant)
-                    and isinstance(schema_example(field), str)
-                    or written(field, "const")
-                    and isinstance(field["const"], str)
+                supported = (candidate in required_names(variant) and isinstance(schema_example(field), str)) or (
+                    written(field, "const") and isinstance(field["const"], str)
                 )
             elif candidate in ("role", "status"):
                 supported = candidate in required_names(variant)
@@ -3585,9 +4121,7 @@ def _candidate_tag_values(
                 supported = singleton_enum
             else:
                 supported = (
-                    candidate in required_names(variant)
-                    and written(field, "const")
-                    and isinstance(field["const"], str)
+                    candidate in required_names(variant) and written(field, "const") and isinstance(field["const"], str)
                 )
             if not supported:
                 return None
@@ -3602,9 +4136,7 @@ def _candidate_tag_values(
     return values
 
 
-def _inferred_union_discriminant_property(
-    node: dict[Any, Any], schemas: dict[Any, Any]
-) -> str | None:
+def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any]) -> str | None:
     """`inferred_union_discriminant_property` of `src/ir.rs`, with its fallback.
 
     The fallback reads `type` off every resolved member that requires it, and
@@ -3642,11 +4174,7 @@ def _any_of_head(node: dict[Any, Any]) -> bool:
 def untyped_enum_tag(field: Any) -> bool:
     """`untyped_any_of_enum_tag` of `src/ir.rs`, given an `anyOf` head: an `enum`
     tag declaring no `type: string`, which Fern does not discriminate on."""
-    return (
-        isinstance(field, dict)
-        and written(field, "enum")
-        and primary_type(field.get("type")) != "string"
-    )
+    return isinstance(field, dict) and written(field, "enum") and primary_type(field.get("type")) != "string"
 
 
 def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
@@ -3716,9 +4244,7 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
         return None
     discriminator = _written_discriminator(node)
     if discriminator is not None and not written(node, "oneOf"):
-        return discriminated_union_head(
-            {key: value for key, value in node.items() if key != "discriminator"}, schemas
-        )
+        return discriminated_union_head({key: value for key, value in node.items() if key != "discriminator"}, schemas)
     members = union_members(node)
     if members is None:
         return None
@@ -3832,15 +4358,9 @@ def selector_error(text: str) -> str | None:
     if equals and not value:
         return f"{text!r} is a valued selector with no value"
     if equals and base == "schema.example" and value not in EXAMPLE_KINDS:
-        return (
-            f"{text!r} is not one of the six example value kinds: "
-            f"{', '.join(sorted(EXAMPLE_KINDS))}."
-        )
+        return f"{text!r} is not one of the six example value kinds: {', '.join(sorted(EXAMPLE_KINDS))}."
     if equals and base not in VALUED:
-        return (
-            f"{base!r} is not one of the fields that emit a valued selector. "
-            f"They are: {', '.join(sorted(VALUED))}."
-        )
+        return f"{base!r} is not one of the fields that emit a valued selector. They are: {', '.join(sorted(VALUED))}."
     head, _, last = base.rpartition(".")
     if last.startswith("x-"):
         if head in prefixes:
@@ -3927,7 +4447,7 @@ def header_operation_counts(document: Any) -> tuple[dict[str, int], int]:
         reference = parameter.get("$ref") if isinstance(parameter, dict) else None
         prefix = "#/components/parameters/"
         if isinstance(reference, str) and reference.startswith(prefix) and isinstance(shared, dict):
-            return shared.get(reference[len(prefix):])
+            return shared.get(reference[len(prefix) :])
         return parameter
 
     for item in paths.values() if isinstance(paths, dict) else []:
@@ -3943,7 +4463,8 @@ def header_operation_counts(document: Any) -> tuple[dict[str, int], int]:
             names = {
                 parameter.get("name")
                 for parameter in map(resolved, [*inherited, *own])
-                if isinstance(parameter, dict) and parameter.get("in") == "header"
+                if isinstance(parameter, dict)
+                and parameter.get("in") == "header"
                 and isinstance(parameter.get("name"), str)
             }
             for name in names:
@@ -3968,8 +4489,9 @@ def is_json_like_media_type(media_type: str) -> bool:
     """`is_json_like_media_type` of `src/ir.rs`."""
     base = media_type.split(";", 1)[0].strip()
     return (
-        base == "application/json" or base.endswith("+json") or base.endswith("/ndjson")
-        or (base.startswith("application/") and "json" in base[len("application/"):])
+        base == "application/json"
+        or base.endswith(("+json", "/ndjson"))
+        or (base.startswith("application/") and "json" in base[len("application/") :])
     )
 
 
@@ -4025,8 +4547,10 @@ def nested_null_member(declared: Any, value: Any, required: bool, depth: int) ->
 def deprecated_member(declared: Any, value: Any, required: bool, depth: int) -> bool:
     """`mediaType.example:deprecated-property`: `own_deprecated` of `src/ir.rs`."""
     return (
-        isinstance(declared, dict) and declared.get("deprecated") is True
-        and "$ref" not in declared and "allOf" not in declared
+        isinstance(declared, dict)
+        and declared.get("deprecated") is True
+        and "$ref" not in declared
+        and "allOf" not in declared
     )
 
 
@@ -4077,7 +4601,7 @@ def component_refs(node: Any) -> list[str]:
         if isinstance(value, dict):
             reference = value.get("$ref")
             if isinstance(reference, str) and reference.startswith(prefix):
-                name = reference[len(prefix):]
+                name = reference[len(prefix) :]
                 if name not in found:
                     found.append(name)
                 return
@@ -4100,7 +4624,8 @@ def reference_cycles(schemas: dict[Any, Any]) -> dict[str, frozenset[str]]:
     """
     edges = {
         name: [target for target in component_refs(schema) if target in schemas]
-        for name, schema in schemas.items() if isinstance(name, str)
+        for name, schema in schemas.items()
+        if isinstance(name, str)
     }
     index: dict[str, int] = {}
     low: dict[str, int] = {}
@@ -4151,7 +4676,8 @@ def reference_cycle_predicates(schemas: Any) -> list[str]:
     cycles = reference_cycles(schemas)
     edges = {
         name: [target for target in component_refs(schema) if target in schemas]
-        for name, schema in schemas.items() if isinstance(name, str)
+        for name, schema in schemas.items()
+        if isinstance(name, str)
     }
     found: list[str] = []
     for name, schema in schemas.items():
@@ -4159,8 +4685,11 @@ def reference_cycle_predicates(schemas: Any) -> list[str]:
         # `anyOf` beside its `properties` is a union alias (mockserver's
         # `Expectation` is `typing.Union[typing.Any]`), whatever its fields reach.
         if (
-            not isinstance(name, str) or name.startswith("x-") or not isinstance(schema, dict)
-            or "oneOf" in schema or "anyOf" in schema
+            not isinstance(name, str)
+            or name.startswith("x-")
+            or not isinstance(schema, dict)
+            or "oneOf" in schema
+            or "anyOf" in schema
         ):
             continue
         properties = schema.get("properties")
@@ -4194,12 +4723,17 @@ def reference_cycle_predicates(schemas: Any) -> list[str]:
 
 def parameter_schema_is_scalar(schema: Any) -> bool:
     """`example_is_scalar`'s test of a query parameter's (once-resolved) schema."""
+
     def scalar(candidate: Any) -> bool:
         return isinstance(candidate, dict) and primary_type(candidate.get("type")) in {
-            "string", "integer", "number", "boolean"
+            "string",
+            "integer",
+            "number",
+            "boolean",
         }
+
     return isinstance(schema, dict) and (
-        scalar(schema) or primary_type(schema.get("type")) == "array" and scalar(schema.get("items"))
+        scalar(schema) or (primary_type(schema.get("type")) == "array" and scalar(schema.get("items")))
     )
 
 
@@ -4210,7 +4744,9 @@ class Census:
         self,
         document: Any = None,
         conjunctions: dict[str, CompiledConjunction] | None = None,
-        *, root_path: Path | None = None, tree_paths: set[Path] | None = None,
+        *,
+        root_path: Path | None = None,
+        tree_paths: set[Path] | None = None,
     ) -> None:
         self.counts: dict[str, int] = defaultdict(int)
         version = document.get("openapi") if isinstance(document, dict) else None
@@ -4222,11 +4758,11 @@ class Census:
                 continue
             parameters = item.get("parameters")
             if isinstance(parameters, list) and any(
-                isinstance(parameter, dict) and parameter.get("in") == "path"
-                for parameter in parameters
+                isinstance(parameter, dict) and parameter.get("in") == "path" for parameter in parameters
             ):
                 self.path_level_parameter_operations.update(
-                    id(operation) for method, operation in item.items()
+                    id(operation)
+                    for method, operation in item.items()
                     if method in _HTTP_METHODS and isinstance(operation, dict)
                 )
         # The conjunctions this walk evaluates: the closed list every command
@@ -4245,9 +4781,7 @@ class Census:
         # empty context rather than failing, so a caller measuring one node's
         # predicates in isolation still gets the node-local family.
         self.component_schemas: dict[Any, Any] = components_schemas(document)
-        self.component_names: frozenset[str] = frozenset(
-            key for key in self.component_schemas if isinstance(key, str)
-        )
+        self.component_names: frozenset[str] = frozenset(key for key in self.component_schemas if isinstance(key, str))
         # `operation.operationId:duplicate` compares one document's values against
         # each other, so it cannot be decided at the declaration site the way every
         # other selector is; the values are gathered here and counted by `finish`.
@@ -4263,8 +4797,9 @@ class Census:
         self.header_operations, self.operation_total = header_operation_counts(document)
         self.request_media: set[int] = request_body_media(document)
         self.components: dict[Any, Any] = (
-            document.get("components") if isinstance(document, dict)
-            and isinstance(document.get("components"), dict) else {}
+            document.get("components")
+            if isinstance(document, dict) and isinstance(document.get("components"), dict)
+            else {}
         )
         # The body, response and status-key predicates read the document's
         # version and how often each `$ref` string is written, once.
@@ -4278,8 +4813,10 @@ class Census:
         self.api_key_headers: frozenset[str] = frozenset(
             scheme["name"]
             for scheme in (schemes.values() if isinstance(schemes, dict) else [])
-            if isinstance(scheme, dict) and scheme.get("type") == "apiKey"
-            and scheme.get("in") == "header" and isinstance(scheme.get("name"), str)
+            if isinstance(scheme, dict)
+            and scheme.get("type") == "apiKey"
+            and scheme.get("in") == "header"
+            and isinstance(scheme.get("name"), str)
         )
         # One node's own selectors are asked for twice — once to record them, once
         # per conjunction group matched against them — and a document's objects
@@ -4328,7 +4865,7 @@ class Census:
         """The `components.schemas` entry a local `#/components/schemas/<name>` names."""
         if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
             return None
-        name = reference[len(_COMPONENT_SCHEMAS_PREFIX):]
+        name = reference[len(_COMPONENT_SCHEMAS_PREFIX) :]
         if "/" in name:
             return None
         return self.component_schemas.get(unquote(name).replace("~1", "/").replace("~0", "~"))
@@ -4340,7 +4877,7 @@ class Census:
             reference = value["$ref"]
             entries = self.components.get(section)
             if reference.startswith(prefix) and isinstance(entries, dict):
-                return entries.get(reference[len(prefix):])
+                return entries.get(reference[len(prefix) :])
         return value
 
     def position_predicates(self, node: dict[Any, Any], kind_name: str) -> list[str]:
@@ -4348,10 +4885,27 @@ class Census:
         found: list[str] = []
         if kind_name == "operation" and id(node) in self.operation_routes:
             method, url = self.operation_routes[id(node)]
-            path_parameters = [parameter for parameter in node.get("parameters", []) if isinstance(parameter, dict) and parameter.get("in") == "path"] if isinstance(node.get("parameters"), list) else []
+            path_parameters = (
+                [
+                    parameter
+                    for parameter in node.get("parameters", [])
+                    if isinstance(parameter, dict) and parameter.get("in") == "path"
+                ]
+                if isinstance(node.get("parameters"), list)
+                else []
+            )
             declared = [parameter.get("name") for parameter in path_parameters]
             template = re.findall(r"\{([^{}]+)\}", url)
-            if self.openapi_version.startswith("3.1") and len(declared) > 1 and id(node) not in self.path_level_parameter_operations and all(not isinstance(parameter.get("schema"), dict) or "title" not in parameter["schema"] for parameter in path_parameters) and declared != [name for name in template if name in declared]:
+            if (
+                self.openapi_version.startswith("3.1")
+                and len(declared) > 1
+                and id(node) not in self.path_level_parameter_operations
+                and all(
+                    not isinstance(parameter.get("schema"), dict) or "title" not in parameter["schema"]
+                    for parameter in path_parameters
+                )
+                and declared != [name for name in template if name in declared]
+            ):
                 found.append("operation.parameters:path-order-oas-three-one")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
@@ -4372,7 +4926,8 @@ class Census:
             if named:
                 found.append(
                     "mediaType.examples:named-beside-example"
-                    if node.get("example") is not None else "mediaType.examples:named-only"
+                    if node.get("example") is not None
+                    else "mediaType.examples:named-only"
                 )
             example = self.media_example_value(node)
             if self.allof_parent_body(node.get("schema"), example):
@@ -4383,9 +4938,11 @@ class Census:
                 found.append("mediaType.example:deprecated-property")
         if kind_name == "parameter" and node.get("in") == "query" and self.declares_parameter_example(node):
             schema = node.get("schema")
-            schema = self.component_target(schema["$ref"]) if (
-                isinstance(schema, dict) and isinstance(schema.get("$ref"), str)
-            ) else schema
+            schema = (
+                self.component_target(schema["$ref"])
+                if (isinstance(schema, dict) and isinstance(schema.get("$ref"), str))
+                else schema
+            )
             if not parameter_schema_is_scalar(schema):
                 found.append("parameter.example:non-scalar-query")
         if kind_name == "parameter":
@@ -4402,22 +4959,54 @@ class Census:
         if "in" not in node and isinstance(node.get("name"), str) and "$ref" not in node:
             found.append("parameter.in:absent")
         if location == "query":
-            if self.openapi_version.startswith("3.0") and node.get("required") is True and schema.get("nullable") is True and primary_type(schema.get("type")) in {"string", "integer", "number", "boolean"}:
+            if (
+                self.openapi_version.startswith("3.0")
+                and node.get("required") is True
+                and schema.get("nullable") is True
+                and primary_type(schema.get("type")) in {"string", "integer", "number", "boolean"}
+            ):
                 found.append("parameter.schema:required-nullable-scalar-oas-three-zero")
             members = schema.get("oneOf")
-            if isinstance(members, list) and any(isinstance(member, dict) and member.get("type") == "integer" for member in members) and any(isinstance(member, dict) and member.get("type") == "string" and member.get("format") == "date" for member in members):
+            if (
+                isinstance(members, list)
+                and any(isinstance(member, dict) and member.get("type") == "integer" for member in members)
+                and any(
+                    isinstance(member, dict) and member.get("type") == "string" and member.get("format") == "date"
+                    for member in members
+                )
+            ):
                 found.append("parameter.schema:date-union-query-oneof")
             if schema.get("type") == "array":
                 items = schema.get("items")
-                if node.get("required") is not True and node.get("explode") is False and node.get("style", "form") == "form" and schema.get("nullable") is True and isinstance(items, dict) and items.get("type") == "string":
+                if (
+                    node.get("required") is not True
+                    and node.get("explode") is False
+                    and node.get("style", "form") == "form"
+                    and schema.get("nullable") is True
+                    and isinstance(items, dict)
+                    and items.get("type") == "string"
+                ):
                     found.append("parameter.schema:nullable-array-explode-false")
-                if self.openapi_version.startswith("3.0") and isinstance(items, dict) and "$ref" not in items and items.get("nullable") is True and primary_type(items.get("type")) in {"string", "integer", "number", "boolean"}:
+                if (
+                    self.openapi_version.startswith("3.0")
+                    and isinstance(items, dict)
+                    and "$ref" not in items
+                    and items.get("nullable") is True
+                    and primary_type(items.get("type")) in {"string", "integer", "number", "boolean"}
+                ):
                     found.append("parameter.schema:nullable-array-items-oas-three-zero")
         if location == "header":
             name = node.get("name")
             if self.operation_total == 1 and node.get("required") is True:
                 found.append("parameter.schema:single-required-header")
-            if schema.get("format") == "date" and isinstance(name, str) and name.lower() not in UNPROMOTED_HEADERS and name not in self.api_key_headers and self.operation_total > 0 and self.header_operations.get(name, 0) * 4 >= self.operation_total * 3:
+            if (
+                schema.get("format") == "date"
+                and isinstance(name, str)
+                and name.lower() not in UNPROMOTED_HEADERS
+                and name not in self.api_key_headers
+                and self.operation_total > 0
+                and self.header_operations.get(name, 0) * 4 >= self.operation_total * 3
+            ):
                 found.append("parameter.schema:promoted-date-header")
         if location == "query" and primary_type(schema.get("type")) == "array":
             items = schema.get("items")
@@ -4425,11 +5014,16 @@ class Census:
             if members is not None and sum(not is_null_member(member) for member in members) >= 2:
                 found.append("parameter.schema:query-items-union")
         name = node.get("name")
-        if location == "header" and isinstance(schema.get("default"), str) and schema["default"] \
-                and isinstance(name, str) and name.lower() not in UNPROMOTED_HEADERS \
-                and name not in self.api_key_headers:
+        if (
+            location == "header"
+            and isinstance(schema.get("default"), str)
+            and schema["default"]
+            and isinstance(name, str)
+            and name.lower() not in UNPROMOTED_HEADERS
+            and name not in self.api_key_headers
+        ):
             carried = self.header_operations.get(name, 0)
-            if 0 < self.operation_total and carried * 4 >= self.operation_total * 3 and carried < self.operation_total:
+            if self.operation_total > 0 and carried * 4 >= self.operation_total * 3 and carried < self.operation_total:
                 found.append("parameter.schema:subset-header-string-default")
         return found
 
@@ -4479,11 +5073,14 @@ class Census:
         if not isinstance(members, list):
             return False
         bases = [m for m in members if isinstance(m, dict) and isinstance(m.get("$ref"), str)]
-        inline = [m for m in members if isinstance(m, dict) and "$ref" not in m and isinstance(m.get("properties"), dict)]
+        inline = [
+            m for m in members if isinstance(m, dict) and "$ref" not in m and isinstance(m.get("properties"), dict)
+        ]
         if len(bases) != 1 or len(inline) != 1:
             return False
         parent = any(
-            isinstance(other, dict) and isinstance(other.get("allOf"), list)
+            isinstance(other, dict)
+            and isinstance(other.get("allOf"), list)
             and any(isinstance(m, dict) and m.get("$ref") == reference for m in other["allOf"])
             for other in self.component_schemas.values()
         )
@@ -4492,9 +5089,7 @@ class Census:
         _, base_required = self.object_members(bases[0])
         return parent and bool(own_required & set(example)) and bool(base_required & set(example))
 
-    def example_holds(
-        self, schema: Any, example: Any, test: "MemberTest", depth: int
-    ) -> bool:
+    def example_holds(self, schema: Any, example: Any, test: MemberTest, depth: int) -> bool:
         """Whether `test` holds of some member of an example object, read against its schema."""
         if not isinstance(example, dict) or depth > 8:
             return False
@@ -4521,7 +5116,7 @@ class Census:
                 reference = example.get("$ref")
                 if not isinstance(reference, str) or not reference.startswith("#/components/examples/"):
                     break
-                name = reference[len("#/components/examples/"):]
+                name = reference[len("#/components/examples/") :]
                 if name in seen:
                     break
                 seen.add(name)
@@ -4537,27 +5132,43 @@ class Census:
         responses = operation.get("responses")
         if not isinstance(responses, dict):
             return None, None
-        resolved = {str(code): self.local_component("responses", value)
-                    for code, value in responses.items()}
+        resolved = {str(code): self.local_component("responses", value) for code, value in responses.items()}
 
         def dispatchable(response: Any) -> bool:
             content = response.get("content") if isinstance(response, dict) else None
-            return not isinstance(content, dict) or not content or any(
-                isinstance(media, str) and "/" in media and all(media.split("/", 1))
-                for media in content
+            return (
+                not isinstance(content, dict)
+                or not content
+                or any(isinstance(media, str) and "/" in media and all(media.split("/", 1)) for media in content)
             )
 
-        content = lambda value: isinstance(value, dict) and bool(value.get("content"))
-        key = "200" if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"]) else next(
-            (code for code, value in resolved.items()
-             if code.isdigit() and 200 <= int(code) < 300 and content(value) and dispatchable(value)),
-            None,
+        def content(value):
+            return isinstance(value, dict) and bool(value.get("content"))
+
+        key = (
+            "200"
+            if "200" in resolved and content(resolved["200"]) and dispatchable(resolved["200"])
+            else next(
+                (
+                    code
+                    for code, value in resolved.items()
+                    if code.isdigit() and 200 <= int(code) < 300 and content(value) and dispatchable(value)
+                ),
+                None,
+            )
         )
         if key is None:
-            key = "200" if "200" in resolved and dispatchable(resolved["200"]) else next(
-                (code for code, value in resolved.items()
-                 if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)),
-                "default" if "default" in resolved else None,
+            key = (
+                "200"
+                if "200" in resolved and dispatchable(resolved["200"])
+                else next(
+                    (
+                        code
+                        for code, value in resolved.items()
+                        if code.isdigit() and 200 <= int(code) < 300 and dispatchable(value)
+                    ),
+                    "default" if "default" in resolved else None,
+                )
             )
         if key is None:
             return None, None
@@ -4567,13 +5178,9 @@ class Census:
     def has_parameters(self, operation: dict[Any, Any], url: str) -> bool:
         """Whether the operation or its Path Item declares any parameter."""
         path_item = self.paths.get(url) if isinstance(self.paths, dict) else None
-        return bool(operation.get("parameters")) or (
-            isinstance(path_item, dict) and bool(path_item.get("parameters"))
-        )
+        return bool(operation.get("parameters")) or (isinstance(path_item, dict) and bool(path_item.get("parameters")))
 
-    def body_and_response_predicates(
-        self, operation: dict[Any, Any], method: str, url: str
-    ) -> list[str]:
+    def body_and_response_predicates(self, operation: dict[Any, Any], method: str, url: str) -> list[str]:
         """The request-body, success-response and status-key predicates of one operation."""
         found: list[str] = []
         body = self.local_component("requestBodies", operation.get("requestBody"))
@@ -4595,10 +5202,18 @@ class Census:
             map_body = target
         map_content = map_body.get("content") if isinstance(map_body, dict) else None
         for media_type, value in map_content.items() if isinstance(map_content, dict) else ():
-            if not isinstance(media_type, str) or not is_json_like_media_type(media_type) or not isinstance(value, dict):
+            if (
+                not isinstance(media_type, str)
+                or not is_json_like_media_type(media_type)
+                or not isinstance(value, dict)
+            ):
                 continue
             map_schema = self.resolved_schema(value.get("schema"))
-            if not isinstance(map_schema, dict) or primary_type(map_schema.get("type")) != "object" or map_schema.get("properties"):
+            if (
+                not isinstance(map_schema, dict)
+                or primary_type(map_schema.get("type")) != "object"
+                or map_schema.get("properties")
+            ):
                 continue
             additional = self.resolved_schema(map_schema.get("additionalProperties"))
             if not isinstance(additional, dict):
@@ -4606,7 +5221,8 @@ class Census:
             additional_type = additional.get("type")
             if (
                 primary_type(additional_type) == "string"
-                and additional.get("format") is None and additional.get("enum") is None
+                and additional.get("format") is None
+                and additional.get("enum") is None
                 and not additional.get("nullable")
                 and not (isinstance(additional_type, list) and "null" in additional_type)
             ):
@@ -4614,12 +5230,17 @@ class Census:
                 break
         if isinstance(schema, dict):
             reference = schema.get("$ref")
-            name = reference[len(_COMPONENT_SCHEMAS_PREFIX):] if (
-                isinstance(reference, str) and reference.startswith(_COMPONENT_SCHEMAS_PREFIX)
-            ) else None
+            name = (
+                reference[len(_COMPONENT_SCHEMAS_PREFIX) :]
+                if (isinstance(reference, str) and reference.startswith(_COMPONENT_SCHEMAS_PREFIX))
+                else None
+            )
             if (
-                method not in ("get", "head") and name is not None and name.startswith("Body_")
-                and name in self.component_schemas and self.ref_counts[reference] == 1
+                method not in ("get", "head")
+                and name is not None
+                and name.startswith("Body_")
+                and name in self.component_schemas
+                and self.ref_counts[reference] == 1
             ):
                 found.append("operation.requestBody:body-prefixed-single-use")
             parameters = self.has_parameters(operation, url)
@@ -4627,10 +5248,7 @@ class Census:
             container = primary_type(schema.get("type")) == "array" or (
                 not schema.get("properties") and (additional is True or isinstance(additional, dict))
             )
-            if (
-                self.openapi_30 and not parameters and reference is None and container
-                and "title" in schema
-            ):
+            if self.openapi_30 and not parameters and reference is None and container and "title" in schema:
                 found.append("operation.requestBody:titled-inline-container-oas-three-zero")
         if isinstance(body, dict) and body.get("description") == "" and not self.has_parameters(operation, url):
             target = schema
@@ -4642,15 +5260,24 @@ class Census:
             if isinstance(properties, dict) and any(name not in required for name in properties):
                 found.append("operation.requestBody:blank-description-optional-object")
         if (
-            isinstance(schema, dict) and "$ref" not in schema and "enum" not in schema
-            and "description" in schema and not self.has_parameters(operation, url)
+            isinstance(schema, dict)
+            and "$ref" not in schema
+            and "enum" not in schema
+            and "description" in schema
+            and not self.has_parameters(operation, url)
             and primary_type(schema.get("type")) in ("string", "integer", "number", "boolean")
         ):
             found.append("operation.requestBody:described-inline-scalar")
-        if isinstance(content, dict) and content and all(
-            isinstance(key, str) and is_json_like_media_type(key)
-            and isinstance(value, dict) and "schema" not in value
-            for key, value in content.items()
+        if (
+            isinstance(content, dict)
+            and content
+            and all(
+                isinstance(key, str)
+                and is_json_like_media_type(key)
+                and isinstance(value, dict)
+                and "schema" not in value
+                for key, value in content.items()
+            )
         ):
             found.append("operation.requestBody:schemaless-json")
         responses = operation.get("responses")
@@ -4658,26 +5285,38 @@ class Census:
             entries = {str(code): value for code, value in responses.items()}
             empty = self.local_component("responses", entries.get("200"))
             created = self.local_component("responses", entries.get("201"))
-            if (isinstance(empty, dict) and "$ref" not in empty and not empty.get("content")
-                and isinstance(created, dict) and "$ref" not in created and created.get("content")):
+            if (
+                isinstance(empty, dict)
+                and "$ref" not in empty
+                and not empty.get("content")
+                and isinstance(created, dict)
+                and "$ref" not in created
+                and created.get("content")
+            ):
                 found.append("operation.responses:contentless-two-hundred-with-created")
         written, success = self.success_entry(operation)
         success_content = success.get("content") if isinstance(success, dict) else None
         if isinstance(success_content, dict):
             json_media = success_content.get("application/json")
             if (
-                self.openapi_30 and not (isinstance(written, dict) and "$ref" in written)
+                self.openapi_30
+                and not (isinstance(written, dict) and "$ref" in written)
                 and list(success_content) == ["application/json"]
-                and isinstance(json_media, dict) and json_media.get("schema") == {}
+                and isinstance(json_media, dict)
+                and json_media.get("schema") == {}
             ):
                 found.append("operation.responses:empty-schema-success-oas-three-zero")
             if json_media is None:
+
                 def schemaless(test: Callable[[str], bool]) -> bool:
                     return any(
-                        isinstance(key, str) and test(key.split(";", 1)[0].strip().lower())
-                        and isinstance(value, dict) and "schema" not in value
+                        isinstance(key, str)
+                        and test(key.split(";", 1)[0].strip().lower())
+                        and isinstance(value, dict)
+                        and "schema" not in value
                         for key, value in success_content.items()
                     )
+
                 if schemaless(lambda base: base.startswith("text/") and base != "text/event-stream"):
                     found.append("operation.responses:schemaless-text-success")
                 if schemaless(lambda base: base == "application/pdf" or base.startswith(("audio/", "video/"))):
@@ -4688,7 +5327,8 @@ class Census:
         for code in responses if isinstance(responses, dict) else []:
             text = str(code)
             if (
-                text[:1].isdigit() and not (len(text) == 3 and text.isdigit())
+                text[:1].isdigit()
+                and not (len(text) == 3 and text.isdigit())
                 and not (len(text) == 3 and text[0].isdigit() and text[1:] == "XX")
             ):
                 found.append("operation.responses:suffixed-status-key")
@@ -4703,8 +5343,10 @@ class Census:
         media = content.get("*/*") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None
         return (
-            isinstance(schema, dict) and "$ref" not in schema
-            and primary_type(schema.get("type")) == "string" and schema.get("format") == "binary"
+            isinstance(schema, dict)
+            and "$ref" not in schema
+            and primary_type(schema.get("type")) == "string"
+            and schema.get("format") == "binary"
         )
 
     def declared_here(self, node: dict[Any, Any], kind_name: str, prefix: str) -> list[str]:
@@ -4725,9 +5367,12 @@ class Census:
         if kind_name == "paths":
             found += self.normalized_collisions(node)
             found += self.path_key_templates(node)
-        if kind_name == "info" and isinstance(node.get("title"), str):
-            if any(ord(char) > 127 for char in node["title"]):
-                found.append("info.title:non-ascii")
+        if (
+            kind_name == "info"
+            and isinstance(node.get("title"), str)
+            and any(ord(char) > 127 for char in node["title"])
+        ):
+            found.append("info.title:non-ascii")
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
@@ -4740,16 +5385,15 @@ class Census:
             example_kind = selected_example_kind(node)
             if example_kind is not None:
                 found.append(f"schema.example={example_kind}")
-            if example_kind == "string" and node.get("format") == "date-time":
-                if not fern_reads_date_time(schema_example(node)):
-                    found.append("schema.example:unread-date-time")
+            if (
+                example_kind == "string"
+                and node.get("format") == "date-time"
+                and not fern_reads_date_time(schema_example(node))
+            ):
+                found.append("schema.example:unread-date-time")
         if is_reference_node(node, kind_name):
             reference = OBJECTS["reference"]
-            found += [
-                f"reference.{name}"
-                for name in node
-                if isinstance(name, str) and name in reference.fields
-            ]
+            found += [f"reference.{name}" for name in node if isinstance(name, str) and name in reference.fields]
             self.declared_cache[key] = found
             return found
         for name, value in node.items():
@@ -4769,9 +5413,8 @@ class Census:
                 # must not count here.
                 if address and not address.startswith(("/", "http://", "https://")) and ":" not in address:
                     found.append("pathItem.$ref:relative-file")
-            if kind_name == "operation" and name == "tags":
-                if isinstance(value, list) and len(value) > 1:
-                    found.append("operation.tags:multiple")
+            if kind_name == "operation" and name == "tags" and isinstance(value, list) and len(value) > 1:
+                found.append("operation.tags:multiple")
             if selector in VALUED:
                 if selector == "schema.example":
                     continue
@@ -4822,9 +5465,7 @@ class Census:
                     former_names = self.component_names
                     self.current_path = path
                     self.component_schemas = components_schemas(self.loaded_tree[path])
-                    self.component_names = frozenset(
-                        key for key in self.component_schemas if isinstance(key, str)
-                    )
+                    self.component_names = frozenset(key for key in self.component_schemas if isinstance(key, str))
                     try:
                         self.walk(resolved, kind_name, prefix, frozenset())
                     finally:
@@ -4910,9 +5551,7 @@ class Census:
         target = OBJECTS[child.kind]
         inner = target.name if target.anchor else f"{prefix}.{descend}"
         return any(
-            self.conjunction_holds(
-                entry, child.kind, inner, groups, index + 1, seen | {id(node)}, resolved
-            )
+            self.conjunction_holds(entry, child.kind, inner, groups, index + 1, seen | {id(node)}, resolved)
             for entry in entries
         )
 
@@ -4957,9 +5596,7 @@ class Census:
 
     def note_operation(self, key: str, value: Any) -> None:
         """The document-scoped predicate one Operation Object's own fields feed."""
-        if key == "operationId" and isinstance(value, (str, int, float)) and not isinstance(
-            value, bool
-        ):
+        if key == "operationId" and isinstance(value, (str, int, float)) and not isinstance(value, bool):
             # Compared as written: a document that spells one id `1` and another
             # `"1"` has written the same value twice, and Fern reads both as a name.
             self.operation_ids.append(str(value))
@@ -4975,11 +5612,7 @@ class Census:
         collisions: dict[str, int] = defaultdict(int)
         for key in keys:
             collisions[normalized_path(key)] += 1
-        return [
-            "openapi.paths:normalized-collision"
-            for key in keys
-            if collisions[normalized_path(key)] > 1
-        ]
+        return ["openapi.paths:normalized-collision" for key in keys if collisions[normalized_path(key)] > 1]
 
     def schema_predicates(self, node: dict[Any, Any]) -> list[str]:
         """The node-local predicates one Schema Object's own fields decide.
@@ -5016,8 +5649,7 @@ class Census:
             non_null = [
                 member
                 for member in members
-                if not isinstance(member, dict)
-                or primary_type(member.get("type")) != "null"
+                if not isinstance(member, dict) or primary_type(member.get("type")) != "null"
             ]
             if len(non_null) == 1 and len(non_null) != len(members):
                 found.append(f"schema.{field}:sole-non-null-member")
@@ -5096,7 +5728,7 @@ class Census:
         """
         if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
             return []
-        head = reference[len(_COMPONENT_SCHEMAS_PREFIX):].split("/")[0]
+        head = reference[len(_COMPONENT_SCHEMAS_PREFIX) :].split("/")[0]
         if head in self.component_names:
             return []
         return ["schema.$ref:undeclared-component-head"]
@@ -5136,11 +5768,7 @@ class Census:
         collisions: dict[str, int] = defaultdict(int)
         for key in keys:
             collisions[class_name(key)] += 1
-        return [
-            "components.schemas:normalized-collision"
-            for key in keys
-            if collisions[class_name(key)] > 1
-        ]
+        return ["components.schemas:normalized-collision" for key in keys if collisions[class_name(key)] > 1]
 
     @staticmethod
     def same_primitive_unions(node: Any) -> list[str]:
@@ -5157,9 +5785,11 @@ class Census:
             return []
 
         def converted(member: Any) -> str | None:
-            if not isinstance(member, dict) or any(
-                field in member for field in ("$ref", "enum", "const", "oneOf", "anyOf", "allOf")
-            ) or member.get("nullable") is True:
+            if (
+                not isinstance(member, dict)
+                or any(field in member for field in ("$ref", "enum", "const", "oneOf", "anyOf", "allOf"))
+                or member.get("nullable") is True
+            ):
                 return None
             kind, form = member.get("type"), member.get("format")
             # `normalize_float_type` of `src/openapi.rs` runs first and reads the
@@ -5177,10 +5807,12 @@ class Census:
             return "bool" if kind == "boolean" else None
 
         def same_primitive(schema: Any) -> bool:
-            if not isinstance(schema, dict) or any(
-                field in schema
-                for field in ("$ref", "type", "allOf", "discriminator", "additionalProperties")
-            ) or schema.get("properties") or schema.get("nullable") is True:
+            if (
+                not isinstance(schema, dict)
+                or any(field in schema for field in ("$ref", "type", "allOf", "discriminator", "additionalProperties"))
+                or schema.get("properties")
+                or schema.get("nullable") is True
+            ):
                 return False
             members = schema.get("oneOf") if "oneOf" in schema else schema.get("anyOf")
             if not isinstance(members, list) or len(members) < 2:
@@ -5198,6 +5830,7 @@ class Census:
     def class_name_sanitizations(node: Any) -> list[str]:
         if not isinstance(node, dict):
             return []
+
         def needs_sanitizing(key: str) -> bool:
             # class_name spells leading digits first and short-circuits wholly
             # canonical numbers before it ever calls sanitize_identifier.
@@ -5207,11 +5840,11 @@ class Census:
             if pascal and _is_digit(pascal[0]):
                 pascal = _DIGIT_WORDS[int(pascal[0])] + pascal[1:]
             return sanitize_identifier(pascal) != pascal
+
         return [
             "components.schemas:nonidentifier-name"
             for key in node
-            if isinstance(key, str) and not key.startswith("x-")
-            and needs_sanitizing(key)
+            if isinstance(key, str) and not key.startswith("x-") and needs_sanitizing(key)
         ]
 
     @staticmethod
@@ -5226,8 +5859,7 @@ class Census:
         return [
             "securityScheme:$ref"
             for key, value in node.items()
-            if isinstance(key, str) and not key.startswith("x-")
-            and isinstance(value, dict) and "$ref" in value
+            if isinstance(key, str) and not key.startswith("x-") and isinstance(value, dict) and "$ref" in value
         ]
 
     @staticmethod
@@ -5277,7 +5909,9 @@ class Census:
 def census_document(
     document: Any,
     conjunctions: dict[str, CompiledConjunction] | None = None,
-    *, root_path: Path | None = None, tree_paths: set[Path] | None = None,
+    *,
+    root_path: Path | None = None,
+    tree_paths: set[Path] | None = None,
 ) -> dict[str, int]:
     """Every `(selector, count)` one parsed source document declares."""
     census = Census(document, conjunctions, root_path=root_path, tree_paths=tree_paths)
@@ -5387,7 +6021,8 @@ def golden_registrations(e2e: Path) -> dict[str, GoldenRegistration]:
     unmatched_of: dict[str, tuple[str, ...]] = {}
     for match in re.finditer(
         r"(?:^const (\w+): Corpus = )?Corpus \{\s*api: \"([^\"]+)\",(.*?)\n\s*\}",
-        source, re.M | re.S,
+        source,
+        re.M | re.S,
     ):
         constant, api, body = match.groups()
         residual = re.search(r"unmatched: &\[(.*?)\]", body, re.S)
@@ -5453,8 +6088,7 @@ def acquisition_sources(fixtures_root: Path, corpus_root: Path, vendored_only: b
             Source(
                 fixture=name,
                 origin="corpus",
-                path=spec_in(corpus_root / name)
-                or pinned_tree_root(fixtures_root, corpus_root, name),
+                path=spec_in(corpus_root / name) or pinned_tree_root(fixtures_root, corpus_root, name),
             )
         )
     return sources
@@ -5493,28 +6127,40 @@ def registered_sources(fixtures_root: Path, corpus_root: Path, vendored_only: bo
 
     return [source for source in acquired if source.origin == "vendored" or carries_golden(source)]
 
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="openapi-surface-census.py",
         description=(
-            "Census the OpenAPI surface the registered golden sources declare, "
-            "one row per (selector, fixture, count)."
+            "Census the OpenAPI surface the registered golden sources declare, one row per (selector, fixture, count)."
         ),
     )
     parser.add_argument(
-        "--fixture", action="append", default=[], metavar="NAME",
+        "--fixture",
+        action="append",
+        default=[],
+        metavar="NAME",
         help="census only this registered source (repeatable)",
     )
     parser.add_argument(
-        "--selector", action="append", default=[], metavar="SELECTOR",
+        "--selector",
+        action="append",
+        default=[],
+        metavar="SELECTOR",
         help="report only this selector (repeatable); an undeclared one is reported as such",
     )
     parser.add_argument(
-        "--original-fixtures-only", "--vendored-only", dest="original_fixtures_only", action="store_true",
+        "--original-fixtures-only",
+        "--vendored-only",
+        dest="original_fixtures_only",
+        action="store_true",
         help="census only sources stored directly in tests/fixtures/<name> (legacy alias: --vendored-only)",
     )
     parser.add_argument(
-        "--allow-missing", "--allow-unfetched", dest="allow_missing", action="store_true",
+        "--allow-missing",
+        "--allow-unfetched",
+        dest="allow_missing",
+        action="store_true",
         help="warn instead of failing for missing source files (legacy alias: --allow-unfetched)",
     )
     parser.add_argument("--json", action="store_true", help="emit the census as JSON")
@@ -5579,7 +6225,8 @@ def main(argv: list[str] | None = None) -> int:
             why = (
                 " It is an acquired CORPUS.md row that carries no Fern golden crozier "
                 "byte-matches, so it is not a golden source."
-                if unknown[0] in acquired_only else ""
+                if unknown[0] in acquired_only
+                else ""
             )
             print(
                 f"openapi-surface-census: no registered source is named {unknown[0]!r}.{why} "
@@ -5623,9 +6270,7 @@ def main(argv: list[str] | None = None) -> int:
             return 1
         censused.append(source)
         tree_paths = pinned_tree_paths(fixtures_root, corpus_root, source.fixture)
-        for selector, count in census_document(
-            document, root_path=source.path, tree_paths=tree_paths
-        ).items():
+        for selector, count in census_document(document, root_path=source.path, tree_paths=tree_paths).items():
             if args.selector and selector not in args.selector:
                 continue
             rows[(selector, source.fixture)] = count
@@ -5648,9 +6293,7 @@ def main(argv: list[str] | None = None) -> int:
                 for (selector, fixture), count in sorted(rows.items())
             ],
             "absent_selectors": sorted(
-                selector
-                for selector in args.selector
-                if selector not in {declared for declared, _ in rows}
+                selector for selector in args.selector if selector not in {declared for declared, _ in rows}
             ),
         }
         print(json.dumps(payload, indent=2, sort_keys=False))

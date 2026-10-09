@@ -45,8 +45,7 @@ def member_path(name: str) -> PurePosixPath:
     on some platform of the release matrix."""
     posix = PurePosixPath(name)
     parts = posix.parts
-    if ("\\" in name or posix.is_absolute() or len(parts) < 2
-            or any(part == ".." or ":" in part for part in parts)):
+    if "\\" in name or posix.is_absolute() or len(parts) < 2 or any(part == ".." or ":" in part for part in parts):
         raise ValueError(f"unsafe archive path {name}")
     return PurePosixPath(*parts[1:])
 
@@ -77,8 +76,9 @@ def extract(plan: Path, archives: Path, tree: Path, manifest: Path) -> None:
                 output = tree / repository.replace("/", "--") / Path(*relative.parts)
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_bytes(body)
-                rows.append((repository, revision, relative.as_posix(),
-                             hashlib.sha256(body).hexdigest(), str(len(body))))
+                rows.append(
+                    (repository, revision, relative.as_posix(), hashlib.sha256(body).hexdigest(), str(len(body)))
+                )
     manifest.parent.mkdir(parents=True, exist_ok=True)
     with manifest.open("w", encoding="utf-8", newline="") as output:
         writer = csv.writer(output, dialect="excel-tab", lineterminator="\n")
@@ -96,7 +96,9 @@ def main() -> int:
     try:
         extract(args.plan, args.archives, args.tree, args.manifest)
     except (OSError, ValueError, tarfile.TarError) as error:
-        print(f"witness-search-portal-trees: {error}; check the plan and pinned archives before retrying", file=sys.stderr)
+        print(
+            f"witness-search-portal-trees: {error}; check the plan and pinned archives before retrying", file=sys.stderr
+        )
         return 1
     return 0
 
