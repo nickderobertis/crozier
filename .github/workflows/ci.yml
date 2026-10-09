@@ -171,10 +171,20 @@ jobs:
       # install-ruff.sh pins it and exposes ~/.local/bin on PATH for later steps.
       - name: Install ruff
         run: ./scripts/install-ruff.sh
-      # cargo is preinstalled and honors rust-toolchain.toml on first use. The
-      # `live-e2e` project builds the release binary its suite drives; `corpus-match`
-      # byte-compares against Fern from committed sources (and proves it with sockets
-      # denied and no cache); `census-fallback` holds the parser fallback to the
+      # Install the rust-toolchain.toml toolchain once, before the gate: left to
+      # first use, the gate's parallel cargo tasks each start the same rustup
+      # install and race on its download directory.
+      - name: Install the pinned Rust toolchain
+        run: just install-toolchain
+      # The corpus-match recipes run their golden inventory under nextest.
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      # The `live-e2e` project builds the release binary its suite drives;
+      # `corpus-match` byte-compares against Fern from committed sources (and proves it with sockets
+      # denied and no cache); `corpus-match-selection` proves that byte-match's nextest
+      # selection is its inventory; `census-fallback` holds the parser fallback to the
       # pinned ruamel.yaml; `screenshots` tests the demo renderer with Pillow from
       # PyPI. Each runs when the change reaches it, and on the release pull request
       # always.
@@ -183,7 +193,7 @@ jobs:
       - name: Live e2e, corpus byte-match, census fallback and screenshot renderer
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
-        run: just ci-check --projects=live-e2e,corpus-match,census-fallback,screenshots
+        run: just ci-check --projects=live-e2e,corpus-match,corpus-match-selection,census-fallback,screenshots
       # llmlint: ignore-end[external_service_suite_stays_out_of_the_affected_tier]
 
   # Prove the PUBLISHED crate builds: `cargo publish --dry-run` packages the crate

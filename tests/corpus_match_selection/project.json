@@ -1,0 +1,46 @@
+{
+  "name": "corpus-match-selection",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "tags": [
+    "type:tier",
+    "cost:expensive",
+    "tier:promoted",
+    "lang:python"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tests/corpus_match_selection/match_selection_test.py"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/tests/corpus_match/match.sh",
+        "crateSource",
+        "e2eSource",
+        "goldenReads",
+        "generator"
+      ],
+      "dependsOn": [
+        {
+          "projects": [
+            "crozier"
+          ],
+          "target": "build"
+        }
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs corpus-match-selection"
+      },
+      "cache": true,
+      "inputs": [
+        "boundaries"
+      ]
+    }
+  }
+}
