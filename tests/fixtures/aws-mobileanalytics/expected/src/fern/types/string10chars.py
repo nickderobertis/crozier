@@ -1,0 +1,3 @@
+
+
+String10Chars = str

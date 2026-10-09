@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document https://raw.githubusercontent.com/Evokoa/polygres-sdk/b4ede83f0dd7176a49b468ac3814ec49106e9291/src/polygres/spec/runtime-v1.openapi.json: generator-missing-type: #/components/parameters/PolygresApiVersion/X-Polygres-Api-Version/schema

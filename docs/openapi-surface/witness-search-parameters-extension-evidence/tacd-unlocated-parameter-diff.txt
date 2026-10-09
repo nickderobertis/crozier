@@ -1,0 +1,4060 @@
+Unexplained differing files: 56
+FILE: README.md
++ # Fern Python Library
++ 
++ [![fern shield](https://img.shields.io/badge/%F0%9F%8C%BF-Built%20with%20Fern-brightgreen)](https://buildwithfern.com?utm_source=github&utm_medium=github&utm_campaign=readme&utm_source=Fern%2FPython)
++ [![pypi](https://img.shields.io/pypi/v/fern)](https://pypi.python.org/pypi/fern)
++ 
++ The Fern Python library provides convenient access to the Fern APIs from Python.
++ 
++ ## Table of Contents
++ 
++ - [Installation](#installation)
++ - [Reference](#reference)
++ - [Usage](#usage)
++ - [Async Client](#async-client)
++ - [Exception Handling](#exception-handling)
++ - [Advanced](#advanced)
++   - [Access Raw Response Data](#access-raw-response-data)
++   - [Retries](#retries)
++   - [Timeouts](#timeouts)
++   - [Custom Client](#custom-client)
++ - [Contributing](#contributing)
++ 
++ ## Installation
++ 
++ ```sh
++ pip install fern
++ ```
++ 
++ ## Reference
++ 
++ A full reference for this library is available [here](./reference.md).
++ 
++ ## Usage
++ 
++ Instantiate and use the client with the following:
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.set_a_new_content_for_roots_authorized_keys_file()
++ ```
++ 
++ ## Async Client
++ 
++ The SDK also exports an `async` client so that you can make non-blocking calls to our API. Note that if you are constructing an Async httpx client class to pass into this client, use `httpx.AsyncClient()` instead of `httpx.Client()` (e.g. for the `httpx_client` parameter of this client).
++ 
++ ```python
++ import asyncio
++ 
++ from fern import AsyncFernApi
++ 
++ client = AsyncFernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ 
++ async def main() -> None:
++     await client.system.set_a_new_content_for_roots_authorized_keys_file()
++ 
++ 
++ asyncio.run(main())
++ ```
++ 
++ ## Exception Handling
++ 
++ When the API returns a non-success status code (4xx or 5xx response), a subclass of the following error
++ will be thrown.
++ 
++ ```python
++ from fern.core.api_error import ApiError
++ 
++ try:
++     client.system.set_a_new_content_for_roots_authorized_keys_file()
++ except ApiError as e:
++     print(e.status_code)
++     print(e.body)
++ ```
++ 
++ ## Advanced
++ 
++ ### Access Raw Response Data
++ 
++ The SDK provides access to raw response data, including headers, through the `.with_raw_response` property.
++ The `.with_raw_response` property returns a "raw" client that can be used to access the `.headers` and `.data` attributes.
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(...)
++ response = client.system.with_raw_response.set_a_new_content_for_roots_authorized_keys_file()
++ print(response.headers)  # access the response headers
++ print(response.status_code)  # access the response status code
++ print(response.data)  # access the underlying object
++ ```
++ 
++ ### Retries
++ 
++ The SDK is instrumented with automatic retries with exponential backoff. A request will be retried as long
++ as the request is deemed retryable and the number of retry attempts has not grown larger than the configured
++ retry limit (default: 2).
++ 
++ Which status codes are retried depends on the `retryStatusCodes` generator configuration:
++ 
++ **`legacy`** (current default): retries on
++ - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
++ - [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
++ - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
++ - [5XX](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#server_error_responses) (All server errors, including 500)
++ 
++ **`recommended`**: retries on
++ - [408](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/408) (Timeout)
++ - [409](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409) (Conflict)
++ - [429](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/429) (Too Many Requests)
++ - [502](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/502) (Bad Gateway)
++ - [503](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/503) (Service Unavailable)
++ - [504](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/504) (Gateway Timeout)
++ 
++ Use the `max_retries` request option to configure this behavior.
++ 
++ ```python
++ client.system.set_a_new_content_for_roots_authorized_keys_file(request_options={
++     "max_retries": 1
++ })
++ ```
++ 
++ ### Timeouts
++ 
++ The SDK defaults to a 60 second timeout. You can configure this with a timeout option at the client or request level.
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(..., timeout=20.0)
++ 
++ # Override timeout for a specific method
++ client.system.set_a_new_content_for_roots_authorized_keys_file(request_options={
++     "timeout": 1
++ })
++ ```
++ 
++ ### Custom Client
++ 
++ You can override the `httpx` client to customize it for your use-case. Some common use-cases include support for proxies
++ and transports.
++ 
++ ```python
++ import httpx
++ from fern import FernApi
++ 
++ client = FernApi(
++     ...,
++     httpx_client=httpx.Client(
++         proxy="http://my.test.proxy.example.com",
++         transport=httpx.HTTPTransport(local_address="0.0.0.0"),
++     ),
++ )
++ ```
++ 
++ ## Contributing
++ 
++ While we value open-source contributions to this SDK, this library is generated programmatically.
++ Additions made directly to this library would have to be moved over to our generation code,
++ otherwise they would be overwritten upon the next generated release. Feel free to open a PR as
++ a proof of concept, but know that we will not be able to merge it as-is. We suggest opening
++ an issue first to discuss with us!
++ 
++ On the other hand, contributions to the README are always very welcome!
+
+FILE: reference.md
+  # Reference
++ ## UserInterface
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">get_the_name_of_the_screen_currently_shown_on_the_display</a>() -> Screen</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.get_the_name_of_the_screen_currently_shown_on_the_display()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">set_the_screen_to_show_on_the_display</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi, Screen
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.set_the_screen_to_show_on_the_display(
++     request=Screen.DUT_POWER,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `Screen` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">a_list_of_currently_pending_alerts_shown_on_the_local_ui</a>() -> Alerts</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.a_list_of_currently_pending_alerts_shown_on_the_local_ui()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">get_the_current_backlight_brightness_between00and10</a>() -> float</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.get_the_current_backlight_brightness_between00and10()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">set_the_current_backlight_brightness_between00and10</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.set_the_current_backlight_brightness_between00and10(
++     request=1.1,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `float` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">simulate_a_button_press_release_on_the_device</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.simulate_a_button_press_release_on_the_device()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **type:** `typing.Optional[typing.Dict[str, typing.Any]]` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **properties:** `typing.Optional[typing.Any]` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">the_current_screen_content_rendered_into_a_png</a>() -> typing.Iterator[bytes]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ client.user_interface.the_current_screen_content_rendered_into_a_png()
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">get_the_current_locator_status</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.get_the_current_locator_status()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">set_the_current_locator_status</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.set_the_current_locator_status(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">display_a_help_menu_on_the_local_screen</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.display_a_help_menu_on_the_local_screen(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">get_the_current_blink_pattern_of_the_led</a>(...) -> BlinkPattern</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.get_the_current_blink_pattern_of_the_led(
++     led="led",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **led:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.user_interface.<a href="src/fern/user_interface/client.py">get_the_current_rgb_color_of_the_led</a>(...) -> typing.List[float]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.user_interface.get_the_current_rgb_color_of_the_led(
++     led="led",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **led:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## DutPower
++ <details><summary><code>client.dut_power.<a href="src/fern/dut_power/client.py">get_the_current_power_switch_state</a>() -> DutPwrStatus</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.dut_power.get_the_current_power_switch_state()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.dut_power.<a href="src/fern/dut_power/client.py">try_to_set_the_power_switch_state</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 📝 Description
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ While the request will return immediately with a successful response, this does not mean that the switch is actually on at this or a later point in time. You will always have to check with e.g. a GET request if you really want to know, as an error state could always take precedence.
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi, DutPwrRequest
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.dut_power.try_to_set_the_power_switch_state(
++     request=DutPwrRequest.ON,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `DutPwrRequest` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## UsbHost
++ <details><summary><code>client.usb_host.<a href="src/fern/usb_host/client.py">get_the_power_status_for_an_usb_host_port</a>(...) -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.usb_host.get_the_power_status_for_an_usb_host_port(
++     port="port",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **port:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.usb_host.<a href="src/fern/usb_host/client.py">set_the_power_status_for_an_usb_host_port</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.usb_host.set_the_power_status_for_an_usb_host_port(
++     port="port",
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **port:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.usb_host.<a href="src/fern/usb_host/client.py">get_the_device_connected_to_the_respective_usb_port</a>(...) -> UsbDevice</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.usb_host.get_the_device_connected_to_the_respective_usb_port(
++     port="port",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **port:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.usb_host.<a href="src/fern/usb_host/client.py">get_the_name_of_the_currently_overloaded_port_if_any</a>() -> typing.Union[typing.Literal["Total", "Port1", "Port2", "Port3"], typing.Any]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.usb_host.get_the_name_of_the_currently_overloaded_port_if_any()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## System
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_current_temperature_inside_the_so_c</a>() -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_current_temperature_inside_the_so_c()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_current_temperature_warning_state</a>() -> typing.Union[typing.Literal["Okay", "SocHigh", "SocCritical"], typing.Any]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_current_temperature_warning_state()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_information_commonly_accessed_via_uname</a>() -> Uname</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_information_commonly_accessed_via_uname()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_information_passed_through_from_the_bootloader</a>() -> Barebox</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_information_passed_through_from_the_bootloader()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_tacd_version_string</a>() -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_tacd_version_string()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_lxa_tac_hardware_generation</a>() -> typing.Union[typing.Literal["Gen1", "Gen2", "Gen3"], typing.Any]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_lxa_tac_hardware_generation()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">check_if_the_tac_has_completed_the_set_up_or_is_still_in_setup_mode</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.check_if_the_tac_has_completed_the_set_up_or_is_still_in_setup_mode()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">leave_setup_mode_by_writing_false</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.leave_setup_mode_by_writing_false(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_current_content_of_a_labgrid_config_file</a>(...) -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_current_content_of_a_labgrid_config_file(
++     file="file",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **file:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">set_a_new_content_for_the_labgrid_config_file</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.set_a_new_content_for_the_labgrid_config_file(
++     file="file",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **file:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_current_content_of_roots_authorized_keys_file</a>() -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_current_content_of_roots_authorized_keys_file()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">set_a_new_content_for_roots_authorized_keys_file</a>()</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.set_a_new_content_for_roots_authorized_keys_file()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">perform_an_action_on_a_systemd_service</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi, ServiceAction
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.perform_an_action_on_a_systemd_service(
++     service="service",
++     request=ServiceAction.START,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **service:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `ServiceAction` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_status_of_a_systemd_service</a>(...) -> ServiceStatus</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_status_of_a_systemd_service(
++     service="service",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **service:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">reboot_the_tac</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.reboot_the_tac(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.system.<a href="src/fern/system/client.py">get_the_current_time_on_the_tac_as_milliseconds_since_the_unix_epoch</a>() -> float</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.system.get_the_current_time_on_the_tac_as_milliseconds_since_the_unix_epoch()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## IoBus
++ <details><summary><code>client.io_bus.<a href="src/fern/io_bus/client.py">get_cached_info_from_the_local_io_bus_server</a>() -> IoBusServerInfo</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.io_bus.get_cached_info_from_the_local_io_bus_server()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.io_bus.<a href="src/fern/io_bus/client.py">get_the_list_of_connected_nodes</a>() -> IoBusServerNodes</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.io_bus.get_the_list_of_connected_nodes()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## InputOutput
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_current_asserted_deasserted_status_of_the_output</a>(...) -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_current_asserted_deasserted_status_of_the_output(
++     out_n="out_n",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **out_n:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">set_the_asserted_deasserted_status_of_the_output</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.set_the_asserted_deasserted_status_of_the_output(
++     out_n="out_n",
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **out_n:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">check_if_the_selected_direction_is_activated</a>(...) -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.check_if_the_selected_direction_is_activated(
++     rx_tx="rx_tx",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **rx_tx:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">activate_deactivate_the_direction</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.activate_deactivate_the_direction(
++     rx_tx="rx_tx",
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **rx_tx:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">check_if_the_power_supply_on_the_dut_uart_connector_is_turned_on</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.check_if_the_power_supply_on_the_dut_uart_connector_is_turned_on()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">turn_the_power_supply_on_the_dut_uart_connector_on_off</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.turn_the_power_supply_on_the_dut_uart_connector_on_off(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">check_if_the_io_bus_power_supply_is_turned_on</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.check_if_the_io_bus_power_supply_is_turned_on()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">turn_the_io_bus_supply_on_off</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.turn_the_io_bus_supply_on_off(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">check_if_the_io_bus_supply_is_in_an_error_state</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.check_if_the_io_bus_supply_is_in_an_error_state()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_current_consumed_by_devices_on_this_port</a>(...) -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_current_consumed_by_devices_on_this_port(
++     port="port",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **port:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_voltage_between_the_two_out_n_pins</a>(...) -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_voltage_between_the_two_out_n_pins(
++     out_n="out_n",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **out_n:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_current_consumed_by_devices_on_the_io_bus</a>() -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_current_consumed_by_devices_on_the_io_bus()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_voltage_of_the_io_bus_power_supply</a>() -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 📝 Description
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ A voltage dip indicates a fault on the bus
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_voltage_of_the_io_bus_power_supply()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_current_consumed_by_the_dut</a>() -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_current_consumed_by_the_dut()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.input_output.<a href="src/fern/input_output/client.py">get_the_voltage_applied_to_the_dut</a>() -> Measurement</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.input_output.get_the_voltage_applied_to_the_dut()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## Updating
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">enable_periodic_polling_for_operating_system_updates</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.enable_periodic_polling_for_operating_system_updates(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">enable_automatic_installation_of_operating_system_updates</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.enable_automatic_installation_of_operating_system_updates(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">whether_the_tac_should_look_for_and_install_updates_while_the_dut_is_powered</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.whether_the_tac_should_look_for_and_install_updates_while_the_dut_is_powered()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">set_whether_polling_for_updates_while_the_dut_is_powered_is_inhibited_or_not</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.set_whether_polling_for_updates_while_the_dut_is_powered_is_inhibited_or_not(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">get_the_currently_running_system_update_operation</a>() -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.get_the_currently_running_system_update_operation()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">get_the_progress_report_of_the_running_update_operation</a>() -> typing.Dict[str, typing.Any]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.get_the_progress_report_of_the_running_update_operation()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">get_the_last_error_reported_by_the_update_system</a>() -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.get_the_last_error_reported_by_the_update_system()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">request_the_installation_of_a_rauc_bundle_from_an_url</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.request_the_installation_of_a_rauc_bundle_from_an_url()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **url:** `typing.Optional[str]` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **manifest_hash:** `typing.Optional[str]` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">get_a_list_of_update_channels_and_available_updates</a>() -> UpdateChannels</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.get_a_list_of_update_channels_and_available_updates()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">request_an_update_of_the_channels_list_and_update_availability</a>(...)</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.request_an_update_of_the_channels_list_and_update_availability(
++     request=True,
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request:** `bool` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.updating.<a href="src/fern/updating/client.py">should_the_system_be_rebooted_as_there_is_a_new_bundle_in_the_other_slot</a>() -> bool</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.updating.should_the_system_be_rebooted_as_there_is_a_new_bundle_in_the_other_slot()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ ## Network
++ <details><summary><code>client.network.<a href="src/fern/network/client.py">get_the_systems_hostname</a>() -> str</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.network.get_the_systems_hostname()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.network.<a href="src/fern/network/client.py">get_the_i_pv4addresses_associated_with_the_tac_bridge_interface</a>() -> typing.List[str]</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.network.get_the_i_pv4addresses_associated_with_the_tac_bridge_interface()
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
++ <details><summary><code>client.network.<a href="src/fern/network/client.py">get_the_link_status_of_the_respective_interface</a>(...) -> GetV1TacNetworkInterfaceIfResponse</code></summary>
++ <dl>
++ <dd>
++ 
++ #### 🔌 Usage
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ ```python
++ from fern import FernApi
++ 
++ client = FernApi(
++     base_url="https://yourhost.com/path/to/api",
++ )
++ 
++ client.network.get_the_link_status_of_the_respective_interface(
++     if_="if",
++ )
++ 
++ ```
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ #### ⚙️ Parameters
++ 
++ <dl>
++ <dd>
++ 
++ <dl>
++ <dd>
++ 
++ **if:** `str` 
++     
++ </dd>
++ </dl>
++ 
++ <dl>
++ <dd>
++ 
++ **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
++     
++ </dd>
++ </dl>
++ </dd>
++ </dl>
++ 
++ 
++ </dd>
++ </dl>
++ </details>
++ 
+
+FILE: src/fern/__init__.py
+      ⋮ (1 unchanged line(s))
+  from importlib import import_module
+  
+  if typing.TYPE_CHECKING:
++     from .types import (
++         Alerts,
++         AlertsItem,
++         Barebox,
++         BlinkPattern,
++         BlinkPatternStepsItem,
++         BlinkPatternStepsItemNanos,
++         DutPwrRequest,
++         DutPwrStatus,
++         IoBusServerInfo,
++         IoBusServerInfoLssState,
++         IoBusServerNodes,
++         Measurement,
++         RaucProgress,
++         Screen,
++         ServiceAction,
++         ServiceStatus,
++         Uname,
++         UpdateChannels,
++         UpdateChannelsItem,
++         UpdateChannelsItemBundle,
++         UpdateChannelsItemPollingInterval,
++         UsbDevice,
++     )
++     from .errors import BadRequestError, ForbiddenError
++     from . import dut_power, input_output, io_bus, network, system, updating, usb_host, user_interface
+      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
+      from .client import AsyncFernApi, FernApi
++     from .network import GetV1TacNetworkInterfaceIfResponse
+      from .version import __version__
+  _dynamic_imports: typing.Dict[str, str] = {
++     "Alerts": ".types",
++     "AlertsItem": ".types",
+      "AsyncFernApi": ".client",
++     "BadRequestError": ".errors",
++     "Barebox": ".types",
++     "BlinkPattern": ".types",
++     "BlinkPatternStepsItem": ".types",
++     "BlinkPatternStepsItemNanos": ".types",
+      "DefaultAioHttpClient": "._default_clients",
+      "DefaultAsyncHttpxClient": "._default_clients",
++     "DutPwrRequest": ".types",
++     "DutPwrStatus": ".types",
+      "FernApi": ".client",
++     "ForbiddenError": ".errors",
++     "GetV1TacNetworkInterfaceIfResponse": ".network",
++     "IoBusServerInfo": ".types",
++     "IoBusServerInfoLssState": ".types",
++     "IoBusServerNodes": ".types",
++     "Measurement": ".types",
++     "RaucProgress": ".types",
++     "Screen": ".types",
++     "ServiceAction": ".types",
++     "ServiceStatus": ".types",
++     "Uname": ".types",
++     "UpdateChannels": ".types",
++     "UpdateChannelsItem": ".types",
++     "UpdateChannelsItemBundle": ".types",
++     "UpdateChannelsItemPollingInterval": ".types",
++     "UsbDevice": ".types",
+      "__version__": ".version",
++     "dut_power": ".dut_power",
++     "input_output": ".input_output",
++     "io_bus": ".io_bus",
++     "network": ".network",
++     "system": ".system",
++     "updating": ".updating",
++     "usb_host": ".usb_host",
++     "user_interface": ".user_interface",
+  }
+  
+  
+      ⋮ (18 unchanged line(s))
+      return sorted(lazy_attrs)
+  
+  
+- __all__ = ["AsyncFernApi", "DefaultAioHttpClient", "DefaultAsyncHttpxClient", "FernApi", "__version__"]
++ __all__ = [
++     "Alerts",
++     "AlertsItem",
++     "AsyncFernApi",
++     "BadRequestError",
++     "Barebox",
++     "BlinkPattern",
++     "BlinkPatternStepsItem",
++     "BlinkPatternStepsItemNanos",
++     "DefaultAioHttpClient",
++     "DefaultAsyncHttpxClient",
++     "DutPwrRequest",
++     "DutPwrStatus",
++     "FernApi",
++     "ForbiddenError",
++     "GetV1TacNetworkInterfaceIfResponse",
++     "IoBusServerInfo",
++     "IoBusServerInfoLssState",
++     "IoBusServerNodes",
++     "Measurement",
++     "RaucProgress",
++     "Screen",
++     "ServiceAction",
++     "ServiceStatus",
++     "Uname",
++     "UpdateChannels",
++     "UpdateChannelsItem",
++     "UpdateChannelsItemBundle",
++     "UpdateChannelsItemPollingInterval",
++     "UsbDevice",
++     "__version__",
++     "dut_power",
++     "input_output",
++     "io_bus",
++     "network",
++     "system",
++     "updating",
++     "usb_host",
++     "user_interface",
++ ]
+
+FILE: src/fern/client.py
+  
+  
++ from __future__ import annotations
++ 
+  import typing
+  
+  import httpx
+  from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+  from .core.logging import LogConfig, Logger
+  
++ if typing.TYPE_CHECKING:
++     from .dut_power.client import AsyncDutPowerClient, DutPowerClient
++     from .input_output.client import AsyncInputOutputClient, InputOutputClient
++     from .io_bus.client import AsyncIoBusClient, IoBusClient
++     from .network.client import AsyncNetworkClient, NetworkClient
++     from .system.client import AsyncSystemClient, SystemClient
++     from .updating.client import AsyncUpdatingClient, UpdatingClient
++     from .usb_host.client import AsyncUsbHostClient, UsbHostClient
++     from .user_interface.client import AsyncUserInterfaceClient, UserInterfaceClient
+  
++ 
+  class FernApi:
+      """
+      Use this class to access the different functions within the SDK. You can instantiate any number of clients with different configuration that will propagate to these functions.
+      ⋮ (65 unchanged line(s))
+              max_stream_reconnection_attempts=max_stream_reconnection_attempts,
+              logging=logging,
+          )
++         self._user_interface: typing.Optional[UserInterfaceClient] = None
++         self._dut_power: typing.Optional[DutPowerClient] = None
++         self._usb_host: typing.Optional[UsbHostClient] = None
++         self._system: typing.Optional[SystemClient] = None
++         self._io_bus: typing.Optional[IoBusClient] = None
++         self._input_output: typing.Optional[InputOutputClient] = None
++         self._updating: typing.Optional[UpdatingClient] = None
++         self._network: typing.Optional[NetworkClient] = None
+  
++     @property
++     def user_interface(self):
++         if self._user_interface is None:
++             from .user_interface.client import UserInterfaceClient
+  
++             self._user_interface = UserInterfaceClient(client_wrapper=self._client_wrapper)
++         return self._user_interface
++ 
++     @property
++     def dut_power(self):
++         if self._dut_power is None:
++             from .dut_power.client import DutPowerClient
++ 
++             self._dut_power = DutPowerClient(client_wrapper=self._client_wrapper)
++         return self._dut_power
++ 
++     @property
++     def usb_host(self):
++         if self._usb_host is None:
++             from .usb_host.client import UsbHostClient
++ 
++             self._usb_host = UsbHostClient(client_wrapper=self._client_wrapper)
++         return self._usb_host
++ 
++     @property
++     def system(self):
++         if self._system is None:
++             from .system.client import SystemClient
++ 
++             self._system = SystemClient(client_wrapper=self._client_wrapper)
++         return self._system
++ 
++     @property
++     def io_bus(self):
++         if self._io_bus is None:
++             from .io_bus.client import IoBusClient
++ 
++             self._io_bus = IoBusClient(client_wrapper=self._client_wrapper)
++         return self._io_bus
++ 
++     @property
++     def input_output(self):
++         if self._input_output is None:
++             from .input_output.client import InputOutputClient
++ 
++             self._input_output = InputOutputClient(client_wrapper=self._client_wrapper)
++         return self._input_output
++ 
++     @property
++     def updating(self):
++         if self._updating is None:
++             from .updating.client import UpdatingClient
++ 
++             self._updating = UpdatingClient(client_wrapper=self._client_wrapper)
++         return self._updating
++ 
++     @property
++     def network(self):
++         if self._network is None:
++             from .network.client import NetworkClient
++ 
++             self._network = NetworkClient(client_wrapper=self._client_wrapper)
++         return self._network
++ 
++ 
+  def _make_default_async_client(
+      timeout: typing.Optional[float],
+      follow_redirects: typing.Optional[bool],
+      ⋮ (81 unchanged line(s))
+              max_stream_reconnection_attempts=max_stream_reconnection_attempts,
+              logging=logging,
+          )
++         self._user_interface: typing.Optional[AsyncUserInterfaceClient] = None
++         self._dut_power: typing.Optional[AsyncDutPowerClient] = None
++         self._usb_host: typing.Optional[AsyncUsbHostClient] = None
++         self._system: typing.Optional[AsyncSystemClient] = None
++         self._io_bus: typing.Optional[AsyncIoBusClient] = None
++         self._input_output: typing.Optional[AsyncInputOutputClient] = None
++         self._updating: typing.Optional[AsyncUpdatingClient] = None
++         self._network: typing.Optional[AsyncNetworkClient] = None
++ 
++     @property
++     def user_interface(self):
++         if self._user_interface is None:
++             from .user_interface.client import AsyncUserInterfaceClient
++ 
++             self._user_interface = AsyncUserInterfaceClient(client_wrapper=self._client_wrapper)
++         return self._user_interface
++ 
++     @property
++     def dut_power(self):
++         if self._dut_power is None:
++             from .dut_power.client import AsyncDutPowerClient
++ 
++             self._dut_power = AsyncDutPowerClient(client_wrapper=self._client_wrapper)
++         return self._dut_power
++ 
++     @property
++     def usb_host(self):
++         if self._usb_host is None:
++             from .usb_host.client import AsyncUsbHostClient
++ 
++             self._usb_host = AsyncUsbHostClient(client_wrapper=self._client_wrapper)
++         return self._usb_host
++ 
++     @property
++     def system(self):
++         if self._system is None:
++             from .system.client import AsyncSystemClient
++ 
++             self._system = AsyncSystemClient(client_wrapper=self._client_wrapper)
++         return self._system
++ 
++     @property
++     def io_bus(self):
++         if self._io_bus is None:
++             from .io_bus.client import AsyncIoBusClient
++ 
++             self._io_bus = AsyncIoBusClient(client_wrapper=self._client_wrapper)
++         return self._io_bus
++ 
++     @property
++     def input_output(self):
++         if self._input_output is None:
++             from .input_output.client import AsyncInputOutputClient
++ 
++             self._input_output = AsyncInputOutputClient(client_wrapper=self._client_wrapper)
++         return self._input_output
++ 
++     @property
++     def updating(self):
++         if self._updating is None:
++             from .updating.client import AsyncUpdatingClient
++ 
++             self._updating = AsyncUpdatingClient(client_wrapper=self._client_wrapper)
++         return self._updating
++ 
++     @property
++     def network(self):
++         if self._network is None:
++             from .network.client import AsyncNetworkClient
++ 
++             self._network = AsyncNetworkClient(client_wrapper=self._client_wrapper)
++         return self._network
+
+FILE: src/fern/dut_power/__init__.py
+OnlyInCrozier
+FILE: src/fern/dut_power/client.py
+OnlyInCrozier
+FILE: src/fern/dut_power/raw_client.py
+OnlyInCrozier
+FILE: src/fern/errors/__init__.py
+OnlyInCrozier
+FILE: src/fern/errors/bad_request_error.py
+OnlyInCrozier
+FILE: src/fern/errors/forbidden_error.py
+OnlyInCrozier
+FILE: src/fern/input_output/__init__.py
+OnlyInCrozier
+FILE: src/fern/input_output/client.py
+OnlyInCrozier
+FILE: src/fern/input_output/raw_client.py
+OnlyInCrozier
+FILE: src/fern/io_bus/__init__.py
+OnlyInCrozier
+FILE: src/fern/io_bus/client.py
+OnlyInCrozier
+FILE: src/fern/io_bus/raw_client.py
+OnlyInCrozier
+FILE: src/fern/network/__init__.py
+OnlyInCrozier
+FILE: src/fern/network/client.py
+OnlyInCrozier
+FILE: src/fern/network/raw_client.py
+OnlyInCrozier
+FILE: src/fern/network/types/__init__.py
+OnlyInCrozier
+FILE: src/fern/network/types/get_v1tac_network_interface_if_response.py
+OnlyInCrozier
+FILE: src/fern/system/__init__.py
+OnlyInCrozier
+FILE: src/fern/system/client.py
+OnlyInCrozier
+FILE: src/fern/system/raw_client.py
+OnlyInCrozier
+FILE: src/fern/types/__init__.py
+OnlyInCrozier
+FILE: src/fern/types/alerts.py
+OnlyInCrozier
+FILE: src/fern/types/alerts_item.py
+OnlyInCrozier
+FILE: src/fern/types/barebox.py
+OnlyInCrozier
+FILE: src/fern/types/blink_pattern.py
+OnlyInCrozier
+FILE: src/fern/types/blink_pattern_steps_item.py
+OnlyInCrozier
+FILE: src/fern/types/blink_pattern_steps_item_nanos.py
+OnlyInCrozier
+FILE: src/fern/types/dut_pwr_request.py
+OnlyInCrozier
+FILE: src/fern/types/dut_pwr_status.py
+OnlyInCrozier
+FILE: src/fern/types/io_bus_server_info.py
+OnlyInCrozier
+FILE: src/fern/types/io_bus_server_info_lss_state.py
+OnlyInCrozier
+FILE: src/fern/types/io_bus_server_nodes.py
+OnlyInCrozier
+FILE: src/fern/types/measurement.py
+OnlyInCrozier
+FILE: src/fern/types/rauc_progress.py
+OnlyInCrozier
+FILE: src/fern/types/screen.py
+OnlyInCrozier
+FILE: src/fern/types/service_action.py
+OnlyInCrozier
+FILE: src/fern/types/service_status.py
+OnlyInCrozier
+FILE: src/fern/types/uname.py
+OnlyInCrozier
+FILE: src/fern/types/update_channels.py
+OnlyInCrozier
+FILE: src/fern/types/update_channels_item.py
+OnlyInCrozier
+FILE: src/fern/types/update_channels_item_bundle.py
+OnlyInCrozier
+FILE: src/fern/types/update_channels_item_polling_interval.py
+OnlyInCrozier
+FILE: src/fern/types/usb_device.py
+OnlyInCrozier
+FILE: src/fern/updating/__init__.py
+OnlyInCrozier
+FILE: src/fern/updating/client.py
+OnlyInCrozier
+FILE: src/fern/updating/raw_client.py
+OnlyInCrozier
+FILE: src/fern/usb_host/__init__.py
+OnlyInCrozier
+FILE: src/fern/usb_host/client.py
+OnlyInCrozier
+FILE: src/fern/usb_host/raw_client.py
+OnlyInCrozier
+FILE: src/fern/user_interface/__init__.py
+OnlyInCrozier
+FILE: src/fern/user_interface/client.py
+OnlyInCrozier
+FILE: src/fern/user_interface/raw_client.py
+OnlyInCrozier
+Catalogued departures: [
+    AppliedDeparture {
+        file: ".fern/metadata.json",
+        line: 6,
+        id: "fern-metadata-generator-config",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 34,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 35,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 36,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 37,
+        id: "sdk-identity-header-prefix",
+    },
+    AppliedDeparture {
+        file: "src/fern/core/client_wrapper.py",
+        line: 38,
+        id: "sdk-identity-header-prefix",
+    },
+]

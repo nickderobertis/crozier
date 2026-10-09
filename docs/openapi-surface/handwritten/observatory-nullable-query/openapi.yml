@@ -1,0 +1,83 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Signal Observatory",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://signals.example.net"
+    }
+  ],
+  "paths": {
+    "/signals": {
+      "get": {
+        "operationId": "listSignals",
+        "parameters": [
+          {
+            "name": "kinds",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "nullable": true,
+              "items": {
+                "type": "string"
+              }
+            },
+            "explode": false
+          },
+          {
+            "name": "region",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "labels",
+            "in": "query",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string",
+                  "format": "date"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
