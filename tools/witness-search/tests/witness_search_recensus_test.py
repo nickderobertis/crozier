@@ -1413,14 +1413,18 @@ class LenientReadingTest(unittest.TestCase):
 # A startup hook for this run and every child it spawns: it removes
 # `signal.SIGALRM`, so a stage takes the branch it takes on Windows, and with
 # RECENSUS_TEST_DIE_ON set, a spawned reader opening that document dies there
-# without a verdict, as one the host kills would.
+# without a verdict, as one the host kills would. It closes its pipe a second
+# before it exits, so the stage always sees the pipe end before the process can
+# be reaped, the order a loaded host only sometimes gives.
 WITHOUT_SIGALRM = """\
-import multiprocessing, os, signal, sys
+import multiprocessing, os, signal, sys, time
 del signal.SIGALRM
 _doomed = os.environ.get("RECENSUS_TEST_DIE_ON")
 if _doomed:
     def _die(event, args):
         if event == "open" and _doomed in str(args[0]) and multiprocessing.parent_process() is not None:
+            os.closerange(3, os.sysconf("SC_OPEN_MAX") if hasattr(os, "sysconf") else 4096)
+            time.sleep(1)
             os._exit(3)
     sys.addaudithook(_die)
 """
