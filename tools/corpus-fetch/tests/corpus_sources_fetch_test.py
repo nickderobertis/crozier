@@ -23,6 +23,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "tools" / "corpus" / "tests"))
@@ -39,8 +40,17 @@ from corpus_sources_test import (  # noqa: E402 - the offline suite's directory 
 )
 
 
+class FixtureServer(http.server.ThreadingHTTPServer):
+    """The loopback server, carrying the documents it serves and its request log."""
+
+    documents: dict[str, bytes]
+    requests: list[str]
+
+
 class Handler(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 - http.server's spelling
+    server: FixtureServer
+
+    def do_GET(self) -> None:
         self.server.requests.append(self.path)
         body = self.server.documents.get(self.path)
         if body is None:
@@ -51,7 +61,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
-    def log_message(self, *args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         """Quiet: the request log is the assertion surface."""
 
 
@@ -60,7 +70,7 @@ class LoopbackRoot(SyntheticRoot):
 
     def setUp(self) -> None:
         super().setUp()
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        self.server = FixtureServer(("127.0.0.1", 0), Handler)
         self.server.requests = []
         self.server.documents = {
             "/specs/plain.json": PLAIN,
@@ -81,14 +91,23 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
     """`fetch-corpus.sh` itself, through real bash, reading the manifest rows."""
 
     def fetch(self, *args: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), *args],
-                              cwd=self.root, capture_output=True, text=True, encoding="utf-8", check=False)
+        return subprocess.run(
+            [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), *args],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
 
     def test_both_manifest_readers_select_the_same_registered_sources(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             result = subprocess.run(
                 [corpus_sources.bash(), str(REPO / "tools/corpus/fetch-corpus.sh"), "--dry-run", directory],
-                cwd=REPO, capture_output=True, text=True, encoding="utf-8",
+                cwd=REPO,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
             )
             self.assertEqual(0, result.returncode, result.stderr)
             fetched_rows = [tuple(line.split("\t")[:2]) for line in result.stdout.splitlines()]
@@ -101,10 +120,15 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
         self.addCleanup(manifest.chmod, 0o644)
         completed = subprocess.run(
             [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--dry-run"],
-            cwd=self.root, capture_output=True, text=True, encoding="utf-8", check=False,
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
         )
-        self.assert_refused(completed, f"could not read the numbered rows of {manifest}",
-                            "git checkout -- tests/fixtures/CORPUS.md")
+        self.assert_refused(
+            completed, f"could not read the numbered rows of {manifest}", "git checkout -- tests/fixtures/CORPUS.md"
+        )
         self.assertEqual("", completed.stdout)
         self.assertEqual([], self.server.requests)
 
@@ -114,40 +138,68 @@ class TheFetchEntryPointReadsTheManifest(LoopbackRoot):
         completed = self.fetch("--dry-run", str(blocked / "cache"))
         self.assertNotEqual(0, completed.returncode)
         self.assertRegex(completed.stderr, r"fetch-corpus: line \d+: 'mkdir -p [^']*' failed \(exit 1\)")
-        self.assertIn("is a writable directory on a disk with free space (or pass another DEST_ROOT)",
-                      completed.stderr)
+        self.assertIn("is a writable directory on a disk with free space (or pass another DEST_ROOT)", completed.stderr)
         self.assertEqual([], self.server.requests)
 
     def test_a_row_the_fetch_cannot_use_safely_fails_the_read_naming_it(self) -> None:
         for label, row, problem in (
-            ("traversing name", "| 3 | `../escape` | test | https://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
-             "the name is not a fixture name"),
-            ("unnamed row", "| 3 |  | test | https://example.test/a.yaml | `HEAD` | MIT | committed | x |\n",
-             "the name is not a fixture name"),
-            ("plain http source", "| 3 | `third` | test | http://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
-             "the source is not an https URL"),
-            ("option-like ref", "| 3 | `third` | test | https://example.test/a.yaml | `--upload-pack=x` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
-            ("option ref", "| 3 | `third` | test | https://example.test/a.yaml | `--detach` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
-            ("a path ref", "| 3 | `third` | test | https://example.test/a.yaml | `.` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
-            ("a parent ref", "| 3 | `third` | test | https://example.test/a.yaml | `../x` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
-            ("a range ref", "| 3 | `third` | test | https://example.test/a.yaml | `main..x` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
-            ("a directory ref", "| 3 | `third` | test | https://example.test/a.yaml | `spec/` | MIT | link-ok | x |\n",
-             "the pinned ref is not a commit, tag or branch name"),
+            (
+                "traversing name",
+                "| 3 | `../escape` | test | https://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
+                "the name is not a fixture name",
+            ),
+            (
+                "unnamed row",
+                "| 3 |  | test | https://example.test/a.yaml | `HEAD` | MIT | committed | x |\n",
+                "the name is not a fixture name",
+            ),
+            (
+                "plain http source",
+                "| 3 | `third` | test | http://example.test/a.yaml | `HEAD` | MIT | link-ok | x |\n",
+                "the source is not an https URL",
+            ),
+            (
+                "option-like ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `--upload-pack=x` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
+            (
+                "option ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `--detach` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
+            (
+                "a path ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `.` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
+            (
+                "a parent ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `../x` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
+            (
+                "a range ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `main..x` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
+            (
+                "a directory ref",
+                "| 3 | `third` | test | https://example.test/a.yaml | `spec/` | MIT | link-ok | x |\n",
+                "the pinned ref is not a commit, tag or branch name",
+            ),
         ):
             with self.subTest(label):
                 self.write_corpus("committed", extra=row)
                 completed = self.fetch("--dry-run")
-                self.assert_refused(completed, f"{self.fixtures / 'CORPUS.md'} row 3", problem,
-                                    "fix the row in tests/fixtures/CORPUS.md, then re-run")
+                self.assert_refused(
+                    completed,
+                    f"{self.fixtures / 'CORPUS.md'} row 3",
+                    problem,
+                    "fix the row in tests/fixtures/CORPUS.md, then re-run",
+                )
                 self.assertEqual("", completed.stdout)
         self.assertEqual([], self.server.requests)
-
-
 
 
 @unittest.skipIf(os.name == "nt", "the corpus fetch scripts run on Linux/macOS")
@@ -184,8 +236,17 @@ class TheRebuildToolingFetches(LoopbackRoot):
         fetched = self.root / "fetched"
         fetched.mkdir()
         result = subprocess.run(
-            [corpus_sources.bash(), str(self.root / "tools/corpus/fetch-corpus.sh"), "--fixture", "plain", str(fetched)],
-            cwd=self.root, capture_output=True, text=True, encoding="utf-8",
+            [
+                corpus_sources.bash(),
+                str(self.root / "tools/corpus/fetch-corpus.sh"),
+                "--fixture",
+                "plain",
+                str(fetched),
+            ],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         requests = len(self.server.requests)
@@ -216,7 +277,7 @@ class TheCheckStillDiscriminates(LoopbackRoot):
 
     def check(self) -> subprocess.CompletedProcess[str]:
         completed = run(self.root, "check")
-        self.assertEqual([], self.server.requests[self.requests_before:], "`check` opened a socket")
+        self.assertEqual([], self.server.requests[self.requests_before :], "`check` opened a socket")
         return completed
 
     def test_the_vendored_root_passes(self) -> None:
@@ -249,21 +310,39 @@ class TheCheckStillDiscriminates(LoopbackRoot):
 
     def test_a_recorded_row_the_manifest_no_longer_registers_is_refused(self) -> None:
         corpus = self.fixtures / "CORPUS.md"
-        corpus.write_text(corpus.read_text(encoding="utf-8").replace("| committed | plain |", "| withdrawn | plain |"), encoding="utf-8", newline="\n")
-        self.assert_refused(self.check(), "plain: recorded in tests/fixtures/corpus-sources.tsv but is no canonical CORPUS.md row")
+        corpus.write_text(
+            corpus.read_text(encoding="utf-8").replace("| committed | plain |", "| withdrawn | plain |"),
+            encoding="utf-8",
+            newline="\n",
+        )
+        self.assert_refused(
+            self.check(), "plain: recorded in tests/fixtures/corpus-sources.tsv but is no canonical CORPUS.md row"
+        )
 
     def test_a_pinned_remote_document_left_uncommitted_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
         manifest.write_text(
-            "".join(line for line in manifest.read_text(encoding="utf-8").splitlines(keepends=True) if "block.yaml" not in line),
-            encoding="utf-8", newline="\n",
+            "".join(
+                line
+                for line in manifest.read_text(encoding="utf-8").splitlines(keepends=True)
+                if "block.yaml" not in line
+            ),
+            encoding="utf-8",
+            newline="\n",
         )
         shutil.rmtree(self.committed("remote/remote"))
-        self.assert_refused(self.check(), f"remote: remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml is not committed")
+        self.assert_refused(
+            self.check(),
+            f"remote: remote/raw.githubusercontent.com/example/schemas/{PINNED_SHA}/block.yaml is not committed",
+        )
 
     def test_a_record_disagreeing_with_the_pin_manifest_is_refused(self) -> None:
         pins = self.fixtures / "corpus-remote-ref-pins.tsv"
-        pins.write_text(pins.read_text(encoding="utf-8").replace(hashlib.sha256(BLOCK).hexdigest(), "0" * 64), encoding="utf-8", newline="\n")
+        pins.write_text(
+            pins.read_text(encoding="utf-8").replace(hashlib.sha256(BLOCK).hexdigest(), "0" * 64),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assert_refused(self.check(), "corpus-remote-ref-pins.tsv pins " + "0" * 64)
 
     def test_manifest_structure_refuses_each_malformed_record(self) -> None:
@@ -273,13 +352,19 @@ class TheCheckStillDiscriminates(LoopbackRoot):
         cases = (
             (rows[0] + "\textra\n", "expected 4 tab-separated cells"),
             ("\n".join(reversed(rows)) + "\n", "records must sort"),
-            ("\n".join(sorted(rows + [rows[0]])) + "\n", "recorded twice"),
-            (original.replace(self.origin + "/specs/plain.json", self.origin + "/other.json"),
-             "records source"),
-            ("\t".join(["/abs", "/abs/openapi.json", *rows[0].split("\t")[2:]]) + "\n",
-             "corpus name '/abs' is not one path segment"),
-            ("\t".join([rows[0].split("\t")[0], rows[0].split("\t")[1].replace("/", "\\", 3),
-                        *rows[0].split("\t")[2:]]) + "\n", "holds a backslash"),
+            ("\n".join(sorted([*rows, rows[0]])) + "\n", "recorded twice"),
+            (original.replace(self.origin + "/specs/plain.json", self.origin + "/other.json"), "records source"),
+            (
+                "\t".join(["/abs", "/abs/openapi.json", *rows[0].split("\t")[2:]]) + "\n",
+                "corpus name '/abs' is not one path segment",
+            ),
+            (
+                "\t".join(
+                    [rows[0].split("\t")[0], rows[0].split("\t")[1].replace("/", "\\", 3), *rows[0].split("\t")[2:]]
+                )
+                + "\n",
+                "holds a backslash",
+            ),
         )
         for body, diagnostic in cases:
             with self.subTest(diagnostic=diagnostic):
@@ -304,7 +389,9 @@ class TheCheckStillDiscriminates(LoopbackRoot):
 
     def test_unsafe_registered_names_are_refused_before_rebuild(self) -> None:
         corpus = self.fixtures / "CORPUS.md"
-        corpus.write_text(corpus.read_text(encoding="utf-8").replace("`plain`", "`../outside`"), encoding="utf-8", newline="\n")
+        corpus.write_text(
+            corpus.read_text(encoding="utf-8").replace("`plain`", "`../outside`"), encoding="utf-8", newline="\n"
+        )
         self.assert_refused(self.vendor(), "unsafe corpus name")
         self.assertEqual(PLAIN, self.committed("plain/openapi.json").read_bytes())
 
@@ -320,8 +407,7 @@ class TheCheckStillDiscriminates(LoopbackRoot):
                         cells[2] = url
                         lines[index] = "\t".join(cells)
                 manifest.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
-                completed = run(self.root, "prepare", "--fixture", "remote",
-                                "--output", str(self.root / "stage"))
+                completed = run(self.root, "prepare", "--fixture", "remote", "--output", str(self.root / "stage"))
                 self.assert_refused(completed, "provenance disagrees")
                 self.assertFalse((self.root / "stage").exists())
         manifest.write_text(original, encoding="utf-8", newline="\n")
@@ -336,7 +422,11 @@ class TheCheckStillDiscriminates(LoopbackRoot):
     def test_a_path_outside_its_row_is_refused(self) -> None:
         manifest = self.fixtures / "corpus-sources.tsv"
         text = manifest.read_text(encoding="utf-8")
-        manifest.write_text(text.replace("corpus-sources/plain/openapi.json", "corpus-sources/remote/../plain/openapi.json"), encoding="utf-8", newline="\n")
+        manifest.write_text(
+            text.replace("corpus-sources/plain/openapi.json", "corpus-sources/remote/../plain/openapi.json"),
+            encoding="utf-8",
+            newline="\n",
+        )
         self.assert_refused(self.check(), "is not a file under tests/fixtures/corpus-sources/plain/")
 
 

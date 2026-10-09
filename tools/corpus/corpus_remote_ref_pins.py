@@ -71,10 +71,10 @@ import subprocess
 import sys
 import tempfile
 import time
+from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import ModuleType
-from typing import Iterator, Mapping
 from urllib.parse import urlsplit
 
 MANIFEST_RELATIVE = ("tests", "fixtures", "corpus-remote-ref-pins.tsv")
@@ -150,8 +150,6 @@ def manifest_path(root: Path) -> Path:
     return root.joinpath(*MANIFEST_RELATIVE)
 
 
-
-
 def _path_segments(url: str) -> list[str]:
     return urlsplit(url).path.split("/")[1:]
 
@@ -173,14 +171,11 @@ def immutability_failure(url: str) -> str | None:
         or parsed.scheme != "https"
     ):
         return (
-            f"{url!r} is not a plain https URL on {IMMUTABLE_HOST}, the one host this "
-            "repository can address immutably"
+            f"{url!r} is not a plain https URL on {IMMUTABLE_HOST}, the one host this repository can address immutably"
         )
     segments = _path_segments(url)
     if len(segments) < 4 or not all(segments):
-        return (
-            f"{url!r} has no /<owner>/<repo>/<ref>/<path> shape, so it names no revision"
-        )
+        return f"{url!r} has no /<owner>/<repo>/<ref>/<path> shape, so it names no revision"
     if not REVISION_RE.fullmatch(segments[2]):
         return (
             f"{url!r} addresses {segments[2]!r} rather than a 40-character commit SHA, "
@@ -207,11 +202,11 @@ def is_absolute_reference(reference: str) -> bool:
     try:
         parsed = urlsplit(strip_fragment(reference))
     except ValueError as error:
-        raise PinError(f"$ref {reference!r} is not a well-formed URL ({error}); fix the reference in the "
-                       "document (or its manifest row), then re-run") from error
+        raise PinError(
+            f"$ref {reference!r} is not a well-formed URL ({error}); fix the reference in the "
+            "document (or its manifest row), then re-run"
+        ) from error
     return bool(parsed.scheme) and bool(parsed.netloc)
-
-
 
 
 def load_records(root: Path | None = None) -> list[PinRecord]:
@@ -226,9 +221,7 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
     except OSError as error:
-        raise PinError(
-            f"could not read pin manifest {path}: {error}; restore it from git"
-        ) from error
+        raise PinError(f"could not read pin manifest {path}: {error}; restore it from git") from error
 
     records: list[PinRecord] = []
     seen: set[tuple[str, str]] = set()
@@ -246,7 +239,7 @@ def load_records(root: Path | None = None) -> list[PinRecord]:
                 "tab between each column"
             )
         record = PinRecord(*cells)
-        for column, value in zip(COLUMNS, cells):
+        for column, value in zip(COLUMNS, cells, strict=False):
             if not value.strip() or value != value.strip():
                 raise PinError(
                     f"{site}: {column} is {value!r}; every column must carry a "
@@ -307,7 +300,10 @@ def load_tree_records(root: Path | None = None) -> list[TreeRecord]:
         _, name, path, url, digest = cells
         parts = Path(path)
         if (
-            not name or not path or parts.is_absolute() or "\\" in path
+            not name
+            or not path
+            or parts.is_absolute()
+            or "\\" in path
             or any(part in {"", ".", ".."} for part in path.split("/"))
             or parts.suffix not in {".json", ".yaml", ".yml"}
         ):
@@ -328,9 +324,7 @@ def load_tree_records(root: Path | None = None) -> list[TreeRecord]:
                 "hexadecimal digits of the pinned file's bytes"
             )
         if (name, path) in seen:
-            raise PinError(
-                f"{site}: duplicate tree member {name} {path}; delete the repeated record"
-            )
+            raise PinError(f"{site}: duplicate tree member {name} {path}; delete the repeated record")
         seen.add((name, path))
         records.append(TreeRecord(name, path, url, digest))
     if records != sorted(records, key=lambda r: (r.corpus_name, r.path)):
@@ -363,9 +357,7 @@ def _reject_prefixes(path: Path, records: list[PinRecord]) -> None:
 def _reject_disorder(path: Path, records: list[PinRecord]) -> None:
     ordered = sorted(records, key=_sort_key)
     if records != ordered:
-        first = next(
-            record for record, want in zip(records, ordered) if record != want
-        )
+        first = next(record for record, want in zip(records, ordered, strict=False) if record != want)
         raise PinError(
             f"{path}: records are not sorted; {first.corpus_name} "
             f"{first.mutable_url} is out of order — sort the records by corpus name "
@@ -375,9 +367,7 @@ def _reject_disorder(path: Path, records: list[PinRecord]) -> None:
 
 def records_for(corpus_name: str, root: Path | None = None) -> list[PinRecord]:
     """This row's records, in manifest order. Empty for a row with no pins."""
-    return [
-        record for record in load_records(root) if record.corpus_name == corpus_name
-    ]
+    return [record for record in load_records(root) if record.corpus_name == corpus_name]
 
 
 def corpus_names(root: Path) -> set[str]:
@@ -437,9 +427,7 @@ def _census(root: Path) -> ModuleType:
     name = "openapi_surface_census"
     spec = importlib.util.spec_from_file_location(name, path)
     if spec is None or spec.loader is None:
-        raise PinError(
-            f"could not load the OpenAPI document reader {path}; restore it from git"
-        )
+        raise PinError(f"could not load the OpenAPI document reader {path}; restore it from git")
     module = importlib.util.module_from_spec(spec)
     # Registered before execution because the reader defines dataclasses, and
     # `@dataclass` resolves annotations through `sys.modules[cls.__module__]`.
@@ -448,10 +436,7 @@ def _census(root: Path) -> ModuleType:
         spec.loader.exec_module(module)
     except OSError as error:
         del sys.modules[name]
-        raise PinError(
-            f"could not load the OpenAPI document reader {path}: {error}; "
-            "restore it from git"
-        ) from error
+        raise PinError(f"could not load the OpenAPI document reader {path}: {error}; restore it from git") from error
     _CENSUS_CACHE[path] = module
     return module
 
@@ -471,10 +456,7 @@ def document_references(root: Path, path: Path) -> list[str]:
             "cannot check a document it cannot parse"
         ) from error
     if not isinstance(document, dict):
-        raise PinError(
-            f"{path} is not an OpenAPI document (its root is not a mapping); the pin "
-            "guard cannot check it"
-        )
+        raise PinError(f"{path} is not an OpenAPI document (its root is not a mapping); the pin guard cannot check it")
     return list(_iter_references(document))
 
 
@@ -490,8 +472,6 @@ def _iter_references(node: object) -> Iterator[str]:
             yield from _iter_references(item)
 
 
-
-
 def post_condition_failure(root: Path, path: Path, manifest: Path) -> str | None:
     """The rule EVERY row obeys: no absolute-URL `$ref` that is not immutable."""
     for reference in document_references(root, path):
@@ -500,16 +480,11 @@ def post_condition_failure(root: Path, path: Path, manifest: Path) -> str | None
         address = strip_fragment(reference)
         failure = immutability_failure(address)
         if failure is not None:
-            return (
-                f"{path}: absolute `$ref` {failure}; add a record substituting it for "
-                f"an immutable URL to {manifest}"
-            )
+            return f"{path}: absolute `$ref` {failure}; add a record substituting it for an immutable URL to {manifest}"
     return None
 
 
-def verification_failure(
-    root: Path, corpus_name: str, path: Path, records: list[PinRecord]
-) -> str | None:
+def verification_failure(root: Path, corpus_name: str, path: Path, records: list[PinRecord]) -> str | None:
     """Why `path` is not in the state `apply` leaves it in, or `None` when it is."""
     manifest = manifest_path(root)
     failure = post_condition_failure(root, path, manifest)
@@ -524,14 +499,10 @@ def verification_failure(
     by_identity = {record.reference_identity: record for record in records}
     for record in records:
         if record.mutable_url in text:
-            return (
-                f"{path}: still carries the mutable URL {record.mutable_url}; "
-                f"{manifest} records a pin for it"
-            )
+            return f"{path}: still carries the mutable URL {record.mutable_url}; {manifest} records a pin for it"
         if record.pinned_url not in text:
             return (
-                f"{path}: does not carry the pinned URL {record.pinned_url} that "
-                f"{manifest} records for {corpus_name}"
+                f"{path}: does not carry the pinned URL {record.pinned_url} that {manifest} records for {corpus_name}"
             )
     for reference in document_references(root, path):
         if not is_absolute_reference(reference):
@@ -547,8 +518,6 @@ def verification_failure(
                 "revision — add a record for it"
             )
     return None
-
-
 
 
 def origin_override(environ: Mapping[str, str] | None = None) -> str | None:
@@ -570,6 +539,7 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
     global _last_raw_fetch
     target = override + url[len(CANONICAL_ORIGIN) :] if override else url
     refusal_count = 0
+
     def retry_delay(value: str | None, fallback: float) -> float:
         if value is None:
             return fallback
@@ -577,7 +547,7 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
             return min(float(value), 60)
         try:
             reset = email.utils.parsedate_to_datetime(value)
-            return min(60, max(0, (reset - datetime.datetime.now(datetime.timezone.utc)).total_seconds()))
+            return min(60, max(0, (reset - datetime.datetime.now(datetime.UTC)).total_seconds()))
         except (TypeError, ValueError, OverflowError):
             return fallback
 
@@ -592,13 +562,24 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
             try:
                 result = subprocess.run(
                     [
-                        "curl", "--silent", "--show-error", "--fail", "--location",
+                        "curl",
+                        "--silent",
+                        "--show-error",
+                        "--fail",
+                        "--location",
                         # Path templates in a publisher's filename may contain braces.
-                        "--globoff", "--max-time", str(FETCH_TIMEOUT_SECONDS),
-                        "--dump-header", str(headers), "--output", str(body),
-                        "--write-out", "%{http_code}",
+                        "--globoff",
+                        "--max-time",
+                        str(FETCH_TIMEOUT_SECONDS),
+                        "--dump-header",
+                        str(headers),
+                        "--output",
+                        str(body),
+                        "--write-out",
+                        "%{http_code}",
                         # `--` keeps the URL from becoming a curl option.
-                        "--", target,
+                        "--",
+                        target,
                     ],
                     capture_output=True,
                     check=False,
@@ -613,15 +594,20 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
             status = result.stdout.decode("ascii", "replace").strip()
             header_text = headers.read_text(errors="replace") if headers.exists() else ""
             retry_after = next(
-                (line.split(":", 1)[1].strip() for line in reversed(header_text.splitlines())
-                 if line.lower().startswith("retry-after:")),
+                (
+                    line.split(":", 1)[1].strip()
+                    for line in reversed(header_text.splitlines())
+                    if line.lower().startswith("retry-after:")
+                ),
                 None,
             )
             if status == "429" or (retry_after is not None and status.startswith(("4", "5"))):
                 refusal_count += 1
                 if refusal_count > 5:
-                    raise PinError(f"{target} remains throttled after five waits; retry the fetch when the publisher permits requests")
-                delay = retry_delay(retry_after, min(60, 2 ** refusal_count))
+                    raise PinError(
+                        f"{target} remains throttled after five waits; retry the fetch when the publisher permits requests"
+                    )
+                delay = retry_delay(retry_after, min(60, 2**refusal_count))
                 time.sleep(max(delay, RAW_FETCH_SPACING_SECONDS))
                 continue
             if result.returncode != 0:
@@ -635,8 +621,6 @@ def fetch_bytes(url: str, override: str | None) -> bytes:
                 # next request. Honour it before returning to the tree loop.
                 time.sleep(retry_delay(retry_after, 0))
             return body.read_bytes()
-
-
 
 
 def check(root: Path) -> None:
@@ -654,7 +638,9 @@ def check(root: Path) -> None:
     by_name: dict[str, list[TreeRecord]] = {}
     for record in load_tree_records(root):
         if record.corpus_name not in sources:
-            raise PinError(f"{manifest}: tree member names unknown corpus {record.corpus_name}; correct the name or delete the record")
+            raise PinError(
+                f"{manifest}: tree member names unknown corpus {record.corpus_name}; correct the name or delete the record"
+            )
         by_name.setdefault(record.corpus_name, []).append(record)
     for name, members in by_name.items():
         source_url, revision = sources[name]
@@ -693,9 +679,7 @@ def apply(root: Path, corpus_name: str, path: Path, document_name: str | None = 
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as error:
-        raise PinError(
-            f"could not read {path}: {error}; fetch the corpus source again"
-        ) from error
+        raise PinError(f"could not read {path}: {error}; fetch the corpus source again") from error
 
     for record in records:
         if record.mutable_url not in text:
@@ -757,17 +741,18 @@ def verify_tree(root: Path, corpus_name: str, directory: Path) -> Path:
     if root_record is None:
         raise PinError(f"{corpus_name} has no tree pins; add its members to tests/fixtures/corpus-remote-ref-pins.tsv")
     expected = {record.path for record in records}
-    found = {
-        path.relative_to(directory).as_posix()
-        for path in directory.rglob("*") if path.is_file()
-    }
+    found = {path.relative_to(directory).as_posix() for path in directory.rglob("*") if path.is_file()}
     if found != expected:
-        raise PinError(f"{corpus_name} tree file set drifted: missing {sorted(expected - found)}, extra {sorted(found - expected)}; re-run tools/corpus/fetch-corpus.sh without --if-missing")
+        raise PinError(
+            f"{corpus_name} tree file set drifted: missing {sorted(expected - found)}, extra {sorted(found - expected)}; re-run tools/corpus/fetch-corpus.sh without --if-missing"
+        )
     for record in records:
         path = directory / record.path
         measured = hashlib.sha256(path.read_bytes()).hexdigest()
         if measured != record.sha256:
-            raise PinError(f"{corpus_name} {record.path} serves sha256 {measured}, pinned {record.sha256}; verify upstream bytes and correct the pin")
+            raise PinError(
+                f"{corpus_name} {record.path} serves sha256 {measured}, pinned {record.sha256}; verify upstream bytes and correct the pin"
+            )
         for reference in document_references(root, path):
             address = strip_fragment(reference)
             if not address:
@@ -782,7 +767,9 @@ def verify_tree(root: Path, corpus_name: str, directory: Path) -> Path:
                 continue
             member = posixpath.normpath(posixpath.join(posixpath.dirname(record.path), address))
             if member not in expected:
-                raise PinError(f"{corpus_name} {record.path}: `$ref` {reference!r} leaves the pinned tree; pin {member} or correct the reference")
+                raise PinError(
+                    f"{corpus_name} {record.path}: `$ref` {reference!r} leaves the pinned tree; pin {member} or correct the reference"
+                )
     return directory / root_record.path
 
 

@@ -18,14 +18,15 @@ import fnmatch
 import hashlib
 import http.server
 import json
-import sys
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import threading
 import unittest
 from pathlib import Path
+from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 LOCK = REPO / "llmlint-plugins" / "lock.json"
@@ -39,16 +40,8 @@ def configured_excludes() -> list[str]:
     """Read the quoted exclude entries from the repository's llmlint config."""
     lines = CONFIG.read_text(encoding="utf-8").splitlines()
     start = lines.index("  exclude:") + 1
-    end = next(
-        index
-        for index in range(start, len(lines))
-        if lines[index] and not lines[index].startswith(" ")
-    )
-    return [
-        line.strip().removeprefix("- ").strip('"')
-        for line in lines[start:end]
-        if line.strip().startswith('- "')
-    ]
+    end = next(index for index in range(start, len(lines)) if lines[index] and not lines[index].startswith(" "))
+    return [line.strip().removeprefix("- ").strip('"') for line in lines[start:end] if line.strip().startswith('- "')]
 
 
 class GeneratedProbeExpectationsStayNarrowlyExcluded(unittest.TestCase):
@@ -56,10 +49,7 @@ class GeneratedProbeExpectationsStayNarrowlyExcluded(unittest.TestCase):
 
     def test_exclusion_covers_expectations_but_not_authored_paths(self) -> None:
         excludes = configured_excludes()
-        expectation = (
-            "docs/openapi-surface/probe-expected/"
-            "annotated-ref-target-closed-object/src/fern/types/target.py"
-        )
+        expectation = "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object/src/fern/types/target.py"
         authored = (
             "docs/openapi-surface/probes/annotated-ref-target-closed-object.yml",
             "tools/surface-census/openapi-surface-census.py",
@@ -102,8 +92,7 @@ class LockRecordsTheVendoredRuleSet(unittest.TestCase):
                 self.assertEqual(
                     plugin["version"].split(".")[: len(plugin["pin"].split("."))],
                     plugin["pin"].split("."),
-                    f"{plugin['name']} version {plugin['version']} escapes its pin"
-                    f" @{plugin['pin']}",
+                    f"{plugin['name']} version {plugin['version']} escapes its pin @{plugin['pin']}",
                 )
 
     def test_config_resolves_plugins_only_from_the_recorded_set(self) -> None:
@@ -117,13 +106,9 @@ class LockRecordsTheVendoredRuleSet(unittest.TestCase):
                 # The bundled plugin ships inside the llmlint binary and resolves
                 # offline, so it stays a URL: it is not a job-time fetch.
                 self.assertIn(f'"{plugin["url"]}@{plugin["pin"]}"', text)
-        recorded = {f'{plugin["url"]}@{plugin["pin"]}' for plugin in bundled}
+        recorded = {f"{plugin['url']}@{plugin['pin']}" for plugin in bundled}
         quoted = [line.strip().strip("- ").strip('"') for line in text.splitlines()]
-        fetched = [
-            entry
-            for entry in quoted
-            if entry.startswith(("http://", "https://")) and entry not in recorded
-        ]
+        fetched = [entry for entry in quoted if entry.startswith(("http://", "https://")) and entry not in recorded]
         self.assertEqual(
             fetched,
             [],
@@ -148,8 +133,13 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
             (root / "llmlint-plugins" / "lock.json").write_text(json.dumps(lock), encoding="utf-8")
             if link is not None:
                 (root / link[0]).symlink_to(Path(outside) / link[1])
-            return subprocess.run([sys.executable, str(script), "refresh"], capture_output=True, text=True,
-                                  env={**os.environ, "PATH": ""}, timeout=60)
+            return subprocess.run(
+                [sys.executable, str(script), "refresh"],
+                capture_output=True,
+                text=True,
+                env={**os.environ, "PATH": ""},
+                timeout=60,
+            )
 
     def test_a_lock_that_is_not_an_object_is_refused(self) -> None:
         run = self.refresh_over([{"name": "base"}])
@@ -161,15 +151,35 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
         run = self.refresh_over({"schema": 1, "plugins": [{"name": "base", "url": "", "pin": 1}]})
         self.assertEqual(1, run.returncode, run.stdout + run.stderr)
         self.assertIn("plugin #1 lacks url, pin, file", run.stderr)
-        self.assertIn("non-empty name, url, pin and file", run.stderr)
+        self.assertIn("non-empty name, url and pin, and every vendored one a file", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_a_bundled_entry_needs_no_file_but_its_other_fields(self) -> None:
+        # llmlint ships a bundled plugin; nothing is vendored, so there is no file.
+        run = self.refresh_over(
+            {"schema": 1, "plugins": [{"name": "config-lint", "url": "", "pin": "1", "bundled": True}]}
+        )
+        self.assertEqual(1, run.returncode, run.stdout + run.stderr)
+        self.assertIn("plugin #1 lacks url\n", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
 
     def test_a_recorded_rule_list_that_is_not_names_is_refused(self) -> None:
         for rules in ("alpha", [None], [["alpha"]]):
             with self.subTest(rules=rules):
-                run = self.refresh_over({"schema": 1, "plugins": [
-                    {"name": "base", "url": "https://example.test/b.yml", "pin": "1",
-                     "file": "llmlint-plugins/base.llmlint.yml", "rules": rules}]})
+                run = self.refresh_over(
+                    {
+                        "schema": 1,
+                        "plugins": [
+                            {
+                                "name": "base",
+                                "url": "https://example.test/b.yml",
+                                "pin": "1",
+                                "file": "llmlint-plugins/base.llmlint.yml",
+                                "rules": rules,
+                            }
+                        ],
+                    }
+                )
                 self.assertEqual(1, run.returncode, run.stdout + run.stderr)
                 self.assertIn(f"plugin #1 has `rules` {rules!r}, not a list of rule names", run.stderr)
                 self.assertNotIn("Traceback", run.stderr)
@@ -186,8 +196,12 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
             "llmlint-plugins\\..\\..\\base.llmlint.yml",
         ):
             with self.subTest(file=file):
-                run = self.refresh_over({"schema": 1, "plugins": [
-                    {"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}]})
+                run = self.refresh_over(
+                    {
+                        "schema": 1,
+                        "plugins": [{"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}],
+                    }
+                )
                 self.assertEqual(1, run.returncode, run.stdout + run.stderr)
                 self.assertIn(f"plugin #1 file {file!r} is not under llmlint-plugins/", run.stderr)
                 self.assertIn("record a relative path inside llmlint-plugins/ with no '..'", run.stderr)
@@ -197,9 +211,13 @@ class AMalformedLockIsRefusedBeforeAnyFetch(unittest.TestCase):
     def test_a_vendored_path_that_links_out_of_the_vendor_directory_is_refused(self) -> None:
         # Spelled inside llmlint-plugins/, but a symlink there leads out of it.
         file = "llmlint-plugins/base.llmlint.yml"
-        run = self.refresh_over({"schema": 1, "plugins": [
-            {"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}]},
-            link=(file, "base.llmlint.yml"))
+        run = self.refresh_over(
+            {
+                "schema": 1,
+                "plugins": [{"name": "base", "url": "http://127.0.0.1:9/base.yml", "pin": "1", "file": file}],
+            },
+            link=(file, "base.llmlint.yml"),
+        )
         self.assertEqual(1, run.returncode, run.stdout + run.stderr)
         self.assertIn(f"plugin #1 file {file!r} is not under llmlint-plugins/", run.stderr)
         self.assertNotIn("Traceback", run.stderr)
@@ -217,20 +235,36 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
             script.parent.mkdir(parents=True)
             shutil.copy2(REPO / "tools" / "llmlint" / "llmlint-plugins.py", script)
             (root / "llmlint-plugins").mkdir()
-            lock = {"schema": 1, "plugins": [{
-                "name": "config-lint", "url": "https://example.test/config_lint.yml", "pin": "1",
-                "file": "llmlint-plugins/config-lint.yml", "bundled": True}]}
+            lock = {
+                "schema": 1,
+                "plugins": [
+                    # As the committed lock records one: a bundled plugin has no
+                    # vendored file, and the refresh still reaches llmlint.
+                    {
+                        "name": "config-lint",
+                        "url": "https://example.test/config_lint.yml",
+                        "pin": "1",
+                        "bundled": True,
+                    }
+                ],
+            }
             (root / "llmlint-plugins" / "lock.json").write_text(json.dumps(lock), encoding="utf-8")
             stubs = root / "bin"
             stubs.mkdir()
-            (stubs / "llmlint").write_text(
-                f"#!/bin/sh\ncat <<'ANSWER'\n{answer}\nANSWER\n", encoding="utf-8"
-            )
+            (stubs / "llmlint").write_text(f"#!/bin/sh\ncat <<'ANSWER'\n{answer}\nANSWER\n", encoding="utf-8")
             (stubs / "llmlint").chmod(0o755)
-            run = subprocess.run([sys.executable, str(script), "refresh"], capture_output=True, text=True,
-                                 env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"}, timeout=60)
-            self.assertEqual(json.loads((root / "llmlint-plugins" / "lock.json").read_text()), lock,
-                             "a refused answer must leave the lock untouched")
+            run = subprocess.run(
+                [sys.executable, str(script), "refresh"],
+                capture_output=True,
+                text=True,
+                env={**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}"},
+                timeout=60,
+            )
+            self.assertEqual(
+                json.loads((root / "llmlint-plugins" / "lock.json").read_text()),
+                lock,
+                "a refused answer must leave the lock untouched",
+            )
             return run
 
     @unittest.skipIf(os.name == "nt", "the stub llmlint is a POSIX shell script")
@@ -251,8 +285,17 @@ class AMalformedLlmlintAnswerIsRefused(unittest.TestCase):
                 self.assertNotIn("Traceback", run.stderr)
 
 
+class _PluginServer(http.server.ThreadingHTTPServer):
+    """The loopback server, carrying the documents it serves and its request log."""
+
+    documents: dict[str, bytes]
+    requests: list[str]
+
+
 class _Plugins(http.server.BaseHTTPRequestHandler):
-    def do_GET(self) -> None:  # noqa: N802 - the stdlib's handler name
+    server: _PluginServer
+
+    def do_GET(self) -> None:
         body = self.server.documents.get(self.path)
         self.server.requests.append(self.path)
         self.send_response(200 if body is not None else 404)
@@ -260,7 +303,7 @@ class _Plugins(http.server.BaseHTTPRequestHandler):
         if body is not None:
             self.wfile.write(body)
 
-    def log_message(self, *_args: object) -> None:
+    def log_message(self, format: str, *args: Any) -> None:
         pass
 
 
@@ -288,12 +331,22 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
         (self.root / "llmlint-plugins").mkdir()
         self.lock_path = self.root / "llmlint-plugins" / "lock.json"
         self.vendored = self.root / "llmlint-plugins" / "base.llmlint.yml"
-        self.write_lock({"schema": 1, "plugins": [
-            {"name": "base", "url": self.URL, "pin": "1", "file": "llmlint-plugins/base.llmlint.yml"},
-            {"name": "config-lint", "url": self.BUNDLED, "pin": "1",
-             "file": "llmlint-plugins/config-lint.yml", "bundled": True},
-        ]})
-        self.server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), _Plugins)
+        self.write_lock(
+            {
+                "schema": 1,
+                "plugins": [
+                    {"name": "base", "url": self.URL, "pin": "1", "file": "llmlint-plugins/base.llmlint.yml"},
+                    {
+                        "name": "config-lint",
+                        "url": self.BUNDLED,
+                        "pin": "1",
+                        "file": "llmlint-plugins/config-lint.yml",
+                        "bundled": True,
+                    },
+                ],
+            }
+        )
+        self.server = _PluginServer(("127.0.0.1", 0), _Plugins)
         self.server.documents = {"/rules/base.llmlint.yml": self.DOCUMENT}
         self.server.requests = []
         thread = threading.Thread(target=self.server.serve_forever, daemon=True)
@@ -301,22 +354,25 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
         self.addCleanup(thread.join)
         self.addCleanup(self.server.server_close)
         self.addCleanup(self.server.shutdown)
-        self.origin = "http://127.0.0.1:{}".format(self.server.server_address[1])
+        self.origin = f"http://127.0.0.1:{self.server.server_address[1]}"
         stubs = self.root / "bin"
         stubs.mkdir()
         (stubs / "llmlint").write_text(
-            '#!/bin/sh\n'
+            "#!/bin/sh\n"
             'if [ "$1" = --version ]; then printf "%s\\n" "$STUB_VERSION"; exit "${STUB_VERSION_EXIT:-0}"; fi\n'
             'cat "$STUB_SOURCES"\n',
             encoding="utf-8",
         )
         (stubs / "llmlint").chmod(0o755)
         self.sources = self.root / "sources.json"
-        self.answer({"alpha": str(self.vendored), "beta": str(self.vendored),
-                     "gamma": f"{self.BUNDLED}@1"})
-        self.env = {**os.environ, "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}",
-                    "STUB_SOURCES": str(self.sources), "STUB_VERSION": "llmlint 0.9.1",
-                    "CROZIER_LLMLINT_PLUGINS_ORIGIN": self.origin}
+        self.answer({"alpha": str(self.vendored), "beta": str(self.vendored), "gamma": f"{self.BUNDLED}@1"})
+        self.env = {
+            **os.environ,
+            "PATH": f"{stubs}{os.pathsep}{os.environ['PATH']}",
+            "STUB_SOURCES": str(self.sources),
+            "STUB_VERSION": "llmlint 0.9.1",
+            "CROZIER_LLMLINT_PLUGINS_ORIGIN": self.origin,
+        }
 
     def write_lock(self, lock: dict) -> None:
         self.lock_path.write_text(json.dumps(lock, indent=2) + "\n", encoding="utf-8")
@@ -325,13 +381,19 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
         return json.loads(self.lock_path.read_text(encoding="utf-8"))
 
     def answer(self, rules: dict[str, str]) -> None:
-        self.sources.write_text(json.dumps(
-            {"sources": {"rules": {rule: {"source": source} for rule, source in rules.items()}}}),
-            encoding="utf-8")
+        self.sources.write_text(
+            json.dumps({"sources": {"rules": {rule: {"source": source} for rule, source in rules.items()}}}),
+            encoding="utf-8",
+        )
 
     def refresh(self, **env: str) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([sys.executable, str(self.script), "refresh"], capture_output=True,
-                              text=True, env={**self.env, **env}, timeout=60)
+        return subprocess.run(
+            [sys.executable, str(self.script), "refresh"],
+            capture_output=True,
+            text=True,
+            env={**self.env, **env},
+            timeout=60,
+        )
 
     def test_a_refresh_vendors_the_document_and_records_what_llmlint_resolved(self) -> None:
         run = self.refresh()
@@ -362,28 +424,62 @@ class ARefreshFetchesScreensAndRecords(unittest.TestCase):
     def test_each_refusal_names_its_fix_and_leaves_the_lock_as_it_was(self) -> None:
         before = self.lock_path.read_bytes()
         cases = [
-            ("a version the pin rejects", {"/rules/base.llmlint.yml": b"version: 2.0.0\n"}, {},
-             "declares version 2.0.0, which its pin @1 rejects", "widen or bump `pin` for base"),
-            ("no version line", {"/rules/base.llmlint.yml": b"rules: []\n"}, {},
-             "declares no top-level `version:`", "report it upstream"),
-            ("a fetch the origin refuses", {}, {},
-             f"could not fetch {self.URL}: HTTP Error 404", "check the network and the recorded URL"),
-            ("a document that is not UTF-8", {"/rules/base.llmlint.yml": b"version: 1.0.0\nrules: [\xff]\n"}, {},
-             f"{self.URL} served a document that is not UTF-8 ('utf-8' codec can't decode byte 0xff",
-             "check that the recorded URL names the rule document itself"),
-            ("an origin that is not loopback", {"/rules/base.llmlint.yml": self.DOCUMENT},
-             {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://example.test:80"},
-             "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://example.test:80' is not a loopback origin",
-             "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
-            ("a loopback origin on no TCP port", {"/rules/base.llmlint.yml": self.DOCUMENT},
-             {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://127.0.0.1:99999"},
-             "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://127.0.0.1:99999' is not a loopback origin",
-             "unset CROZIER_LLMLINT_PLUGINS_ORIGIN"),
-            ("an llmlint with no version", {"/rules/base.llmlint.yml": self.DOCUMENT}, {"STUB_VERSION": ""},
-             "`llmlint --version` exited 0 and printed '', no version", "reinstall llmlint"),
-            ("an llmlint whose --version fails", {"/rules/base.llmlint.yml": self.DOCUMENT},
-             {"STUB_VERSION_EXIT": "3"},
-             "`llmlint --version` exited 3 and printed 'llmlint 0.9.1', no version", "reinstall llmlint"),
+            (
+                "a version the pin rejects",
+                {"/rules/base.llmlint.yml": b"version: 2.0.0\n"},
+                {},
+                "declares version 2.0.0, which its pin @1 rejects",
+                "widen or bump `pin` for base",
+            ),
+            (
+                "no version line",
+                {"/rules/base.llmlint.yml": b"rules: []\n"},
+                {},
+                "declares no top-level `version:`",
+                "report it upstream",
+            ),
+            (
+                "a fetch the origin refuses",
+                {},
+                {},
+                f"could not fetch {self.URL}: HTTP Error 404",
+                "check the network and the recorded URL",
+            ),
+            (
+                "a document that is not UTF-8",
+                {"/rules/base.llmlint.yml": b"version: 1.0.0\nrules: [\xff]\n"},
+                {},
+                f"{self.URL} served a document that is not UTF-8 ('utf-8' codec can't decode byte 0xff",
+                "check that the recorded URL names the rule document itself",
+            ),
+            (
+                "an origin that is not loopback",
+                {"/rules/base.llmlint.yml": self.DOCUMENT},
+                {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://example.test:80"},
+                "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://example.test:80' is not a loopback origin",
+                "unset CROZIER_LLMLINT_PLUGINS_ORIGIN",
+            ),
+            (
+                "a loopback origin on no TCP port",
+                {"/rules/base.llmlint.yml": self.DOCUMENT},
+                {"CROZIER_LLMLINT_PLUGINS_ORIGIN": "http://127.0.0.1:99999"},
+                "CROZIER_LLMLINT_PLUGINS_ORIGIN='http://127.0.0.1:99999' is not a loopback origin",
+                "unset CROZIER_LLMLINT_PLUGINS_ORIGIN",
+            ),
+            (
+                "an llmlint with no version",
+                {"/rules/base.llmlint.yml": self.DOCUMENT},
+                {"STUB_VERSION": ""},
+                "`llmlint --version` exited 0 and printed '', no version",
+                "reinstall llmlint",
+            ),
+            (
+                "an llmlint whose --version fails",
+                {"/rules/base.llmlint.yml": self.DOCUMENT},
+                {"STUB_VERSION_EXIT": "3"},
+                "`llmlint --version` exited 3 and printed 'llmlint 0.9.1', no version",
+                "reinstall llmlint",
+            ),
         ]
         for name, documents, env, message, remedy in cases:
             with self.subTest(name):

@@ -138,11 +138,87 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
     assert_eq!(
         scopes,
         [
-            "--exclude=tag:tier:promoted",
+            // The combined Python coverage floor holds on the Linux and macOS
+            // legs only: the suites skip their POSIX-only cases on Windows.
+            "--exclude=tag:tier:promoted${{ runner.os == 'Windows' && ',python-workspace' || '' }}",
             "--projects=sdk-env,runtime",
-            "--projects=live-e2e,corpus-match,census-fallback,screenshots"
+            "--projects=live-e2e,corpus-match,corpus-match-selection,census-fallback"
         ]
     );
+}
+
+/// `just bootstrap` syncs the Python tooling's uv workspace (`just sync-python`)
+/// and every Python target runs under `uv run`, but GitHub runners carry no uv:
+/// every job that bootstraps, in either workflow, installs uv before it does.
+#[test]
+fn every_job_that_bootstraps_installs_uv_first() {
+    let mut bootstrapping = Vec::new();
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
+        let workflow: Value =
+            serde_yaml_ng::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        let jobs = workflow
+            .get("jobs")
+            .and_then(Value::as_mapping)
+            .unwrap_or_else(|| panic!("{file} has jobs"));
+        for (name, job) in jobs {
+            let name = name.as_str().expect("job ids are strings");
+            let Some(steps) = job.get("steps").and_then(Value::as_sequence) else {
+                continue;
+            };
+            let Some(bootstrap) = steps
+                .iter()
+                .position(|step| text(step, "run") == Some("just bootstrap"))
+            else {
+                continue;
+            };
+            let uv = steps.iter().position(|step| {
+                text(step, "uses").is_some_and(|uses| uses.starts_with("astral-sh/setup-uv@"))
+            });
+            assert!(
+                uv.is_some_and(|uv| uv < bootstrap),
+                "{file}: job `{name}` runs `just bootstrap` without installing uv first"
+            );
+            bootstrapping.push(format!("{file}:{name}"));
+        }
+    }
+    assert_eq!(
+        bootstrapping,
+        ["ci.yml:check", "ci.yml:sdk-env", "release.yml:test"],
+        "the jobs that bootstrap"
+    );
+}
+
+/// Every gate leg holds what its projects run before `just ci-check` starts
+/// them: cargo-nextest, which the e2e and corpus-match targets run under, and a
+/// toolchain installed once — by `just bootstrap`, or by `just
+/// install-toolchain` where the leg skips bootstrap — so the gate's parallel cargo tasks
+/// never race one first-use rustup install.
+#[test]
+fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
+    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    for name in ["check", "sdk-env", "live-e2e"] {
+        let steps = steps(job(&workflow, name));
+        let gate = steps
+            .iter()
+            .position(|step| text(step, "run").is_some_and(|run| run.starts_with("just ci-check")))
+            .unwrap_or_else(|| panic!("{name} runs no `just ci-check` step"));
+        let before = &steps[..gate];
+        assert!(
+            before.iter().any(|step| {
+                text(step, "uses").is_some_and(|uses| uses.starts_with("taiki-e/install-action"))
+                    && step
+                        .get("with")
+                        .and_then(|with| text(with, "tool"))
+                        .is_some_and(|tools| tools.split(',').any(|tool| tool == "cargo-nextest"))
+            }),
+            "{name}: cargo-nextest is installed before the gate"
+        );
+        assert!(
+            before.iter().any(|step| text(step, "run")
+                .is_some_and(|run| run == "just bootstrap" || run == "just install-toolchain")),
+            "{name}: the pinned toolchain is installed once before the gate"
+        );
+    }
 }
 
 /// A hand-cut Release can tag any commit, so release.yml re-gates it with the

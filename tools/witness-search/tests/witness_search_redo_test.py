@@ -13,6 +13,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "witness-search" / "witness-search-redo.py"
@@ -25,9 +26,7 @@ WIDE_REGION_NAMES = ("bodies-media", "document-paths", "oas31-extensions", "para
 
 
 class WitnessSearchRedoTests(unittest.TestCase):
-    def run_validator(
-        self, *paths: Path, reconcile: bool = False
-    ) -> subprocess.CompletedProcess[str]:
+    def run_validator(self, *paths: Path, reconcile: bool = False) -> subprocess.CompletedProcess[str]:
         command = [
             sys.executable,
             str(SCRIPT),
@@ -40,7 +39,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "--schemas",
                 str(REPO / "docs/openapi-surface/schemas.md"),
             ]
-        return subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
+        return subprocess.run(
+            command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8"
+        )
 
     def changed(self, source: Path, old: str, new: str) -> Path:
         directory = Path(tempfile.mkdtemp())
@@ -54,13 +55,13 @@ class WitnessSearchRedoTests(unittest.TestCase):
         target.write_text(text.replace(old, new, 1), encoding="utf-8")
         return target
 
-    def contract_keys(self) -> list[tuple[str, str]]:
+    @staticmethod
+    def contract_keys() -> list[tuple[str, str]]:
         keys = []
         for line in CONTRACT.read_text(encoding="utf-8").splitlines():
             if line.startswith("| `") and line.count("|") == 3:
-                keys.append(
-                    tuple(cell.strip().strip("`") for cell in line.split("|")[1:3])
-                )
+                key, selector = (cell.strip().strip("`") for cell in line.split("|")[1:3])
+                keys.append((key, selector))
         return keys
 
     def completed_documents(self) -> tuple[list[Path], Path]:
@@ -104,10 +105,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "|---|---|---|---|---|---|---|---|\n"
             + "".join(
                 f"| {key} | both | Schema Object | gap | search outcome `search-incomplete`; "
-                + "; ".join(
-                    f"**{source}** `query {key} {source}` → `unanswered`"
-                    for source in sources
-                )
+                + "; ".join(f"**{source}** `query {key} {source}` → `unanswered`" for source in sources)
                 + " | site | bytes | FIXTURE |\n"
                 for key, _ in keys
             ),
@@ -116,9 +114,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         (schemas.parent / "candidates.md").write_text("# Candidate screens\n", encoding="utf-8")
         return completed, schemas
 
-    def reconcile_documents(
-        self, shards: list[Path], schemas: Path
-    ) -> subprocess.CompletedProcess[str]:
+    def reconcile_documents(self, shards: list[Path], schemas: Path) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [
                 sys.executable,
@@ -133,7 +129,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, errors="backslashreplace", encoding="utf-8",
+            text=True,
+            errors="backslashreplace",
+            encoding="utf-8",
         )
 
     def test_each_shard_is_independently_valid_and_outcome_invisible(
@@ -153,9 +151,15 @@ class WitnessSearchRedoTests(unittest.TestCase):
         cases = (
             (text.replace(row, row + f"| `{key}` | `schema.items` |\n", 1), f"owned key {key} is named twice"),
             (text.replace(row, row + "| `empty-selector` | `` |\n", 1), "owned key row 2 is not two nonempty"),
-            (text.replace(row, row + "| `three` | `schema.items` | `cells` |\n", 1), "owned key row 2 is not two nonempty"),
+            (
+                text.replace(row, row + "| `three` | `schema.items` | `cells` |\n", 1),
+                "owned key row 2 is not two nonempty",
+            ),
             (head + "## Owned keys\n\n| key | selector |\n|---|---|\n", "the `## Owned keys` table owns no key"),
-            (head + "## Owned keys\n\n| name | rule |\n|---|---|\n" + row, "no `## Owned keys` table with a `key | selector` header"),
+            (
+                head + "## Owned keys\n\n| name | rule |\n|---|---|\n" + row,
+                "no `## Owned keys` table with a `key | selector` header",
+            ),
             (head, "no `## Owned keys` table"),
         )
         directory = Path(tempfile.mkdtemp())
@@ -166,7 +170,11 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 contract.write_text(changed, encoding="utf-8")
                 result = subprocess.run(
                     [sys.executable, str(SCRIPT), str(contract), *(str(shard) for shard in SHARDS)],
-                    cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
+                    cwd=REPO,
+                    capture_output=True,
+                    text=True,
+                    errors="backslashreplace",
+                    encoding="utf-8",
                 )
                 self.assertEqual(1, result.returncode, result.stderr)
                 self.assertIn(f"witness-search-redo: {contract}: {message}", result.stderr)
@@ -174,8 +182,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertNotIn("Traceback", result.stderr)
         # The committed contract, restored, validates both shards again.
         contract.write_text(text, encoding="utf-8")
-        result = subprocess.run([sys.executable, str(SCRIPT), str(contract), *(str(shard) for shard in SHARDS)],
-                                cwd=REPO, capture_output=True, text=True)
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), str(contract), *(str(shard) for shard in SHARDS)],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+        )
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_catalogue_report_covers_every_owned_key_and_source(self) -> None:
@@ -206,9 +218,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                         "openapi": "3.1.0",
                         "info": {"title": name, "version": "1"},
                         "paths": {},
-                        "components": {
-                            "schemas": {"Witness": {"anyOf": [{"type": "string"}]}}
-                        },
+                        "components": {"schemas": {"Witness": {"anyOf": [{"type": "string"}]}}},
                     }
                 ),
                 encoding="utf-8",
@@ -229,18 +239,18 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "--documents",
             f"test={directory}",
         ]
-        result = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
+        result = subprocess.run(
+            command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8"
+        )
         self.assertEqual(0, result.returncode, result.stderr)
         rows = list(csv.DictReader(result.stdout.splitlines(), dialect="excel-tab"))
-        hits = {
-            row["document"]
-            for row in rows
-            if row["key"] == "anyof-sole-member" and int(row["count"]) > 0
-        }
+        hits = {row["document"] for row in rows if row["key"] == "anyof-sole-member" and int(row["count"]) > 0}
         self.assertEqual({"first.json", "second.json", "third.yaml"}, hits)
 
         (directory / "broken.json").write_text("{", encoding="utf-8")
-        bad = subprocess.run(command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8")
+        bad = subprocess.run(
+            command, cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8"
+        )
         self.assertNotEqual(0, bad.returncode)
         self.assertIn("test/broken.json", bad.stderr)
 
@@ -284,7 +294,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     ],
                     cwd=REPO,
                     capture_output=True,
-                    text=True, errors="backslashreplace", encoding="utf-8",
+                    text=True,
+                    errors="backslashreplace",
+                    encoding="utf-8",
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
@@ -361,10 +373,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
 
     def test_duplicate_missing_query_and_missing_result_are_rejected(self) -> None:
         prefix = "| `anyof-sole-member` | `schema.anyOf:sole-member` | `apis.guru` |"
-        valid = (
-            prefix
-            + " `grep -F anyOf APIs` | 1 | candidate | commit `abc` | admitted | accepted |\n"
-        )
+        valid = prefix + " `grep -F anyOf APIs` | 1 | candidate | commit `abc` | admitted | accepted |\n"
         for suffix, message in (
             (valid + valid, "duplicate source/key"),
             (
@@ -372,8 +381,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 "missing a rerunnable query",
             ),
             (
-                prefix
-                + " `grep -F anyOf APIs` |  | candidate | commit `abc` | admitted | accepted |\n",
+                prefix + " `grep -F anyOf APIs` |  | candidate | commit `abc` | admitted | accepted |\n",
                 "result must be a nonnegative integer or unanswered",
             ),
         ):
@@ -412,21 +420,47 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ("shard: `catalogue-portals`", "shard: `everything`", "missing or unknown shard declaration"),
             ("shard: `catalogue-portals`", "", "missing or unknown shard declaration"),
             (header, header.replace("| fern-screen |", "| fern |"), "records header is not the shared record shape"),
-            ("| `anyof-sole-member` |\n", "| `anyof-sole-member` |\n| `extra` | `cell` |\n",
-             "owned key row ['`extra`', '`cell`'] is not one key cell"),
-            (separator, separator + "| `anyof-sole-member` | `apis.guru` | unanswered |\n",
-             "record 1 has 3 fields, expected 9"),
-            (separator, separator + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —")
-             .replace("anyof-sole-member` | `schema", "no-such-key` | `schema"), "unknown key no-such-key"),
-            (separator, separator + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —")
-             .replace("schema.anyOf:sole-member", "schema.oneOf:sole-member"), "anyof-sole-member has the wrong selector"),
-            (separator, separator + row.format(source="postman", result="unanswered", rest="— | — | — | —"),
-             "source postman is not owned by catalogue-portals"),
-            (separator, separator + row.format(source="apis.guru", result="unanswered",
-                                               rest="candidate | — | — | —"),
-             "apis.guru/anyof-sole-member unanswered result has supporting fields"),
-            (separator, separator + row.format(source="apis.guru", result="0", rest="— | commit `abc` | — | —"),
-             "apis.guru/anyof-sole-member zero result has candidate evidence"),
+            (
+                "| `anyof-sole-member` |\n",
+                "| `anyof-sole-member` |\n| `extra` | `cell` |\n",
+                "owned key row ['`extra`', '`cell`'] is not one key cell",
+            ),
+            (
+                separator,
+                separator + "| `anyof-sole-member` | `apis.guru` | unanswered |\n",
+                "record 1 has 3 fields, expected 9",
+            ),
+            (
+                separator,
+                separator
+                + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —").replace(
+                    "anyof-sole-member` | `schema", "no-such-key` | `schema"
+                ),
+                "unknown key no-such-key",
+            ),
+            (
+                separator,
+                separator
+                + row.format(source="apis.guru", result="unanswered", rest="— | — | — | —").replace(
+                    "schema.anyOf:sole-member", "schema.oneOf:sole-member"
+                ),
+                "anyof-sole-member has the wrong selector",
+            ),
+            (
+                separator,
+                separator + row.format(source="postman", result="unanswered", rest="— | — | — | —"),
+                "source postman is not owned by catalogue-portals",
+            ),
+            (
+                separator,
+                separator + row.format(source="apis.guru", result="unanswered", rest="candidate | — | — | —"),
+                "apis.guru/anyof-sole-member unanswered result has supporting fields",
+            ),
+            (
+                separator,
+                separator + row.format(source="apis.guru", result="0", rest="— | commit `abc` | — | —"),
+                "apis.guru/anyof-sole-member zero result has candidate evidence",
+            ),
         ):
             with self.subTest(message=message, new=new[:40]):
                 refused = self.run_validator(self.changed(SHARDS[0], old, new))
@@ -441,9 +475,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
         self.assertEqual(0, complete.returncode, complete.stderr)
         row = next(
             line
-            for line in completed[0]
-            .read_text(encoding="utf-8")
-            .splitlines(keepends=True)
+            for line in completed[0].read_text(encoding="utf-8").splitlines(keepends=True)
             if line.startswith("| `anyof-sole-member` | `schema.anyOf:sole-member` |")
         )
         completed[0] = self.changed(completed[0], row, "")
@@ -477,9 +509,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
             self.assertNotIn(artifact, actual)
             actual[artifact] = set(re.findall(r"`([^`]+)`", cells[1]))
             self.assertTrue(all(cells[index] for index in range(2, 6)))
-            self.assertIn(cells[6].strip("`"), {
-                "witness-found", "witness-blocked", "fern-rejected", "search-incomplete"
-            })
+            self.assertIn(
+                cells[6].strip("`"), {"witness-found", "witness-blocked", "fern-rejected", "search-incomplete"}
+            )
             if "attentivemobile.com" in artifact:
                 self.assertEqual("`search-incomplete`", cells[6])
                 self.assertIn("no completed check", cells[4])
@@ -507,16 +539,23 @@ class WitnessSearchRedoTests(unittest.TestCase):
         for row in rows:
             artifact, keys, redistribution, publisher, fern, retention, verdict, evidence = row
             pin = re.search(r"[0-9a-f]{40}", artifact)
-            self.assertIsNotNone(pin, artifact)
+            assert pin is not None, artifact
             filename = artifact.split(" at ", 1)[0].split()[-1] if " at " in artifact else artifact.rsplit("/", 1)[1]
             matches = [
-                (index, record) for index, record in enumerate(source)
-                if pin[0] in record[6] and filename in record[5]
-                and ((record[6].startswith("immutable commits:")
-                      and (not artifact.startswith("ballerina-platform/")
-                           or artifact.rsplit("/", 2)[1].lower() in record[5].lower()))
-                     or (not record[6].startswith("immutable commits:")
-                         and artifact.split("@", 1)[1] in record[6]))
+                (index, record)
+                for index, record in enumerate(source)
+                if pin[0] in record[6]
+                and filename in record[5]
+                and (
+                    (
+                        record[6].startswith("immutable commits:")
+                        and (
+                            not artifact.startswith("ballerina-platform/")
+                            or artifact.rsplit("/", 2)[1].lower() in record[5].lower()
+                        )
+                    )
+                    or (not record[6].startswith("immutable commits:") and artifact.split("@", 1)[1] in record[6])
+                )
             ]
             self.assertTrue(matches, artifact)
             self.assertEqual(
@@ -534,7 +573,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 self.assertEqual(expected, verdict, artifact)
                 if accepted:
                     self.assertTrue(all(cell.startswith("passed:") for cell in row[2:6]), artifact)
-                    count = re.search(r"(\d+) files", record[8])[1]
+                    files = re.search(r"(\d+) files", record[8])
+                    assert files is not None, record[8]
+                    count = files[1]
                     self.assertIn(f"{count} files", fern)
                     for version in re.findall(r"\b5\.\d+\.\d+\b", record[8]):
                         self.assertIn(version, fern)
@@ -565,7 +606,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
         rows = self.document_rows(choices)
         self.assertTrue(rows)
         for key, link, proof in rows:
-            url = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)[1]
+            found = re.search(r"\((https://raw.githubusercontent.com/[^)]+)\)", link)
+            assert found is not None, link
+            url = found[1]
             owner, repo, pin, path = url.removeprefix("https://raw.githubusercontent.com/").split("/", 3)
             artifact = f"{owner}/{repo}@{pin}/{path}"
             if owner == "jentic":
@@ -610,17 +653,13 @@ class WitnessSearchRedoTests(unittest.TestCase):
         for line in rejected.splitlines():
             if not line.startswith("| `"):
                 continue
-            label, source, diagnostic = (
-                cell.strip() for cell in line.strip("|").split("|")
-            )
+            label, source, diagnostic = (cell.strip() for cell in line.strip("|").split("|"))
             catalogue = re.search(r"api-guru `([^`]+)`", label)
             artifact = catalogue[1] if catalogue else source.strip("`")
             with self.subTest(spec=label):
                 rows = recorded.get(artifact, [])
                 screens = [s for s in screened.get(artifact, []) if s["disposition"] == "rejected"]
-                self.assertEqual(
-                    1, len(rows) + len(screens), f"{artifact}: expected exactly one record"
-                )
+                self.assertEqual(1, len(rows) + len(screens), f"{artifact}: expected exactly one record")
                 if screens:
                     screen = screens[0]
                     self.assertTrue(screen["fern"].startswith("failed: "), screen["fern"])
@@ -632,9 +671,7 @@ class WitnessSearchRedoTests(unittest.TestCase):
                     count += 1
                     continue
                 self.assertEqual("`fern-rejected`", rows[0][6])
-                self.assertIn(
-                    diagnostic.replace("../../docs/", "../../"), rows[0][7]
-                )
+                self.assertIn(diagnostic.replace("../../docs/", "../../"), rows[0][7])
             count += 1
         self.assertGreater(count, 0, "rejected-spec source table must not be empty")
 
@@ -645,10 +682,19 @@ class WitnessSearchRedoTests(unittest.TestCase):
         keys = dict(self.contract_keys())
         self.assertEqual(30, len(keys))
         result = subprocess.run(
-            [sys.executable, str(REPO / "tools/surface-census/openapi-surface-census.py"),
-             "--fixture", "paypal-catalog-products", "--json",
-             *(arg for selector in keys.values() for arg in ("--selector", selector))],
-            cwd=REPO, capture_output=True, text=True, errors="backslashreplace", encoding="utf-8",
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/openapi-surface-census.py"),
+                "--fixture",
+                "paypal-catalog-products",
+                "--json",
+                *(arg for selector in keys.values() for arg in ("--selector", selector)),
+            ],
+            cwd=REPO,
+            capture_output=True,
+            text=True,
+            errors="backslashreplace",
+            encoding="utf-8",
         )
         self.assertEqual(0, result.returncode, result.stderr)
         census = json.loads(result.stdout)
@@ -716,8 +762,15 @@ class WitnessSearchRedoTests(unittest.TestCase):
 
     def test_committed_reports_reconcile_with_authoritative_rows(self) -> None:
         supplement = REPO / "docs/openapi-surface/witness-scrape-wide/candidates.md"
-        command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in SHARDS),
-                   "--reconcile", "--schemas", str(REPO / "docs/openapi-surface/schemas.md")]
+        command = [
+            sys.executable,
+            str(SCRIPT),
+            str(CONTRACT),
+            *(str(p) for p in SHARDS),
+            "--reconcile",
+            "--schemas",
+            str(REPO / "docs/openapi-surface/schemas.md"),
+        ]
         if supplement.is_file():
             command += ["--supplement-candidates", str(supplement)]
         result = subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
@@ -734,9 +787,17 @@ class WitnessSearchRedoTests(unittest.TestCase):
         key = "annotated-ref-target-string-const"
 
         def reconcile(schemas: Path) -> subprocess.CompletedProcess[str]:
-            command = [sys.executable, str(SCRIPT), str(CONTRACT), *(str(p) for p in SHARDS),
-                       "--reconcile", "--schemas", str(schemas),
-                       "--candidates", str(ROOT / "candidates.md")]
+            command = [
+                sys.executable,
+                str(SCRIPT),
+                str(CONTRACT),
+                *(str(p) for p in SHARDS),
+                "--reconcile",
+                "--schemas",
+                str(schemas),
+                "--candidates",
+                str(ROOT / "candidates.md"),
+            ]
             if supplement.is_file():
                 command += ["--supplement-candidates", str(supplement)]
             return subprocess.run(command, cwd=REPO, capture_output=True, errors="backslashreplace", encoding="utf-8")
@@ -749,7 +810,11 @@ class WitnessSearchRedoTests(unittest.TestCase):
         flipped = schemas.read_text(encoding="utf-8")
         for old, new, message in (
             ("search: exhausted", "search: search-incomplete", "states ['exhausted'] for"),
-            ("(schemas.md#witness-search-exhaustive))", "(schemas.md#no-such-heading))", "no heading of `schemas.md` has the anchor"),
+            (
+                "(schemas.md#witness-search-exhaustive))",
+                "(schemas.md#no-such-heading))",
+                "no heading of `schemas.md` has the anchor",
+            ),
             ("search: exhausted (", "search: exhausted, ", "its evidence cell must read"),
         ):
             with self.subTest(message=message):
@@ -772,9 +837,12 @@ class WitnessSearchRedoTests(unittest.TestCase):
             "passed: generated model | `witness-found` | model.py |\n"
         )
         candidates.write_text(row, encoding="utf-8")
-        schemas.write_text(schemas.read_text(encoding="utf-8").replace(
-            "search outcome `search-incomplete`", "search outcome `witness-found`", 1
-        ), encoding="utf-8")
+        schemas.write_text(
+            schemas.read_text(encoding="utf-8").replace(
+                "search outcome `search-incomplete`", "search outcome `witness-found`", 1
+            ),
+            encoding="utf-8",
+        )
         found = self.reconcile_documents(shards, schemas)
         self.assertEqual(0, found.returncode, found.stderr)
         for screen in ("grant", "publisher pin", "non-empty generation", "generated model"):
@@ -783,7 +851,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
                 rejected = self.reconcile_documents(shards, schemas)
                 self.assertNotEqual(0, rejected.returncode)
                 self.assertIn("search-incomplete", rejected.stderr)
-        candidates.write_text(row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"), encoding="utf-8")
+        candidates.write_text(
+            row.replace("passed: generated model", f"passed: model; discarded keys: `{key}`"), encoding="utf-8"
+        )
         discarded = self.reconcile_documents(shards, schemas)
         self.assertNotEqual(0, discarded.returncode)
         self.assertIn("search-incomplete", discarded.stderr)
@@ -856,7 +926,9 @@ class WitnessSearchRedoTests(unittest.TestCase):
             ],
             cwd=REPO,
             capture_output=True,
-            text=True, errors="backslashreplace", encoding="utf-8",
+            text=True,
+            errors="backslashreplace",
+            encoding="utf-8",
         )
         self.assertEqual(2, result.returncode)
         self.assertIn("--reconcile requires --schemas PATH", result.stderr)
@@ -895,49 +967,62 @@ class WitnessSearchRedoTests(unittest.TestCase):
             with self.subTest(message=message):
                 completed, schemas = self.completed_documents()
                 bad_schemas = self.changed(schemas, old, new)
-                self.assertIn(
-                    message, self.reconcile_documents(completed, bad_schemas).stderr
-                )
+                self.assertIn(message, self.reconcile_documents(completed, bad_schemas).stderr)
 
-class WideWitnessFixture:
+
+# The fixture is only ever mixed into a unittest.TestCase; the checker sees that base, the runtime does not.
+if TYPE_CHECKING:
+    _FixtureBase = unittest.TestCase
+else:
+    _FixtureBase = object
+
+
+class WideWitnessFixture(_FixtureBase):
     """A scratch report and contract, and the wide-witness CLI run over them."""
 
-    contract_keys = WitnessSearchRedoTests.contract_keys
+    contract_keys = staticmethod(WitnessSearchRedoTests.contract_keys)
     completed_documents = WitnessSearchRedoTests.completed_documents
 
     def setUp(self) -> None:
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
         self.work = Path(self.directory.name)
-        self.wide = REPO / 'tools/witness-search/witness-scrape-wide.py'
-        self.report = self.work / 'report'
-        result = self.cli('derive', '--report', self.report)
+        self.wide = REPO / "tools/witness-search/witness-scrape-wide.py"
+        self.report = self.work / "report"
+        result = self.cli("derive", "--report", self.report)
         self.assertEqual(0, result.returncode, result.stderr)
-        self.key = next(iter(json.loads((self.report / 'baseline.json').read_text(encoding='utf-8'))['keys']))
-        self.sha = 'a' * 64
-        self.artifact = 'https://publisher.example/pinned/openapi.json'
+        self.key = next(iter(json.loads((self.report / "baseline.json").read_text(encoding="utf-8"))["keys"]))
+        self.sha = "a" * 64
+        self.artifact = "https://publisher.example/pinned/openapi.json"
         self.candidate = (
-            '| artifact | keys | redistribution | immutable publisher reference | Fern acceptance | retention | disposition | evidence |\n'
-            '|---|---|---|---|---|---|---|---|\n'
-            f'| `{self.artifact}` | `{self.key}` | passed: grant | passed: immutable publisher | passed: real generation | passed: retained model | `witness-found` | fern.txt |\n'
+            "| artifact | keys | redistribution | immutable publisher reference | Fern acceptance | retention | disposition | evidence |\n"
+            "|---|---|---|---|---|---|---|---|\n"
+            f"| `{self.artifact}` | `{self.key}` | passed: grant | passed: immutable publisher | passed: real generation | passed: retained model | `witness-found` | fern.txt |\n"
         )
-        (self.report / 'candidates.md').write_text(self.candidate, encoding='utf-8')
-        (self.report / 'fern.txt').write_text('Fern evidence: modèle conservé\n', encoding='utf-8')
-        (self.report / 'comparison.txt').write_text('comparison failed: modèle.py differs\n', encoding='utf-8')
-        self.rank_header = 'rank\tartifact_sha256\tartifact\tkeys\tfern_evidence\tcomparison_evidence\n'
-        self.rank_row = f'1\t{self.sha}\t{self.artifact}\t{json.dumps([self.key])}\tfern.txt\tcomparison.txt\n'
-        (self.report / 'ranking.tsv').write_text(self.rank_header + self.rank_row, encoding='utf-8')
-        self.slots_header = '| slot | artifact_sha256 | keys | disposition | evidence |\n|---|---|---|---|---|\n'
-        (self.report / 'slots.md').write_text(self.slots_header, encoding='utf-8')
-        (self.report / 'acquisition.json').write_text(json.dumps({'schema_version': 1, 'sources': [
-            {'artifact': self.artifact, 'sha256': self.sha}]}), encoding='utf-8')
+        (self.report / "candidates.md").write_text(self.candidate, encoding="utf-8")
+        (self.report / "fern.txt").write_text("Fern evidence: modèle conservé\n", encoding="utf-8")
+        (self.report / "comparison.txt").write_text("comparison failed: modèle.py differs\n", encoding="utf-8")
+        self.rank_header = "rank\tartifact_sha256\tartifact\tkeys\tfern_evidence\tcomparison_evidence\n"
+        self.rank_row = f"1\t{self.sha}\t{self.artifact}\t{json.dumps([self.key])}\tfern.txt\tcomparison.txt\n"
+        (self.report / "ranking.tsv").write_text(self.rank_header + self.rank_row, encoding="utf-8")
+        self.slots_header = "| slot | artifact_sha256 | keys | disposition | evidence |\n|---|---|---|---|---|\n"
+        (self.report / "slots.md").write_text(self.slots_header, encoding="utf-8")
+        (self.report / "acquisition.json").write_text(
+            json.dumps({"schema_version": 1, "sources": [{"artifact": self.artifact, "sha256": self.sha}]}),
+            encoding="utf-8",
+        )
 
     def cli(self, *args) -> subprocess.CompletedProcess[str]:
-        return subprocess.run([sys.executable, str(self.wide), *(str(a) for a in args)],
-                              cwd=REPO, capture_output=True, errors="backslashreplace", encoding='utf-8')
+        return subprocess.run(
+            [sys.executable, str(self.wide), *(str(a) for a in args)],
+            cwd=REPO,
+            capture_output=True,
+            errors="backslashreplace",
+            encoding="utf-8",
+        )
 
     def validate(self, *args) -> subprocess.CompletedProcess[str]:
-        return self.cli('validate', '--report', self.report, *args)
+        return self.cli("validate", "--report", self.report, *args)
 
 
 class WideRegionSetTests(unittest.TestCase):

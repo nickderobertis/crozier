@@ -18,7 +18,7 @@ import sys
 import urllib.error
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -68,14 +68,23 @@ def phrasings(key: str, selector: str) -> tuple[str, str]:
 
 
 def request_body(query: str, offset: int, index: str) -> dict:
-    return {"service": "search", "method": "POST", "path": "/search-all", "body": {
-        "queryIndices": [index], "queryText": query, "size": 25, "from": offset,
-    }}
+    return {
+        "service": "search",
+        "method": "POST",
+        "path": "/search-all",
+        "body": {
+            "queryIndices": [index],
+            "queryText": query,
+            "size": 25,
+            "from": offset,
+        },
+    }
 
 
 def search_once(url: str, guard, query: str, offset: int, index: str) -> tuple[int | None, bytes]:
     request = urllib.request.Request(
-        url, data=json.dumps(request_body(query, offset, index), separators=(",", ":")).encode(),
+        url,
+        data=json.dumps(request_body(query, offset, index), separators=(",", ":")).encode(),
         headers={"Content-Type": "application/json", "User-Agent": "crozier-witness-search/1"},
         method="POST",
     )
@@ -123,36 +132,44 @@ def metadata_hits(queries: Path) -> dict[tuple[str, str], dict]:
                     kind, document = "collection", document.get("collection")
                 if kind not in HIT_ROUTES or not isinstance(document, dict) or not document.get("id"):
                     continue
-                entry = hits.setdefault((kind, str(document["id"])), {
-                    "handle": str(document.get("publicHandle") or ""), "keys": set()})
+                entry = hits.setdefault(
+                    (kind, str(document["id"])), {"handle": str(document.get("publicHandle") or ""), "keys": set()}
+                )
                 entry["keys"].add(row["key"])
     return hits
 
 
-def classify_body(status: int | None, content_type: str, body: bytes,
-                  keys: list[dict], census) -> dict:
+def classify_body(status: int | None, content_type: str, body: bytes, keys: list[dict], census) -> dict:
     """What an acquired body is, decided by parsing it and running the census."""
     if status != 200:
-        return {"classification": "source-refused",
-                "response": body.decode("utf-8", errors="replace")[:500]}
+        return {"classification": "source-refused", "response": body.decode("utf-8", errors="replace")[:500]}
     if "json" not in content_type:
-        return {"classification": "no-document-body",
-                "blocker": f"route returned {content_type or 'no content type'}, not a document"}
+        return {
+            "classification": "no-document-body",
+            "blocker": f"route returned {content_type or 'no content type'}, not a document",
+        }
     try:
         document = json.loads(body)
     except json.JSONDecodeError as error:
         return {"classification": "parse-failure", "blocker": str(error)}
     if isinstance(document, dict) and str(document.get("openapi", "")).startswith("3."):
         selectors = [row["selector"] for row in keys]
-        conjunctions = {s: census.compile_conjunction(s) for s in selectors
-                        if census.selector_error(s) is None and census.is_conjunction(s)}
+        conjunctions = {
+            s: census.compile_conjunction(s)
+            for s in selectors
+            if census.selector_error(s) is None and census.is_conjunction(s)
+        }
         counts = census.census_document(document, conjunctions=conjunctions)
-        return {"classification": "openapi-3",
-                "selectors": {row["key"]: counts.get(row["selector"], 0) for row in keys}}
+        return {
+            "classification": "openapi-3",
+            "selectors": {row["key"]: counts.get(row["selector"], 0) for row in keys},
+        }
     info = document.get("info") if isinstance(document, dict) else None
     schema = info.get("schema", "") if isinstance(info, dict) else ""
-    return {"classification": "not-openapi-3",
-            "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json"}
+    return {
+        "classification": "not-openapi-3",
+        "document_kind": "postman-collection" if "getpostman.com" in str(schema) else "other-json",
+    }
 
 
 def load_region_keys():
@@ -226,8 +243,9 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
     try:
         hits = metadata_hits(queries)
     except (OSError, ValueError) as error:
-        raise SystemExit(f"witness-search-postman: cannot read {queries}: {error}; "
-                         "run the search stage first")
+        raise SystemExit(
+            f"witness-search-postman: cannot read {queries}: {error}; run the search stage first"
+        ) from error
     census = load_census()
     guard = GUARD.RateLimitGuard("postman", evidence_dir=args.evidence_dir)
     output = args.evidence_dir / "hit-access.jsonl"
@@ -235,13 +253,16 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
         for (kind, identifier), entry in sorted(hits.items()):
             # Both values come from Postman's response, so they are quoted into one path segment.
             url = HIT_ROUTES[kind].format(
-                web=args.web_base.rstrip("/"), api=args.api_base.rstrip("/"),
+                web=args.web_base.rstrip("/"),
+                api=args.api_base.rstrip("/"),
                 id=urllib.parse.quote(identifier, safe=""),
-                handle=urllib.parse.quote(entry["handle"] or identifier, safe=""))
-            request = urllib.request.Request(url, headers={
-                "User-Agent": "crozier-witness-search/1", "Accept": "application/json"})
+                handle=urllib.parse.quote(entry["handle"] or identifier, safe=""),
+            )
+            request = urllib.request.Request(
+                url, headers={"User-Agent": "crozier-witness-search/1", "Accept": "application/json"}
+            )
             while True:
-                taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                taken = datetime.now(UTC).isoformat(timespec="seconds")
                 content_type = ""
                 try:
                     guard.acquire("postman", cost=1)
@@ -264,10 +285,17 @@ def acquire_hits(args: argparse.Namespace, keys: list[dict]) -> int:
                 if status not in GUARD.REFUSAL_STATUSES and status is not None:
                     break
                 # A throttle is waited out by the next acquire's backoff, never recorded as an answer.
-            record = {"hit": kind, "id": identifier, "keys": sorted(entry["keys"]), "url": url,
-                      "taken_utc": taken, "status": status, "content_type": content_type,
-                      "sha256": hashlib.sha256(body).hexdigest(),
-                      **classify_body(status, content_type, body, keys, census)}
+            record = {
+                "hit": kind,
+                "id": identifier,
+                "keys": sorted(entry["keys"]),
+                "url": url,
+                "taken_utc": taken,
+                "status": status,
+                "content_type": content_type,
+                "sha256": hashlib.sha256(body).hexdigest(),
+                **classify_body(status, content_type, body, keys, census),
+            }
             handle.write(json.dumps(record, sort_keys=True) + "\n")
             handle.flush()
     print(f"witness-search-postman: recorded {len(hits)} metadata-hit acquisitions")
@@ -279,8 +307,11 @@ def main() -> int:
     parser.add_argument("--keys", type=Path, required=True)
     parser.add_argument("--evidence-dir", type=Path, required=True)
     parser.add_argument("--url", default=DEFAULT_URL)
-    parser.add_argument("--acquire-hits", action="store_true",
-                        help="read every metadata hit in queries.jsonl through its unauthenticated route")
+    parser.add_argument(
+        "--acquire-hits",
+        action="store_true",
+        help="read every metadata hit in queries.jsonl through its unauthenticated route",
+    )
     parser.add_argument("--web-base", default=DEFAULT_WEB)
     parser.add_argument("--api-base", default=DEFAULT_API)
     args = parser.parse_args()
@@ -289,8 +320,9 @@ def main() -> int:
     except OSError as error:
         parser.error(f"cannot read --keys {args.keys}: {error}; regenerate the region-key derivation")
     except (UnicodeError, ValueError, csv.Error) as error:
-        parser.error(f"--keys must be the region-key derivation TSV: {args.keys}: {error}; "
-                     "regenerate the region-key derivation")
+        parser.error(
+            f"--keys must be the region-key derivation TSV: {args.keys}: {error}; regenerate the region-key derivation"
+        )
     if args.acquire_hits:
         return acquire_hits(args, keys)
     args.evidence_dir.mkdir(parents=True, exist_ok=True)
@@ -301,19 +333,34 @@ def main() -> int:
             for index in INDICES:
                 offset = 0
                 while True:
-                    taken = datetime.now(timezone.utc).isoformat(timespec="seconds")
+                    taken = datetime.now(UTC).isoformat(timespec="seconds")
                     try:
                         status, body = search_once(args.url, guard, query, offset, index)
                     except GUARD.SecondaryLimit as error:
-                        rows.append({"key": row["key"], "selector": row["selector"],
-                                     "query": query, "index": index, "offset": offset,
-                                     "taken_utc": taken, "classification": "source-refused",
-                                     "error": str(error)})
+                        rows.append(
+                            {
+                                "key": row["key"],
+                                "selector": row["selector"],
+                                "query": query,
+                                "index": index,
+                                "offset": offset,
+                                "taken_utc": taken,
+                                "classification": "source-refused",
+                                "error": str(error),
+                            }
+                        )
                         break
-                    result = {"key": row["key"], "selector": row["selector"],
-                              "query": query, "index": index, "offset": offset,
-                              "request": request_body(query, offset, index), "taken_utc": taken,
-                              "status": status, "sha256": hashlib.sha256(body).hexdigest()}
+                    result = {
+                        "key": row["key"],
+                        "selector": row["selector"],
+                        "query": query,
+                        "index": index,
+                        "offset": offset,
+                        "request": request_body(query, offset, index),
+                        "taken_utc": taken,
+                        "status": status,
+                        "sha256": hashlib.sha256(body).hexdigest(),
+                    }
                     if status != 200:
                         result["classification"] = "source-refused"
                         result["response"] = body.decode("utf-8", errors="replace")[:500]
@@ -324,9 +371,13 @@ def main() -> int:
                     try:
                         payload = json.loads(body)
                         totals = payload["meta"]["total"]
-                        kinds = ("team",) if index == "apinetwork.team" else (
-                            "collection",) if index == "runtime.collection" else (
-                            "api", "apiDefinition", "specification")
+                        kinds = (
+                            ("team",)
+                            if index == "apinetwork.team"
+                            else ("collection",)
+                            if index == "runtime.collection"
+                            else ("api", "apiDefinition", "specification")
+                        )
                         count = counted_total(totals, kinds)
                         result["totals"] = totals
                         result["data"] = payload.get("data", {})

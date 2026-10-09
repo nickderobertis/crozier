@@ -82,14 +82,14 @@ def differences(left: Any, right: Any, path: tuple = ()) -> list[tuple]:
         found: list[tuple] = []
         for name in list(left) + [name for name in right if name not in left]:
             if name not in left or name not in right:
-                found.append(path + (name,))
+                found.append((*path, name))
             else:
-                found += differences(left[name], right[name], path + (name,))
+                found += differences(left[name], right[name], (*path, name))
         return found
     if isinstance(left, list) and isinstance(right, list) and len(left) == len(right):
         found = []
-        for index, (a, b) in enumerate(zip(left, right)):
-            found += differences(a, b, path + (index,))
+        for index, (a, b) in enumerate(zip(left, right, strict=False)):
+            found += differences(a, b, (*path, index))
         return found
     return [] if left == right and type(left) is type(right) else [path]
 

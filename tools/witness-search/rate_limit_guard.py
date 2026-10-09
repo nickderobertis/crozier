@@ -124,8 +124,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any
 
 CAP = 0.70
 """The share of any GitHub REST bucket this repository's calls may reach."""
@@ -145,7 +146,7 @@ RESET_MARGIN_S = 1.0
 SECONDARY_BACKOFF_BASE_S = 60.0
 """First secondary-limit backoff when no ``Retry-After`` asks for longer."""
 
-SECONDARY_ATTEMPT_BUDGET = 5
+SECONDARY_ATTEMPT_BUDGET: int = 5
 """Consecutive refusals of one bucket or lane before ``SecondaryLimit``."""
 
 
@@ -185,7 +186,7 @@ class SecondaryLimit(RuntimeError):
 
 
 def _now_iso() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="milliseconds")
+    return datetime.datetime.now(datetime.UTC).isoformat(timespec="milliseconds")
 
 
 def _token() -> str | None:
@@ -207,9 +208,13 @@ def valid_port(parsed: urllib.parse.SplitResult) -> bool:
 def checked_service_url(value: str, name: str, expected_host: str) -> str:
     """Allow the intended HTTPS host and local HTTP servers used by the offline tier."""
     parsed = urllib.parse.urlsplit(value)
-    if not valid_port(parsed) or not parsed.hostname or (
-        not (parsed.scheme == "https" and parsed.hostname == expected_host)
-        and not (parsed.scheme == "http" and parsed.hostname in LOOPBACK_HOSTS)
+    if (
+        not valid_port(parsed)
+        or not parsed.hostname
+        or (
+            not (parsed.scheme == "https" and parsed.hostname == expected_host)
+            and not (parsed.scheme == "http" and parsed.hostname in LOOPBACK_HOSTS)
+        )
     ):
         raise ValueError(f"{name} must use https://{expected_host} or a loopback HTTP URL")
     return value
@@ -250,7 +255,8 @@ def github_api_url() -> str:
     Raises ``ValueError`` for an override that is neither the GitHub API over
     HTTPS nor a loopback HTTP server, before any credential is attached."""
     return checked_service_url(
-        os.environ.get("CROZIER_GITHUB_API_URL", GITHUB_API_URL), "CROZIER_GITHUB_API_URL",
+        os.environ.get("CROZIER_GITHUB_API_URL", GITHUB_API_URL),
+        "CROZIER_GITHUB_API_URL",
         urllib.parse.urlsplit(GITHUB_API_URL).hostname or "",
     ).rstrip("/")
 
@@ -433,8 +439,7 @@ class RateLimitGuard:
         if not isinstance(figures, dict) or not {"limit", "used", "reset"} <= figures.keys():
             raise UnsupportedBucket(f"GET /rate_limit reports no figures for bucket {bucket!r}")
         reading = {key: figures[key] for key in ("limit", "used", "remaining", "reset") if key in figures}
-        if not all(isinstance(value, int) and not isinstance(value, bool) and value >= 0
-                   for value in reading.values()):
+        if not all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in reading.values()):
             raise RuntimeError(
                 f"GET /rate_limit reported malformed figures for bucket {bucket!r}: {figures!r} — "
                 "each must be a nonnegative integer; check CROZIER_GITHUB_API_URL points at the GitHub REST API"
@@ -449,8 +454,14 @@ class RateLimitGuard:
             admitted = limit > 0 and (reading["used"] + cost) / limit <= CAP
             if waiting or not admitted:
                 self._log_wait(
-                    {"host": "github", "bucket": bucket, "kind": "probe", "reading": reading,
-                     "cost": cost, "admitted": admitted}
+                    {
+                        "host": "github",
+                        "bucket": bucket,
+                        "kind": "probe",
+                        "reading": reading,
+                        "cost": cost,
+                        "admitted": admitted,
+                    }
                 )
             if admitted:
                 return reading
@@ -458,8 +469,7 @@ class RateLimitGuard:
             duration = max(reading["reset"] - time.time(), 0.0) + RESET_MARGIN_S
             self._sleep(
                 duration,
-                {"host": "github", "bucket": bucket, "kind": "wait", "cause": "cap",
-                 "reading": reading, "cost": cost},
+                {"host": "github", "bucket": bucket, "kind": "wait", "cause": "cap", "reading": reading, "cost": cost},
             )
 
     def _wait_backoff(self, bucket: str, state: _Backoff) -> None:
@@ -467,8 +477,7 @@ class RateLimitGuard:
         if duration > 0:
             self._sleep(
                 duration,
-                {"host": "github", "bucket": bucket, "kind": "wait", "cause": "backoff",
-                 "refusals": state.refusals},
+                {"host": "github", "bucket": bucket, "kind": "wait", "cause": "backoff", "refusals": state.refusals},
             )
 
     def _record_github(self, reservation: _Reservation, response: Any) -> bool:
@@ -477,7 +486,10 @@ class RateLimitGuard:
         status = _status(response)
         retry_after = _retry_after(response)
         spent: dict[str, Any] = {
-            "host": "github", "bucket": bucket, "at": _now_iso(), "status": status,
+            "host": "github",
+            "bucket": bucket,
+            "at": _now_iso(),
+            "status": status,
             "reserved": reservation.cost,
         }
         for key in ("limit", "used", "remaining", "reset", "resource"):
@@ -505,8 +517,14 @@ class RateLimitGuard:
         live = self._read(bucket)
         primary = live["used"] >= live["limit"]
         self._log_wait(
-            {"host": "github", "bucket": bucket, "kind": "probe", "reading": live,
-             "classifying": "primary" if primary else "secondary", "status": status}
+            {
+                "host": "github",
+                "bucket": bucket,
+                "kind": "probe",
+                "reading": live,
+                "classifying": "primary" if primary else "secondary",
+                "status": status,
+            }
         )
         if primary:
             # The bucket really is spent (by another holder of the token): the
@@ -522,16 +540,14 @@ class RateLimitGuard:
         if state.until > now:
             self._sleep(
                 state.until - now,
-                {"host": lane, "lane": lane, "kind": "wait", "cause": "backoff",
-                 "refusals": state.refusals},
+                {"host": lane, "lane": lane, "kind": "wait", "cause": "backoff", "refusals": state.refusals},
             )
         if state.last_request is not None:
             duration = state.last_request + pacing.spacing_s - time.monotonic()
             if duration > 0:
                 self._sleep(
                     duration,
-                    {"host": lane, "lane": lane, "kind": "wait", "cause": "spacing",
-                     "spacing_s": pacing.spacing_s},
+                    {"host": lane, "lane": lane, "kind": "wait", "cause": "spacing", "spacing_s": pacing.spacing_s},
                 )
 
     def _record_lane(self, reservation: _Reservation, response: Any) -> bool:
@@ -604,7 +620,9 @@ def status() -> int:
         resources = read_rate_limit()
     except (OSError, RuntimeError, ValueError) as error:
         print(f"quota-status: could not read {api_url}/rate_limit: {error}", file=sys.stderr)
-        print("quota-status: check network access, and set GITHUB_TOKEN to read the token's own buckets", file=sys.stderr)
+        print(
+            "quota-status: check network access, and set GITHUB_TOKEN to read the token's own buckets", file=sys.stderr
+        )
         return 1
     lines = []
     for bucket in sorted(set(resources) - {"graphql"}):
@@ -612,11 +630,13 @@ def status() -> int:
         try:
             limit, used, reset = (int(figures[key]) for key in ("limit", "used", "reset"))
         except (KeyError, TypeError, ValueError):
-            print(f"quota-status: GET /rate_limit reported malformed figures for {bucket!r}: {figures!r}", file=sys.stderr)
+            print(
+                f"quota-status: GET /rate_limit reported malformed figures for {bucket!r}: {figures!r}", file=sys.stderr
+            )
             print("quota-status: check CROZIER_GITHUB_API_URL points at the GitHub REST API", file=sys.stderr)
             return 1
         share = used / limit if limit else 0.0
-        when = datetime.datetime.fromtimestamp(reset, datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        when = datetime.datetime.fromtimestamp(reset, datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         guarded = "guarded" if bucket in GITHUB_BUCKETS else "not called here"
         over = "  OVER CAP" if share > CAP else ""
         lines.append(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}  {guarded}{over}")

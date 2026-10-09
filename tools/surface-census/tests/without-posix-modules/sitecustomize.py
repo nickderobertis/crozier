@@ -11,4 +11,6 @@ import sys
 ABSENT = ("fcntl", "grp", "pwd", "resource", "termios")
 
 for name in ABSENT:
-    sys.modules[name] = None  # type: ignore[assignment]
+    # typeshed types `sys.modules` values as `ModuleType`, but the import system
+    # reads a `None` entry as "not available", which is the whole point here.
+    sys.modules[name] = None  # ty: ignore[invalid-assignment]

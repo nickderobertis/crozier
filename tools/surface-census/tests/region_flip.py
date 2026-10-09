@@ -29,7 +29,9 @@ def flipped_regions(target: Path, key: str, record: str = "schemas.md#witness-se
                 cells = [c.replace("\0", "\\|") for c in cells[:3]] + [
                     "handwritten",
                     f"handwritten: {key}-fixture; search: exhausted ([record]({record}))",
-                    "", "", "",
+                    "",
+                    "",
+                    "",
                 ]
                 line = "| " + " | ".join(cells) + " |\n"
                 flipped += 1

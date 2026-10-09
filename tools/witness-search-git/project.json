@@ -10,11 +10,10 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "sh scripts/census-python.sh tools/witness-search-git/tests/witness_search_git_test.py",
-          "sh scripts/census-python.sh tools/witness-search-git/tests/witness_scrape_wide_test.py"
-        ],
-        "parallel": false
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/witness-search-git/tests/witness_search_git_test.py tools/witness-search-git/tests/witness_scrape_wide_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/witness-search-git/test/.coverage"
+        }
       },
       "cache": true,
       "inputs": [
@@ -30,10 +29,14 @@
         "{workspaceRoot}/tools/surface-census/tests/region_flip.py",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/scripts/census-python.sh",
-        "{workspaceRoot}/justfile"
+        "{workspaceRoot}/justfile",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/witness-search-git/test"
       ]
     },
-    "lint": {
+    "lint-boundaries": {
       "executor": "nx:run-commands",
       "options": {
         "command": "node scripts/check-project-boundaries.mjs witness-search-git"
@@ -41,6 +44,54 @@
       "cache": true,
       "inputs": [
         "boundaries"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/witness-search-git"
+      },
+      "configurations": {
+        "write": {
+          "command": "uv run --locked --all-packages ruff format tools/witness-search-git"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint-ruff": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff check tools/witness-search-git"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "pythonTooling"
+      ]
+    },
+    "lint": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "lint-boundaries",
+        "lint-ruff"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/witness-search-git"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.py",
+        "{workspaceRoot}/tools/witness-search/*.py",
+        "{workspaceRoot}/tools/witness-search/tests/*.py",
+        "{workspaceRoot}/tools/surface-census/tests/*.py",
+        "pythonTooling"
       ]
     }
   }

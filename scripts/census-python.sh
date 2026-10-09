@@ -13,9 +13,10 @@
 # value is that its numbers are about *this* repository. A missing environment
 # has to be an error, not a fall-through.
 #
-# crozier is a Rust project: it has no committed virtualenv and needs none. So
-# the interpreter it wants is a plain system Python 3, and a repo-local `.venv`
-# is honoured only if someone has deliberately made one here.
+# The census scripts are stdlib-only and need no virtualenv. A repo-local `.venv`
+# is this repository's own Python tooling workspace (`just bootstrap` makes it
+# with `uv sync`), so it is honoured first; without one, the interpreter is a
+# plain system Python 3 from PATH, never another project's virtualenv.
 # Started as `sh` (a POSIX shell, or bash in POSIX mode — macOS's /bin/sh), the
 # selection below needs bash proper.
 needs_bash() {
