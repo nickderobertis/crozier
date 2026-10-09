@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Ledger Records
+  version: 1.0.0
+  description: Entries in a co-operative's shared ledger.
+servers:
+  - url: https://ledger.coop.test
+paths:
+  /entries:
+    get:
+      operationId: listEntries
+      x-fern-pagination:
+        offset: $request.page
+        results: $response.entries
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+        - name: account
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One page of entries.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryPage'
+  /accounts:
+    get:
+      operationId: listAccounts
+      responses:
+        '200':
+          description: Account codes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Entry:
+      type: object
+      required: [id, amount]
+      properties:
+        id:
+          type: string
+        amount:
+          type: number
+        side:
+          type: string
+          enum: [debit, credit]
+    EntryPage:
+      type: object
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/Entry'

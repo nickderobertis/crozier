@@ -17,6 +17,8 @@ operation-id-digit-leading-method	operation.operationId:digit-leading-method	doc
 operation-id-hyphenated-tag-method	operation.operationId:hyphenated-tag-method	document-paths.md	supported
 operation-id-untagged-list-or-set	operation.operationId:untagged-list-or-set	document-paths.md	supported
 operation-idempotent-with-root-headers	operation.x-fern-idempotent:with-root-headers	oas31-extensions.md	supported
+operation-pagination-boolean	operation.x-fern-pagination:boolean-over-root	oas31-extensions.md	supported
+operation-pagination-offset	operation.x-fern-pagination:offset	oas31-extensions.md	supported
 operation-retries-disabled	operation.x-fern-retries:disabled	oas31-extensions.md	supported
 operation-sdk-group-name-leading-underscore	operation.x-fern-sdk-group-name:leading-underscore	oas31-extensions.md	supported
 operation-sdk-group-name-without-method-name	operation.x-fern-sdk-group-name:without-method-name	oas31-extensions.md	supported

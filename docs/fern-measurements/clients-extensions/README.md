@@ -11,6 +11,8 @@ is the one `scripts/generate-fern-fixture.sh` scaffolds (Route A of
 with crozier under the same setting and holds the whole tree to
 `fern-expected/` under the corpus gate's normalization.
 
+A case with no hand-written fixture of its own carries its `openapi.yml` beside its tree.
+
 This is no corpus fixture and no coverage probe: it is never a `CORPUS.md` row
 and settles no coverage row.
 
@@ -36,3 +38,9 @@ and settles no coverage row.
 | `parcel-courier-desk-literals` | [`parcel-courier-desk`](../../openapi-surface/handwritten/parcel-courier-desk/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the idempotent `ship_parcel` taking `dedupe_token` and the retries-disabled `cancel_parcel`, with the inline `service` enum an open `Literal` union |
 | `film-shot-planner-literals` | [`film-shot-planner`](../../openapi-surface/handwritten/film-shot-planner/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the inline `ShotSize`, `LensSpec` and `IsoBand` types beside the undeclared `GetSettingsResponseLight`, with their enums open `Literal` unions |
 | `auction-house-bids-literals` | [`auction-house-bids`](../../openapi-surface/handwritten/auction-house-bids/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | no `bid_placed` method and an ordinary `Bid` type beside `list_lots`, with the `Lot.state` enum an open `Literal` union |
+| `ledger-records-offset-literals` | [`ledger-records-offset`](../../openapi-surface/handwritten/ledger-records-offset/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the offset pager over `list_entries` beside the unpaginated `list_accounts`, with the `Entry.side` enum an open `Literal` union |
+| `beacon-registry-pages-literals` | [`beacon-registry-pages`](../../openapi-surface/handwritten/beacon-registry-pages/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the root offset contract applied to `list_beacons` through `x-fern-pagination: true`, its scalar items paging as `str` |
+| `ledger-records-offset-flat` | [`ledger-records-offset`](../../openapi-surface/handwritten/ledger-records-offset/openapi.yml) | Fern: token-less `fern generate --local` (its flat tree); crozier: `--layout flat` | the offset-paginated `list_entries` returning its page model while the pagination runtime and its `core` exports still ship; Fern's README documents a pager the method does not return, the `flat-pagination-pager-docs` departure |
+| `beacon-registry-pages-flat` | [`beacon-registry-pages`](../../openapi-surface/handwritten/beacon-registry-pages/openapi.yml) | Fern: token-less `fern generate --local`; crozier: `--layout flat` | the same for the root contract `x-fern-pagination: true` takes |
+| `crane-hire-cursor` | [`crane-hire-cursor`](crane-hire-cursor/openapi.yml) | the defaults (packaged, `python_enums`) | a cursor pager whose next cursor sits at the top of the page model, assigned outright with no `_has_next = False` guard |
+| `crane-hire-cursor-flat` | [`crane-hire-cursor`](crane-hire-cursor/openapi.yml) | Fern: token-less `fern generate --local`; crozier: `--layout flat` | the cursor-paginated `list_cranes` returning its page model in the flat tree, with the `flat-pagination-pager-docs` departure |

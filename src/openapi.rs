@@ -48,6 +48,12 @@ pub struct OpenApi {
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
+    /// `x-crozier-pagination` / `x-fern-pagination` at the document root: the
+    /// contract an operation's `x-fern-pagination: true` takes.
+    #[serde(rename = "x-crozier-pagination", default)]
+    pub(crate) pagination_crozier: Option<Pagination>,
+    #[serde(rename = "x-fern-pagination", default)]
+    pub(crate) pagination_fern: Option<Pagination>,
     /// `x-crozier-idempotency-headers` / `x-fern-idempotency-headers`: the headers
     /// an idempotent operation takes. Read through [`OpenApi::idempotency_headers`].
     #[serde(rename = "x-crozier-idempotency-headers", default)]
@@ -724,11 +730,11 @@ pub struct Operation {
     /// also honours the `x-fern-pagination` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
     #[serde(rename = "x-crozier-pagination", default)]
-    pagination_crozier: Option<Pagination>,
+    pagination_crozier: Option<DeclaredPagination>,
     /// `x-fern-pagination`: the Fern spelling of the pagination contract. Superseded
     /// by `x-crozier-pagination` when both appear (see [`Operation::pagination`]).
     #[serde(rename = "x-fern-pagination", default)]
-    pagination_fern: Option<Pagination>,
+    pagination_fern: Option<DeclaredPagination>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -884,9 +890,16 @@ impl Operation {
     /// policy](self#fern-compatible-extensions)).
     #[must_use]
     pub fn pagination(&self) -> Option<&Pagination> {
-        self.pagination_crozier
+        match self
+            .pagination_crozier
             .as_ref()
-            .or(self.pagination_fern.as_ref())
+            .or(self.pagination_fern.as_ref())?
+        {
+            DeclaredPagination::Contract(contract) => Some(contract),
+            // Resolved against the root contract at load time
+            // (`normalize_root_pagination`); a boolean left here names none.
+            DeclaredPagination::Root(_) => None,
+        }
     }
 
     /// The declared streaming contract, canonicalizing on the
@@ -981,9 +994,46 @@ pub struct EnumValueName {
     pub name: Option<String>,
 }
 
+/// An operation's `x-crozier-pagination` / `x-fern-pagination`: a contract of
+/// its own, or a boolean, `true` taking the document's root contract (Fern's
+/// `x-fern-pagination: true`) and `false` declaring none.
+#[derive(Debug, Clone)]
+pub(crate) enum DeclaredPagination {
+    Contract(Pagination),
+    Root(bool),
+}
+
+impl<'de> Deserialize<'de> for DeclaredPagination {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct Declared;
+        impl<'de> serde::de::Visitor<'de> for Declared {
+            type Value = DeclaredPagination;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("a pagination contract, or a boolean naming the document's")
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                value: bool,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(DeclaredPagination::Root(value))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> std::result::Result<Self::Value, A::Error> {
+                Pagination::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                    .map(DeclaredPagination::Contract)
+            }
+        }
+        deserializer.deserialize_any(Declared)
+    }
+}
+
 /// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
-/// request members that drive a generated pager. Only the cursor form is modelled,
-/// which is the one Fern's Python generator emits a `SyncPager`/`AsyncPager` for.
+/// request members that drive a generated pager: the cursor form, or the offset
+/// form (`offset` with no `cursor`).
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Pagination {
     /// The request property holding the cursor, as a dotted path
@@ -1019,6 +1069,12 @@ impl Pagination {
     #[must_use]
     pub fn results_property(&self) -> Option<&str> {
         self.results.as_deref().map(strip_selector_prefix)
+    }
+
+    /// The request-side offset property name, with `$request.` stripped.
+    #[must_use]
+    pub fn offset_property(&self) -> Option<&str> {
+        self.offset.as_deref().map(strip_selector_prefix)
     }
 }
 
@@ -2138,6 +2194,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_webhook_operations(&mut doc);
+    normalize_root_pagination(&mut doc);
     normalize_declared_type_names(&mut doc);
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
@@ -2799,6 +2856,29 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
     rename_component_schemas(doc, &renames);
 }
 
+/// Resolve each operation's `x-fern-pagination: true` (or crozier's spelling)
+/// to the document root's contract, `x-crozier-pagination` over
+/// `x-fern-pagination`, as Fern reads it; with no root contract, or `false`, the
+/// operation declares none.
+fn normalize_root_pagination(doc: &mut OpenApi) {
+    let root = doc
+        .pagination_crozier
+        .clone()
+        .or_else(|| doc.pagination_fern.clone());
+    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+        for op in item.operation_slots().into_iter().flatten() {
+            for declared in [&mut op.pagination_crozier, &mut op.pagination_fern] {
+                if let Some(DeclaredPagination::Root(take)) = declared {
+                    *declared = take
+                        .then(|| root.clone())
+                        .flatten()
+                        .map(DeclaredPagination::Contract);
+                }
+            }
+        }
+    }
+}
+
 /// Drop every path operation marked `x-fern-webhook: true` (or crozier's
 /// spelling): it describes a request the API sends, so Fern gives the client no
 /// method for it, while the schemas it names stay ordinary types (a `$ref` body
@@ -2815,10 +2895,13 @@ fn normalize_webhook_operations(doc: &mut OpenApi) {
 
 /// Lift every inline schema that declares a type name (`x-crozier-type-name`,
 /// or `x-fern-type-name`) into a component of that name, leaving a `$ref` where
-/// it stood: Fern names such a schema by the declaration wherever it sits — a
-/// response property's inline enum declaring `ShotSize` is `types/shot_size.py`,
-/// not `GetSettingsResponseMode` — exactly as it would a component. A name a
-/// component already holds is left inline, so nothing a document declares is
+/// it stood, wherever Fern's type for it is a root type: under a component, or
+/// in an operation the root client carries. Fern names such a schema by the
+/// declaration — a response property's inline enum declaring `ShotSize` is
+/// `types/shot_size.py`, not `GetSettingsResponseMode` — as it would a
+/// component. An operation grouped into a sub-client keeps its inline schemas,
+/// whose types Fern writes into that sub-client's own `types/`; and a name a
+/// component already holds stays inline, so nothing a document declares is
 /// overwritten.
 fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
     fn lift(schema: &mut Schema, taken: &mut IndexMap<String, Option<Schema>>) {
@@ -2867,8 +2950,11 @@ fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
     for schema in doc.components.schemas.values_mut() {
         lift(schema, &mut taken);
     }
-    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+    for (url, item) in &mut doc.paths {
         for op in item.operation_slots().into_iter().flatten() {
+            if !crate::ir::endpoint_module(op, url).is_empty() {
+                continue;
+            }
             let bodies = op
                 .request_body
                 .iter_mut()
@@ -3742,6 +3828,44 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_boolean_pagination_takes_the_root_contract() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "x-fern-pagination": {"offset": "$request.page", "results": "$response.items"},
+            "paths": {"/p": {
+                "get": {"x-fern-pagination": true, "responses": {}},
+                "put": {"x-fern-pagination": false, "responses": {}},
+                "post": {"x-crozier-pagination": {"cursor": "$request.c", "next_cursor": "$response.n",
+                                                  "results": "$response.items"},
+                         "x-fern-pagination": true, "responses": {}},
+            }},
+        }))
+        .expect("a document");
+        normalize_root_pagination(&mut doc);
+        let item = &doc.paths["/p"];
+        let get = item
+            .get
+            .as_ref()
+            .unwrap()
+            .pagination()
+            .expect("the root contract");
+        assert_eq!(get.offset_property(), Some("page"));
+        assert!(item.put.as_ref().unwrap().pagination().is_none());
+        let post = item
+            .post
+            .as_ref()
+            .unwrap()
+            .pagination()
+            .expect("its own contract");
+        assert_eq!(post.cursor_property(), Some("c"));
+        let refused: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({"x-fern-pagination": "yes"}));
+        assert!(refused
+            .expect_err("a string is no pagination")
+            .to_string()
+            .contains("a pagination contract, or a boolean"));
+    }
 
     #[test]
     fn a_webhook_marked_operation_is_dropped_and_its_neighbour_kept() {

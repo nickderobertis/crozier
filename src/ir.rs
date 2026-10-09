@@ -1548,6 +1548,9 @@ pub struct EndpointExtensions {
     /// Whether the operation sends its request with retries off
     /// (`x-fern-retries: {disabled: true}`).
     pub retries_disabled: bool,
+    /// Whether the operation declared a pagination contract the layout leaves
+    /// without a pager (the flat tree): the pagination runtime still ships.
+    pub pagination_declared: bool,
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -2341,6 +2344,16 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .clone()
         .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
+
+    // Fern's flat tree is its token-less local run, which writes the pagination
+    // runtime and its exports but returns each paginated method's page model
+    // rather than a pager: the operation keeps only the mark that it declared a
+    // contract.
+    if config.layout == crate::settings::Layout::Flat {
+        for ep in &mut endpoints {
+            ep.extensions.pagination_declared = ep.pagination.take().is_some();
+        }
+    }
 
     // A literal enum is a plain string at runtime: Fern serializes an enum
     // header with `str(..)` rather than `.value`, and examples an enum value as
@@ -3578,6 +3591,7 @@ fn build_endpoint(
                 Vec::new()
             },
             retries_disabled: op.retries_disabled(),
+            pagination_declared: false,
         },
         header_order,
         constant_headers,
@@ -3884,18 +3898,33 @@ fn build_endpoint(
 pub struct EndpointPagination {
     /// The Python attribute on the parsed response holding the page's items.
     pub results: String,
-    /// The attribute chain up to (but excluding) the cursor itself — the optional
-    /// container the emitted `if … is not None` guards on. Empty when the cursor
-    /// sits at the top level of the response model.
-    pub next_cursor_container: Vec<String>,
-    /// The cursor attribute itself, e.g. the `next_page_token` of
-    /// `["pagination", "next_page_token"]`. Split from its container at
-    /// construction so the pair cannot represent a chain with no cursor.
-    pub next_cursor_leaf: String,
-    /// The Python name of the request parameter carrying the cursor.
+    /// How the next page is requested: from a cursor the response carries, or by
+    /// stepping an offset.
+    pub advance: PageAdvance,
+    /// The Python name of the request parameter the advance writes: the cursor,
+    /// or the offset.
     pub cursor_param: String,
     /// The element type of the item list, which parameterizes the pager.
     pub item_type: TypeRef,
+}
+
+/// How a pager requests its next page.
+#[derive(Debug, Clone)]
+pub enum PageAdvance {
+    /// The cursor form: the response's next cursor, written back to the request.
+    Cursor {
+        /// The attribute chain up to (but excluding) the cursor itself — the
+        /// optional container the emitted `if … is not None` guards on. Empty
+        /// when the cursor sits at the top level of the response model.
+        container: Vec<String>,
+        /// The cursor attribute itself, e.g. the `next_page_token` of
+        /// `["pagination", "next_page_token"]`. Split from its container at
+        /// construction so the pair cannot represent a chain with no cursor.
+        leaf: String,
+    },
+    /// The offset form (`x-fern-pagination: {offset: …, results: …}`): the
+    /// request's offset, defaulting to 1, stepped by one while a page has items.
+    Offset,
 }
 
 /// Resolve the declared pagination contract against the operation's own response
@@ -3909,11 +3938,18 @@ fn endpoint_pagination(
 ) -> Option<EndpointPagination> {
     let declared = op.pagination()?;
     let results = declared.results_property()?;
-    let next_cursor = declared.next_cursor_property()?;
-    let cursor = declared.cursor_property()?;
+    let offset = declared
+        .cursor_property()
+        .is_none()
+        .then(|| declared.offset_property())
+        .flatten();
+    let request_param = match offset {
+        Some(offset) => offset,
+        None => declared.cursor_property()?,
+    };
     let cursor_param = query_params
         .iter()
-        .find(|param| param.wire_name == cursor)?
+        .find(|param| param.wire_name == request_param)?
         .py_name
         .clone();
     let response = success_response_schema(op)?;
@@ -3926,22 +3962,32 @@ fn endpoint_pagination(
         .properties
         .get(results)
         .and_then(|list| list.items.as_deref())?;
-    let item_type = items
-        .reference
-        .as_deref()
-        .map(|reference| TypeRef::Named(ref_to_class(reference)))?;
-    // `str::split` always yields at least one segment, so the chain always has a
-    // cursor to pop; splitting it here is what keeps a cursor-less chain
-    // unrepresentable downstream.
-    let mut next_cursor_container: Vec<String> = next_cursor
-        .split('.')
-        .map(naming::model_field_name)
-        .collect();
-    let next_cursor_leaf = next_cursor_container.pop()?;
+    // A component item, or a scalar one (Fern's `SyncPager[str, …]`); any other
+    // inline item would be a type the pager cannot name.
+    let item_type = match base_type_ref(items) {
+        named @ TypeRef::Named(_) => named,
+        TypeRef::Primitive(prim) if prim != Prim::Any && items.reference.is_none() => {
+            TypeRef::Primitive(prim)
+        }
+        _ => return None,
+    };
+    let advance = if offset.is_some() {
+        PageAdvance::Offset
+    } else {
+        // `str::split` always yields at least one segment, so the chain always
+        // has a cursor to pop; splitting it here is what keeps a cursor-less
+        // chain unrepresentable downstream.
+        let mut container: Vec<String> = declared
+            .next_cursor_property()?
+            .split('.')
+            .map(naming::model_field_name)
+            .collect();
+        let leaf = container.pop()?;
+        PageAdvance::Cursor { container, leaf }
+    };
     Some(EndpointPagination {
         results: naming::model_field_name(results),
-        next_cursor_container,
-        next_cursor_leaf,
+        advance,
         cursor_param,
         item_type,
     })

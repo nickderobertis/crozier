@@ -1933,9 +1933,29 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "beacon-registry-pages-flat",
+        "docs/openapi-surface/handwritten/beacon-registry-pages/openapi.yml",
+        &["--layout", "flat"],
+    ),
+    (
+        "beacon-registry-pages-literals",
+        "docs/openapi-surface/handwritten/beacon-registry-pages/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "cargo-hold-pallets-literals",
         "docs/openapi-surface/handwritten/cargo-hold-pallets/openapi.yml",
         &["--enum-type", "literals"],
+    ),
+    (
+        "crane-hire-cursor",
+        "docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml",
+        &[],
+    ),
+    (
+        "crane-hire-cursor-flat",
+        "docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml",
+        &["--layout", "flat"],
     ),
     (
         "depot-bin-ledger-literals",
@@ -1965,6 +1985,16 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
     (
         "impedance-complex-reading-literals",
         "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "ledger-records-offset-flat",
+        "docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml",
+        &["--layout", "flat"],
+    ),
+    (
+        "ledger-records-offset-literals",
+        "docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml",
         &["--enum-type", "literals"],
     ),
     (
@@ -16949,6 +16979,38 @@ print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: 
         String::from_utf8_lossy(&run.stdout).trim(),
         "[('POST', 't-1'), ('POST', None)] 1 3"
     );
+}
+
+/// Pagination's boolean form takes the document's root contract in either
+/// spelling, crozier's winning when both appear: `x-crozier-pagination: true`
+/// under a root `x-crozier-pagination` offset contract pages by offset while the
+/// root `x-fern-pagination` cursor contract beside it is ignored, and `false`
+/// declares no pager.
+#[test]
+fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, flag: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Beacons, version: '1'}}\nx-fern-pagination: {{cursor: $request.after, next_cursor: $response.next, results: $response.beacons}}\nx-crozier-pagination: {{offset: $request.page, results: $response.beacons}}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: {flag}\n      parameters:\n        - {{name: page, in: query, schema: {{type: integer}}}}\n        - {{name: after, in: query, schema: {{type: string}}}}\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  next: {{type: string}}\n                  beacons: {{type: array, items: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client")
+    };
+    let paged = generate("true", "true");
+    assert!(
+        paged.contains("page = page if page is not None else 1"),
+        "{paged}"
+    );
+    assert!(paged.contains("page=page + 1,"));
+    assert!(!paged.contains("_parsed_next"));
+    let unpaged = generate("false", "false");
+    assert!(!unpaged.contains("Pager"), "{unpaged}");
 }
 
 /// A path operation marked a webhook in crozier's spelling has no method and its

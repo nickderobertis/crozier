@@ -595,11 +595,12 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 12] = [
+pub const RULE_IDS: [&str; 13] = [
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
     "fern-metadata-generator-config",
+    "flat-pagination-pager-docs",
     "init-type-checking-import-order",
     "lifted-base-path-docs-examples",
     "lifted-base-path-positional-example",
@@ -630,6 +631,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
+            ..none
+        },
+        "flat-pagination-pager-docs" => Rule {
+            region: Some(flat_pagination_pager_docs),
             ..none
         },
         "init-type-checking-import-order" => Rule {
@@ -1293,6 +1298,80 @@ fn repeated_credential_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>
         kept.push(line);
     }
     if !removed || kept != pair.crozier {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
+/// its pager documentation is undone — the `Pagination` table-of-contents entry,
+/// the `## Pagination` section, and the raw-response snippet walking a `pager`
+/// written back as the raw client's call — where crozier's tree has no pager to
+/// document (Fern's flat tree, whose paginated methods return the page model).
+/// The region is the two files' differing window.
+fn flat_pagination_pager_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "README.md" || pair.crozier.contains(&"## Pagination") {
+        return Ok(None);
+    }
+    let lines = pair.fern;
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
+        if line == "- [Pagination](#pagination)" {
+            removed = true;
+            index += 1;
+            continue;
+        }
+        if line == "## Pagination" {
+            removed = true;
+            index += 1;
+            while index < lines.len() && !lines[index].starts_with("## ") {
+                index += 1;
+            }
+            continue;
+        }
+        // `client = X(` / `    ...,` / `)` / `pager = client.…(...)` and the
+        // seven lines walking it are the raw client's five.
+        if let (Some(class), Some(&"    ...,"), Some(&")"), Some(call)) = (
+            line.strip_prefix("client = ")
+                .and_then(|rest| rest.strip_suffix('(')),
+            lines.get(index + 1),
+            lines.get(index + 2),
+            lines
+                .get(index + 3)
+                .and_then(|call| call.strip_prefix("pager = client.")),
+        ) {
+            if let Some((callee, arguments)) = call.split_once('(') {
+                let (path, method) = callee.rsplit_once('.').unwrap_or(("", callee));
+                let raw = if path.is_empty() {
+                    format!("response = client.with_raw_response.{method}({arguments}")
+                } else {
+                    format!("response = client.{path}.with_raw_response.{method}({arguments}")
+                };
+                kept.push(format!("client = {class}(...)"));
+                kept.push(raw);
+                kept.push("print(response.headers)  # access the response headers".to_string());
+                kept.push(
+                    "print(response.status_code)  # access the response status code".to_string(),
+                );
+                kept.push("print(response.data)  # access the underlying object".to_string());
+                removed = true;
+                index += 11;
+                continue;
+            }
+        }
+        kept.push(line.to_string());
+        index += 1;
+    }
+    if !removed
+        || kept.len() != pair.crozier.len()
+        || kept
+            .iter()
+            .zip(pair.crozier)
+            .any(|(left, right)| left != right)
+    {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
@@ -2380,6 +2459,68 @@ mod tests {
                 &["    profile={},"]
             )),
             Ok(None)
+        );
+    }
+
+    #[test]
+    fn the_flat_pager_docs_rule_takes_only_the_pager_documentation() {
+        let fern = [
+            "- [Exception Handling](#exception-handling)",
+            "- [Pagination](#pagination)",
+            "## Pagination",
+            "",
+            "```python",
+            "pager = client.list_entries(...)",
+            "```",
+            "",
+            "## Advanced",
+            "client = FernApi(",
+            "    ...,",
+            ")",
+            "pager = client.ledger.list_entries(...)",
+            "print(pager.response)  # access the typed response for the first page",
+            "for item in pager:",
+            "    print(item)  # access the underlying object(s)",
+            "for page in pager.iter_pages():",
+            "    print(page.response)  # access the typed response for each page",
+            "    for item in page:",
+            "        print(item)  # access the underlying object(s)",
+            "```",
+        ];
+        let crozier = [
+            "- [Exception Handling](#exception-handling)",
+            "## Advanced",
+            "client = FernApi(...)",
+            "response = client.ledger.with_raw_response.list_entries(...)",
+            "print(response.headers)  # access the response headers",
+            "print(response.status_code)  # access the response status code",
+            "print(response.data)  # access the underlying object",
+            "```",
+        ];
+        let found = flat_pagination_pager_docs(&pair("README.md", &fern, &crozier)).unwrap();
+        assert_eq!(
+            found,
+            Some(Region {
+                fern: 1..20,
+                crozier: 1..7
+            })
+        );
+        // Only the README, and only where crozier documents no pager itself.
+        assert!(
+            flat_pagination_pager_docs(&pair("reference.md", &fern, &crozier))
+                .unwrap()
+                .is_none()
+        );
+        assert!(flat_pagination_pager_docs(&pair("README.md", &fern, &fern))
+            .unwrap()
+            .is_none());
+        // One more changed line anywhere is not this departure.
+        let mut other = crozier;
+        other[0] = "- [Exceptions](#exceptions)";
+        assert!(
+            flat_pagination_pager_docs(&pair("README.md", &fern, &other))
+                .unwrap()
+                .is_none()
         );
     }
 

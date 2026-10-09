@@ -83,6 +83,27 @@
     configuration of a Fern run it did not make.
   evidence: docs/departures/evidence/fern-metadata-generator-config.md
 
+- id: flat-pagination-pager-docs
+  kind: fern-defect
+  trigger: >-
+    A paginated operation (`x-fern-pagination`, cursor or offset form) in the
+    flat layout, Fern's token-less local tree, whose paginated method returns
+    the page model rather than a pager: `README.md`.
+  fern: >-
+    A `Pagination` table-of-contents entry and section saying paginated
+    requests return a `SyncPager` or `AsyncPager` and walking
+    `pager.iter_pages()`, and a raw-response snippet reading `pager.response`
+    and `pager.iter_pages()` off the method's return value.
+  crozier: >-
+    No `Pagination` entry or section, and the raw-response snippet reading the
+    raw client's `response.headers`, `response.status_code` and
+    `response.data`.
+  reason: >-
+    The examples contradict the generated code: the method returns the page
+    model, which has no `iter_pages` or `response`, so the documented walk
+    raises `AttributeError`.
+  evidence: docs/departures/evidence/flat-pagination-pager-docs.md
+
 - id: init-type-checking-import-order
   kind: ordering
   trigger: >-

@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 8 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 9 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -203,6 +203,15 @@ when the two differ.
 - **crozier writes:** The one fixed metadata record crozier always writes, whose `generatorConfig` is `pydantic_config.enum_type: python_enums` whatever crozier was configured with.
 - **Why:** The block records how a generator was run, not anything the SDK does; crozier ships one fixed provenance record rather than imitating the configuration of a Fern run it did not make.
 - **Evidence:** [`docs/departures/evidence/fern-metadata-generator-config.md`](../../docs/departures/evidence/fern-metadata-generator-config.md)
+
+### `flat-pagination-pager-docs`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A paginated operation (`x-fern-pagination`, cursor or offset form) in the flat layout, Fern's token-less local tree, whose paginated method returns the page model rather than a pager: `README.md`.
+- **Fern writes:** A `Pagination` table-of-contents entry and section saying paginated requests return a `SyncPager` or `AsyncPager` and walking `pager.iter_pages()`, and a raw-response snippet reading `pager.response` and `pager.iter_pages()` off the method's return value.
+- **crozier writes:** No `Pagination` entry or section, and the raw-response snippet reading the raw client's `response.headers`, `response.status_code` and `response.data`.
+- **Why:** The examples contradict the generated code: the method returns the page model, which has no `iter_pages` or `response`, so the documented walk raises `AttributeError`.
+- **Evidence:** [`docs/departures/evidence/flat-pagination-pager-docs.md`](../../docs/departures/evidence/flat-pagination-pager-docs.md)
 
 ### `init-type-checking-import-order`
 

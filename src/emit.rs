@@ -19,7 +19,7 @@ use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Credential,
     Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType,
-    Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    PageAdvance, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -1660,9 +1660,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // the auth-shaped `client_wrapper.py`.
     files.extend(core_files(
         pkg,
-        ir.endpoints
-            .iter()
-            .any(|endpoint| endpoint.pagination.is_some()),
+        ir.endpoints.iter().any(|endpoint| {
+            endpoint.pagination.is_some() || endpoint.extensions.pagination_declared
+        }),
         ir.enum_type,
     ));
     // Fern's flat tree has no publishing identity, so its wrapper sends no
@@ -2707,7 +2707,19 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         || first.request_body.is_some();
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
-    let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
+    // A paginated endpoint's raw-response snippet walks its pager, as Fern's
+    // does; any other reads the raw client's response.
+    let raw_block = if first.pagination.is_some() {
+        format!(
+            "client = @@CLIENT@@(\n    ...,\n)\npager = {}\nprint(pager.response)  # access the typed response for the first page\nfor item in pager:\n    print(item)  # access the underlying object(s)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)  # access the underlying object(s)\n",
+            abbrev_call(0, &client_call_prefix(first), complex)
+        )
+    } else {
+        format!(
+            "client = @@CLIENT@@(...)\n{}\nprint(response.headers)  # access the response headers\nprint(response.status_code)  # access the response status code\nprint(response.data)  # access the underlying object\n",
+            abbrev_call(0, &raw_client_call_prefix(first), complex)
+        )
+    };
     let retry_prefix = client_call_prefix(first);
     let retry_call = format!(
         "{retry_prefix}({}request_options={{",
@@ -2884,6 +2896,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@ORG@@", &org)
         .replace("@@PROJECT@@", &ir.project_name)
         .replace("@@PKG@@", pkg)
+        .replace("@@RAW_BLOCK@@", &raw_block)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
         .replace(
@@ -2894,7 +2907,6 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             ),
         )
         .replace("@@ERR_CALL@@", &err_call)
-        .replace("@@RAW_CALL@@", &raw_call)
         .replace("@@RETRY_CALL@@", &retry_call)
         .replace("@@USAGE@@", &sync_example)
         .replace("@@ASYNC_EXAMPLE@@", &async_example);
@@ -5038,12 +5050,12 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
     // An idempotent operation's idempotency headers follow its body, optional
     // `str` arguments with no description (Fern's `dedupe_token`).
     let mut body = body;
-    body.extend(ep.extensions.idempotency_headers.iter().map(|hp| {
+    body.extend(ep.extensions.idempotency_headers.iter().map(|idempotency| {
         optional_arg(
-            raw_type_str_ctx(&hp.type_ref, imports, true),
-            hp.required,
-            hp.docstring.clone(),
-            hp.py_name.clone(),
+            raw_type_str_ctx(&idempotency.type_ref, imports, true),
+            idempotency.required,
+            idempotency.docstring.clone(),
+            idempotency.py_name.clone(),
         )
     }));
 
@@ -5145,35 +5157,48 @@ fn pager_success_branch(
             "                _items = _parsed_response.{}",
             pagination.results
         ),
-        "                _has_next = False".to_string(),
-        "                _get_next = None".to_string(),
     ];
-    // The cursor's container is optional on the response model, so the whole
-    // advance is guarded on it; a cursor declared at the top level needs no guard.
-    let container = &pagination.next_cursor_container;
-    let (indent, holder) = if container.is_empty() {
-        ("                ", "_parsed_response".to_string())
-    } else {
-        let holder = format!("_parsed_response.{}", container.join("."));
-        lines.push(format!("                if {holder} is not None:"));
-        ("                    ", holder)
+    let (indent, next_value) = match &pagination.advance {
+        PageAdvance::Cursor { container, leaf } => {
+            // The cursor's container is optional on the response model, so the
+            // whole advance is guarded on it; a cursor declared at the top level
+            // needs no guard.
+            // A guarded advance starts from no next page, which the guard then
+            // overwrites; an unguarded one assigns both outright.
+            let (indent, holder) = if container.is_empty() {
+                ("                ", "_parsed_response".to_string())
+            } else {
+                let holder = format!("_parsed_response.{}", container.join("."));
+                lines.push("                _has_next = False".to_string());
+                lines.push("                _get_next = None".to_string());
+                lines.push(format!("                if {holder} is not None:"));
+                ("                    ", holder)
+            };
+            lines.push(format!("{indent}_parsed_next = {holder}.{leaf}"));
+            lines.push(format!(
+                "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
+            ));
+            (indent, "_parsed_next".to_string())
+        }
+        PageAdvance::Offset => {
+            // The offset form reads no cursor: a page with items has a next one,
+            // one offset on (`x-fern-pagination: {offset: …}`).
+            lines.push("                _has_next = len(_items or []) > 0".to_string());
+            (
+                "                ",
+                format!("{} + 1", pagination.cursor_param),
+            )
+        }
     };
-    lines.push(format!(
-        "{indent}_parsed_next = {holder}.{}",
-        pagination.next_cursor_leaf
-    ));
-    lines.push(format!(
-        "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
-    ));
     // The recursive call: every argument the method took, with the cursor replaced
-    // by the one just parsed.
+    // by the one just parsed, or the offset by the next one.
     let mut args: Vec<String> = Vec::new();
     for param in &ep.path_params {
         args.push(param.py_name.clone());
     }
     for param in &ep.query_params {
         let value = if param.py_name == pagination.cursor_param {
-            "_parsed_next"
+            next_value.as_str()
         } else {
             param.py_name.as_str()
         };
@@ -5212,8 +5237,11 @@ fn pager_success_branch(
 /// signature that names it has already registered one.
 fn pager_doc_type(pagination: &EndpointPagination, inner: &str, is_async: bool) -> String {
     let pager = if is_async { "AsyncPager" } else { "SyncPager" };
-    let TypeRef::Named(item) = &pagination.item_type else {
-        return inner.to_string();
+    let item = match &pagination.item_type {
+        TypeRef::Named(item) => item.clone(),
+        // A scalar names no import, so a scratch registry renders it.
+        primitive @ TypeRef::Primitive(_) => raw_type_str(primitive, &mut Imports::default()),
+        _ => return inner.to_string(),
     };
     format!("{pager}[{item}, {inner}]")
 }
@@ -5388,7 +5416,8 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     } else {
         imports.core_local("http_response", "HttpResponse")
     };
-    let mut lines: Vec<String> = retries_disabled_preamble(ep);
+    let mut lines: Vec<String> = offset_default_preamble(ep);
+    lines.extend(retries_disabled_preamble(ep));
     lines.push(format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
     ));
@@ -5475,6 +5504,22 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
 /// `request_options`, and the `omit`/`force_multipart` sentinels. Shared by the
 /// buffered `.request(...)` path ([`raw_body`]) and the streaming `.stream(...)`
 /// path ([`raw_stream_body`]) so both serialize a body identically.
+/// An offset-paginated operation's first statement: its offset argument
+/// defaulted to the first page (`page = page if page is not None else 1`), as
+/// Fern writes it, then a blank line.
+fn offset_default_preamble(ep: &Endpoint) -> Vec<String> {
+    match &ep.pagination {
+        Some(pagination) if matches!(pagination.advance, PageAdvance::Offset) => vec![
+            format!(
+                "        {0} = {0} if {0} is not None else 1",
+                pagination.cursor_param
+            ),
+            String::new(),
+        ],
+        _ => Vec::new(),
+    }
+}
+
 /// The request options an operation with `x-fern-retries: {disabled: true}`
 /// sends in place of the caller's: theirs with `max_retries` set to 0, written
 /// ahead of the request call; nothing for any other operation.
@@ -12188,6 +12233,47 @@ mod tests {
     }
 
     #[test]
+    fn an_offset_pager_defaults_and_steps_its_offset() {
+        let mut ep = endpoint(
+            "/entries",
+            Vec::new(),
+            Some(TypeRef::Named("EntryPage".to_string())),
+        );
+        ep.query_params = vec![QueryParam {
+            wire_name: "page".to_string(),
+            py_name: "page".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Int),
+            required: false,
+            nullable: false,
+            convert: false,
+            comma_separated: false,
+            allow_multiple: false,
+            one_or_many: false,
+            example: None,
+            example_is_scalar: false,
+            aliased_datetime: None,
+            docstring: None,
+        }];
+        ep.pagination = Some(crate::ir::EndpointPagination {
+            results: "entries".to_string(),
+            advance: crate::ir::PageAdvance::Offset,
+            cursor_param: "page".to_string(),
+            item_type: TypeRef::Named("Entry".to_string()),
+        });
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("page = page if page is not None else 1"),
+            "{out}"
+        );
+        assert!(out.contains("_has_next = len(_items or []) > 0"), "{out}");
+        assert!(out.contains("page=page + 1,"), "{out}");
+        assert!(
+            !out.contains("_parsed_next") && !out.contains("_get_next = None"),
+            "{out}"
+        );
+    }
+
+    #[test]
     fn endpoint_extensions_add_an_idempotency_argument_and_disable_retries() {
         let mut ep = endpoint("/parcels", Vec::new(), None);
         ep.http_method = "POST";
@@ -12202,6 +12288,7 @@ mod tests {
                 enum_value: false,
             }],
             retries_disabled: true,
+            pagination_declared: false,
         };
         let out = raw_method(&ep, false, &mut Imports::default());
         assert!(

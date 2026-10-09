@@ -208,6 +208,40 @@ The shape: a path operation marked `x-fern-webhook: true` (or `x-crozier-webhook
 |---|---|---|
 | `operation-webhook-extension` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
 
+## Offset pagination
+
+The shape: an operation whose pagination extension (either spelling) is the offset form, `offset` with no `cursor` (`operation.x-fern-pagination:offset`). Fern returns an offset pager in its packaged tree and, in its flat tree, the page model with the pagination runtime still shipped.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-pagination-offset` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Boolean pagination over a root contract
+
+The shape: an operation whose pagination extension is `true` in a document whose root declares a pagination contract (`operation.x-fern-pagination:boolean-over-root`). Fern takes the root contract for the operation.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-pagination-boolean` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
+## Cursor pagination
+
+The shape: an operation whose pagination extension is the cursor form, `cursor`
+with `next_cursor` (`operation.x-fern-pagination:cursor`). Registered real
+specifications declare it: `truefoundry-trueforge` and
+`truefoundry-trueforge-5adde28` (7 sites each), whose packaged goldens
+byte-match. The scenario's divergence is Fern's flat tree, which neither
+registers: the flat behaviour is measured on the crozier-authored
+`crane-hire-cursor` case in
+[`../../fern-measurements/clients-extensions/`](../../fern-measurements/clients-extensions/README.md),
+and TrueForge's own flat output, run locally at the certified pair, differs
+from crozier's only by the `flat-pagination-pager-docs` departure; a flat
+TrueForge golden needs the Fern goldens workflow to publish it.
+
+| key | outcome | registered declarers |
+|---|---|---|
+| `operation-pagination-cursor` | `golden` | `truefoundry-trueforge`, `truefoundry-trueforge-5adde28` |
+
 ## Results
 
 | key | result | fixture |
@@ -231,3 +265,5 @@ The shape: a path operation marked `x-fern-webhook: true` (or `x-crozier-webhook
 | `operation-retries-disabled` | `none-registrable` | `parcel-courier-desk` |
 | `schema-type-name-inline-property` | `none-registrable` | `film-shot-planner` |
 | `operation-webhook-extension` | `none-registrable` | `auction-house-bids` |
+| `operation-pagination-offset` | `none-registrable` | `ledger-records-offset` |
+| `operation-pagination-boolean` | `none-registrable` | `beacon-registry-pages` |
