@@ -31,7 +31,7 @@ install-nx:
 # gate's parallel cargo tasks never race one first-use rustup install.
 install-toolchain:
     @rustup show active-toolchain >/dev/null 2>&1 || rustup toolchain install
-    @rustup component add rustfmt clippy llvm-tools-preview >/dev/null 2>&1 || true
+    @out=$(rustup component add rustfmt clippy llvm-tools-preview 2>&1) || { echo "$out" >&2; echo "install-toolchain: adding rustfmt, clippy and llvm-tools-preview failed (above); fix rustup's error, then rerun" >&2; exit 1; }
 
 # The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
 # validates the base and selects the projects; the Nx command below runs over them:
