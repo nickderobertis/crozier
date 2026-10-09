@@ -371,7 +371,9 @@ fn remote_model_types_resolve_through_a_real_http_document() {
                 break;
             }
         }
-        let body = include_str!("../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml");
+        let body = include_str!(
+            "../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"
+        );
         write!(
             stream,
             "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
@@ -379,8 +381,10 @@ fn remote_model_types_resolve_through_a_real_http_document() {
         )
         .unwrap();
     });
-    let spec = include_str!("../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml")
-        .replace("@REMOTE_URL@", &format!("http://{address}"));
+    let spec = include_str!(
+        "../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    )
+    .replace("@REMOTE_URL@", &format!("http://{address}"));
     let files = render(&spec);
     server.join().expect("the document was fetched once");
     let catalogue = &files["src/acme/types/catalogue.py"];

@@ -2463,7 +2463,7 @@ fn handwritten_fixtures_match_fern_goldens() {
 /// with adjacent ordinary scalar formats kept as controls.
 #[test]
 fn material_register_matches_certified_fern_tree() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let fixture = root.join("docs/openapi-surface/handwritten/material-register");
     let source = tempfile::tempdir().expect("source recovery directory");
     let spec = source.path().join("openapi.yml");
@@ -2510,8 +2510,8 @@ fn material_register_matches_certified_fern_tree() {
 
 #[test]
 fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("docs/openapi-surface/handwritten/material-register/fern-expected");
+    let fixture =
+        repo_root().join("docs/openapi-surface/handwritten/material-register/fern-expected");
     let rel = "src/fern/types/material.py";
     let expected = std::fs::read_to_string(fixture.join(rel)).expect("certified model");
     let changed = expected.replace(
@@ -2534,7 +2534,7 @@ fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
 
 #[test]
 fn composed_model_shapes_match_the_certified_fern_trees() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let mut all_failures = Vec::new();
     for name in [
         "circuit-readings",
@@ -2576,7 +2576,7 @@ fn composed_model_shapes_match_the_certified_fern_trees() {
 
 #[test]
 fn property_metadata_shapes_match_the_certified_fern_trees() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let mut all_failures = Vec::new();
     for name in [
         "blank-reading-description",
@@ -2619,7 +2619,8 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
 
 #[test]
 fn object_union_extension_keeps_nearby_refusals_and_recovers() {
-    let original = include_str!("../../../docs/openapi-surface/handwritten/union-sample/openapi.yml");
+    let original =
+        include_str!("../../../docs/openapi-surface/handwritten/union-sample/openapi.yml");
     let controls = [
         original.replace("    Signal:\n      type: object\n", "    Signal:\n"),
         original.replace("    Signal:\n      type: object\n      oneOf:", "    Signal:\n      type: object\n      anyOf:"),
@@ -2654,7 +2655,7 @@ fn object_union_extension_keeps_nearby_refusals_and_recovers() {
 
 #[test]
 fn remaining_model_shapes_match_the_certified_fern_trees() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let mut all_failures = Vec::new();
     for name in [
         "measurement-phase",
@@ -2694,10 +2695,8 @@ fn remaining_model_shapes_match_the_certified_fern_trees() {
 
 #[test]
 fn property_extensions_accept_aliases_and_crozier_precedence() {
-    let reference_doc = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-reference.md"),
-    )
-    .unwrap();
+    let reference_doc =
+        std::fs::read_to_string(repo_root().join("docs/fern-reference.md")).unwrap();
     for (extension, placement, effect) in [
         (
             "ignore",
@@ -2731,7 +2730,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
         assert_eq!(rows, vec![vec![fern.as_str(), canonical.as_str(), placement, effect]],
             "vendor-extension table drift: restore the documented {extension} contract or update its real-binary proof");
     }
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let root = repo_root().join("docs/openapi-surface/handwritten");
     for (fixture, extension, conflict, module, expected) in [
         ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
         ("gauge-public-fields", "ignore", "          x-crozier-ignore: false\n", "gauge", "calibration_note: typing.Optional[str]"),
@@ -15035,7 +15034,9 @@ fn remote_model_components_match_the_certified_fern_tree() {
     )]);
     let source = tempfile::tempdir().expect("remote source");
     let spec = source.path().join("openapi.yml");
-    let text = include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml");
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    );
     let failed_output = source.path().join("failed-sdk");
     std::fs::write(
         &spec,
@@ -15061,7 +15062,7 @@ fn remote_model_components_match_the_certified_fern_tree() {
         client.contains("from .types.curator import Curator"),
         "the external response keeps its component identity:\n{client}"
     );
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let golden = format!("{MODELS_REFS_REMOTE_DIR}/library-records/fern-expected");
     let ledger = departure_ledger()
         .golden(&golden, &[])
@@ -15095,7 +15096,7 @@ fn remote_model_components_match_the_certified_fern_tree() {
 
 #[test]
 fn remote_model_controls_reject_an_unexplained_dependency_mismatch() {
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+    let fixture = repo_root()
         .join(MODELS_REFS_REMOTE_DIR)
         .join("library-records/fern-expected");
     let rel = "src/fern/types/catalogue.py";
@@ -21177,7 +21178,7 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let root = repo_root();
     let fixture = root.join("docs/openapi-surface/handwritten/measurement-phase");
     let script = root.join("docs/departures/evidence/pattern-narrowed-enum-example.py");
     let mut requirements = pyproject_requirements(
@@ -21351,12 +21352,14 @@ fn remote_external_component_control_keeps_nested_document_inlining() {
     ]);
     let source = tempfile::tempdir().unwrap();
     let spec = source.path().join("openapi.yml");
-    let text = include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml")
-        .replace(
-            "@REMOTE_URL@/models.yml#/components/schemas/Catalogue",
-            "@REMOTE_URL@/nested-control.yml#/components/schemas/Catalogue",
-        )
-        .replace("@REMOTE_URL@", &server.base_url);
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    )
+    .replace(
+        "@REMOTE_URL@/models.yml#/components/schemas/Catalogue",
+        "@REMOTE_URL@/nested-control.yml#/components/schemas/Catalogue",
+    )
+    .replace("@REMOTE_URL@", &server.base_url);
     std::fs::write(&spec, text).unwrap();
     let out = source.path().join("sdk");
     probe_command(&spec, &out).assert().success();
@@ -21373,8 +21376,7 @@ fn remote_external_component_control_keeps_nested_document_inlining() {
 #[test]
 fn response_component_collision_keeps_the_existing_schema_identity() {
     let original = std::fs::read_to_string(
-        Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("docs/openapi-surface/handwritten/parcel-response/openapi.yml"),
+        repo_root().join("docs/openapi-surface/handwritten/parcel-response/openapi.yml"),
     )
     .unwrap();
     let source = original.replace(

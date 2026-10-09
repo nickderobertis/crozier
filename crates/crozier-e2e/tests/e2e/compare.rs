@@ -2001,7 +2001,7 @@ fn compare_reports_the_body_query_departure_and_rejects_another_changed_line() {
 #[cfg(unix)]
 #[test]
 fn compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes() {
-    let manifest = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let manifest = crate::repo_root();
     let fixture = manifest.join("docs/openapi-surface/handwritten/measurement-phase");
     let repo = tempfile::tempdir().expect("pattern comparison repository");
     let root = repo.path();
