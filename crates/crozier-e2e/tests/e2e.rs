@@ -20704,14 +20704,9 @@ fn stream_split_request_name_collisions_refuse_in_both_modes() {
     );
 }
 
-/// The streaming fixtures' journeys (`e2e/streaming_journeys.py`): each generated
-/// SDK's sync and async streaming methods driven through httpx's transport
-/// boundary — chunks parsed, SSE events dispatched on their `event` field, a
-/// declared terminator ending the stream, JSON lines skipping blank and
-/// malformed lines, a binary event stream downloading bytes, each
-/// `stream-condition` half sending its condition, and a 400 raising `ApiError`
-/// with the next call recovering. The same journeys run over Fern's certified
-/// tree for each fixture, so the behaviour asserted is Fern's as well as crozier's.
+/// Runs each streaming fixture's journey (`e2e/streaming_journeys.py`) over the
+/// SDK crozier generates and over Fern's certified tree, so the behaviour it
+/// asserts is Fern's as well as crozier's.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
