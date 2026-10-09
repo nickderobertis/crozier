@@ -795,17 +795,24 @@ impl Streaming {
     }
 
     /// Whether the stream is Server-Sent Events rather than newline-delimited
-    /// JSON. Measured at Fern 5.20.0: `format: sse` is SSE and `format: json` or
-    /// the boolean `true` is JSON lines whatever the response's media types; a
-    /// mapping that names no format follows the response's own media —
-    /// `sse_media` says whether it declares `text/event-stream`.
+    /// JSON. Measured at Fern 5.20.0, only `format: sse` is SSE: `format: json`,
+    /// a `stream-condition` naming no format and the boolean `true` all stream
+    /// JSON lines, whatever media types the response declares.
     #[must_use]
-    pub fn is_sse(&self, sse_media: bool) -> bool {
-        match (self.form, self.format.as_deref()) {
-            (StreamingForm::Flag(_), _) => false,
-            (StreamingForm::Mapping, Some(format)) => format == "sse",
-            (StreamingForm::Mapping, None) => sse_media,
-        }
+    pub fn is_sse(&self) -> bool {
+        self.form == StreamingForm::Mapping && self.format.as_deref() == Some("sse")
+    }
+
+    /// Whether the extension makes the operation stream without a
+    /// `stream-condition`: the boolean `true`, or a mapping naming a `format`.
+    /// A mapping naming neither leaves the operation to its response's media
+    /// types, as if it declared no extension (Fern streams `{}` over a
+    /// `text/event-stream` response and buffers it over an `application/json`
+    /// one).
+    #[must_use]
+    pub fn streams_unconditionally(&self) -> bool {
+        self.condition_property().is_none()
+            && (self.form == StreamingForm::Flag(true) || self.format.is_some())
     }
 
     /// The request property the condition names, with its `$request.` prefix

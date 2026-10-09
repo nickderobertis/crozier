@@ -5924,6 +5924,15 @@ fn sse_chunk(ep: &Endpoint, imports: &mut Imports) -> String {
         .map_or_else(|| "typing.Any".to_string(), |ty| raw_type_str(ty, imports))
 }
 
+/// The `_sse.data` value that ends a Server-Sent-Events stream: the declared
+/// terminator, or `None` — an event carrying no data — when none is declared.
+fn sse_end(terminator: Option<&str>) -> String {
+    terminator.map_or_else(
+        || "None".to_string(),
+        |end| format!("\"{}\"", escape_py_str(end)),
+    )
+}
+
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
 /// chunks over the `core.http_sse` runtime, matching Fern's shape (issue #43).
@@ -5992,17 +6001,51 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
 
     let inner_return = format!("{wrapper}(response=_response, data=_iter())");
     let iter_body = match &ep.stream_protocol {
-        StreamProtocol::Sse { terminator } => {
+        StreamProtocol::Sse { terminator, events } if !events.is_empty() => {
+            imports.add_plain("json");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // Each event's `event` field picks the model its JSON `data` parses
+            // as; an event no branch names is skipped.
+            let branches: Vec<String> = events
+                .iter()
+                .enumerate()
+                .map(|(index, dispatched)| {
+                    let model = raw_type_str(&TypeRef::Named(dispatched.model.clone()), imports);
+                    let keyword = if index == 0 { "if" } else { "elif" };
+                    let event = escape_py_str(&dispatched.event);
+                    format!(
+                        "                                {keyword} _sse.event == \"{event}\":
+                                    try:
+                                        yield typing.cast(
+                                            {model},
+                                            parse_obj_as(
+                                                type_={model},
+                                                object_=json.loads(_sse.data),
+                                            ),
+                                        )
+                                    except Exception as e:
+                                        warning(f\"Failed to parse SSE event '{event}': {{e}}, sse: {{_sse!r}}\")"
+                    )
+                })
+                .collect();
+            format!(
+                "                            _event_source = EventSource(_response)
+                            {for_kw} _sse in _event_source.{iter_sse}():
+                                if _sse.data == {end}:
+                                    return
+{branches}",
+                end = sse_end(terminator.as_deref()),
+                branches = branches.join("\n"),
+            )
+        }
+        StreamProtocol::Sse { terminator, .. } => {
             imports.add_from("logging", "error");
             imports.add_from("logging", "warning");
             imports.add_core("http_sse._api", "EventSource");
             imports.add_core("pydantic_utilities", "parse_sse_obj");
-            // Fern ends the stream at the declared terminator's `data`, or at an
-            // event carrying none.
-            let end = terminator.as_deref().map_or_else(
-                || "None".to_string(),
-                |end| format!("\"{}\"", escape_py_str(end)),
-            );
+            let end = sse_end(terminator.as_deref());
             format!(
                 "                            _event_source = EventSource(_response)
                             {for_kw} _sse in _event_source.{iter_sse}():
@@ -12010,7 +12053,10 @@ mod tests {
             reference_description_suffix: String::new(),
             streaming: false,
             stream_chunk: None,
-            stream_protocol: crate::ir::StreamProtocol::Sse { terminator: None },
+            stream_protocol: crate::ir::StreamProtocol::Sse {
+                terminator: None,
+                events: Vec::new(),
+            },
             text_response: false,
             markdown_response: false,
             binary_response: false,
