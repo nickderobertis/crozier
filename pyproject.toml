@@ -80,12 +80,9 @@ members = [
     "tests/runtime",
 ]
 
-# The tooling's quality toolchain, resolved once in uv.lock. ruff is pinned to
-# exactly `.ruff-version`, the generation-time ruff that decides byte parity
-# with Fern: `uv run` puts this venv's bin first on PATH, and crozier shells out
-# to the first `ruff` there, so any other version would silently change what a
-# tooling suite's `crozier generate` emits. `.ruff-version` leads; this pin
-# follows it (`python-workspace:test` fails when they differ).
+# The tooling's quality toolchain, resolved once in uv.lock. ruff follows
+# `.ruff-version` exactly (why: AGENTS.md's Python departures);
+# `python-workspace:test` fails when they differ.
 [dependency-groups]
 dev = [
     "coverage>=7.16",

@@ -54,12 +54,9 @@ suite.
 
 ## ruff and ty
 
-- **The tooling ruff is the generation ruff.** `uv run` puts `.venv/bin` first on
-  PATH, and crozier shells out to the first `ruff` there to format what it emits.
-  A tooling ruff of any other version would silently change what a tooling
-  suite's `crozier generate` produces, so the dev group pins `ruff==` exactly
-  `.ruff-version`, and `python-workspace:test` fails when they differ.
-  `.ruff-version` leads: it moves for byte parity with Fern, never for linting.
+- **The tooling ruff is `.ruff-version`'s.** The dev group pins `ruff==` that
+  version and `python-workspace:test` fails when they differ; `.ruff-version`
+  leads, moving for byte parity with Fern, never for linting.
 - **Rules** (root `[tool.ruff.lint]`): pycodestyle, pyflakes, isort, bugbear,
   pyupgrade, simplify, comprehensions, pie, ruff's own, and the injection and
   unsafe-deserialization `S` rules. Line length 120, owned by the formatter.

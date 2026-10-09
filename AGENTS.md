@@ -105,7 +105,6 @@ and surfacing the rest as follow-ups:
     - The promoted tiers' harnesses get format, lint and typecheck only; their
       suites need Prism, PyPI or a release build, so they keep their runners and
       stay out of the coverage floor.
-    - The coverage floor is 88%, not 95% (see "Tests are context engineering").
 
 ## Command surface
 
@@ -299,6 +298,7 @@ divergence — every corpus's `unmatched` list is empty, so a non-empty one mean
 work in flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
 holds the judgment about why.
 
+<!-- llmlint: ignore-block[agents_md_durable_and_terse] The per-project figures and the two structural 0% files are the measurement the lowered floor rests on; the create-repo Python reference lets a floor sit below 95% only with that reason recorded in AGENTS.md itself, and the manager's ruling for this floor required them here. -->
 **The Python tooling's floor is 88%, lower than the crate's 95% — a floor to
 ratchet up, not a target** (`python-workspace:coverage`, combined over every
 tooling project's suite; test files are the only exclusion). It rests on the
@@ -313,6 +313,7 @@ e2e harness drives. It holds on the Linux and macOS check legs and the sweep; th
 Windows leg runs every suite without the floor, because the suites skip their
 POSIX-only cases there. Raise it as those lines get reached; never lower it
 without a new measurement here.
+<!-- llmlint: ignore-end[agents_md_durable_and_terse] -->
 
 ## Keeping the allowlist current
 
