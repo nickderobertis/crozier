@@ -13282,6 +13282,28 @@ class ExampleAndEnumSelectorControls(unittest.TestCase):
                                  rows(completed))
                 self.assertGreaterEqual(rows(completed).get((selector, "positive"), 0), 1)
 
+    def test_request_body_predicates_skip_content_that_is_no_mapping(self) -> None:
+        """A list or scalar `requestBody.content` is no JSON body: counted nowhere, no crash."""
+        malformed = {
+            "operation.x-fern-sdk-group-name:types-beside-child-group": {
+                "paths": {"/a": {"post": {"x-fern-sdk-group-name": ["yard"], "x-fern-sdk-method-name": "book",
+                                          "requestBody": {"content": ["application/json"]}, "responses": {}}},
+                          "/b": {"post": {"x-fern-sdk-group-name": ["yard", "cranes"],
+                                          "x-fern-sdk-method-name": "lift", "responses": {}}}}},
+            "openapi.webhooks:inline-json-body-named": {
+                "paths": {},
+                "webhooks": {"w": {"post": {"x-fern-sdk-method-name": "delivered", "responses": {},
+                                            "requestBody": {"content": "application/json"}}}}},
+        }
+        for selector, fields in malformed.items():
+            with self.subTest(selector=selector), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                write_fixture(root, "malformed", json.dumps({
+                    "openapi": "3.1.0", "info": {"title": "t", "version": "1"}, **fields}))
+                completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual({}, rows(completed))
+
     def test_sdk_method_name_sequence_reads_the_winning_spelling(self) -> None:
         selector = "operation.x-fern-sdk-method-name:sequence"
         with tempfile.TemporaryDirectory() as directory:

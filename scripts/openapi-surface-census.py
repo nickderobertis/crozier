@@ -2977,6 +2977,14 @@ def _extension(node: Any, base: str) -> Any:
     return node.get(f"x-crozier-{base}", node.get(f"x-fern-{base}"))
 
 
+def json_media(operation: dict[Any, Any]) -> Any:
+    """An operation's `application/json` request media, or None when its
+    `requestBody` or `content` is not a mapping."""
+    request_body = operation.get("requestBody")
+    content = request_body.get("content") if isinstance(request_body, dict) else None
+    return content.get("application/json") if isinstance(content, dict) else None
+
+
 def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
     """The client- and package-construction shapes, read off the whole document."""
     found: list[str] = []
@@ -3111,8 +3119,7 @@ def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
         if group and sdk_method_named(operation) and any(
             len(other) > len(group) and other[:len(group)] == group for other in groups
         ):
-            body = ((operation.get("requestBody") or {}).get("content") or {}).get("application/json") \
-                if isinstance(operation.get("requestBody"), dict) else None
+            body = json_media(operation)
             schema = body.get("schema") if isinstance(body, dict) else None
             properties = schema.get("properties") if isinstance(schema, dict) and "$ref" not in schema else None
             if isinstance(properties, dict) and any(
@@ -3127,8 +3134,7 @@ def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
         for method, operation in item.items():
             if method not in ("get", "put", "post", "delete", "patch") or not isinstance(operation, dict):
                 continue
-            body = ((operation.get("requestBody") or {}).get("content") or {}).get("application/json") \
-                if isinstance(operation.get("requestBody"), dict) else None
+            body = json_media(operation)
             schema = body.get("schema") if isinstance(body, dict) else None
             if isinstance(schema, dict) and "$ref" not in schema and (
                 sdk_group_segments(operation) or sdk_method_named(operation)

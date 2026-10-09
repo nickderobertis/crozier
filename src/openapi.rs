@@ -2919,6 +2919,11 @@ fn normalize_root_pagination(doc: &mut OpenApi) {
         .or_else(|| doc.pagination_fern.clone());
     for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
         for op in item.operation_slots().into_iter().flatten() {
+            // The crozier spelling, once declared, decides alone: its `false`
+            // (or a `true` with no root contract) leaves no Fern contract behind.
+            if op.pagination_crozier.is_some() {
+                op.pagination_fern = None;
+            }
             for declared in [&mut op.pagination_crozier, &mut op.pagination_fern] {
                 if let Some(DeclaredPagination::Root(take)) = declared {
                     *declared = take

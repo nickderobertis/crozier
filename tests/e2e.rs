@@ -2874,11 +2874,12 @@ fn server_extensions_read_crozier_spelling_over_fern() {
 /// A name an extension declares that crozier cannot emit as Fern's SDK is
 /// refused at the boundary, exit 1 with the conflict named and nothing written:
 /// a server name making a digit-led environment member, an operation server
-/// named `base` (the document's own URL), and a credential named like a client
-/// constructor parameter. A keyword name is escaped instead, as Fern escapes it
+/// named `base` (the document's own URL), a credential named like a client
+/// constructor parameter, and a header prefix with braces, which Fern writes
+/// into an f-string. A keyword name is escaped instead, as Fern escapes it
 /// (`class` is `class_`), and generates.
 #[test]
-fn extension_names_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
+fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
     let dir = tempfile::tempdir().expect("tempdir");
     let generate = |name: &str, body: &str| {
         let spec = dir.path().join(format!("{name}.yml"));
@@ -2909,6 +2910,14 @@ fn extension_names_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 ping("      servers:\n        - url: https://other.test\n          x-fern-server-name: base\n")
             ),
             "names the environment field `base`",
+        ),
+        (
+            "braced-prefix",
+            format!(
+                "security: [{{Key: []}}]\n{}components:\n  securitySchemes:\n    Key: {{type: apiKey, in: header, name: X-Key, x-fern-header: {{prefix: 'Key {{x}}'}}}}\n",
+                ping("")
+            ),
+            "header prefix `Key {x}` carries `{` or `}`",
         ),
         (
             "timeout-credential",
@@ -17336,7 +17345,7 @@ fn paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control
 /// spelling, crozier's winning when both appear: `x-crozier-pagination: true`
 /// under a root `x-crozier-pagination` offset contract pages by offset while the
 /// root `x-fern-pagination` cursor contract beside it is ignored, and `false`
-/// declares no pager.
+/// declares no pager, even beside the operation's own `x-fern-pagination`.
 #[test]
 fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
     let dir = tempfile::tempdir().expect("tempdir");
@@ -17362,6 +17371,12 @@ fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
     assert!(!paged.contains("_parsed_next"));
     let unpaged = generate("false", "false");
     assert!(!unpaged.contains("Pager"), "{unpaged}");
+    // Crozier's `false` beside the operation's own Fern contract still wins.
+    let overruled = generate(
+        "false-over-fern",
+        "false\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}",
+    );
+    assert!(!overruled.contains("Pager"), "{overruled}");
 }
 
 /// A path operation marked a webhook in crozier's spelling has no method and its

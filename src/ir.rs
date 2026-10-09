@@ -238,6 +238,7 @@ pub enum EnvironmentField {
     /// The document's own server URL.
     Base,
     /// The field an operation server's name declares (`archive`, `class_`).
+    // llmlint: ignore[invalid_states_unrepresentable] The only producer is `environment_field`, which builds the name with `python_parameter_name` (a non-empty identifier, keywords escaped), and `Ir::unemittable_extension` refuses a document whose operation server is named `base`; a newtype would restate those two checks for one producer.
     Named(String),
 }
 
@@ -381,15 +382,30 @@ fn python_parameter_name(name: &str) -> String {
 }
 
 impl Ir {
-    /// Why a name an extension declares cannot be emitted, if one cannot: a
+    /// Why what an extension declares cannot be emitted, if it cannot: a
     /// server name whose environment member starts with a digit, which Fern's
     /// examples write as an attribute that is not Python (`Environment.1ST`); an
     /// operation server named `base`, the environment field holding the
     /// document's own URL; or a credential named like one of the root client's
-    /// own constructor parameters. Fern's output for each breaks, loses or
-    /// renames what the author declared, so crozier asks for another name.
+    /// own constructor parameters; or a credential prefix carrying `{` or `}`,
+    /// which Fern writes into the header's f-string, where it is interpolation
+    /// rather than text. Fern's output for each breaks, loses or renames what
+    /// the author declared, so crozier asks for another value.
     #[must_use]
-    pub fn extension_name_conflict(&self) -> Option<String> {
+    pub fn unemittable_extension(&self) -> Option<String> {
+        if let Auth::ApiKey {
+            prefix: Some(prefix),
+            ..
+        } = &self.auth
+        {
+            if prefix.contains(['{', '}']) {
+                return Some(format!(
+                    "a security scheme's header prefix `{prefix}` carries `{{` or `}}`, which the \
+                     client's f-string would read as interpolation; declare the prefix without \
+                     braces"
+                ));
+            }
+        }
         if let Some(environment) = &self.environment {
             let members = std::iter::once(&environment.default.0)
                 .chain(environment.others.iter().map(|(name, _)| name));
@@ -1039,7 +1055,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Credential {
     /// The parameter's Python name (`token`, `lift_pass`).
-    // llmlint: ignore[invalid_states_unrepresentable] A credential is built only by `Credential::named` (which normalizes a declared name to a Python identifier, escaping keywords) and `Credential::plain` (crozier's literal defaults), and `Ir::extension_name_conflict` refuses a name colliding with the constructor's own parameters; a newtype would retype a string twenty-five emitter sites format.
+    // llmlint: ignore[invalid_states_unrepresentable] A credential is built only by `Credential::named` (which normalizes a declared name to a Python identifier, escaping keywords) and `Credential::plain` (crozier's literal defaults), and `Ir::unemittable_extension` refuses a name colliding with the constructor's own parameters; a newtype would retype a string twenty-five emitter sites format.
     pub param: String,
     /// The environment variable the root client reads it from, if any.
     pub env: Option<String>,

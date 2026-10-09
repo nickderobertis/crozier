@@ -109,7 +109,7 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
-    if let Some(message) = ir.extension_name_conflict() {
+    if let Some(message) = ir.unemittable_extension() {
         return Err(Error::InvalidSpec {
             path: args.spec.clone(),
             message,
@@ -190,7 +190,7 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
-    if let Some(message) = ir.extension_name_conflict() {
+    if let Some(message) = ir.unemittable_extension() {
         return Err(Error::InvalidSpec {
             path: args.spec.clone(),
             message,
