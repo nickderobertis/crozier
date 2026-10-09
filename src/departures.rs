@@ -2115,11 +2115,11 @@ mod tests {
         assert!(Context::default().reference_classes().is_empty());
     }
 
-    /// Fern's empty-namespace tree and crozier's, as `(path, text)` files:
-    /// Fern's `_` package at the package root, crozier's under `_/`.
     /// A tree's files as `(path, text)`.
     type Tree = Vec<(&'static str, String)>;
 
+    /// Fern's empty-namespace tree and crozier's: Fern's `_` package at the
+    /// package root, crozier's under `_/`.
     fn empty_namespace_trees() -> (Tree, Tree) {
         let client = |example: &str| {
             format!(
