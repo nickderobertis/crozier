@@ -8,8 +8,5 @@
   suite that drives the real git, just, Nx or cargo belongs to `ci-journeys`.
 - `gate.mjs` validates `NX_BASE` before Nx runs and strips it from Nx's
   environment: Nx reads that variable itself and hands it to a shell.
-- `gate.mjs` installs the toolchain `rust-toolchain.toml` pins before Nx runs:
-  parallel cargo targets each auto-install a missing one into the shared rustup
-  home and break each other's install (live-e2e, which never bootstraps).
 - The module-boundary rule is `scripts/check-project-boundaries.mjs`, a shared
   script, so every project's `lint` can run it without depending on this project.
