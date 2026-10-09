@@ -175,7 +175,7 @@ jobs:
       # first use, the gate's parallel cargo tasks each start the same rustup
       # install and race on its download directory.
       - name: Install the pinned Rust toolchain
-        run: rustup toolchain install
+        run: just install-toolchain
       # The corpus-match recipes run their golden inventory under nextest.
       - name: Install cargo-nextest
         uses: taiki-e/install-action@v2

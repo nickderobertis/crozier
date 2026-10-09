@@ -147,8 +147,8 @@ fn every_gate_leg_routes_its_tier_through_ci_check() {
 
 /// Every gate leg holds what its projects run before `just ci-check` starts
 /// them: cargo-nextest, which the e2e and corpus-match targets run under, and a
-/// toolchain installed once — by `just bootstrap`, or by `rustup toolchain
-/// install` where the leg skips bootstrap — so the gate's parallel cargo tasks
+/// toolchain installed once — by `just bootstrap`, or by `just
+/// install-toolchain` where the leg skips bootstrap — so the gate's parallel cargo tasks
 /// never race one first-use rustup install.
 #[test]
 fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
@@ -172,7 +172,7 @@ fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
         );
         assert!(
             before.iter().any(|step| text(step, "run")
-                .is_some_and(|run| run == "just bootstrap" || run == "rustup toolchain install")),
+                .is_some_and(|run| run == "just bootstrap" || run == "just install-toolchain")),
             "{name}: the pinned toolchain is installed once before the gate"
         );
     }

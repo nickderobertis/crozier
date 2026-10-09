@@ -12,8 +12,7 @@ default:
 # Set up from a clean clone: toolchain (from rust-toolchain.toml), deps, the pinned
 # Nx (bun.lock), dev tools.
 bootstrap:
-    @rustup show active-toolchain >/dev/null 2>&1 || rustup toolchain install
-    @rustup component add rustfmt clippy llvm-tools-preview >/dev/null 2>&1 || true
+    @just install-toolchain
     cargo fetch --locked
     @just install-nx
     @./scripts/install-dev-tools.sh
@@ -26,6 +25,13 @@ bootstrap:
 install-nx:
     @command -v bun >/dev/null 2>&1 || { echo "install-nx: bun not found — install it (https://bun.sh), then rerun" >&2; exit 1; }
     bun install --frozen-lockfile
+
+# Install the rust-toolchain.toml toolchain and its components. Part of
+# `bootstrap`; CI jobs that skip bootstrap call it alone, before the gate, so the
+# gate's parallel cargo tasks never race one first-use rustup install.
+install-toolchain:
+    @rustup show active-toolchain >/dev/null 2>&1 || rustup toolchain install
+    @rustup component add rustfmt clippy llvm-tools-preview >/dev/null 2>&1 || true
 
 # The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
 # validates the base and selects the projects; the Nx command below runs over them:
