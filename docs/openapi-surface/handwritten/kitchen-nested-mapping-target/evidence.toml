@@ -1,0 +1,17 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "0f6e8b7be3befd17cec8fe4830e7348792949288fbae522d581006feb0710d58"
+
+[[covers]]
+key = "discriminator-mapping"
+arm = 'src/ir.rs::Builder::discriminated_union[if union_target \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+
+[[covers]]
+key = "discriminator-mapping"
+arm = 'src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

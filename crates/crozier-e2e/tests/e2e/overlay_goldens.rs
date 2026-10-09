@@ -53,7 +53,11 @@ const KINDS: &[Kind] = &[
     // - `enum-receiver-collision`: members whose names collide with `visit`'s
     //   receiver;
     // - `openfigi.com`: inline property enums, optional and `nullable` ones, and
-    //   a path-parameter enum, in a real corpus document.
+    //   a path-parameter enum, in a real corpus document;
+    // - `offchain-metadata-tools`: no enum at all, so its literals tree differs
+    //   only in the generator record and the absent `core/enum.py` — the one
+    //   enum mode its one-member response union is proven under besides the
+    //   default.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -65,6 +69,7 @@ const KINDS: &[Kind] = &[
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
+            "offchain-metadata-tools",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

@@ -1096,6 +1096,14 @@ PREDICATES = {
         "model, which `inline_body_source_names` of `src/ir.rs` drops like any "
         "single-use body"
     ),
+    "operation.requestBody:get-union-member": (
+        "one per GET Operation Object whose request body's `application/json` schema "
+        "is a `$ref` to a `components.schemas` entry that is a `$ref` member of a "
+        "component `oneOf` or `anyOf` whose two or more members are objects sharing a "
+        "property with one string value (`inferred_discriminant` of "
+        "`src/document_refusals/type_not_defined.rs`): Fern drops the GET body, so "
+        "`body_member_union` leaves the union to generate"
+    ),
     "operation.requestBody:titled-inline-container-oas-three-zero": (
         "one per Operation Object of an OpenAPI 3.0 document, declaring no parameter "
         "itself or on its Path Item, whose request body's `application/json` schema "
@@ -2602,7 +2610,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "92a25efcc00ca5a9",
+    "endpoint_method_name": "0335f9443a6809f7",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3147,7 +3155,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
 # scalar arms of `base_type_ref`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "e89b0d632c061c3f",
+    "inferred_discriminant_property_with": "c022ad3b8943e79a",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "aed18925c5369dea",
 }
@@ -3491,6 +3499,8 @@ def _inferred_discriminant_property(
     whose tag `required` leaves out; where it does not, a one-member `enum` is
     required of every member.
     """
+    if _undiscriminated(node):
+        return None
     members = union_members(node)
     if members is None:
         return None
@@ -3604,6 +3614,8 @@ def _inferred_union_discriminant_property(
     members at all satisfies it vacuously — nought distinct values out of nought —
     which is how an empty `oneOf: []` reaches `discriminated_union`'s `Some`.
     """
+    if _undiscriminated(node):
+        return None
     found = _inferred_discriminant_property(node, schemas, True)
     if found is not None:
         return found
@@ -3652,9 +3664,33 @@ def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -
 
 
 def _written_discriminator(node: dict[Any, Any]) -> dict[Any, Any] | None:
-    """The Discriminator Object this schema writes, as `Option<Discriminator>`."""
+    """The Discriminator Object this schema writes, as `Option<Discriminator>`.
+
+    A schema declaring itself undiscriminated has none: `normalize_undiscriminated_unions`
+    of `src/openapi.rs` removes it at load.
+    """
     discriminator = node.get("discriminator")
+    if _undiscriminated(node):
+        return None
     return discriminator if isinstance(discriminator, dict) else None
+
+
+def _undiscriminated(node: dict[Any, Any]) -> bool:
+    """`Schema::discriminated` of `src/openapi.rs` reading `false`: the
+    `x-crozier-discriminated` spelling when written, else `x-fern-discriminated`."""
+    for key in ("x-crozier-discriminated", "x-fern-discriminated"):
+        if isinstance(node.get(key), bool):
+            return node[key] is False
+    return False
+
+
+def _dangling_component_pointer(reference: Any, schemas: dict[Any, Any]) -> bool:
+    """A `#/components/schemas/<name>` pointer whose one segment names no
+    component schema of the document."""
+    if not isinstance(reference, str) or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+        return False
+    key = reference[len(_COMPONENT_SCHEMAS_PREFIX):]
+    return "/" not in key and key not in schemas
 
 
 def inheritance_union(node: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
@@ -3725,7 +3761,17 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
         return None
     mapping = discriminator.get("mapping") if discriminator is not None else None
     if isinstance(mapping, dict) and mapping:
-        if not _mapping_targets_resolve(mapping, schemas):
+        # Every target and every member dangling still names the variants, each
+        # holding an unknown `value`.
+        all_dangling = (
+            len(members) > 1
+            and all(
+                isinstance(member, dict) and _dangling_component_pointer(member.get("$ref"), schemas)
+                for member in members
+            )
+            and all(_dangling_component_pointer(target, schemas) for target in mapping.values())
+        )
+        if not all_dangling and not _mapping_targets_resolve(mapping, schemas):
             return None
     else:
         for member in members:
@@ -4300,6 +4346,49 @@ class Census:
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
 
+    def tagged_union_members(self) -> set[str]:
+        """The component schemas that are `$ref` members of a component union
+        `inferred_discriminant` of `src/document_refusals/type_not_defined.rs`
+        reads as discriminated: two or more members, each an object with
+        `properties`, the first's properties naming one every member gives a
+        single string value (`enum` of one, or `const`)."""
+
+        def single_value(field: Any) -> bool:
+            if not isinstance(field, dict):
+                return False
+            if "enum" in field:
+                values = field["enum"]
+                return isinstance(values, list) and len(values) == 1 and isinstance(values[0], str)
+            return isinstance(field.get("const"), str)
+
+        found: set[str] = set()
+        for schema in self.component_schemas.values():
+            for key in ("oneOf", "anyOf"):
+                members = schema.get(key) if isinstance(schema, dict) else None
+                if not isinstance(members, list) or len(members) < 2:
+                    continue
+                objects = []
+                for member in members:
+                    reference = member.get("$ref") if isinstance(member, dict) else None
+                    target = self.component_target(reference) if isinstance(reference, str) else member
+                    properties = target.get("properties") if isinstance(target, dict) else None
+                    if not isinstance(properties, dict):
+                        break
+                    objects.append(properties)
+                else:
+                    if any(
+                        single_value(field) and all(single_value(other.get(name)) for other in objects[1:])
+                        for name, field in objects[0].items()
+                    ):
+                        found.update(
+                            member["$ref"][len(_COMPONENT_SCHEMAS_PREFIX):]
+                            for member in members
+                            if isinstance(member, dict)
+                            and isinstance(member.get("$ref"), str)
+                            and member["$ref"].startswith(_COMPONENT_SCHEMAS_PREFIX)
+                        )
+        return found
+
     def component_target(self, reference: str) -> Any:
         """The `components.schemas` entry a local `#/components/schemas/<name>` names."""
         if not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
@@ -4573,6 +4662,8 @@ class Census:
                 and name in self.component_schemas and self.ref_counts[reference] == 1
             ):
                 found.append("operation.requestBody:body-prefixed-single-use")
+            if method == "get" and name is not None and name in self.tagged_union_members():
+                found.append("operation.requestBody:get-union-member")
             parameters = self.has_parameters(operation, url)
             additional = schema.get("additionalProperties")
             container = primary_type(schema.get("type")) == "array" or (

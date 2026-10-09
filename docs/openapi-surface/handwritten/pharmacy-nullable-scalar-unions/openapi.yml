@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Pharmacy Dispensing
+  version: 1.5.0
+paths:
+  /prescriptions/{rx}:
+    get:
+      operationId: getPrescription
+      parameters:
+        - name: rx
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The prescription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Prescription"
+components:
+  schemas:
+    Prescription:
+      type: object
+      properties:
+        dose:
+          $ref: "#/components/schemas/Dose"
+        refills:
+          $ref: "#/components/schemas/Refills"
+    Dose:
+      nullable: true
+      oneOf:
+        - type: integer
+        - type: string
+    Refills:
+      nullable: true
+      anyOf:
+        - type: boolean
+        - type: number
+        - type: string

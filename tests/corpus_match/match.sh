@@ -280,6 +280,7 @@ CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e cphos_ai_
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e flask_example_heroku_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e oip_web_api_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e waylay_queries_matches_fern_output
+CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e offchain_metadata_tools_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e confluent_kafka_connect_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e breizhsport_catalogue_matches_fern_output
 CROZIER_REQUIRE_CORPUS=1 cargo test --locked -p crozier-e2e --test e2e protoform_conformance_matches_fern_output

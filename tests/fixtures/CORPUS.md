@@ -258,6 +258,7 @@ compares it. Row 224 is the one so far.
 | 330 | `marimo-client-class-name` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/257ea7a983e2dbe4627f0168072fdcd538c93c5c/packages/openapi/api.yaml | `257ea7a983e2dbe4627f0168072fdcd538c93c5c` | Apache-2.0 | committed | Row 95 with `client_class_name: DispatchClient`, proving configured client and raw-client names for package-root operations |
 | 331 | `confluent-kafka-connect` | github-raw | https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml | `8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Confluent's Kafka Connect API: connector-plugin configuration validation posts a plain string map with a declared request example; source SHA-256 `4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839` |
 | 332 | `netgsm-sms` | github-raw | https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json | `33ca38622067e3730479aded9e56f6b1151bfeb5` | MIT (the publisher repository's pinned `LICENSE`) | committed | NetGSM's SMS API: required query arrays beside JSON responses and JSON request-body content-type headers; source SHA-256 `9b728d109dc796d8dd166616d5be2425f4530703ef059ec0a561709421509ae3` |
+| 1200 | `offchain-metadata-tools` | github-raw | https://raw.githubusercontent.com/input-output-hk/offchain-metadata-tools/91eba72d6e5e3b17cd49f625c9546f2c82df5a65/docs/api/0.5.0.0/openapi.yaml | `91eba72d6e5e3b17cd49f625c9546f2c82df5a65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Input Output's Cardano token metadata server API (`tokens.cardano.org`): `GET /metadata/{subject}/properties/{properties}` answers an inline `oneOf` whose only member is `$ref Property`, which Fern returns as `Property` itself |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1619,6 +1620,24 @@ catalogued `body-query-parameter-value` departure, a Fern defect
 ([evidence](../../docs/departures/evidence/body-query-parameter-value.md)),
 pinned line by line in `departures-ledger.tsv`.
 
+
+## Row 1200 — an inline success response that is a one-member `oneOf` of a `$ref`
+
+Input Output's token metadata server answers
+`GET /metadata/{subject}/properties/{properties}` with an inline
+`oneOf: [$ref Property]`, and its metadata query answers a list whose items are
+`anyOf: [$ref Property]`. Fern reads each one-member composition as the
+reference itself: the method returns `Property` and the list is
+`List[Property]`, with no alias of its own.
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 1200 | `offchain-metadata-tools` | an inline success response `oneOf` whose only member is a `$ref` | ✅ byte-matched after two repairs |
+
+The repairs: `build_endpoint` returns a one-`$ref` response composition as that
+reference, and `hoist_array_item_type` reads a one-`$ref` item composition the
+same way. The search that found it is
+[`witness-search-union-scenarios`](../../docs/openapi-surface/witness-search-union-scenarios/README.md).
 
 ## Row 332 — query-array examples beside JSON bodies
 

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "bb86475d7f51737c111927f5c3601ef2b59d9e571cbfa3bb302daac8aafeaca0"
+
+[[covers]]
+key = "discriminator-property-name-extension"
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

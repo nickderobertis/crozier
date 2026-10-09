@@ -6332,12 +6332,12 @@ impl InlineHoister<'_> {
         // `SubmitResponseRequestAnswersZeroValue = Union[int, str, bool]` under
         // `Dict[str, Optional[SubmitResponseRequestAnswersZeroValue]]`.
         if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
-            let members = value.one_of.as_ref().or(value.any_of.as_ref());
-            if let Some(members) = members.filter(|_| {
+            let union_value = value.one_of.as_ref().or(value.any_of.as_ref()).filter(|_| {
                 is_map(variant)
                     && value.reference.is_none()
                     && simple_nullable_member(value).is_none()
-            }) {
+            });
+            if let Some(members) = union_value {
                 let value_name = format!(
                     "{}Value",
                     variant_class_name(parent, index, variant, siblings)
@@ -6703,6 +6703,13 @@ impl InlineHoister<'_> {
                 self.hoist_object(&item_name, &members[0]);
                 return Some(sequence_of(array, TypeRef::Named(item_name)));
             }
+            // A composition of exactly one `$ref` is that reference here too, as
+            // it is at a response's top: offchain-metadata-tools' metadata query
+            // answers `subjects: {items: {anyOf: [$ref Property]}}`, and Fern
+            // types it `List[Property]`.
+            if let Some(reference) = sole_reference_member(item_schema) {
+                return Some(sequence_of(array, TypeRef::Named(ref_to_class(reference))));
+            }
             if let Some(item) = self.hoist_discriminated_union(
                 &item_name,
                 item_schema,
@@ -6725,9 +6732,13 @@ impl InlineHoister<'_> {
                 .iter()
                 .enumerate()
                 .map(|(index, member)| {
-                    if (member.title.is_none() || member.required.is_empty())
+                    if member.title.is_some()
+                        && member.required.is_empty()
                         && is_inline_object(member)
                     {
+                        return self.hoist_union_variant(&item_name, index, member, members);
+                    }
+                    if member.title.is_none() && is_inline_object(member) {
                         self.hoist_union_variant(&item_name, index, member, members)
                     } else {
                         base_type_ref(member)
@@ -9541,7 +9552,7 @@ fn untagged_inline_discriminator(schema: &Schema) -> bool {
         return false;
     };
     let property = discriminator.property_name.as_str();
-    discriminator.mapping.is_empty()
+    let untagged = discriminator.mapping.is_empty()
         && members.len() > 1
         && members.iter().all(|member| {
             is_inline_object(member)
@@ -9549,7 +9560,11 @@ fn untagged_inline_discriminator(schema: &Schema) -> bool {
                     .properties
                     .get(property)
                     .is_none_or(|tag| tag.enum_values.is_none() && tag.const_value.is_none())
-        })
+        });
+    if untagged {
+        return true;
+    }
+    false
 }
 
 /// The discriminant's declared Python name, when the schema's `discriminator`
@@ -9742,7 +9757,10 @@ impl Builder<'_> {
                     // `pharmacy-nullable-scalar-unions` fixture's `Dose` is
                     // `{nullable: true, oneOf: [integer, string]}` and Fern's
                     // alias is `typing.Union[int, str]`.
-                    (false, _) if variants.iter().all(is_plain_scalar) => TypeRef::Union(members),
+                    (false, _) if variants.iter().all(is_plain_scalar) => {
+                        // The 3.0 `nullable` stays off the alias (see above).
+                        TypeRef::Union(members)
+                    }
                     (false, _) => {
                         let target = TypeRef::Union(members);
                         if schema_accepts_none(schema, self.schemas) {
@@ -10787,16 +10805,12 @@ impl Builder<'_> {
                 .strip_prefix("#/components/schemas/")
                 .is_some_and(|key| !key.contains('/') && !self.schemas.contains_key(key))
         };
-        if variants.len() > 1
+        let all_dangling = variants.len() > 1
             && variants.iter().all(|variant| {
-                variant.unresolved_reference
-                    || variant
-                        .reference
-                        .as_deref()
-                        .is_some_and(|reference| dangling(reference))
+                variant.unresolved_reference || variant.reference.as_deref().is_some_and(&dangling)
             })
-            && mapping.values().all(|reference| dangling(reference))
-        {
+            && mapping.values().all(|reference| dangling(reference));
+        if all_dangling {
             return Some(DiscriminatedUnion {
                 name: name.to_string(),
                 module: module.to_string(),
@@ -10827,15 +10841,15 @@ impl Builder<'_> {
             // hand-written `kitchen-nested-mapping-target` fixture's `Course`
             // maps `grill` to `GrillCourse`, a `oneOf` of two `$ref`s, and Fern's
             // `Course_Grill` is `value: GrillCourse` beside the `Literal` tag.
-            if target.properties.is_empty()
+            let union_target = target.properties.is_empty()
                 && target
                     .one_of
                     .as_ref()
                     .or(target.any_of.as_ref())
                     .is_some_and(|members| {
                         members.len() > 1 && members.iter().all(|member| member.reference.is_some())
-                    })
-            {
+                    });
+            if union_target {
                 let target_class = naming::class_name(target_key);
                 members.push(UnionMember {
                     class_name: format!("{name}_{}", discriminant_class_name(value)),

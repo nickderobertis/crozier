@@ -6,6 +6,9 @@ array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema
 base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
 cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
+discriminated-extension	schema.x-fern-discriminated	oas31-extensions.md	supported
+discriminator-property-name-extension	schema.discriminator.x-fern-property-name	oas31-extensions.md	supported
+get-request-body-union-member	operation.requestBody:get-union-member	bodies-media.md	supported
 header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
 integer-format-fallback	schema.format=bigint	schemas.md	supported
 oneof-array-variant-annotated-ref-item	schema.oneOf>schema.type:primary=array&schema.items>schema.allOf:annotated-ref&schema.allOf>schema.$ref:resolves-to-component	schemas.md	supported

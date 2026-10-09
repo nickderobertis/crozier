@@ -44,6 +44,11 @@ mod default_max_retries;
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
 
+/// The hand-written union fixtures in both enum modes, their extensions' two
+/// spellings, the wrapper departure's scope, and the refusals beside them.
+#[path = "e2e/unions.rs"]
+mod unions;
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -5126,6 +5131,7 @@ const CORPORA: &[&Corpus] = &[
     &YOURBRAND_TICKETING,
     &LOOTLOG_BATTLELOG,
     &EGO_MICROSERVICES,
+    &OFFCHAIN_METADATA_TOOLS,
 ];
 
 #[test]
@@ -8913,6 +8919,26 @@ fn netgsm_sms_matches_fern_output() {
 #[test]
 fn waylay_queries_matches_fern_output() {
     assert_committed_corpus_matches(&WAYLAY_QUERIES);
+}
+
+/// Input Output's Cardano token metadata server API — corpus row 1200. Its
+/// `GET /metadata/{subject}/properties/{properties}` answers an inline
+/// `oneOf: [$ref Property]`, which Fern returns as `Property` itself, and its
+/// metadata query lists `anyOf: [$ref Property]` items as `List[Property]`.
+const OFFCHAIN_METADATA_TOOLS: Corpus = Corpus {
+    api: "offchain-metadata-tools",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn offchain_metadata_tools_matches_fern_output() {
+    assert_committed_corpus_matches(&OFFCHAIN_METADATA_TOOLS);
 }
 
 #[test]
@@ -18331,6 +18357,10 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
             "union-member-body-probe.yml",
             "components/schemas/Proc/properties/events/oneOf/0",
         ),
+        (
+            "explicit-discriminator-body-probe.yml",
+            "components/schemas/Piece/oneOf/0",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
@@ -18344,6 +18374,12 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
     let dir = tempfile::tempdir().unwrap();
     let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
     let union = std::fs::read_to_string(class.join("union-member-body-probe.yml")).unwrap();
+    let mapped =
+        std::fs::read_to_string(class.join("explicit-discriminator-body-probe.yml")).unwrap();
+    assert!(
+        mapped.contains("\n    post:\n"),
+        "the mapped probe sends a POST body"
+    );
     for (name, text) in [
         (
             "users-tag.yml",
@@ -18352,6 +18388,12 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
         (
             "plain-member.yml",
             union.replace("{type: string, enum: [OPERATOR]}", "{type: string}"),
+        ),
+        // Fern drops a GET body, so the member is no inline request and the
+        // union generates (evaluation-logs/fern-explicit-discriminator-get.log).
+        (
+            "mapped-get-body.yml",
+            mapped.replace("\n    post:\n", "\n    get:\n"),
         ),
     ] {
         let recovered = dir.path().join(name);
@@ -18363,6 +18405,7 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
         "other-file-control.yml",
         "group-name-control.yml",
         "union-member-control.yml",
+        "explicit-discriminator-control.yml",
     ] {
         generates_identically_in_both_modes(&class.join(control));
     }

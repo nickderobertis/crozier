@@ -2263,6 +2263,7 @@ class RecipeWiringTests(unittest.TestCase):
 # document's version, a local Response `$ref`), so none is node-local.
 BODY_AND_RESPONSE_PREDICATES = frozenset({
     "operation.requestBody:body-prefixed-single-use",
+    "operation.requestBody:get-union-member",
     "operation.requestBody:titled-inline-container-oas-three-zero",
     "operation.responses:empty-schema-success-oas-three-zero",
     "operation.responses:schemaless-text-success",
@@ -2460,7 +2461,7 @@ class GrammarContractTests(unittest.TestCase):
             "seventeen": 17, "eighteen": 18, "twenty": 20, "twenty-one": 21,
             "twenty-three": 23, "twenty-four": 24,
             "thirty-one": 31, "thirty-two": 32, "thirty-three": 33, "thirty-four": 34,
-            "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37,
+            "thirty-five": 35, "thirty-six": 36, "thirty-seven": 37, "thirty-eight": 38,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(
@@ -13335,6 +13336,36 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
+
+    def test_get_union_member_counts_get_bodies_naming_tagged_union_members(self) -> None:
+        selector = "operation.requestBody:get-union-member"
+        ref = lambda name: {"$ref": f"#/components/schemas/{name}"}
+        tagged = lambda value: {"type": "object", "properties": {
+            "grain": {"type": "string", "enum": [value]}, "weight": {"type": "integer"}}}
+        components = {"schemas": {
+            "Rye": tagged("rye"),
+            "Spelt": {"type": "object", "properties": {"grain": {"const": "spelt"}}},
+            "Loaf": {"oneOf": [ref("Rye"), ref("Spelt")]},
+            "Plain": {"type": "object", "properties": {"grain": {"type": "string"}}},
+            "Mixed": {"anyOf": [ref("Rye"), ref("Plain")]},
+            "Sole": {"oneOf": [ref("Rye")]},
+        }}
+        documents = {
+            "positive": {"components": components, "paths": {
+                "/rye": {"get": self.operation(body=self.json_body(ref("Rye")))},
+                "/spelt": {"get": self.operation(body=self.json_body(ref("Spelt")))},
+            }},
+            "decoys": {"components": components, "paths": {
+                # Sent as a POST body, the member is refused, not generated.
+                "/post": {"post": self.operation(body=self.json_body(ref("Rye")))},
+                # A member of a union whose members do not all tag `grain`.
+                "/plain": {"get": self.operation(body=self.json_body(ref("Plain")))},
+                # The union itself, and an inline body.
+                "/loaf": {"get": self.operation(body=self.json_body(ref("Loaf")))},
+                "/inline": {"get": self.operation(body=self.json_body(tagged("rye")))},
+            }},
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
 
     def test_success_selection_prefers_200_and_skips_unusable_media(self) -> None:
         selector = "operation.responses:schemaless-text-success"

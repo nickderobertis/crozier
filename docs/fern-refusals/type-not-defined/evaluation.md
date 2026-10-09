@@ -69,6 +69,31 @@ referenced from a request or a response. The Provoly document reduces to it:
 with its unrelated duplicate `closeEvent` operation id renamed, it still fails
 ([log](evaluation-logs/fern-provoly-without-duplicate.log)).
 
+**A mapped discriminator whose body member lacks its property.** A component
+`oneOf` with an explicit `discriminator` (a `propertyName` and a non-empty
+`mapping`) is discriminated by Fern whatever its members declare. When one of
+its `$ref` members is also the entire `application/json` body of an operation
+that is not ignored, and that member declares no property of the
+discriminator's name, Fern turns the body into an inline request and the
+union's reference to the member dangles: the
+[probe](explicit-discriminator-body-probe.yml) refuses with `Type Vase is not
+defined.` at `__package__.yml -> types -> Piece -> union -> vase`, from both
+`fern check` and `fern generate`, and writes no SDK
+([log](evaluation-logs/fern-explicit-discriminator-body.log)). The same document
+with the body declared inline is accepted
+([control](explicit-discriminator-control.yml),
+[log](evaluation-logs/fern-explicit-discriminator-control.log)). This mechanism
+is `refuse` in both modes for a reason of its own: the discriminator names a
+property its members lack, so the specification is at fault. Its mapping says
+`vase` selects `Vase`, yet a `Vase` carries no `form` from which a reader could
+select anything, so there is no wire value the generated union could dispatch
+on and no SDK that reproduces what the document declares. crozier refuses it,
+with and without `--fern-strict`, at the member's pointer
+(`components/schemas/Piece/oneOf/0`). A `GET` body is not an inline request to
+Fern (it drops the body), so a union member sent only as a `GET` body leaves
+the union generating, as the hand-written `bakery-get-body-member` fixture
+proves byte for byte.
+
 ## Accepted controls
 
 Each control passes `fern check`, and Fern generates an SDK from it. crozier
@@ -94,6 +119,10 @@ generates byte-identical output from each one in both modes:
   the members use different property names. In a third, a member has two
   values. One has an explicit `discriminator` but no enums, and one has a
   single member.
+- [`explicit-discriminator-control.yml`](explicit-discriminator-control.yml)
+  ([log](evaluation-logs/fern-explicit-discriminator-control.log)) is the
+  mapped-discriminator probe with its body declared inline, so no member is a
+  body.
 
 A header with an inline enum is not part of this class. Fern lifts a header
 that every operation shares to a global header and accepts it. Once another
@@ -109,9 +138,11 @@ document that another registered class already refuses keeps that class. With
 [CLI journey failed](evaluation-logs/refusal-e2e-induced-red.log): crozier
 wrote 40 files from the probe. The journey passes again once the detector is
 restored. The journey covers the probe, the status sweep, response, parameter,
-body and union probes, and two recoveries (tag `users`; a member without a
-single value). It also checks the four controls for identical bytes in both
-modes. I compared crozier's strict mode with Fern's check verdict on all 147
+body, union and mapped-discriminator probes, and three recoveries (tag
+`users`; a member without a single value; the mapped-discriminator probe's body
+moved to a `GET`, which Fern accepts and crozier byte-matches,
+[log](evaluation-logs/fern-explicit-discriminator-get.log)). It also checks the
+five controls for identical bytes in both modes. I compared crozier's strict mode with Fern's check verdict on all 147
 hand-written controls ([comparison](evaluation-logs/controls-comparison.log)).
 Every control Fern refuses with this phrase is refused by this class. Every
 control Fern accepts generates, except the header enum above, which the

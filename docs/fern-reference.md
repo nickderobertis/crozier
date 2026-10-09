@@ -128,7 +128,8 @@ extension not listed here does not change crozier's output.
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
-| `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
+| `x-fern-property-name` | `x-crozier-property-name` | object property, discriminator | The property's Python name, both the model field and the request keyword argument; on a `discriminator`, the name of the discriminant field every wrapper of the union declares and dispatches on. Its JSON key on the wire stays the property's key (the discriminator's `propertyName`). |
+| `x-fern-discriminated` | `x-crozier-discriminated` | `oneOf` / `anyOf` schema | `false` makes the union an ordinary one: a `discriminator` beside it is ignored, no tag is inferred from its members, and each member keeps its own tag field. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 
 ## The script

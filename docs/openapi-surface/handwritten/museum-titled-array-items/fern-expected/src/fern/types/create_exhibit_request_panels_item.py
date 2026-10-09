@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .create_exhibit_request_panels_item_alt import CreateExhibitRequestPanelsItemAlt
+from .create_exhibit_request_panels_item_caption import CreateExhibitRequestPanelsItemCaption
+
+CreateExhibitRequestPanelsItem = typing.Union[CreateExhibitRequestPanelsItemCaption, CreateExhibitRequestPanelsItemAlt]

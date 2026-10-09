@@ -1,0 +1,77 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Planner
+  version: 2.4.0
+paths:
+  /plantings:
+    post:
+      operationId: schedulePlanting
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              x-fern-discriminated: false
+              oneOf:
+                - $ref: "#/components/schemas/Seedling"
+                - $ref: "#/components/schemas/Cutting"
+      responses:
+        "200":
+          description: The planting as recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Propagation"
+  /plantings/{planting_id}/origin:
+    get:
+      operationId: getOrigin
+      parameters:
+        - name: planting_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: How the planting was started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Origin"
+components:
+  schemas:
+    Origin:
+      x-fern-discriminated: false
+      oneOf:
+        - $ref: "#/components/schemas/Seedling"
+        - $ref: "#/components/schemas/Cutting"
+      discriminator:
+        propertyName: method
+        mapping:
+          seedling: "#/components/schemas/Seedling"
+          cutting: "#/components/schemas/Cutting"
+    Propagation:
+      x-fern-discriminated: false
+      oneOf:
+        - $ref: "#/components/schemas/Seedling"
+        - $ref: "#/components/schemas/Cutting"
+    Seedling:
+      type: object
+      required: [method, tray]
+      properties:
+        method:
+          type: string
+          enum: [seedling]
+        tray:
+          type: integer
+        germinated:
+          type: boolean
+    Cutting:
+      type: object
+      required: [method, stem_length]
+      properties:
+        method:
+          type: string
+          enum: [cutting]
+        stem_length:
+          type: number

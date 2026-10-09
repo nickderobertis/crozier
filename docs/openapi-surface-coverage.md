@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-108, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+109, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -666,6 +666,12 @@ drift gate over the pair:
   response, chosen as `has_wildcard_binary_response` chooses it, serves `*/*`
   with an inline string schema of format `binary`: the endpoint mode
   `build_example_inner` reads before it renders any parameter example.
+- `operation.requestBody:get-union-member` — one per GET Operation Object
+  whose request body's `application/json` schema is a `$ref` to a component
+  that is a `$ref` member of a component `oneOf` or `anyOf` whose members all
+  give one shared property a single string value, the union
+  `body_member_union` of `src/document_refusals/type_not_defined.rs` reads.
+  Fern drops a GET body, so the member stays a member and the union generates.
 - `operation.requestBody:body-prefixed-single-use` — one per Operation Object
   other than a GET or HEAD whose request body's `application/json` schema is a
   `$ref` to a `components.schemas` entry named `Body_…` that no other `$ref` of
@@ -876,7 +882,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 108 are node-local**, which is what makes them one family:
+**Seventy-one of the 109 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -885,7 +891,7 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-thirty-seven — `operation.operationId:duplicate`,
+thirty-eight — `operation.operationId:duplicate`,
 `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
 `schema.$ref:undeclared-component-head`,
 `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
@@ -898,6 +904,7 @@ thirty-seven — `operation.operationId:duplicate`,
 `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
 `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`,
 `operation.requestBody:body-prefixed-single-use`,
+`operation.requestBody:get-union-member`,
 `operation.requestBody:titled-inline-container-oas-three-zero`,
 `operation.responses:empty-schema-success-oas-three-zero`,
 `operation.responses:schemaless-text-success`,
