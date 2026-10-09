@@ -6324,7 +6324,8 @@ impl InlineHoister<'_> {
             self.hoist_object(&name, variant);
             return TypeRef::Named(name);
         }
-        // A map member whose value is an inline union names that value
+        // An `object` member declaring no properties whose map value is an
+        // inline union of two or more non-`null` members names that value
         // `{Variant}Value`, as the component builder's map member does, a `null`
         // alternative leaving it and making the value optional: the hand-written
         // `survey-map-value-union` fixture's `answers` offers a map of `anyOf:
@@ -6332,11 +6333,20 @@ impl InlineHoister<'_> {
         // `SubmitResponseRequestAnswersZeroValue = Union[int, str, bool]` under
         // `Dict[str, Optional[SubmitResponseRequestAnswersZeroValue]]`.
         if let Some(AdditionalProperties::Schema(value)) = &variant.additional_properties {
-            let union_value = value.one_of.as_ref().or(value.any_of.as_ref()).filter(|_| {
-                is_map(variant)
-                    && value.reference.is_none()
-                    && simple_nullable_member(value).is_none()
-            });
+            let union_value = value
+                .one_of
+                .as_ref()
+                .or(value.any_of.as_ref())
+                .filter(|members| {
+                    variant.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                        && variant.properties.is_empty()
+                        && value.reference.is_none()
+                        && members
+                            .iter()
+                            .filter(|member| !is_null_variant(member))
+                            .count()
+                            > 1
+                });
             if let Some(members) = union_value {
                 let value_name = format!(
                     "{}Value",

@@ -259,6 +259,7 @@ compares it. Row 224 is the one so far.
 | 331 | `confluent-kafka-connect` | github-raw | https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml | `8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Confluent's Kafka Connect API: connector-plugin configuration validation posts a plain string map with a declared request example; source SHA-256 `4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839` |
 | 332 | `netgsm-sms` | github-raw | https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json | `33ca38622067e3730479aded9e56f6b1151bfeb5` | MIT (the publisher repository's pinned `LICENSE`) | committed | NetGSM's SMS API: required query arrays beside JSON responses and JSON request-body content-type headers; source SHA-256 `9b728d109dc796d8dd166616d5be2425f4530703ef059ec0a561709421509ae3` |
 | 1200 | `offchain-metadata-tools` | github-raw | https://raw.githubusercontent.com/input-output-hk/offchain-metadata-tools/91eba72d6e5e3b17cd49f625c9546f2c82df5a65/docs/api/0.5.0.0/openapi.yaml | `91eba72d6e5e3b17cd49f625c9546f2c82df5a65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Input Output's Cardano token metadata server API (`tokens.cardano.org`): `GET /metadata/{subject}/properties/{properties}` answers an inline `oneOf` whose only member is `$ref Property`, which Fern returns as `Property` itself |
+| 1201 | `subsloth` | github-raw | https://raw.githubusercontent.com/knirski/subsloth/b4acb8e87ee47a4154f40c431b7c91d8d27d1b64/api/subsloth.openapi.yaml | `b4acb8e87ee47a4154f40c431b7c91d8d27d1b64` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The subsloth project's own media API contract: its component `SubtitlesValue` offers, as a `oneOf` member, an `object` map whose value is a `oneOf` of three non-null members |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -1637,6 +1638,22 @@ reference itself: the method returns `Property` and the list is
 The repairs: `build_endpoint` returns a one-`$ref` response composition as that
 reference, and `hoist_array_item_type` reads a one-`$ref` item composition the
 same way. The search that found it is
+[`witness-search-union-scenarios`](../../docs/openapi-surface/witness-search-union-scenarios/README.md).
+
+## Row 1201 — a `oneOf` member that is a map of a `oneOf`
+
+The subsloth project's media API contract declares `SubtitlesValue`, a component
+`oneOf` whose second member is `{type: object, additionalProperties: {oneOf:
+[a URI string, $ref SubtitleTrack, an array of SubtitleTrack]}}`: the census
+conjunction `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members`.
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 1201 | `subsloth` | a `oneOf` member that is an `object` map of an inline `oneOf` of two or more non-null members | ✅ byte-matched |
+
+The site is a component union, which lowers through the component builder's map
+member; the inline hoister's arm for the same shape is proven by the hand-written
+`survey-map-value-union` fixture. The search that found it is
 [`witness-search-union-scenarios`](../../docs/openapi-surface/witness-search-union-scenarios/README.md).
 
 ## Row 332 — query-array examples beside JSON bodies

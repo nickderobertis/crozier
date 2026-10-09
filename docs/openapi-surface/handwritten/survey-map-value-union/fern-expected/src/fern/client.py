@@ -8,6 +8,7 @@ from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.submit_response_request_answers import SubmitResponseRequestAnswers
+from .types.submit_response_request_metadata import SubmitResponseRequestMetadata
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -102,6 +103,7 @@ class FernApi:
         *,
         answers: SubmitResponseRequestAnswers,
         respondent: typing.Optional[str] = OMIT,
+        metadata: typing.Optional[SubmitResponseRequestMetadata] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -110,6 +112,8 @@ class FernApi:
         answers : SubmitResponseRequestAnswers
 
         respondent : typing.Optional[str]
+
+        metadata : typing.Optional[SubmitResponseRequestMetadata]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -130,7 +134,7 @@ class FernApi:
         )
         """
         _response = self._raw_client.submit_response(
-            answers=answers, respondent=respondent, request_options=request_options
+            answers=answers, respondent=respondent, metadata=metadata, request_options=request_options
         )
         return _response.data
 
@@ -240,6 +244,7 @@ class AsyncFernApi:
         *,
         answers: SubmitResponseRequestAnswers,
         respondent: typing.Optional[str] = OMIT,
+        metadata: typing.Optional[SubmitResponseRequestMetadata] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -248,6 +253,8 @@ class AsyncFernApi:
         answers : SubmitResponseRequestAnswers
 
         respondent : typing.Optional[str]
+
+        metadata : typing.Optional[SubmitResponseRequestMetadata]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -276,6 +283,6 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.submit_response(
-            answers=answers, respondent=respondent, request_options=request_options
+            answers=answers, respondent=respondent, metadata=metadata, request_options=request_options
         )
         return _response.data

@@ -2449,6 +2449,12 @@ tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	37	sdk-i
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
 tests/fixtures/strapi-rest-api/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected	src/fern/core/client_wrapper.py	41	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected	src/fern/core/client_wrapper.py	42	sdk-identity-header-prefix
+tests/fixtures/subsloth/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/svix-webhooks/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix

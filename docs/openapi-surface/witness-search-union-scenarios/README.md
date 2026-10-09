@@ -84,6 +84,21 @@ declarer that came out byte-equal.
 
 The other seven shapes have no declarer in either population.
 
+**The map-member arm, read as census conjunctions.** The repair for
+`map-value-union-not-hoisted` is `hoist_union_variant`'s cases 14a to 14d: an
+`object` member declaring no properties whose `additionalProperties` holds an
+inline `oneOf` (14a, 14c) or `anyOf` (14b, 14d) of two or more non-`null`
+members, under a `oneOf` head (14a, 14b) or an `anyOf` head (14c, 14d). The
+census counted each over the same two populations (13,234 documents read, 174
+unreadable). The `anyOf`-head pair needs no search: registered sources already
+declare both (`hasura-metadata`; `deepsearch-ds-v2`, `opencodeui`,
+`waylay-queries`), on component unions the inline arm never sees. Case 14b has
+no declarer. Case 14a has eight: the subsloth project's media API contract
+(`knirski/subsloth@b4acb8e87ee47a4154f40c431b7c91d8d27d1b64`, Apache-2.0 in the
+repository's `LICENSE`) is byte-equal and **registered as corpus row 1201**;
+`roe-ai/roe-python` differs from Fern apart from the shape, and the other six
+are refused by the pair. Every one is in [`screens.tsv`](screens.tsv).
+
 ## Witness search
 
 The search is **search-incomplete**: it covers APIs.guru and the acquired pools,
@@ -97,9 +112,12 @@ The feature-level keys:
 | `discriminated-extension` | `search-incomplete` | `discriminated-false-extension-ignored` | none-registrable |
 | `discriminator-property-name-extension` | `search-incomplete` | `discriminator-property-rename-extension-refused` | none-registrable |
 | `get-request-body-union-member` | `search-incomplete` | `get-request-body-union-member-refused` | none-registrable |
+| `oneof-map-variant-anyof-value` | `search-incomplete` | `map-value-union-not-hoisted` | none-registrable |
 
 The arm-level keys, each a handling site of a `golden` row that no registered
-golden reaches:
+golden reaches (the last three rows' witnesses, rows 1201, 305, 194, 196 and
+329 among them, declare their shape on component unions, which lower through
+the component builder instead):
 
 | key | verdict | arm | shape | renewed outcome |
 |---|---|---|---|---|
@@ -114,6 +132,9 @@ golden reaches:
 | `oneof-discriminated-union` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | `oneof-sibling-properties-base-class` | none-registrable |
 | `items-oneof-element` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]` | `titled-inline-object-array-item-union-members-any` | none-registrable |
 | `ref-pointer-undeclared-component-head` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | `discriminator-mapping-unresolved-members` | none-registrable |
+| `oneof-map-variant-oneof-value` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |
+| `anyof-map-variant-oneof-value` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |
+| `anyof-map-variant-anyof-value` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |
 
 `single-member-oneof-response-hoisted`'s two sites,
 `src/ir.rs::build_endpoint[Some\(schema\) if sole_reference_member\(schema\)\.is_some\(\) => \{]`

@@ -1474,6 +1474,12 @@ PREDICATES = {
         "primary type is not `null`, beside at least one member whose primary type is "
         "`null`"
     ),
+    "schema.oneOf:several-non-null-members": (
+        "one per Schema Object whose `oneOf` array holds two or more members whose primary type is not `null`"
+    ),
+    "schema.anyOf:several-non-null-members": (
+        "one per Schema Object whose `anyOf` array holds two or more members whose primary type is not `null`"
+    ),
     "schema.oneOf:sole-member": ("one per Schema Object whose `oneOf` array holds exactly one member"),
     "schema.anyOf:sole-member": ("one per Schema Object whose `anyOf` array holds exactly one member"),
     "schema.enum:string-valued": (
@@ -1765,6 +1771,10 @@ CONJUNCTIONS = {
     "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
     "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
     "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
+    "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
+    "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref`, declares no `oneOf` and holds an `anyOf` of two or more non-`null` members",
+    "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `anyOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
+    "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose `anyOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref`, declares no `oneOf` and holds an `anyOf` of two or more non-`null` members",
 }
 
 
@@ -2050,6 +2060,26 @@ CASES: dict[str, tuple[Case, ...]] = {
             selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
         ),
         Case(
+            "14a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        ),
+        Case(
+            "14b",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        ),
+        Case(
+            "14c",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        ),
+        Case(
+            "14d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        ),
+        Case(
             "12a",
             block="hoist_union_variant/oneOf",
             residual=(
@@ -2250,7 +2280,7 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "d18b44f1eb2c3221",
+    "hoist_union_variant": "1389956b0480011c",
     "prop_type_ref": "e2046726db880b3c",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
@@ -5646,6 +5676,8 @@ class Census:
             ]
             if len(non_null) == 1 and len(non_null) != len(members):
                 found.append(f"schema.{field}:sole-non-null-member")
+            if len(non_null) >= 2:
+                found.append(f"schema.{field}:several-non-null-members")
             if len(members) == 1:
                 found.append(f"schema.{field}:sole-member")
         if "enum" in node and string_valued(node, node.get("enum")):

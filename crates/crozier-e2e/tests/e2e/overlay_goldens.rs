@@ -57,7 +57,8 @@ const KINDS: &[Kind] = &[
     // - `offchain-metadata-tools`: no enum at all, so its literals tree differs
     //   only in the generator record and the absent `core/enum.py` — the one
     //   enum mode its one-member response union is proven under besides the
-    //   default.
+    //   default;
+    // - `subsloth`: inline property enums beside its map-of-`oneOf` member.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -70,6 +71,7 @@ const KINDS: &[Kind] = &[
             "enum-receiver-collision",
             "openfigi.com",
             "offchain-metadata-tools",
+            "subsloth",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

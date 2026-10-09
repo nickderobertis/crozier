@@ -2408,6 +2408,8 @@ class GrammarContractTests(unittest.TestCase):
             "Sixty-nine": 69,
             "Seventy": 70,
             "Seventy-one": 71,
+            "Seventy-two": 72,
+            "Seventy-three": 73,
             "four": 4,
             "five": 5,
             "six": 6,

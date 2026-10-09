@@ -52,6 +52,14 @@ client.submit_response(
 <dl>
 <dd>
 
+**metadata:** `typing.Optional[SubmitResponseRequestMetadata]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
 **request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration.
     
 </dd>

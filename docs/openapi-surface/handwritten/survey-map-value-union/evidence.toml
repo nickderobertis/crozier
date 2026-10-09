@@ -1,9 +1,36 @@
 fern_cli_version = "5.67.1"
 fern_python_sdk_version = "5.20.0"
-digest = "520da54398db73197d8c73a407e155f65b61a9d437fdad1812e637658a0ef546"
+digest = "955566d312ffb3b67fca797d553e9d62906b0a0691f4e7807e8f80d5b89a6da9"
 
 [[covers]]
 key = "additional-properties-schema"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+
+[[covers]]
+key = "oneof-map-variant-oneof-value"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+
+[[covers]]
+key = "oneof-map-variant-anyof-value"
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+
+[[covers]]
+key = "anyof-map-variant-oneof-value"
+arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
+
+[[covers]]
+key = "anyof-map-variant-anyof-value"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]'
 search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
 verdict = "search-incomplete"

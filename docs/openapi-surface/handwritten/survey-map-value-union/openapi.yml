@@ -26,6 +26,14 @@ paths:
                           - type: boolean
                           - type: "null"
                     - type: string
+                metadata:
+                  oneOf:
+                    - type: object
+                      additionalProperties:
+                        oneOf:
+                          - type: string
+                          - type: number
+                    - type: boolean
       responses:
         "204":
           description: Stored

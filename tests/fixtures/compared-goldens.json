@@ -642,6 +642,12 @@
     "tests/fixtures/standrig/expected": {},
     "tests/fixtures/steaminputdb/expected": {},
     "tests/fixtures/strapi-rest-api/expected": {},
+    "tests/fixtures/subsloth/expected": {},
+    "tests/fixtures/subsloth/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/svix-webhooks/expected": {},
     "tests/fixtures/swagger-petstore-distribution/expected-flat": {},
     "tests/fixtures/swagger-petstore-organization/expected-flat": {},

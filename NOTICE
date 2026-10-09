@@ -510,6 +510,13 @@ Additional one-member response union specification:
     The source bytes are unchanged; only Fern-generated output is vendored,
     with Python comments stripped as described above.
 
+  * subsloth media API contract: the project's own description at
+    https://raw.githubusercontent.com/knirski/subsloth/b4acb8e87ee47a4154f40c431b7c91d8d27d1b64/api/subsloth.openapi.yaml.
+    The repository's LICENSE at that same commit grants Apache-2.0
+    redistribution; corpus row 1201 records the immutable reference.
+    The source bytes are unchanged; only Fern-generated output is vendored,
+    with Python comments stripped as described above.
+
   * tests/fixtures/marimo-client-class-name/expected/ is generated from Marimo's
     published OpenAPI document at revision
     257ea7a983e2dbe4627f0168072fdcd538c93c5c of marimo-team/marimo, with a

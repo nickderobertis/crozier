@@ -5142,6 +5142,7 @@ const CORPORA: &[&Corpus] = &[
     &LOOTLOG_BATTLELOG,
     &EGO_MICROSERVICES,
     &OFFCHAIN_METADATA_TOOLS,
+    &SUBSLOTH,
 ];
 
 #[test]
@@ -8949,6 +8950,25 @@ const OFFCHAIN_METADATA_TOOLS: Corpus = Corpus {
 #[test]
 fn offchain_metadata_tools_matches_fern_output() {
     assert_committed_corpus_matches(&OFFCHAIN_METADATA_TOOLS);
+}
+
+/// The subsloth project's media API contract — corpus row 1201. Its component
+/// `SubtitlesValue` offers, as a `oneOf` member, an `object` map whose value is
+/// a `oneOf` of three non-null members.
+const SUBSLOTH: Corpus = Corpus {
+    api: "subsloth",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn subsloth_matches_fern_output() {
+    assert_committed_corpus_matches(&SUBSLOTH);
 }
 
 #[test]

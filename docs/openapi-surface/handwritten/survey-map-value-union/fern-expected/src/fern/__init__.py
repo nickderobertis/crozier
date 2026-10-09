@@ -6,7 +6,12 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import SubmitResponseRequestAnswers, SubmitResponseRequestAnswersZeroValue
+    from .types import (
+        SubmitResponseRequestAnswers,
+        SubmitResponseRequestAnswersZeroValue,
+        SubmitResponseRequestMetadata,
+        SubmitResponseRequestMetadataZeroValue,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
@@ -17,6 +22,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "SubmitResponseRequestAnswers": ".types",
     "SubmitResponseRequestAnswersZeroValue": ".types",
+    "SubmitResponseRequestMetadata": ".types",
+    "SubmitResponseRequestMetadataZeroValue": ".types",
     "__version__": ".version",
 }
 
@@ -49,5 +56,7 @@ __all__ = [
     "FernApi",
     "SubmitResponseRequestAnswers",
     "SubmitResponseRequestAnswersZeroValue",
+    "SubmitResponseRequestMetadata",
+    "SubmitResponseRequestMetadataZeroValue",
     "__version__",
 ]

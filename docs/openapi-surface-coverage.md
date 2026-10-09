@@ -444,7 +444,7 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-109, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+111, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
@@ -777,6 +777,10 @@ drift gate over the pair:
 - `schema.anyOf:sole-non-null-member` — one per Schema Object whose `anyOf`
   array holds exactly one member whose primary type is not `null`, beside at
   least one member whose primary type is `null`.
+- `schema.oneOf:several-non-null-members` — one per Schema Object whose `oneOf`
+  array holds two or more members whose primary type is not `null`.
+- `schema.anyOf:several-non-null-members` — one per Schema Object whose `anyOf`
+  array holds two or more members whose primary type is not `null`.
 - `schema.enum:string-valued` — one per Schema Object whose `enum` array
   yields at least one string value under crozier's own `string_enum_values` —
   the schema is `type: string`, or declares no `type` and every member is a
@@ -882,7 +886,7 @@ drift gate over the pair:
   `example`, then the first `examples` member, and the content test is the one
   `src/ir.rs`'s since-removed `example_is_schema_definition` made.
 
-**Seventy-one of the 109 are node-local**, which is what makes them one family:
+**Seventy-three of the 111 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1188,7 +1192,7 @@ which count members with or without `properties`. Cases 12c and 12d use the
 stricter selectors requiring that field; the historical search counts do not
 measure those stricter cases.
 
-The conjunctions are themselves a closed list of 96, declared in
+The conjunctions are themselves a closed list of 100, declared in
 `tools/surface-census/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair:
 
@@ -1456,6 +1460,22 @@ with a drift gate over the pair:
   one per Schema Object one of whose `anyOf` members writes an explicitly
   empty `properties` map beside `additionalProperties: false`, on an
   `object` primary type.
+- `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members` —
+  one per Schema Object one of whose `oneOf` members is an `object` declaring
+  no properties whose `additionalProperties` schema is no `$ref` and holds a
+  `oneOf` of two or more non-`null` members.
+- `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` —
+  one per Schema Object one of whose `oneOf` members is an `object` declaring
+  no properties whose `additionalProperties` schema is no `$ref`, declares no
+  `oneOf` and holds an `anyOf` of two or more non-`null` members.
+- `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members` —
+  one per Schema Object one of whose `anyOf` members is an `object` declaring
+  no properties whose `additionalProperties` schema is no `$ref` and holds a
+  `oneOf` of two or more non-`null` members.
+- `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` —
+  one per Schema Object one of whose `anyOf` members is an `object` declaring
+  no properties whose `additionalProperties` schema is no `$ref`, declares no
+  `oneOf` and holds an `anyOf` of two or more non-`null` members.
 - `schema.items>!schema.$ref&!schema.additionalProperties=false&!schema.anyOf&!schema.anyOf:discriminated-union&!schema.discriminator:inheritance-union&!schema.oneOf&!schema.oneOf:discriminated-union&!schema.properties:non-empty&!schema.type:primary=array` —
   one per Schema Object whose `items` value declares none of the members
   `nested_array_element`'s other cases carry, which is the residual arm its
@@ -2100,8 +2120,8 @@ is enumerable only where a selector can name it, so
 [the walk's 593](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
-[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
-branches those six functions of `src/ir.rs` offer a document, all 107 carry an exact
+[the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 111
+branches those six functions of `src/ir.rs` offer a document, all 111 carry an exact
 selector and **none** is an enumeration hole. Case 11's bare-object example arm
 is closed by its object-kind and schema-shaped conjunction, and the new
 example-kind family extends that same reading. **That bound has moved seven
@@ -4073,6 +4093,10 @@ composition, so the gate below fires — which is the chain overlap
 | 10b | the same, `anyOf` head | `schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
 | 10c | the same arm on such a variant writing `additionalProperties: false`, which the helper admits as its other spelling; `oneOf` head | `schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object` |
 | 10d | the same, `anyOf` head | `schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object` |
+| 14a | `if let Some(members) = union_value` — an `object` variant declaring no properties whose `additionalProperties` is a schema, no `$ref`, holding two or more non-`null` members, named `{Variant}Value` as a union alias of them with a `null` member making the map's value optional (the hand-written `survey-map-value-union` fixture); the value's `oneOf` spelling, which the arm reads first; `oneOf` head. An `additionalProperties: true` or `false` is no schema, so the descent fails on it by itself | `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members` |
+| 14b | the value's `anyOf` spelling, which the arm reads only where no `oneOf` is written; `oneOf` head | `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` |
+| 14c | 14a's value, `anyOf` head | `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members` |
+| 14d | 14b's value, `anyOf` head | `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` |
 | 12a | the closing `base_type_ref(variant)` — the residual arm, its selector **composed from the case table**; `oneOf` head. Only cases 1, 2a, 2c, 8a, 9, 13a and 13b are negatable: every case inside the `type: array` guard states a property of the item rather than of the variant. The nodes those cases claim are counted here too, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two cases of one table | `schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
 | 12b | the same, `anyOf` head | `schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
 

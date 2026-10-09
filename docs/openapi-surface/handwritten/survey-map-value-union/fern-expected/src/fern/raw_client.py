@@ -10,6 +10,7 @@ from .core.parse_error import ParsingError
 from .core.request_options import RequestOptions
 from .core.serialization import convert_and_respect_annotation_metadata
 from .types.submit_response_request_answers import SubmitResponseRequestAnswers
+from .types.submit_response_request_metadata import SubmitResponseRequestMetadata
 from pydantic import ValidationError
 
 
@@ -25,6 +26,7 @@ class RawFernApi:
         *,
         answers: SubmitResponseRequestAnswers,
         respondent: typing.Optional[str] = OMIT,
+        metadata: typing.Optional[SubmitResponseRequestMetadata] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
@@ -33,6 +35,8 @@ class RawFernApi:
         answers : SubmitResponseRequestAnswers
 
         respondent : typing.Optional[str]
+
+        metadata : typing.Optional[SubmitResponseRequestMetadata]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -48,6 +52,9 @@ class RawFernApi:
                 "respondent": respondent,
                 "answers": convert_and_respect_annotation_metadata(
                     object_=answers, annotation=SubmitResponseRequestAnswers, direction="write"
+                ),
+                "metadata": convert_and_respect_annotation_metadata(
+                    object_=metadata, annotation=SubmitResponseRequestMetadata, direction="write"
                 ),
             },
             headers={
@@ -78,6 +85,7 @@ class AsyncRawFernApi:
         *,
         answers: SubmitResponseRequestAnswers,
         respondent: typing.Optional[str] = OMIT,
+        metadata: typing.Optional[SubmitResponseRequestMetadata] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
@@ -86,6 +94,8 @@ class AsyncRawFernApi:
         answers : SubmitResponseRequestAnswers
 
         respondent : typing.Optional[str]
+
+        metadata : typing.Optional[SubmitResponseRequestMetadata]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -101,6 +111,9 @@ class AsyncRawFernApi:
                 "respondent": respondent,
                 "answers": convert_and_respect_annotation_metadata(
                     object_=answers, annotation=SubmitResponseRequestAnswers, direction="write"
+                ),
+                "metadata": convert_and_respect_annotation_metadata(
+                    object_=metadata, annotation=SubmitResponseRequestMetadata, direction="write"
                 ),
             },
             headers={

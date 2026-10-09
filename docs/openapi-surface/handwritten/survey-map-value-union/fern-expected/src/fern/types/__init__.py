@@ -8,9 +8,13 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .submit_response_request_answers import SubmitResponseRequestAnswers
     from .submit_response_request_answers_zero_value import SubmitResponseRequestAnswersZeroValue
+    from .submit_response_request_metadata import SubmitResponseRequestMetadata
+    from .submit_response_request_metadata_zero_value import SubmitResponseRequestMetadataZeroValue
 _dynamic_imports: typing.Dict[str, str] = {
     "SubmitResponseRequestAnswers": ".submit_response_request_answers",
     "SubmitResponseRequestAnswersZeroValue": ".submit_response_request_answers_zero_value",
+    "SubmitResponseRequestMetadata": ".submit_response_request_metadata",
+    "SubmitResponseRequestMetadataZeroValue": ".submit_response_request_metadata_zero_value",
 }
 
 
@@ -35,4 +39,9 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["SubmitResponseRequestAnswers", "SubmitResponseRequestAnswersZeroValue"]
+__all__ = [
+    "SubmitResponseRequestAnswers",
+    "SubmitResponseRequestAnswersZeroValue",
+    "SubmitResponseRequestMetadata",
+    "SubmitResponseRequestMetadataZeroValue",
+]
