@@ -571,7 +571,7 @@ fn python_method_name(line: &str) -> Option<&str> {
         .filter(|name| python_identifier(name))
 }
 
-fn optional_annotation(mut annotation: &str) -> &str {
+fn strip_optional(mut annotation: &str) -> &str {
     while let Some(inner) = annotation
         .strip_prefix("typing.Optional[")
         .and_then(|s| s.strip_suffix(']'))
@@ -598,7 +598,7 @@ fn request_example_context<'a>(
         let mut current = *target;
         let mut seen = BTreeSet::new();
         while seen.insert(current) {
-            current = optional_annotation(current);
+            current = strip_optional(current);
             if model_names.contains(current) || current.starts_with("typing.Dict[") {
                 out.object_aliases.insert((*name).to_string());
                 break;
@@ -831,7 +831,7 @@ fn multipart_example_lines<'a>(
                     let eligible = fields.iter().any(|(name, annotation)| {
                         encoded.contains(*name)
                             && (*name == "json"
-                                || context.object_aliases.contains(optional_annotation(
+                                || context.object_aliases.contains(strip_optional(
                                     annotation.split('=').next().unwrap_or(annotation),
                                 )))
                     });
