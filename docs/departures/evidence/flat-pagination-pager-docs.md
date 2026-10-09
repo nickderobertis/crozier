@@ -61,4 +61,6 @@ pager, crozier writes Fern's Pagination section and pager walk unchanged.
 `clients_extensions_measurements_match_fern` holds the departure to each flat
 case's `flat-pagination-pager-docs` row in
 `tests/fixtures/departures-ledger.tsv`, one at the first line of
-`README.md`'s differing window.
+`README.md`'s differing window, and `truefoundry_trueforge_flat_matches_fern`
+holds it the same way over the flat golden of the registered TrueForge
+document, whose cursor-paginated methods return their page models too.
