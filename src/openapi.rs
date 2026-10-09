@@ -3247,19 +3247,19 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
 /// wins, and any other media type's `itemSchema` is not read at all.
 fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
     let fold = |response: &mut Response| {
-        for (media_type, media) in &mut response.content {
-            let base = media_type.split(';').next().unwrap_or_default().trim();
-            if base.eq_ignore_ascii_case("text/event-stream") && media.schema.is_none() {
+        if let Some(media) = response.content.get_mut("text/event-stream") {
+            if media.schema.is_none() {
                 media.schema = media.item_schema.take();
             }
         }
     };
-    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+    for item in doc.paths.values_mut() {
         for slot in item.operation_slots() {
             let Some(op) = slot else { continue };
             op.responses.values_mut().for_each(fold);
         }
     }
+    // A shared response is folded before `normalize_responses` inlines it.
     doc.components.responses.values_mut().for_each(fold);
 }
 

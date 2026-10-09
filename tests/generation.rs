@@ -14717,6 +14717,24 @@ fn event_stream_schemas_decide_download_item_type_and_heading() {
         "{}",
         item["reference.md"]
     );
+    // A shared `components.responses` entry's `itemSchema` types the stream an
+    // operation referencing it returns.
+    let shared = render(
+        &streaming_operation("", "{}")
+            .replace(
+                "        \"200\":\n          description: Items.\n          content: {}\n",
+                "        \"200\": { $ref: \"#/components/responses/Feed\" }\n",
+            )
+            .replace(
+                "components:\n",
+                "components:\n  responses:\n    Feed:\n      description: Items.\n      content:\n        text/event-stream:\n          itemSchema: { $ref: \"#/components/schemas/Chunk\" }\n",
+            ),
+    );
+    assert!(
+        shared["src/acme/client.py"].contains("-> typing.Iterator[Chunk]:"),
+        "{}",
+        shared["src/acme/client.py"]
+    );
     // `itemSchema` on a buffered JSON body is not read: Fern 5.20.0 types it
     // `typing.Any`, as a media type declaring no schema.
     let json_item = render(&streaming_operation(
