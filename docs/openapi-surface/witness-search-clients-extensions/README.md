@@ -255,6 +255,14 @@ refusal class, whose probe and Fern record live in the refusal registry.
 |---|---|
 | `operation-pagination-nullable-response` | `refuse` (no declarer in the walk or the registered corpus) |
 
+## Group with types beside a child group
+
+The shape: an operation declaring an SDK group and method name whose group is a proper prefix of another operation's declared group and whose inline request body has an inline `enum` property (`operation.x-fern-sdk-group-name:types-beside-child-group`). Fern's group package exports its hoisted types and its child group together.
+
+| key | verdict | remaining work |
+|---|---|---|
+| `operation-group-types-beside-child-group` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+
 ## Results
 
 | key | result | fixture |
@@ -280,3 +288,4 @@ refusal class, whose probe and Fern record live in the refusal registry.
 | `operation-webhook-extension` | `none-registrable` | `auction-house-bids` |
 | `operation-pagination-offset` | `none-registrable` | `ledger-records-offset` |
 | `operation-pagination-boolean` | `none-registrable` | `beacon-registry-pages` |
+| `operation-group-types-beside-child-group` | `none-registrable` | `dock-yard-bookings` |

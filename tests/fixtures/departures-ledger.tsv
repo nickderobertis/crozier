@@ -53,6 +53,13 @@ docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expecte
 docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/depot-bin-ledger-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/dock-yard-bookings-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/ferry-berth-desk-literals/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -505,6 +512,12 @@ docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	sr
 docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ferry-berth-desk/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

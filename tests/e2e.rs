@@ -1963,6 +1963,11 @@ const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
         &["--enum-type", "literals"],
     ),
     (
+        "dock-yard-bookings-literals",
+        "docs/openapi-surface/handwritten/dock-yard-bookings/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
         "ferry-berth-desk-literals",
         "docs/openapi-surface/handwritten/ferry-berth-desk/openapi.yml",
         &["--enum-type", "literals"],

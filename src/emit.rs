@@ -1690,10 +1690,8 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         if ir.empty_endpoint_namespace && module == "_" {
             continue;
         }
-        if let Some(decls) = tag_type_modules.get(module.as_str()) {
-            files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
-        } else if let Some(names) = children.get(module.as_str()) {
-            let child_types: Vec<(String, Vec<String>)> = names
+        let child_types = |names: &[String]| -> Vec<(String, Vec<String>)> {
+            names
                 .iter()
                 .filter_map(|child| {
                     let decls = tag_type_modules.get(child.as_str())?;
@@ -1704,7 +1702,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                     exported.sort();
                     Some((module_stem(child).to_string(), exported))
                 })
-                .collect();
+                .collect()
+        };
+        if let Some(decls) = tag_type_modules.get(module.as_str()) {
+            let names = children.get(module.as_str()).cloned().unwrap_or_default();
+            files.push(tag_pkg_init_file(
+                &env,
+                pkg,
+                module,
+                decls,
+                &names,
+                &child_types(&names),
+            )?);
+        } else if let Some(names) = children.get(module.as_str()) {
+            let child_types = child_types(names);
             files.push(module_pkg_init_file(
                 &env,
                 pkg,
@@ -1924,7 +1935,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|decl| decl.module == "_")
             .map(|decl| &decl.decl)
             .collect();
-        files.push(tag_pkg_init_file(&env, pkg, "", &empty_namespace_types)?);
+        files.push(tag_pkg_init_file(
+            &env,
+            pkg,
+            "",
+            &empty_namespace_types,
+            &[],
+            &[],
+        )?);
     }
 
     // Generated `README.md` (usage examples from the first endpoint) and the
@@ -2250,17 +2268,38 @@ fn tag_pkg_init_file(
     pkg: &str,
     module: &str,
     decls: &[&TypeDecl],
+    children: &[String],
+    child_types: &[(String, Vec<String>)],
 ) -> Result<GeneratedFile> {
     let mut names: Vec<String> = decls
         .iter()
         .flat_map(|d| d.exported_names().into_iter().map(str::to_string))
         .collect();
     names.sort();
-    let type_checking = from_import_block(".types", &names, 4);
-    let pairs: Vec<(String, String)> = names
+    let mut type_checking = from_import_block(".types", &names, 4);
+    let mut pairs: Vec<(String, String)> = names
         .iter()
         .map(|n| (n.clone(), ".types".to_string()))
         .collect();
+    // A group with a child group exports the child too, after its own types
+    // (Fern's `yard/__init__.py` lists `from . import cranes` beside the
+    // `.types` it hoisted), and re-exports the child's hoisted types.
+    let child_names: Vec<String> = children
+        .iter()
+        .map(|child| module_stem(child).to_string())
+        .collect();
+    type_checking.push_str(&from_import_block(".", &child_names, 4));
+    for name in &child_names {
+        pairs.push((name.clone(), format!(".{name}")));
+        names.push(name.clone());
+    }
+    for (child, exported) in child_types {
+        type_checking.push_str(&from_import_block(&format!(".{child}"), exported, 4));
+        for name in exported {
+            pairs.push((name.clone(), format!(".{child}")));
+            names.push(name.clone());
+        }
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
         contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
