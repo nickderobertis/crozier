@@ -312,6 +312,7 @@ inventory=(
   lootlog_battlelog_matches_fern_output
   ego_microservices_matches_fern_output
   netgsm_sms_matches_fern_output
+  aws_mobileanalytics_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

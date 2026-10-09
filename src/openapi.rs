@@ -79,6 +79,27 @@ pub struct OpenApi {
     /// `x-crozier-base-path` when both appear.
     #[serde(rename = "x-fern-base-path", default)]
     pub base_path_fern: Option<BasePath>,
+    /// Explicit client-wide headers. (crozier spelling).
+    #[serde(rename = "x-crozier-global-headers", default)]
+    pub global_headers_crozier: Option<Vec<GlobalHeaderExtension>>,
+    /// Explicit client-wide headers. (fern spelling).
+    #[serde(rename = "x-fern-global-headers", default)]
+    pub global_headers_fern: Option<Vec<GlobalHeaderExtension>>,
+    /// Client-wide variables referenced by path parameters. (crozier spelling).
+    #[serde(rename = "x-crozier-sdk-variables", default)]
+    pub sdk_variables_crozier: Option<IndexMap<String, serde_json::Value>>,
+    /// Client-wide variables referenced by path parameters. (fern spelling).
+    #[serde(rename = "x-fern-sdk-variables", default)]
+    pub sdk_variables_fern: Option<IndexMap<String, serde_json::Value>>,
+}
+
+/// An explicitly declared client-wide header.
+#[derive(Debug, Clone, Deserialize)]
+pub struct GlobalHeaderExtension {
+    /// The header name sent on the wire.
+    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
+    /// The client constructor argument name.
+    pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
 
 /// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
@@ -205,6 +226,23 @@ impl OpenApi {
         self.base_path_crozier
             .as_ref()
             .or(self.base_path_fern.as_ref())
+    }
+
+    /// Explicit client-wide headers, with canonical spelling precedence.
+    #[must_use]
+    pub fn global_header_extensions(&self) -> &[GlobalHeaderExtension] {
+        self.global_headers_crozier
+            .as_deref()
+            .or(self.global_headers_fern.as_deref())
+            .unwrap_or_default()
+    }
+
+    /// Client-wide variables, with canonical spelling precedence.
+    #[must_use]
+    pub fn sdk_variables(&self) -> Option<&IndexMap<String, serde_json::Value>> {
+        self.sdk_variables_crozier
+            .as_ref()
+            .or(self.sdk_variables_fern.as_ref())
     }
 }
 
@@ -837,6 +875,61 @@ pub struct Parameter {
     /// Named OpenAPI examples, in declaration order.
     #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
+    /// Whether this parameter leaves the generated SDK. (crozier spelling).
+    #[serde(rename = "x-crozier-ignore", default)]
+    pub ignore_crozier: Option<bool>,
+    /// Whether this parameter leaves the generated SDK. (fern spelling).
+    #[serde(rename = "x-fern-ignore", default)]
+    pub ignore_fern: Option<bool>,
+    /// The SDK argument name; the wire name remains unchanged. (crozier spelling).
+    #[serde(rename = "x-crozier-parameter-name", default)]
+    pub parameter_name_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The SDK argument name; the wire name remains unchanged. (fern spelling).
+    #[serde(rename = "x-fern-parameter-name", default)]
+    pub parameter_name_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The generated argument default. (crozier spelling).
+    #[serde(rename = "x-crozier-default", default)]
+    pub default_crozier: Option<serde_json::Value>,
+    /// The generated argument default. (fern spelling).
+    #[serde(rename = "x-fern-default", default)]
+    pub default_fern: Option<serde_json::Value>,
+    /// The document SDK variable supplying this path parameter. (crozier spelling).
+    #[serde(rename = "x-crozier-sdk-variable", default)]
+    pub sdk_variable_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The document SDK variable supplying this path parameter. (fern spelling).
+    #[serde(rename = "x-fern-sdk-variable", default)]
+    pub sdk_variable_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+}
+
+impl Parameter {
+    /// Whether the canonical ignore extension removes this parameter.
+    #[must_use]
+    pub fn ignored(&self) -> bool {
+        self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The canonical SDK argument name, falling back to the wire name.
+    #[must_use]
+    pub fn sdk_name(&self) -> &str {
+        self.parameter_name_crozier
+            .as_deref()
+            .or(self.parameter_name_fern.as_deref())
+            .unwrap_or(&self.name)
+    }
+
+    /// The canonical parameter default.
+    #[must_use]
+    pub fn sdk_default(&self) -> Option<&serde_json::Value> {
+        self.default_crozier.as_ref().or(self.default_fern.as_ref())
+    }
+
+    /// The canonical SDK variable supplying this parameter.
+    #[must_use]
+    pub fn sdk_variable(&self) -> Option<&str> {
+        self.sdk_variable_crozier
+            .as_deref()
+            .or(self.sdk_variable_fern.as_deref())
+    }
 }
 
 /// The value-bearing portion of an OpenAPI parameter example.
@@ -1754,6 +1847,14 @@ pub enum AdditionalProperties {
     Bool(bool),
     /// A schema describing the map's values.
     Schema(Box<Schema>),
+}
+
+/// Version header selected for refusal validation, with canonical precedence.
+pub(crate) fn refusal_version_header(node: &serde_yaml_ng::Value) -> Option<&str> {
+    node.get("x-crozier-version")
+        .or_else(|| node.get("x-fern-version"))?
+        .get("header")
+        .and_then(serde_yaml_ng::Value::as_str)
 }
 
 /// The declared SDK parameter name used by refusal validation only.
@@ -3314,7 +3415,11 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 pub fn filter_ignored(doc: &mut OpenApi) {
     // Remove the ignored operations, then drop paths that are now empty.
     for item in doc.paths.values_mut() {
+        item.parameters.retain(|parameter| !parameter.ignored());
         for slot in item.operation_slots() {
+            if let Some(op) = slot.as_mut() {
+                op.parameters.retain(|parameter| !parameter.ignored());
+            }
             if slot.as_ref().is_some_and(|op| op.ignored()) {
                 *slot = None;
             }
@@ -4979,4 +5084,43 @@ mod refusal_name_tests {
             assert_eq!(schema.property_name(), expected, "{text}");
         }
     }
+}
+#[test]
+fn parameter_extensions_prefer_the_canonical_spelling() {
+    let parameter: Parameter = serde_json::from_value(serde_json::json!({
+        "name": "wire", "in": "query",
+        "x-fern-ignore": true, "x-crozier-ignore": false,
+        "x-fern-parameter-name": "old", "x-crozier-parameter-name": "new",
+        "x-fern-default": "10", "x-crozier-default": "20",
+        "x-fern-sdk-variable": "oldVariable", "x-crozier-sdk-variable": "newVariable"
+    }))
+    .unwrap();
+    assert!(!parameter.ignored());
+    assert_eq!(parameter.sdk_name(), "new");
+    assert_eq!(parameter.sdk_default(), Some(&serde_json::json!("20")));
+    assert_eq!(parameter.sdk_variable(), Some("newVariable"));
+    let fallback: Parameter = serde_json::from_value(serde_json::json!({"name": "wire"})).unwrap();
+    assert_eq!(fallback.sdk_name(), "wire");
+    assert!(fallback.sdk_default().is_none());
+    assert!(fallback.sdk_variable().is_none());
+}
+
+#[test]
+fn ignored_parameters_leave_operations_and_path_items() {
+    let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+        "openapi": "3.0.3", "paths": {"/signals": {
+            "parameters": [{"name": "old", "in": "query", "x-fern-ignore": true}],
+            "get": {"parameters": [
+                {"name": "removed", "in": "query", "x-crozier-ignore": true},
+                {"name": "kept", "in": "query", "x-fern-ignore": true, "x-crozier-ignore": false}
+            ], "responses": {"200": {"description": "Signals"}}}
+        }}
+    }))
+    .unwrap();
+    filter_ignored(&mut doc);
+    let item = &doc.paths["/signals"];
+    assert!(item.parameters.is_empty());
+    let operation = item.operations()[0].1;
+    assert_eq!(operation.parameters.len(), 1);
+    assert_eq!(operation.parameters[0].name, "kept");
 }

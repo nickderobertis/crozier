@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "dadf49aa387a26860d83f533e0ce1e25e4a2d187f8be99dc7ca901845cc05b50"
+
+[[covers]]
+key = "base-path-extension"
+search = "docs/openapi-surface/oas31-extensions.md#witness-search-exhaustive"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-parameters-extension-evidence/README.md"

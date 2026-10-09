@@ -72,6 +72,7 @@ const KINDS: &[Kind] = &[
             "openfigi.com",
             "offchain-metadata-tools",
             "subsloth",
+            "aws-mobileanalytics",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

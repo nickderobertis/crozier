@@ -63,6 +63,19 @@
     not have.
   evidence: docs/departures/evidence/constant-header-docs-arguments.md
 
+- id: date-header-constructor-example
+  kind: fern-defect
+  trigger: >-
+    A promoted optional date header in a client constructor's Python examples.
+  fern: >-
+    The constructor receives a YOUR placeholder string despite its dt.date annotation.
+  crozier: >-
+    The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
+  reason: >-
+    The placeholder is invalid for the declared date schema. The correction uses the
+    certified generator's own date-example form and leaves string placeholders intact.
+  evidence: docs/departures/evidence/date-header-constructor-example.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-
@@ -207,6 +220,22 @@
     release metadata outside the generated code.
   evidence: docs/departures/evidence/sdk-name-version-headers.md
 
+- id: sdk-variable-docs-examples
+  kind: fern-defect
+  trigger: >-
+    A path parameter lifted into a required client field by a document SDK
+    variable: README.md and reference.md examples and parameter documentation.
+  fern: >-
+    Constructors omit the required field; method documentation retains the
+    lifted parameter and positional placeholder although the method has no
+    positional argument.
+  crozier: >-
+    Constructors pass the lifted field by keyword and method documentation
+    follows the generated signature.
+  reason: >-
+    Constructor examples fail to bind because their required field is missing;
+    method examples pass an argument the generated method does not accept.
+  evidence: docs/departures/evidence/sdk-variable-docs-examples.md
 - id: union-value-wrapper-docs-example
   kind: fern-defect
   trigger: >-

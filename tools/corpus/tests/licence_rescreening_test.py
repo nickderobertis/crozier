@@ -151,7 +151,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
             "curedao/curedao-monorepo",
         ):
             self.assertIn(expected, documents, f"{expected} fell out of the set")
-        for expected in ("security.md:509", "parameters.md:417", "schemas.md:1273"):
+        for expected in ("security.md:509", "parameters.md:432", "schemas.md:1273"):
             self.assertIn(expected, rows, f"{expected} fell out of the in-scope rows")
 
     def test_a_pooled_region_row_splits_into_its_members(self) -> None:
