@@ -2876,7 +2876,8 @@ fn server_extensions_read_crozier_spelling_over_fern() {
 /// a server name making a digit-led environment member, an operation server
 /// named `base` (the document's own URL), a credential named like a client
 /// constructor parameter, a header prefix with braces, which Fern writes into
-/// an f-string, and an idempotency header that is no HTTP header name. A keyword name is escaped instead, as Fern escapes it
+/// an f-string, an idempotency header that is no HTTP header name, and a basic
+/// scheme naming its username and password alike. A keyword name is escaped instead, as Fern escapes it
 /// (`class` is `class_`), and generates.
 #[test]
 fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
@@ -2926,6 +2927,14 @@ fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 ping("      x-fern-idempotent: true\n")
             ),
             "names `Idem\\\"pot`, which is no HTTP header name",
+        ),
+        (
+            "one-basic-name",
+            format!(
+                "security: [{{Login: []}}]\n{}components:\n  securitySchemes:\n    Login: {{type: http, scheme: basic, x-fern-basic: {{username: {{name: who}}, password: {{name: who}}}}}}\n",
+                ping("")
+            ),
+            "names both its username and its password `who`",
         ),
         (
             "timeout-credential",

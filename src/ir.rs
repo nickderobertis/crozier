@@ -382,17 +382,21 @@ fn python_parameter_name(name: &str) -> String {
 }
 
 impl Ir {
-    /// Why what an extension declares cannot be emitted, if it cannot: a
-    /// server name whose environment member starts with a digit, which Fern's
-    /// examples write as an attribute that is not Python (`Environment.1ST`); an
-    /// operation server named `base`, the environment field holding the
-    /// document's own URL; or a credential named like one of the root client's
-    /// own constructor parameters; an idempotency header that is no HTTP header
-    /// name, whose quotes or backslashes would break the generated literal; or a
-    /// credential prefix carrying `{` or `}`,
-    /// which Fern writes into the header's f-string, where it is interpolation
-    /// rather than text. Fern's output for each breaks, loses or renames what
-    /// the author declared, so crozier asks for another value.
+    /// Why what an extension declares cannot be emitted, if it cannot. Fern's
+    /// output for each of these breaks, loses or renames what the author
+    /// declared, so crozier asks for another value:
+    ///
+    /// - an idempotency header that is no HTTP header name, whose quotes or
+    ///   backslashes would break the generated literal;
+    /// - a credential prefix carrying `{` or `}`, which Fern writes into the
+    ///   header's f-string, where it is interpolation rather than text;
+    /// - a server name whose environment member starts with a digit, which
+    ///   Fern's examples write as an attribute that is not Python
+    ///   (`Environment.1ST`);
+    /// - an operation server named `base`, the environment field holding the
+    ///   document's own URL;
+    /// - a basic scheme's username and password of one name, or a credential
+    ///   named like one of the root client's own constructor parameters.
     #[must_use]
     pub fn unemittable_extension(&self) -> Option<String> {
         // An HTTP header name is a token (RFC 9110 `tchar`), which no quote or
@@ -449,6 +453,18 @@ impl Ir {
                      URL; give that server another name"
                         .to_string(),
                 );
+            }
+        }
+        if let Auth::Basic {
+            username, password, ..
+        } = &self.auth
+        {
+            if username.param == password.param {
+                return Some(format!(
+                    "the basic scheme's `x-fern-basic` (or `x-crozier-basic`) names both its \
+                     username and its password `{}`; give them distinct names",
+                    username.param
+                ));
             }
         }
         self.auth
@@ -1724,6 +1740,7 @@ pub struct EndpointExtensions {
     pub retries_disabled: bool,
     /// Whether the operation declared a pagination contract the layout leaves
     /// without a pager (the flat tree): the pagination runtime still ships.
+    // llmlint: ignore[invalid_states_unrepresentable] `Endpoint::pagination` predates this field and the standing ruling for this change forbids retyping existing IR fields, so the one enum the finding asks for cannot replace it; this flag is set only where the flat layout takes that pagination away, so the two are never both set.
     pub pagination_declared: bool,
     /// In a multi-URL environment, the field whose URL the operation's requests
     /// go to (`base`, or an operation server's name); `None` otherwise.
