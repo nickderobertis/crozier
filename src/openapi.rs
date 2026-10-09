@@ -3242,17 +3242,6 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
     response.clone()
 }
 
-/// Inline every `components.responses` `$ref` an operation points at, so generation
-/// sees each response's real `content` (and thus its response model) rather than an
-/// empty `$ref` shell.
-///
-/// Real specs frequently declare a status → response mapping as
-/// `"200": { $ref: "#/components/responses/GetActivitiesResponse" }`, sharing one
-/// response across operations. crozier reads only an inline `Response`, so an
-/// unresolved `$ref` looks like a response with no body — the endpoint generates
-/// `-> None` and the response schema is never reached (and, if it was only reachable
-/// through such a response, never generated). Resolving here restores both. Inert on
-/// specs that inline every response (every synthetic fixture).
 /// Type a `text/event-stream` response declaring only an `itemSchema` from that
 /// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
 /// wins, and any other media type's `itemSchema` is not read at all.
@@ -3274,6 +3263,17 @@ fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
     doc.components.responses.values_mut().for_each(fold);
 }
 
+/// Inline every `components.responses` `$ref` an operation points at, so generation
+/// sees each response's real `content` (and thus its response model) rather than an
+/// empty `$ref` shell.
+///
+/// Real specs frequently declare a status → response mapping as
+/// `"200": { $ref: "#/components/responses/GetActivitiesResponse" }`, sharing one
+/// response across operations. crozier reads only an inline `Response`, so an
+/// unresolved `$ref` looks like a response with no body — the endpoint generates
+/// `-> None` and the response schema is never reached (and, if it was only reachable
+/// through such a response, never generated). Resolving here restores both. Inert on
+/// specs that inline every response (every synthetic fixture).
 fn normalize_responses(doc: &mut OpenApi) {
     let defs = doc.components.responses.clone();
     for item in doc.paths.values_mut() {
