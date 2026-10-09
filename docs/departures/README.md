@@ -245,8 +245,8 @@ when the two differ.
 - **Kind:** `fern-defect`
 - **Trigger:** A string enum reference intersected with a scalar string pattern, whose first declared enum value is rejected by that pattern, in a generated default usage example. The comparison has the parsed source document.
 - **Fern writes:** The first enum member, or its literal string, as the example argument.
-- **crozier writes:** The first declared enum value admitted by the scalar-member pattern, retaining the enum alias, annotation, description and all other output.
-- **Why:** Validating Fern's generated example value against the property's allOf schema rejects it; the replacement satisfies both the enum and pattern.
+- **crozier writes:** The first declared enum value valid against the complete schema it documents: the enum, the scalar member and the enclosing schema's own constraints. Where no value is valid, or a constraint cannot be decided, Fern's example stands. The enum alias, annotation, description and all other output are retained.
+- **Why:** Validating Fern's generated example value against the property's allOf schema rejects it; the replacement satisfies every constraint of it.
 - **Evidence:** [`docs/departures/evidence/pattern-narrowed-enum-example.md`](../../docs/departures/evidence/pattern-narrowed-enum-example.md)
 
 ### `readme-client-class-casing`

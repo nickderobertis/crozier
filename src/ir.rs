@@ -13196,32 +13196,139 @@ fn scalar_narrowed_enum_type(
 
 /// Select a schema-valid default example without changing the enum's public
 /// values: the scalar allOf member constrains those values at this use site.
+///
+/// Each member is validated against the complete schema the example documents:
+/// the enum, the scalar member, and the enclosing schema's own keywords beside
+/// its `allOf`. Fern's first member stands whenever it is valid, no member is,
+/// or any constraint cannot be decided here — one this validator does not
+/// read, or one load normalization dropped (`discarded_composition`).
 fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
     let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
-    // A pattern-only correction cannot certify additional string constraints,
-    // including any held in a composition load normalization discarded.
-    if [target, member].iter().any(|node| {
-        node.discarded_composition
-            || node.min_length.is_some()
-            || node.max_length.is_some()
-            || node.const_value.is_some()
-            || node.not_schema.is_some()
-            || node.format.is_some()
-    }) || target.pattern.is_some()
+    // The enclosing schema keeps its `allOf` only when it is not string-typed,
+    // so any `type` it declares contradicts the string members, and any other
+    // composition or reference beside the `allOf` is beyond this validator.
+    if schema.ty.is_some()
+        || schema.reference.is_some()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
     {
         return None;
     }
-    let pattern = fancy_regex::Regex::new(member.pattern.as_deref()?).ok()?;
     let values = target.enum_values.as_ref()?;
     let first = values.first()?.as_str()?;
-    if pattern.is_match(first).ok()? {
+    let admits = |value: &str| -> Option<bool> {
+        for node in [schema, target, member] {
+            if !string_node_admits(node, value)? {
+                return Some(false);
+            }
+        }
+        Some(true)
+    };
+    if admits(first)? {
         return None;
     }
-    values
-        .iter()
-        .filter_map(serde_json::Value::as_str)
-        .find(|value| pattern.is_match(value).unwrap_or(false))
-        .map(str::to_owned)
+    for value in values.iter().filter_map(serde_json::Value::as_str) {
+        if admits(value)? {
+            return Some(value.to_owned());
+        }
+    }
+    None
+}
+
+/// Whether one string `value` satisfies `node`'s own string constraints, or
+/// `None` when that cannot be decided: a dropped composition, a dropped
+/// conditional, a `format`, an unreadable pattern or an unread `not` keyword.
+fn string_node_admits(node: &Schema, value: &str) -> Option<bool> {
+    if node.discarded_composition || node.drops_applicator() || node.format.is_some() {
+        return None;
+    }
+    let mut admitted = string_keywords_admit(
+        value,
+        node.enum_values.as_deref(),
+        node.const_value.as_ref(),
+        node.pattern.as_deref(),
+        node.min_length,
+        node.max_length,
+    )?;
+    if let Some(not) = &node.not_schema {
+        admitted &= !not_schema_admits(not, value)?;
+    }
+    Some(admitted)
+}
+
+/// The string keywords JSON Schema applies to a string instance. Lengths count
+/// code points, as JSON Schema does.
+fn string_keywords_admit(
+    value: &str,
+    enum_values: Option<&[serde_json::Value]>,
+    const_value: Option<&serde_json::Value>,
+    pattern: Option<&str>,
+    min_length: Option<u64>,
+    max_length: Option<u64>,
+) -> Option<bool> {
+    let length = u64::try_from(value.chars().count()).ok()?;
+    let matched = match pattern {
+        Some(pattern) => fancy_regex::Regex::new(pattern)
+            .ok()?
+            .is_match(value)
+            .ok()?,
+        None => true,
+    };
+    Some(
+        matched
+            && enum_values
+                .is_none_or(|values| values.iter().any(|item| item.as_str() == Some(value)))
+            && const_value.is_none_or(|constant| constant.as_str() == Some(value))
+            && min_length.is_none_or(|minimum| length >= minimum)
+            && max_length.is_none_or(|maximum| length <= maximum),
+    )
+}
+
+/// Whether a `not` keyword's schema admits `value`. Only the string keywords
+/// [`string_keywords_admit`] reads, `type` and annotations are decided; any
+/// other keyword leaves the answer undecided.
+fn not_schema_admits(not: &serde_json::Value, value: &str) -> Option<bool> {
+    let object = match not {
+        serde_json::Value::Bool(admits) => return Some(*admits),
+        serde_json::Value::Object(object) => object,
+        _ => return None,
+    };
+    const ANNOTATIONS: [&str; 5] = ["description", "title", "example", "examples", "default"];
+    const DECIDED: [&str; 6] = ["type", "enum", "const", "pattern", "minLength", "maxLength"];
+    if object
+        .keys()
+        .any(|key| !ANNOTATIONS.contains(&key.as_str()) && !DECIDED.contains(&key.as_str()))
+    {
+        return None;
+    }
+    let typed = match object.get("type") {
+        None => true,
+        Some(serde_json::Value::String(ty)) => ty == "string",
+        Some(_) => return None,
+    };
+    let length = |key: &str| match object.get(key) {
+        None => Some(None),
+        Some(bound) => bound.as_u64().map(Some),
+    };
+    let pattern = match object.get("pattern") {
+        None => None,
+        Some(pattern) => Some(pattern.as_str()?),
+    };
+    let enum_values = match object.get("enum") {
+        None => None,
+        Some(values) => Some(values.as_array()?.as_slice()),
+    };
+    Some(
+        typed
+            && string_keywords_admit(
+                value,
+                enum_values,
+                object.get("const"),
+                pattern,
+                length("minLength")?,
+                length("maxLength")?,
+            )?,
+    )
 }
 
 /// An enum component intersected with one scalar string member.

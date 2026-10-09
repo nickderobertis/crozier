@@ -80,41 +80,82 @@ fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
     assert!(render(&accepted_first)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
     let malformed = source.replace("^(?!preparation$).*$", "'['");
     assert!(render(&malformed)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
-    // A pattern-only correction cannot certify any further string constraint,
-    // on the scalar member or on the enum it narrows, so each keeps Fern's first
-    // member as the example.
-    for member in [
-        "minLength: 100",
-        "maxLength: 1",
-        "const: recording",
-        "not: { enum: [recording] }",
-        "format: uuid",
-    ] {
-        let further_constraint = source.replace(
+    // Every member is validated against the complete schema: the scalar
+    // member, the enum it narrows and the enclosing schema beside the `allOf`.
+    // A constraint `recording` satisfies keeps the correction; one it fails
+    // leaves no valid member, and one crozier cannot decide declines, so both
+    // keep Fern's first member.
+    let constrained = |site: &str, constraint: &str| match site {
+        "member" => source.replace(
             "\n            pattern: ^(?!preparation$).*$",
-            &format!("\n            {member}\n            pattern: ^(?!preparation$).*$"),
-        );
+            &format!("\n            {constraint}\n            pattern: ^(?!preparation$).*$"),
+        ),
+        "target" => source.replace(
+            "    Phase:\n      type: string\n",
+            &format!("    Phase:\n      type: string\n      {constraint}\n"),
+        ),
+        _ => source.replace(
+            "        phase:\n          allOf:\n",
+            &format!("        phase:\n          {constraint}\n          allOf:\n"),
+        ),
+    };
+    for (site, constraint, member) in [
+        ("member", "minLength: 9", "RECORDING"),
+        ("member", "maxLength: 9", "RECORDING"),
+        ("member", "const: recording", "RECORDING"),
+        ("member", "not: { enum: [preparation] }", "RECORDING"),
+        ("member", "not: { type: string, maxLength: 3 }", "RECORDING"),
+        ("member", "not: false", "RECORDING"),
+        ("member", "minLength: 100", "PREPARATION"),
+        ("member", "maxLength: 1", "PREPARATION"),
+        ("member", "const: preparation", "PREPARATION"),
+        ("member", "not: { enum: [recording] }", "PREPARATION"),
+        ("member", "not: {}", "PREPARATION"),
+        ("member", "not: true", "PREPARATION"),
+        ("member", "format: uuid", "PREPARATION"),
+        ("member", "not: { format: uuid }", "PREPARATION"),
+        ("member", "not: { type: integer }", "RECORDING"),
+        ("member", "not: { type: [string] }", "PREPARATION"),
+        ("member", "not: { pattern: 1 }", "PREPARATION"),
+        ("member", "not: { enum: recording }", "PREPARATION"),
+        ("member", "not: { maxLength: -1 }", "PREPARATION"),
+        ("member", "not: [recording]", "PREPARATION"),
+        ("member", "if: { maxLength: 1 }", "PREPARATION"),
+        ("target", "pattern: ^.*$", "RECORDING"),
+        ("target", "minLength: 100", "PREPARATION"),
+        ("target", "maxLength: 1", "PREPARATION"),
+        ("target", "format: uuid", "PREPARATION"),
+        ("target", "not: { enum: [recording] }", "PREPARATION"),
+        ("target", "$dynamicRef: '#meta'", "PREPARATION"),
+        ("target", "$recursiveRef: '#'", "PREPARATION"),
+        ("enclosing", "maxLength: 9", "RECORDING"),
+        ("enclosing", "maxLength: 8", "PREPARATION"),
+        ("enclosing", "pattern: ^prep", "PREPARATION"),
+        ("enclosing", "type: array", "PREPARATION"),
+        (
+            "enclosing",
+            "$ref: '#/components/schemas/Phase'",
+            "PREPARATION",
+        ),
+        ("enclosing", "anyOf: [{ minLength: 1 }]", "PREPARATION"),
+        ("enclosing", "oneOf: [{ minLength: 1 }]", "PREPARATION"),
+    ] {
+        let changed = constrained(site, constraint);
+        assert_ne!(changed, source, "{site} {constraint}");
+        let expected = format!("phase=MeasurementPhase.{member},");
         assert!(
-            render(&further_constraint)["README.md"]
-                .contains("phase=MeasurementPhase.PREPARATION,"),
-            "member {member}"
+            render(&changed)["README.md"].contains(&expected),
+            "{site} {constraint}: expected {expected}"
         );
     }
+    // A composition on the enum is discarded at load; its constraints still
+    // bind the value, so the correction declines whatever they say.
     for target in [
-        "minLength: 100",
-        "maxLength: 1",
-        "format: uuid",
-        "pattern: ^.*$",
-        "not: { enum: [recording] }",
         "allOf: [{ type: string }]",
         "anyOf: [{ minLength: 1 }]",
         "oneOf: [{ maxLength: 20 }]",
     ] {
-        let further_constraint = source.replace(
-            "    Phase:\n      type: string\n",
-            &format!("    Phase:\n      type: string\n      {target}\n"),
-        );
-        assert_ne!(further_constraint, source);
+        let further_constraint = constrained("target", target);
         assert!(
             render(&further_constraint)["README.md"]
                 .contains("phase=MeasurementPhase.PREPARATION,"),

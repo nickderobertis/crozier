@@ -1217,9 +1217,32 @@ pub struct Schema {
     /// so a correction that cannot see it must decline.
     #[serde(skip)]
     pub(crate) discarded_composition: bool,
+    /// Whether the node declares an applicator crozier never reads — `if`, or a
+    /// `$dynamicRef`/`$recursiveRef` — which can still constrain an instance.
+    /// Only their presence is kept, so a correction that validates a value
+    /// against this node declines rather than ignore them.
+    #[serde(rename = "if", default, deserialize_with = "de_present")]
+    pub(crate) conditional: bool,
+    #[serde(rename = "$dynamicRef", default, deserialize_with = "de_present")]
+    pub(crate) dynamic_ref: bool,
+    #[serde(rename = "$recursiveRef", default, deserialize_with = "de_present")]
+    pub(crate) recursive_ref: bool,
+}
+
+/// Record only that a keyword is present, whatever its value.
+fn de_present<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> std::result::Result<bool, D::Error> {
+    IgnoredAny::deserialize(deserializer).map(|_| true)
 }
 
 impl Schema {
+    /// Whether this node declares an applicator crozier drops at load
+    /// (`if`, `$dynamicRef`, `$recursiveRef`).
+    pub(crate) fn drops_applicator(&self) -> bool {
+        self.conditional || self.dynamic_ref || self.recursive_ref
+    }
+
     /// Whether this component schema is marked ignored and must not be emitted. The
     /// `x-crozier-ignore` flag is canonical: an explicit `false` keeps the schema
     /// even when `x-fern-ignore: true` is present (see the [dual-header

@@ -165,11 +165,14 @@
   fern: >-
     The first enum member, or its literal string, as the example argument.
   crozier: >-
-    The first declared enum value admitted by the scalar-member pattern,
-    retaining the enum alias, annotation, description and all other output.
+    The first declared enum value valid against the complete schema it
+    documents: the enum, the scalar member and the enclosing schema's own
+    constraints. Where no value is valid, or a constraint cannot be decided,
+    Fern's example stands. The enum alias, annotation, description and all
+    other output are retained.
   reason: >-
     Validating Fern's generated example value against the property's allOf
-    schema rejects it; the replacement satisfies both the enum and pattern.
+    schema rejects it; the replacement satisfies every constraint of it.
   evidence: docs/departures/evidence/pattern-narrowed-enum-example.md
 
 - id: readme-client-class-casing

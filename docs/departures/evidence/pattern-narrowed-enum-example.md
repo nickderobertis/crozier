@@ -39,23 +39,70 @@ examples, and both endpoints’ synchronous and asynchronous client docstrings. 
 invocation reads each actual imported enum member's wire value; the literals
 invocation reads each actual AST string argument.
 
-## Where the correction declines
+## Validity against the complete schema
 
-The replacement is checked against the pattern only, so crozier declines it,
-writing Fern's first member byte for byte, whenever the enum or the scalar
-member carries any other string constraint: `minLength`, `maxLength`, `const`,
-`not`, `format`, a pattern on the enum itself, or a composition. Load
-normalization drops `allOf`, `anyOf` and `oneOf` from string-typed nodes, as
-Fern does when it generates the plain type, but the constraints inside them
-still bind the value. The node records that it lost one.
+A replacement is chosen only when it is valid against the complete schema the
+example documents: the enum, the scalar member, and the enclosing schema's own
+keywords beside its `allOf`. crozier decides `enum`, `const`, `pattern`,
+`minLength`, `maxLength` and a `not` built from those keywords on each of the
+three. Fern's first member stands, byte for byte, whenever it is valid, no
+member is, or a constraint cannot be decided: a `format`, any other keyword
+inside `not`, a `type`, `$ref`, `oneOf` or `anyOf` beside the enclosing
+`allOf`, an `if`, `$dynamicRef` or `$recursiveRef`, or a composition load
+normalization discarded. Load normalization drops `allOf`, `anyOf` and `oneOf`
+from string-typed nodes, as Fern does when it generates the plain type, but the
+constraints inside them still bind the value, so the node records that it lost
+one.
+
+### An enclosing constraint
+
+The independently authored
+`docs/fern-measurements/models-refs-composed-narrowing/harbour-window` source
+declares `TideWindow` (`slack`, `flood`, `ebb`, `neap`). Both use sites exclude
+`slack` with `^(?!slack$).*$`. `Crossing.window` adds `maxLength: 4` beside its
+`allOf`, so `flood`, the member the pattern alone admits first, is invalid too.
+`Charter.window` also adds `not: {enum: [ebb, neap]}`, so no member is valid.
+Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 certified both enum modes
+(`fern-expected` beside it for `python_enums`, and
+`docs/fern-measurements/models-refs-literals/harbour-window` for the default
+literals). Both write `slack` for both properties.
+
+Executed on 2026-10-09 with Python 3.14.7, jsonschema 4.26.0 and PyYAML 6.0.3,
+validating every member against each property's complete schema (with the
+document's `components` for the `$ref`) and reading the certified client's
+examples. jsonschema reports a value's first error:
+
+```text
+Crossing.window 'slack': 'slack' is too long
+Crossing.window 'flood': 'flood' is too long
+Crossing.window 'ebb': valid
+Crossing.window 'neap': valid
+Crossing.window certified Fern example(s): ['SLACK']
+Charter.window 'slack': 'slack' is too long
+Charter.window 'flood': 'flood' is too long
+Charter.window 'ebb': 'ebb' should not be valid under {'enum': ['ebb', 'neap']}
+Charter.window 'neap': 'neap' should not be valid under {'enum': ['ebb', 'neap']}
+Charter.window certified Fern example(s): ['SLACK']
+```
+
+crozier writes `ebb` for `Crossing.window` and Fern's `slack` for
+`Charter.window`. A pattern-only correction would have written `flood`, which
+the enclosing `maxLength` rejects.
+`enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern`
+in `crates/crozier-e2e/tests/e2e.rs` byte-compares both trees, and holds that
+Fern's example replaced by `flood`, or any replacement for the charter, is an
+unexplained mismatch.
+
+### A dropped composition
 
 The independently authored
 `docs/fern-measurements/models-refs-composed-narrowing/dossier-status` source
-shows why. `DossierStatus` (`draft`, `sealed`) holds `maxLength: 5` in an
-`allOf`, and the `Dossier.standing` use site adds `^(?!draft$).*$`. Before this
-decline, crozier wrote `standing=DossierStanding.SEALED,` (literals:
-`standing="sealed",`). Validating both values against the complete original
-schema with jsonschema 4.26.0 reported:
+shows why a discarded composition declines. `DossierStatus` (`draft`,
+`sealed`) holds `maxLength: 5` in an `allOf`, and the `Dossier.standing` use
+site adds `^(?!draft$).*$`. A pattern-only correction wrote
+`standing=DossierStanding.SEALED,` (literals: `standing="sealed",`).
+Validating both values against the complete original schema with jsonschema
+4.26.0 reported:
 
 ```text
 'draft': 'draft' does not match '^(?!draft$).*$'
@@ -65,12 +112,13 @@ schema with jsonschema 4.26.0 reported:
 Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 certified both enum modes
 of that source (`fern-expected` beside it for `python_enums`, and
 `docs/fern-measurements/models-refs-literals/dossier-status` for the default
-literals). crozier now matches both trees with no `pattern-narrowed-enum-example`
+literals). crozier matches both trees with no `pattern-narrowed-enum-example`
 departure. `composed_narrowing_declines_the_example_correction_and_matches_certified_fern`
 in `crates/crozier-e2e/tests/e2e.rs` byte-compares them and holds the controls.
-Without the composition, crozier still corrects the example to `sealed`. Moving
-the constraint onto the node, or into `anyOf`, declines the correction. The
-comparison accepts the replacement only against the composition-free source.
+Without the composition, crozier corrects the example to `sealed`. Moving
+`maxLength: 5` onto the node, where it is decided, leaves no valid member, and
+moving it into `anyOf` discards it; both keep Fern's member. The comparison
+accepts the replacement only against the composition-free source.
 
 **This is a known limitation, not a parity claim.** Declining is conservative.
 Where a dropped composition would still admit some enum member, for example

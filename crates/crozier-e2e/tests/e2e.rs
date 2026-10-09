@@ -21282,6 +21282,99 @@ fn composed_narrowing_declines_the_example_correction_and_matches_certified_fern
 }
 
 #[test]
+fn enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern() {
+    // `TideWindow` is `slack`, `flood`, `ebb`, `neap`; both use sites exclude
+    // `slack` by pattern. `Crossing.window` adds `maxLength: 4` beside its
+    // `allOf`, which rejects `flood`, the member the pattern alone admits first,
+    // so the example is `ebb`. `Charter.window` also adds `not: {enum: [ebb,
+    // neap]}`, which leaves no member valid, so it keeps Fern's `slack`.
+    let root = repo_root();
+    let fixture = root
+        .join(MODELS_REFS_COMPOSED_NARROWING_DIR)
+        .join("harbour-window");
+    let spec = fixture.join("openapi.yml");
+    let source = spec.to_str().expect("UTF-8 fixture path");
+    for (mode, golden, corrected, kept) in [
+        (
+            None,
+            format!("{MODELS_REFS_COMPOSED_NARROWING_DIR}/harbour-window/fern-expected"),
+            "window=CrossingWindow.EBB,",
+            "window=CharterWindow.SLACK,",
+        ),
+        (
+            Some("literals"),
+            format!("{MODELS_REFS_LITERALS_DIR}/harbour-window/fern-expected"),
+            "window=\"ebb\",",
+            "window=\"slack\",",
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("enclosing constraint SDK");
+        let mut command = probe_command(&spec, out.path());
+        if let Some(mode) = mode {
+            command.args(["--enum-type", mode]);
+        }
+        command.assert().success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+        let crossing = client.find("def book_crossing").expect("crossing method");
+        let charter = client.find("def book_charter").expect("charter method");
+        assert!(client[crossing..charter].contains(corrected), "{client}");
+        assert!(client[charter..].contains(kept), "{client}");
+        let ledger = departure_ledger()
+            .golden(&golden, &[])
+            .expect("enclosing constraint golden");
+        let failures = golden_tree_failures(
+            "enclosing constraint",
+            source,
+            &ledger,
+            &root.join(&golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+
+    // The departure holds only the complete-schema member: Fern's example
+    // replaced by the member the pattern alone would pick is an unexplained
+    // mismatch, as is any correction of the unsatisfiable charter.
+    let golden = fixture.join("fern-expected");
+    let context = Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let accepted = reference.replace("window=CrossingWindow.SLACK,", "window=CrossingWindow.EBB,");
+    assert_ne!(accepted, reference);
+    let compared = parity::compare_file(&context, "README.md", &accepted, &reference).unwrap();
+    assert!(compared.matches(), "{:?}", compared.diff());
+    let pattern_only = reference.replace(
+        "window=CrossingWindow.SLACK,",
+        "window=CrossingWindow.FLOOD,",
+    );
+    assert!(
+        parity::compare_file(&context, "README.md", &pattern_only, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let client = std::fs::read_to_string(golden.join("src/fern/client.py")).unwrap();
+    for replacement in [
+        "CharterWindow.EBB",
+        "CharterWindow.FLOOD",
+        "CharterWindow.NEAP",
+    ] {
+        let changed = client.replace(
+            "window=CharterWindow.SLACK,",
+            &format!("window={replacement},"),
+        );
+        assert_ne!(changed, client);
+        assert!(
+            parity::compare_file(&context, "src/fern/client.py", &changed, &client)
+                .unwrap()
+                .diff()
+                .is_some(),
+            "{replacement}"
+        );
+    }
+}
+
+#[test]
 fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
     let script =
         repo_root().join("crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py");

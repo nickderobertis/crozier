@@ -2,6 +2,7 @@
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
     "docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected": {},
+    "docs/fern-measurements/models-refs-composed-narrowing/harbour-window/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected": {},
@@ -9,6 +10,7 @@
     "docs/fern-measurements/models-refs-literals/dossier-status/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/garden-crown/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/gauge-public-fields/fern-expected": {},
+    "docs/fern-measurements/models-refs-literals/harbour-window/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/library-records/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/material-register/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected": {},
