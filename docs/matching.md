@@ -551,9 +551,11 @@ corpora stay byte-identical — none of them exercised these paths):
 
 1. **Operation grouping for dotted corpus APIs** (`src/ir.rs`) — operations Fern
    groups under its empty `_` namespace (an operationId such as `.GetAvailableLocales`)
-   are now emitted, flattened onto the package root as `src/fern/raw_client.py` plus
-   the root `client.py` methods ([`emit`]'s `empty_endpoint_namespace`), and wired into
-   the `__init__` exports; crozier previously omitted that group entirely.
+   are now emitted; crozier previously omitted that group entirely. Fern writes
+   that `_` package over the package root, which leaves the tree unimportable, so
+   crozier writes it under `_/` beside a root client exposing it: the
+   `fern-defect` departure
+   [`empty-namespace-package`](departures/evidence/empty-namespace-package.md).
 2. **Named per-operation response types** (`src/ir.rs`, `src/emit.rs`,
    `src/openapi.rs`) — Fern synthesizes a `<OperationId>Response` type from each
    operation's inline response body (Bungie's standard
@@ -1697,7 +1699,7 @@ workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
 as `expected/` is, with `"layout": "flat"` added to its
 `.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
 declares every one. Between them they exercise every setting that changes the
-flat tree:
+flat tree, and a shape whose flat output differs from its packaged one:
 
 | Flat golden | Setting it pins |
 | --- | --- |
@@ -1707,6 +1709,7 @@ flat tree:
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |
 | `swagger-petstore-distribution` | package `acme` and project `acme-dist` |
 | `swagger-petstore-organization` | custom Fern organization naming |
+| `truefoundry-trueforge` | none: the default names, over a registered document whose cursor `x-fern-pagination` makes Fern's flat methods return the page model (a `CORPUS.md` row) |
 
 The distribution and organization variants use the registered Swagger Petstore
 source named by their `flat-goldens.txt` rows. They add goldens without adding

@@ -429,7 +429,7 @@ impl Checker<'_> {
                 .map(|departure| report::Departure {
                     id: departure.id,
                     file: departure.file,
-                    line: departure.line,
+                    line: departure.location.as_number(),
                 })
                 .collect(),
             diff_file: None,

@@ -891,5 +891,86 @@ class FernRuns(unittest.TestCase):
         self.assertEqual(rows(self.evidence / "confirmations.tsv")[1], [self.CLASS, digest, "acme", "1", "0", log])
 
 
+class DiagnosticExtraction(unittest.TestCase):
+    """What `diagnostics` reads off a Fern log, over the generator's own lines."""
+
+    module: ModuleType
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.module = load_script("fern_refusals_diagnostics")
+
+    def test_the_generators_response_object_refusal_is_its_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: python-sdk fernapi/fern-python-sdk Started.",
+                "[api]: python-sdk ✓ All checks passed",
+                "[api]: python-sdk fernapi/fern-python-sdk Response must be an object in order to "
+                "return property next as a response.",
+                "[api]: python-sdk fernapi/fern-python-sdk Failed.",
+            ]
+        )
+        self.assertEqual(
+            ["Response must be an object in order to return property next as a response."],
+            self.module.diagnostics(log),
+        )
+
+    def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: python-sdk fernapi/fern-python-sdk Started.",
+                "[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk",
+                "[api]: python-sdk fernapi/fern-python-sdk Finished.",
+            ]
+        )
+        self.assertEqual([], self.module.diagnostics(log))
+
+
+class ProbeRecording(unittest.TestCase):
+    """`probe` reads a class's diagnostic off Fern's own output and records it.
+
+    `fern` is the script's subprocess boundary; a stand-in on `PATH` replays the
+    committed logs of the measured run with that run's exits, so the real
+    `probe` subcommand classifies them and writes the class's `fern-refusal.txt`
+    into a scratch registry, which must be the committed record. Replaying the
+    committed logs leaves the probe logs `probe` rewrites byte-identical.
+    """
+
+    NAME = "paginated-nullable-response"
+
+    @unittest.skipIf(os.name == "nt", "the stand-in `fern` is a POSIX shell script")
+    def test_probe_records_the_generators_response_object_refusal(self) -> None:
+        logs = REPO / "docs" / "openapi-surface" / "fern-refusals" / "probe-logs"
+        with tempfile.TemporaryDirectory() as scratch:
+            registry = Path(scratch) / "fern-refusals"
+            shutil.copytree(REGISTRY, registry)
+            (registry / self.NAME / "fern-refusal.txt").unlink()
+            bin_dir = Path(scratch) / "bin"
+            bin_dir.mkdir()
+            fern = bin_dir / "fern"
+            check_log = logs / f"{self.NAME}.check.log"
+            generate_log = logs / f"{self.NAME}.generate.log"
+            fern.write_text(
+                f'#!/bin/sh\nif [ "$1" = check ]; then cat "{check_log}"; exit 0; fi\ncat "{generate_log}"; exit 1\n',
+                encoding="utf-8",
+            )
+            fern.chmod(0o755)
+            env = dict(
+                os.environ,
+                CROZIER_FERN_REFUSALS_REGISTRY=str(registry),
+                PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            )
+            before = {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")}
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "probe", self.NAME], capture_output=True, text=True, env=env, cwd=REPO
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(
+                (REGISTRY / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
+                (registry / self.NAME / "fern-refusal.txt").read_text(encoding="utf-8"),
+            )
+            self.assertEqual(before, {path.name: path.read_bytes() for path in logs.glob(f"{self.NAME}.*.log")})
+
+
 if __name__ == "__main__":
     unittest.main()

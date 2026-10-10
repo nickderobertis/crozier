@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Locker Bank
+  version: 2.0.0
+  description: Parcel lockers at a station concourse.
+servers:
+  - url: https://lockers.concourse.test
+paths:
+  /lockers:
+    get:
+      operationId: getLockers
+      x-fern-sdk-method-name: [vacancies]
+      summary: Lockers free right now.
+      responses:
+        '200':
+          description: Free lockers.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Locker'
+  /lockers/{lockerId}/claim:
+    post:
+      operationId: claimLocker
+      x-fern-sdk-group-name: lockers
+      x-fern-sdk-method-name: [claim, now]
+      parameters:
+        - name: lockerId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [pin]
+              properties:
+                pin:
+                  type: string
+                  description: Four digits the claimant chose.
+      responses:
+        '204':
+          description: Claimed.
+  /lockers/{lockerId}:
+    delete:
+      operationId: releaseLocker
+      x-fern-sdk-group-name: lockers
+      x-fern-sdk-method-name: release
+      parameters:
+        - name: lockerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Released.
+components:
+  schemas:
+    Locker:
+      type: object
+      required: [id, size]
+      properties:
+        id:
+          type: string
+        size:
+          type: string
+          enum: [small, medium, large]

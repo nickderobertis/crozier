@@ -273,6 +273,7 @@ pub struct Comparison {
 
 /// One intended departure the comparison applied: an entry of crozier's
 /// departure catalog (docs/departures/README.md) and where it applied.
+// llmlint: ignore[invalid_states_unrepresentable] This struct is the `--json` contract's departure object, whose `line` is one number in the committed schema (assets/compare-report.schema.json); the whole-file case is modelled as `parity::Location::WholeFile` inside crozier and flattened to 0 only here, by `Location::as_number`, so changing this field's type would change the published contract.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 pub struct Departure {
@@ -280,7 +281,8 @@ pub struct Departure {
     pub id: String,
     /// The file, relative to the SDK root.
     pub file: String,
-    /// crozier's 1-based line where the departure starts.
+    /// crozier's 1-based line where the departure starts, or 0 when it
+    /// accounts for a whole file only one side has.
     pub line: usize,
 }
 

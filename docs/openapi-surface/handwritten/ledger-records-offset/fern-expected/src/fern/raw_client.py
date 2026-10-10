@@ -1,0 +1,222 @@
+
+
+import typing
+from json.decoder import JSONDecodeError
+
+from .core.api_error import ApiError
+from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from .core.http_response import AsyncHttpResponse, HttpResponse
+from .core.pagination import AsyncPager, SyncPager
+from .core.parse_error import ParsingError
+from .core.pydantic_utilities import parse_obj_as
+from .core.request_options import RequestOptions
+from .types.entry import Entry
+from .types.entry_page import EntryPage
+from pydantic import ValidationError
+
+
+class RawFernApi:
+    def __init__(self, *, client_wrapper: SyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    def list_entries(
+        self,
+        *,
+        page: typing.Optional[int] = None,
+        account: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> SyncPager[Entry, EntryPage]:
+        """
+        Parameters
+        ----------
+        page : typing.Optional[int]
+
+        account : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        SyncPager[Entry, EntryPage]
+            One page of entries.
+        """
+        page = page if page is not None else 1
+
+        _response = self._client_wrapper.httpx_client.request(
+            "entries",
+            method="GET",
+            params={
+                "page": page,
+                "account": account,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _parsed_response = typing.cast(
+                    EntryPage,
+                    parse_obj_as(
+                        type_=EntryPage,
+                        object_=_response.json(),
+                    ),
+                )
+                _items = _parsed_response.entries
+                _has_next = len(_items or []) > 0
+                _get_next = lambda: self.list_entries(
+                    page=page + 1,
+                    account=account,
+                    request_options=request_options,
+                )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    def list_accounts(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> HttpResponse[typing.List[str]]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[typing.List[str]]
+            Account codes.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "accounts",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[str],
+                    parse_obj_as(
+                        type_=typing.List[str],
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+
+class AsyncRawFernApi:
+    def __init__(self, *, client_wrapper: AsyncClientWrapper):
+        self._client_wrapper = client_wrapper
+
+    async def list_entries(
+        self,
+        *,
+        page: typing.Optional[int] = None,
+        account: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncPager[Entry, EntryPage]:
+        """
+        Parameters
+        ----------
+        page : typing.Optional[int]
+
+        account : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncPager[Entry, EntryPage]
+            One page of entries.
+        """
+        page = page if page is not None else 1
+
+        _response = await self._client_wrapper.httpx_client.request(
+            "entries",
+            method="GET",
+            params={
+                "page": page,
+                "account": account,
+            },
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _parsed_response = typing.cast(
+                    EntryPage,
+                    parse_obj_as(
+                        type_=EntryPage,
+                        object_=_response.json(),
+                    ),
+                )
+                _items = _parsed_response.entries
+                _has_next = len(_items or []) > 0
+
+                async def _get_next():
+                    return await self.list_entries(
+                        page=page + 1,
+                        account=account,
+                        request_options=request_options,
+                    )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
+    async def list_accounts(
+        self, *, request_options: typing.Optional[RequestOptions] = None
+    ) -> AsyncHttpResponse[typing.List[str]]:
+        """
+        Parameters
+        ----------
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[typing.List[str]]
+            Account codes.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "accounts",
+            method="GET",
+            request_options=request_options,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    typing.List[str],
+                    parse_obj_as(
+                        type_=typing.List[str],
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)

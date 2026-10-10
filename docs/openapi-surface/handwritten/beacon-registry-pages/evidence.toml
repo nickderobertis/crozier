@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "3c711e0bff27fa2be0918cb793a9aac52c8be0d6420cd348b2b0872ee5092866"
+
+[[covers]]
+key = "operation-pagination-boolean"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#boolean-pagination-over-a-root-contract"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

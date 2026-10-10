@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "0c39f3d7d26466706eec27cac0e223e5723f7e5a5173ed62a1c477e3b783ea1a"
+
+[[covers]]
+key = "security-scheme-capitalised-http"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#capitalised-http-scheme"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

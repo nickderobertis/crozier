@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "bc1f55a882a99d1860d5c943749933625afab90a1633e7c47ab511a5513c79be"
+
+[[covers]]
+key = "operation-sdk-group-name-without-method-name"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-name-without-a-method-name"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

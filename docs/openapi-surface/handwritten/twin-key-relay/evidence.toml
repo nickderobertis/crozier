@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "01f5ebae7df5d37572d842fd5c44fa3ebc0dc194551d85b63559dafe5a81e0ed"
+
+[[covers]]
+key = "security-schemes-duplicate-api-key-header"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#duplicate-api-key-header-schemes"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

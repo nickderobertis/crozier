@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "316e606b55bee8da30bdf44a65452c9e31b91f12c02e62eaa212ffe18e7427c6"
+
+[[covers]]
+key = "security-scheme-token-variable-name"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#token-variable-name-extension"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

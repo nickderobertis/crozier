@@ -33,7 +33,8 @@
 //! writes no line, the line before which Fern's stand.
 //!
 //! The tree rules ([`compare_trees`]): the comparison is bidirectional (a file
-//! on only one side is a difference), a symbolic link on either side is refused
+//! on only one side is a difference unless a catalog file rule accounts for it
+//! — reported as the whole file, [`Location::WholeFile`]), a symbolic link on either side is refused
 //! rather than followed, and the `.crozier-fern-golden.json` provenance record a
 //! committed golden carries is not part of either tree. A rule that reads the
 //! trees (which classes each defines) sees them whole.
@@ -43,9 +44,12 @@
 //! module's tests), so stripping both sides serves both inputs with one rule.
 
 use std::collections::BTreeSet;
+use std::num::NonZeroUsize;
 use std::path::Path;
 
 use crate::departures::{self, Context, Pair};
+
+pub use crate::departures::Side;
 use crate::strip_python_comments;
 
 pub use crate::departures::FERN_METADATA;
@@ -58,8 +62,8 @@ pub const PROVENANCE_FILE: &str = ".crozier-fern-golden.json";
 /// catalog id.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileDeparture {
-    /// crozier's line where the departure starts.
-    pub line: usize,
+    /// crozier's 1-based line where the departure starts.
+    pub line: NonZeroUsize,
     /// The catalog entry's id.
     pub id: &'static str,
 }
@@ -160,7 +164,7 @@ pub fn compare_file(
                 region.fern.clone().map(|i| (fern[i], None)),
             );
             departures.push(FileDeparture {
-                line: region.crozier.start + 1,
+                line: NonZeroUsize::MIN.saturating_add(region.crozier.start),
                 id,
             });
             break;
@@ -217,7 +221,7 @@ pub fn compare_file(
             };
             if let Some((id, origin)) = claimed {
                 departures.push(FileDeparture {
-                    line: origin + 1,
+                    line: NonZeroUsize::MIN.saturating_add(origin),
                     id,
                 });
             }
@@ -231,6 +235,16 @@ pub fn compare_file(
         departures,
         residual: (reference != applied).then(|| (reference.to_string(), applied.to_string())),
     })
+}
+
+/// The catalog entry whose file rule accounts for `rel`, a file only `side`
+/// has, with `context` describing the two trees.
+#[must_use]
+pub fn file_departure(context: &Context, rel: &str, side: Side) -> Option<&'static str> {
+    rules_of(|rule| rule.file)
+        .into_iter()
+        .find(|(_, holds)| holds(context, rel, side))
+        .map(|(id, _)| id)
 }
 
 /// The catalog's rules of one shape, each with its id, in catalog order.
@@ -443,10 +457,31 @@ pub enum Difference {
 pub struct AppliedDeparture {
     /// The file's `/`-separated path relative to the tree root.
     pub file: String,
-    /// crozier's 1-based line where it starts.
-    pub line: usize,
+    /// Where in the file it applies.
+    pub location: Location,
     /// The catalog entry's id.
     pub id: String,
+}
+
+/// Where an [`AppliedDeparture`] applies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Location {
+    /// A whole file only one side has, which a file rule accounts for.
+    WholeFile,
+    /// crozier's 1-based line where it starts.
+    Line(NonZeroUsize),
+}
+
+impl Location {
+    /// The location as the departure ledger and the compare report write it:
+    /// the 1-based line, or 0 for a whole file.
+    #[must_use]
+    pub fn as_number(self) -> usize {
+        match self {
+            Location::WholeFile => 0,
+            Location::Line(line) => line.get(),
+        }
+    }
 }
 
 /// The comparison of two whole trees.
@@ -491,9 +526,23 @@ pub fn compare_trees(
         if file_filter.is_some_and(|filter| !rel.contains(filter)) {
             continue;
         }
-        let difference = match (reference_files.contains(rel), crozier_files.contains(rel)) {
-            (true, false) => Some(Difference::OnlyInReference),
-            (false, true) => Some(Difference::OnlyInCrozier),
+        let only = match (reference_files.contains(rel), crozier_files.contains(rel)) {
+            (true, false) => Some((Side::Reference, Difference::OnlyInReference)),
+            (false, true) => Some((Side::Crozier, Difference::OnlyInCrozier)),
+            _ => None,
+        };
+        let difference = match only {
+            Some((side, difference)) => match file_departure(&context, rel, side) {
+                Some(id) => {
+                    comparison.departures.push(AppliedDeparture {
+                        file: rel.clone(),
+                        location: Location::WholeFile,
+                        id: id.to_string(),
+                    });
+                    None
+                }
+                None => Some(difference),
+            },
             _ => {
                 let (difference, departures) = file_difference(
                     &context,
@@ -506,7 +555,7 @@ pub fn compare_trees(
                     .departures
                     .extend(departures.into_iter().map(|departure| AppliedDeparture {
                         file: rel.clone(),
-                        line: departure.line,
+                        location: Location::Line(departure.line),
                         id: departure.id.to_string(),
                     }));
                 difference
@@ -581,7 +630,7 @@ mod tests {
         compared
             .departures
             .iter()
-            .map(|departure| (departure.line, departure.id))
+            .map(|departure| (departure.line.get(), departure.id))
             .collect()
     }
 
@@ -923,6 +972,65 @@ mod tests {
         assert!(d.ends_with("unchanged line(s))\n"), "{d}");
     }
 
+    /// A file only one side has is no difference where a file rule accounts
+    /// for it: Fern's empty-namespace package over the root, crozier's under
+    /// `_/`, report the departure at line 0 for each moved file and at line 1
+    /// for the root files replaced whole — and a moved file that is not Fern's
+    /// copy stays a difference.
+    #[test]
+    fn compare_trees_accounts_for_moved_files_under_a_file_rule() {
+        let reference = tempfile::tempdir().unwrap();
+        let crozier = tempfile::tempdir().unwrap();
+        let (r, c) = (reference.path(), crozier.path());
+        let raw = b"from ..core.client_wrapper import SyncClientWrapper\n\n\nclass RawClient:\n    pass\n";
+        write(
+            r,
+            "src/fern/client.py",
+            b"from ..core.client_wrapper import SyncClientWrapper\n\n\nclass Client:\n    pass\n",
+        );
+        write(r, "src/fern/raw_client.py", raw);
+        write(r, "src/fern/__init__.py", b"\n");
+        write(c, "src/fern/client.py", b"class FernApi:\n    pass\n");
+        write(c, "src/fern/__init__.py", b"from .client import FernApi\n");
+        write(
+            c,
+            "src/fern/_/client.py",
+            b"from ..core.client_wrapper import SyncClientWrapper\n\n\nclass Client:\n    pass\n",
+        );
+        write(c, "src/fern/_/raw_client.py", raw);
+        write(c, "src/fern/_/__init__.py", b"\n");
+
+        let found = compare_trees(r, c, None, false).unwrap();
+        assert!(found.differences.is_empty(), "{found:?}");
+        let applied: Vec<(&str, usize)> = found
+            .departures
+            .iter()
+            .map(|departure| {
+                assert_eq!(departure.id, "empty-namespace-package");
+                (departure.file.as_str(), departure.location.as_number())
+            })
+            .collect();
+        assert_eq!(
+            applied,
+            [
+                ("src/fern/_/__init__.py", 0),
+                ("src/fern/_/client.py", 0),
+                ("src/fern/_/raw_client.py", 0),
+                ("src/fern/__init__.py", 1),
+                ("src/fern/client.py", 1),
+                ("src/fern/raw_client.py", 0),
+            ]
+        );
+
+        write(c, "src/fern/_/raw_client.py", b"class Other:\n    pass\n");
+        let found = compare_trees(r, c, None, false).unwrap();
+        assert!(found.departures.is_empty(), "{found:?}");
+        assert!(found.differences.contains(&(
+            "src/fern/raw_client.py".to_string(),
+            Difference::OnlyInReference
+        )));
+    }
+
     #[test]
     fn compare_trees_is_bidirectional_skips_provenance_and_reports_departures() {
         let reference = tempfile::tempdir().unwrap();
@@ -978,7 +1086,7 @@ mod tests {
             found.departures,
             [AppliedDeparture {
                 file: "core/client_wrapper.py".into(),
-                line: 2,
+                location: Location::Line(NonZeroUsize::new(2).unwrap()),
                 id: "sdk-identity-header-prefix".into(),
             }]
         );
@@ -1015,7 +1123,7 @@ mod tests {
             found.departures,
             [AppliedDeparture {
                 file: "README.md".into(),
-                line: 1,
+                location: Location::Line(NonZeroUsize::MIN),
                 id: "readme-client-class-casing".into(),
             }]
         );

@@ -1,0 +1,72 @@
+openapi: 3.0.3
+info:
+  title: Cargo Hold
+  version: 0.4.0
+  description: Pallet stowage in a ship's cargo hold.
+servers:
+  - url: https://hold.cargo.test
+paths:
+  /pallets:
+    get:
+      operationId: listPallets
+      x-fern-sdk-group-name: [hold, pallets]
+      responses:
+        '200':
+          description: Stowed pallets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pallet'
+  /pallets/{palletId}/weight:
+    put:
+      tags: [Scales]
+      operationId: weighPallet
+      x-fern-sdk-group-name: weighing
+      parameters:
+        - name: palletId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kilograms]
+              properties:
+                kilograms:
+                  type: number
+      responses:
+        '204':
+          description: Recorded.
+  /manifests:
+    get:
+      operationId: listManifests
+      x-fern-sdk-group-name: manifests
+      x-fern-sdk-method-name: list
+      responses:
+        '200':
+          description: Manifest ids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Pallet:
+      type: object
+      required: [id, deck]
+      properties:
+        id:
+          type: string
+        deck:
+          type: string
+          enum: [lower, middle, upper]
+        hazardous:
+          type: boolean

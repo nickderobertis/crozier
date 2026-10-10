@@ -1,0 +1,116 @@
+openapi: 3.0.3
+info:
+  title: Impedance Bench
+  version: 2.1.0
+  description: Reads the impedance a bench analyser measures across a sweep.
+servers:
+  - url: https://bench.impedance.test/v2
+paths:
+  /sweeps/{sweepId}/impedance:
+    post:
+      tags: [Sweeps]
+      operationId: complex
+      summary: Resolve one sweep point as a complex impedance.
+      parameters:
+        - name: sweepId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: complex
+          in: query
+          description: Report the point in rectangular rather than polar form.
+          schema:
+            type: boolean
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [frequency]
+              properties:
+                frequency:
+                  type: number
+                  description: Sweep frequency in hertz.
+                complex:
+                  type: boolean
+                  description: Return the conjugate as well.
+      responses:
+        '200':
+          description: The resolved point.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Complex'
+  /calibrations:
+    put:
+      tags: [Sweeps]
+      operationId: calibrate
+      parameters:
+        - name: complex
+          in: query
+          description: Apply the correction to the complex plane only.
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Calibration'
+      responses:
+        '204':
+          description: The correction was stored.
+  /sweeps/{sweepId}/range:
+    get:
+      tags: [Sweeps]
+      operationId: getRange
+      parameters:
+        - name: sweepId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The frequency span the sweep covered.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Range'
+components:
+  schemas:
+    Complex:
+      type: object
+      description: An impedance reading in the requested form.
+      required: [complex, form]
+      properties:
+        complex:
+          type: array
+          description: Real and imaginary parts, in ohms.
+          items:
+            type: number
+        form:
+          $ref: '#/components/schemas/Form'
+        str:
+          type: string
+          description: The reading as the analyser prints it.
+    Form:
+      type: string
+      enum: [polar, complex]
+    Calibration:
+      type: object
+      properties:
+        complex:
+          type: number
+          description: Phase correction, in degrees.
+        gain:
+          type: number
+    Range:
+      type: object
+      required: [low, high]
+      properties:
+        low:
+          type: number
+        high:
+          type: number

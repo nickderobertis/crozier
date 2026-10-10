@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info: {title: Relay Station, version: '1'}
+servers:
+  - url: https://relay.test
+security: [{Primary: [], Station: []}]
+paths:
+  /readings:
+    get:
+      operationId: listReadings
+      responses: {'204': {description: ok}}
+components:
+  securitySchemes:
+    Primary: {type: apiKey, in: header, name: X-Primary-Key, x-fern-header: {name: token}}
+    Station: {type: apiKey, in: header, name: X-Station-Token, x-fern-header: {name: token}}

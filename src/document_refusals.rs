@@ -43,6 +43,7 @@ enum Class {
     ExampleNotEnumValue,
     ExampleUnexpectedProperty,
     ExampleMissingRequiredProperty,
+    PaginatedNullableResponse,
     HeaderDefaultDiffersAcrossOperations,
     VersionHeaderRedeclaredAsParameter,
 }
@@ -78,6 +79,7 @@ impl Class {
             Self::ExampleNotEnumValue => "example-not-enum-value",
             Self::ExampleUnexpectedProperty => "example-unexpected-property",
             Self::ExampleMissingRequiredProperty => "example-missing-required-property",
+            Self::PaginatedNullableResponse => "paginated-nullable-response",
             Self::HeaderDefaultDiffersAcrossOperations => {
                 "header-default-differs-across-operations"
             }
@@ -1904,6 +1906,9 @@ fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
 /// Reject an evaluated class before rendering or writing an SDK.
 pub fn check(doc: &OpenApi, path: &Path, strict: bool) -> Result<()> {
     check_version(&doc.openapi, path, strict)?;
+    if let Some(element) = paginated_nullable_response(doc) {
+        return refusal(path, strict, Class::PaginatedNullableResponse, &element);
+    }
     for (route, item) in &doc.paths {
         if let Some(operation) = &item.head {
             if !operation.ignored() && operation.request_body.is_some() {
@@ -2065,11 +2070,15 @@ pub fn check_sdk(
     for endpoint in ir.endpoints.iter().filter(|endpoint| endpoint.emittable) {
         let route = format!("{} {}", endpoint.http_method, endpoint.path);
         // F811: a root-client method and a sub-client property of one name.
+        // The empty `_` namespace is a sub-client like any other; no root
+        // method can be named `_` (method naming empties it), so it needs no
+        // exemption here.
+        // llmlint: ignore[changed_behavior_has_e2e] Dropping the `_` exemption changes no reachable behaviour: `x-fern-sdk-method-name: _` and `operationId: _` both name an empty method, never `_`, so no CLI input can drive a root method `_` beside the namespace. The empty-namespace goldens (lamp-room-log, bungie.net) and sdk_env_empty_namespace_package_imports_and_answers_its_documented_call cover the namespace generating.
         if endpoint.module.is_empty()
-            && ir.endpoint_modules.iter().any(|module| {
-                module.split('/').next() == Some(endpoint.method_name.as_str())
-                    && !(ir.empty_endpoint_namespace && module == "_")
-            })
+            && ir
+                .endpoint_modules
+                .iter()
+                .any(|module| module.split('/').next() == Some(endpoint.method_name.as_str()))
         {
             return refusal(
                 path,
@@ -2111,6 +2120,9 @@ pub fn check_sdk(
                 );
             }
         }
+        if let Some(element) = idempotency_argument_fault(endpoint) {
+            return refusal(path, strict, class, &format!("{route} {element}"));
+        }
     }
     if let Some(environment) = &ir.environment {
         let template = &environment.url_template;
@@ -2150,6 +2162,58 @@ pub fn check_sdk(
         }
     }
     Ok(())
+}
+
+/// The first idempotency header whose argument the method signature cannot
+/// take: a syntax error when its Python name is empty (a header like `-`), and
+/// a duplicate argument when it repeats another argument of the method (an
+/// earlier idempotency header, or a path, query, header or body argument).
+/// Pinned Fern's `ruff check` rejects all three, so the element names the
+/// header and the argument it would have written.
+fn idempotency_argument_fault(endpoint: &crate::ir::Endpoint) -> Option<String> {
+    use crate::ir::RequestBody;
+    let body: Vec<&str> = match &endpoint.request_body {
+        None => Vec::new(),
+        Some(RequestBody::Single(_) | RequestBody::Bytes { .. }) => vec!["request"],
+        Some(RequestBody::Inline(fields)) => {
+            fields.iter().map(|field| field.py_name.as_str()).collect()
+        }
+        Some(RequestBody::Form(form)) => form
+            .fields
+            .iter()
+            .map(|field| field.py_name.as_str())
+            .collect(),
+    };
+    let mut taken: Vec<&str> = endpoint
+        .path_params
+        .iter()
+        .map(|param| param.py_name.as_str())
+        .chain(
+            endpoint
+                .query_params
+                .iter()
+                .map(|param| param.py_name.as_str()),
+        )
+        .chain(
+            endpoint
+                .header_params
+                .iter()
+                .map(|param| param.py_name.as_str()),
+        )
+        .chain(body)
+        .chain(["request_options"])
+        .collect();
+    for header in &endpoint.extensions.idempotency_headers {
+        let name = header.py_name.as_str();
+        if name.is_empty() || taken.contains(&name) {
+            return Some(format!(
+                "idempotency header {:?} argument {name:?}",
+                header.wire_name
+            ));
+        }
+        taken.push(name);
+    }
+    None
 }
 
 /// The IR for the document as pinned Fern names its operations, or `None`
@@ -2562,6 +2626,51 @@ fn promoted_optional_array_header(doc: &OpenApi, ir: &crate::ir::Ir) -> Option<S
     Some(format!("{method} {route} header {}", header.wire_name))
 }
 
+/// The first operation whose pagination contract reads its page off a
+/// response the document declares `nullable: true`: Fern refuses it ("Response
+/// must be an object in order to return property next as a response"), and a
+/// pager over a page that may be `null` has no page to read, so crozier refuses
+/// it too rather than dropping the pager. The element names the operation, the
+/// contract's response property and the nullable component.
+fn paginated_nullable_response(doc: &OpenApi) -> Option<String> {
+    for (route, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            let Some(pagination) = op.pagination() else {
+                continue;
+            };
+            let Some(property) = pagination
+                .next_cursor_property()
+                .or_else(|| pagination.results_property())
+            else {
+                continue;
+            };
+            let Some(reference) = op
+                .responses
+                .get("200")
+                .and_then(|response| response.content.get("application/json"))
+                .and_then(|media| media.schema.as_ref())
+                .and_then(|schema| schema.reference.as_deref())
+            else {
+                continue;
+            };
+            let Some(name) = reference.strip_prefix("#/components/schemas/") else {
+                continue;
+            };
+            if doc
+                .components
+                .schemas
+                .get(name)
+                .is_some_and(|schema| schema.nullable == Some(true))
+            {
+                return Some(format!(
+                    "{method} {route} pagination reads $response.{property} off nullable {name}"
+                ));
+            }
+        }
+    }
+    None
+}
+
 fn refusal(path: &Path, strict: bool, class: Class, element: &str) -> Result<()> {
     Err(Error::InvalidSpec {
         path: path.to_path_buf(),
@@ -2598,6 +2707,27 @@ mod tests {
         )
         .unwrap();
         promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
+    }
+
+    #[test]
+    fn a_pagination_contract_over_a_nullable_response_is_refused() {
+        let doc = |nullable: bool| -> OpenApi {
+            serde_json::from_value(serde_json::json!({
+                "openapi": "3.0.3",
+                "paths": {"/jobs": {"get": {
+                    "x-fern-pagination": {"offset": "$request.page", "results": "$response.jobs"},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/JobPage"}}}}},
+                }}},
+                "components": {"schemas": {"JobPage": {"type": "object", "nullable": nullable}}},
+            }))
+            .unwrap()
+        };
+        assert_eq!(
+            paginated_nullable_response(&doc(true)).as_deref(),
+            Some("GET /jobs pagination reads $response.jobs off nullable JobPage")
+        );
+        assert_eq!(paginated_nullable_response(&doc(false)), None);
     }
 
     #[test]

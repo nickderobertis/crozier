@@ -1,0 +1,40 @@
+openapi: 3.0.3
+info:
+  title: Grid Valve Console
+  version: 2.3.0
+  description: Valves on a district heating grid.
+servers:
+  - url: https://console.grid.test
+paths:
+  /valves:
+    get:
+      operationId: listValves
+      responses:
+        '200':
+          description: Every valve.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Valve'
+components:
+  securitySchemes:
+    Grid:
+      type: http
+      scheme: bearer
+      x-fern-token-variable-name: apiKey
+    Valve:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+  schemas:
+    Valve:
+      type: object
+      required: [id, state]
+      properties:
+        id:
+          type: string
+        state:
+          type: string
+          enum: [open, shut, stuck]

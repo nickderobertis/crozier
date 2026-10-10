@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "943876b65d65a80fdcf9e77b719a8ee44bf2f111561424a492939981a52b273a"
+
+[[covers]]
+key = "operation-webhook-extension"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#webhook-marked-path-operation"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

@@ -1546,6 +1546,125 @@ fn compare_reports_the_closed_empty_object_departure_and_fails_on_any_other_diff
     );
 }
 
+/// A whole-file departure through `crozier compare`: the reference is the
+/// certified pair's tree for the hand-written fixture `lamp-room-log`, whose
+/// empty tag Fern writes as files over the package root and crozier as the
+/// `_/` package beside it. The comparison matches, reporting each file only one
+/// side has at line 0 in the JSON report and the human one — exactly the
+/// ledger's rows for that golden — and fails, naming the file, once a moved
+/// file of the reference is no longer the copy the file rule accounts for.
+#[cfg(unix)]
+#[test]
+fn compare_reports_whole_file_departures_at_line_zero_and_fails_on_an_edited_moved_file() {
+    let golden = "docs/openapi-surface/handwritten/lamp-room-log/fern-expected";
+    let case = crate::repo_root().join("docs/openapi-surface/handwritten/lamp-room-log");
+    let repo = tempfile::tempdir().expect("repo tempdir");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(case.join("openapi.yml")).unwrap(),
+    );
+    // `reference.sh [edited]`: copy the committed Fern tree, then make the
+    // root raw client it wrote for the empty tag differ from crozier's `_/` one.
+    write_script(
+        root,
+        "scripts/reference.sh",
+        &format!(
+            "out=\"$CROZIER_REFERENCE_OUTPUT\"\n\
+             cp -R '{}'/. \"$out\"\n\
+             [ \"${{1:-}}\" = edited ] && printf '\\n\\nEDITED = 1\\n' >> \"$out/src/fern/raw_client.py\"\n\
+             exit 0\n",
+            case.join("fern-expected").display()
+        ),
+    );
+    let config = |generators: &str| {
+        format!(
+            "spec: ./openapi.yml\npackage-name: fern\n\
+             project-name: default_package_name\ngenerators:\n{generators}"
+        )
+    };
+    write(
+        root,
+        "crozier.yml",
+        &config("  python:\n    reference:\n      command: ./scripts/reference.sh\n"),
+    );
+    write(
+        root,
+        "edited.yml",
+        &config("  edited:\n    reference:\n      command: ./scripts/reference.sh edited\n"),
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let python = result(&report, "crozier.yml", "python");
+    assert_eq!(python["status"], "matched", "{python:#}");
+    let observed: Vec<super::departures_ledger::Observed> = python["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                usize::try_from(departure["line"].as_u64().unwrap()).unwrap(),
+                departure["id"].as_str().unwrap().to_string(),
+            )
+        })
+        .collect();
+    let whole_files: Vec<&str> = observed
+        .iter()
+        .filter(|(_, line, id)| *line == 0 && id == "empty-namespace-package")
+        .map(|(file, _, _)| file.as_str())
+        .collect();
+    assert_eq!(
+        whole_files,
+        [
+            "src/fern/_/__init__.py",
+            "src/fern/_/client.py",
+            "src/fern/_/raw_client.py",
+            "src/fern/raw_client.py",
+        ]
+    );
+    let ledger = super::departure_ledger()
+        .golden(golden, &[])
+        .unwrap_or_else(|failures| panic!("{failures:?}"));
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let stderr = String::from_utf8_lossy(&assert.get_output().stderr);
+    assert!(
+        stderr.contains("      src/fern/_/raw_client.py:0 empty-namespace-package\n"),
+        "{stderr}"
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let edited = result(&report, "edited.yml", "edited");
+    assert_eq!(edited["status"], "mismatched", "{edited:#}");
+    let comparison = &edited["comparison"];
+    assert_eq!(
+        comparison["only_in_reference"],
+        serde_json::json!(["src/fern/raw_client.py"]),
+        "{comparison:#}"
+    );
+    assert!(
+        !comparison["departures"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|departure| departure["file"] == "src/fern/raw_client.py"),
+        "{comparison:#}"
+    );
+}
+
 /// `crozier compare` over a measured parameter-lowering case and the certified
 /// pair's committed tree for it: the comparison matches, reporting exactly the
 /// departures `expected` lists among those whose id starts `lifted-`,

@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: Ferry Berth Desk
+  version: 0.9.2
+  description: Assigns vessels to berths at a ferry terminal.
+servers:
+  - url: https://berths.ferry.test/api
+tags:
+  - name: Berths
+    description: The terminal's berths.
+paths:
+  /berths/{berthId}/status:
+    get:
+      tags: [Berths]
+      operationId: berths-checkStatus
+      summary: Whether a berth is free.
+      parameters:
+        - name: berthId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: The berth's status.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BerthStatus'
+  /berths/{berthId}/vessel:
+    post:
+      tags: [Berths]
+      operationId: Berths-assignVessel
+      parameters:
+        - name: berthId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vessel]
+              properties:
+                vessel:
+                  type: string
+                  description: The vessel's call sign.
+      responses:
+        '204':
+          description: Assigned.
+  /berths/{berthId}/hold:
+    delete:
+      tags: [Berths]
+      operationId: berths-release-hold
+      parameters:
+        - name: berthId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Released.
+  /berths:
+    get:
+      tags: [Berths]
+      operationId: berths-all
+      responses:
+        '200':
+          description: Every berth.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BerthStatus'
+  /reports/daily:
+    get:
+      operationId: terminal-dailyReport
+      responses:
+        '200':
+          description: The day's departures.
+          content:
+            text/plain:
+              schema:
+                type: string
+components:
+  schemas:
+    BerthStatus:
+      type: object
+      required: [berth, state]
+      properties:
+        berth:
+          type: integer
+        state:
+          type: string
+          enum: [free, occupied, closed]
+        vessel:
+          type: string

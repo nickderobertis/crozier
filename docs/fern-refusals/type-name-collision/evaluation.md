@@ -48,6 +48,30 @@ and one declaring a name the other holds as its key
 [pinned Fern](evidence/376-350-declared-type-name-taken.pinned-fern.log)).
 crozier refuses those two in both modes, naming both components.
 
+The detector also covers an inline schema declaring a type name, which
+crozier lifts into a type of that name. Fresh independently authored probes
+were generated with CLI 5.67.1 and Python SDK 5.20.0 through
+`tools/fern-goldens/generate-fern-fixture.sh` with its default settings. Pinned
+Fern takes the declaration as the type already holding the name. An inline
+enum declaring `Finish` beside an object component `Finish`
+([probe](evidence/inline-declared-type-name-component.yml),
+[pinned Fern](evidence/inline-declared-type-name-component.pinned-fern.log))
+fails its check with `Expected example to be an object`. Two inline enums
+declaring `Finish` with different values
+([probe](evidence/inline-declared-type-name-inline.yml),
+[pinned Fern](evidence/inline-declared-type-name-inline.pinned-fern.log))
+fail with `"satin" is not a valid example for this enum`. These are name-only
+faults: crozier refuses both in both modes, naming the operation, the type and
+the schema already holding it, and never generates the inline schema under a
+derived name. When the inline schema is the component's own
+([probe](evidence/inline-declared-type-name-same.yml),
+[pinned Fern](evidence/inline-declared-type-name-same.pinned-fern.log)),
+Fern merges the two and generates; crozier references the component and
+matches that tree. A distinct declared name beside the component
+([probe](evidence/inline-declared-type-name-control.yml),
+[pinned Fern](evidence/inline-declared-type-name-control.pinned-fern.log))
+generates in both, and so does the hand-written `film-shot-planner` golden.
+
 The detector also covers the request types of a `stream-condition` split. Pinned
 Fern gives an operation declaring `x-fern-streaming`'s `stream-condition` two
 methods, and it synthesizes a request type for each: `{Ctx}Request` and

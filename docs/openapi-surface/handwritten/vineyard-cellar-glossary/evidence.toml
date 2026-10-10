@@ -1,0 +1,15 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "08666e576b8f29007f51a85c7f9e6f8ca4e368f5324f8871b1d906dd35eb5d3b"
+
+[[covers]]
+key = "schema-sdk-group-name"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#component-sdk-group"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
+
+[[covers]]
+key = "schema-x-tags"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#component-x-tags"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

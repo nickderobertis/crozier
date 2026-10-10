@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: Harbour Pilots
+  version: 1.3.0
+  description: Books a harbour pilot to bring a vessel in.
+servers:
+  - url: https://{region}.pilots.harbour.test/v1
+    x-fern-default-url: https://pilots.harbour.test/v1
+    variables:
+      region:
+        default: north
+        enum: [north, south]
+paths:
+  /bookings:
+    post:
+      operationId: bookPilot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vessel, eta]
+              properties:
+                vessel:
+                  type: string
+                eta:
+                  type: string
+                  format: date-time
+                tug:
+                  type: string
+                  enum: [none, one, two]
+      responses:
+        '200':
+          description: The booking.
+          content:
+            application/json:
+              schema:
+                type: string

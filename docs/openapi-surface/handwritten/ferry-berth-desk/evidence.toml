@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "ef584ab63d91b9b5fee2c953c9396ae6ad795f4022ecd920a97e3a8d2eb0a669"
+
+[[covers]]
+key = "operation-id-hyphenated-tag-method"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#hyphenated-tag-method"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"
