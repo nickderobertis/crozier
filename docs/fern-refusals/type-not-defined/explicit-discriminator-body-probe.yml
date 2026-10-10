@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Glassworks
+  version: 1.0.0
+paths:
+  /pieces:
+    post:
+      operationId: commissionPiece
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Vase"
+      responses:
+        "200":
+          description: The commissioned piece
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Piece"
+components:
+  schemas:
+    Piece:
+      oneOf:
+        - $ref: "#/components/schemas/Vase"
+        - $ref: "#/components/schemas/Bowl"
+      discriminator:
+        propertyName: form
+        mapping:
+          vase: "#/components/schemas/Vase"
+          bowl: "#/components/schemas/Bowl"
+    Vase:
+      type: object
+      properties:
+        height_cm:
+          type: number
+    Bowl:
+      type: object
+      properties:
+        diameter_cm:
+          type: number

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "f7d52e0a118f813958d1878f4d215d2a9a1d6789060e216e9f5d5792a57526b2"
+
+[[covers]]
+key = "discriminated-extension"
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

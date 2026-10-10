@@ -51,7 +51,9 @@ import subprocess
 import sys
 import tempfile
 import threading
+import tomllib
 from collections import defaultdict
+from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any, NamedTuple, NoReturn
 
@@ -807,6 +809,317 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
     return changed
 
 
+COVERAGE_DOC = REPO / "docs" / "openapi-surface-coverage.md"
+EXHAUSTIVE_SEARCH_HEADING = "### Witness search (exhaustive)"
+CONFIG_GATE_HEADING = "### Configuration gate"
+NOT_SEARCHED_CELL = "`not searched` — no arm search has run"
+ARM_COUNTS_BEGIN = "<!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->"
+ARM_COUNTS_END = "<!-- END GENERATED ARM COUNTS -->"
+ARM_TABLE_BEGIN = "<!-- BEGIN GENERATED ARM TABLE: run `just golden-reach-arms` -->"
+ARM_TABLE_END = "<!-- END GENERATED ARM TABLE -->"
+ARM_TABLE_HEADER = (
+    "| rank | key | unreached site | regions | search verdict | hand-written cover |\n|---|---|---|---|---|---|\n"
+)
+
+
+class Verdict(StrEnum):
+    """What an arm-search record states for an arm (fern-limitations.md's vocabulary)."""
+
+    EXHAUSTED = "exhausted"
+    SEARCH_INCOMPLETE = "search-incomplete"
+    CONFIG_GATED = "config-gated"
+
+
+class Cover(NamedTuple):
+    """One `[[covers]]` entry of a hand-written fixture's `evidence.toml`."""
+
+    fixture: str
+    key: str
+    arm: str | None
+    verdict: Verdict
+    # The fixture declares a generation setting (`audiences`), so its runs are gated.
+    set_up: bool
+
+
+class ArmRow(NamedTuple):
+    """One unreached arm, as the coverage index's arm table states it."""
+
+    rank: int
+    key: str
+    site: str
+    regions: int
+    verdict: Verdict | None  # None: no arm search has run
+    covers: tuple[str, ...]
+
+    def cells(self) -> list[str]:
+        return [
+            str(self.rank),
+            f"`{self.key}`",
+            f"`{self.site}`",
+            str(self.regions),
+            NOT_SEARCHED_CELL if self.verdict is None else f"`{self.verdict}`",
+            ", ".join(f"`{name}`" for name in self.covers) or "—",
+        ]
+
+
+def table_cells(line: str, width: int) -> list[str] | None:
+    """One markdown table row as `width` cells, or None; `\\|` is an escaped pipe, overflow folds into the last."""
+    if not line.startswith("| "):
+        return None
+    cells = [cell.replace("\x00", "\\|").strip() for cell in line.replace("\\|", "\x00").strip().strip("|").split("|")]
+    if len(cells) < width:
+        return None
+    return cells[: width - 1] + ["|".join(cells[width - 1 :])]
+
+
+def _verdict(text: str, where: str) -> Verdict:
+    try:
+        return Verdict(text)
+    except ValueError:
+        fail(f"{where} states the verdict {text!r}, not one of {[v.value for v in Verdict]}; correct it, then re-run")
+
+
+def config_gated_verdict(text: str, key: str) -> str | None:
+    """The verdict a `config-gated` record's gate table states for `key`, else None."""
+    if CONFIG_GATE_HEADING not in text.splitlines():
+        return None
+    body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
+    stated = {
+        cells[3].strip("`")
+        for cells in (table_cells(line, 4) for line in body.splitlines())
+        if cells and cells[0].strip("`") == key
+    }
+    return stated.pop() if len(stated) == 1 else None
+
+
+class Measurement(NamedTuple):
+    """One row of a `just handwritten-reach` ledger: a fixture's run over one arm."""
+
+    fixture: str
+    key: str
+    site: str
+    setting: str | None  # `handwritten-config-gates.tsv`'s setting column; `-` is no setting
+    regions_executed: int
+    regions: int
+
+
+REACH_COLUMNS = ("fixture", "key", "site", "regions_executed", "regions")
+GATE_COLUMNS = ("fixture", "key", "site", "setting", "regions_executed", "regions")
+
+
+def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]:
+    """A `just handwritten-reach` TSV as typed rows, refused unless every row fills `columns` exactly."""
+    with path.open(encoding="utf-8", newline="") as handle:
+        lines = handle.read().splitlines()
+    if not lines or tuple(lines[0].split("\t")) != columns:
+        fail(f"{path} does not start with the columns {list(columns)}; re-run `just handwritten-reach`")
+    rows = []
+    for number, line in enumerate(lines[1:], start=2):
+        cells = line.split("\t")
+        row = dict(zip(columns, cells, strict=False))
+        if (
+            len(cells) != len(columns)
+            or not all(row[name] for name in columns)
+            or not all(re.fullmatch(r"[0-9]+", row[name]) for name in ("regions_executed", "regions"))
+        ):
+            fail(
+                f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; "
+                "re-run `just handwritten-reach`"
+            )
+        if int(row["regions_executed"]) > int(row["regions"]):
+            fail(
+                f"{path}:{number} executes {row['regions_executed']} of only {row['regions']} regions, "
+                "a measurement no run can take; re-run `just handwritten-reach`"
+            )
+        rows.append(
+            Measurement(
+                row["fixture"],
+                row["key"],
+                row["site"],
+                row.get("setting"),
+                int(row["regions_executed"]),
+                int(row["regions"]),
+            )
+        )
+    return rows
+
+
+def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
+    """Every cover a hand-written fixture's `evidence.toml` declares, validated."""
+    covers = []
+    for path in sorted((regions_dir / "handwritten").glob("*/evidence.toml")):
+        with path.open("rb") as handle:
+            declared = tomllib.load(handle)
+        audiences = declared.get("audiences", [])
+        entries = declared.get("covers", [])
+        if (
+            not isinstance(audiences, list)
+            or not all(isinstance(name, str) and name for name in audiences)
+            or not isinstance(entries, list)
+        ):
+            fail(
+                f"{path}: `audiences` must be an array of audience names and `covers` an array; correct it, then re-run"
+            )
+        for cover in entries:
+            arm = cover.get("arm") if isinstance(cover, dict) else None
+            if (
+                not isinstance(cover, dict)
+                or not isinstance(cover.get("key"), str)
+                or not cover["key"]
+                or not isinstance(cover.get("verdict"), str)
+                or not isinstance(arm, (str, type(None)))
+                or arm == ""
+            ):
+                fail(f"{path}: every cover needs a non-empty string `key` and `verdict`, and a non-empty `arm` if any")
+            covers.append(
+                Cover(path.parent.name, cover["key"], arm, _verdict(cover["verdict"], str(path)), bool(audiences))
+            )
+    return covers
+
+
+def config_gated_arm_verdict(
+    key: str, site: str, text: str, regions_dir: Path = REGIONS_DIR, covers: list[Cover] | None = None
+) -> Verdict | None:
+    """The verdict a `config-gated` record's key gives one of its arms, by measurement.
+
+    The gate table's verdict is the measured gate's: it holds for an arm
+    `handwritten-config-gates.tsv` records with and without the setting. Any
+    other arm of the key joined it later and is gated only if measured so: it
+    reads the verdict its hand-written covers cite, and only when
+    `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
+    executing it. Otherwise no one verdict is stated (`None`).
+    """
+    gates = [
+        row
+        for row in read_measurements(regions_dir / "handwritten-config-gates.tsv", GATE_COLUMNS)
+        if (row.key, row.site) == (key, site)
+    ]
+    if gates:
+        with_setting = [row for row in gates if row.setting != "-"]
+        without = [row for row in gates if row.setting == "-"]
+        if (
+            not with_setting
+            or not without
+            or any(row.regions_executed == 0 for row in with_setting)
+            or any(row.regions_executed for row in without)
+        ):
+            fail(
+                f"handwritten-config-gates.tsv: `{key}`'s arm `{site}` is not a measured gate — it needs a run "
+                "with the setting that executes it and a run without one that does not; re-run "
+                "`just handwritten-reach`"
+            )
+        stated = config_gated_verdict(text, key)
+        return None if stated is None else _verdict(stated, f"{key}'s gate table")
+    citing = [
+        c for c in (handwritten_covers(regions_dir) if covers is None else covers) if (c.key, c.arm) == (key, site)
+    ]
+    ungated = {c.fixture for c in citing if not c.set_up}
+    executed = any(
+        row.fixture in ungated and (row.key, row.site) == (key, site) and row.regions_executed
+        for row in read_measurements(regions_dir / "handwritten-reach.tsv", REACH_COLUMNS)
+    )
+    verdicts = {c.verdict for c in citing}
+    return verdicts.pop() if executed and len(verdicts) == 1 else None
+
+
+def arm_verdict(
+    key: str, site: str, regions_dir: Path = REGIONS_DIR, covers: list[Cover] | None = None
+) -> Verdict | None:
+    """The verdict an unreached arm's linked arm-search record gives it, or None when no record exists.
+
+    An ordinary record states one verdict for its key in its exhaustive-search
+    table; a `config-gated` one gives each arm its own (`config_gated_arm_verdict`).
+    """
+    record = regions_dir / SEARCHES / f"{key}.md"
+    if not record.is_file():
+        return None
+    text = record.read_text(encoding="utf-8")
+    if CONFIG_GATE_HEADING in text.splitlines():
+        verdict = config_gated_arm_verdict(key, site, text, regions_dir, covers)
+    else:
+        stated: set[str] = set()
+        if EXHAUSTIVE_SEARCH_HEADING in text:
+            body = text.split(EXHAUSTIVE_SEARCH_HEADING, 1)[1].split("\n#", 1)[0]
+            for line in body.splitlines():
+                cells = table_cells(line, 7)
+                if cells and cells[0].strip("`") == key:
+                    stated.add(cells[2].strip("`"))
+        verdict = _verdict(stated.pop(), str(record)) if len(stated) == 1 else None
+    if verdict is None:
+        fail(f"{record}: states no one verdict for `{site}`; correct its record or measurements, then re-run")
+    return verdict
+
+
+def arm_rows(ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR) -> list[ArmRow]:
+    """Every unreached arm, in ledger rank order, as the arm table states it."""
+    covers = handwritten_covers(regions_dir)
+    covering: dict[tuple[str, str], set[str]] = defaultdict(set)
+    for cover in covers:
+        if cover.arm:
+            covering[(cover.key, cover.arm)].add(cover.fixture)
+    return [
+        ArmRow(
+            rank,
+            reach.key,
+            spec,
+            total,
+            arm_verdict(reach.key, spec, regions_dir, covers),
+            tuple(sorted(covering.get((reach.key, spec), ()))),
+        )
+        for rank, reach in ledger
+        for spec, hit, total in reach.sites
+        if not hit
+    ]
+
+
+def arm_counts_text(ledger: list[tuple[int, Reach]], rows: list[ArmRow]) -> str:
+    """The generated sentence counting the golden rows' reach and the arm table's verdicts."""
+    partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
+    phrases = [f"{sum(1 for row in rows if row.verdict is verdict)} read `{verdict}`" for verdict in Verdict]
+    unsearched = sum(1 for row in rows if row.verdict is None)
+    return (
+        f"The golden rows split in two. **{len(ledger) - partial}** reach every handling site their\n"
+        "[site table](openapi-surface/golden-reach-sites.tsv) declares, and "
+        f"**{partial}** carry at least one handling site no golden-only witness executes: "
+        f"{len(rows)} unreached arms in all. By the verdict each arm's linked record states, "
+        f"{', '.join(phrases)}, and {unsearched} have no arm search.\n"
+    )
+
+
+def _replace_between(text: str, begin: str, end: str, body: str, path: Path) -> str:
+    if (
+        text.count(begin) != 1
+        or text.count(begin + "\n") != 1
+        or text.count(end) != 1
+        or text.index(begin) > text.index(end)
+    ):
+        fail(f"{path} carries no single `{begin}` ... `{end}` section; restore the markers, then re-run")
+    head, rest = text.split(begin + "\n", 1)
+    _old, tail = rest.split(end, 1)
+    return head + begin + "\n" + body + end + tail
+
+
+def render_arm_sections(
+    text: str, ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR, path: Path = COVERAGE_DOC
+) -> str:
+    """`text` with its generated arm counts and arm table restated from the committed measurements."""
+    rows = arm_rows(ledger, regions_dir)
+    table = ARM_TABLE_HEADER + "".join("| " + " | ".join(row.cells()) + " |\n" for row in rows)
+    text = _replace_between(text, ARM_COUNTS_BEGIN, ARM_COUNTS_END, arm_counts_text(ledger, rows), path)
+    return _replace_between(text, ARM_TABLE_BEGIN, ARM_TABLE_END, table, path)
+
+
+def rewrite_arm_sections(
+    ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR, path: Path = COVERAGE_DOC
+) -> bool:
+    """Restate the coverage index's generated arm sections in place; return whether they changed."""
+    text = path.read_text(encoding="utf-8")
+    restated = render_arm_sections(text, ledger, regions_dir, path)
+    if restated != text:
+        path.write_text(restated, encoding="utf-8", newline="\n")
+    return restated != text
+
+
 def fixture_test_map(repo_root: Path) -> dict[str, str]:
     """census fixture name -> the golden test comparing its committed golden.
 
@@ -941,9 +1254,29 @@ def report(args: argparse.Namespace) -> int:
             ledger_text(reaches, provenance), encoding="utf-8"
         )
         changed = rewrite_cells(reaches, repo_root / "docs" / "openapi-surface")
-        print(f"golden-reach: wrote the ledger and {changed} reach cell(s)")
+        index = repo_root / "docs" / "openapi-surface-coverage.md"
+        # A tree with no coverage index (a scratch region set) has no arm sections to restate.
+        restated = index.is_file() and rewrite_arm_sections(
+            read_ledger(repo_root / "docs" / "openapi-surface" / "golden-reach.tsv"),
+            repo_root / "docs" / "openapi-surface",
+            index,
+        )
+        print(
+            f"golden-reach: wrote the ledger and {changed} reach cell(s); "
+            f"arm sections {'restated' if restated else 'unchanged'}"
+        )
     else:
         sys.stdout.write(ledger_text(reaches, provenance))
+    return 0
+
+
+def arms(args: argparse.Namespace) -> int:
+    """Restate the coverage index's arm counts and arm table from the committed ledger and records."""
+    regions = args.repo_root / "docs" / "openapi-surface"
+    restated = rewrite_arm_sections(
+        read_ledger(regions / "golden-reach.tsv"), regions, args.repo_root / "docs" / "openapi-surface-coverage.md"
+    )
+    print(f"golden-reach: arm sections {'restated' if restated else 'unchanged'}")
     return 0
 
 
@@ -991,12 +1324,13 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")
     r.add_argument("--write", action="store_true", help="write the ledger and reach cells")
+    sub.add_parser("arms", help="restate the coverage index's arm counts and table from committed files")
     s = sub.add_parser("sites", help="resolve every declared site against src/")
     s.add_argument("--verbose", action="store_true")
     s.add_argument("--table", type=Path, help="a site table other than the committed one")
     s.add_argument("--census", help="also check every selector against this census output")
     args = parser.parse_args(argv)
-    return {"measure": measure, "report": report, "sites": sites}[args.command](args)
+    return {"measure": measure, "report": report, "arms": arms, "sites": sites}[args.command](args)
 
 
 if __name__ == "__main__":

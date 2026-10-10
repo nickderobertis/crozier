@@ -1,0 +1,37 @@
+openapi: 3.1.0
+info:
+  title: Museum Exhibits
+  version: 1.0.0
+paths:
+  /exhibits:
+    post:
+      operationId: createExhibit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                panels:
+                  type: array
+                  items:
+                    oneOf:
+                      - type: object
+                        title: Caption Panel
+                        properties:
+                          caption:
+                            type: string
+                      - type: object
+                        title: Image Panel
+                        properties:
+                          image_url:
+                            type: string
+                          alt:
+                            type: string
+      responses:
+        "204":
+          description: Created

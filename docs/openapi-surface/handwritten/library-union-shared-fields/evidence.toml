@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d101c1976c64c8eecfabc8ae39e07f50a81b65fa7c5cb2ddca83154b921312de"
+
+[[covers]]
+key = "oneof-discriminated-union"
+arm = 'src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

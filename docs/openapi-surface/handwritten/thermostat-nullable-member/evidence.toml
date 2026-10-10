@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "1b1b4dbecc9def9ecaf1ad55ba2cfcf851a16406d69e4299e7766fb0ae772a47"
+
+[[covers]]
+key = "nullable"
+arm = 'src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

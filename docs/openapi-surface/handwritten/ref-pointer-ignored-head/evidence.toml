@@ -8,4 +8,5 @@ digest = "452fe88929436bb183c7705ad0813ff737ca47b5df6347ca61ce5738b1813b4a"
 key = "ref-pointer-undeclared-component-head"
 arm = 'src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md#witness-search-exhaustive"
-verdict = "exhausted"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/golden-reach-witnesses/searches/ref-pointer-undeclared-component-head.md"

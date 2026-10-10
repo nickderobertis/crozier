@@ -53,7 +53,12 @@ const KINDS: &[Kind] = &[
     // - `enum-receiver-collision`: members whose names collide with `visit`'s
     //   receiver;
     // - `openfigi.com`: inline property enums, optional and `nullable` ones, and
-    //   a path-parameter enum, in a real corpus document.
+    //   a path-parameter enum, in a real corpus document;
+    // - `offchain-metadata-tools`: no enum at all, so its literals tree differs
+    //   only in the generator record and the absent `core/enum.py` — the one
+    //   enum mode its one-member response union is proven under besides the
+    //   default;
+    // - `subsloth`: inline property enums beside its map-of-`oneOf` member;
     // - `zylon-private-gpt`: property enums of the models a `stream-condition`
     //   operation's halves stream and return.
     Kind {
@@ -67,6 +72,8 @@ const KINDS: &[Kind] = &[
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
+            "offchain-metadata-tools",
+            "subsloth",
             "zylon-private-gpt",
             "aws-mobileanalytics",
         ],

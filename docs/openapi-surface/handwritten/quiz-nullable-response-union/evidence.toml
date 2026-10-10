@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "7ba06903f1d31972c8e48bab8be74558c3d515dd8944e5ca42fd3c014c5b77c2"
+
+[[covers]]
+key = "oneof"
+arm = 'src/ir.rs::build_endpoint[Some\(if dropped_null \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

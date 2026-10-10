@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d6ab0db6ccb3e7e380662d7337e09d4ae23569effa42244e08fab4631eccb1e3"
+
+[[covers]]
+key = "get-request-body-union-member"
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

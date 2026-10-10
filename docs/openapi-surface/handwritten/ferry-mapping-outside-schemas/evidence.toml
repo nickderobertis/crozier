@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "530a781b9bfe9e1e3f08ac6796ae648c66b44e467ab58dd32cd8147e0e2645ef"
+
+[[covers]]
+key = "ref-pointer-undeclared-component-head"
+arm = 'src/ir.rs::Builder::discriminated_union[if all_dangling \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"
