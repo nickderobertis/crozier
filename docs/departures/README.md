@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 13 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 14 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -320,5 +320,14 @@ when the two differ.
 - **crozier writes:** The annotation the sync method declares, `-> typing.Iterator[T]` for its chunk type `T`.
 - **Why:** The docs contradict the generated code: `reference.md` documents a return type the method does not have, since iterating it yields parsed `T` chunks, never `bytes`.
 - **Evidence:** [`docs/departures/evidence/stream-reference-return-type.md`](../../docs/departures/evidence/stream-reference-return-type.md)
+
+### `union-value-wrapper-docs-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A discriminated union whose `discriminator.mapping` names a schema that is itself a union of references, so its wrapper holds the payload whole in `value`, passed in a usage example: `README.md` and `reference.md`.
+- **Fern writes:** The wrapper called with an empty keyword argument named by its discriminant value, `Course_Grill(grill=,)`, and an import line naming only the wrapper.
+- **crozier writes:** The wrapper called with its payload, `value=SteakOrder(...)`, as the method docstrings Fern writes for the same call do, and an import line naming every class and enum the payload uses.
+- **Why:** The example does not compile: `grill=,` is a keyword argument with no value, so Python rejects the snippet with a `SyntaxError` before anything runs.
+- **Evidence:** [`docs/departures/evidence/union-value-wrapper-docs-example.md`](../../docs/departures/evidence/union-value-wrapper-docs-example.md)
 
 <!-- END GENERATED CATALOG -->

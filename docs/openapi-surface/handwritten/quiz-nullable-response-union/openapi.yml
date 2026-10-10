@@ -1,0 +1,24 @@
+openapi: 3.1.0
+info:
+  title: Quiz Grader
+  version: 1.0.0
+paths:
+  /answers/{question}:
+    get:
+      operationId: getAnswer
+      parameters:
+        - name: question
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The graded answer
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: integer
+                  - type: boolean
+                  - type: "null"

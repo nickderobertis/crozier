@@ -287,3 +287,23 @@
     type the method does not have, since iterating it yields parsed `T`
     chunks, never `bytes`.
   evidence: docs/departures/evidence/stream-reference-return-type.md
+
+- id: union-value-wrapper-docs-example
+  kind: fern-defect
+  trigger: >-
+    A discriminated union whose `discriminator.mapping` names a schema that is
+    itself a union of references, so its wrapper holds the payload whole in
+    `value`, passed in a usage example: `README.md` and `reference.md`.
+  fern: >-
+    The wrapper called with an empty keyword argument named by its
+    discriminant value, `Course_Grill(grill=,)`, and an import line naming only
+    the wrapper.
+  crozier: >-
+    The wrapper called with its payload, `value=SteakOrder(...)`, as the
+    method docstrings Fern writes for the same call do, and an import line
+    naming every class and enum the payload uses.
+  reason: >-
+    The example does not compile: `grill=,` is a keyword argument with no
+    value, so Python rejects the snippet with a `SyntaxError` before anything
+    runs.
+  evidence: docs/departures/evidence/union-value-wrapper-docs-example.md

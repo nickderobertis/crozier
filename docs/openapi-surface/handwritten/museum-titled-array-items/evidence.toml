@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "6d3dc34b4d1922936d58dcee1e75659f342ab4e29dc5c404cbcc81acadee39c9"
+
+[[covers]]
+key = "items-oneof-element"
+arm = 'src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

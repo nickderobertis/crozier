@@ -287,6 +287,7 @@ pub struct Context {
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
+    crozier_value_wrappers: OnceLock<std::collections::BTreeMap<String, String>>,
     crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
     request_examples: OnceLock<RequestExampleContext>,
 }
@@ -316,6 +317,7 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
+            crozier_value_wrappers: OnceLock::from(value_wrappers(crozier.iter().copied())),
             crozier_returns: OnceLock::from(method_returns(crozier.iter().copied())),
             request_examples: OnceLock::from(request_example_context(crozier.iter().copied())),
         }
@@ -415,6 +417,22 @@ impl Context {
                 project_name(&std::fs::read_to_string(crozier.join("pyproject.toml")).ok()?)
             })
             .as_deref()
+    }
+
+    /// The discriminated-union wrappers crozier's modules declare holding their
+    /// payload whole, each class name mapped to its discriminant value.
+    pub fn crozier_value_wrappers(&self) -> &std::collections::BTreeMap<String, String> {
+        self.crozier_value_wrappers.get_or_init(|| {
+            let Some((_, root)) = self.roots.as_ref() else {
+                return std::collections::BTreeMap::new();
+            };
+            let sources = python_sources(root);
+            value_wrappers(
+                sources
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            )
+        })
     }
 
     fn request_examples(&self) -> &RequestExampleContext {
@@ -1291,6 +1309,46 @@ fn lifted_parameters<'a>(
         .collect()
 }
 
+/// Every class among `sources` whose body opens with a `value` field followed
+/// by a `Literal` tag with its default, `    <tag>: typing.Literal["<v>"] =
+/// "<v>"`: a discriminated-union wrapper holding its payload whole, mapped to
+/// its discriminant value `<v>`.
+fn value_wrappers<'a>(
+    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
+) -> std::collections::BTreeMap<String, String> {
+    let mut found = std::collections::BTreeMap::new();
+    for (path, text) in sources {
+        if !path.ends_with(".py") {
+            continue;
+        }
+        let lines: Vec<&str> = text.lines().collect();
+        for (index, line) in lines.iter().enumerate() {
+            let Some(name) = line
+                .strip_prefix("class ")
+                .and_then(|rest| rest.split_once('('))
+                .map(|(name, _)| name)
+            else {
+                continue;
+            };
+            let (Some(value), Some(tag)) = (lines.get(index + 1), lines.get(index + 2)) else {
+                continue;
+            };
+            if !value.starts_with("    value: ") {
+                continue;
+            }
+            let literal = tag
+                .split_once(": typing.Literal[\"")
+                .and_then(|(_, rest)| rest.split_once("\"] = \""))
+                .filter(|(value, default)| default.strip_suffix('"') == Some(*value))
+                .map(|(value, _)| value.to_string());
+            if let Some(literal) = literal {
+                found.insert(name.to_string(), literal);
+            }
+        }
+    }
+    found
+}
+
 /// The `(wire name, value)` of every `"<wire>": "<value>",` line inside a
 /// `headers={` dict of the raw clients among `sources`.
 fn constant_headers<'a>(
@@ -1478,7 +1536,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 17] = [
+pub const RULE_IDS: [&str; 18] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
@@ -1496,6 +1554,7 @@ pub const RULE_IDS: [&str; 17] = [
     "sdk-name-version-headers",
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
+    "union-value-wrapper-docs-example",
 ];
 
 /// The rule of the catalog entry `id`, if crozier has one.
@@ -1571,6 +1630,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "sdk-variable-docs-examples" => Rule {
             region: Some(sdk_variable_docs_examples),
+            ..none
+        },
+        "union-value-wrapper-docs-example" => Rule {
+            region: Some(union_value_wrapper_docs_example),
             ..none
         },
         _ => return None,
@@ -2667,6 +2730,94 @@ fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
             .iter()
             .zip(pair.crozier)
             .all(|(left, right)| left == right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `union-value-wrapper-docs-example`: in `README.md` or `reference.md`, every
+/// call of a wrapper that holds its payload whole (see
+/// [`Context::crozier_value_wrappers`]) passes it as `value=<payload>` in
+/// crozier's snippet, where Fern's writes the empty keyword argument
+/// `<discriminant value>=,` in its place, and the snippet's `from … import`
+/// line leaves out the names only the payload used. crozier's lines rewritten
+/// so must equal Fern's file exactly.
+fn union_value_wrapper_docs_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel) {
+        return Ok(None);
+    }
+    let wrappers = pair.context.crozier_value_wrappers();
+    if wrappers.is_empty() {
+        return Ok(None);
+    }
+    let mut fern_form: Vec<String> = Vec::with_capacity(pair.crozier.len());
+    let mut payload_names = BTreeSet::new();
+    let mut index = 0;
+    while index < pair.crozier.len() {
+        let line = pair.crozier[index];
+        fern_form.push(line.to_string());
+        index += 1;
+        let trimmed = line.trim_start();
+        let callee = trimmed
+            .strip_suffix('(')
+            .map(|call| call.rsplit_once('=').map_or(call, |(_, callee)| callee));
+        let Some(value) = callee.and_then(|callee| wrappers.get(callee)) else {
+            continue;
+        };
+        let inner = format!("{}    ", &line[..line.len() - trimmed.len()]);
+        let Some(payload) = pair
+            .crozier
+            .get(index)
+            .and_then(|next| next.strip_prefix(&format!("{inner}value=")))
+        else {
+            continue;
+        };
+        let mut end = index + 1;
+        if payload.ends_with('(') {
+            let close = format!("{inner})");
+            while end < pair.crozier.len() && pair.crozier[end] != close {
+                end += 1;
+            }
+            end += 1;
+        }
+        for payload_line in &pair.crozier[index..end.min(pair.crozier.len())] {
+            payload_names.extend(
+                tokens(payload_line)
+                    .into_iter()
+                    .filter(|token| token.starts_with(|c: char| c.is_ascii_uppercase())),
+            );
+        }
+        fern_form.push(format!("{inner}{value}=,"));
+        index = end;
+    }
+    let body: Vec<String> = fern_form
+        .iter()
+        .filter(|line| !line.starts_with("from "))
+        .cloned()
+        .collect();
+    let used = |name: &str| body.iter().any(|line| tokens(line).contains(&name));
+    let fern_form: Vec<String> = fern_form
+        .into_iter()
+        .map(|line| {
+            let Some((head, names)) = line.split_once(" import ") else {
+                return line;
+            };
+            if !head.starts_with("from ") {
+                return line;
+            }
+            let kept: Vec<&str> = names
+                .split(", ")
+                .filter(|name| !payload_names.contains(*name) || used(name))
+                .collect();
+            format!("{head} import {}", kept.join(", "))
+        })
+        .collect();
+    if fern_form.len() != pair.fern.len()
+        || fern_form
+            .iter()
+            .zip(pair.fern)
+            .any(|(left, right)| left != right)
     {
         return Ok(None);
     }

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 215 of the 246 registered sources live in `corpus-sources/` (a split
+  and 217 of the 248 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1299,6 +1299,14 @@ PREDICATES = {
         "model, which `inline_body_source_names` of `src/ir.rs` drops like any "
         "single-use body"
     ),
+    "operation.requestBody:get-union-member": (
+        "one per GET Operation Object whose request body's `application/json` schema "
+        "is a `$ref` to a `components.schemas` entry that is a `$ref` member of a "
+        "component `oneOf` or `anyOf` whose two or more members are objects sharing a "
+        "property with one string value (`inferred_discriminant` of "
+        "`src/document_refusals/type_not_defined.rs`): Fern drops the GET body, so "
+        "`body_member_union` leaves the union to generate"
+    ),
     "operation.requestBody:titled-inline-container-oas-three-zero": (
         "one per Operation Object of an OpenAPI 3.0 document, declaring no parameter "
         "itself or on its Path Item, whose request body's `application/json` schema "
@@ -1497,6 +1505,12 @@ PREDICATES = {
         "one per Schema Object whose `anyOf` array holds exactly one member whose "
         "primary type is not `null`, beside at least one member whose primary type is "
         "`null`"
+    ),
+    "schema.oneOf:several-non-null-members": (
+        "one per Schema Object whose `oneOf` array holds two or more members whose primary type is not `null`"
+    ),
+    "schema.anyOf:several-non-null-members": (
+        "one per Schema Object whose `anyOf` array holds two or more members whose primary type is not `null`"
     ),
     "schema.oneOf:sole-member": ("one per Schema Object whose `oneOf` array holds exactly one member"),
     "schema.anyOf:sole-member": ("one per Schema Object whose `anyOf` array holds exactly one member"),
@@ -1789,6 +1803,10 @@ CONJUNCTIONS = {
     "schema.anyOf>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside no `additionalProperties`, on an `object` primary type",
     "schema.oneOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `oneOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
     "schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object": "one per Schema Object one of whose `anyOf` members writes an explicitly empty `properties` map beside `additionalProperties: false`, on an `object` primary type",
+    "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
+    "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose `oneOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref`, declares no `oneOf` and holds an `anyOf` of two or more non-`null` members",
+    "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": "one per Schema Object one of whose `anyOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref` and holds a `oneOf` of two or more non-`null` members",
+    "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": "one per Schema Object one of whose `anyOf` members is an `object` declaring no properties whose `additionalProperties` schema is no `$ref`, declares no `oneOf` and holds an `anyOf` of two or more non-`null` members",
 }
 
 
@@ -2074,6 +2092,26 @@ CASES: dict[str, tuple[Case, ...]] = {
             selector="schema.anyOf>!schema.properties:non-empty&schema.additionalProperties=false&schema.properties&schema.type:primary=object",
         ),
         Case(
+            "14a",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        ),
+        Case(
+            "14b",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        ),
+        Case(
+            "14c",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        ),
+        Case(
+            "14d",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        ),
+        Case(
             "12a",
             block="hoist_union_variant/oneOf",
             residual=(
@@ -2274,7 +2312,7 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "d18b44f1eb2c3221",
+    "hoist_union_variant": "1389956b0480011c",
     "prop_type_ref": "e2046726db880b3c",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
@@ -3161,7 +3199,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "efd3a74154b2040b",
+    "endpoint_method_name": "82927a62f963958b",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3713,7 +3751,7 @@ def annotated_all_of_ref(node: dict[Any, Any]) -> bool:
 # and `Census.same_primitive_unions` reads `same_primitive_union_last` and the
 # scalar arms of `base_type_ref`.
 UNION_PORT_DIGESTS = {
-    "inferred_discriminant_property_with": "e89b0d632c061c3f",
+    "inferred_discriminant_property_with": "ab3c68f20ce92ccd",
     "same_primitive_union_last": "46bacd9b81edeea4",
     "base_type_ref": "aed18925c5369dea",
 }
@@ -4071,6 +4109,8 @@ def _inferred_discriminant_property(node: dict[Any, Any], schemas: dict[Any, Any
     whose tag `required` leaves out; where it does not, a one-member `enum` is
     required of every member.
     """
+    if _undiscriminated(node):
+        return None
     members = union_members(node)
     if members is None:
         return None
@@ -4168,6 +4208,8 @@ def _inferred_union_discriminant_property(node: dict[Any, Any], schemas: dict[An
     members at all satisfies it vacuously — nought distinct values out of nought —
     which is how an empty `oneOf: []` reaches `discriminated_union`'s `Some`.
     """
+    if _undiscriminated(node):
+        return None
     found = _inferred_discriminant_property(node, schemas, True)
     if found is not None:
         return found
@@ -4212,9 +4254,33 @@ def _mapping_targets_resolve(mapping: dict[Any, Any], schemas: dict[Any, Any]) -
 
 
 def _written_discriminator(node: dict[Any, Any]) -> dict[Any, Any] | None:
-    """The Discriminator Object this schema writes, as `Option<Discriminator>`."""
+    """The Discriminator Object this schema writes, as `Option<Discriminator>`.
+
+    A schema declaring itself undiscriminated has none: `normalize_undiscriminated_unions`
+    of `src/openapi.rs` removes it at load.
+    """
     discriminator = node.get("discriminator")
+    if _undiscriminated(node):
+        return None
     return discriminator if isinstance(discriminator, dict) else None
+
+
+def _undiscriminated(node: dict[Any, Any]) -> bool:
+    """`Schema::discriminated` of `src/openapi.rs` reading `false`: the
+    `x-crozier-discriminated` spelling when written, else `x-fern-discriminated`."""
+    for key in ("x-crozier-discriminated", "x-fern-discriminated"):
+        if isinstance(node.get(key), bool):
+            return node[key] is False
+    return False
+
+
+def _dangling_component_pointer(reference: Any, schemas: dict[Any, Any]) -> bool:
+    """A `#/components/schemas/<name>` pointer whose one segment names no
+    component schema of the document."""
+    if not isinstance(reference, str) or not reference.startswith(_COMPONENT_SCHEMAS_PREFIX):
+        return False
+    key = reference[len(_COMPONENT_SCHEMAS_PREFIX) :]
+    return "/" not in key and key not in schemas
 
 
 def inheritance_union(node: dict[Any, Any], schemas: dict[Any, Any]) -> bool:
@@ -4283,7 +4349,17 @@ def discriminated_union_head(node: dict[Any, Any], schemas: dict[Any, Any]) -> s
         return None
     mapping = discriminator.get("mapping") if discriminator is not None else None
     if isinstance(mapping, dict) and mapping:
-        if not _mapping_targets_resolve(mapping, schemas):
+        # Every target and every member dangling still names the variants, each
+        # holding an unknown `value`.
+        all_dangling = (
+            len(members) > 1
+            and all(
+                isinstance(member, dict) and _dangling_component_pointer(member.get("$ref"), schemas)
+                for member in members
+            )
+            and all(_dangling_component_pointer(target, schemas) for target in mapping.values())
+        )
+        if not all_dangling and not _mapping_targets_resolve(mapping, schemas):
             return None
     else:
         for member in members:
@@ -4555,6 +4631,18 @@ def request_body_media(document: Any) -> set[int]:
 EXAMPLE_PORT_DIGESTS = {
     ("src/ir.rs", "own_deprecated"): "453b400276e22e0a",
     ("src/emit.rs", "read_datetime"): "17d1f36be9e0d0c2",
+}
+
+
+# The two functions of `src/document_refusals/type_not_defined.rs` the
+# `operation.requestBody:get-union-member` predicate ports:
+# `Census.tagged_union_members` reads `inferred_discriminant`, and the predicate's
+# `GET`-only reading is `body_member_union`'s skip of `GET` bodies. Pinned by the
+# same normalized-body digest, so an edit to either fails until the port is read
+# again.
+REFUSAL_PORT_DIGESTS = {
+    ("src/document_refusals/type_not_defined.rs", "inferred_discriminant"): "89031d16c07fa07a",
+    ("src/document_refusals/type_not_defined.rs", "body_member_union"): "86555f260408efe9",
 }
 
 
@@ -4884,6 +4972,49 @@ class Census:
 
     def record(self, selector: str) -> None:
         self.counts[selector] += 1
+
+    def tagged_union_members(self) -> set[str]:
+        """The component schemas that are `$ref` members of a component union
+        `inferred_discriminant` of `src/document_refusals/type_not_defined.rs`
+        reads as discriminated: two or more members, each an object with
+        `properties`, the first's properties naming one every member gives a
+        single string value (`enum` of one, or `const`)."""
+
+        def single_value(field: Any) -> bool:
+            if not isinstance(field, dict):
+                return False
+            if "enum" in field:
+                values = field["enum"]
+                return isinstance(values, list) and len(values) == 1 and isinstance(values[0], str)
+            return isinstance(field.get("const"), str)
+
+        found: set[str] = set()
+        for schema in self.component_schemas.values():
+            for key in ("oneOf", "anyOf"):
+                members = schema.get(key) if isinstance(schema, dict) else None
+                if not isinstance(members, list) or len(members) < 2:
+                    continue
+                objects = []
+                for member in members:
+                    reference = member.get("$ref") if isinstance(member, dict) else None
+                    target = self.component_target(reference) if isinstance(reference, str) else member
+                    properties = target.get("properties") if isinstance(target, dict) else None
+                    if not isinstance(properties, dict):
+                        break
+                    objects.append(properties)
+                else:
+                    if any(
+                        single_value(field) and all(single_value(other.get(name)) for other in objects[1:])
+                        for name, field in objects[0].items()
+                    ):
+                        found.update(
+                            member["$ref"][len(_COMPONENT_SCHEMAS_PREFIX) :]
+                            for member in members
+                            if isinstance(member, dict)
+                            and isinstance(member.get("$ref"), str)
+                            and member["$ref"].startswith(_COMPONENT_SCHEMAS_PREFIX)
+                        )
+        return found
 
     def component_target(self, reference: str) -> Any:
         """The `components.schemas` entry a local `#/components/schemas/<name>` names."""
@@ -5275,6 +5406,8 @@ class Census:
                 and self.ref_counts[reference] == 1
             ):
                 found.append("operation.requestBody:body-prefixed-single-use")
+            if method == "get" and name is not None and name in self.tagged_union_members():
+                found.append("operation.requestBody:get-union-member")
             parameters = self.has_parameters(operation, url)
             additional = schema.get("additionalProperties")
             container = primary_type(schema.get("type")) == "array" or (
@@ -5749,6 +5882,8 @@ class Census:
             ]
             if len(non_null) == 1 and len(non_null) != len(members):
                 found.append(f"schema.{field}:sole-non-null-member")
+            if len(non_null) >= 2:
+                found.append(f"schema.{field}:several-non-null-members")
             if len(members) == 1:
                 found.append(f"schema.{field}:sole-member")
         if "enum" in node and string_valued(node, node.get("enum")):

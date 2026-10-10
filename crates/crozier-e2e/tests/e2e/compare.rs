@@ -1997,3 +1997,85 @@ fn compare_reports_the_body_query_departure_and_rejects_another_changed_line() {
         serde_json::json!(["src/fern/execute/raw_client.py"])
     );
 }
+
+/// `crozier compare` against Fern's tree for the hand-written
+/// `kitchen-nested-mapping-target` fixture reports the
+/// `union-value-wrapper-docs-example` departure at each Markdown snippet's
+/// window and matches; the same reference with one line beside the wrapper call
+/// changed (an extra argument of the method call it sits in) is a mismatch, so
+/// the rule accounts for the wrapper call alone.
+#[cfg(unix)]
+#[test]
+fn compare_reports_the_union_value_wrapper_departure_and_rejects_an_adjacent_line() {
+    let project = crate::repo_root();
+    let fixture = project.join("docs/openapi-surface/handwritten/kitchen-nested-mapping-target");
+    let repo = tempfile::tempdir().expect("comparison repo");
+    let root = repo.path();
+    git(root, &["init", "-q"]);
+    write(
+        root,
+        "openapi.yml",
+        &std::fs::read_to_string(fixture.join("openapi.yml")).unwrap(),
+    );
+    write_script(root, "reference.sh", &format!(
+        "cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
+         if [ \"${{1:-}}\" = edited ]; then\n\
+         \x20 f=\"$CROZIER_REFERENCE_OUTPUT/README.md\"\n\
+         \x20 awk '!done && /request=Course_Grill\\(/ {{ print \"    request_options=None,\"; done=1 }} {{ print }}' \"$f\" > \"$f.tmp\"\n\
+         \x20 mv \"$f.tmp\" \"$f\"\n\
+         fi\n", fixture.join("fern-expected").display()
+    ));
+    for (config, command) in [
+        ("crozier.yml", "./reference.sh"),
+        ("edited.yml", "./reference.sh edited"),
+    ] {
+        write(
+            root,
+            config,
+            &format!(
+                "spec: ./openapi.yml\npackage-name: fern\nproject-name: default_package_name\n\
+             generators:\n  python:\n    reference:\n      command: {command}\n"
+            ),
+        );
+    }
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "crozier.yml"])
+        .assert()
+        .code(0);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    validate_against_committed_schema(&report);
+    let matched = result(&report, "crozier.yml", "python");
+    assert_eq!(matched["status"], "matched", "{matched:#}");
+    let windows: Vec<(String, u64)> = matched["comparison"]["departures"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|departure| departure["id"] == "union-value-wrapper-docs-example")
+        .map(|departure| {
+            (
+                departure["file"].as_str().unwrap().to_string(),
+                departure["line"].as_u64().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        windows,
+        [
+            ("README.md".to_string(), 37),
+            ("reference.md".to_string(), 15)
+        ],
+        "{matched:#}"
+    );
+
+    let assert = compare_cmd(root)
+        .args(["--json", "-", "edited.yml"])
+        .assert()
+        .code(3);
+    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
+    let changed = result(&report, "edited.yml", "python");
+    assert_eq!(changed["status"], "mismatched");
+    assert_eq!(
+        changed["comparison"]["differing"],
+        serde_json::json!(["README.md"])
+    );
+}

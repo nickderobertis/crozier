@@ -44,6 +44,11 @@ mod default_max_retries;
 #[path = "e2e/overlay_goldens.rs"]
 mod overlay_goldens;
 
+/// The hand-written union fixtures in both enum modes, their extensions' two
+/// spellings, the wrapper departure's scope, and the refusals beside them.
+#[path = "e2e/unions.rs"]
+mod unions;
+
 /// The parity shapes measured under Fern's default `enum_type`, against
 /// crozier's `--enum-type literals`.
 #[path = "e2e/literals_mode.rs"]
@@ -776,8 +781,9 @@ fn load_departure_ledger(root: &Path) -> Result<Ledger, Vec<String>> {
 
 /// The inventory of compared goldens, derived from the comparisons' own
 /// registrations under `root`: each registered corpus's `expected/` and each
-/// overlay golden of one, with that corpus's file-level carve-outs; each flat
-/// golden; each probe, authored-probe, hand-written and measured
+/// overlay golden of one, with that corpus's file-level carve-outs; each union
+/// fixture's literals overlay; each flat golden; each probe, authored-probe,
+/// hand-written and measured
 /// parameter-lowering tree; and each Fern
 /// reference tree a departure's evidence holds, which `crozier compare` reads in
 /// `departures_ledger_gate`. An overlay
@@ -808,6 +814,15 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
             departures_ledger::ComparedGolden {
                 excluded,
                 carve_outs: recorded_carve_outs(corpus),
+            },
+        );
+    }
+    for (golden, excluded) in unions::compared() {
+        add(
+            golden,
+            departures_ledger::ComparedGolden {
+                excluded,
+                carve_outs: Default::default(),
             },
         );
     }
@@ -7309,6 +7324,8 @@ const CORPORA: &[&Corpus] = &[
     &LOOTLOG_BATTLELOG,
     &AWS_MOBILEANALYTICS,
     &EGO_MICROSERVICES,
+    &OFFCHAIN_METADATA_TOOLS,
+    &SUBSLOTH,
 ];
 
 #[test]
@@ -11154,6 +11171,45 @@ fn waylay_queries_matches_fern_output() {
     assert_committed_corpus_matches(&WAYLAY_QUERIES);
 }
 
+/// Input Output's Cardano token metadata server API — corpus row 1200. Its
+/// `GET /metadata/{subject}/properties/{properties}` answers an inline
+/// `oneOf: [$ref Property]`, which Fern returns as `Property` itself, and its
+/// metadata query lists `anyOf: [$ref Property]` items as `List[Property]`.
+const OFFCHAIN_METADATA_TOOLS: Corpus = Corpus {
+    api: "offchain-metadata-tools",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn offchain_metadata_tools_matches_fern_output() {
+    assert_committed_corpus_matches(&OFFCHAIN_METADATA_TOOLS);
+}
+
+/// The subsloth project's media API contract — corpus row 1201. Its component
+/// `SubtitlesValue` offers, as a `oneOf` member, an `object` map whose value is
+/// a `oneOf` of three non-null members.
+const SUBSLOTH: Corpus = Corpus {
+    api: "subsloth",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+#[test]
+fn subsloth_matches_fern_output() {
+    assert_committed_corpus_matches(&SUBSLOTH);
+}
+
 #[test]
 fn letta_matches_fern_output() {
     assert_committed_corpus_matches(&LETTA);
@@ -14727,7 +14783,7 @@ fn overlapping_all_of_fields_flatten_the_base_model() {
 }
 
 #[test]
-fn nested_and_union_nullability_is_preserved() {
+fn nested_nullability_is_preserved_and_a_nullable_scalar_union_stays_bare() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths: {}\ncomponents:\n  schemas:\n    Widget:\n      type: object\n      properties:\n        labels:\n          type: array\n          items: { type: string, nullable: true }\n        roles:\n          type: array\n          items:\n            type: object\n            nullable: true\n            properties:\n              name: { type: string }\n    Schedule:\n      nullable: true\n      anyOf:\n        - { type: integer }\n        - { type: string }\n",
     );
@@ -14738,8 +14794,10 @@ fn nested_and_union_nullability_is_preserved() {
     assert!(
         model.contains("typing.List[typing.Optional[str]]")
             && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
-            && alias.contains("Schedule = typing.Union[int, typing.Optional[str]]"),
-        "nested and union nullability should be retained at the schema node that declares it: {model}\n{alias}"
+            // A nullable union of plain scalars stays bare in Fern 5.20, as the
+            // `pharmacy-nullable-scalar-unions` golden measures.
+            && alias.contains("Schedule = typing.Union[int, str]"),
+        "nested nullability should be retained at the schema node that declares it: {model}\n{alias}"
     );
 }
 
@@ -20569,6 +20627,10 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
             "union-member-body-probe.yml",
             "components/schemas/Proc/properties/events/oneOf/0",
         ),
+        (
+            "explicit-discriminator-body-probe.yml",
+            "components/schemas/Piece/oneOf/0",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(spec), strict).unwrap();
@@ -20582,6 +20644,12 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
     let dir = tempfile::tempdir().unwrap();
     let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
     let union = std::fs::read_to_string(class.join("union-member-body-probe.yml")).unwrap();
+    let mapped =
+        std::fs::read_to_string(class.join("explicit-discriminator-body-probe.yml")).unwrap();
+    assert!(
+        mapped.contains("\n    post:\n"),
+        "the mapped probe sends a POST body"
+    );
     for (name, text) in [
         (
             "users-tag.yml",
@@ -20590,6 +20658,12 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
         (
             "plain-member.yml",
             union.replace("{type: string, enum: [OPERATOR]}", "{type: string}"),
+        ),
+        // Fern drops a GET body, so the member is no inline request and the
+        // union generates (evaluation-logs/fern-explicit-discriminator-get.log).
+        (
+            "mapped-get-body.yml",
+            mapped.replace("\n    post:\n", "\n    get:\n"),
         ),
     ] {
         let recovered = dir.path().join(name);
@@ -20601,6 +20675,7 @@ fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
         "other-file-control.yml",
         "group-name-control.yml",
         "union-member-control.yml",
+        "explicit-discriminator-control.yml",
     ] {
         generates_identically_in_both_modes(&class.join(control));
     }
@@ -23084,6 +23159,77 @@ fn sdk_env_stream_reference_heading_states_the_returned_iterator() {
             String::from_utf8_lossy(&run.stderr)
         );
     }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_union_value_wrapper_docs_examples_compile_only_in_crozier() {
+    let fixture =
+        repo_root().join("docs/openapi-surface/handwritten/kitchen-nested-mapping-target");
+    let script = repo_root().join("docs/departures/evidence/union-value-wrapper-docs-example.py");
+    let directory = tempfile::tempdir().expect("crozier tree");
+    let sdk = directory.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(fixture.join("openapi.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let run = std::process::Command::new(python)
+        .arg(&script)
+        .arg(fixture.join("fern-expected"))
+        .arg(&sdk)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8_lossy(&run.stdout);
+    assert!(
+        run.status.success(),
+        "{stdout}{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    // Fern's three Markdown snippets pass the wrapper an empty argument;
+    // crozier's three compile and bind to the generated method.
+    let lines: Vec<&str> = stdout.lines().collect();
+    let fern: Vec<&&str> = lines
+        .iter()
+        .filter(|line| line.starts_with("fern "))
+        .collect();
+    let crozier: Vec<&&str> = lines
+        .iter()
+        .filter(|line| line.starts_with("crozier "))
+        .collect();
+    assert_eq!(3, fern.len(), "{stdout}");
+    assert!(
+        fern.iter()
+            .all(|line| line.contains("SyntaxError") && line.contains("'grill=,'")),
+        "{stdout}"
+    );
+    assert_eq!(3, crozier.len(), "{stdout}");
+    assert!(
+        crozier.iter().all(|line| line
+            .contains("compiles; request=Course_Grill(value=SteakOrder(")
+            && line.ends_with("binds fire_ticket")),
+        "{stdout}"
+    );
+
+    // The script refuses a call missing a tree rather than indexing past it.
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let refused = std::process::Command::new(python)
+        .arg(&script)
+        .arg(fixture.join("fern-expected"))
+        .output()
+        .unwrap();
+    assert!(!refused.status.success());
+    assert!(String::from_utf8_lossy(&refused.stderr).contains("usage:"));
 }
 
 #[test]

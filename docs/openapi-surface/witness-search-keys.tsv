@@ -9,7 +9,9 @@ client-header-date-format	parameter.schema:promoted-date-header	parameters.md	su
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
 cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
 described-ref-oneof-alias-without-docstring	schema.description	schemas.md	supported
+discriminated-extension	schema.x-fern-discriminated	oas31-extensions.md	supported
 discriminated-variant-date-value-snippet	schema.format=date	schemas.md	supported
+discriminator-property-name-extension	schema.discriminator.x-fern-property-name	oas31-extensions.md	supported
 empty-path-segment-double-slash-kept	openapi.paths:several-template-expressions	document-paths.md	supported
 enum-union-body-example-first-member-value	schema.enum:string-valued	bodies-media.md	supported
 fern-streaming-boolean	operation.x-fern-streaming	oas31-extensions.md	supported
@@ -18,6 +20,7 @@ fern-streaming-condition-shared-body	operation.x-fern-streaming	oas31-extensions
 fern-streaming-condition-union-body	operation.x-fern-streaming	oas31-extensions.md	supported
 fern-streaming-format-over-json	operation.x-fern-streaming	oas31-extensions.md	supported
 fern-streaming-terminator	operation.x-fern-streaming	oas31-extensions.md	supported
+get-request-body-union-member	operation.requestBody:get-union-member	bodies-media.md	supported
 global-headers-extension	openapi.x-fern-global-headers	parameters.md	supported
 group-path-ending-in-api-nested-package	operation.x-fern-sdk-group-name	document-paths.md	supported
 header-subset-string-default	parameter.schema:subset-header-string-default	parameters.md	supported
@@ -37,6 +40,7 @@ oneof-array-variant-anyof-discriminated-union-item	schema.oneOf>schema.type:prim
 oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member	schemas.md	supported
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported
 oneof-duplicate-members-collapsed	schema.oneOf	schemas.md	supported
+oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	schemas.md	supported
 operation-id-digit-leading-method	operation.operationId:digit-leading-method	document-paths.md	supported
 parameter-default-extension	parameter.x-fern-default	parameters.md	supported
 parameter-ignore-extension	parameter.x-fern-ignore	parameters.md	supported

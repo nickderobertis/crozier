@@ -4526,7 +4526,7 @@ fn render_discriminated_union(
         let mut discriminant = render_field(
             &Field {
                 wire_name: union.discriminant_property.clone(),
-                py_name: naming::model_field_name(&union.discriminant_property),
+                py_name: discriminant_field_name(union),
                 type_ref: TypeRef::Literal(vec![member.discriminant.clone()]),
                 optional: false,
                 nullable: false,
@@ -4582,7 +4582,7 @@ fn render_discriminated_union(
         format!(
             "{} = typing_extensions.Annotated[{union_expr}, pydantic.Field(discriminator=\"{}\")]",
             union.name,
-            naming::model_field_name(&union.discriminant_property)
+            discriminant_field_name(union)
         )
     };
 
@@ -4616,6 +4616,19 @@ fn render_discriminated_union(
         imports.render(),
         classes.join("\n\n\n")
     ))
+}
+
+/// The Python name of a discriminated union's tag field: the one its
+/// discriminator declares, else its wire key's. The hand-written
+/// `telescope-renamed-discriminant` fixture renames `$class` to `targetClass`,
+/// and Fern's wrappers declare `target_class` aliased to `$class`.
+fn discriminant_field_name(union: &crate::ir::DiscriminatedUnion) -> String {
+    naming::model_field_name(
+        union
+            .discriminant_name
+            .as_deref()
+            .unwrap_or(&union.discriminant_property),
+    )
 }
 
 /// Whether a resolved type references any name that must render as a forward
@@ -7671,6 +7684,9 @@ enum Example {
     /// A call `Name(arg, ...)`; each arg is `(Some("kw"), val)` or `(None, val)`
     /// for a positional argument. A non-empty arg list always explodes.
     Call(String, Vec<(Option<String>, Example)>),
+    /// A discriminated-union wrapper holding its payload whole, `Name(value=…)`:
+    /// it always explodes, and its one argument carries no trailing comma.
+    Wrapped(String, Box<Example>),
     /// A list `[items]` — explodes only when an item does.
     List(Vec<Example>),
     /// A list supplied verbatim by the spec — wraps at the snippet line limit and
@@ -7699,6 +7715,7 @@ impl Example {
         match self {
             Example::Atom(_) => false,
             Example::Call(_, args) => !args.is_empty(),
+            Example::Wrapped(..) => true,
             Example::List(items) | Example::ExplicitList(items) => {
                 items.iter().any(Example::forces_multiline)
             }
@@ -7732,6 +7749,9 @@ impl Example {
                     .map(|(kw, value)| (kw, value.into_documentation_dicts()))
                     .collect(),
             ),
+            Example::Wrapped(name, value) => {
+                Example::Wrapped(name, Box::new(value.into_documentation_dicts()))
+            }
             Example::List(items) => Example::List(convert_items(items)),
             Example::ExplicitList(items) => Example::ExplicitList(convert_items(items)),
             Example::ReferenceList(items) => Example::ReferenceList(convert_items(items)),
@@ -7757,6 +7777,7 @@ impl Example {
                     .join(", ");
                 format!("{name}({inner})")
             }
+            Example::Wrapped(name, value) => format!("{name}(value={})", value.flat()),
             Example::List(items) | Example::ExplicitList(items) | Example::ReferenceList(items) => {
                 format!(
                     "[{}]",
@@ -7821,6 +7842,12 @@ impl Example {
                 out.push(')');
                 out
             }
+            Example::Wrapped(name, value) => format!(
+                "{name}(\n{}value={}\n{})",
+                " ".repeat(indent + 4),
+                value.render_at(indent + 4, indent + 10),
+                " ".repeat(indent)
+            ),
             Example::List(items) => {
                 // Width is counted in *characters*: Python and `ruff` measure a
                 // line that way, so VTEX's `"Alimentação"` example is 88 columns
@@ -9133,6 +9160,19 @@ impl<'a> ExampleCtx<'a> {
                 }
             }
             Some(TypeDecl::DiscriminatedUnion(u)) => match u.members.first() {
+                // A wrapper holding a union whole passes its payload as `value`,
+                // the one argument Fern's docstring writer leaves without a
+                // trailing comma (the hand-written `kitchen-nested-mapping-target`
+                // fixture's `Course_Grill(value=SteakOrder(…))`).
+                Some(m) if m.wrapped => {
+                    self.record_ref(&m.class_name);
+                    let payload = m.fields.first().map(|field| field.type_ref.clone());
+                    let value = payload.map_or_else(
+                        || Example::Atom("None".to_string()),
+                        |payload| self.value(&payload, slot),
+                    );
+                    Example::Wrapped(m.class_name.clone(), Box::new(value))
+                }
                 Some(m) => {
                     self.record_ref(&m.class_name);
                     // The discriminant field carries a default (`= "circle"`), so
@@ -9209,10 +9249,7 @@ impl<'a> ExampleCtx<'a> {
                             }
                             args.insert(
                                 at.min(args.len()),
-                                (
-                                    Some(naming::model_field_name(&u.discriminant_property)),
-                                    Example::Atom(member),
-                                ),
+                                (Some(discriminant_field_name(u)), Example::Atom(member)),
                             );
                         }
                     }
@@ -13216,6 +13253,7 @@ mod tests {
             module: "agents".to_string(),
             decl: TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
                 base_fields: Vec::new(),
+                discriminant_name: None,
                 name: "ModifyMessageRequestBody".to_string(),
                 module: "modify_message_request_body".to_string(),
                 discriminant_property: "message_type".to_string(),
@@ -13553,6 +13591,7 @@ mod tests {
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
                 base_fields: Vec::new(),
+                discriminant_name: None,
                 name: "Shape".to_string(),
                 module: "shape".to_string(),
                 discriminant_property: "kind".to_string(),
@@ -14069,6 +14108,7 @@ mod tests {
         nullable_required.nullable = true;
         let union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
             base_fields: Vec::new(),
+            discriminant_name: None,
             name: "Shape".to_string(),
             module: "shape".to_string(),
             discriminant_property: "kind".to_string(),
@@ -14089,6 +14129,7 @@ mod tests {
         });
         let empty_union = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
             base_fields: Vec::new(),
+            discriminant_name: None,
             name: "Nothing".to_string(),
             module: "nothing".to_string(),
             discriminant_property: "kind".to_string(),
@@ -14817,6 +14858,7 @@ mod tests {
 
         let singleton = TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
             base_fields: Vec::new(),
+            discriminant_name: None,
             name: "Content".to_string(),
             module: "content".to_string(),
             discriminant_property: "type".to_string(),

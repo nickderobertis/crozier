@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Atlas Tiles
+  version: 0.9.0
+paths:
+  /maps/{map_id}:
+    get:
+      operationId: getMap
+      parameters:
+        - name: map_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Map"
+components:
+  schemas:
+    Map:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        projection:
+          oneOf:
+            - type: object
+              properties:
+                family:
+                  type: string
+                central_meridian:
+                  type: number
+            - type: object
+              properties:
+                family:
+                  type: string
+                zone:
+                  type: integer
+                hemisphere:
+                  type: string
+          discriminator:
+            propertyName: family

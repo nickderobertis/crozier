@@ -5723,9 +5723,12 @@ components:
 "#,
     );
     let maybe = &files["src/acme/types/maybe_scalar.py"];
+    // Fern 5.20 keeps a nullable union of plain scalars bare, as the
+    // `pharmacy-nullable-scalar-unions` golden measures; the nullability lands
+    // on the fields that reference it instead.
     assert!(
-        maybe.contains("MaybeScalar = typing.Union[str, typing.Optional[int]]"),
-        "nullable unions apply Optional to Fern's final variant: {maybe}"
+        maybe.contains("MaybeScalar = typing.Union[str, int]"),
+        "a nullable union of plain scalars stays a bare union: {maybe}"
     );
     let closed = &files["src/acme/types/closed_map.py"];
     assert!(
@@ -14507,6 +14510,134 @@ components:
         ["id", "url", "state"],
         "{reference}"
     );
+}
+
+/// The hand-written union fixtures crozier is byte-gated against: one per
+/// literals overlay directory under `docs/fern-measurements/union-literals/`,
+/// each holding its overlay in `fern-expected/`. The e2e suite's
+/// `union_literals_overlays_are_exactly_the_fixtures` holds that directory to
+/// its own fixture list, so the two suites read one inventory.
+fn union_shape_fixtures(repo: &Path) -> Vec<String> {
+    let mut names: Vec<String> =
+        std::fs::read_dir(repo.join("docs/fern-measurements/union-literals"))
+            .expect("the literals overlays are committed")
+            .map(|entry| entry.expect("entry"))
+            .filter(|entry| entry.path().is_dir())
+            .map(|entry| entry.file_name().to_string_lossy().into_owned())
+            .collect();
+    names.sort();
+    assert!(!names.is_empty(), "no union fixture overlay is committed");
+    names
+}
+
+/// Every file of a stripped Fern tree but its provenance record, by relative
+/// path.
+fn fern_tree(root: &Path) -> Vec<(String, String)> {
+    crozier::parity::walk_files(root)
+        .unwrap()
+        .into_iter()
+        .filter(|rel| rel != crozier::parity::PROVENANCE_FILE)
+        .map(|rel| {
+            let text = std::fs::read_to_string(root.join(&rel)).unwrap();
+            (rel, text)
+        })
+        .collect()
+}
+
+/// A fixture's literals tree: its committed `fern-expected/` less the files the
+/// overlay manifest removes, with the overlay's files laid over it. The
+/// manifest's `digest`, the complete tree's Contract A digest, is held by the
+/// binary gate (`union_shapes_match_complete_goldens_in_both_enum_modes`).
+fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> {
+    let manifest: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(overlay.join(".crozier-overlay.json")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(manifest["enum_type"], "literals", "{}", overlay.display());
+    assert_eq!(manifest["fern_cli_version"], "5.67.1");
+    assert_eq!(manifest["fern_python_sdk_version"], "5.20.0");
+    let removed: Vec<&str> = manifest["removed"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|rel| rel.as_str().unwrap())
+        .collect();
+    let mut tree: std::collections::BTreeMap<String, String> =
+        fern_tree(&fixture.join("fern-expected"))
+            .into_iter()
+            .filter(|(rel, _)| !removed.contains(&rel.as_str()))
+            .collect();
+    tree.extend(
+        fern_tree(overlay)
+            .into_iter()
+            .filter(|(rel, _)| rel != ".crozier-overlay.json"),
+    );
+    tree.into_iter().collect()
+}
+
+/// The thirteen hand-written union shapes, compared whole and in-process in both enum
+/// modes: every file of the certified Fern tree (the committed python-enums
+/// `fern-expected/`, and the literals tree its overlay rebuilds) against what
+/// crozier renders through the library under the same setting, under the
+/// comparison engine and its catalogued departures alone.
+#[test]
+fn union_shape_goldens_match_in_process_in_both_enum_modes() {
+    use crozier::settings::EnumType;
+    let repo = Path::new(env!("CARGO_MANIFEST_DIR"));
+    for name in &union_shape_fixtures(repo) {
+        let fixture = repo.join("docs/openapi-surface/handwritten").join(name);
+        let overlay = repo
+            .join("docs/fern-measurements/union-literals")
+            .join(name)
+            .join("fern-expected");
+        for (mode, reference) in [
+            (
+                EnumType::PythonEnums,
+                fern_tree(&fixture.join("fern-expected")),
+            ),
+            (EnumType::Literals, union_literals_tree(&fixture, &overlay)),
+        ] {
+            let files: HashMap<String, String> = render_files(GenerateArgs {
+                spec: fixture.join("openapi.yml"),
+                output: PathBuf::from("unused"),
+                package_name: Some("fern".to_string()),
+                project_name: Some("default_package_name".to_string()),
+                client_class_name: None,
+                audiences: Vec::new(),
+                audience_strict: false,
+                fern_strict: false,
+                extra_fields: crozier::settings::ExtraFields::Allow,
+                enum_type: mode,
+                default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+                layout: crozier::settings::Layout::Packaged,
+            })
+            .expect("render succeeds")
+            .into_iter()
+            .map(|f| (f.path.to_string_lossy().into_owned(), f.contents))
+            .collect();
+            let context = crozier::departures::Context::from_sources(
+                reference
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+                files
+                    .iter()
+                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
+            );
+            let mut generated: Vec<&String> = files.keys().collect();
+            generated.sort();
+            let expected: Vec<&String> = reference.iter().map(|(rel, _)| rel).collect();
+            assert_eq!(generated, expected, "{name} {mode:?}: file sets differ");
+            for (rel, fern) in &reference {
+                let compared = crozier::parity::compare_file(&context, rel, &files[rel], fern)
+                    .unwrap_or_else(|error| panic!("{name} {mode:?} {rel}: {error}"));
+                assert!(
+                    compared.matches(),
+                    "{name} {mode:?}: {rel} differs from Fern:\n{}",
+                    compared.diff().unwrap_or_default()
+                );
+            }
+        }
+    }
 }
 
 /// One GET whose 200 declares `media` (a YAML flow mapping of media types) and

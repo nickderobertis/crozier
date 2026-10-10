@@ -294,6 +294,8 @@ inventory=(
   flask_example_heroku_matches_fern_output
   oip_web_api_matches_fern_output
   waylay_queries_matches_fern_output
+  offchain_metadata_tools_matches_fern_output
+  subsloth_matches_fern_output
   confluent_kafka_connect_matches_fern_output
   breizhsport_catalogue_matches_fern_output
   protoform_conformance_matches_fern_output

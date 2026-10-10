@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Bakery Orders
+  version: 1.2.0
+paths:
+  /loaves/preview:
+    get:
+      operationId: previewLoaf
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Sourdough"
+      responses:
+        "200":
+          description: The loaf that would be baked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Loaf"
+  /loaves:
+    get:
+      operationId: listLoaves
+      responses:
+        "200":
+          description: Every loaf on the rack
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Loaf"
+components:
+  schemas:
+    Sourdough:
+      type: object
+      properties:
+        grain:
+          type: string
+          enum: [sourdough]
+        starter_age_days:
+          type: integer
+    Rye:
+      type: object
+      properties:
+        grain:
+          type: string
+          enum: [rye]
+        caraway:
+          type: boolean
+    Loaf:
+      oneOf:
+        - $ref: "#/components/schemas/Sourdough"
+        - $ref: "#/components/schemas/Rye"

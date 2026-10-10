@@ -1,0 +1,33 @@
+openapi: 3.1.0
+info:
+  title: Harbor Moorings
+  version: 1.0.0
+paths:
+  /moorings/{mooring_id}:
+    get:
+      operationId: getMooring
+      parameters:
+        - name: mooring_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The mooring
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Mooring"
+components:
+  schemas:
+    Mooring:
+      oneOf:
+        - type: object
+          required: [anchor]
+          properties:
+            anchor:
+              type: object
+            label:
+              type: string
+        - type: "null"

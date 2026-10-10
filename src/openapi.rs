@@ -1412,6 +1412,17 @@ pub struct Schema {
     /// [`Schema::property_name`]).
     #[serde(rename = "x-fern-property-name", default)]
     pub(crate) property_name_fern: Option<String>,
+    /// `x-crozier-discriminated`: whether a `oneOf`/`anyOf` is a discriminated
+    /// union at all (canonical spelling). Read via [`Schema::discriminated`],
+    /// which also honours the `x-fern-discriminated` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-discriminated", default)]
+    pub(crate) discriminated_crozier: Option<bool>,
+    /// `x-fern-discriminated`: the Fern spelling of the discriminated flag.
+    /// Superseded by `x-crozier-discriminated` when both appear (see
+    /// [`Schema::discriminated`]).
+    #[serde(rename = "x-fern-discriminated", default)]
+    pub(crate) discriminated_fern: Option<bool>,
     /// Set when this node's `type` was a list with more than one non-`null` member,
     /// which `normalize_multi_type_schemas` rewrote into the equivalent `anyOf`.
     /// Not a wire field. Fern names such a union rather than inlining it — EN
@@ -1467,6 +1478,15 @@ impl Schema {
             .or(self.property_name_fern.as_deref())
             .map(str::trim)
             .filter(|name| !name.is_empty())
+    }
+
+    /// Whether this `oneOf`/`anyOf` declares itself a discriminated union,
+    /// canonicalizing on the `x-crozier-discriminated` spelling (see the
+    /// [dual-header policy](self#fern-compatible-extensions)). `Some(false)` makes
+    /// it an ordinary union, whatever `discriminator` or member tags it carries.
+    #[must_use]
+    pub fn discriminated(&self) -> Option<bool> {
+        self.discriminated_crozier.or(self.discriminated_fern)
     }
 
     /// The SDK type name this schema declares, canonicalizing on the
@@ -1943,6 +1963,32 @@ pub struct Discriminator {
     /// is inferred from each variant's own discriminator-property enum.
     #[serde(default)]
     pub mapping: IndexMap<String, String>,
+    /// `x-crozier-property-name`: the Python name of the discriminant field,
+    /// whose wire key stays `propertyName` (canonical spelling). Read via
+    /// [`Discriminator::declared_property_name`], which also honours the
+    /// `x-fern-property-name` variant per the
+    /// [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-property-name", default)]
+    pub(crate) property_name_crozier: Option<String>,
+    /// `x-fern-property-name`: the Fern spelling of the discriminant's Python
+    /// name. Superseded by `x-crozier-property-name` when both appear (see
+    /// [`Discriminator::declared_property_name`]).
+    #[serde(rename = "x-fern-property-name", default)]
+    pub(crate) property_name_fern: Option<String>,
+}
+
+impl Discriminator {
+    /// The declared Python name of the discriminant field, canonicalizing on the
+    /// `x-crozier-property-name` spelling (see the [dual-header
+    /// policy](self#fern-compatible-extensions)). A blank value declares nothing.
+    #[must_use]
+    pub fn declared_property_name(&self) -> Option<&str> {
+        self.property_name_crozier
+            .as_deref()
+            .or(self.property_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+    }
 }
 
 /// `type` as a single string or (3.1) a list of strings.
@@ -2128,6 +2174,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_error_class_schema_names(&mut doc);
     normalize_same_primitive_unions(&mut doc);
     normalize_multi_type_schemas(&mut doc);
+    normalize_undiscriminated_unions(&mut doc);
     normalize_unlisted_required(&mut doc);
     normalize_nullable_schema_refs(&mut doc);
     normalize_parameters(&mut doc);
@@ -2686,6 +2733,24 @@ fn normalize_multi_type_schemas(doc: &mut OpenApi) {
             node.multi_type_union = true;
             if nullable {
                 node.nullable = Some(true);
+            }
+        });
+    });
+}
+
+/// Make every union that declares itself undiscriminated (see
+/// [`Schema::discriminated`]) an ordinary one: its `discriminator` goes. No
+/// discriminant is inferred over its members' tags either; the inference reads
+/// [`Schema::discriminated`] itself, so the extension stays the one record. The
+/// hand-written `greenhouse-undiscriminated-unions` fixture writes
+/// `x-fern-discriminated: false` on a request body, on a component, and beside
+/// an explicit `discriminator`, and Fern declares `Union[Seedling, Cutting]` at
+/// all three, each member keeping its own `method` enum.
+pub(crate) fn normalize_undiscriminated_unions(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node.discriminated() == Some(false) {
+                node.discriminator = None;
             }
         });
     });

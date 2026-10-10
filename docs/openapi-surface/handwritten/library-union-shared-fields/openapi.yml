@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Library Loans
+  version: 1.0.0
+paths:
+  /loans:
+    get:
+      operationId: listLoans
+      responses:
+        "200":
+          description: Active loans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Loan"
+components:
+  schemas:
+    Loan:
+      required: [patron_id, due]
+      properties:
+        patron_id:
+          type: string
+        due:
+          type: string
+          format: date
+      oneOf:
+        - type: object
+          required: [medium]
+          properties:
+            medium:
+              type: string
+              enum: [book]
+            isbn:
+              type: string
+        - type: object
+          required: [medium]
+          properties:
+            medium:
+              type: string
+              enum: [film]
+            runtime_minutes:
+              type: integer

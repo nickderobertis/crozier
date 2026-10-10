@@ -1884,17 +1884,15 @@ def is_config_gated(text: str) -> bool:
     return CONFIG_GATE_HEADING in text.splitlines()
 
 
+@functools.cache
+def golden_reach_script():
+    """`tools/surface-census/golden-reach.py`, which derives each arm's verdict for the coverage index."""
+    return load_script("tools/surface-census/golden-reach.py")
+
+
 def config_gated_verdict(text: str, key: str) -> str | None:
-    """The verdict a `config-gated` record states for `key`, off its gate table."""
-    if not is_config_gated(text):
-        return None
-    body = text.split(CONFIG_GATE_HEADING, 1)[1].split("\n### ", 1)[0].split("\n#### ", 1)[0]
-    stated = {
-        cells[3].strip("`")
-        for cells in (table_cells(line, 4) for line in body.splitlines())
-        if cells and cells[0].strip("`") == key
-    }
-    return stated.pop() if len(stated) == 1 else None
+    """The verdict a `config-gated` record states for `key`, off its gate table (the script's reading)."""
+    return golden_reach_script().config_gated_verdict(text, key)
 
 
 def config_gated_record_failures(
@@ -2032,6 +2030,137 @@ def config_gated_record_failures(
                             f"{key}: `queries.tsv` holds a `{source}` phrasing for the key, so it was queried"
                         )
     return failures
+
+
+class ConfigGatedArmVerdictTests(unittest.TestCase):
+    """`golden-reach.py arms` over a scratch tree: a gated key's verdict is per arm, by measurement."""
+
+    KEY = "tag-mapping"
+    GATED = "src/openapi.rs::walk[if gated \\{]"
+    LATER = "src/ir.rs::lower[if later \\{]"
+
+    def tree(self, executed: int) -> Path:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        regions = root / "docs" / "openapi-surface"
+        (regions / "golden-reach-witnesses" / "searches").mkdir(parents=True)
+        (regions / "golden-reach-witnesses" / "searches" / f"{self.KEY}.md").write_text(
+            f"# Arm search\n\n### Configuration gate\n\n| key | setting | gate | verdict |\n|---|---|---|---|\n"
+            f"| `{self.KEY}` | `audiences` | `src/openapi.rs::filter` | `config-gated` |\n",
+            encoding="utf-8",
+        )
+        header = "fixture\tkey\tsite\tsetting\tregions_executed\tregions\n"
+        (regions / "handwritten-config-gates.tsv").write_text(
+            header
+            + f"gated\t{self.KEY}\t{self.GATED}\t-\t0\t9\ngated\t{self.KEY}\t{self.GATED}\taudiences=public\t9\t9\n",
+            encoding="utf-8",
+        )
+        (regions / "handwritten-reach.tsv").write_text(
+            f"fixture\tkey\tsite\tregions_executed\tregions\nplain\t{self.KEY}\t{self.LATER}\t{executed}\t20\n",
+            encoding="utf-8",
+        )
+        for fixture, audiences, arm, verdict in (
+            ("gated", 'audiences = ["public"]\n', self.GATED, "config-gated"),
+            ("plain", "", self.LATER, "search-incomplete"),
+        ):
+            (regions / "handwritten" / fixture).mkdir(parents=True)
+            (regions / "handwritten" / fixture / "evidence.toml").write_text(
+                f'{audiences}\n[[covers]]\nkey = "{self.KEY}"\narm = \'{arm}\'\nverdict = "{verdict}"\n',
+                encoding="utf-8",
+            )
+        (regions / "golden-reach.tsv").write_text(
+            "# golden-reach ledger: scratch\n"
+            + golden_reach_script().LEDGER_HEADER
+            + f"\n1\t{self.KEY}\tschemas\t2\t29\t29\t-\t-\t{self.GATED}=0/9 ; {self.LATER}=0/20\t-\n",
+            encoding="utf-8",
+        )
+        (root / "docs" / "openapi-surface-coverage.md").write_text(
+            "# Index\n\n#### Every unreached arm, and its search verdict\n\n"
+            f"{golden_reach_script().ARM_COUNTS_BEGIN}\n{golden_reach_script().ARM_COUNTS_END}\n\n"
+            f"{golden_reach_script().ARM_TABLE_BEGIN}\n{golden_reach_script().ARM_TABLE_END}\n",
+            encoding="utf-8",
+        )
+        return root
+
+    def arms(self, root: Path) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools" / "surface-census" / "golden-reach.py"),
+                "--repo-root",
+                str(root),
+                "arms",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_only_the_measured_gate_reads_config_gated(self) -> None:
+        root = self.tree(executed=20)
+        first = self.arms(root)
+        self.assertEqual(0, first.returncode, first.stderr)
+        doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+        self.assertIn(f"| 1 | `{self.KEY}` | `{self.GATED}` | 9 | `config-gated` | `gated` |", doc)
+        self.assertIn(f"| 1 | `{self.KEY}` | `{self.LATER}` | 20 | `search-incomplete` | `plain` |", doc)
+        self.assertIn("2 unreached arms in all", doc)
+        self.assertIn("0 read `exhausted`, 1 read `search-incomplete`, 1 read `config-gated`, and 0 have", doc)
+        second = self.arms(root)
+        self.assertIn("unchanged", second.stdout)
+        self.assertEqual(doc, (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8"))
+
+    def test_a_measurement_with_other_columns_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        reach = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
+        reach.write_text(reach.read_text(encoding="utf-8").replace("regions_executed", "executed"), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("re-run `just handwritten-reach`", run.stderr)
+
+    def test_a_cover_whose_audiences_are_not_names_is_refused(self) -> None:
+        root = self.tree(executed=20)
+        evidence = root / "docs" / "openapi-surface" / "handwritten" / "gated" / "evidence.toml"
+        evidence.write_text(
+            evidence.read_text(encoding="utf-8").replace('["public"]', "[false]"),
+            encoding="utf-8",
+        )
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("`audiences` must be an array of audience names", run.stderr)
+
+    def test_a_measurement_count_int_cannot_read_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        reach = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
+        reach.write_text(reach.read_text(encoding="utf-8").replace("\t20\t20\n", "\t\u00b2\t20\n"), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("ending in two whole-number counts", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_a_cover_with_an_empty_key_or_arm_is_refused(self) -> None:
+        for old, empty in (('key = "', 'key = ""\nunused = "'), ("arm = '", "arm = ''\nunused = '")):
+            with self.subTest(empty=empty.split(" ", 1)[0]):
+                root = self.tree(executed=20)
+                evidence = root / "docs" / "openapi-surface" / "handwritten" / "plain" / "evidence.toml"
+                evidence.write_text(evidence.read_text(encoding="utf-8").replace(old, empty), encoding="utf-8")
+                run = self.arms(root)
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn("every cover needs a non-empty string `key`", run.stderr)
+
+    def test_an_arm_marker_without_its_line_break_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        index = root / "docs" / "openapi-surface-coverage.md"
+        begin = golden_reach_script().ARM_COUNTS_BEGIN
+        index.write_text(index.read_text(encoding="utf-8").replace(begin + "\n", begin + " "), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("restore the markers", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_a_later_arm_no_setting_free_run_executes_states_no_verdict(self) -> None:
+        run = self.arms(self.tree(executed=0))
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn(f"states no one verdict for `{self.LATER}`", run.stderr)
 
 
 class ConfigGatedRecordTests(unittest.TestCase):
@@ -2213,6 +2342,7 @@ class RecipeWiringTests(unittest.TestCase):
 BODY_AND_RESPONSE_PREDICATES = frozenset(
     {
         "operation.requestBody:body-prefixed-single-use",
+        "operation.requestBody:get-union-member",
         "operation.requestBody:titled-inline-container-oas-three-zero",
         "operation.responses:empty-schema-success-oas-three-zero",
         "operation.responses:schemaless-text-success",
@@ -2417,7 +2547,10 @@ class GrammarContractTests(unittest.TestCase):
             "Sixty-nine": 69,
             "Seventy": 70,
             "Seventy-one": 71,
+            "Seventy-two": 72,
+            "Seventy-three": 73,
             "Seventy-four": 74,
+            "Seventy-six": 76,
             "four": 4,
             "five": 5,
             "six": 6,
@@ -2437,9 +2570,12 @@ class GrammarContractTests(unittest.TestCase):
             "thirty-five": 35,
             "thirty-six": 36,
             "thirty-seven": 37,
+            "thirty-eight": 38,
             "forty-one": 41,
             "forty-two": 42,
+            "forty-three": 43,
             "forty-six": 46,
+            "forty-seven": 47,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
@@ -2790,6 +2926,7 @@ class GrammarContractTests(unittest.TestCase):
             83: "eighty-three",
             89: "eighty-nine",
             107: "one-hundred-and-seven",
+            110: "one-hundred-and-ten",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -3284,6 +3421,10 @@ class ConjunctionCensusTests(unittest.TestCase):
             "tag-based-grouping": 2,
             "writeonly-fields": 1,
         },
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members": {},
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members": {},
     }
 
     # A conjunction no selected source declares, asserted as absent rather than as
@@ -3752,6 +3893,19 @@ NULLABLE_ONE_OF = {"oneOf": [{"type": "null"}, {"type": "string"}]}
 NULLABLE_ANY_OF = {"anyOf": [{"type": "null"}, {"type": "string"}]}
 TWO_ONE_OF = {"oneOf": [{"type": "string"}, {"type": "integer"}]}
 TWO_ANY_OF = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+MAP_OF_TWO_ONE_OF = {"type": "object", "additionalProperties": TWO_ONE_OF}
+MAP_OF_TWO_ANY_OF = {"type": "object", "additionalProperties": TWO_ANY_OF}
+# The same maps over structured members: cases 14a and 14d use them as overlap
+# documents, which both the case's own selector and its head's closing residual
+# count.
+MAP_OF_TWO_ONE_OF_STRUCTS = {
+    "type": "object",
+    "additionalProperties": {"oneOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},
+}
+MAP_OF_TWO_ANY_OF_STRUCTS = {
+    "type": "object",
+    "additionalProperties": {"anyOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},
+}
 
 
 def array_of(items: dict) -> dict:
@@ -3967,6 +4121,10 @@ NEGATION_SELECTORS = frozenset(
         "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
         "schema.properties>!schema.anyOf:discriminated-union&!schema.anyOf:sole-non-null-member&schema.anyOf",
         "schema.properties>!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty&!schema.type:primary=array",
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+        "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
     }
 )
 
@@ -4077,6 +4235,20 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "branch": "prop_type_ref case 7b's `const` fallback",
             "select": ("schema", {"const": "alpha"}),
             "near": ("schema", {"const": 1}),
+        },
+        {
+            "selector": "schema.oneOf:several-non-null-members",
+            "slug": "one-of-several-non-null",
+            "branch": "the arity `hoist_union_variant` case 14 reads off a map's value",
+            "select": ("schema", TWO_ONE_OF),
+            "near": ("schema", NULLABLE_ONE_OF),
+        },
+        {
+            "selector": "schema.anyOf:several-non-null-members",
+            "slug": "any-of-several-non-null",
+            "branch": "the same arity, `anyOf` spelling",
+            "select": ("schema", TWO_ANY_OF),
+            "near": ("schema", NULLABLE_ANY_OF),
         },
         {
             "selector": "schema.additionalProperties=false",
@@ -6177,6 +6349,45 @@ class NegationSelectorDiscriminationTests(unittest.TestCase):
                 "Target": {"type": "string"},
             },
             "overlap_selector": "schema.properties>schema.allOf:annotated-ref",
+        },
+        # --- hoist_union_variant, cases 14a to 14d: the map member's union value.
+        # Each node is one the closing residual of its head (case 12a or 12b)
+        # also counts, since that residual does not negate a subtree condition.
+        {
+            "selector": "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "huv-14a",
+            "branch": "hoist_union_variant case 14a",
+            "select": {"Root": {"oneOf": [MAP_OF_TWO_ONE_OF]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "additionalProperties": NULLABLE_ONE_OF}]}},
+            "overlap": {"Root": {"oneOf": [MAP_OF_TWO_ONE_OF_STRUCTS]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "huv-14b",
+            "branch": "hoist_union_variant case 14b",
+            "select": {"Root": {"oneOf": [MAP_OF_TWO_ANY_OF]}},
+            "near": {"Root": {"oneOf": [{"type": "object", "additionalProperties": {**TWO_ANY_OF, **TWO_ONE_OF}}]}},
+            "overlap": {"Root": {"oneOf": [MAP_OF_TWO_ANY_OF]}},
+            "overlap_selector": "schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members",
+            "slug": "huv-14c",
+            "branch": "hoist_union_variant case 14c",
+            "select": {"Root": {"anyOf": [MAP_OF_TWO_ONE_OF]}},
+            "near": {"Root": {"anyOf": [{**MAP_OF_TWO_ONE_OF, **STRUCT}]}},
+            "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ONE_OF]}},
+            "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
+        },
+        {
+            "selector": "schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
+            "slug": "huv-14d",
+            "branch": "hoist_union_variant case 14d",
+            "select": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF]}},
+            "near": {"Root": {"anyOf": [{**MAP_OF_TWO_ANY_OF, "type": "string"}]}},
+            "overlap": {"Root": {"anyOf": [MAP_OF_TWO_ANY_OF_STRUCTS]}},
+            "overlap_selector": "schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty",
         },
         {
             "selector": "schema.properties>!schema.oneOf:discriminated-union&!schema.oneOf:sole-non-null-member&schema.oneOf",
@@ -10026,57 +10237,37 @@ class RankedBacklogTests(unittest.TestCase):
     REACH_ARMS = "#### Every unreached arm, and its search verdict"
 
     def test_every_unreached_arm_is_named_with_its_search_verdict(self) -> None:
-        """The report splits golden rows by reach and names every unreached arm.
+        """The arm counts and arm table are `just golden-reach-arms`'s output over the committed tree.
 
-        Each row of the arm table is one handling site the ledger records no
-        golden-only witness executing, with the verdict its linked arm-search
-        record states; the two counts before it are the ledger's own.
+        `golden-reach.py`'s `arm_rows` names each handling site the ledger records
+        no golden-only witness executing, in rank order, with the verdict its
+        linked arm-search record states; restating the index from the committed
+        ledger, records, covers and measurements must change nothing, so a hand
+        edit or a stale section fails here.
         """
+        module = golden_reach_script()
         ledger = self.reach_ledger()
-        # The hand-written column: each fixture whose arm-level cover names the
-        # arm. It proves less than a real specification, so the arm stays here.
-        covering: dict[tuple[str, str], set[str]] = {}
-        for fixture, key, arm in handwritten_covers():
-            if arm:
-                covering.setdefault((key, arm), set()).add(fixture)
-        expected = []
-        for rank, reach in ledger:
-            if not reach.unreached_sites:
-                continue
-            record = self.ARM_SEARCHES / "searches" / f"{reach.key}.md"
-            if record.is_file():
-                text = record.read_text(encoding="utf-8")
-                outcomes = (
-                    {line[2].strip("`") for line in exhaustive_search_lines(text).get(reach.key, [])}
-                    if not is_config_gated(text)
-                    else {config_gated_verdict(text, reach.key)}
-                )
-                self.assertEqual(1, len(outcomes), f"{reach.key}: its arm search states no one verdict")
-                verdict = outcomes.pop()
-                self.assertIn(verdict, (EXHAUSTED, SEARCH_INCOMPLETE, CONFIG_GATED), reach.key)
-                cell = f"`{verdict}`"
-            else:
-                # No record is no search, which is its own reason, never a
-                # search's verdict.
-                cell = f"{NOT_SEARCHED} — no arm search has run"
-            expected.extend(
-                [
-                    str(rank),
-                    f"`{reach.key}`",
-                    f"`{spec}`",
-                    str(total),
-                    cell,
-                    ", ".join(f"`{name}`" for name in sorted(covering.get((reach.key, spec), ()))) or "—",
-                ]
+        rows = module.arm_rows(ledger, self.REGIONS)
+        self.assertEqual(
+            [
+                (str(rank), f"`{reach.key}`", f"`{spec}`", str(total))
+                for rank, reach in ledger
                 for spec, hit, total in reach.sites
                 if not hit
-            )
-        self.assertEqual(expected, self.reach_table(self.REACH_ARMS, 6))
+            ],
+            [tuple(row.cells()[:4]) for row in rows],
+        )
+        self.assertEqual([row.cells() for row in rows], self.reach_table(self.REACH_ARMS, 6))
+        self.assertEqual(
+            self.doc,
+            module.render_arm_sections(self.doc, ledger, self.REGIONS, self.DOC),
+            "the generated arm sections are stale; run `just golden-reach-arms`",
+        )
         flat = " ".join(self.section(self.REACH_ARMS).split("\n#", 1)[0].split())
         partial = sum(1 for _rank, reach in ledger if reach.unreached_sites)
         self.assertIn(f"**{len(ledger) - partial}** reach every handling site", flat)
         self.assertIn(f"**{partial}** carry at least one handling site", flat)
-        self.assertIn(f"{len(expected)} unreached arms in all", flat)
+        self.assertIn(f"{len(rows)} unreached arms in all", flat)
 
     def test_the_source_capability_table_is_complete_and_cited(self) -> None:
         """Six declared sources, both capabilities each, each one cited."""
@@ -12733,9 +12924,10 @@ class NamingMirrorTests(unittest.TestCase):
 
         Each is pinned by the same normalized-body digest the other ports use,
         read from the file that declares it, so an edit to the Rust arm fails
-        here until the port is read again.
+        here until the port is read again. The refusal ports of
+        `operation.requestBody:get-union-member` are pinned the same way.
         """
-        for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
+        for (path, name), pinned in {**census.EXAMPLE_PORT_DIGESTS, **census.REFUSAL_PORT_DIGESTS}.items():
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
             start = next(
                 (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
@@ -13849,6 +14041,50 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         self.assertEqual(0, completed.returncode, completed.stderr)
         return rows(completed)
 
+    def test_get_union_member_counts_get_bodies_naming_tagged_union_members(self) -> None:
+        selector = "operation.requestBody:get-union-member"
+
+        def ref(name: str) -> dict:
+            return {"$ref": f"#/components/schemas/{name}"}
+
+        def tagged(value: str) -> dict:
+            return {
+                "type": "object",
+                "properties": {"grain": {"type": "string", "enum": [value]}, "weight": {"type": "integer"}},
+            }
+
+        components = {
+            "schemas": {
+                "Rye": tagged("rye"),
+                "Spelt": {"type": "object", "properties": {"grain": {"const": "spelt"}}},
+                "Loaf": {"oneOf": [ref("Rye"), ref("Spelt")]},
+                "Plain": {"type": "object", "properties": {"grain": {"type": "string"}}},
+                "Mixed": {"anyOf": [ref("Rye"), ref("Plain")]},
+                "Sole": {"oneOf": [ref("Rye")]},
+            }
+        }
+        documents = {
+            "positive": {
+                "components": components,
+                "paths": {
+                    "/rye": {"get": self.operation(body=self.json_body(ref("Rye")))},
+                    "/spelt": {"get": self.operation(body=self.json_body(ref("Spelt")))},
+                },
+            },
+            "decoys": {
+                "components": components,
+                "paths": {
+                    # Sent as a POST body, the member is refused, not generated.
+                    "/post": {"post": self.operation(body=self.json_body(ref("Rye")))},
+                    # A member of a union whose members do not all tag `grain`.
+                    "/plain": {"get": self.operation(body=self.json_body(ref("Plain")))},
+                    "/loaf": {"get": self.operation(body=self.json_body(ref("Loaf")))},
+                    "/inline": {"get": self.operation(body=self.json_body(tagged("rye")))},
+                },
+            },
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
     def test_success_selection_prefers_200_and_skips_unusable_media(self) -> None:
         selector = "operation.responses:schemaless-text-success"
         text = {"description": "text", "content": {"text/plain": {}}}
@@ -14588,7 +14824,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(36, len(rows))
+        self.assertEqual(37, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}

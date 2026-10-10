@@ -679,8 +679,15 @@ fn check_schema_names(
             |ty| ty.primary() == Some("object"),
         )
     });
+    // A discriminator that declares the tag's Python name is named by that:
+    // the hand-written `telescope-renamed-discriminant` fixture renames `$class`
+    // with `x-fern-property-name`, and Fern generates the union.
     let discriminant = explicit
-        .map(|tag| tag.property_name.clone())
+        .map(|tag| {
+            tag.declared_property_name()
+                .unwrap_or(&tag.property_name)
+                .to_string()
+        })
         .or_else(|| crate::ir::inferred_discriminant_property(schema, schemas));
     if let Some(discriminant) = discriminant.filter(|name| !usable_name(name)) {
         return Err(refusal(path, Class::DiscriminantValueUnsuitable, format!(
