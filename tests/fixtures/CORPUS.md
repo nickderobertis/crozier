@@ -481,9 +481,10 @@ add a row over a small registered source rather than hunting a new spec.
 
 `client_class_name` set to the class name of one of the document's own
 resource sub-clients makes the root `client.py` define a class the sub-client
-import would otherwise bind — the collision hellopatient's TinyURL client hits
-with `client_class_name: TinyUrlClient` over its `TinyURL` resource. That spec
-carries no licence, only terms of service, so this row reproduces the collision
+import would otherwise bind — a collision first observed on a privately held
+specification whose configured client name equals one of its own resources'
+sub-client class names (that evidence is held privately). That spec cannot be
+published, so this row reproduces the collision
 over row 13's Apache-2.0 Ecosystem API instead: its `Ecosystem` resource's
 sub-client is `EcosystemClient`, the name a consumer of the "Ecosystem API"
 would give its client, and its four other resources pin that a sub-client

@@ -1,24 +1,24 @@
 # `x-fern-property-name` renames an object property's Python name — the model
 # field and the request keyword argument — while its JSON key stays the property's
-# key here. The request bodies below reproduce hellopatient's overlay: each body
-# declares a `practice_id` property beside the operation's `practice_id` path
+# key here. The request bodies below reproduce a real-world overlay pattern: each
+# body declares a `harbor_id` property beside the operation's `harbor_id` path
 # parameter, a collision Fern and crozier both refuse until the property is
-# renamed. `PracticeServiceMetadataCreate.practice_id` and the response's
-# `practice_id` declare the name in both spellings at once, holding identical
+# renamed. `HarborBerthAssignmentCreate.harbor_id` and the response's
+# `harbor_id` declare the name in both spellings at once, holding identical
 # values, so the golden also proves crozier reads the canonical
 # `x-crozier-property-name` (see `../crozier-sdk-extensions/openapi.yml`). The
 # remaining operations carry the extension through every other way a property
 # becomes a Python name: an inline JSON body and the inline object it nests, a
 # form body, and a discriminated union's variant.
 openapi: 3.0.3
-info: { title: Practice API, version: 1.0.0 }
+info: { title: Harbor API, version: 1.0.0 }
 paths:
-  /practice/{practice_id}/service-metadata:
+  /harbor/{harbor_id}/berth-assignments:
     post:
-      operationId: createServiceMetadata
-      tags: [Practice]
+      operationId: createBerthAssignment
+      tags: [Harbor]
       parameters:
-        - name: practice_id
+        - name: harbor_id
           in: path
           required: true
           schema: { type: string }
@@ -26,19 +26,19 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/PracticeServiceMetadataCreate' }
+            schema: { $ref: '#/components/schemas/HarborBerthAssignmentCreate' }
       responses:
         '200':
-          description: The created metadata.
+          description: The created berth assignment.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/PracticeServiceMetadata' }
-  /practice/{practice_id}/intents:
+              schema: { $ref: '#/components/schemas/HarborBerthAssignment' }
+  /harbor/{harbor_id}/voyages:
     post:
-      operationId: createIntent
-      tags: [Practice]
+      operationId: createVoyage
+      tags: [Harbor]
       parameters:
-        - name: practice_id
+        - name: harbor_id
           in: path
           required: true
           schema: { type: string }
@@ -46,19 +46,19 @@ paths:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/PracticeIntentCreate' }
+            schema: { $ref: '#/components/schemas/HarborVoyageCreate' }
       responses:
         '200':
-          description: The created intent.
+          description: The created voyage.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/PracticeIntent' }
-  /practice/{practice_id}/insurance-products:
+              schema: { $ref: '#/components/schemas/HarborVoyage' }
+  /harbor/{harbor_id}/mooring-permits:
     post:
-      operationId: createInsuranceProduct
-      tags: [Practice]
+      operationId: createMooringPermit
+      tags: [Harbor]
       parameters:
-        - name: practice_id
+        - name: harbor_id
           in: path
           required: true
           schema: { type: string }
@@ -68,30 +68,30 @@ paths:
           application/json:
             schema:
               type: object
-              required: [practice_id]
+              required: [harbor_id]
               properties:
-                practice_id:
+                harbor_id:
                   type: string
-                  x-fern-property-name: insurance_product_practice_id
-                coverage:
+                  x-fern-property-name: mooring_permit_harbor_id
+                vessel:
                   type: object
                   properties:
-                    planCode:
+                    hullCode:
                       type: string
-                      x-fern-property-name: plan
-                    tier: { type: string }
+                      x-fern-property-name: hull
+                    rating: { type: string }
       responses:
         '200':
-          description: The created product's events.
+          description: The created permit's events.
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/PracticeEvent' }
-  /practice/{practice_id}/notes:
+              schema: { $ref: '#/components/schemas/HarborEvent' }
+  /harbor/{harbor_id}/log-entries:
     post:
-      operationId: createNote
-      tags: [Practice]
+      operationId: createLogEntry
+      tags: [Harbor]
       parameters:
-        - name: practice_id
+        - name: harbor_id
           in: path
           required: true
           schema: { type: string }
@@ -101,75 +101,75 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               type: object
-              required: [practice_id, body]
+              required: [harbor_id, body]
               properties:
-                practice_id:
+                harbor_id:
                   type: string
-                  x-fern-property-name: note_practice_id
+                  x-fern-property-name: log_entry_harbor_id
                 body: { type: string }
       responses:
         '204':
           description: Created.
 components:
   schemas:
-    PracticeServiceMetadataCreate:
+    HarborBerthAssignmentCreate:
       type: object
-      required: [practice_id, service_name]
+      required: [harbor_id, vessel_name]
       properties:
-        practice_id:
+        harbor_id:
           type: string
-          x-fern-property-name: practice_service_metadata_create_practice_id
-          x-crozier-property-name: practice_service_metadata_create_practice_id
-        service_name: { type: string }
-        duration_minutes: { type: integer }
-    PracticeServiceMetadata:
+          x-fern-property-name: harbor_berth_assignment_create_harbor_id
+          x-crozier-property-name: harbor_berth_assignment_create_harbor_id
+        vessel_name: { type: string }
+        stay_hours: { type: integer }
+    HarborBerthAssignment:
       type: object
-      required: [id, practice_id, service_name]
+      required: [id, harbor_id, vessel_name]
       properties:
         id: { type: string }
-        practice_id:
+        harbor_id:
           type: string
-          x-fern-property-name: owning_practice_id
-          x-crozier-property-name: owning_practice_id
-        service_name: { type: string }
+          x-fern-property-name: owning_harbor_id
+          x-crozier-property-name: owning_harbor_id
+        vessel_name: { type: string }
         displayName:
           type: string
           x-fern-property-name: label
-    PracticeIntentCreate:
+    HarborVoyageCreate:
       type: object
-      required: [practice_id, intent]
+      required: [harbor_id, route]
       properties:
-        practice_id:
+        harbor_id:
           type: string
-          x-fern-property-name: practiceIntentCreatePracticeId
-        intent: { type: string }
+          x-fern-property-name: harborVoyageCreateHarborId
+        route: { type: string }
         tags:
           type: array
           items: { type: string }
-    PracticeIntent:
+    HarborVoyage:
       type: object
-      required: [id, intent]
+      required: [id, route]
       properties:
         id: { type: string }
-        intent: { type: string }
-    PracticeEvent:
+        route: { type: string }
+    HarborEvent:
       oneOf:
-        - $ref: '#/components/schemas/PracticeOpened'
-        - $ref: '#/components/schemas/PracticeClosed'
+        - $ref: '#/components/schemas/HarborOpened'
+        - $ref: '#/components/schemas/HarborClosed'
       discriminator:
         propertyName: kind
         mapping:
-          opened: '#/components/schemas/PracticeOpened'
-          closed: '#/components/schemas/PracticeClosed'
-    PracticeOpened:
+          opened: '#/components/schemas/HarborOpened'
+          closed: '#/components/schemas/HarborClosed'
+    HarborOpened:
       type: object
-      required: [kind, practice_id]
+      required: [kind, harbor_id]
       properties:
         kind: { type: string }
-        practice_id:
+        harbor_id:
           type: string
-          x-fern-property-name: opened_practice_id
-    PracticeClosed:
+          x-fern-property-name: opened_harbor_id
+    HarborClosed:
       type: object
       required: [kind]
       properties:
