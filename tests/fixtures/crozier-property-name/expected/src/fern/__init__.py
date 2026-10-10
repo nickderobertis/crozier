@@ -7,34 +7,34 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import (
-        PracticeClosed,
-        PracticeEvent,
-        PracticeEvent_Closed,
-        PracticeEvent_Opened,
-        PracticeIntent,
-        PracticeOpened,
-        PracticeServiceMetadata,
+        HarborBerthAssignment,
+        HarborClosed,
+        HarborEvent,
+        HarborEvent_Closed,
+        HarborEvent_Opened,
+        HarborOpened,
+        HarborVoyage,
     )
-    from . import practice
+    from . import harbor
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
-    from .practice import CreateInsuranceProductRequestCoverage
+    from .harbor import CreateMooringPermitRequestVessel
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
-    "CreateInsuranceProductRequestCoverage": ".practice",
+    "CreateMooringPermitRequestVessel": ".harbor",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
-    "PracticeClosed": ".types",
-    "PracticeEvent": ".types",
-    "PracticeEvent_Closed": ".types",
-    "PracticeEvent_Opened": ".types",
-    "PracticeIntent": ".types",
-    "PracticeOpened": ".types",
-    "PracticeServiceMetadata": ".types",
+    "HarborBerthAssignment": ".types",
+    "HarborClosed": ".types",
+    "HarborEvent": ".types",
+    "HarborEvent_Closed": ".types",
+    "HarborEvent_Opened": ".types",
+    "HarborOpened": ".types",
+    "HarborVoyage": ".types",
     "__version__": ".version",
-    "practice": ".practice",
+    "harbor": ".harbor",
 }
 
 
@@ -61,17 +61,17 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
-    "CreateInsuranceProductRequestCoverage",
+    "CreateMooringPermitRequestVessel",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
-    "PracticeClosed",
-    "PracticeEvent",
-    "PracticeEvent_Closed",
-    "PracticeEvent_Opened",
-    "PracticeIntent",
-    "PracticeOpened",
-    "PracticeServiceMetadata",
+    "HarborBerthAssignment",
+    "HarborClosed",
+    "HarborEvent",
+    "HarborEvent_Closed",
+    "HarborEvent_Opened",
+    "HarborOpened",
+    "HarborVoyage",
     "__version__",
-    "practice",
+    "harbor",
 ]

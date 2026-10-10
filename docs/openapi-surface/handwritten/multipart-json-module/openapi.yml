@@ -1,0 +1,91 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Survey Intake",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://maps.example.com"
+    }
+  ],
+  "paths": {
+    "/surveys": {
+      "post": {
+        "operationId": "store_survey",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "json",
+                  "attachment"
+                ],
+                "properties": {
+                  "json": {
+                    "type": "object",
+                    "required": [
+                      "bearing"
+                    ],
+                    "properties": {
+                      "bearing": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "attachment": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      }
+    },
+    "/metadata": {
+      "post": {
+        "operationId": "store_metadata",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "metadata"
+                ],
+                "properties": {
+                  "metadata": {
+                    "type": "object",
+                    "required": [
+                      "bearing"
+                    ],
+                    "properties": {
+                      "bearing": {
+                        "type": "integer"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      }
+    }
+  }
+}

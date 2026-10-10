@@ -674,6 +674,13 @@ impl Operation {
             .filter(|name| !name.is_empty())
     }
 
+    /// A naming view for one request representation; the source operation is unchanged.
+    pub(crate) fn with_sdk_method_name(&self, name: &str) -> Self {
+        let mut view = self.clone();
+        view.sdk_method_name_crozier = Some(name.to_string());
+        view
+    }
+
     /// The declared pagination contract, canonicalizing on the
     /// `x-crozier-pagination` spelling (see the [dual-header
     /// policy](self#fern-compatible-extensions)).
@@ -1010,6 +1017,12 @@ pub struct Response {
 /// A media-type object carrying the body/response schema.
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct MediaType {
+    /// Method name for this request representation, in the canonical spelling.
+    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    sdk_method_name_crozier: Option<String>,
+    /// Fern's spelling, read when the canonical one is absent.
+    #[serde(rename = "x-fern-sdk-method-name", default)]
+    sdk_method_name_fern: Option<String>,
     /// The schema for this media type.
     #[serde(default)]
     pub schema: Option<Schema>,
@@ -1022,6 +1035,18 @@ pub struct MediaType {
     /// Per-part multipart serialization metadata.
     #[serde(default)]
     pub encoding: IndexMap<String, Encoding>,
+}
+
+impl MediaType {
+    /// The request representation's method name; crozier's spelling wins.
+    #[must_use]
+    pub fn sdk_method_name(&self) -> Option<&str> {
+        self.sdk_method_name_crozier
+            .as_deref()
+            .or(self.sdk_method_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+    }
 }
 
 /// Serialization metadata for one multipart property.

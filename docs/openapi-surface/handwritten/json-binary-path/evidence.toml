@@ -1,0 +1,17 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "246406e21cc03c28b9e744aa6aa1f0b7f57135c763ce4b996bb09f0ee0d52684"
+
+[[covers]]
+key = "format-binary"
+arm = 'src/ir.rs::scalar_body[=Some\("binary"\)]'
+search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
+
+[[covers]]
+key = "format-binary"
+arm = 'src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]'
+search = "docs/openapi-surface/witness-search-json-request-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-json-request-shapes/README.md"
