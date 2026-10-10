@@ -13874,6 +13874,32 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
         }
         self.assertEqual({(selector, "positive"): 4}, self.census(selector, documents))
 
+    def test_success_selection_dispatches_a_slashless_json_media_key(self) -> None:
+        """A slashless key `has_dispatchable_media` reads as JSON-like keeps its 200 selected."""
+        selector = "operation.responses:schemaless-text-success"
+        text = {"description": "text", "content": {"text/plain": {}}}
+
+        def slashless(media: str) -> dict:
+            return {"description": "reading", "content": {media: {"schema": {"type": "string"}}}}
+
+        documents = {
+            "positive": {
+                "paths": {
+                    "/untyped": {"get": self.operation(responses={"200": slashless("readings"), "201": text})},
+                    "/plain": {"get": self.operation(responses={"200": slashless("json"), "201": text})},
+                }
+            },
+            "decoys": {
+                "paths": {
+                    "/versioned": {
+                        "get": self.operation(responses={"200": slashless("vnd.x+json;version=2"), "201": text})
+                    },
+                    "/suffixed": {"get": self.operation(responses={"200": slashless("vnd.x+json"), "201": text})},
+                }
+            },
+        }
+        self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
     def test_contentless_200_with_201_counts_inline_and_referenced_responses(self) -> None:
         selector = "operation.responses:contentless-two-hundred-with-created"
         empty = {"description": "empty"}

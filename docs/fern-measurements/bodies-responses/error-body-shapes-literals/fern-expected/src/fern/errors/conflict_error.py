@@ -1,0 +1,11 @@
+
+
+import typing
+
+from ..core.api_error import ApiError
+from ..types.conflict_error_body import ConflictErrorBody
+
+
+class ConflictError(ApiError):
+    def __init__(self, body: ConflictErrorBody, headers: typing.Optional[typing.Dict[str, str]] = None):
+        super().__init__(status_code=409, headers=headers, body=body)

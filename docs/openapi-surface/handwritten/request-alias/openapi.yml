@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Manifest Cabinet
+  version: 1.0.0
+paths:
+  /manifest:
+    put:
+      operationId: retitleManifest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TitleAlias"
+      responses:
+        "204":
+          description: Retitled
+components:
+  schemas:
+    TitleAlias:
+      $ref: "#/components/schemas/Title"
+    Title:
+      type: object
+      required: [ticket]
+      properties:
+        caption:
+          type: string
+          description: Shown on cabinet labels.
+        ticket:
+          type: integer

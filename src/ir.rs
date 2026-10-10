@@ -1111,7 +1111,8 @@ fn inline_body_source_names(
             if !is_enum
                 && !is_union
                 && !is_alias
-                && !is_map(target)
+                && !is_optional(target)
+                && (!is_map(target) || target.all_of.is_some())
                 && (target.properties.declared() || target.all_of.is_some())
             {
                 *counts.entry(ref_to_class(reference)).or_default() += 1;
@@ -2645,52 +2646,55 @@ fn endpoints(
     let mut tag_types = Vec::new();
     for (path, item) in &doc.paths {
         for (http_method, op) in item.operations() {
-            // A `stream-condition` makes one operation two methods: `<name>_stream`
-            // with the condition set, and `<name>` with it cleared. Each is built
-            // from its own view of the operation, so the response type, the chunk
-            // type and the fixed body field all follow from the document rather
-            // than from a special case downstream.
-            let variants = stream_condition_variants(op, http_method, path);
-            for variant in &variants {
-                let view = variant.as_ref().map_or(op, |split| &split.operation);
-                let endpoint = build_endpoint(
-                    doc,
-                    types,
-                    path,
-                    http_method,
-                    view,
-                    &mut tag_types,
-                    &global_names,
-                );
-                let mut endpoint = endpoint;
-                if let Some(split) = variant {
-                    declare_split_union_body(&mut endpoint, split, types, &mut tag_types);
-                }
-                let endpoint = match variant {
-                    Some(split) => Endpoint {
-                        method_name: split.method_name.clone(),
-                        stream_condition: Some((split.condition.clone(), split.streaming)),
-                        response_doc: None,
-                        // Fern's reference writer documents both halves as the
-                        // flattened body they send, and shows the streaming half's
-                        // worked call under each of them.
-                        reference_body_type: None,
-                        reference_method_name: Some(split.stream_method_name.clone()),
-                        ..endpoint
-                    },
-                    None => endpoint,
-                };
-                // Fern exposes one method for duplicate synthesized/declared names in
-                // the same client, with the later operation replacing the earlier one's
-                // contents while retaining its first-seen position. Keep all
-                // already-hoisted response types, but only the winning endpoint.
-                if let Some(index) = out.iter().position(|existing: &Endpoint| {
-                    existing.module == endpoint.module
-                        && existing.method_name == endpoint.method_name
-                }) {
-                    out[index] = endpoint;
-                } else {
-                    out.push(endpoint);
+            for media_view in request_media_variants(op) {
+                let op = media_view.as_ref().unwrap_or(op);
+                // A `stream-condition` makes one operation two methods: `<name>_stream`
+                // with the condition set, and `<name>` with it cleared. Each is built
+                // from its own view of the operation, so the response type, the chunk
+                // type and the fixed body field all follow from the document rather
+                // than from a special case downstream.
+                let variants = stream_condition_variants(op, http_method, path);
+                for variant in &variants {
+                    let view = variant.as_ref().map_or(op, |split| &split.operation);
+                    let endpoint = build_endpoint(
+                        doc,
+                        types,
+                        path,
+                        http_method,
+                        view,
+                        &mut tag_types,
+                        &global_names,
+                    );
+                    let mut endpoint = endpoint;
+                    if let Some(split) = variant {
+                        declare_split_union_body(&mut endpoint, split, types, &mut tag_types);
+                    }
+                    let endpoint = match variant {
+                        Some(split) => Endpoint {
+                            method_name: split.method_name.clone(),
+                            stream_condition: Some((split.condition.clone(), split.streaming)),
+                            response_doc: None,
+                            // Fern's reference writer documents both halves as the
+                            // flattened body they send, and shows the streaming half's
+                            // worked call under each of them.
+                            reference_body_type: None,
+                            reference_method_name: Some(split.stream_method_name.clone()),
+                            ..endpoint
+                        },
+                        None => endpoint,
+                    };
+                    // Fern exposes one method for duplicate synthesized/declared names in
+                    // the same client, with the later operation replacing the earlier one's
+                    // contents while retaining its first-seen position. Keep all
+                    // already-hoisted response types, but only the winning endpoint.
+                    if let Some(index) = out.iter().position(|existing: &Endpoint| {
+                        existing.module == endpoint.module
+                            && existing.method_name == endpoint.method_name
+                    }) {
+                        out[index] = endpoint;
+                    } else {
+                        out.push(endpoint);
+                    }
                 }
             }
         }
@@ -2709,6 +2713,32 @@ fn endpoints(
         declared.insert((tag_type.module.clone(), tag_type.decl.name().to_string()))
     });
     (out, tag_types)
+}
+
+/// Give each explicitly named request representation its own existing endpoint.
+/// Unnamed alternatives retain the operation's established media selection.
+fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
+    let Some(body) = op.request_body.as_ref() else {
+        return vec![None];
+    };
+    if body.content.is_empty()
+        || body
+            .content
+            .values()
+            .any(|media| media.sdk_method_name().is_none())
+    {
+        return vec![None];
+    }
+    body.content
+        .iter()
+        .map(|(media_type, media)| {
+            let mut view = op.with_sdk_method_name(media.sdk_method_name().unwrap());
+            if let Some(body) = view.request_body.as_mut() {
+                body.content.retain(|name, _| name == media_type);
+            }
+            Some(view)
+        })
+        .collect()
 }
 
 /// The two method names a `stream-condition` operation splits into: the
@@ -3639,6 +3669,19 @@ fn build_endpoint(
         })
         .map(|parameter| parameter.name.clone())
         .collect();
+    // The flattened alias takes the model's fields, so its reference must document
+    // those arguments rather than advertise a whole request the method cannot take.
+    let aliased_inline_request = matches!(&request_body, Some(RequestBody::Inline(fields))
+        if !fields.is_empty() && fields.iter().all(|field| field.py_name != "request"))
+        && op
+            .request_body
+            .as_ref()
+            .and_then(selected_json_request_media)
+            .filter(|(media_type, _)| *media_type == "application/json")
+            .and_then(|(_, media)| media.schema.as_ref())
+            .and_then(|schema| schema.reference.as_deref())
+            .and_then(|reference| resolve_ref(doc, reference))
+            .is_some_and(|target| target.reference.is_some());
     Endpoint {
         openapi_31: doc.openapi.starts_with("3.1"),
         module,
@@ -3695,6 +3738,7 @@ fn build_endpoint(
                             && target.additional_properties.is_none()
                     })
             })
+            .filter(|_| !aliased_inline_request)
             .map(ref_to_class)
             .map(TypeRef::Named),
         request_body_doc: op
@@ -4526,8 +4570,13 @@ fn request_body_has_all_of(doc: &OpenApi, op: &Operation) -> bool {
         .as_ref()
         .and_then(|body| body.content.get("application/json"))
         .and_then(|media| media.schema.as_ref())
-        .and_then(|schema| schema.reference.as_deref())
-        .and_then(|reference| resolve_ref(doc, reference))
+        .and_then(|schema| {
+            schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .or_else(|| (!schema.properties.is_empty()).then_some(schema))
+        })
         // An `allOf` of nothing but inline objects is one object to Fern's
         // importer, not a composition: Fergus's `CreateContactPayload` merges two
         // inline members, so its worked example keeps the merged object's field
@@ -4770,7 +4819,8 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
             })
             .is_some_and(|media_type| is_download_media_type(media_type));
         code.starts_with('2')
-            && (download_first && !resp.content.contains_key("application/json")
+            && ((has_byte_text_response(doc, resp) || download_first)
+                && !resp.content.contains_key("application/json")
                 // A binary *schema* wins either way: apicurio's `application/zip`
                 // names one beside an `application/json` and streams.
                 || resp.content.values().any(|media| {
@@ -4785,6 +4835,27 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
                     })
                 }))
     })
+}
+
+/// A byte-formatted text representation is downloaded rather than decoded as text.
+fn has_byte_text_response(doc: &OpenApi, response: &Response) -> bool {
+    response
+        .content
+        .get("text/plain")
+        .and_then(|media| media.schema.as_ref())
+        .is_some_and(|schema| {
+            let schema = schema
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref(doc, reference))
+                .unwrap_or(schema);
+            if schema.ty.as_ref().and_then(TypeField::primary) == Some("string")
+                && schema.format.as_deref() == Some("byte")
+            {
+                return true;
+            }
+            false
+        })
 }
 
 /// Whether a success media type is one Fern streams back as bytes whatever its
@@ -5007,6 +5078,9 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         schema.and_then(|schema| schema.one_of.as_ref().or(schema.any_of.as_ref()))
     {
         return match members.as_slice() {
+            [only] if only.reference.is_none() && is_inline_struct(only) => {
+                TypeRef::Named(format!("{class}Body"))
+            }
             [only] => base_type_ref(only),
             _ => TypeRef::Named(format!("{class}Body")),
         };
@@ -5075,6 +5149,24 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 // [VALIDATION_ERROR]}` objects before their final `anyOf`, and
                 // `BadRequestErrorBodyCode` outlives them.
                 if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+                    if let [only] = members.as_slice() {
+                        if only.reference.is_none() && is_inline_struct(only) {
+                            bodies.insert(name, only.clone());
+                        }
+                        continue;
+                    }
+                    // A status-named component already owns the body declaration.
+                    // Fern retains that object when the inline union refers to it.
+                    if schema.discriminator.is_some()
+                        && members.iter().any(|member| {
+                            member.reference.as_deref().is_some_and(|reference| {
+                                ref_to_class(reference) == name
+                                    && doc.components.schemas.contains_key(&name)
+                            })
+                        })
+                    {
+                        continue;
+                    }
                     if members.len() > 1 {
                         if let Some(existing) = bodies.get(&name).filter(|existing| {
                             existing.one_of.is_none() && existing.any_of.is_none()
@@ -5468,7 +5560,16 @@ fn resolve_request_body(
         });
     }
     let (media_type, media) = selected_json_request_media(rb)?;
-    let schema = media.schema.as_ref()?;
+    let Some(schema) = media.schema.as_ref() else {
+        // An example supplies an untyped JSON payload; an empty media object
+        // remains bodyless through `request_body_ignored`.
+        let example = media.example.as_ref()?;
+        let mut body = single(TypeRef::Primitive(Prim::Any), true, false, false);
+        if let RequestBody::Single(single) = &mut body {
+            single.example = Some(example.to_string());
+        }
+        return Some(body);
+    };
     // Fern treats a schema-bearing request body as required unless the document
     // explicitly opts out. Wildcard request schemas remain required even when the
     // OpenAPI wrapper says otherwise: the importer models the wildcard payload
@@ -5489,11 +5590,24 @@ fn resolve_request_body(
                 || (target.properties.is_empty()
                     && (target.one_of.is_some() || target.any_of.is_some()))
         });
-    let required =
-        (media_type == "*/*" || rb.required != Some(false) || passed_whole) && !is_optional(schema);
+    let required = (media_type == "*/*"
+        || rb.required != Some(false)
+        || passed_whole
+        || is_map(schema)
+            && schema.all_of.is_none()
+            && matches!(
+                schema.additional_properties,
+                Some(AdditionalProperties::Bool(true))
+            ))
+        && !is_optional(schema);
     let content_type_override = (media_type != "application/json").then(|| media_type.to_string());
     if let Some(reference) = &schema.reference {
         let target = resolve_ref(doc, reference)?;
+        let target = if target.reference.is_some() {
+            resolve_form_object_alias(target, Some(&doc.components.schemas), types)
+        } else {
+            target
+        };
         let class = ref_to_class(reference);
         if target.properties.declared()
             && target.properties.is_empty()
@@ -5501,6 +5615,9 @@ fn resolve_request_body(
             && target.additional_properties.is_none()
         {
             return Some(RequestBody::Inline(Vec::new()));
+        }
+        if is_optional(target) && (target.properties.declared() || target.all_of.is_some()) {
+            return Some(single(TypeRef::Named(class), false, true, false));
         }
         // A `$ref` to an enum — string (extensible) or integer (a plain `int`
         // alias) — serializes as a plain `json=request` with the content-type
@@ -5537,7 +5654,7 @@ fn resolve_request_body(
         }
         // A `$ref` to a map (object with `additionalProperties`, no declared
         // properties) is passed straight through as `json=request`.
-        if is_map(target) {
+        if is_map(target) && target.all_of.is_none() {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
         if target.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
@@ -5751,6 +5868,45 @@ fn resolve_request_body(
     // objects hoist into `{request_ctx}{Prop}` models.
     if !schema.properties.is_empty() {
         return hoist_inline_object(schema, hoister, request_ctx).map(|mut fields| {
+            // Own fields precede inherited fields; reuse the parent's resolved types.
+            let own_count = fields.len();
+            for reference in schema
+                .all_of
+                .iter()
+                .flatten()
+                .filter_map(|member| member.reference.as_deref())
+            {
+                if let Some(parent) = hoist_fields(&ref_to_class(reference), types) {
+                    for mut field in parent {
+                        // A parent field an own field redeclares is never a second
+                        // argument. `name_refusals` refuses a writable own field; a
+                        // readOnly own field keeps its slot and, as pinned Fern does,
+                        // the parent's description (handwritten
+                        // inline-body-readonly-own-overlap).
+                        if let Some(own) = fields
+                            .iter_mut()
+                            .take(own_count)
+                            .find(|own| own.wire_name == field.wire_name)
+                        {
+                            if field.docstring.is_some() {
+                                own.docstring = field.docstring;
+                            }
+                            continue;
+                        }
+                        let inherited_order = fields.len() - own_count;
+                        field.reference_order = inherited_order;
+                        field.declaration_order = inherited_order;
+                        field.markdown_order = inherited_order;
+                        fields.push(field);
+                    }
+                }
+            }
+            let inherited_count = fields.len() - own_count;
+            for field in fields.iter_mut().take(own_count) {
+                field.reference_order += inherited_count;
+                field.declaration_order += inherited_count;
+                field.markdown_order += inherited_count;
+            }
             // An inline body carries its example on the schema as readily as a
             // `$ref` body does — VTEX puts the whole `rules` array on the request
             // schema — so both are applied here in the same order the `$ref` path
@@ -6059,6 +6215,7 @@ fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     let schemaless_json = !rb.content.is_empty()
         && rb.content.iter().all(|(media_type, media)| {
             media.schema.is_none()
+                && media.example.is_none()
                 && (media_type == "application/json" || is_json_like_media_type(media_type))
         });
     schemaless_json
@@ -7300,6 +7457,38 @@ fn union_has_temporal_member<'a>(
     }
 }
 
+/// Resolve an object alias's encoding shape while retaining its declared type
+/// at the form-field call site.
+fn resolve_form_object_alias<'a>(
+    schema: &'a Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+    types: &[TypeDecl],
+) -> &'a Schema {
+    let mut resolved = schema;
+    let mut seen = std::collections::BTreeSet::new();
+    let mut target_name = None;
+    while let Some(reference) = resolved.reference.as_deref() {
+        if !seen.insert(reference) {
+            return schema;
+        }
+        let Some(next) = schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+        else {
+            return schema;
+        };
+        target_name = Some(ref_to_class(reference));
+        resolved = next;
+    }
+    if is_object_type(resolved)
+        || types.iter().any(|decl| {
+            matches!(decl, TypeDecl::Object(object) if Some(&object.name) == target_name.as_ref())
+        })
+    {
+        resolved
+    } else {
+        schema
+    }
+}
+
 /// Hoist a form body's properties into [`BodyField`]s, marking `format: binary`
 /// fields as file uploads. A file part never carries the convert wrapper, but a
 /// field whose schema is a named model does, exactly as a JSON body's would:
@@ -7334,14 +7523,26 @@ fn hoist_form_object(
             // `{type: array, items: {type: string, format: binary}}` on both its
             // multipart uploads, and Fern types it `Sequence[core.File]` and sends
             // it through `files=` rather than JSON-encoding it into `data=`.
-            let is_file = binary_scalar(prop_schema)
-                || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
-                    && prop_schema.items.as_deref().is_some_and(binary_scalar);
+            let nullable_binary = multipart
+                && prop_schema.any_of.is_some()
+                && simple_nullable_member(prop_schema).is_some_and(binary_scalar);
+            let is_file = if nullable_binary {
+                true
+            } else {
+                binary_scalar(prop_schema)
+                    || prop_schema.ty.as_ref().and_then(|t| t.primary()) == Some("array")
+                        && prop_schema.items.as_deref().is_some_and(binary_scalar)
+            };
             let resolved = prop_schema
                 .reference
                 .as_deref()
                 .and_then(|reference| hoister.schemas?.get(reference.rsplit('/').next()?))
                 .unwrap_or(prop_schema);
+            let resolved = if multipart && resolved.reference.is_some() {
+                resolve_form_object_alias(resolved, hoister.schemas, hoister.root_types)
+            } else {
+                resolved
+            };
             let form_json = multipart
                 && !is_file
                 && simple_nullable_primitive_member(resolved).is_none()
@@ -7376,7 +7577,13 @@ fn hoist_form_object(
                 // a JSON body's does: Zulip's urlencoded `PATCH /streams/{stream_id}`
                 // `can_add_subscribers_group` is `allOf: [{description}, $ref …]`.
                 docstring: clean_doc(prop_schema.description.as_deref().or_else(|| {
-                    described_all_of_ref(prop_schema).and_then(|(_, description)| description)
+                    described_all_of_ref(prop_schema)
+                        .and_then(|(_, description)| description)
+                        .or_else(|| {
+                            (multipart && is_file)
+                                .then(|| prop_schema.items.as_deref()?.description.as_deref())
+                                .flatten()
+                        })
                 })),
                 convert,
                 is_file,
@@ -7777,7 +7984,7 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             Some("email" | "hostname" | "ipv4" | "password" | "uri") => {
                 return Some((TypeRef::Primitive(Prim::Str), true))
             }
-            Some("binary") => return None,
+            Some("binary") => return Some((TypeRef::Primitive(Prim::Bytes), true)),
             // Any other format is an unformatted `str` with no header: the same
             // fixture's `duration`, `time`, `iri`, `regex`, … and `custom-thing`.
             _ => TypeRef::Primitive(Prim::Str),
@@ -8058,7 +8265,7 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
 }
 
 /// Whether a response declares at least one media type that names both a type and
-/// a subtype (or declares no body at all). Eozilla puts `executeProcess`'s `200`
+/// a subtype, a JSON-like suffix, or no body at all. Eozilla puts `executeProcess`'s `200`
 /// under the malformed media type `/*`, which nothing can dispatch on: Fern skips
 /// that response entirely and types the operation from the next `2xx` — the `201`
 /// carrying `JobInfo`, description and all — rather than reading it as a bodyless
@@ -8066,6 +8273,9 @@ fn success_response_schema(op: &Operation) -> Option<&Schema> {
 fn has_dispatchable_media(response: &Response) -> bool {
     response.content.is_empty()
         || response.content.keys().any(|media| {
+            if !media.contains('/') && is_json_like_media_type(media) {
+                return true;
+            }
             media
                 .split_once('/')
                 .is_some_and(|(ty, subtype)| !ty.is_empty() && !subtype.is_empty())
@@ -15264,8 +15474,12 @@ mod tests {
                 Some((TypeRef::Primitive(Prim::Str), false))
             ));
         }
-        // A binary string and non-scalar shapes are excluded.
-        assert!(scalar("string", Some("binary")).is_none());
+        // An inline JSON binary string stays a bytes-typed JSON payload.
+        assert!(matches!(
+            scalar("string", Some("binary")),
+            Some((TypeRef::Primitive(Prim::Bytes), true))
+        ));
+        // Non-scalar shapes use their dedicated dispatch.
         assert!(scalar("object", None).is_none());
         assert!(scalar("array", None).is_none());
     }
@@ -17351,6 +17565,446 @@ mod tests {
     }
 
     #[test]
+    fn error_body_shapes_keep_the_status_component_and_hoist_single_inline_members() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/error-body-shapes/openapi.yml"),
+        )
+        .unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Nursery",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "BadRequestErrorBody"
+                && object.docstring.as_deref() == Some("The reservation is already occupied.")
+        )));
+        assert!(!ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::DiscriminatedUnion(union) if union.name == "BadRequestErrorBody"
+        )));
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Object(object) if object.name == "ConflictErrorBody"
+                && object.fields.iter().any(|field| field.py_name == "state"
+                    && field.type_ref == TypeRef::Named("ConflictErrorBodyState".into()))
+        )));
+        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+            "description": "Conflict",
+            "content": { "application/json": { "schema": { "oneOf": [{
+                "type": "object", "properties": { "state": { "type": "string" } }
+            }] } } }
+        }))
+        .unwrap();
+        assert_eq!(
+            super::error_body_type(&response, "ConflictError"),
+            TypeRef::Named("ConflictErrorBody".into())
+        );
+        let response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
+            "description": "Conflict",
+            "content": { "application/json": { "schema": { "oneOf": [{
+                "$ref": "#/components/schemas/JournalContext"
+            }] } } }
+        }))
+        .unwrap();
+        assert_eq!(
+            super::error_body_type(&response, "ConflictError"),
+            TypeRef::Named("JournalContext".into())
+        );
+    }
+
+    fn request_shape_ir() -> super::Ir {
+        build_document(
+            serde_yaml_ng::from_str(include_str!(
+                "../docs/openapi-surface/handwritten/json-request-shapes/openapi.yml"
+            ))
+            .unwrap(),
+        )
+    }
+
+    #[test]
+    fn referenced_allof_map_flattens_and_nullable_component_stays_whole() {
+        let ir = request_shape_ir();
+        let endpoint = |name: &str| {
+            ir.endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == name)
+                .unwrap()
+        };
+        let Some(RequestBody::Inline(fields)) = &endpoint("register_crate").request_body else {
+            panic!("flattened allOf body")
+        };
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["aisle", "batch"]
+        );
+        assert!(!ir
+            .types
+            .iter()
+            .any(|decl| decl.name() == "CrateRegistration"));
+        let Some(RequestBody::Single(body)) = &endpoint("update_preference").request_body else {
+            panic!("whole nullable model")
+        };
+        assert_eq!(body.type_ref, TypeRef::Named("Preference".to_string()));
+        assert!(!body.required);
+        assert!(body.convert);
+        assert!(!body.content_type);
+        assert!(ir.types.iter().any(|decl| decl.name() == "Preference"));
+    }
+
+    #[test]
+    fn inline_body_inherits_parent_fields_and_keeps_signature_and_document_orders() {
+        let ir = request_shape_ir();
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "submit_run")
+            .unwrap();
+        let Some(RequestBody::Inline(fields)) = &endpoint.request_body else {
+            panic!("inline body")
+        };
+        assert_eq!(endpoint.body_composition, super::BodyComposition::AllOf);
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.wire_name.as_str())
+                .collect::<Vec<_>>(),
+            ["cycles", "station"]
+        );
+        assert_eq!(
+            fields
+                .iter()
+                .map(|field| field.declaration_order)
+                .collect::<Vec<_>>(),
+            [1, 0]
+        );
+        assert!(fields
+            .iter()
+            .all(|field| field.spec_required && !field.optional));
+    }
+
+    #[test]
+    fn optional_freeform_payload_is_required_and_schemaless_example_supplies_any() {
+        let ir = request_shape_ir();
+        for (name, expected, example) in [
+            (
+                "set_labels",
+                TypeRef::Dict(
+                    Box::new(TypeRef::Primitive(Prim::Str)),
+                    Box::new(TypeRef::Primitive(Prim::Any)),
+                ),
+                None,
+            ),
+            (
+                "define_marker",
+                TypeRef::Primitive(Prim::Any),
+                Some("azimuth"),
+            ),
+        ] {
+            let endpoint = ir
+                .endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == name)
+                .unwrap();
+            let Some(RequestBody::Single(body)) = &endpoint.request_body else {
+                panic!("whole payload")
+            };
+            assert_eq!(body.type_ref, expected);
+            assert!(body.required);
+            if let Some(value) = example {
+                assert!(body.example.as_deref().unwrap().contains(value));
+            }
+        }
+        let media =
+            serde_json::json!({"content": {"application/json": {"example": {"marker":"azimuth"}}}});
+        let body = serde_json::from_value(media).unwrap();
+        assert!(!super::request_body_ignored(&body));
+        let empty =
+            serde_json::from_value(serde_json::json!({"content": {"application/json": {}}}))
+                .unwrap();
+        assert!(super::request_body_ignored(&empty));
+    }
+
+    #[test]
+    fn inline_binary_json_body_keeps_its_tagged_client_and_is_typed_bytes() {
+        let ir = request_shape_ir();
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "deposit_bundle")
+            .unwrap();
+        let Some(RequestBody::Single(body)) = &endpoint.request_body else {
+            panic!("JSON binary payload")
+        };
+        assert_eq!(body.type_ref, TypeRef::Primitive(Prim::Bytes));
+        assert!(body.content_type && body.required);
+        assert!(ir
+            .endpoints
+            .iter()
+            .any(|endpoint| endpoint.module == "vault" && endpoint.method_name == "list_bundles"));
+    }
+
+    #[test]
+    fn alias_object_request_flattens_without_losing_the_models_or_advertising_request() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+        )
+        .unwrap();
+        let config = crate::config::GenerateConfig::new(
+            "openapi.yml".into(),
+            "out".into(),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Cabinet",
+        )
+        .unwrap();
+        let ir = super::build(&doc, &config);
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|ep| ep.method_name == "retitle_manifest")
+            .unwrap();
+        assert!(endpoint.emittable && endpoint.reference_body_type.is_none());
+        let Some(RequestBody::Inline(fields)) = &endpoint.request_body else {
+            panic!("alias object did not flatten");
+        };
+        assert_eq!(fields.len(), 2);
+        assert!(fields
+            .iter()
+            .any(|field| field.py_name == "ticket" && !field.optional));
+        assert!(fields.iter().any(|field| field.py_name == "caption"
+            && field.optional
+            && field.docstring.as_deref() == Some("Shown on cabinet labels.")));
+        assert!(ir.types.iter().any(|decl| decl.name() == "TitleAlias"));
+        assert!(ir.types.iter().any(|decl| decl.name() == "Title"));
+    }
+
+    #[test]
+    fn alias_reference_correction_is_scoped_to_nonempty_flattened_fields_without_request() {
+        let source = include_str!("../docs/openapi-surface/handwritten/request-alias/openapi.yml");
+        let mut document: serde_json::Value = serde_yaml_ng::from_str(source).unwrap();
+        document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({
+            "request": { "type": "string" }
+        });
+        document["components"]["schemas"]["Title"]["required"] = serde_json::json!([]);
+        let ir = build_document(document.clone());
+        assert_eq!(
+            ir.endpoints[0].reference_body_type,
+            Some(TypeRef::Named("TitleAlias".into()))
+        );
+        document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({});
+        let ir = build_document(document);
+        assert_eq!(
+            ir.endpoints[0].reference_body_type,
+            Some(TypeRef::Named("TitleAlias".into()))
+        );
+    }
+
+    #[test]
+    fn named_request_media_have_separate_views_without_mutating_the_operation() {
+        let operation: crate::openapi::Operation = serde_json::from_value(serde_json::json!({
+            "operationId": "appendCard", "requestBody": { "content": {
+                "application/json": { "x-fern-sdk-method-name": "card_note",
+                    "schema": { "type": "object" } },
+                "image/png": { "x-fern-sdk-method-name": "wrong",
+                    "x-crozier-sdk-method-name": "card_scan",
+                    "schema": { "type": "string", "format": "binary" } }
+            } }, "responses": {}
+        }))
+        .unwrap();
+        let views = super::request_media_variants(&operation);
+        assert_eq!(views.len(), 2);
+        assert_eq!(
+            views[0].as_ref().unwrap().sdk_method_name(),
+            Some("card_note")
+        );
+        assert_eq!(
+            views[1].as_ref().unwrap().sdk_method_name(),
+            Some("card_scan")
+        );
+        assert!(views.iter().all(|view| view
+            .as_ref()
+            .unwrap()
+            .request_body
+            .as_ref()
+            .unwrap()
+            .content
+            .len()
+            == 1));
+        assert!(operation.sdk_method_name().is_none());
+        assert_eq!(operation.request_body.as_ref().unwrap().content.len(), 2);
+        let mut unnamed = operation.clone();
+        unnamed
+            .request_body
+            .as_mut()
+            .unwrap()
+            .content
+            .insert("text/plain".into(), Default::default());
+        assert_eq!(super::request_media_variants(&unnamed).len(), 1);
+        assert!(super::request_media_variants(&unnamed)[0].is_none());
+        let blank: crate::openapi::MediaType = serde_json::from_value(serde_json::json!({
+            "x-crozier-sdk-method-name": " ", "x-fern-sdk-method-name": "fallback"
+        }))
+        .unwrap();
+        assert!(blank.sdk_method_name().is_none());
+        assert!(
+            serde_json::from_value::<crate::openapi::MediaType>(serde_json::json!({
+                "x-crozier-sdk-method-name": 12
+            }))
+            .is_err()
+        );
+        let no_body: crate::openapi::Operation =
+            serde_json::from_value(serde_json::json!({ "responses": {} })).unwrap();
+        assert_eq!(super::request_media_variants(&no_body).len(), 1);
+    }
+
+    #[test]
+    fn multipart_nullable_binary_is_a_file_and_array_items_document_the_part() {
+        let schema = schema(serde_json::json!({
+            "type": "object", "properties": {
+                "frames": { "type": "array", "items": {
+                    "type": "string", "format": "binary", "description": "Frame images."
+                } },
+                "page": { "anyOf": [
+                    { "type": "string", "format": "binary" }, { "type": "null" }
+                ] },
+                "caption": { "anyOf": [
+                    { "type": "string" }, { "type": "null" }
+                ] }
+            }
+        }));
+        let mut hoister = InlineHoister {
+            copying_refs: Vec::new(),
+            root_types: &[],
+            schemas: None,
+            out: Vec::new(),
+        };
+        let fields = super::hoist_form_object(
+            &schema,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "PreserveReelRequest",
+            true,
+        );
+        assert!(fields[0].is_file);
+        assert_eq!(fields[0].docstring.as_deref(), Some("Frame images."));
+        assert!(fields[1].is_file && fields[1].nullable && !fields[1].form_json);
+        assert!(!fields[2].is_file && !fields[2].form_json);
+        let fields = super::hoist_form_object(
+            &schema,
+            &indexmap::IndexMap::new(),
+            &mut hoister,
+            "PreserveReelRequest",
+            false,
+        );
+        assert!(!fields[1].is_file);
+        assert!(fields[0].docstring.is_none());
+    }
+
+    #[test]
+    fn multipart_object_aliases_keep_their_annotation_and_use_json_encoding() {
+        for multipart in [true, false] {
+            for inherited in [true, false] {
+                let model = if inherited {
+                    serde_json::json!({ "allOf": [{ "type": "object", "properties": {
+                        "bearing": { "type": "integer" }
+                    } }] })
+                } else {
+                    serde_json::json!({ "type": "object", "properties": {
+                        "bearing": { "type": "integer" }
+                    } })
+                };
+                let media = if multipart {
+                    "multipart/form-data"
+                } else {
+                    "application/x-www-form-urlencoded"
+                };
+                let ir = build_document(serde_json::json!({
+                    "openapi": "3.0.3", "info": { "title": "Cartography", "version": "1" },
+                    "paths": { "/plans": { "post": { "operationId": "store_plan",
+                        "requestBody": { "required": true, "content": { media: { "schema": {
+                            "type": "object", "required": ["plan", "attachment"], "properties": {
+                                "plan": { "$ref": "#/components/schemas/PlanAlias" },
+                                "attachment": { "type": "string", "format": "binary" }
+                            }
+                        } } } }, "responses": { "204": { "description": "Stored" } }
+                    } } },
+                    "components": { "schemas": { "Plan": model,
+                        "PlanAlias": { "$ref": "#/components/schemas/Plan" }
+                    } }
+                }));
+                let Some(RequestBody::Form(form)) = &ir.endpoints[0].request_body else {
+                    panic!("a form body")
+                };
+                let plan = form
+                    .fields
+                    .iter()
+                    .find(|field| field.wire_name == "plan")
+                    .unwrap();
+                assert_eq!(plan.type_ref, TypeRef::Named("PlanAlias".to_string()));
+                assert_eq!(plan.form_json, multipart);
+                assert!(
+                    form.fields
+                        .iter()
+                        .find(|field| field.wire_name == "attachment")
+                        .unwrap()
+                        .is_file
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn multipart_object_alias_resolution_recovers_from_unknown_and_cyclic_refs() {
+        let alias = schema(serde_json::json!({ "$ref": "#/components/schemas/B" }));
+        let mut schemas = indexmap::IndexMap::new();
+        schemas.insert("A".to_string(), alias.clone());
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "$ref": "#/components/schemas/A" })),
+        );
+        for source in [None, Some(&schemas)] {
+            assert_eq!(
+                super::resolve_form_object_alias(&alias, source, &[]).reference,
+                alias.reference
+            );
+        }
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "type": "string" })),
+        );
+        assert_eq!(
+            super::resolve_form_object_alias(&alias, Some(&schemas), &[]).reference,
+            alias.reference
+        );
+        schemas.insert(
+            "B".to_string(),
+            schema(serde_json::json!({ "type": "object", "properties": {
+            "bearing": { "type": "integer" }
+        } })),
+        );
+        assert!(
+            super::resolve_form_object_alias(&alias, Some(&schemas), &[])
+                .reference
+                .is_none()
+        );
+    }
+
+    #[test]
     fn multipart_nullable_scalars_are_sent_without_json_encoding() {
         let form = schema(serde_json::json!({
             "type": "object",
@@ -19341,6 +19995,21 @@ mod tests {
         let doc: OpenApi =
             serde_json::from_value(serde_json::json!({ "openapi": "3.0.3" })).expect("document");
         for (content, binary) in [
+            (
+                serde_json::json!({ "text/plain": { "schema": { "type": "string", "format": "byte" } } }),
+                true,
+            ),
+            (
+                serde_json::json!({ "text/plain": { "schema": { "type": "integer", "format": "byte" } } }),
+                false,
+            ),
+            (
+                serde_json::json!({
+                    "text/plain": { "schema": { "type": "string", "format": "byte" } },
+                    "application/json": { "schema": { "type": "string" } }
+                }),
+                false,
+            ),
             (serde_json::json!({ "audio/mpeg": {} }), true),
             (
                 serde_json::json!({ "audio/mpeg": { "schema": { "type": "string" } } }),
@@ -19412,6 +20081,44 @@ mod tests {
         )
         .expect("the config is well formed");
         super::build(&doc, &config)
+    }
+
+    #[test]
+    fn slashless_json_media_dispatches_but_an_untyped_key_does_not() {
+        for (media, dispatches) in [
+            ("vnd.observatory+json;version=2", true),
+            ("readings", false),
+        ] {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.3", "info": { "title": "Observatory", "version": "1" },
+                "paths": { "/latest": { "get": { "operationId": "latest",
+                    "responses": { "200": { "description": "latest", "content": {
+                        media: { "schema": { "$ref": "#/components/schemas/Observation" } }
+                    } } }
+                } } },
+                "components": { "schemas": { "Observation": {
+                    "type": "object", "properties": { "reading": { "type": "integer" } }
+                } } }
+            }));
+            assert_eq!(ir.endpoints[0].response.is_some(), dispatches, "{media}");
+        }
+    }
+
+    #[test]
+    fn byte_text_response_resolves_a_component_and_leaves_errors_unstreamed() {
+        for status in ["200", "400"] {
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.3",
+                "info": { "title": "Lantern Export", "version": "1" },
+                "paths": { "/export": { "get": {
+                    "responses": { status: { "description": "export", "content": {
+                        "text/plain": { "schema": { "$ref": "#/components/schemas/Export" } }
+                    } } }
+                } } },
+                "components": { "schemas": { "Export": { "type": "string", "format": "byte" } } }
+            }));
+            assert_eq!(ir.endpoints[0].binary_response, status == "200");
+        }
     }
 
     #[test]
@@ -20760,5 +21467,35 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str))
         );
         assert!(!ir.endpoints[0].response_may_be_empty);
+    }
+    #[test]
+    fn an_inline_body_never_appends_a_parent_field_an_own_field_redeclares() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Orchard Workshop", "version": "1"},
+            "components": {"schemas": {"RunSettings": {
+                "type": "object", "required": ["station", "lane"],
+                "properties": {
+                    "station": {"type": "string", "readOnly": true},
+                    "lane": {"type": "string"}
+                }
+            }}},
+            "paths": {"/runs": {"post": {
+                "operationId": "submitRun",
+                "requestBody": {"required": true, "content": {"application/json": {"schema": {
+                    "type": "object", "required": ["station"],
+                    "properties": {"station": {"type": "string"}},
+                    "allOf": [{"$ref": "#/components/schemas/RunSettings"}]
+                }}}},
+                "responses": {"204": {"description": "Submitted"}}
+            }}}
+        }));
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("the inline body flattens");
+        };
+        let wires: Vec<&str> = fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect();
+        assert_eq!(wires, ["station", "lane"]);
     }
 }

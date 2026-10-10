@@ -9,7 +9,7 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 
 if typing.TYPE_CHECKING:
-    from .practice.client import AsyncPracticeClient, PracticeClient
+    from .harbor.client import AsyncHarborClient, HarborClient
 
 
 class FernApi:
@@ -83,15 +83,15 @@ class FernApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
-        self._practice: typing.Optional[PracticeClient] = None
+        self._harbor: typing.Optional[HarborClient] = None
 
     @property
-    def practice(self):
-        if self._practice is None:
-            from .practice.client import PracticeClient
+    def harbor(self):
+        if self._harbor is None:
+            from .harbor.client import HarborClient
 
-            self._practice = PracticeClient(client_wrapper=self._client_wrapper)
-        return self._practice
+            self._harbor = HarborClient(client_wrapper=self._client_wrapper)
+        return self._harbor
 
 
 def _make_default_async_client(
@@ -181,12 +181,12 @@ class AsyncFernApi:
             max_stream_reconnection_attempts=max_stream_reconnection_attempts,
             logging=logging,
         )
-        self._practice: typing.Optional[AsyncPracticeClient] = None
+        self._harbor: typing.Optional[AsyncHarborClient] = None
 
     @property
-    def practice(self):
-        if self._practice is None:
-            from .practice.client import AsyncPracticeClient
+    def harbor(self):
+        if self._harbor is None:
+            from .harbor.client import AsyncHarborClient
 
-            self._practice = AsyncPracticeClient(client_wrapper=self._client_wrapper)
-        return self._practice
+            self._harbor = AsyncHarborClient(client_wrapper=self._client_wrapper)
+        return self._harbor

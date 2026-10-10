@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Emblem Cabinet
+  version: 1.0.0
+paths:
+  /emblems:
+    post:
+      operationId: uploadEmblem
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [metadata]
+              properties:
+                metadata:
+                  $ref: "#/components/schemas/UploadEmblemRequest"
+      responses:
+        "204":
+          description: Uploaded
+components:
+  schemas:
+    UploadEmblemRequest:
+      type: object
+      required: [color]
+      properties:
+        color:
+          type: string

@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "091226f8a26cbd4a01dd4665cf3924044fc0bad506185b1b0184dc0d37492f6d"
+
+[[covers]]
+key = "request-body-content"
+arm = 'src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]'
+search = "docs/openapi-surface/witness-search-inline-body-readonly-own-overlap/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-inline-body-readonly-own-overlap/README.md"

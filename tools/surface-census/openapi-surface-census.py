@@ -3161,7 +3161,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "92a25efcc00ca5a9",
+    "endpoint_method_name": "efd3a74154b2040b",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3726,7 +3726,7 @@ SCHEMA_RESPONSE_PORT_DIGESTS = {
     "success_response_entry": "668fb1266cbe71a1",
     "success_response_key": "f373029108feb261",
     "success_response_with_content": "10b3b17e00498b25",
-    "has_dispatchable_media": "0d3fe2386094f82f",
+    "has_dispatchable_media": "1778b0cd46695752",
 }
 
 
@@ -5164,7 +5164,14 @@ class Census:
             return (
                 not isinstance(content, dict)
                 or not content
-                or any(isinstance(media, str) and "/" in media and all(media.split("/", 1)) for media in content)
+                or any(
+                    isinstance(media, str)
+                    and (
+                        ("/" not in media and is_json_like_media_type(media))
+                        or ("/" in media and all(media.split("/", 1)))
+                    )
+                    for media in content
+                )
             )
 
         def content(value):

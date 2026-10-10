@@ -1,6 +1,6 @@
 # Reference
-## Practice
-<details><summary><code>client.practice.<a href="src/fern/practice/client.py">create_service_metadata</a>(...) -> PracticeServiceMetadata</code></summary>
+## Harbor
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_berth_assignment</a>(...) -> HarborBerthAssignment</code></summary>
 <dl>
 <dd>
 
@@ -19,10 +19,10 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.practice.create_service_metadata(
-    practice_id="practice_id",
-    practice_service_metadata_create_practice_id="practice_id",
-    service_name="service_name",
+client.harbor.create_berth_assignment(
+    harbor_id="harbor_id",
+    harbor_berth_assignment_create_harbor_id="harbor_id",
+    vessel_name="vessel_name",
 )
 
 ```
@@ -39,7 +39,7 @@ client.practice.create_service_metadata(
 <dl>
 <dd>
 
-**practice_id:** `str` 
+**harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -47,7 +47,7 @@ client.practice.create_service_metadata(
 <dl>
 <dd>
 
-**practice_service_metadata_create_practice_id:** `str` 
+**harbor_berth_assignment_create_harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -55,7 +55,7 @@ client.practice.create_service_metadata(
 <dl>
 <dd>
 
-**service_name:** `str` 
+**vessel_name:** `str` 
     
 </dd>
 </dl>
@@ -63,7 +63,7 @@ client.practice.create_service_metadata(
 <dl>
 <dd>
 
-**duration_minutes:** `typing.Optional[int]` 
+**stay_hours:** `typing.Optional[int]` 
     
 </dd>
 </dl>
@@ -83,7 +83,7 @@ client.practice.create_service_metadata(
 </dl>
 </details>
 
-<details><summary><code>client.practice.<a href="src/fern/practice/client.py">create_intent</a>(...) -> PracticeIntent</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_voyage</a>(...) -> HarborVoyage</code></summary>
 <dl>
 <dd>
 
@@ -102,10 +102,10 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.practice.create_intent(
-    practice_id="practice_id",
-    practice_intent_create_practice_id="practice_id",
-    intent="intent",
+client.harbor.create_voyage(
+    harbor_id="harbor_id",
+    harbor_voyage_create_harbor_id="harbor_id",
+    route="route",
 )
 
 ```
@@ -122,7 +122,7 @@ client.practice.create_intent(
 <dl>
 <dd>
 
-**practice_id:** `str` 
+**harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -130,7 +130,7 @@ client.practice.create_intent(
 <dl>
 <dd>
 
-**practice_intent_create_practice_id:** `str` 
+**harbor_voyage_create_harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -138,7 +138,7 @@ client.practice.create_intent(
 <dl>
 <dd>
 
-**intent:** `str` 
+**route:** `str` 
     
 </dd>
 </dl>
@@ -166,7 +166,7 @@ client.practice.create_intent(
 </dl>
 </details>
 
-<details><summary><code>client.practice.<a href="src/fern/practice/client.py">create_insurance_product</a>(...) -> PracticeEvent</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_mooring_permit</a>(...) -> HarborEvent</code></summary>
 <dl>
 <dd>
 
@@ -185,9 +185,9 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.practice.create_insurance_product(
-    practice_id="practice_id",
-    insurance_product_practice_id="practice_id",
+client.harbor.create_mooring_permit(
+    harbor_id="harbor_id",
+    mooring_permit_harbor_id="harbor_id",
 )
 
 ```
@@ -204,7 +204,7 @@ client.practice.create_insurance_product(
 <dl>
 <dd>
 
-**practice_id:** `str` 
+**harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -212,7 +212,7 @@ client.practice.create_insurance_product(
 <dl>
 <dd>
 
-**insurance_product_practice_id:** `str` 
+**mooring_permit_harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -220,7 +220,7 @@ client.practice.create_insurance_product(
 <dl>
 <dd>
 
-**coverage:** `typing.Optional[CreateInsuranceProductRequestCoverage]` 
+**vessel:** `typing.Optional[CreateMooringPermitRequestVessel]` 
     
 </dd>
 </dl>
@@ -240,7 +240,7 @@ client.practice.create_insurance_product(
 </dl>
 </details>
 
-<details><summary><code>client.practice.<a href="src/fern/practice/client.py">create_note</a>(...)</code></summary>
+<details><summary><code>client.harbor.<a href="src/fern/harbor/client.py">create_log_entry</a>(...)</code></summary>
 <dl>
 <dd>
 
@@ -259,9 +259,9 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.practice.create_note(
-    practice_id="practice_id",
-    note_practice_id="practice_id",
+client.harbor.create_log_entry(
+    harbor_id="harbor_id",
+    log_entry_harbor_id="harbor_id",
     body="body",
 )
 
@@ -279,7 +279,7 @@ client.practice.create_note(
 <dl>
 <dd>
 
-**practice_id:** `str` 
+**harbor_id:** `str` 
     
 </dd>
 </dl>
@@ -287,7 +287,7 @@ client.practice.create_note(
 <dl>
 <dd>
 
-**note_practice_id:** `str` 
+**log_entry_harbor_id:** `str` 
     
 </dd>
 </dl>

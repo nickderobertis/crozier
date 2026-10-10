@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "bbb4649d6a01a1a6a12a5a3b5ffb0f4656df9fd8f361d19ac4592842138982d7"
+
+[[covers]]
+key = "oneof"
+arm = 'src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]'
+search = "docs/openapi-surface/witness-search-error-body-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-error-body-shapes/README.md"
