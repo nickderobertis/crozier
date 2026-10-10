@@ -484,7 +484,11 @@ def measure(args: argparse.Namespace) -> int:
             raw = Path(scratch)
             run = subprocess.run(
                 [str(e2e), "--exact", test, "--test-threads", "1", "--quiet"],
-                cwd=repo_root,
+                # The crate's directory, where cargo runs it: from the root, the
+                # crozier it spawns runs `ruff format` under the tooling's own
+                # `[tool.ruff]`, whose `templates` exclude leaves a generated
+                # `templates/` package unformatted and fails its golden.
+                cwd=repo_root / "crates" / "crozier-e2e",
                 capture_output=True,
                 text=True,
                 env=dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
