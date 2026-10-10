@@ -1,0 +1,26 @@
+generate-fern-fixture: running Fern (python-sdk@5.20.0, packaged) locally...
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /tmp/tmp.FNA8Torkla/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> submitRun -> request -> body
+                  __package__.yml
+                  [error] Object has multiple properties named "station":
+                    - <Inlined Request> -> station
+                    - <Inlined Request> -> (extends) RunSettings -> station
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> submitRun -> request -> body%0A__package__.yml%0A[error] Object has multiple properties named "station":%0A  - <Inlined Request> -> station%0A  - <Inlined Request> -> (extends) RunSettings -> station
+[api]: python-sdk __package__.yml -> service -> endpoints -> submitRun
+                  __package__.yml
+                  [error] Multiple request properties have the name station. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Body property: <Request Body> -> station
+                    - Body property: <Request Body> -> (extends) RunSettings -> station
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> submitRun%0A__package__.yml%0A[error] Multiple request properties have the name station. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.%0A  - Body property: <Request Body> -> station%0A  - Body property: <Request Body> -> (extends) RunSettings -> station
+[api]: python-sdk Found 2 errors and 0 warnings in 0.999 seconds.
+::error title=[api]%3A python-sdk::Found 2 errors and 0 warnings in 0.999 seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

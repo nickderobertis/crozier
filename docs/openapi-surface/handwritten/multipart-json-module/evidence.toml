@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "69ad5a9e7bbf7dacd1325102e49fd6b02e792ffe5e724672f1d813ddc1579945"
+
+[[covers]]
+key = "media-type-multipart"
+arm = 'src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]'
+search = "docs/openapi-surface/witness-search-multipart-objects/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-multipart-objects/README.md"
