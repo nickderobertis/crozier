@@ -2246,6 +2246,10 @@ BODY_AND_RESPONSE_PREDICATES = frozenset(
         "operation.requestBody:blank-description-optional-object",
         "operation.requestBody:described-inline-scalar",
         "operation.requestBody:plain-string-map",
+        "operation.responses:event-stream-binary",
+        "operation.responses:event-stream-inline-const-union",
+        "operation.responses:event-stream-item-schema-ref",
+        "operation.responses:event-stream-event-dispatch",
     }
 )
 
@@ -2454,7 +2458,9 @@ class GrammarContractTests(unittest.TestCase):
             "thirty-five": 35,
             "thirty-six": 36,
             "thirty-seven": 37,
+            "forty-one": 41,
             "forty-two": 42,
+            "forty-six": 46,
         }
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
@@ -13923,6 +13929,98 @@ class BodyAndResponseSelectorControls(unittest.TestCase):
             },
         }
         self.assertEqual({(selector, "positive"): 2}, self.census(selector, documents))
+
+    def test_event_stream_predicates_count_their_shape_and_not_its_near_misses(self) -> None:
+        def ref(name: str) -> dict:
+            return {"$ref": f"#/components/schemas/{name}"}
+
+        def sse(media: dict) -> dict:
+            return self.success({"text/event-stream": media})
+
+        def tagged(value: str, extra: str) -> dict:
+            return {
+                "type": "object",
+                "properties": {"trend": {"type": "string", "const": value}, extra: {"type": "number"}},
+            }
+
+        def variant(value: str, *extra: str) -> dict:
+            return {
+                "type": "object",
+                "properties": {
+                    "event": {"type": "string", "enum": [value]},
+                    "data": ref("Berth"),
+                    **{name: {"type": "integer"} for name in extra},
+                },
+            }
+
+        def union(prop: str, *variants: str) -> dict:
+            return {"oneOf": [ref(name) for name in variants], "discriminator": {"propertyName": prop}}
+
+        schemas = {
+            "Blob": {"type": "string", "format": "binary"},
+            "Sample": {"type": "object", "properties": {"altitude": {"type": "number"}}},
+            "Berth": {"type": "object", "properties": {"terminal": {"type": "string"}}},
+            "Departure": variant("departed"),
+            "Arrival": variant("arrived"),
+            "Late": variant("late", "minutes"),
+            "Movement": union("event", "Departure", "Arrival"),
+            "Typed": union("type", "Departure", "Arrival"),
+            "Mixed": union("event", "Departure", "Late"),
+        }
+        shapes = {
+            "operation.responses:event-stream-binary": (
+                [sse({"schema": {"type": "string", "format": "binary"}}), sse({"schema": ref("Blob")})],
+                [
+                    sse({"schema": {"type": "string"}}),
+                    self.success({"application/octet-stream": {"schema": ref("Blob")}}),
+                ],
+            ),
+            "operation.responses:event-stream-inline-const-union": (
+                [sse({"schema": {"oneOf": [tagged("flood", "height"), tagged("ebb", "slack")]}})],
+                [
+                    sse({"schema": {"oneOf": [tagged("flood", "height")]}}),
+                    sse({"schema": {"oneOf": [tagged("flood", "height"), ref("Sample")]}}),
+                    sse(
+                        {
+                            "schema": {
+                                "oneOf": [tagged("flood", "height"), tagged("ebb", "slack")],
+                                "discriminator": {"propertyName": "trend"},
+                            }
+                        }
+                    ),
+                ],
+            ),
+            "operation.responses:event-stream-item-schema-ref": (
+                [sse({"itemSchema": ref("Sample")})],
+                [
+                    sse({"schema": ref("Sample")}),
+                    sse({"schema": ref("Sample"), "itemSchema": ref("Sample")}),
+                    sse({"itemSchema": {"type": "object"}}),
+                ],
+            ),
+            "operation.responses:event-stream-event-dispatch": (
+                [sse({"schema": ref("Movement")})],
+                [
+                    sse({"schema": ref("Typed")}),
+                    sse({"schema": ref("Mixed")}),
+                    self.success({"application/json": {"schema": ref("Movement")}}),
+                ],
+            ),
+        }
+        for selector, (positives, decoys) in shapes.items():
+            with self.subTest(selector=selector):
+                documents = {
+                    name: {
+                        "openapi": "3.1.0",
+                        "paths": {
+                            f"/{name}/{index}": {"get": self.operation(responses=responses)}
+                            for index, responses in enumerate(cases)
+                        },
+                        "components": {"schemas": schemas},
+                    }
+                    for name, cases in (("positive", positives), ("decoys", decoys))
+                }
+                self.assertEqual({(selector, "positive"): len(positives)}, self.census(selector, documents))
 
     def test_a_body_prefixed_body_counts_only_posted_once(self) -> None:
         selector = "operation.requestBody:body-prefixed-single-use"

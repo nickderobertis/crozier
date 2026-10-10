@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Build Runner
+  version: 1.0.0
+paths:
+  /builds/{buildId}/log:
+    get:
+      operationId: followBuildLog
+      x-fern-streaming:
+        format: sse
+        terminator: '[DONE]'
+      parameters:
+        - name: buildId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Build steps as they finish.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/StepResult'
+components:
+  schemas:
+    StepResult:
+      type: object
+      properties:
+        step:
+          type: string
+        passed:
+          type: boolean

@@ -1,11 +1,12 @@
 fixture	key	site	regions_executed	regions
 base-path-client-argument	parameter-in-path	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
-blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]	1	1
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
 discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
+event-stream-event-dispatch	media-type-event-stream	src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]	41	41
+event-stream-event-dispatch	media-type-event-stream	src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]	9	9
 format-scalar-bodies	format-email	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-hostname	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-idn-hostname	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
@@ -18,8 +19,6 @@ format-scalar-bodies	format-time	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Pri
 format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
-harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
-harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
 header-subset-string-default	parameter-in-header	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	1	1
 http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
@@ -48,8 +47,6 @@ json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	27
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
-measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
-measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]	2	2
 multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
 multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
 multipart-nullable-array	format-binary	src/ir.rs::hoist_form_object[if nullable_binary]	1	1
@@ -63,7 +60,6 @@ nested-array-discriminated-unions	oneof-discriminated-union	src/ir.rs::Builder::
 nested-array-elements	array-item-empty-object	src/ir.rs::Builder::nested_array_element[if is_inline_struct\(items\) \{]	10	10
 nested-array-elements	items-oneof-element	src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]	21	21
 nullable-query-union-items	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]	2	2
-nullable-store	allof	src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]	2	2
 observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*HeaderType::Date]	1	1
 observatory-client-headers	parameter-in-header	src/ir.rs::global_headers[for header in doc\.global_header_extensions]	8	11
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
@@ -90,6 +86,6 @@ request-media-methods	request-body-content	src/openapi.rs::Operation::with_sdk_m
 skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
 slashless-json-response	media-type-malformed-key	src/ir.rs::has_dispatchable_media[=^ {16}return true;$]	1	1
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3
-union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
-verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1
+stream-condition-union-body	fern-streaming-extension	src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]	3	3
+streaming-extension-terminator	fern-streaming-extension	src/emit.rs::sse_end[=\x7cend\x7c format!]	3	3
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

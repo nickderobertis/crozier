@@ -54,6 +54,8 @@ const KINDS: &[Kind] = &[
     //   receiver;
     // - `openfigi.com`: inline property enums, optional and `nullable` ones, and
     //   a path-parameter enum, in a real corpus document.
+    // - `zylon-private-gpt`: property enums of the models a `stream-condition`
+    //   operation's halves stream and return.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -65,6 +67,7 @@ const KINDS: &[Kind] = &[
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
+            "zylon-private-gpt",
             "aws-mobileanalytics",
         ],
     },

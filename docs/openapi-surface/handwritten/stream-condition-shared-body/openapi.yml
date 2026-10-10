@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Route Planner
+  version: 1.0.0
+paths:
+  /plans:
+    post:
+      operationId: planRoute
+      x-fern-sdk-method-name: plan
+      x-fern-streaming:
+        format: sse
+        stream-condition: $request.progressive
+        response:
+          $ref: '#/components/schemas/Itinerary'
+        response-stream:
+          $ref: '#/components/schemas/Itinerary'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequestBody'
+      responses:
+        '200':
+          description: The itinerary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Itinerary'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Itinerary'
+  /plans/estimate:
+    post:
+      operationId: estimateRoute
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlanRequestBody'
+      responses:
+        '200':
+          description: A rough itinerary.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Itinerary'
+components:
+  schemas:
+    PlanRequestBody:
+      type: object
+      properties:
+        origin:
+          type: string
+        destination:
+          type: string
+        progressive:
+          type: boolean
+    Itinerary:
+      type: object
+      properties:
+        legs:
+          type: integer

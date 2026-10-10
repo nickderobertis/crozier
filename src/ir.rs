@@ -7,7 +7,8 @@ use indexmap::IndexMap;
 use crate::config::GenerateConfig;
 use crate::naming;
 use crate::openapi::{
-    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, TypeField,
+    AdditionalProperties, OpenApi, Operation, ParameterLocation, Response, Schema, StreamFormat,
+    Streaming, StreamingMapping, TypeField,
 };
 
 /// Which arm of this module ran, asked of the generator rather than of its
@@ -1068,6 +1069,17 @@ fn inline_body_source_names(
             if !surviving.contains(&(path.as_str(), method)) || matches!(method, "GET" | "HEAD") {
                 continue;
             }
+            // Nor does a `stream-condition` operation's body count as a use: Fern
+            // copies it into each half's own request, so a schema a buffered
+            // operation also posts is that operation's single use, and dropped
+            // (see `stream_condition_body_source_names`).
+            if op
+                .streaming()
+                .and_then(crate::openapi::Streaming::condition_property)
+                .is_some()
+            {
+                continue;
+            }
             let Some(rb) = &op.request_body else { continue };
             // The JSON representation is found the way the body itself selects
             // it, parameters and all: Prisma Cloud posts its single-use
@@ -1407,6 +1419,10 @@ pub struct Endpoint {
     /// type's own schema. `None` when that media declares no schema, which Fern
     /// yields as `typing.Any`.
     pub stream_chunk: Option<TypeRef>,
+    /// How a streaming response frames its chunks: present exactly when
+    /// `streaming` is.
+    // llmlint: ignore[invalid_states_unrepresentable] `streaming: bool` is the shared Endpoint field other generators' code reads; folding it and this protocol into one enum amends that shared interface, which this change may only propose (drafted as a follow-up). `build_endpoint` sets both from one `is_streaming` call.
+    pub stream_protocol: Option<StreamProtocol>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
     /// Whether the success body is Markdown text. Fern types it as `str` but
@@ -1428,6 +1444,32 @@ pub struct Endpoint {
     /// Whether crozier can emit this operation's raw client today. A module is
     /// only emitted when every one of its operations is emittable.
     pub emittable: bool,
+}
+
+/// How a streaming response frames its chunks.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum StreamProtocol {
+    /// Server-Sent Events, decoded event by event. The stream ends at an event
+    /// whose `data` equals `terminator`, or at one without data when none is
+    /// declared.
+    Sse {
+        /// The declared end-of-stream `data` payload (`[DONE]`).
+        terminator: Option<String>,
+        /// Events dispatched on their SSE `event` field, each parsing its `data`
+        /// as its own model; empty when every event parses as the chunk type.
+        events: Vec<SseEvent>,
+    },
+    /// Newline-delimited JSON: each non-empty line is one chunk.
+    JsonLines,
+}
+
+/// One event a Server-Sent-Events stream dispatches on its `event` field.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SseEvent {
+    /// The `event` field's value that selects this model.
+    pub event: String,
+    /// The model the event's JSON `data` parses as.
+    pub model: String,
 }
 
 /// A resolved path parameter.
@@ -2685,7 +2727,7 @@ fn endpoints(
                 // from its own view of the operation, so the response type, the chunk
                 // type and the fixed body field all follow from the document rather
                 // than from a special case downstream.
-                let variants = stream_condition_variants(op);
+                let variants = stream_condition_variants(op, http_method, path);
                 for variant in &variants {
                     let view = variant.as_ref().map_or(op, |split| &split.operation);
                     let endpoint = build_endpoint(
@@ -2697,6 +2739,10 @@ fn endpoints(
                         &mut tag_types,
                         &global_names,
                     );
+                    let mut endpoint = endpoint;
+                    if let Some(split) = variant {
+                        declare_split_union_body(&mut endpoint, split, types, &mut tag_types);
+                    }
                     let endpoint = match variant {
                         Some(split) => Endpoint {
                             method_name: split.method_name.clone(),
@@ -2769,34 +2815,49 @@ fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
         .collect()
 }
 
-/// The base method name a `stream-condition` operation splits from — *not* the
-/// general per-operation derivation, which is [`endpoint_method_name`]. Only the
-/// extension-declared name is consulted, because a document that declares a
-/// stream condition declares the method name too; the `"stream"` fallback is
-/// meaningful only inside that split.
-fn stream_condition_base_method_name(op: &Operation) -> String {
-    op.sdk_method_name().map_or_else(
-        || "stream".to_string(),
-        |name| {
-            naming::escape_python_keyword(naming::sanitize_identifier(&naming::to_snake_case(name)))
-        },
-    )
+/// The two method names a `stream-condition` operation splits into: the
+/// streaming half's and the buffered half's. An extension-declared name names
+/// both (`compose_stream` / `compose`). Without one, the buffered half takes the
+/// name the operation's own derivation gives it while the streaming half is the
+/// whole `operationId` snake-cased: measured at Fern 5.20.0, privateGPT's
+/// tagged FastAPI id `prompt_completion_v1_completions_post` splits into
+/// `prompt_completion_v1completions_post_stream` and `prompt_completion`. The
+/// `stream` fallback is for an operation declaring neither, and is meaningful
+/// only inside that split.
+fn stream_condition_method_names(
+    op: &Operation,
+    http_method: &str,
+    path: &str,
+) -> (String, String) {
+    let id = op
+        .operation_id
+        .as_deref()
+        .map(str::trim)
+        .unwrap_or_default();
+    if op.sdk_method_name().is_some() {
+        let base = endpoint_method_name(op, http_method, path);
+        (format!("{base}_stream"), base)
+    } else if !id.is_empty() {
+        let stream = naming::sanitize_identifier(&naming::to_snake_case(id));
+        (
+            format!("{stream}_stream"),
+            endpoint_method_name(op, http_method, path),
+        )
+    } else {
+        ("stream_stream".to_string(), "stream".to_string())
+    }
 }
 
 /// The component schemas that back the request body of an operation declaring a
 /// `stream-condition`. Fern keeps such a model in the public type layer even
-/// though both generated methods flatten its fields.
+/// though both generated methods flatten its fields — but only while no other
+/// operation posts it: measured at Fern 5.20.0, a body schema a buffered
+/// operation also posts is flattened away like any single-use body.
 fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let mut names = std::collections::HashSet::new();
+    let mut streamed = std::collections::HashSet::new();
+    let mut posted = std::collections::HashSet::new();
     for item in doc.paths.values().chain(doc.webhooks.values()) {
         for (_, op) in item.operations() {
-            if op
-                .streaming()
-                .and_then(crate::openapi::Streaming::condition_property)
-                .is_none()
-            {
-                continue;
-            }
             let reference = op
                 .request_body
                 .as_ref()
@@ -2806,12 +2867,62 @@ fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSe
                         .find_map(|media| media.schema.as_ref())
                 })
                 .and_then(|schema| schema.reference.as_deref());
-            if let Some(reference) = reference {
-                names.insert(ref_to_class(reference));
+            let Some(reference) = reference else {
+                continue;
+            };
+            let conditional = op
+                .streaming()
+                .and_then(crate::openapi::Streaming::condition_property)
+                .is_some();
+            if conditional {
+                &mut streamed
+            } else {
+                &mut posted
             }
+            .insert(ref_to_class(reference));
         }
     }
-    names
+    streamed.retain(|name| !posted.contains(name));
+    streamed
+}
+
+/// Give one half of a `stream-condition` split whose body is a component union
+/// alias its own alias of that union. Fern declares `{Half}Request` per half —
+/// `estimate_stream` takes `EstimateStreamRequest` and `estimate` takes
+/// `EstimateRequest`, each `Union[...]` over the component's members — where
+/// a flattened object body needs no request type at all.
+fn declare_split_union_body(
+    endpoint: &mut Endpoint,
+    split: &StreamSplit,
+    types: &[TypeDecl],
+    tag_types: &mut Vec<TagTypeDecl>,
+) {
+    let Some(RequestBody::Single(body)) = endpoint.request_body.as_mut() else {
+        return;
+    };
+    let TypeRef::Named(component) = &body.type_ref else {
+        return;
+    };
+    let Some(target) = types.iter().find_map(|decl| match decl {
+        TypeDecl::Alias(alias) if alias.name == *component => {
+            matches!(alias.target, TypeRef::Union(_)).then(|| alias.target.clone())
+        }
+        _ => None,
+    }) else {
+        return;
+    };
+    let name = format!("{}Request", naming::to_pascal_case(&split.method_name));
+    tag_types.push(TagTypeDecl {
+        module: endpoint.module.clone(),
+        decl: TypeDecl::Alias(AliasType {
+            name: name.clone(),
+            module: naming::module_name(&name),
+            target,
+            docstring: None,
+            reach_refs: Vec::new(),
+        }),
+    });
+    body.type_ref = TypeRef::Named(name);
 }
 
 /// One half of a `stream-condition` split: the operation as that half sees it,
@@ -2828,21 +2939,43 @@ struct StreamSplit {
 
 /// The variants an operation generates. One `None` for the ordinary case; a
 /// streaming and a buffered `Some` when a `stream-condition` is declared.
-fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
+fn stream_condition_variants(
+    op: &Operation,
+    http_method: &str,
+    path: &str,
+) -> Vec<Option<StreamSplit>> {
     let Some(streaming) = op.streaming() else {
         return vec![None];
     };
-    let Some(condition) = streaming.condition_property() else {
+    let (Some(condition), Some(mapping)) = (streaming.condition_property(), streaming.mapping())
+    else {
         return vec![None];
     };
-    let base = stream_condition_base_method_name(op);
+    let (stream_method_name, base) = stream_condition_method_names(op, http_method, path);
+    let sse_media = success_response_entry(op)
+        .is_some_and(|response| response.content.contains_key("text/event-stream"));
     let mut variants = Vec::new();
     for stream in [true, false] {
         let mut operation = op.clone();
-        // Each half sees only its own success media type, which is what makes the
-        // ordinary streaming/buffered resolution downstream pick the right one.
+        // Each half sees only its own success media type and its own view of the
+        // extension — the streaming half an unconditional stream in the declared
+        // framing, the buffered half none — which is what makes the ordinary
+        // streaming/buffered resolution downstream pick the right one.
+        operation.set_streaming(stream.then(|| {
+            Streaming::Mapping(Box::new(StreamingMapping {
+                format: Some(if streaming.is_sse() {
+                    StreamFormat::Sse
+                } else {
+                    StreamFormat::Json
+                }),
+                terminator: streaming.terminator().map(str::to_string),
+                ..StreamingMapping::default()
+            }))
+        }));
         if let Some(response) = success_response_entry_mut(&mut operation) {
-            let media = if stream {
+            // A stream whose response declares no `text/event-stream` media
+            // streams its `application/json` one.
+            let media = if stream && sse_media {
                 "text/event-stream"
             } else {
                 "application/json"
@@ -2850,9 +2983,9 @@ fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
             response.content.retain(|name, _| name == media);
             if let Some(entry) = response.content.get_mut(media) {
                 let schema = if stream {
-                    streaming.response_stream.clone()
+                    mapping.response_stream.clone()
                 } else {
-                    streaming.response.clone()
+                    mapping.response.clone()
                 };
                 if let Some(schema) = schema {
                     entry.schema = Some(schema);
@@ -2862,11 +2995,11 @@ fn stream_condition_variants(op: &Operation) -> Vec<Option<StreamSplit>> {
         variants.push(Some(StreamSplit {
             operation,
             method_name: if stream {
-                format!("{base}_stream")
+                stream_method_name.clone()
             } else {
                 base.clone()
             },
-            stream_method_name: format!("{base}_stream"),
+            stream_method_name: stream_method_name.clone(),
             condition: condition.to_string(),
             streaming: stream,
         }));
@@ -3255,7 +3388,15 @@ fn build_endpoint(
     // The success response: a `$ref`/scalar/container passes straight through; an
     // inline object body is hoisted into a `{Ctx}Response` model, where `Ctx` is
     // the operation's PascalCase context (computed above, from the operationId).
-    let response = match success_response_schema(op) {
+    // A stream's chunk type is resolved exactly as a buffered response's would
+    // be, hoisting and all — Fern types an inline `text/event-stream` union as
+    // the `{Ctx}Response` it would declare for a JSON one — from a view whose
+    // success response carries only the chunk media; the stream then has no
+    // buffered response of its own.
+    let streaming = is_streaming(doc, op);
+    let stream_view = streaming.then(|| stream_chunk_view(op));
+    let response_op = stream_view.as_ref().unwrap_or(op);
+    let response = match success_response_schema(response_op) {
         Some(schema) if simple_nullable_member(schema).is_some() => {
             let member = simple_nullable_member(schema).expect("guard checked nullable member");
             let base = member.reference.as_deref().map_or_else(
@@ -3357,10 +3498,10 @@ fn build_endpoint(
                         Box::new(TypeRef::Named(name)),
                     ))
                 } else {
-                    success_response(op)
+                    success_response(response_op)
                 }
             } else {
-                success_response(op)
+                success_response(response_op)
             }
         }
         // A hoisted element keeps the response schema's own nullability, the same
@@ -3384,8 +3525,8 @@ fn build_endpoint(
                     hoisted
                 }
             })
-            .or_else(|| success_response(op)),
-        _ => success_response(op),
+            .or_else(|| success_response(response_op)),
+        _ => success_response(response_op),
     };
     // A `$ref` to a component that is itself nullable returns it optionally,
     // unlike a `nullable` written beside a `$ref`: marimo-plugins'
@@ -3393,7 +3534,7 @@ fn build_endpoint(
     // returns `typing.Optional[MarimoChatbotCancelPromptOutput]`, and
     // `read_marimo_form_validate_output` (`type: [string, "null"]`)
     // `typing.Optional[MarimoFormValidateOutput]`.
-    let returns_nullable_component = success_response_schema(op)
+    let returns_nullable_component = success_response_schema(response_op)
         .and_then(|schema| schema.reference.as_deref())
         .and_then(|reference| resolve_ref(doc, reference))
         .is_some_and(|target| target.explicitly_nullable() || is_null_component(target));
@@ -3405,7 +3546,7 @@ fn build_endpoint(
         }
     });
     let response = response.map(|response| {
-        if has_bodyless_success(op) && !has_text_response(op) {
+        if has_bodyless_success(response_op) && !has_text_response(response_op) {
             // A declared body beside an empty `204` is optional even when that
             // body is unknown: ZipTax's `merchantCertDelete` (a `200` of
             // `schema: {}` beside a `204`) returns `typing.Optional[typing.Any]`.
@@ -3414,12 +3555,14 @@ fn build_endpoint(
             // `Any`, and Fergus's `postDisconnect`, a lone `204` declaring
             // `{type: object}`, stays `Dict[str, Any]`. A `200` declaring no
             // schema (Microcks' `GetFeaturesConfiguration`) stays `Any` too.
-            let typed_by_empty_status = success_response_entry(op).is_some_and(|entry| {
-                op.responses
+            let typed_by_empty_status = success_response_entry(response_op).is_some_and(|entry| {
+                response_op
+                    .responses
                     .get("204")
                     .is_some_and(|empty| std::ptr::eq(entry, empty))
             });
-            let empty_beside_body = success_response_schema(op).is_some() && !typed_by_empty_status;
+            let empty_beside_body =
+                success_response_schema(response_op).is_some() && !typed_by_empty_status;
             match response {
                 other if typed_by_empty_status => other,
                 TypeRef::Primitive(Prim::Any) if empty_beside_body => {
@@ -3431,6 +3574,12 @@ fn build_endpoint(
             response
         }
     });
+
+    let (response, stream_chunk) = if streaming {
+        (None, response)
+    } else {
+        (response, None)
+    };
 
     // A request body is either absent, within the subset crozier can render, or
     // unsupported. Its inline nested objects hoist under the `{Ctx}Request` context.
@@ -3903,8 +4052,9 @@ fn build_endpoint(
             .description
             .as_deref()
             .map_or_else(String::new, reference_description_suffix),
-        streaming: is_streaming(op),
-        stream_chunk: stream_chunk_type(op),
+        streaming,
+        stream_chunk,
+        stream_protocol: streaming.then(|| stream_protocol(doc, op)),
         text_response: has_text_response(op),
         // A Markdown media type beside a download listed before it is not the
         // body: the method streams the download and documents its path
@@ -4109,10 +4259,18 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
                 media.starts_with("multipart/") || media == "application/x-www-form-urlencoded"
             })
     });
+    // An event stream is supported unless it streams a binary string, which Fern
+    // downloads as bytes like any other declined download (see `is_streaming`).
     let unsupported_response = success_response_entry(op).is_some_and(|response| {
         !response.content.is_empty()
-            && !response.content.keys().any(|media| {
-                media == "*/*" || media == "text/event-stream" || is_json_like_media_type(media)
+            && !response.content.iter().any(|(media, body)| {
+                media == "*/*"
+                    || media == "text/event-stream"
+                        && !body
+                            .schema
+                            .as_ref()
+                            .is_some_and(|schema| is_binary_string(doc, schema))
+                    || is_json_like_media_type(media)
             })
     });
     // A success body naming a component the document never declares has no
@@ -4529,30 +4687,152 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
     }
 }
 
-/// Whether the operation's selected success response is a Server-Sent-Events
-/// stream. Fern prefers an `application/json` representation when a response
+/// Whether the operation's success response is a stream. A declared
+/// streaming extension without a `stream-condition` streams whatever the
+/// response's media types (Fern 5.20.0 streams `x-fern-streaming: {format: sse}`
+/// over a lone `application/json`); the boolean `false` declares nothing, as no
+/// extension does.
+/// Otherwise Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
-/// iterator of chunks, typed by [`stream_chunk_type`].
-fn is_streaming(op: &Operation) -> bool {
+/// iterator of chunks, typed through [`stream_chunk_view`] — unless its schema is a
+/// binary string, which Fern downloads as bytes like any other binary body.
+fn is_streaming(doc: &OpenApi, op: &Operation) -> bool {
+    if op
+        .streaming()
+        .is_some_and(crate::openapi::Streaming::streams_unconditionally)
+    {
+        return success_response_entry(op).is_some();
+    }
     success_response_entry(op).is_some_and(|response| {
-        response.content.contains_key("text/event-stream")
-            && !response.content.contains_key("application/json")
+        !response.content.contains_key("application/json")
+            && response
+                .content
+                .get("text/event-stream")
+                .is_some_and(|media| {
+                    !media
+                        .schema
+                        .as_ref()
+                        .is_some_and(|schema| is_binary_string(doc, schema))
+                })
     })
 }
 
-/// The type of one Server-Sent-Events chunk. Fern types each event from the
-/// `text/event-stream` media type's own schema — a `type: string` stream yields
-/// `str` — and falls back to `typing.Any` when that media declares none.
-fn stream_chunk_type(op: &Operation) -> Option<TypeRef> {
-    if !is_streaming(op) {
-        return None;
+/// Whether `schema`, through a component reference, is `{type: string, format: binary}`.
+fn is_binary_string(doc: &OpenApi, schema: &Schema) -> bool {
+    let schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    schema.ty.as_ref().and_then(|ty| ty.primary()) == Some("string")
+        && schema.format.as_deref() == Some("binary")
+}
+
+/// How a streaming operation frames its chunks: newline-delimited JSON when the
+/// streaming extension makes it stream in any framing but SSE (see
+/// [`crate::openapi::Streaming::is_sse`]), else Server-Sent Events, which the
+/// extension's `terminator` ends.
+fn stream_protocol(doc: &OpenApi, op: &Operation) -> StreamProtocol {
+    match op.streaming() {
+        Some(streaming) if streaming.streams_unconditionally() && !streaming.is_sse() => {
+            StreamProtocol::JsonLines
+        }
+        streaming => StreamProtocol::Sse {
+            terminator: streaming
+                .and_then(crate::openapi::Streaming::terminator)
+                .map(str::to_string),
+            events: sse_event_dispatch(doc, op),
+        },
     }
-    let schema = success_response_entry(op)?
-        .content
-        .get("text/event-stream")?
-        .schema
-        .as_ref()?;
-    Some(base_type_ref(schema))
+}
+
+/// The events an SSE stream dispatches on their `event` field. Measured at Fern
+/// 5.20.0, a chunk schema that is a `$ref` to a `oneOf` of `$ref` variants
+/// discriminated on `event`, every variant declaring exactly the two properties
+/// `event` and `data`, streams as those events: each `_sse.event` value selects
+/// its variant, parsed from the event's JSON `data`. The values are the
+/// discriminator mapping's keys in mapping order, or each variant's own `event`
+/// `const` or first enum value in `oneOf` order when there is no mapping. A
+/// variant with any other property, or another discriminator property, keeps the
+/// ordinary parse.
+fn sse_event_dispatch(doc: &OpenApi, op: &Operation) -> Vec<SseEvent> {
+    let view = stream_chunk_view(op);
+    let Some(union) = success_response_schema(&view)
+        .and_then(|schema| schema.reference.as_deref())
+        .and_then(|reference| resolve_ref(doc, reference))
+    else {
+        return Vec::new();
+    };
+    let (Some(variants), Some(discriminator)) = (&union.one_of, &union.discriminator) else {
+        return Vec::new();
+    };
+    if discriminator.property_name != "event" {
+        return Vec::new();
+    }
+    let event_and_data = |reference: &str| {
+        resolve_ref(doc, reference).is_some_and(|variant| {
+            variant.properties.len() == 2
+                && variant.properties.contains_key("event")
+                && variant.properties.contains_key("data")
+        })
+    };
+    if !variants
+        .iter()
+        .all(|variant| variant.reference.as_deref().is_some_and(&event_and_data))
+    {
+        return Vec::new();
+    }
+    if !discriminator.mapping.is_empty() {
+        return discriminator
+            .mapping
+            .iter()
+            .map(|(event, reference)| SseEvent {
+                event: event.clone(),
+                model: ref_to_class(reference),
+            })
+            .collect();
+    }
+    variants
+        .iter()
+        .filter_map(|variant| {
+            let reference = variant.reference.as_deref()?;
+            let event = resolve_ref(doc, reference)?.properties.get("event")?;
+            let value = event
+                .const_value
+                .as_ref()
+                .or_else(|| event.enum_values.as_ref()?.first())?
+                .as_str()?
+                .to_string();
+            Some(SseEvent {
+                event: value,
+                model: ref_to_class(reference),
+            })
+        })
+        .collect()
+}
+
+/// The operation as its stream's chunk type reads it: the success response
+/// reduced to one `application/json` media carrying the chunk schema. Fern
+/// types each event from the `text/event-stream` media type's own schema — a
+/// `type: string` stream yields `str` — or, for an extension-declared stream
+/// whose response declares no such media, from the response's first media; a
+/// media without a schema yields `typing.Any`.
+fn stream_chunk_view(op: &Operation) -> Operation {
+    let mut view = op.clone();
+    if let Some(response) = success_response_entry_mut(&mut view) {
+        let media = response
+            .content
+            .shift_remove("text/event-stream")
+            .or_else(|| {
+                response
+                    .content
+                    .shift_remove_index(0)
+                    .map(|(_, media)| media)
+            })
+            .unwrap_or_default();
+        response.content = IndexMap::from([("application/json".to_string(), media)]);
+    }
+    view
 }
 
 fn body_response_same_ref(doc: &OpenApi, op: &Operation) -> bool {

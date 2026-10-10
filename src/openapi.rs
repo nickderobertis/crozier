@@ -699,6 +699,15 @@ impl Operation {
         self.streaming_crozier
             .as_deref()
             .or(self.streaming_fern.as_deref())
+            .filter(|streaming| streaming.declares_stream())
+    }
+
+    /// Replace the declared streaming contract, in both spellings, with
+    /// `streaming` — how one half of a `stream-condition` split sees the
+    /// operation.
+    pub(crate) fn set_streaming(&mut self, streaming: Option<Streaming>) {
+        self.streaming_crozier = streaming.map(Box::new);
+        self.streaming_fern = None;
     }
 
     /// Take out the `x-crozier-sdk-group-name` / `x-crozier-sdk-method-name`
@@ -731,14 +740,26 @@ pub(crate) struct CrozierNaming {
 }
 
 /// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
-/// streams. An operation that declares a `stream-condition` generates *two*
-/// methods — one that sets the condition and streams, one that clears it and
-/// returns the buffered response.
+/// streams, written as a boolean or as a mapping. `true` streams the success
+/// response as newline-delimited JSON, as a mapping declaring `format: json`
+/// does; `false` declares no stream, leaving the response's media to decide as
+/// if no extension were written (see [`Streaming::declares_stream`]).
+#[derive(Debug, Clone)]
+pub enum Streaming {
+    /// The boolean form.
+    Flag(bool),
+    /// The mapping form, boxed: it embeds two schemas a boolean never carries.
+    Mapping(Box<StreamingMapping>),
+}
+
+/// The mapping form of the streaming extension. An operation that declares a
+/// `stream-condition` generates *two* methods — one that sets the condition and
+/// streams, one that clears it and returns the buffered response.
 #[derive(Debug, Default, Clone, Deserialize)]
-pub struct Streaming {
-    /// The stream encoding (`sse`).
+pub struct StreamingMapping {
+    /// The stream encoding.
     #[serde(default)]
-    pub format: Option<String>,
+    pub format: Option<StreamFormat>,
     /// The buffered response schema, used when the condition is cleared.
     #[serde(default)]
     pub response: Option<Schema>,
@@ -749,17 +770,109 @@ pub struct Streaming {
     /// (`$request.stream`).
     #[serde(rename = "stream-condition", default)]
     pub stream_condition: Option<String>,
+    /// The SSE `data` payload that ends the stream (`[DONE]`). Absent, an
+    /// event without data ends it.
+    #[serde(default)]
+    pub terminator: Option<String>,
+}
+
+/// How a declared stream is framed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StreamFormat {
+    /// Server-Sent Events (`sse`).
+    Sse,
+    /// Newline-delimited JSON (`json`).
+    Json,
+}
+
+impl<'de> Deserialize<'de> for Streaming {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct StreamingVisitor;
+        impl<'de> Visitor<'de> for StreamingVisitor {
+            type Value = Streaming;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a boolean or a streaming mapping")
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                flag: bool,
+            ) -> std::result::Result<Streaming, E> {
+                Ok(Streaming::Flag(flag))
+            }
+            fn visit_map<A: MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> std::result::Result<Streaming, A::Error> {
+                StreamingMapping::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                    .map(|mapping| Streaming::Mapping(Box::new(mapping)))
+            }
+        }
+        deserializer.deserialize_any(StreamingVisitor)
+    }
 }
 
 impl Streaming {
+    /// Whether the extension declares a stream: every mapping and `true` do;
+    /// `false` declares none, so the response's media types decide, as for an
+    /// operation without the extension.
+    #[must_use]
+    pub fn declares_stream(&self) -> bool {
+        !matches!(self, Streaming::Flag(false))
+    }
+
+    /// The mapping, when the extension is written as one.
+    #[must_use]
+    pub fn mapping(&self) -> Option<&StreamingMapping> {
+        match self {
+            Streaming::Mapping(mapping) => Some(mapping),
+            Streaming::Flag(_) => None,
+        }
+    }
+
+    /// Whether the stream is Server-Sent Events rather than newline-delimited
+    /// JSON. Measured at Fern 5.20.0, only `format: sse` is SSE: `format: json`,
+    /// a `stream-condition` naming no format and the boolean `true` all stream
+    /// JSON lines, whatever media types the response declares.
+    #[must_use]
+    pub fn is_sse(&self) -> bool {
+        self.mapping()
+            .is_some_and(|mapping| mapping.format == Some(StreamFormat::Sse))
+    }
+
+    /// Whether the extension makes the operation stream without a
+    /// `stream-condition`: the boolean `true`, or a mapping naming a `format`.
+    /// A mapping naming neither leaves the operation to its response's media
+    /// types, as if it declared no extension (Fern streams `{}` over a
+    /// `text/event-stream` response and buffers it over an `application/json`
+    /// one).
+    #[must_use]
+    pub fn streams_unconditionally(&self) -> bool {
+        match self {
+            Streaming::Flag(flag) => *flag,
+            Streaming::Mapping(mapping) => {
+                self.condition_property().is_none() && mapping.format.is_some()
+            }
+        }
+    }
+
     /// The request property the condition names, with its `$request.` prefix
     /// stripped. `None` when the operation streams unconditionally.
     #[must_use]
     pub fn condition_property(&self) -> Option<&str> {
-        self.stream_condition
+        self.mapping()?
+            .stream_condition
             .as_deref()
             .map(strip_selector_prefix)
             .filter(|property| !property.is_empty())
+    }
+
+    /// The SSE `data` payload that ends the stream, when one is declared.
+    #[must_use]
+    pub fn terminator(&self) -> Option<&str> {
+        self.mapping()?.terminator.as_deref()
     }
 }
 
@@ -1016,25 +1129,60 @@ pub struct Response {
 
 /// A media-type object carrying the body/response schema.
 #[derive(Debug, Default, Clone, Deserialize)]
+#[serde(from = "MediaTypeDecl")]
 pub struct MediaType {
     /// Method name for this request representation, in the canonical spelling.
-    #[serde(rename = "x-crozier-sdk-method-name", default)]
     sdk_method_name_crozier: Option<String>,
     /// Fern's spelling, read when the canonical one is absent.
-    #[serde(rename = "x-fern-sdk-method-name", default)]
     sdk_method_name_fern: Option<String>,
-    /// The schema for this media type.
-    #[serde(default)]
+    /// The schema for this media type. A `text/event-stream` media type may
+    /// declare its schema per item as `itemSchema` instead, which Fern types each
+    /// streamed event from; [`load`] moves that item schema here when no `schema`
+    /// is declared beside it.
     pub schema: Option<Schema>,
+    /// The per-item schema as written (`itemSchema`), until [`load`] reads it.
+    /// Fern reads it only on `text/event-stream`: on `application/json` it types
+    /// the body `typing.Any`, as a media type declaring no schema.
+    item_schema: Option<Schema>,
     /// Optional example value for the media payload.
-    #[serde(default)]
     pub example: Option<serde_json::Value>,
     /// Named examples for the media payload, in declaration order.
-    #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
     /// Per-part multipart serialization metadata.
-    #[serde(default)]
     pub encoding: IndexMap<String, Encoding>,
+}
+
+/// A media-type object as written, before its `itemSchema` folds into `schema`.
+#[derive(Deserialize)]
+struct MediaTypeDecl {
+    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    sdk_method_name_crozier: Option<String>,
+    #[serde(rename = "x-fern-sdk-method-name", default)]
+    sdk_method_name_fern: Option<String>,
+    #[serde(default)]
+    schema: Option<Schema>,
+    #[serde(rename = "itemSchema", default)]
+    item_schema: Option<Schema>,
+    #[serde(default)]
+    example: Option<serde_json::Value>,
+    #[serde(default)]
+    examples: IndexMap<String, ParameterExample>,
+    #[serde(default)]
+    encoding: IndexMap<String, Encoding>,
+}
+
+impl From<MediaTypeDecl> for MediaType {
+    fn from(decl: MediaTypeDecl) -> Self {
+        MediaType {
+            sdk_method_name_crozier: decl.sdk_method_name_crozier,
+            sdk_method_name_fern: decl.sdk_method_name_fern,
+            schema: decl.schema,
+            item_schema: decl.item_schema,
+            example: decl.example,
+            examples: decl.examples,
+            encoding: decl.encoding,
+        }
+    }
 }
 
 impl MediaType {
@@ -2049,6 +2197,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // before anything reads the map, so the validation below and every later pass
     // see the Security Scheme Object the reference names.
     normalize_security_scheme_refs(&mut doc);
+    normalize_event_stream_item_schemas(&mut doc);
     // An apiKey scheme's `name` (the header/query/cookie carrying the key) is
     // required by OpenAPI; without it the generated header name would be empty.
     // Fail at the boundary rather than emit a broken client.
@@ -3384,6 +3533,27 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
         }
     }
     response.clone()
+}
+
+/// Type a `text/event-stream` response declaring only an `itemSchema` from that
+/// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
+/// wins, and any other media type's `itemSchema` is not read at all.
+fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
+    let fold = |response: &mut Response| {
+        if let Some(media) = response.content.get_mut("text/event-stream") {
+            if media.schema.is_none() {
+                media.schema = media.item_schema.take();
+            }
+        }
+    };
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            op.responses.values_mut().for_each(fold);
+        }
+    }
+    // A shared response is folded before `normalize_responses` inlines it.
+    doc.components.responses.values_mut().for_each(fold);
 }
 
 /// Inline every `components.responses` `$ref` an operation points at, so generation

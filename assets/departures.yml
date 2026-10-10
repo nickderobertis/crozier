@@ -289,3 +289,20 @@
     Constructor examples fail to bind because their required field is missing;
     method examples pass an argument the generated method does not accept.
   evidence: docs/departures/evidence/sdk-variable-docs-examples.md
+
+- id: stream-reference-return-type
+  kind: fern-defect
+  trigger: >-
+    A streaming method (Server-Sent Events or newline-delimited JSON) whose
+    chunk type is not `bytes`: its heading line in `reference.md`.
+  fern: >-
+    The heading's return annotation `-> typing.Iterator[bytes]`, whatever the
+    method yields.
+  crozier: >-
+    The annotation the sync method declares, `-> typing.Iterator[T]` for its
+    chunk type `T`.
+  reason: >-
+    The docs contradict the generated code: `reference.md` documents a return
+    type the method does not have, since iterating it yields parsed `T`
+    chunks, never `bytes`.
+  evidence: docs/departures/evidence/stream-reference-return-type.md

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "zylon-private-gpt",
+  "corpus_spec_ref": "8119842ae6f1f5ecfaf42b06fa0d1ffec675def4",
+  "corpus_spec_url": "https://raw.githubusercontent.com/zylon-ai/private-gpt/8119842ae6f1f5ecfaf42b06fa0d1ffec675def4/fern/openapi/openapi.json"
+}

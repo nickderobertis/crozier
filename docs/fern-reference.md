@@ -131,7 +131,7 @@ The ignore, enum and type rows are reconciled with real CLI output by
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. |
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | request-body media | Each named representation generates its own method; the crozier spelling wins on that media node. |
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
-| `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
+| `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response: `format: sse` as Server-Sent Events, which a `terminator` ends; `true` or `format: json` as JSON lines; `false`, like no extension, leaves the response's media types to decide. A `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name and, in Python-enums mode, description for each value. |
 | `x-fern-type` | `x-crozier-type` | boolean schema | `literal<true>` and `literal<false>` preserve a boolean literal annotation. |
 | `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |

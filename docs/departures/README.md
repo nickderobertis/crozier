@@ -321,4 +321,13 @@ when the two differ.
 - **Why:** Constructor examples fail to bind because their required field is missing; method examples pass an argument the generated method does not accept.
 - **Evidence:** [`docs/departures/evidence/sdk-variable-docs-examples.md`](../../docs/departures/evidence/sdk-variable-docs-examples.md)
 
+### `stream-reference-return-type`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A streaming method (Server-Sent Events or newline-delimited JSON) whose chunk type is not `bytes`: its heading line in `reference.md`.
+- **Fern writes:** The heading's return annotation `-> typing.Iterator[bytes]`, whatever the method yields.
+- **crozier writes:** The annotation the sync method declares, `-> typing.Iterator[T]` for its chunk type `T`.
+- **Why:** The docs contradict the generated code: `reference.md` documents a return type the method does not have, since iterating it yields parsed `T` chunks, never `bytes`.
+- **Evidence:** [`docs/departures/evidence/stream-reference-return-type.md`](../../docs/departures/evidence/stream-reference-return-type.md)
+
 <!-- END GENERATED CATALOG -->

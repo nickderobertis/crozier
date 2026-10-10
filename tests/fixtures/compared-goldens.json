@@ -101,6 +101,10 @@
     "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected": {},
     "docs/openapi-surface/handwritten/error-body-shapes/fern-expected": {},
+    "docs/openapi-surface/handwritten/event-stream-binary-download/fern-expected": {},
+    "docs/openapi-surface/handwritten/event-stream-const-tagged-union/fern-expected": {},
+    "docs/openapi-surface/handwritten/event-stream-event-dispatch/fern-expected": {},
+    "docs/openapi-surface/handwritten/event-stream-item-schema/fern-expected": {},
     "docs/openapi-surface/handwritten/float-typed-properties/fern-expected": {},
     "docs/openapi-surface/handwritten/format-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/garden-crown/fern-expected": {},
@@ -158,6 +162,12 @@
     "docs/openapi-surface/handwritten/skyglass-observation-date/fern-expected": {},
     "docs/openapi-surface/handwritten/slashless-json-response/fern-expected": {},
     "docs/openapi-surface/handwritten/sonar-packet-envelope/fern-expected": {},
+    "docs/openapi-surface/handwritten/stream-condition-ref-body-header/fern-expected": {},
+    "docs/openapi-surface/handwritten/stream-condition-shared-body/fern-expected": {},
+    "docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected": {},
+    "docs/openapi-surface/handwritten/streaming-extension-boolean/fern-expected": {},
+    "docs/openapi-surface/handwritten/streaming-extension-sse-format/fern-expected": {},
+    "docs/openapi-surface/handwritten/streaming-extension-terminator/fern-expected": {},
     "docs/openapi-surface/handwritten/suffixed-status-keys/fern-expected": {},
     "docs/openapi-surface/handwritten/turbine-pulse-counter/fern-expected": {},
     "docs/openapi-surface/handwritten/union-sample/fern-expected": {},
@@ -1135,6 +1145,12 @@
     "tests/fixtures/zoonk/expected": {},
     "tests/fixtures/zulip-jentic-entry/expected": {},
     "tests/fixtures/zulip-jentic/expected": {},
-    "tests/fixtures/zulip/expected": {}
+    "tests/fixtures/zulip/expected": {},
+    "tests/fixtures/zylon-private-gpt/expected": {},
+    "tests/fixtures/zylon-private-gpt/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    }
   }
 }
