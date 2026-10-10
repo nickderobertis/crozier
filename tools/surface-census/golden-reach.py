@@ -909,6 +909,11 @@ def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]
                 f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; "
                 "re-run `just handwritten-reach`"
             )
+        if int(row["regions_executed"]) > int(row["regions"]):
+            fail(
+                f"{path}:{number} executes {row['regions_executed']} of only {row['regions']} regions, "
+                "a measurement no run can take; re-run `just handwritten-reach`"
+            )
         rows.append(
             Measurement(
                 row["fixture"],

@@ -493,6 +493,7 @@ class ReportTests(unittest.TestCase):
             "short-row": ([f"fx\tflag-set\t{site}\t-\t1"], "is not 6 filled cells"),
             "empty-cell": ([f"fx\tflag-set\t{site}\t\t1\t1"], "is not 6 filled cells"),
             "fractional-count": ([f"fx\tflag-set\t{site}\t-\t1.5\t2"], "is not 6 filled cells"),
+            "more-executed-than-regions": ([f"fx\tflag-set\t{site}\t-\t3\t2"], "executes 3 of only 2 regions"),
         }
         gates = self.repo / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
         for case, (rows, message) in cases.items():
