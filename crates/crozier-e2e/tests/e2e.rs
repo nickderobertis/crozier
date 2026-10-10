@@ -19825,6 +19825,7 @@ assert asyncio.run(asynchronous._.getlocales()).default == "en"
             .args(["-c", &script(call)])
             .current_dir(sdk.join("src"))
             .env("PYTHONDONTWRITEBYTECODE", "1")
+            .env("PYTHON_COLORS", "0")
             .output()
             .expect("drive the generated client");
         assert!(
@@ -19836,7 +19837,8 @@ assert asyncio.run(asynchronous._.getlocales()).default == "en"
         assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), sent);
 
         // Fern's tree for the fixture fails the documented import; a copy is
-        // imported so the committed golden gains no bytecode.
+        // imported so the committed golden gains no bytecode. PYTHON_COLORS=0
+        // keeps a CI FORCE_COLOR from splitting the matched traceback line.
         if call == lamp_call {
             let fern_src = dir.path().join("fern-src");
             copy_dir(&lamps.join("fern-expected/src"), &fern_src);
@@ -19844,6 +19846,7 @@ assert asyncio.run(asynchronous._.getlocales()).default == "en"
                 .args(["-c", &script(call)])
                 .current_dir(&fern_src)
                 .env("PYTHONDONTWRITEBYTECODE", "1")
+                .env("PYTHON_COLORS", "0")
                 .output()
                 .expect("import Fern's tree");
             let stderr = String::from_utf8_lossy(&fern.stderr);
