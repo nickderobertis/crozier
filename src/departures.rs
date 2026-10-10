@@ -1483,6 +1483,17 @@ fn empty_namespace_package_file(context: &Context, rel: &str, side: Side) -> boo
     }
 }
 
+/// The seven lines Fern's README raw-response snippet walks its `pager` with.
+const PAGER_WALK: [&str; 7] = [
+    "print(pager.response)  # access the typed response for the first page",
+    "for item in pager:",
+    "    print(item)  # access the underlying object(s)",
+    "for page in pager.iter_pages():",
+    "    print(page.response)  # access the typed response for each page",
+    "    for item in page:",
+    "        print(item)  # access the underlying object(s)",
+];
+
 /// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
 /// its pager documentation is undone — the `Pagination` table-of-contents entry,
 /// the `## Pagination` section, and the raw-response snippet walking a `pager`
@@ -1523,7 +1534,8 @@ fn flat_pagination_pager_docs(pair: &Pair<'_>) -> Result<Option<Region>, String>
                 .get(index + 3)
                 .and_then(|call| call.strip_prefix("pager = client.")),
         ) {
-            if let Some((callee, arguments)) = call.split_once('(') {
+            let walked = lines.get(index + 4..index + 11) == Some(&PAGER_WALK[..]);
+            if let (true, Some((callee, arguments))) = (walked, call.split_once('(')) {
                 let (path, method) = callee.rsplit_once('.').unwrap_or(("", callee));
                 let raw = if path.is_empty() {
                     format!("response = client.with_raw_response.{method}({arguments}")
@@ -3038,6 +3050,14 @@ mod tests {
         other[0] = "- [Exceptions](#exceptions)";
         assert!(
             flat_pagination_pager_docs(&pair("README.md", &fern, &other))
+                .unwrap()
+                .is_none()
+        );
+        // Nor is a snippet whose walk is not Fern's pager walk.
+        let mut walked = fern;
+        walked[16] = "    print(page.headers)";
+        assert!(
+            flat_pagination_pager_docs(&pair("README.md", &walked, &crozier))
                 .unwrap()
                 .is_none()
         );
