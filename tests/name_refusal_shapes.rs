@@ -247,36 +247,36 @@ fn a_header_parameter_enum_named_like_a_root_schema_still_generates() {
     }
 }
 
-/// hellopatient's shape: a body property named like the operation's path
+/// A real-world overlay's shape: a body property named like the operation's path
 /// parameter, which `RENAME` (blank by default) can rename clear of it.
 const PATH_PARAMETER_BODY: &str = r#"paths:
-  /practice/{practice_id}/service-metadata:
+  /harbor/{harbor_id}/berth-assignments:
     post:
-      operationId: createServiceMetadata
+      operationId: createBerthAssignment
       parameters:
-        - {name: practice_id, in: path, required: true, schema: {type: string}}
+        - {name: harbor_id, in: path, required: true, schema: {type: string}}
       requestBody:
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/PracticeServiceMetadataCreate'}
+            schema: {$ref: '#/components/schemas/HarborBerthAssignmentCreate'}
       responses: {'200': {description: ok}}
-  /practice/{practice_id}/intents:
+  /harbor/{harbor_id}/voyages:
     post:
-      operationId: createIntent
+      operationId: createVoyage
       parameters:
-        - {name: practice_id, in: path, required: true, schema: {type: string}}
+        - {name: harbor_id, in: path, required: true, schema: {type: string}}
       requestBody:
         content:
           application/json:
             schema:
               type: object
-              properties: {practice_id: {type: string RENAME}}
+              properties: {harbor_id: {type: string RENAME}}
       responses: {'200': {description: ok}}
 components:
   schemas:
-    PracticeServiceMetadataCreate:
+    HarborBerthAssignmentCreate:
       type: object
-      properties: {practice_id: {type: string RENAME}, service_name: {type: string}}
+      properties: {harbor_id: {type: string RENAME}, vessel_name: {type: string}}
 "#;
 
 #[test]
@@ -284,7 +284,7 @@ fn a_body_property_named_like_a_path_parameter_is_refused() {
     assert_refused(
         &PATH_PARAMETER_BODY.replace(" RENAME", ""),
         "request-property-name-collision",
-        r#"POST /practice/{practice_id}/service-metadata body property "practice_id" collides with another request property"#,
+        r#"POST /harbor/{harbor_id}/berth-assignments body property "harbor_id" collides with another request property"#,
     );
 }
 
@@ -293,9 +293,9 @@ fn a_body_property_renamed_clear_of_a_path_parameter_generates() {
     // Either spelling of the property-name extension, on a referenced and an
     // inline body alike, gives the property a declared name Fern accepts.
     for rename in [
-        ", x-fern-property-name: body_practice_id",
-        ", x-crozier-property-name: body_practice_id",
-        ", x-crozier-property-name: body_practice_id, x-fern-property-name: other_practice_id",
+        ", x-fern-property-name: body_harbor_id",
+        ", x-crozier-property-name: body_harbor_id",
+        ", x-crozier-property-name: body_harbor_id, x-fern-property-name: other_harbor_id",
     ] {
         let dir = tempfile::tempdir().expect("temp dir");
         let spec = write(dir.path(), &PATH_PARAMETER_BODY.replace(" RENAME", rename));
@@ -313,6 +313,6 @@ fn a_blank_property_name_leaves_the_collision_refused() {
     assert_refused(
         &PATH_PARAMETER_BODY.replace(" RENAME", ", x-fern-property-name: ' '"),
         "request-property-name-collision",
-        r#"body property "practice_id" collides with another request property"#,
+        r#"body property "harbor_id" collides with another request property"#,
     );
 }

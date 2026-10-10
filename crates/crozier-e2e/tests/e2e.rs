@@ -19561,7 +19561,7 @@ fn sdk_env_renamed_properties_keep_their_json_keys_on_the_wire() {
         .arg(fixture_dir("crozier-property-name").join("openapi.yml"))
         .arg("--output")
         .arg(&sdk)
-        .args(["--package-name", "practice"])
+        .args(["--package-name", "harbor"])
         .assert()
         .success();
     let script = r#"
@@ -19570,18 +19570,18 @@ import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs
 
-from practice import PracticeApi
-from practice.practice import CreateInsuranceProductRequestCoverage
+from harbor import HarborApi
+from harbor.harbor import CreateMooringPermitRequestVessel
 
 RESPONSES = {
-    "/practice/p-1/service-metadata": {
+    "/harbor/h-1/berth-assignments": {
         "id": "m-1",
-        "practice_id": "p-owner",
-        "service_name": "checkup",
-        "displayName": "Checkup",
+        "harbor_id": "h-owner",
+        "vessel_name": "aurora",
+        "displayName": "Aurora",
     },
-    "/practice/p-1/intents": {"id": "i-1", "intent": "book"},
-    "/practice/p-1/insurance-products": {"kind": "opened", "practice_id": "p-opened"},
+    "/harbor/h-1/voyages": {"id": "i-1", "route": "north"},
+    "/harbor/h-1/mooring-permits": {"kind": "opened", "harbor_id": "h-opened"},
 }
 sent = []
 
@@ -19611,30 +19611,30 @@ class Handler(BaseHTTPRequestHandler):
 
 server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
 threading.Thread(target=server.serve_forever, daemon=True).start()
-client = PracticeApi(base_url=f"http://127.0.0.1:{server.server_address[1]}")
-metadata = client.practice.create_service_metadata(
-    "p-1",
-    practice_service_metadata_create_practice_id="p-body",
-    service_name="checkup",
+client = HarborApi(base_url=f"http://127.0.0.1:{server.server_address[1]}")
+assignment = client.harbor.create_berth_assignment(
+    "h-1",
+    harbor_berth_assignment_create_harbor_id="h-body",
+    vessel_name="aurora",
 )
-client.practice.create_intent("p-1", practice_intent_create_practice_id="p-intent", intent="book")
-event = client.practice.create_insurance_product(
-    "p-1",
-    insurance_product_practice_id="p-product",
-    coverage=CreateInsuranceProductRequestCoverage(plan="gold"),
+client.harbor.create_voyage("h-1", harbor_voyage_create_harbor_id="h-route", route="north")
+event = client.harbor.create_mooring_permit(
+    "h-1",
+    mooring_permit_harbor_id="h-permit",
+    vessel=CreateMooringPermitRequestVessel(hull="steel"),
 )
-client.practice.create_note("p-1", note_practice_id="p-note", body="hello")
+client.harbor.create_log_entry("h-1", log_entry_harbor_id="h-log", body="hello")
 
 assert sent == [
-    ("/practice/p-1/service-metadata", {"practice_id": "p-body", "service_name": "checkup"}),
-    ("/practice/p-1/intents", {"practice_id": "p-intent", "intent": "book"}),
-    ("/practice/p-1/insurance-products", {"practice_id": "p-product", "coverage": {"planCode": "gold"}}),
-    ("/practice/p-1/notes", {"practice_id": "p-note", "body": "hello"}),
+    ("/harbor/h-1/berth-assignments", {"harbor_id": "h-body", "vessel_name": "aurora"}),
+    ("/harbor/h-1/voyages", {"harbor_id": "h-route", "route": "north"}),
+    ("/harbor/h-1/mooring-permits", {"harbor_id": "h-permit", "vessel": {"hullCode": "steel"}}),
+    ("/harbor/h-1/log-entries", {"harbor_id": "h-log", "body": "hello"}),
 ], sent
-assert (metadata.owning_practice_id, metadata.label) == ("p-owner", "Checkup"), metadata
-assert metadata.dict()["practice_id"] == "p-owner", metadata.dict()
-assert metadata.dict()["displayName"] == "Checkup", metadata.dict()
-assert (event.kind, event.opened_practice_id) == ("opened", "p-opened"), event
+assert (assignment.owning_harbor_id, assignment.label) == ("h-owner", "Aurora"), assignment
+assert assignment.dict()["harbor_id"] == "h-owner", assignment.dict()
+assert assignment.dict()["displayName"] == "Aurora", assignment.dict()
+assert (event.kind, event.opened_harbor_id) == ("opened", "h-opened"), event
 server.shutdown()
 print("ok")
 "#;

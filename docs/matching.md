@@ -1352,8 +1352,9 @@ The precedence lives in the field accessors (`Operation::audiences`,
 `Schema::enum_member_names`, `Schema::declared_type_name`,
 `Schema::property_name`); any future extension inherits the policy by default.
 The `crozier-property-name` feature target pins `property-name` against Fern:
-hellopatient's overlay renames request body properties clear of the same-named
-`practice_id` path parameter, and the target reproduces that through every place
+a real-world overlay renames request body properties clear of a same-named path
+parameter (the specification it was observed on is held privately), and the
+target reproduces that over a synthetic `harbor_id` API through every place
 a property becomes a Python name.
 
 Four of them shape the client tree and its methods, and corpus row 108
@@ -1534,8 +1535,9 @@ in `.fern/metadata.json`'s `generatorConfig`, which the comparison accepts as th
 `fern-metadata-generator-config` departure, so the provenance difference does not
 gate.
 
-A configured name can equal a sub-client's own class name — hellopatient's
-`TinyUrlClient` over a `TinyURL` resource, or `EcosystemClient` over Apideck's
+A configured name can equal a sub-client's own class name — a privately held
+specification whose configured client name equals one of its own resource
+sub-clients (that evidence is held privately), or `EcosystemClient` over Apideck's
 `Ecosystem` resource. The root `client.py` defines that class itself, so an
 unaliased import would leave the sub-client property typed as the root client.
 Fern imports each colliding class as `{module}_client_{Class}`
