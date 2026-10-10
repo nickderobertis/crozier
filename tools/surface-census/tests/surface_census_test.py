@@ -14824,7 +14824,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(36, len(rows))
+        self.assertEqual(37, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
