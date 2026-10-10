@@ -147,10 +147,19 @@ server-sent-event method `-> typing.Iterator[bytes]` while the method returns
 byte.
 
 The hand-written fixture of `multipart-inline-object-part-json-encoded`
-carries the inline object part without a file part. With a required file part
-beside it, Fern's worked calls leave the file argument out, an example that
-does not bind and a Fern defect of its own, so the fixture isolates the JSON
-encoding the shape is about.
+carries the inline object part without a file part, so it proves the JSON
+encoding but not the complete trigger, which puts a binary part beside the
+object. With a required file part, Fern's worked calls leave the file argument
+out, an example that does not bind and a Fern defect of its own. With an
+optional `scan` part (`type: string, format: binary`), the pinned pair
+generates in both enum modes. Its `README.md` sync and async examples and
+`reference.md` pass `scan="example_scan"`, which binds and is a valid
+`core.File`. crozier matches `reference.md` and the encoding itself byte for
+byte (`"label": json.dumps(jsonable_encoder(label))`, the hoisted
+`UploadSpecimenRequestLabel`), but its `README.md` leaves the `scan` line out of
+both examples (lines 45 and 67), under `python_enums` and literals alike. That
+is a generator change in the README example rendering. The manager handed it,
+and this shape's completed proof, to the examples-docs work.
 
 ## The real witnesses
 
