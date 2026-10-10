@@ -23,13 +23,13 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 638 features. By category, 494 are `golden`, 52
-`limitations`, 70 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 665 features. By category, 494 are `golden`, 52
+`limitations`, 97 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 638
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 665
 split four ways:
 
-- **492 carry byte-match evidence against a registered real-world
+- **493 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **70 rest on a hand-written fixture, a weaker proof than a real
+- **97 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. Fifty-five read `search-incomplete`. Of those,
+  decided and none is registrable. Eighty-two read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -87,23 +87,23 @@ split four ways:
   converter example that fails publisher provenance.
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  492 and never count as a real-specification match.
-- **10 remain unproven.** 8 are the `FIXTURE` `gap` rows. Each is a feature the
+  493 and never count as a real-specification match.
+- **9 remain unproven.** 8 are the `FIXTURE` `gap` rows. Each is a feature the
   naming and example predicates of #361 brought inside the census that no
   registered golden source declares, and none has had a witness search, so each
   reads `not searched` ([Unproven features, named](#unproven-features-named)):
   `operation-id-digit-leading-method`, `schema-example-fractional-on-integer`,
   `schema-example-array-null-element`, `schema-example-temporal-duplicate-element`,
   `schema-example-union-ref-sentinel`, `schema-example-on-ref-to-object`,
-  `schema-example-on-ref-to-enum` and `schema-example-on-ref-to-union`. 2 are
-  `golden` rows resting only on residual goldens whose code moves no
-  byte-matched file: `schema-example-null` and `extension-server`
+  `schema-example-on-ref-to-enum` and `schema-example-on-ref-to-union`. 1 is a
+  `golden` row resting only on residual goldens whose code moves no
+  byte-matched file: `schema-example-null`
   ([the attribution](#golden-rows-resting-only-on-residual-goldens)). The
   other 0 are `golden` rows declared only by corpus rows that carry no golden;
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-492 + 66 + 70 + 10 = 638.
+493 + 66 + 97 + 9 = 665.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 494 `golden` rows declare 965 handling sites in
@@ -210,13 +210,13 @@ real-specification match.
   hand-written match: [`353-method-optional-array`](openapi-surface/authored-probes/353-method-optional-array/), [`353-method-required-array`](openapi-surface/authored-probes/353-method-required-array/), [`353-promoted-required-array`](openapi-surface/authored-probes/353-promoted-required-array/), [`353-solo-required-array`](openapi-surface/authored-probes/353-solo-required-array/), [`353-string-default-control`](openapi-surface/authored-probes/353-string-default-control/), [`353-string-default-probe`](openapi-surface/authored-probes/353-string-default-probe/), [`353-string-default-scalar`](openapi-surface/authored-probes/353-string-default-scalar/), [`356-defs-pointer`](openapi-surface/authored-probes/356-defs-pointer/), [`356-defs-property`](openapi-surface/authored-probes/356-defs-property/), [`356-defs-required-property`](openapi-surface/authored-probes/356-defs-required-property/), [`358-absent-allof-member`](openapi-surface/authored-probes/358-absent-allof-member/), [`358-absent-array-item`](openapi-surface/authored-probes/358-absent-array-item/), [`358-absent-items-segment`](openapi-surface/authored-probes/358-absent-items-segment/), [`358-absent-map-value`](openapi-surface/authored-probes/358-absent-map-value/), [`358-absent-property`](openapi-surface/authored-probes/358-absent-property/), [`358-absent-request-body`](openapi-surface/authored-probes/358-absent-request-body/), [`358-absent-required-property`](openapi-surface/authored-probes/358-absent-required-property/), [`358-absent-response-body`](openapi-surface/authored-probes/358-absent-response-body/), [`358-undeclared-head-properties-required`](openapi-surface/authored-probes/358-undeclared-head-properties-required/), [`376-350-declared-type-name`](openapi-surface/authored-probes/376-350-declared-type-name/), [`376-350-declared-type-name-blank`](openapi-surface/authored-probes/376-350-declared-type-name-blank/), [`376-350-declared-type-name-shared`](openapi-surface/authored-probes/376-350-declared-type-name-shared/), [`376-350-declared-type-name-slash`](openapi-surface/authored-probes/376-350-declared-type-name-slash/), [`376-350-declared-type-name-tilde`](openapi-surface/authored-probes/376-350-declared-type-name-tilde/), [`376-354-model-property-construct`](openapi-surface/authored-probes/376-354-model-property-construct/), [`376-357-tag-only-operation-id`](openapi-surface/authored-probes/376-357-tag-only-operation-id/), [`parity-property-anyof-composed-members`](openapi-surface/authored-probes/parity-property-anyof-composed-members/), [`parity-required-query-array-examples`](openapi-surface/authored-probes/parity-required-query-array-examples/), [`parity-unrequired-tag-variant-classes`](openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/). The `parity-property-` and `parity-unrequired-` cases vary the shapes registered corpus rows 311 and 312 witness once each: an inner `oneOf` and `anyOf` beside a sibling, each with and without a discriminator, and unrequired tags with no `default` under `oneOf` and `anyOf`. `parity-required-query-array-examples` varies the required query array that registered goldens declare on each side of the measured rule — corpus row 316 for a JSON response, `amazonaws.com-cloudformation` for `text/xml` and `query-parameters-openapi` for a required object parameter beside it — in three operations that differ in the decisive attribute alone.
 
 Where crozier deliberately differs from Fern is decided per refusal class in
-[`fern-refusals/`](fern-refusals/README.md). Each of its 39 classes is decided
+[`fern-refusals/`](fern-refusals/README.md). Each of its 40 classes is decided
 `refuse`: crozier refuses those documents with or without `fern-strict`, so no
 class is yet one where crozier generates and Fern does not. A `generate`
 decision, which would write an SDK by default and refuse only under
 `fern-strict`, is the registry's to make, with a wire test proving the SDK.
 
-**What the census still cannot enumerate.** The 638 are what a selector over a
+**What the census still cannot enumerate.** The 665 are what a selector over a
 parsed document can count. What lies outside is a list, not a number, because
 the census cannot measure the population beyond its own reach.
 
@@ -452,483 +452,523 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-120, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+150, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
-- `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` names
-  a relative file; its declaration counts even when the target is outside the
-  registered tree.
-- `info.title:non-ascii` — one per Info Object whose title contains a
-  non-ASCII character; this distinguishes the title probe from its control.
-- `operation.tags:multiple` — one per Operation Object whose `tags` array
-  holds more than one member.
-- `operation.operationId:duplicate` — one per Operation Object whose
-  `operationId` value is declared by more than one Operation Object of the
-  same document, so a value written twice counts two.
-- `openapi.paths:normalized-collision` — one per Paths Object key that
-  collides with at least one other key of the same document after path-
-  template-name normalization, so a two-key collision counts two. The
-  normalization is crozier's own — `naming::field_name` of `src/naming.rs`,
-  the transform that gives a path parameter its Python name and so decides
-  which routes `src/emit.rs` renders as one URL — applied to each
-  `{expression}` and to nothing else, so `/users/{userId}` and
-  `/users/{user_id}` collide while `/{id}/users` and `/users/{id}` do not.
-- `openapi.paths:templated-key` — one per Paths Object key carrying at least
-  one `{expression}` template expression, so a key with two counts one.
-- `openapi.paths:several-template-expressions` — one per Paths Object key
-  carrying more than one `{expression}` template expression, so a key with one
-  counts none and a key with three counts one. The two are separate readings
-  of the same key rather than one selector and a refinement of it: a key with
-  exactly one expression is what tells them apart.
-- `components.schemas:normalized-collision` — one per `components.schemas` key
-  that collides with at least one other key of the same document after class-
-  name normalization, so a two-key collision counts two. The normalization is
-  again crozier's own — `naming::class_name` of `src/naming.rs`, the transform
-  `src/ir.rs`'s `ref_to_class` gives a named schema and so the one that
-  decides which components generate as one class — so `OBRate1_0` and
-  `OB_Rate1_0` collide while `OBRate1` and `OBRate1_0` do not.
-- `components.schemas:nonidentifier-name` — one per component schema name whose
-  Pascal casing contains a character `sanitize_identifier` replaces with `_`.
-- `components.schemas:same-primitive-union` — one per component schema whose
-  `oneOf` (else `anyOf`) holds two or more inline scalar alternatives that all
-  convert to one primitive, with nothing declared beside them — the shape
-  `same_primitive_union_last` of `src/ir.rs` reads and
-  `normalize_same_primitive_unions` of `src/openapi.rs` renames after its last
-  alternative's ordinal. Read at the Components Object, the one position where
-  the name shows; `integer` and `format: int64` convert to different primitives,
-  as Fern keeps them apart.
-- `schema.example:unread-date-time` — one per `format: date-time` Schema Object
-  whose selected example is a string Fern's reading rejects once it has appended
-  `Z` to a value that neither ends in `Z` nor holds a `+`; `datetime_example` of
-  `src/emit.rs` writes Fern's default for it.
-- `mediaType.schema:allof-parent-body` — one per request body's selected JSON
-  media type whose schema `$ref`s a component composed `allOf` of one inline
-  object and one `$ref` base, which another component's `allOf` names in turn,
-  and whose example names a required field of each side: the body whose
-  Markdown examples list their own fields first.
-- `mediaType.example:nested-null-member` — one per request body's selected JSON
-  media type whose example (its `example`, else its first named one) gives
-  `null` to a property a nested object's schema declares and does not require.
-- `mediaType.example:deprecated-property` — one per request body's selected JSON
-  media type whose example names, at any depth, a property whose own schema is
-  marked `deprecated: true` — not one it reaches through a `$ref` or an `allOf`,
-  as `own_deprecated` of `src/ir.rs` reads it.
-- `components.schemas:fields-reach-cycles-unsorted` — one per component schema
-  composing no `oneOf` or `anyOf` whose `properties`, read in order, name
-  members of two or more reference cycles (strongly connected components of the
-  `components.schemas` `$ref` graph), where each cycle's members sorted and the
-  cycles taken in the order the properties first reach them are not in sorted
-  order: the trailing deferred imports `object_deferred_order` of `src/emit.rs`
-  writes in that order.
-- `components.schemas:cycle-into-cycle` — one per component schema composing no
-  `oneOf` or `anyOf` that names a member of a reference cycle with an edge into
-  a different reference cycle the schema names no member of: the case
-  `forward_repair_map` of `src/emit.rs` repairs with the first cycle only.
-- `mediaType.schema:closed-empty-object-property` — one per inline schema
-  `{type: object, additionalProperties: false}` declaring no `properties` that is
-  a property of a request body's selected JSON media type's inline schema: the
-  position `base_type_ref` of `src/ir.rs` types `Dict[str, Any]` where
-  `is_inline_struct` once hoisted an empty model. The same object as an inline
-  success response is corpus row 314's.
-- `schema.type:misspelled-scalar` — one per Schema Object whose `type` names
-  `double`, `int32`, `long`, `bool` or `decimal`, none an OpenAPI type: Fern
-  reads each as unknown, and `base_type_ref` types it `Any` too. `float`, which
-  `normalize_float_type` of `src/openapi.rs` reads as a number, and `int` are
-  corpus row 313's, and kept apart.
-- `securityScheme:$ref` — one per `components.securitySchemes` entry that is a
-  Reference Object rather than a Security Scheme Object, the entry
-  `normalize_security_scheme_refs` of `src/openapi.rs` resolves. The walk counts
-  every Reference Object as `reference.$ref` wherever it stands, so this is read
-  at the Components Object, from that one map's own values.
-- `schema.enum:empty-member` — one per schema with an empty string enum member;
-  `enum_words` names that member EMPTY.
-- `schema.enum:empty-identifier-member` — one per schema with a non-empty
-  string enum member whose normalized identifier is empty; `finalize_enum_ident`
-  supplies `_`.
-- `schema.enum:wildcard-member` — one per schema with a string enum member
-  containing `*`, which `enum_words` spells ALL when it is the whole value and
-  treats as a word boundary otherwise (Tally's `image/*` is `IMAGE`).
-- `schema.enum:apostrophe-member` — one per schema with a string enum member
-  containing an ASCII or curly apostrophe, which `enum_words` removes.
-- `schema.enum:digit-word-member` — one per schema with a UUID-shaped string
-  enum member beginning with exactly one digit before a letter; this is the
-  `digit_word` branch of `uuid_enum_identifier`.
-- `schema.enum:numeric-prefix-member` — one per schema with a string enum
-  member beginning with a canonical integer from 10 to 9999; the numeric
-  prefix is spelled in English by `numeric_enum_identifier`.
-- `schema.enum:leading-zero-member` — one per schema with a string enum member
-  containing a multi-digit leading-zero token, which the canonical numeric
-  reader refuses.
-- `schema.enum:leading-digit-identifier` — one per schema with a string enum
-  member whose normalized identifier still begins with a digit, so
-  `finalize_enum_ident` prefixes `_`.
-- `schema.enum:uuid-member` — one per schema with a UUID-shaped string enum
-  member, which takes `uuid_enum_identifier` rather than `enum_words`.
-- `schema.enum:reserved-member` — one per schema with a string enum member
-  whose normalized visit parameter is reserved, so `finalize_enum_ident`
-  appends `_`.
-- `schema.enum:normalized-collision` — one per schema with two string enum
-  members yielding the same crozier member identifier after normalization.
-- `schema.enum:numeric-member` — one per schema with a numeric enum member;
-  `string_enum_values` does not yield a named member from it.
-- `schema.enum:deburred-member` — one per schema with a string enum member
-  holding a Latin-1 Supplement or Latin Extended-A letter, which
-  `enum_identifier`'s `deburr` folds to ASCII before naming it (`SUBSTÂNCIA` is
-  `SUBSTANCIA`).
-- `schema.enum:letter-run-member` — one per schema with a string enum member
-  whose split words hold consecutive single letters, which `enum_words` joins
-  into one word (`u.s. virgin islands` is `US_VIRGIN_ISLANDS`).
-- `schema.enum:alphanumeric-join-member` — one per schema with a string enum
-  member where `enum_words` joins a word to the one before it: a letter run of
-  at most two after a digits-then-letter word, or a letter-then-digits word
-  after a single letter (`a b12` is `AB12`).
-- `schema.enum:digit-boundary-member` — one per schema with a string enum
-  member whose joined words carry an underscore beside a digit, which
-  `enum_words` collapses (`DB-25` is `DB25`).
-- `schema.enum:single-digit-prefix-member` — one per schema with a string enum
-  member whose leading numeric run, as written, is one digit that `enum_words`
-  spells through `numeric_enum_identifier` (`5G` is `FIVE_G`).
-- `schema.enum:numeric-small-member`, `schema.enum:numeric-tens-member`,
-  `schema.enum:numeric-hundreds-member` and
-  `schema.enum:numeric-thousands-member` — one per schema with a string enum
-  member whose number `enum_words` spells through `numeric_enum_identifier`
-  falls in that function's below-20, 20-to-99, 100-to-999 or 1000-to-9999
-  branch. Each reads the number the function is handed — a zero-led whole value
-  read without its zeros, or a leading run — so `05` is small and `1200 bps`
-  thousands.
-- `operation.operationId:digit-leading-method` — one per Operation Object under
-  the Paths Object whose `operationId`-derived method name starts with a digit,
-  so `sanitize_identifier` prefixes it with `_`. The name is
-  `endpoint_method_name`'s after its tag, group, FastAPI-suffix, duplicate-suffix
-  and template transforms, which the census ports function by function; an
-  operation naming its method by extension, or by no id, is not one.
-- `schema.example:date-time-string` and `schema.example:date-string` — one per
-  schema writing `format: date-time` (or `date`) whose selected example is a
-  string, which `value_from_example` renders through
-  `datetime.datetime.fromisoformat` (or `datetime.date.fromisoformat`).
-- `schema.example:integral-on-number` — one per schema whose primary type is
-  `number` and whose selected example is a JSON integer, which
-  `value_from_example` writes with a `.0` for the float annotation.
-- `schema.example:fractional-on-integer` — one per schema whose primary type is
-  `integer` and whose selected example is a JSON fraction, which
-  `example_matches_type`'s integer arm refuses.
-- `schema.example:empty-array` and `schema.example:empty-object` — one per
-  schema whose selected example is `[]` (or `{}`).
-- `schema.example:array-null-element` — one per schema whose selected example
-  is an array holding a `null`, which `value_from_example`'s list arm replaces
-  with a synthesized element.
-- `schema.example:array-object-element` — one per schema whose selected example
-  is an array holding an object, a nested element the list arm renders through
-  the item type.
-- `schema.example:temporal-duplicate-element` — one per schema whose `items`
-  write `format: date` or `date-time` and whose selected example repeats an
-  element, which the list arm de-duplicates.
-- `schema.example:union-ref-sentinel` — one per schema declaring `oneOf` or
-  `anyOf` whose selected example is an object holding only `$ref`, which
-  `value_from_example`'s union arm answers with its list member.
-- `schema.example:missing-required-field` and `schema.example:undeclared-field`
-  — one per schema with a non-empty `properties` map whose selected example is
-  an object omitting a property `required` names (or holding a key the map does
-  not declare); `example_matches_type`'s object arm refuses either.
-- `schema.example:empty-object-member` and `schema.example:empty-array-member`
-  — one per schema whose selected example is an object one of whose values is
-  `{}` (no argument for an optional model field) or `[]` (no example value for
-  the field).
-- `schema.example:object-on-map` — one per schema writing
-  `additionalProperties` as `true` or a schema, with no non-empty `properties`
-  map, whose selected example is an object: the `Dict` an example renders as a
-  dictionary.
-- `schema.example:outside-enum` — one per schema with a string-valued `enum`
-  whose selected example is a string none of its members is, which
-  `example_matches_type`'s enum arm refuses.
-- `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
-  `schema.example:on-ref-to-union` and `schema.example:on-ref-to-alias` — one
-  per schema with a selected example whose `$ref` resolves, in the document's
-  own `components.schemas`, to a schema declaring a non-empty `properties` map
-  (object), a string-valued `enum` (enum), a `oneOf` or `anyOf` (union), or none
-  of those nor an `allOf` (alias): the named declaration `named_value_inner` and
-  `example_is_object` switch on, reached from the example site. A target
-  declaring a union counts as one before anything else it declares, and an enum
-  before an object.
-- `schema.properties:optional-example` — one per schema one of whose
-  properties its `required` list does not name selects an example: the
-  `Optional` the example arms unwrap first.
-- `parameter.example:non-scalar-query` — one per query Parameter Object
-  declaring an example whose schema, after one local `$ref`, is neither a
-  string, integer, number or boolean nor an array of one, so
-  `build_example_inner` does not render the declared example.
-- `parameter.schema:query-items-union` — one per query Parameter Object whose
-  inline schema is an array whose inline `items` is a `oneOf` (else `anyOf`) of
-  two or more non-null members: the union `hoist_param_enum` hoists as the
-  parameter's `{Param}Item`.
-- `parameter.schema:subset-header-string-default` — one per header Parameter
-  Object declaring a non-empty string `default` whose name rides at least three
-  quarters but not all of the document's operations and is neither a header the
-  transport or an apiKey scheme owns nor `Authorization`: the header
-  `global_headers` promotes as a one-value `Literal`.
-- `parameter.in:absent` — one per inline Parameter Object with a name and an
-  inline schema but no `in` field: the parameter `build_endpoint` skips.
-- `parameter.schema:nullable-array-explode-false` — one per optional form-style
-  query Parameter Object writing `explode: false` whose inline schema is a
-  `nullable: true` array of strings: the list sent unjoined.
-- `parameter.schema:nullable-array-items-oas-three-zero` — one per query Parameter Object
-  of an OpenAPI 3.0 document whose inline array schema's inline `items` is a
-  `nullable: true` scalar: the item nullability the query type drops.
-- `parameter.schema:required-nullable-scalar-oas-three-zero` — one per required query
-  Parameter Object of an OpenAPI 3.0 document whose inline scalar schema is
-  `nullable: true`: the required parameter lowered as optional.
-- `parameter.schema:date-union-query-oneof` — one per query Parameter Object
-  whose inline `oneOf` has an integer member and a `format: date` string
-  member: the union the query serializer converts.
-- `parameter.schema:promoted-date-header` — one per `format: date` header
-  Parameter Object whose name rides at least three quarters of the document's
-  operations and is neither a header the transport or an apiKey scheme owns nor
-  `Authorization`: the client field typed `dt.date`.
-- `parameter.schema:single-required-header` — one per required header
-  Parameter Object of a document with exactly one operation: the header
-  `global_headers` promotes to a required constructor field.
-- `operation.parameters:path-order-oas-three-one` — one per Operation Object of an
-  OpenAPI 3.1 document declaring two or more untitled path parameters in an
-  order other than its URL template's, with no path-level path parameter: the
-  signature `build_endpoint` orders by template position.
-- `mediaType.examples:named-beside-example` and `mediaType.examples:named-only`
-  — one per request body's selected JSON media type writing a named example that
-  resolves to a value, beside a non-null `example` (which `reference.md` then
-  documents) or without one (the first named one is documented).
+- `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` has a non-empty
+  relative file path before an optional `#` fragment; the referring Path Item counts
+  even when the target lies outside the registered source tree
+- `info.title:non-ascii` — one per Info Object whose title contains a non-ASCII
+  character
+- `schema.enum:empty-member` — one per Schema Object with an empty string enum member,
+  which enum_words renders as empty
+- `schema.enum:empty-identifier-member` — one per Schema Object with a non-empty string
+  enum member that normalizes to no identifier characters, which finalize_enum_ident
+  changes to _
+- `schema.enum:wildcard-member` — one per Schema Object with a string enum member
+  containing *, which enum_words spells all when it is the whole value and treats as a
+  word boundary otherwise
+- `schema.enum:apostrophe-member` — one per Schema Object with a string enum member
+  containing an ASCII or curly apostrophe, which enum_words removes
+- `schema.enum:digit-word-member` — one per Schema Object with a UUID-shaped string enum
+  member beginning with exactly one digit before a letter, which digit_word spells in
+  English
+- `schema.enum:numeric-prefix-member` — one per Schema Object with a string enum member
+  beginning with a canonical integer from 10 through 9999, which numeric_enum_identifier
+  spells in English
+- `schema.enum:leading-zero-member` — one per Schema Object with a string enum member
+  containing a multi-digit leading-zero token, which numeric_enum_identifier refuses
+- `schema.enum:leading-digit-identifier` — one per Schema Object with a string enum
+  member whose enum_words result starts with a digit, which finalize_enum_ident prefixes
+  with _
+- `schema.enum:uuid-member` — one per Schema Object with a UUID-shaped string enum
+  member, which enum_identifier sends to uuid_enum_identifier
+- `schema.enum:reserved-member` — one per Schema Object with a string enum member whose
+  normalized visit parameter is reserved and finalize_enum_ident suffixes
+- `schema.enum:normalized-collision` — one per Schema Object with two string enum
+  members that collide after crozier enum identifier normalization
+- `schema.enum:numeric-member` — one per Schema Object with a numeric enum member;
+  string_enum_values does not generate a named member for it
+- `schema.enum:deburred-member` — one per Schema Object with a string enum member
+  holding a Latin-1 Supplement or Latin Extended-A letter, which enum_identifier's
+  deburr folds to ASCII before naming it
+- `schema.enum:letter-run-member` — one per Schema Object with a string enum member
+  whose split words hold consecutive single letters, which enum_words joins into one
+  word (u.s. is US)
+- `schema.enum:alphanumeric-join-member` — one per Schema Object with a string enum
+  member where enum_words joins a word to the one before it: a short letter run after a
+  digits-then-letter word, or a letter-then-digits word after a single letter
+- `schema.enum:digit-boundary-member` — one per Schema Object with a string enum member
+  whose joined words carry an underscore beside a digit, which enum_words collapses
+  (DB-25 is DB25)
+- `schema.enum:single-digit-prefix-member` — one per Schema Object with a string enum
+  member whose leading numeric run, as written, is one digit that enum_words spells
+  through numeric_enum_identifier (5G is FIVE_G)
+- `schema.enum:numeric-small-member` — one per Schema Object with a string enum member
+  whose number enum_words spells through numeric_enum_identifier is below 20, its SMALL-
+  table branch
+- `schema.enum:numeric-tens-member` — one per Schema Object with a string enum member
+  whose number enum_words spells through numeric_enum_identifier is 20 to 99, its tens
+  branch
+- `schema.enum:numeric-hundreds-member` — one per Schema Object with a string enum
+  member whose number enum_words spells through numeric_enum_identifier is 100 to 999,
+  its hundreds branch
+- `schema.enum:numeric-thousands-member` — one per Schema Object with a string enum
+  member whose number enum_words spells through numeric_enum_identifier is 1000 to 9999,
+  its thousands branch
+- `operation.operationId:digit-leading-method` — one per Operation Object under the
+  Paths Object whose operationId-derived method name, after endpoint_method_name's tag,
+  group, FastAPI-suffix and template transforms, starts with a digit, so
+  sanitize_identifier prefixes it with _; an operation naming its method by extension,
+  or by no id, is not one
+- `schema.example:date-time-string` — one per Schema Object writing format date-time
+  whose selected example is a string, which value_from_example renders through
+  datetime.datetime.fromisoformat
+- `schema.example:date-string` — one per Schema Object writing format date whose
+  selected example is a string, which value_from_example renders through
+  datetime.date.fromisoformat
+- `schema.example:integral-on-number` — one per Schema Object whose primary type is
+  number and whose selected example is a JSON integer, which value_from_example writes
+  with a .0 for the float annotation
+- `schema.example:fractional-on-integer` — one per Schema Object whose primary type is
+  integer and whose selected example is a JSON fraction, which example_matches_type's
+  integer arm refuses
+- `schema.example:empty-array` — one per Schema Object whose selected example is an
+  empty array
+- `schema.example:empty-object` — one per Schema Object whose selected example is an
+  empty object
+- `schema.example:array-null-element` — one per Schema Object whose selected example is
+  an array holding a null, which value_from_example's list arm replaces with a
+  synthesized element
+- `schema.example:array-object-element` — one per Schema Object whose selected example
+  is an array holding an object, a nested element value_from_example renders through the
+  item type
+- `schema.example:temporal-duplicate-element` — one per Schema Object whose items write
+  format date or date-time and whose selected example is an array repeating an element,
+  which value_from_example's list arm de-duplicates
+- `schema.example:union-ref-sentinel` — one per Schema Object declaring oneOf or anyOf
+  whose selected example is an object holding only $ref, which value_from_example's
+  union arm answers with its list member
+- `schema.example:missing-required-field` — one per Schema Object with a non-empty
+  properties map whose selected example is an object omitting a property its required
+  list names, which example_matches_type's object arm refuses
+- `schema.example:undeclared-field` — one per Schema Object with a non-empty properties
+  map whose selected example is an object holding a key that map does not declare, which
+  example_matches_type's object arm refuses
+- `schema.example:empty-object-member` — one per Schema Object whose selected example is
+  an object one of whose values is an empty object, which selects no argument for an
+  optional model field
+- `schema.example:empty-array-member` — one per Schema Object whose selected example is
+  an object one of whose values is an empty array, which carries no example value for
+  that field
+- `schema.example:object-on-map` — one per Schema Object writing additionalProperties as
+  true or a schema, with no non-empty properties map, whose selected example is an
+  object: a Dict the example renders as a dictionary
+- `schema.example:outside-enum` — one per Schema Object with a string-valued enum whose
+  selected example is a string none of its members is, which example_matches_type's enum
+  arm refuses
+- `schema.example:on-ref-to-object` — one per Schema Object with a selected example
+  whose $ref resolves, in this document's components.schemas, to a schema declaring a
+  non-empty properties map and no oneOf, anyOf or string-valued enum: the named object
+  example_is_object and named_value_inner take
+- `schema.example:on-ref-to-enum` — one per Schema Object with a selected example whose
+  $ref resolves in components.schemas to a schema declaring a string-valued enum and no
+  oneOf or anyOf: the named enum
+- `schema.example:on-ref-to-union` — one per Schema Object with a selected example whose
+  $ref resolves in components.schemas to a schema declaring oneOf or anyOf: the named
+  union
+- `schema.example:on-ref-to-alias` — one per Schema Object with a selected example whose
+  $ref resolves in components.schemas to a schema declaring none of a non-empty
+  properties map, allOf, oneOf, anyOf or a string-valued enum: the named alias the
+  example arms follow to its target
+- `schema.properties:optional-example` — one per Schema Object one of whose properties
+  its required list does not name selects an example: the optional field the example
+  arms unwrap first
+- `parameter.example:non-scalar-query` — one per query Parameter Object declaring an
+  example whose schema, after one local $ref, is neither a string, integer, number or
+  boolean nor an array of one, so build_example_inner does not render the declared
+  example
+- `parameter.schema:query-items-union` — one per query Parameter Object whose inline
+  schema is an array whose inline `items` is a `oneOf` (else `anyOf`) of two or more
+  non-null members, which `hoist_param_enum` of `src/ir.rs` hoists as the `{Param}Item`
+  union
+- `parameter.in:absent` — one per inline Parameter Object with a name and schema but no
+  in field
+- `parameter.schema:nullable-array-explode-false` — one per optional form query string
+  array with nullable true and explode false
+- `parameter.schema:nullable-array-items-oas-three-zero` — one per OpenAPI 3.0 query
+  array with inline nullable scalar items
+- `parameter.schema:required-nullable-scalar-oas-three-zero` — one per required OpenAPI
+  3.0 query parameter with inline nullable scalar schema
+- `parameter.schema:date-union-query-oneof` — one per inline query oneOf with integer
+  and date-formatted string members
+- `parameter.schema:promoted-date-header` — one per date header carried by at least
+  three quarters of operations
+- `parameter.schema:single-required-header` — one per required header on a document's
+  only operation
+- `operation.parameters:path-order-oas-three-one` — one per OpenAPI 3.1 operation with
+  untitled operation path parameters in a different order from the template and no path-
+  level path parameters
+- `parameter.schema:subset-header-string-default` — one per header Parameter Object
+  declaring a non-empty string `default` whose name rides at least three quarters but
+  not all of the document's operations and is neither a header the transport or an
+  apiKey scheme owns nor `Authorization`, which `global_headers` of `src/ir.rs` promotes
+  as a one-value `Literal`
+- `mediaType.examples:named-beside-example` — one per request body's selected JSON media
+  type writing both a non-null example and a named example that resolves to a value, so
+  reference.md documents the singular example
+- `mediaType.examples:named-only` — one per request body's selected JSON media type
+  writing a named example that resolves to a value and no non-null example, so
+  reference.md documents the first named one
 - `operation.responses:wildcard-binary` — one per Operation Object whose success
-  response, chosen as `has_wildcard_binary_response` chooses it, serves `*/*`
-  with an inline string schema of format `binary`: the endpoint mode
-  `build_example_inner` reads before it renders any parameter example.
-- `operation.requestBody:body-prefixed-single-use` — one per Operation Object
-  other than a GET or HEAD whose request body's `application/json` schema is a
-  `$ref` to a `components.schemas` entry named `Body_…` that no other `$ref` of
-  the document names: FastAPI's embedded-body model, which
-  `inline_body_source_names` of `src/ir.rs` drops like any single-use body.
+  response, chosen as has_wildcard_binary_response chooses it, serves */* with an inline
+  string schema of format binary: the endpoint mode build_example_inner reads before it
+  renders any parameter example
+- `schema.example:unread-date-time` — one per `format: date-time` Schema Object whose
+  selected example is a string Fern's append-`Z` reading rejects, which
+  `datetime_example` of `src/emit.rs` replaces with Fern's default
+- `mediaType.schema:allof-parent-body` — one per request body's selected JSON media type
+  whose schema `$ref`s a component composed `allOf` of an inline object and a `$ref`
+  base, which another component's `allOf` names in turn, and whose example names a
+  required field of each side: the body whose Markdown example lists its own fields
+  first
+- `mediaType.example:nested-null-member` — one per request body's selected JSON media
+  type whose example gives `null` to an optional property of a nested object, which the
+  worked examples leave out
+- `mediaType.example:deprecated-property` — one per request body's selected JSON media
+  type whose example names a property whose own schema is marked `deprecated: true`,
+  which the worked examples leave out unless it is required
+- `components.schemas:nonidentifier-name` — one per component schema name whose class-
+  name casing contains a character sanitize_identifier replaces with an underscore
+- `components.schemas:complex-module-name` — one per component schema name whose class's
+  module stem is `complex`, the builtin Fern reserves, so its type module is
+  `complex_.py`
+- `operation.requestBody:body-prefixed-single-use` — one per Operation Object other than
+  a GET or HEAD whose request body's `application/json` schema is a `$ref` to a
+  `components.schemas` entry named `Body_…` that no other `$ref` of the document names:
+  FastAPI's embedded-body model, which `inline_body_source_names` of `src/ir.rs` drops
+  like any single-use body
 - `operation.requestBody:titled-inline-container-oas-three-zero` — one per Operation
-  Object of an OpenAPI 3.0 document, declaring no parameter itself or on its
-  Path Item, whose request body's `application/json` schema is an inline array
-  or map (`additionalProperties` true or a schema, no `properties`) declaring a
-  `title`: the body `inline_container_carries_content_type` of `src/ir.rs` sends
-  the JSON content-type header for.
-- `operation.responses:contentless-two-hundred-with-created` — one per operation
-  whose 200 response declares no content while its 201 declares content,
-  resolving local Response Object references. `success_response_with_content`
-  selects the latter body, preserving a 200 with content as the first choice.
-- `operation.responses:event-stream-binary` — one per Operation Object whose
-  success response's `text/event-stream` media type has a schema resolving to
-  `{type: string, format: binary}` through local `components.schemas`
-  references: the body `is_streaming` of `src/ir.rs` downloads as bytes rather
-  than decoding as events.
-- `operation.responses:event-stream-inline-const-union` — one per Operation
-  Object whose success response's `text/event-stream` schema is written inline as
-  a `oneOf` of at least two inline objects, each tagging a string property with a
-  `const`, with no `discriminator`: the chunk `stream_chunk_view` of `src/ir.rs`
-  hoists as a discriminated union.
-- `operation.responses:event-stream-item-schema-ref` — one per Operation Object
-  whose success response's `text/event-stream` media type declares no `schema`
-  and an `itemSchema` that is a local `components.schemas` reference: the
-  per-item schema `MediaType` of `src/openapi.rs` types each streamed event from.
-- `operation.responses:event-stream-event-dispatch` — one per Operation Object
-  whose success response's `text/event-stream` schema is a reference to a `oneOf`
-  of references discriminated on `event`, every variant declaring exactly the
-  properties `event` and `data`: the stream `sse_event_dispatch` of `src/ir.rs`
-  dispatches on the SSE `event` field.
-- `operation.responses:empty-schema-success-oas-three-zero` — one per Operation Object of
-  an OpenAPI 3.0 document whose success response, declared inline rather than by
-  a Response `$ref`, holds an `application/json` media type whose `schema` is the
-  empty schema `{}` and no other media type: the unknown body
-  `response_may_be_empty` of `src/ir.rs` guards.
-- `operation.responses:schemaless-text-success` — one per Operation Object whose
-  success response holds a `text/*` media type other than `text/event-stream`
-  declaring no `schema`, and no `application/json` beside it: the body
-  `success_response` of `src/ir.rs` types `str`.
-- `operation.responses:schemaless-download-success` — one per Operation Object
-  whose success response holds an `audio/*`, `video/*` or `application/pdf`
-  media type declaring no `schema`, and no `application/json` beside it: the
-  download `is_download_media_type` of `src/ir.rs` streams.
-- `operation.requestBody:blank-description-optional-object` — one per Operation
-  Object declaring no parameter itself or on its Path Item whose request body's
-  `description` is the empty string and whose `application/json` schema, inline
-  or behind one local `$ref`, declares properties not all of which `required`
-  lists: the body crozier once sent without the JSON content-type header.
-- `operation.requestBody:described-inline-scalar` — one per Operation Object
-  declaring no parameter itself or on its Path Item whose request body's
-  `application/json` schema is an inline string, integer, number or boolean
-  declaring no `enum` and a `description`: the body `resolve_request_body` of
-  `src/ir.rs` sends with the JSON content-type header, where a `title` alone
-  does not.
-- `operation.requestBody:plain-string-map` — one per Operation Object whose
-  JSON-like request content declares a top-level object without named
-  properties, with an unformatted, non-enum, non-nullable string
-  `additionalProperties` schema. Local component references are resolved with
-  cycle protection, and multiple qualifying media types still count once.
-- `operation.requestBody:schemaless-json` — one per Operation Object whose
-  request body's content holds only JSON media types and none of them declares a
-  `schema`: the body `request_body_ignored` of `src/ir.rs` sends nothing for.
-- `operation.responses:schemaless-wav-success` — one per Operation Object whose
-  success response holds an `audio/wav` media type declaring no `schema`, and no
-  `application/json` beside it: the download `is_download_media_type` of
-  `src/ir.rs` streams.
-- `operation.responses:space-suffixed-status-key` — one per Responses Object key,
-  of an operation the Paths Object holds, that is a three-digit status code, a
-  space and further text (`429 (live)`): the spelling `response_key_status` of
-  `src/ir.rs` reads by its leading integer.
-- `operation.responses:suffixed-status-key` — one per Responses Object key, of
-  an operation the Paths Object holds, that begins with a digit and is neither a
-  three-digit status code nor an upper-case range (`4XX`): the spelling
-  `response_key_status` of `src/ir.rs` reads by its leading integer.
-- `openapi.paths:leading-literal-segment` — one per Paths Object key whose
-  first non-empty `/`-separated segment is not wholly a `{expression}`
-  template expression, which is the segment `src/ir.rs`'s `path_group`
-  returns.
-- `openapi.paths:template-before-literal-segment` — one per Paths Object key
-  whose first non-empty segment is wholly a template expression and which
-  carries a later segment that is not, so `path_group` skips one to return the
-  other.
-- `openapi.paths:all-segments-templated` — one per Paths Object key with no
-  non-empty segment that is not wholly a template expression, so a key whose
-  every segment is templated counts one and so does a key carrying no segment
-  at all. The three above are one reading of a key between them, and the
-  reading `path_group` makes: every key takes exactly one of them.
-- `schema.type:primary=array` — one per Schema Object whose `type` names
-  `array` first among its non-`null` members, which is the member
-  `TypeField::primary` of `src/openapi.rs` reads, so a 3.1 `type: [string,
-  array]` counts none and `type: [null, array]` counts one. A schema declaring
-  `array` anywhere among its types is what `schema.type=array` counts, and the
-  two disagree on exactly the key case 3.1 added.
-- `schema.type:primary=object` — one per Schema Object whose `type` names
-  `object` first among its non-`null` members, which is the first disjunct of
-  `src/ir.rs`'s `is_object_type` and the reading every arm that asks whether a
-  schema closes an object makes.
-- `schema.type:primary-scalar` — one per Schema Object whose `type` names
-  `string`, `number`, `integer` or `boolean` first among its non-`null` members,
-  which is exactly what `src/ir.rs`'s `declares_scalar_type` reads. It is one
-  predicate rather than four because the arms reading it read the disjunction and
-  never one member of it, and it is not the four valued spellings `schema.type` =
-  `string` and its neighbours emit: those count a 3.1 `type` of `[object,
-  string]`, whose primary member is `object`, and this does not.
-- `schema.properties:non-empty` — one per Schema Object whose `properties` map
-  holds at least one entry, so a declared-but-empty `properties: {}` counts
-  none.
-- `schema.oneOf:sole-member` — one per Schema Object whose `oneOf` array holds
-  exactly one member.
-- `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds
-  exactly one member.
-- `schema.allOf:sole-member` — one per Schema Object whose `allOf` array holds
-  exactly one member, the arity `src/ir.rs`'s `sole_inline_all_of` tests, on the
-  same terms as the two above.
-- `schema.oneOf:sole-non-null-member` — one per Schema Object whose `oneOf`
-  array holds exactly one member whose primary type is not `null`, beside at
-  least one member whose primary type is `null`.
-- `schema.anyOf:sole-non-null-member` — one per Schema Object whose `anyOf`
-  array holds exactly one member whose primary type is not `null`, beside at
-  least one member whose primary type is `null`.
-- `schema.enum:string-valued` — one per Schema Object whose `enum` array
-  yields at least one string value under crozier's own `string_enum_values` —
-  the schema is `type: string`, or declares no `type` and every member is a
-  string.
-- `schema.const:string-valued` — one per Schema Object whose `const` value
-  yields a string under that same reading, which is the spelling
-  `string_enum_values` falls back to when no `enum` is written. The two are
-  two readings rather than one, because a schema writing both is read by its
-  `enum` alone.
-- `schema.$ref:cross-document` — one per Schema Object whose `$ref` names
-  another document: the value carries a non-empty part before its `#`, or no
-  `#` at all, so `./other.yaml#/components/schemas/Author` and a bare
-  `common.yaml` count.
-- `schema.$ref:same-document-foreign-pointer` — one per Schema Object whose
-  `$ref` points inside its own document but outside `components.schemas`, so
-  `#/definitions/Foo` from a Swagger conversion and
-  `#/components/parameters/Page` count. The two above are the two shapes that
-  reach `ref_to_class`'s first case, which names a reference off its last
-  segment, and they are two selectors rather than one because only the first
-  names a document other than the one being censused: crozier answers it by
-  fetching that document, where a same-document pointer is answered — or not —
-  inside the bytes already read. Both are declared by registered sources that
-  carry committed goldens.
+  Object of an OpenAPI 3.0 document, declaring no parameter itself or on its Path Item,
+  whose request body's `application/json` schema is an inline array or map
+  (`additionalProperties` true or a schema, no `properties`) declaring a `title`: the
+  body `inline_container_carries_content_type` of `src/ir.rs` sends the JSON content-
+  type header for
+- `operation.responses:contentless-two-hundred-with-created` — one per Operation Object
+  whose 200 response declares no content while its 201 declares content, resolving local
+  Response Object references: `success_response_with_content` of `src/ir.rs` selects the
+  latter body
+- `operation.responses:event-stream-binary` — one per Operation Object whose success
+  response's `text/event-stream` media type has a schema resolving to `{type: string,
+  format: binary}`, through local `components.schemas` references: the body
+  `is_streaming` of `src/ir.rs` downloads as bytes rather than decoding as events
+- `operation.responses:event-stream-inline-const-union` — one per Operation Object whose
+  success response's `text/event-stream` schema is written inline as a `oneOf` of at
+  least two inline objects, each tagging a string property with a `const`, with no
+  `discriminator`: the chunk `stream_chunk_view` of `src/ir.rs` hoists as a
+  discriminated union
+- `operation.responses:event-stream-item-schema-ref` — one per Operation Object whose
+  success response's `text/event-stream` media type declares no `schema` and an
+  `itemSchema` that is a local `components.schemas` reference: the per-item schema
+  `MediaType` of `src/openapi.rs` types each streamed event from
+- `operation.responses:event-stream-event-dispatch` — one per Operation Object whose
+  success response's `text/event-stream` schema is a reference to a `oneOf` of
+  references discriminated on `event`, every variant declaring exactly the properties
+  `event` and `data`: the stream `sse_event_dispatch` of `src/ir.rs` dispatches on the
+  SSE `event` field
+- `operation.responses:empty-schema-success-oas-three-zero` — one per Operation Object
+  of an OpenAPI 3.0 document whose success response, declared inline rather than by a
+  Response `$ref`, holds an `application/json` media type whose `schema` is the empty
+  schema `{}` and no other media type: the unknown body `response_may_be_empty` of
+  `src/ir.rs` guards
+- `operation.responses:schemaless-text-success` — one per Operation Object whose success
+  response holds a `text/*` media type other than `text/event-stream` declaring no
+  `schema`, and no `application/json` beside it: the body `success_response` of
+  `src/ir.rs` types `str`
+- `operation.responses:schemaless-download-success` — one per Operation Object whose
+  success response holds an `audio/*`, `video/*` or `application/pdf` media type
+  declaring no `schema`, and no `application/json` beside it: the download
+  `is_download_media_type` of `src/ir.rs` streams
+- `operation.requestBody:blank-description-optional-object` — one per Operation Object
+  declaring no parameter itself or on its Path Item whose request body's `description`
+  is the empty string and whose `application/json` schema, inline or behind one local
+  `$ref`, declares properties not all of which `required` lists: the body crozier once
+  sent without the JSON content-type header
+- `operation.requestBody:described-inline-scalar` — one per Operation Object declaring
+  no parameter itself or on its Path Item whose request body's `application/json` schema
+  is an inline string, integer, number or boolean declaring no `enum` and a
+  `description`: the body `resolve_request_body` of `src/ir.rs` sends with the JSON
+  content-type header, where a `title` alone does not
+- `operation.requestBody:schemaless-json` — one per Operation Object whose request
+  body's content holds only JSON media types and none of them declares a `schema`: the
+  body `request_body_ignored` of `src/ir.rs` sends nothing for
+- `operation.requestBody:plain-string-map` — one per Operation Object whose JSON-like
+  request content declares a top-level object without named properties and with an
+  unformatted, non-enum, non-nullable string additionalProperties schema; local
+  component references are followed with cycle protection
+- `operation.responses:schemaless-wav-success` — one per Operation Object whose success
+  response holds an `audio/wav` media type declaring no `schema`, and no
+  `application/json` beside it: the download `is_download_media_type` of `src/ir.rs`
+  streams
+- `operation.responses:space-suffixed-status-key` — one per Responses Object key that is
+  a three-digit status code, a space and further text (`429 (live)`): the spelling
+  `response_key_status` of `src/ir.rs` reads by its leading integer
+- `operation.responses:suffixed-status-key` — one per Responses Object key that begins
+  with a digit and is neither a three-digit status code nor an upper-case range (`4XX`):
+  the spelling `response_key_status` of `src/ir.rs` reads by its leading integer
+- `components.schemas:cycle-into-cycle` — one per component schema composing no `oneOf`
+  or `anyOf` that names, anywhere in its own body, a member of a reference cycle that
+  has an edge into a different reference cycle the schema itself names no member of:
+  `forward_repair_map` of `src/emit.rs` repairs the model with the first cycle only
+- `components.schemas:fields-reach-cycles-unsorted` — one per component schema composing
+  no `oneOf` or `anyOf` whose `properties`, read in order, name members of two or more
+  different reference cycles, and whose cycles' members, each cycle sorted and the
+  cycles in the order the properties first reach them, are not in sorted order: the
+  trailing deferred imports `object_deferred_order` of `src/emit.rs` writes
+- `mediaType.schema:closed-empty-object-property` — one per inline schema `{type:
+  object, additionalProperties: false}` declaring no `properties` that is a property of
+  a request body's selected JSON media type's inline schema: `base_type_ref` of
+  `src/ir.rs` types it `Dict[str, Any]` where `is_inline_struct` once hoisted an empty
+  model
+- `components.schemas:same-primitive-union` — one per component schema whose `oneOf`
+  (else `anyOf`) holds two or more inline scalar alternatives that all convert to one
+  primitive and nothing else is declared beside them, which
+  `normalize_same_primitive_unions` of `src/openapi.rs` renames after its last
+  alternative's ordinal
+- `securityScheme:$ref` — one per `components.securitySchemes` entry that is a Reference
+  Object rather than a Security Scheme Object, which `normalize_security_scheme_refs` of
+  `src/openapi.rs` resolves
+- `operation.tags:multiple` — one per Operation Object whose `tags` array holds more
+  than one member
+- `operation.operationId:hyphenated-tag-method` — one per Operation Object under the
+  Paths Object with no SDK method-name extension whose operationId is
+  `<prefix>-<method>`, one hyphen and no `_` or `.`, the prefix spelling its first tag
+  and the method camel-cased, so Fern's lowercased method differs from its snake-cased
+  one
+- `operation.operationId:tag-spelled-split-prefix` — one per tagged Operation Object
+  under the Paths Object with no SDK group- or method-name extension whose operationId
+  `<prefix>_<method>`, no `.`, has a prefix spelling its first tag letter for letter but
+  not word for word as Fern splits the tag (`q_x_schedule` under `QX`), so the tag names
+  the module and the whole id the method
+- `operation.operationId:all-caps-tag-split-prefix` — one per Operation Object
+  `operation.operationId:tag-spelled-split-prefix` counts whose first tag is all
+  capitals, several of them (`QX`)
+- `operation.x-fern-sdk-method-name:sequence` — one per Operation Object under the Paths
+  Object whose SDK method name (`x-crozier-sdk-method-name` over `x-fern-sdk-method-
+  name`) is written as a sequence of strings rather than a string
+- `operation.x-fern-sdk-group-name:leading-underscore` — one per Operation Object under
+  the Paths Object declaring an SDK method name whose SDK group name (`x-crozier-sdk-
+  group-name` over `x-fern-sdk-group-name`) has a segment starting with `_`, which Fern
+  keeps in the module path
+- `operation.x-fern-sdk-group-name:without-method-name` — one per Operation Object under
+  the Paths Object declaring a non-blank SDK group name (either spelling) and no SDK
+  method name, which Fern then ignores
+- `securityScheme.x-fern-header:named` — one per header `apiKey` Security Scheme Object
+  whose `x-fern-header` (or `x-crozier-header`, which wins) names the credential
+- `securityScheme.x-fern-bearer:named` — one per `http` `bearer` Security Scheme Object
+  whose `x-fern-bearer` (or `x-crozier-bearer`) names the credential
+- `securityScheme.x-fern-basic:named-or-env` — one per `http` `basic` Security Scheme
+  Object whose `x-fern-basic` (or `x-crozier-basic`) gives its username or password a
+  `name` or an `env`
+- `securityScheme.x-fern-token-variable-name:bearer` — one per `http` `bearer` Security
+  Scheme Object declaring a non-blank `x-fern-token-variable-name` (or `x-crozier-token-
+  variable-name`) that is the document's first scheme of a kind Fern supports, so it is
+  the credential Fern names
+- `components.securitySchemes:duplicate-api-key-header` — one per header `apiKey`
+  Security Scheme Object naming, case-insensitively, the same header as an earlier one,
+  a header whose name stems to `api_key` (`X-Api-Key`), with both schemes offered by the
+  document's `security`
+- `securityScheme.scheme:capitalised-http` — one per `http` Security Scheme Object whose
+  `scheme` is `bearer` or `basic` spelled with a capital
+- `operation.x-fern-pagination:cursor` — one per path Operation Object whose pagination
+  extension (either spelling) is a mapping with `cursor` and `next_cursor`
+- `operation.x-fern-pagination:offset` — one per path Operation Object whose pagination
+  extension (either spelling) is a mapping with `offset` and no `cursor`
+- `operation.x-fern-pagination:boolean-over-root` — one per path Operation Object whose
+  pagination extension is `true` in a document whose root declares a pagination mapping
+- `operation.x-fern-pagination:nullable-response` — one per path Operation Object with a
+  pagination mapping whose 200 `application/json` schema references a component declared
+  `nullable: true`
+- `operation.tags:empty-string` — one per path Operation Object whose only tag is the
+  empty string, that declares no SDK group name and whose operationId does not begin
+  with `.` (which names the `_` group itself)
+- `operation.x-fern-sdk-group-name:types-beside-child-group` — one per path Operation
+  Object declaring an SDK group and method name whose group is a proper prefix of
+  another operation's declared group and whose inline request body has an inline `enum`
+  property
+- `operation.x-fern-idempotent:with-root-headers` — one per path Operation Object marked
+  `x-fern-idempotent: true` (either spelling) in a document whose root declares
+  idempotency headers
+- `operation.x-fern-retries:disabled` — one per path Operation Object whose retries
+  extension (either spelling) is a mapping with `disabled: true`
+- `operation.servers:named-beside-document-server` — one per path Operation Object whose
+  `servers` are one named (`x-fern-server-name`, either spelling) URL other than the
+  document's single server's
+- `server.x-fern-default-url:templated` — one per document Server Object with a
+  templated `url` that declares `x-fern-default-url` (either spelling)
+- `server.x-fern-server-name:several-undescribed` — one per document Server Object
+  naming itself by `x-fern-server-name` (either spelling) without a `description`, in a
+  document with two or more such servers
+- `schema.x-fern-sdk-group-name:component` — one per `components.schemas` entry
+  declaring an SDK group name (either spelling)
+- `schema.x-tags:component` — one per `components.schemas` entry declaring a non-empty
+  `x-tags` list
+- `schema.x-fern-type-name:inline-property` — one per inline property Schema Object
+  anywhere in the document (a component's, a body's, a parameter's or a webhook's; never
+  a `components.schemas` entry itself or a `$ref`), declaring `x-fern-type-name` (either
+  spelling)
+- `openapi.webhooks:inline-json-body-named` — one per `webhooks` Operation Object whose
+  `application/json` request body is an inline schema and that declares an SDK group or
+  method name
+- `operation.x-fern-webhook:true` — one per path Operation Object marked `x-fern-
+  webhook: true` (either spelling)
+- `operation.operationId:untagged-list-or-set` — one per Operation Object under the
+  Paths Object with no tag and no SDK method-name extension whose operationId is exactly
+  `list` or `set`, the builtins Fern leaves unsuffixed as method names
+- `operation.operationId:duplicate` — one per Operation Object whose `operationId` value
+  is declared by more than one Operation Object of the same document, so a value written
+  twice counts two
+- `openapi.paths:normalized-collision` — one per Paths Object key that collides with at
+  least one other key of the same document after path-template-name normalization, so a
+  two-key collision counts two
+- `openapi.paths:templated-key` — one per Paths Object key carrying at least one
+  `{expression}` template expression, so a key with two counts one
+- `openapi.paths:several-template-expressions` — one per Paths Object key carrying more
+  than one `{expression}` template expression, so a key with one counts none and a key
+  with three counts one
+- `components.schemas:normalized-collision` — one per `components.schemas` key that
+  collides with at least one other key of the same document after class-name
+  normalization, so a two-key collision counts two
+- `schema.type:primary=array` — one per Schema Object whose `type` names `array` first
+  among its non-`null` members, which is the member `TypeField::primary` of
+  `src/openapi.rs` reads, so a 3.1 `type: [string, array]` counts none and `type: [null,
+  array]` counts one
+- `schema.type:primary=object` — one per Schema Object whose `type` names `object` first
+  among its non-`null` members, which is the first disjunct of `is_object_type` of
+  `src/ir.rs` and the reading every arm that asks whether a schema closes an object
+  makes
+- `schema.type:misspelled-scalar` — one per Schema Object whose `type` names `double`,
+  `int32`, `long`, `bool` or `decimal`: no OpenAPI type, which Fern reads as unknown and
+  `base_type_ref` of `src/ir.rs` types `Any` too; `float`, which `normalize_float_type`
+  of `src/openapi.rs` reads as a number, and `int` are its two witnessed neighbours,
+  kept apart
+- `schema.type:primary-scalar` — one per Schema Object whose `type` names `string`,
+  `number`, `integer` or `boolean` first among its non-`null` members, which is exactly
+  what `declares_scalar_type` of `src/ir.rs` reads. It is one predicate rather than four
+  because the arms that read it read the disjunction and never one member of it, and it
+  is not the four valued spellings `schema.type=string` and its neighbours: those count
+  a 3.1 `type: [object, string]`, whose primary member is `object`, and this does not
+- `schema.allOf:sole-member` — one per Schema Object whose `allOf` array holds exactly
+  one member, the arity `sole_inline_all_of` of `src/ir.rs` tests, on the same terms as
+  the `oneOf` and `anyOf` spellings above
+- `schema.properties:non-empty` — one per Schema Object whose `properties` map holds at
+  least one entry, so a declared-but-empty `properties: {}` counts none
+- `schema.oneOf:sole-non-null-member` — one per Schema Object whose `oneOf` array holds
+  exactly one member whose primary type is not `null`, beside at least one member whose
+  primary type is `null`
+- `schema.anyOf:sole-non-null-member` — one per Schema Object whose `anyOf` array holds
+  exactly one member whose primary type is not `null`, beside at least one member whose
+  primary type is `null`
+- `schema.oneOf:sole-member` — one per Schema Object whose `oneOf` array holds exactly
+  one member
+- `schema.anyOf:sole-member` — one per Schema Object whose `anyOf` array holds exactly
+  one member
+- `schema.enum:string-valued` — one per Schema Object whose `enum` array yields at least
+  one string value under crozier's own `string_enum_values` — the schema is `type:
+  string`, or declares no `type` and every member is a string
+- `schema.const:string-valued` — one per Schema Object whose `const` value yields a
+  string under that same reading, which is the spelling `string_enum_values` falls back
+  to when no `enum` is written
+- `schema.example:schema-shaped` — one per Schema Object whose `example`, or else first
+  `examples` member, is a non-empty object every value of which is an object declaring
+  at least one of `type`, `$ref`, `properties`, `allOf`, `oneOf` or `anyOf`, which is
+  the content test `src/ir.rs`'s since-removed `example_is_schema_definition` made
+- `openapi.paths:leading-literal-segment` — one per Paths Object key whose first non-
+  empty `/`-separated segment is not wholly a `{expression}` template expression, which
+  is the segment `src/ir.rs`'s `path_group` returns
+- `openapi.paths:template-before-literal-segment` — one per Paths Object key whose first
+  non-empty segment is wholly a template expression and which carries a later segment
+  that is not, so `path_group` skips one to return the other
+- `openapi.paths:all-segments-templated` — one per Paths Object key with no non-empty
+  segment that is not wholly a template expression, so a key whose every segment is
+  templated counts one and so does a key carrying no segment at all
+- `schema.$ref:cross-document` — one per Schema Object whose `$ref` names another
+  document — the value carries a non-empty part before its `#`, or no `#` at all — so
+  `./other.yaml#/components/schemas/Author` counts and `#/definitions/Foo` does not
+- `schema.$ref:same-document-foreign-pointer` — one per Schema Object whose `$ref`
+  points inside its own document but outside `components.schemas`, so
+  `#/definitions/Foo` and `#/components/parameters/Page` count and
+  `#/components/schemas/Foo` does not
 - `schema.$ref:nested-properties` — one per Schema Object whose `$ref` is a
-  `#/components/schemas/` pointer carrying a `properties` segment with a
-  segment after it, at a position the `ref_to_class` walk reads, so a pointer
-  carrying two counts one.
-- `schema.$ref:nested-items` — one per Schema Object whose `$ref` is such a
-  pointer carrying an `items` segment at a position that same walk reads.
-- `schema.$ref:composition-index` — one per Schema Object whose `$ref` is such
-  a pointer carrying an `allOf`, `oneOf` or `anyOf` segment at a position that
-  same walk reads, the segment whose index contributes no name.
-- `schema.$ref:unnamed-segment` — one per Schema Object whose `$ref` is such a
-  pointer carrying, at a position that same walk reads, a segment naming none
-  of those five — a trailing `properties` included, since with no segment after
-  it there is no property name to append. The four above are read off the four
-  arms of `ref_to_class`'s own loop, whose read positions are
-  `resolve_schema_pointer`'s too.
-- `schema.$ref:undeclared-component-head` — one per Schema Object whose `$ref`
-  is such a pointer whose head segment names no key of the same document's own
-  `components.schemas`, which is what `resolve_schema_pointer`'s
-  `schemas.get(parts.next()?)?` returns `None` on.
-- `schema.$ref:resolves-to-component` — one per Schema Object whose `$ref`
-  resolves under `resolve_ref_from_schemas` of `src/ir.rs`: its **last**
-  `/`-separated segment names a key of the same document's own
-  `components.schemas`. That is the *other* of the two resolutions
-  [the `~>` operator's own paragraph](#the-selector-grammar) distinguishes, and
-  the one `~>` performs, so this predicate says a reference resolves where `~>`
-  says what it resolves to. It requires no prefix and traverses nothing, so
-  `#/definitions/Author` resolves whenever the document declares a component
-  named `Author`, and `#/components/schemas/Order/properties/lines` resolves to
-  the component named `lines` or to nothing at all. It is neither the negation
-  of the entry above nor a second spelling of it: that one reads the *head* of a
-  `#/components/schemas/` pointer, and the two disagree on every pointer
-  carrying a segment after its head. An arm needing only that a reference
-  resolve reads this; an arm going on to read the target's own fields descends
-  through `~>`.
-- `schema.oneOf:discriminated-union` — one per Schema Object whose `oneOf` is a
-  union `discriminated_union` of `src/ir.rs` builds. It is the *reading* of that
-  function rather than the shape that resembles it. The written spelling needs a
-  `discriminator` whose `propertyName` is non-empty; the inferred spelling needs
-  no `discriminator` at all, and finds a property of the first member that every
-  member tags itself with, distinctly. Where no non-empty `mapping` is written,
-  every member must carry a `discriminant_value` for that property — a one-member
-  string `enum`, the `const` that stands in for one, or a string `example` — read
-  off the member **resolved**, so a `$ref` member naming no component of this
-  document refuses the whole union; where a `mapping` is written, every mapping
-  target must resolve instead and no member is read at all. A `discriminator`
-  beside a `oneOf` is therefore neither necessary nor sufficient.
-- `schema.anyOf:discriminated-union` — one per Schema Object whose `anyOf`,
-  written where no `oneOf` is, is such a union. Only the *inferred* spelling
-  reaches it: `discriminated_union` refuses a written `discriminator` beside an
-  `anyOf` with no `oneOf` outright, because Fern applies an explicit
-  discriminator to `oneOf` alone and reads an `anyOf` as an ordinary union
-  whatever sibling block a generator emitted beside it. `oneOf` is the head
-  wherever both are written, exactly as the `or` in `src/ir.rs` has it, so this
-  and the entry above never count one node twice.
-- `schema.discriminator:inheritance-union` — one per Schema Object that is the
-  base of an inheritance-style discriminated union, OpenAPI's other polymorphism
-  spelling: a `discriminator` with a non-empty `propertyName` and a non-empty
-  `mapping` every entry of which resolves, on a schema declaring no `oneOf` and
-  no `anyOf` of its own. It is the arm `discriminated_union` delegates to before
-  it looks at a union head at all. The three above are one reading of
-  `discriminated_union` between them, and they are three selectors rather than
-  one because the three heads are three cases under
-  [the enumeration rule](#the-selector-grammar).
+  `#/components/schemas/` pointer carrying a `properties` segment with a segment after
+  it, at a position the `ref_to_class` walk reads, so a pointer carrying two counts one
+- `schema.$ref:nested-items` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer carrying an `items` segment at a position that same
+  walk reads
+- `schema.$ref:composition-index` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer carrying an `allOf`, `oneOf` or `anyOf` segment at a
+  position that same walk reads
+- `schema.$ref:unnamed-segment` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer carrying, at a position that same walk reads, a
+  segment that names none of those five — a trailing `properties` included, since
+  `ref_to_class` reads one as a name it cannot use rather than as a nesting step
+- `schema.$ref:undeclared-component-head` — one per Schema Object whose `$ref` is a
+  `#/components/schemas/` pointer whose head segment names no key of the same document's
+  own `components.schemas`
+- `schema.$ref:resolves-to-component` — one per Schema Object whose `$ref` resolves
+  under `resolve_ref_from_schemas` of `src/ir.rs` — its **last** `/`-separated segment
+  names a key of the same document's own `components.schemas` — which is the resolution
+  every arm that reads an annotated `$ref`'s target performs, and the one the `~>`
+  operator mirrors. It requires no prefix and traverses nothing, so
+  `#/definitions/Author` resolves whenever this document declares a component named
+  `Author`, and `#/components/schemas/Order/properties/lines` resolves to the component
+  named `lines` or to nothing at all. It is neither the negation of
+  `schema.$ref:undeclared-component-head` nor a second spelling of it: that one reads
+  the *head* segment of a `#/components/schemas/` pointer, which is what the other
+  resolution `resolve_schema_pointer` performs takes, and the two disagree on every
+  pointer carrying a segment after its head. An arm needing only that a reference
+  resolve — `hoist_union_variant`'s case 6 — reads this, where an arm that goes on to
+  read the target's own fields descends through `~>` instead
+- `schema.oneOf:discriminated-union` — one per Schema Object whose `oneOf` is a union
+  `discriminated_union` of `src/ir.rs` builds — the reading rather than the resemblance.
+  The written spelling needs a `discriminator` whose `propertyName` is non-empty; the
+  inferred spelling needs no `discriminator` at all and finds a property of the first
+  member every member tags itself with, distinctly. Where no non-empty `mapping` is
+  written every member must carry a `discriminant_value` for that property — a one-
+  member string `enum`, the `const` that stands in for one, or a string `example` — read
+  off the member *resolved*, so a `$ref` member naming no component of this document
+  refuses the whole union; where one is written, every mapping target must resolve
+  instead. A `discriminator` beside a `oneOf` is therefore neither necessary nor
+  sufficient. `oneOf` is the head wherever both composition fields are written, exactly
+  as the `or` in `src/ir.rs` has it, so this and the `anyOf` spelling below never count
+  one node twice
+- `schema.anyOf:discriminated-union` — one per Schema Object whose `anyOf`, written
+  where no `oneOf` is, is such a union. Only the *inferred* spelling reaches it:
+  `discriminated_union` refuses a written `discriminator` beside an `anyOf` with no
+  `oneOf` outright, because Fern applies an explicit discriminator to `oneOf` alone and
+  reads an `anyOf` as an ordinary union whatever sibling block a generator emitted
+  beside it
+- `schema.discriminator:inheritance-union` — one per Schema Object that is the base of
+  an inheritance-style discriminated union — OpenAPI's other polymorphism spelling,
+  which `inheritance_discriminated_union` of `src/ir.rs` reads: a `discriminator` with a
+  non-empty `propertyName` and a non-empty `mapping` every entry of which resolves, on a
+  schema declaring no `oneOf` and no `anyOf` of its own. It is the arm
+  `discriminated_union` delegates to before it looks at a union head at all
 - `schema.allOf:annotated-ref` — one per Schema Object whose `allOf` is the
-  annotated-`$ref` shape `described_all_of_ref` of `src/ir.rs` reads: an array
-  of at least two members, exactly one of them a Reference Object, and every
-  other declaring nothing that determines a type. A member declares nothing
-  when it writes none of the ten fields `is_unknown` reads — `$ref`, a `type`
-  with a non-`null` member, `oneOf`, `anyOf`, `allOf`, `enum`, `const`, a
-  non-empty `properties`, `additionalProperties` or `items` — so a member
-  carrying only a `description`, a `title`, a `format`, an `example` or nothing
-  at all is one, while `{type: string}` and `{properties: {a: {}}}` are not. It
-  is the 3.0 idiom for attaching documentation to a shared schema, and it is one
-  predicate rather than a conjunction because none of the three things it asks —
-  a member count, that exactly one member is a reference, and what the others
-  declare — is a field's presence.
-- `schema.example:schema-shaped` — one per Schema Object whose selected example
-  is a non-empty object every value of which is an object declaring at least one
-  of `type`, `$ref`, `properties`, `allOf`, `oneOf` or `anyOf`. Selection uses
-  `example`, then the first `examples` member, and the content test is the one
-  `src/ir.rs`'s since-removed `example_is_schema_definition` made.
+  annotated-`$ref` shape `described_all_of_ref` of `src/ir.rs` reads: an array of at
+  least two members, exactly one of which is a Reference Object, and every other of
+  which declares nothing that determines a type. A member declares nothing when it
+  writes none of the ten fields `is_unknown` reads — `$ref`, a `type` with a non-`null`
+  member, `oneOf`, `anyOf`, `allOf`, `enum`, `const`, a non-empty `properties`,
+  `additionalProperties` or `items` — so a member carrying only a `description`, a
+  `title`, a `format`, an `example` or nothing at all is one, and `{type: string}` or
+  `{properties: {a: {}}}` is not. It is the 3.0 idiom for attaching documentation to a
+  shared schema, and a `$ref` beside a member declaring any shape of its own is
+  deliberately not counted: crozier reads that as a composition and sends it elsewhere.
+  A field written as JSON `null` is not written at all here, which is how `serde` reads
+  one into the `Option` fields `is_unknown` tests
 
-**Seventy-four of the 120 are node-local**, which is what makes them one family:
+**Eighty-two of the 150 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -937,46 +977,8 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-forty-six — `operation.operationId:duplicate`,
-`openapi.paths:normalized-collision`, `components.schemas:normalized-collision`,
-`schema.$ref:undeclared-component-head`,
-`schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`,
-`schema.anyOf:discriminated-union`,
-`schema.discriminator:inheritance-union`,
-`parameter.schema:subset-header-string-default`,
-`parameter.schema:promoted-date-header`,
-`parameter.schema:single-required-header`,
-`operation.operationId:digit-leading-method`,
-`operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`,
-`mediaType.examples:named-beside-example`, `mediaType.examples:named-only`,
-`schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`,
-`schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`,
-`operation.requestBody:body-prefixed-single-use`,
-`operation.requestBody:titled-inline-container-oas-three-zero`,
-`operation.responses:empty-schema-success-oas-three-zero`,
-`operation.responses:schemaless-text-success`,
-`operation.responses:schemaless-download-success`,
-`operation.responses:suffixed-status-key`,
-`operation.requestBody:schemaless-json`,
-`operation.responses:schemaless-wav-success`,
-`operation.responses:space-suffixed-status-key`,
-`operation.requestBody:blank-description-optional-object` and
-`operation.requestBody:described-inline-scalar`,
-`operation.requestBody:plain-string-map`,
-`operation.responses:contentless-two-hundred-with-created`,
-`operation.responses:event-stream-binary`,
-`operation.responses:event-stream-inline-const-union`,
-`operation.responses:event-stream-item-schema-ref`,
-`operation.responses:event-stream-event-dispatch`,
-`parameter.schema:nullable-array-items-oas-three-zero`,
-`parameter.schema:required-nullable-scalar-oas-three-zero`,
-`operation.parameters:path-order-oas-three-one`,
-`mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`,
-`mediaType.example:deprecated-property`,
-`components.schemas:fields-reach-cycles-unsorted`,
-`components.schemas:cycle-into-cycle` and
-`mediaType.schema:closed-empty-object-property` — read the document beyond the
-node, and say so in their own sentence. The first eleven and the two cycle
+sixty-eight — `operation.operationId:duplicate`, `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`, `schema.$ref:undeclared-component-head`, `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`, `schema.anyOf:discriminated-union`, `schema.discriminator:inheritance-union`, `parameter.schema:subset-header-string-default`, `parameter.schema:promoted-date-header`, `parameter.schema:single-required-header`, `operation.operationId:digit-leading-method`, `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`, `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`, `operation.requestBody:body-prefixed-single-use`, `operation.requestBody:titled-inline-container-oas-three-zero`, `operation.responses:empty-schema-success-oas-three-zero`, `operation.responses:schemaless-text-success`, `operation.responses:schemaless-download-success`, `operation.responses:suffixed-status-key`, `operation.requestBody:schemaless-json`, `operation.responses:schemaless-wav-success`, `operation.responses:space-suffixed-status-key`, `operation.requestBody:blank-description-optional-object`, `operation.requestBody:described-inline-scalar`, `operation.requestBody:plain-string-map`, `operation.responses:contentless-two-hundred-with-created`, `operation.responses:event-stream-binary`, `operation.responses:event-stream-inline-const-union`, `operation.responses:event-stream-item-schema-ref`, `operation.responses:event-stream-event-dispatch`, `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`, `mediaType.example:deprecated-property`, `components.schemas:fields-reach-cycles-unsorted`, `components.schemas:cycle-into-cycle`, `mediaType.schema:closed-empty-object-property`, `securityScheme.x-fern-header:named`, `securityScheme.x-fern-bearer:named`, `securityScheme.x-fern-basic:named-or-env`, `securityScheme.x-fern-token-variable-name:bearer`, `components.securitySchemes:duplicate-api-key-header`, `securityScheme.scheme:capitalised-http`, `operation.x-fern-pagination:cursor`, `operation.x-fern-pagination:offset`, `operation.x-fern-pagination:boolean-over-root`, `operation.x-fern-pagination:nullable-response`, `operation.tags:empty-string`, `operation.x-fern-sdk-group-name:types-beside-child-group`, `operation.x-fern-idempotent:with-root-headers`, `operation.x-fern-retries:disabled`, `operation.servers:named-beside-document-server`, `server.x-fern-default-url:templated`, `server.x-fern-server-name:several-undescribed`, `schema.x-fern-sdk-group-name:component`, `schema.x-tags:component`, `schema.x-fern-type-name:inline-property`, `openapi.webhooks:inline-json-body-named`, `operation.x-fern-webhook:true`, `parameter.schema:nullable-array-items-oas-three-zero`, `parameter.schema:required-nullable-scalar-oas-three-zero`, `operation.parameters:path-order-oas-three-one` — read the document beyond the
+node, and say so in their own sentence. The first nine and the two cycle
 readings compare one document's own values against each other; the next
 twenty-nine read where the node stands (an operation's route, a request body's
 selected media type, the document's version) or resolve one local
@@ -1582,10 +1584,10 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 35 rows are the 27 generator categories, the base-path and string-map
-example gaps, and the six additional scenarios the parameter fix closed.
-Other scenarios remain in a separate follow-on plan and are not proof claims
-here. Each path is committed output from Fern CLI **5.67.1** with
+These 38 rows are the 27 generator categories, the base-path and string-map
+example gaps, the six additional scenarios the parameter fix closed, and the
+three clients-and-extensions scenarios whose correction is a Fern defect. Other
+scenarios are not proof claims here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
 counting as real-specification matches.
@@ -1631,6 +1633,9 @@ corrections the shared comparison engine applies. All other bytes must match.
 | required-and-nullable-query-param-made-optional | Required nullable query schema becomes an optional method argument | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | — |
 | query-array-nullable-items-optional | Nullable query-array items stripped from signature; incompatible documentation type/example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/fern-measurements/parameter-lowering/query-nullable-31/fern-expected | `parameter_lowering_measurements_match_fern` | `nullable-items-docs` |
 | single-operation-required-header-promoted | Required header on a sole operation promoted to the client | Fern behaviour | `fix-parameters` | docs/fern-measurements/parameter-lowering/single-operation-headers/fern-expected | `parameter_lowering_measurements_match_fern` | — |
+| duplicate-api-key-header-schemes-fail-formatting | Two header credentials sharing one constructor parameter, declared once; repeated-keyword examples corrected | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/twin-key-relay/fern-expected; tests/fixtures/openepcis-dpp-ready/expected | `handwritten_fixtures_match_fern_goldens; openepcis_dpp_ready_matches_fern_output` | `repeated-credential-example-keyword` |
+| pagination-extension-offset-form-ignored | Offset pagination as a pager; flat-tree README pager documentation corrected | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/ledger-records-offset/fern-expected; docs/fern-measurements/clients-extensions/ledger-records-offset-flat/fern-expected | `handwritten_fixtures_match_fern_goldens; clients_extensions_measurements_match_fern` | `flat-pagination-pager-docs` |
+| empty-tag-becomes-subpackage | Empty-namespace (`_`) sub-client written as a package beside an importable root client | Fern behaviour + Fern defect | `clients-extensions` | docs/openapi-surface/handwritten/lamp-room-log/fern-expected; tests/fixtures/bungie.net/expected | `handwritten_fixtures_match_fern_goldens; bungie_matches_fern_output` | `empty-namespace-package` |
 | streaming | Event-stream and JSON-lines framing, stream-condition halves and event dispatch; stream headings corrected | Fern behaviour + Fern defect | `fix-streaming` | tests/fixtures/zylon-private-gpt/expected; docs/openapi-surface/handwritten/streaming-extension-terminator/fern-expected | `zylon_private_gpt_matches_fern_output; handwritten_fixtures_match_fern_goldens` | `stream-reference-return-type` |
 | client-header-date-format-typed-str | Promoted date header typed `dt.date` on the client; invalid constructor example corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-date/fern-expected | `handwritten_fixtures_match_fern_goldens` | `date-header-constructor-example` |
 | sdk-variables-extension-ignored | SDK-variable path parameters lifted to the client; constructor and method documentation corrected | Fern behaviour + Fern defect | `fix-parameters` | docs/openapi-surface/handwritten/observatory-client-variable/fern-expected | `handwritten_fixtures_match_fern_goldens` | `sdk-variable-docs-examples` |
@@ -1823,15 +1828,15 @@ for either; each bullet below says where its number comes from.
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | [`parameters`](openapi-surface/parameters.md) | 90 | 53 | 19 | 18 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 298 | 248 | 14 | 27 | 9 | 7 | 0 | 2 |
+| [`schemas`](openapi-surface/schemas.md) | 302 | 248 | 14 | 31 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 67 | 46 | 5 | 16 | 0 | 0 | 0 | 0 |
-| [`security`](openapi-surface/security.md) | 50 | 41 | 9 | 0 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 74 | 68 | 3 | 2 | 1 | 1 | 0 | 0 |
-| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 59 | 38 | 2 | 7 | 12 | 0 | 0 | 12 |
-| **total** | **638** | **494** | **52** | **70** | **22** | **8** | **0** | **14** |
+| [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 81 | 68 | 3 | 9 | 1 | 1 | 0 | 0 |
+| [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 69 | 38 | 2 | 17 | 12 | 0 | 0 | 12 |
+| **total** | **665** | **494** | **52** | **97** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **638** features and landed each in exactly one category:
-**494** `golden`, **52** `limitations`, **70** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **665** features and landed each in exactly one category:
+**494** `golden`, **52** `limitations`, **97** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -1982,7 +1987,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 638 rows carry 638 distinct
+**Each feature is classified exactly once.** The 665 rows carry 665 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Fifteen spec
@@ -2154,7 +2159,7 @@ is what makes the gap a *supply* problem rather than a closed question.
 
 **The enumeration cannot see everything, and it says where it stops.** A feature
 is enumerable only where a selector can name it, so
-[the walk's 638](#what-the-walk-enumerated) is a
+[the walk's 665](#what-the-walk-enumerated) is a
 denominator bounded by the grammar rather than by the specification. The sharpest
 statement of that bound is
 [the case analysis](#the-six-blind-regions-of-srcirrs-case-by-case): of the 107
@@ -2852,13 +2857,15 @@ sits in a byte-matched file, so
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
 splits the files that move by whether the golden test compares them. Five rows
-rest on those three alone. Three land in byte-matched files and stay proven,
-and one of them, `format-idn-hostname`, also moves `reference.md`, which
-`short-io` does not byte-match: that part is an open gap of its own, and the
-row's disposition is `split` — proven where its code lands in byte-matched
-files, unproven in the `unmatched` one named. Two move no generated file at all,
-so no byte-matched file vouches for them; they are open gaps, counted among the
-unproven, while the
+rest on those three alone. Four land in byte-matched files and stay proven,
+and two of them also move files their golden does not byte-match:
+`format-idn-hostname` moves `short-io`'s `reference.md`, and `extension-server`
+moves `webflow-v2`'s `reference.md` beside its byte-matched `README.md`,
+`src/fern/client.py` and `src/fern/environment.py`. Those parts are
+open gaps of their own, and each row's disposition is `split` — proven where its
+code lands in byte-matched files, unproven in the `unmatched` ones named. One
+moves no generated file at all, so no byte-matched file vouches for it; it is an
+open gap, counted among the unproven, while the
 [category rules](#the-category-rules) still classify them `golden` because a
 registered golden source declares them.
 
@@ -2868,7 +2875,7 @@ registered golden source declares them.
 | `format-iri` | `short-io` | `src/fern/domains/types/get_api_domains_response_item.py`, `src/fern/domains/types/get_domains_domain_id_response.py`, `src/fern/domains/types/post_domains_response.py`, `src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py` | `byte-matched` |
 | `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
 | `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
-| `extension-server` | `webflow-v2` | none: removing its one Server Object extension moves no generated file | `open gap` |
+| `extension-server` | `webflow-v2` | `README.md`, `src/fern/client.py`, `src/fern/environment.py`; open gap: `reference.md`, which is `unmatched` | `split` |
 
 ### The ranked `FIXTURE` backlog
 

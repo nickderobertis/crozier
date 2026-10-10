@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9f2661209e9a4ecb8b02bf83737aa20ee15bab4d07fea112fd9ce16a4ca849f2"
+
+[[covers]]
+key = "schema-type-name-inline-property"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#type-name-on-an-inline-schema"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

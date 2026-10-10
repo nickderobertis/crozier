@@ -289,6 +289,19 @@ pub struct Context {
     crozier_project: OnceLock<Option<String>>,
     crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
     request_examples: OnceLock<RequestExampleContext>,
+    empty_namespace: OnceLock<EmptyNamespace>,
+}
+
+/// The files of an empty-namespace package (`_`) Fern wrote one level too high,
+/// as [`empty_namespace_moves`] finds them.
+#[derive(Debug, Default)]
+struct EmptyNamespace {
+    /// Package-root files crozier writes whole for the root client.
+    replaced: BTreeSet<String>,
+    /// Fern's copies of files crozier writes inside `_/`.
+    reference_only: BTreeSet<String>,
+    /// The `_` package crozier writes.
+    crozier_only: BTreeSet<String>,
 }
 
 impl Context {
@@ -316,6 +329,7 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
+            empty_namespace: OnceLock::from(EmptyNamespace::default()),
             crozier_returns: OnceLock::from(method_returns(crozier.iter().copied())),
             request_examples: OnceLock::from(request_example_context(crozier.iter().copied())),
         }
@@ -415,6 +429,16 @@ impl Context {
                 project_name(&std::fs::read_to_string(crozier.join("pyproject.toml")).ok()?)
             })
             .as_deref()
+    }
+
+    /// The empty-namespace package files the two trees place apart.
+    fn empty_namespace(&self) -> &EmptyNamespace {
+        self.empty_namespace.get_or_init(|| {
+            self.roots
+                .as_ref()
+                .map(|(reference, crozier)| empty_namespace_moves(reference, crozier))
+                .unwrap_or_default()
+        })
     }
 
     fn request_examples(&self) -> &RequestExampleContext {
@@ -1267,6 +1291,107 @@ fn python_sources(root: &std::path::Path) -> Vec<(String, String)> {
         .collect()
 }
 
+/// Where Fern wrote an empty-namespace package (`_`) over the package root and
+/// crozier wrote it under `_/`. A package qualifies when the reference's root
+/// `client.py` imports the runtime from above the package (`from ..core.`, the
+/// `_` client's import) and crozier's `_/client.py` is that client but for its
+/// docstring examples. Each other file crozier writes inside `_/` must then be
+/// Fern's root-level copy unchanged (`__init__.py` but for leading blank lines),
+/// except `types/__init__.py`, whose root path holds Fern's root aggregator;
+/// otherwise nothing is found for the package.
+fn empty_namespace_moves(reference: &std::path::Path, crozier: &std::path::Path) -> EmptyNamespace {
+    let read = |root: &std::path::Path, rel: &str| {
+        std::fs::read_to_string(root.join(rel))
+            .ok()
+            .map(|text| crate::strip_python_comments(&text))
+    };
+    let leading_blank_free = |text: &str| text.trim_start_matches('\n').to_string();
+    let crozier_files = crate::parity::walk_files(crozier).unwrap_or_default();
+    let packages: BTreeSet<&str> = crozier_files
+        .iter()
+        .filter_map(|rel| rel.strip_suffix("/_/client.py"))
+        .filter(|pkg| {
+            pkg.strip_prefix("src/")
+                .is_some_and(|name| !name.contains('/'))
+        })
+        .collect();
+    let mut found = EmptyNamespace::default();
+    'packages: for pkg in packages {
+        let (Some(root_client), Some(moved_client)) = (
+            read(reference, &format!("{pkg}/client.py")),
+            read(crozier, &format!("{pkg}/_/client.py")),
+        ) else {
+            continue;
+        };
+        if !root_client
+            .lines()
+            .any(|line| line.starts_with("from ..core."))
+            || without_examples(&root_client) != without_examples(&moved_client)
+        {
+            continue;
+        }
+        let mut reference_only = BTreeSet::new();
+        let mut crozier_only = BTreeSet::new();
+        for rel in &crozier_files {
+            let Some(inner) = rel.strip_prefix(&format!("{pkg}/_/")) else {
+                continue;
+            };
+            let fern_rel = format!("{pkg}/{inner}");
+            match inner {
+                "client.py" | "types/__init__.py" => {}
+                "__init__.py" => {
+                    let (ours, theirs) = (read(crozier, rel), read(reference, &fern_rel));
+                    if ours.as_deref().map(leading_blank_free)
+                        != theirs.as_deref().map(leading_blank_free)
+                    {
+                        continue 'packages;
+                    }
+                }
+                _ => {
+                    let ours = read(crozier, rel);
+                    if ours.is_none() || ours != read(reference, &fern_rel) {
+                        continue 'packages;
+                    }
+                    if !crozier.join(&fern_rel).exists() {
+                        reference_only.insert(fern_rel);
+                    }
+                }
+            }
+            crozier_only.insert(rel.clone());
+        }
+        found.reference_only.extend(reference_only);
+        found.crozier_only.extend(crozier_only);
+        found
+            .replaced
+            .extend([format!("{pkg}/client.py"), format!("{pkg}/__init__.py")]);
+    }
+    found
+}
+
+/// A client module's lines without its docstrings' `Examples` sections.
+fn without_examples(text: &str) -> Vec<&str> {
+    let lines: Vec<&str> = text.lines().collect();
+    let mut kept = Vec::with_capacity(lines.len());
+    let mut in_examples = false;
+    for (index, line) in lines.iter().enumerate() {
+        if in_examples {
+            in_examples = line.trim() != "\"\"\"";
+            if in_examples {
+                continue;
+            }
+        } else if line.trim() == "Examples"
+            && lines
+                .get(index + 1)
+                .is_some_and(|next| next.trim() == "--------")
+        {
+            in_examples = true;
+            continue;
+        }
+        kept.push(*line);
+    }
+    kept
+}
+
 /// The names `X` the `.py` files among `sources` read as
 /// `encode_path_param(self._client_wrapper._X)`: base-path parameters a route
 /// takes from the client.
@@ -1466,7 +1591,19 @@ pub type LineRule = fn(&Pair<'_>, &str, &str) -> bool;
 /// A rule's recogniser for one line crozier writes with no Fern counterpart.
 pub type AddedRule = fn(&Pair<'_>, &str) -> bool;
 
-/// How one entry's rule recognises its departure: by any of the three shapes.
+/// The tree a file present on only one side belongs to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Side {
+    /// Only the reference has the file.
+    Reference,
+    /// Only crozier wrote the file.
+    Crozier,
+}
+
+/// A rule's recogniser for a whole file at a path only one side has.
+pub type FileRule = fn(&Context, &str, Side) -> bool;
+
+/// How one entry's rule recognises its departure: by any of the four shapes.
 #[derive(Clone, Copy, Default)]
 pub struct Rule {
     /// A region of the pair.
@@ -1475,22 +1612,27 @@ pub struct Rule {
     pub line: Option<LineRule>,
     /// A line only crozier writes.
     pub added: Option<AddedRule>,
+    /// A file only one side has.
+    pub file: Option<FileRule>,
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 17] = [
+pub const RULE_IDS: [&str; 20] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
     "date-header-constructor-example",
+    "empty-namespace-package",
     "fern-metadata-generator-config",
+    "flat-pagination-pager-docs",
     "init-type-checking-import-order",
     "lifted-base-path-docs-examples",
     "lifted-base-path-positional-example",
     "multipart-object-required-file-example",
     "nullable-items-docs",
     "readme-client-class-casing",
+    "repeated-credential-example-keyword",
     "request-alias-reference-parameters",
     "sdk-identity-header-prefix",
     "sdk-name-version-headers",
@@ -1510,7 +1652,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         "closed-empty-object-example" => Rule {
             region: Some(closed_empty_object_example_region),
             line: Some(closed_empty_object_example_line),
-            added: None,
+            ..none
         },
         "constant-header-docs-arguments" => Rule {
             region: Some(constant_header_docs_arguments),
@@ -1520,8 +1662,17 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(date_header_constructor_example),
             ..none
         },
+        "empty-namespace-package" => Rule {
+            region: Some(empty_namespace_package_root),
+            file: Some(empty_namespace_package_file),
+            ..none
+        },
         "fern-metadata-generator-config" => Rule {
             region: Some(metadata_generator_config),
+            ..none
+        },
+        "flat-pagination-pager-docs" => Rule {
+            region: Some(flat_pagination_pager_docs),
             ..none
         },
         "binary-json-body-example" => Rule {
@@ -1556,6 +1707,10 @@ pub fn rule(id: &str) -> Option<Rule> {
             line: Some(readme_client_class_casing),
             ..none
         },
+        "repeated-credential-example-keyword" => Rule {
+            region: Some(repeated_credential_example_keyword),
+            ..none
+        },
         "stream-reference-return-type" => Rule {
             line: Some(stream_reference_return_type),
             ..none
@@ -1567,7 +1722,7 @@ pub fn rule(id: &str) -> Option<Rule> {
         "sdk-name-version-headers" => Rule {
             line: Some(sdk_name_version_header),
             added: Some(sdk_name_version_header_added),
-            region: None,
+            ..none
         },
         "sdk-variable-docs-examples" => Rule {
             region: Some(sdk_variable_docs_examples),
@@ -2192,11 +2347,16 @@ fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> b
     let Some((method, _)) = rest.split_once("</a>") else {
         return false;
     };
-    // `reference.md` links the packaged module (`src/<package>/…`); crozier's
-    // tree holds it at the same relative path.
-    pair.context
-        .crozier_method_returns()
-        .get(&(path.to_string(), method.to_string()))
+    // `reference.md` links the packaged module (`src/<package>/…`) in either
+    // layout; a packaged tree holds it at that path, a flat tree at the root.
+    let returns = pair.context.crozier_method_returns();
+    let declared = |path: &str| returns.get(&(path.to_string(), method.to_string()));
+    declared(path)
+        .or_else(|| {
+            path.strip_prefix("src/")
+                .and_then(|packaged| packaged.split_once('/'))
+                .and_then(|(_, flat)| declared(flat))
+        })
         .is_some_and(|declared| declared.replace("dt.", "datetime.") == annotation)
 }
 
@@ -2209,6 +2369,157 @@ fn lifted_argument<'l>(line: &'l str, names: &BTreeSet<String>) -> Option<&'l st
     }
     let (name, _) = trimmed.split_once('=')?;
     names.contains(name).then_some(name)
+}
+
+/// `repeated-credential-example-keyword`: in `README.md`, `reference.md` or a
+/// `client.py`, Fern's file is crozier's once every keyword argument line of a
+/// client constructor call (`client = <Class>(`) that repeats a keyword an
+/// earlier line of the same call passed is removed — Fern's two credentials
+/// sharing one parameter, written `api_key=…` twice. The region is the two
+/// files' differing window.
+fn repeated_credential_example_keyword(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if !DOCS_FILES.contains(&pair.rel)
+        && pair.rel != "client.py"
+        && !pair.rel.ends_with("/client.py")
+    {
+        return Ok(None);
+    }
+    let mut kept: Vec<&str> = Vec::with_capacity(pair.fern.len());
+    let mut keywords: Option<(usize, BTreeSet<&str>)> = None;
+    let mut removed = false;
+    for line in pair.fern {
+        let trimmed = line.trim_start();
+        let indent = line.len() - trimmed.len();
+        if opens_constructor_call(trimmed) {
+            keywords = Some((indent, BTreeSet::new()));
+        } else if let Some((opened, seen)) = keywords.as_mut() {
+            if trimmed == ")" && indent == *opened {
+                keywords = None;
+            } else if let Some((name, _)) = trimmed.split_once('=').filter(|_| line.ends_with(','))
+            {
+                if !seen.insert(name) {
+                    removed = true;
+                    continue;
+                }
+            }
+        }
+        kept.push(line);
+    }
+    if !removed || kept != pair.crozier {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
+}
+
+/// `empty-namespace-package`: the package root's `client.py` and `__init__.py`,
+/// where Fern wrote the empty namespace's client and package marker, are
+/// crozier's root client and package whole.
+fn empty_namespace_package_root(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    Ok(pair
+        .context
+        .empty_namespace()
+        .replaced
+        .contains(pair.rel)
+        .then_some(Region {
+            fern: 0..pair.fern.len(),
+            crozier: 0..pair.crozier.len(),
+        }))
+}
+
+/// `empty-namespace-package`: a file of the `_` package crozier writes, or
+/// Fern's copy of one at the package root.
+fn empty_namespace_package_file(context: &Context, rel: &str, side: Side) -> bool {
+    let moves = context.empty_namespace();
+    match side {
+        Side::Reference => moves.reference_only.contains(rel),
+        Side::Crozier => moves.crozier_only.contains(rel),
+    }
+}
+
+/// The seven lines Fern's README raw-response snippet walks its `pager` with.
+const PAGER_WALK: [&str; 7] = [
+    "print(pager.response)  # access the typed response for the first page",
+    "for item in pager:",
+    "    print(item)  # access the underlying object(s)",
+    "for page in pager.iter_pages():",
+    "    print(page.response)  # access the typed response for each page",
+    "    for item in page:",
+    "        print(item)  # access the underlying object(s)",
+];
+
+/// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
+/// its pager documentation is undone — the `Pagination` table-of-contents entry,
+/// the `## Pagination` section, and the raw-response snippet walking a `pager`
+/// written back as the raw client's call — where crozier's tree has no pager to
+/// document (Fern's flat tree, whose paginated methods return the page model).
+/// The region is the two files' differing window.
+fn flat_pagination_pager_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
+    if pair.rel != "README.md" || pair.crozier.contains(&"## Pagination") {
+        return Ok(None);
+    }
+    let lines = pair.fern;
+    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut removed = false;
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
+        if line == "- [Pagination](#pagination)" {
+            removed = true;
+            index += 1;
+            continue;
+        }
+        if line == "## Pagination" {
+            removed = true;
+            index += 1;
+            while index < lines.len() && !lines[index].starts_with("## ") {
+                index += 1;
+            }
+            continue;
+        }
+        // `client = X(` / `    ...,` / `)` / `pager = client.…(...)` and the
+        // seven lines walking it are the raw client's five.
+        if let (Some(class), Some(&"    ...,"), Some(&")"), Some(call)) = (
+            line.strip_prefix("client = ")
+                .and_then(|rest| rest.strip_suffix('(')),
+            lines.get(index + 1),
+            lines.get(index + 2),
+            lines
+                .get(index + 3)
+                .and_then(|call| call.strip_prefix("pager = client.")),
+        ) {
+            let walked = lines.get(index + 4..index + 11) == Some(&PAGER_WALK[..]);
+            if let (true, Some((callee, arguments))) = (walked, call.split_once('(')) {
+                let (path, method) = callee.rsplit_once('.').unwrap_or(("", callee));
+                let raw = if path.is_empty() {
+                    format!("response = client.with_raw_response.{method}({arguments}")
+                } else {
+                    format!("response = client.{path}.with_raw_response.{method}({arguments}")
+                };
+                kept.push(format!("client = {class}(...)"));
+                kept.push(raw);
+                kept.push("print(response.headers)  # access the response headers".to_string());
+                kept.push(
+                    "print(response.status_code)  # access the response status code".to_string(),
+                );
+                kept.push("print(response.data)  # access the underlying object".to_string());
+                removed = true;
+                index += 11;
+                continue;
+            }
+        }
+        kept.push(line.to_string());
+        index += 1;
+    }
+    if !removed
+        || kept.len() != pair.crozier.len()
+        || kept
+            .iter()
+            .zip(pair.crozier)
+            .any(|(left, right)| left != right)
+    {
+        return Ok(None);
+    }
+    Ok(differing_window(pair.fern, pair.crozier))
 }
 
 /// The line opening the call whose argument list holds line `index`: the
@@ -2957,6 +3268,167 @@ mod tests {
         assert!(Context::default().reference_classes().is_empty());
     }
 
+    /// A tree's files as `(path, text)`.
+    type Tree = Vec<(&'static str, String)>;
+
+    /// Fern's empty-namespace tree and crozier's: Fern's `_` package at the
+    /// package root, crozier's under `_/`.
+    fn empty_namespace_trees() -> (Tree, Tree) {
+        let client = |example: &str| {
+            format!(
+                "from ..core.client_wrapper import SyncClientWrapper\nfrom .raw_client import RawClient\n\n\nclass Client:\n    def ping(self) -> None:\n        \"\"\"\n        Examples\n        --------\n        {example}\n        \"\"\"\n        return None\n"
+            )
+        };
+        let raw =
+            "from ..core.client_wrapper import SyncClientWrapper\n\n\nclass RawClient:\n    pass\n";
+        let hoisted = "from ...core.pydantic_utilities import UniversalBaseModel\n\n\nclass Ping(UniversalBaseModel):\n    pass\n";
+        let reference = vec![
+            ("src/fern/client.py", client("client..ping()")),
+            ("src/fern/raw_client.py", raw.to_string()),
+            (
+                "src/fern/__init__.py",
+                "\n\nfrom .types import Ping\n".to_string(),
+            ),
+            ("src/fern/types/ping.py", hoisted.to_string()),
+            (
+                "src/fern/types/__init__.py",
+                "from .ping import Ping\n".to_string(),
+            ),
+        ];
+        let crozier = vec![
+            (
+                "src/fern/client.py",
+                "class FernApi:\n    @property\n    def _(self):\n        pass\n".to_string(),
+            ),
+            (
+                "src/fern/__init__.py",
+                "from .client import FernApi\n".to_string(),
+            ),
+            (
+                "src/fern/types/__init__.py",
+                "from .ping import Ping\n".to_string(),
+            ),
+            ("src/fern/_/client.py", client("client._.ping()")),
+            ("src/fern/_/raw_client.py", raw.to_string()),
+            (
+                "src/fern/_/__init__.py",
+                "from .types import Ping\n".to_string(),
+            ),
+            ("src/fern/_/types/ping.py", hoisted.to_string()),
+            (
+                "src/fern/_/types/__init__.py",
+                "from .ping import Ping\n".to_string(),
+            ),
+        ];
+        (reference, crozier)
+    }
+
+    fn write_tree(files: &[(&str, String)]) -> tempfile::TempDir {
+        let root = tempfile::tempdir().unwrap();
+        for (rel, text) in files {
+            let path = root.path().join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        }
+        root
+    }
+
+    #[test]
+    fn the_empty_namespace_rule_holds_only_where_crozier_moves_fern_s_files_unchanged() {
+        let (reference, crozier) = empty_namespace_trees();
+        let (fern_tree, crozier_tree) = (write_tree(&reference), write_tree(&crozier));
+        let context = Context::from_trees(fern_tree.path(), crozier_tree.path());
+        let found = context.empty_namespace();
+        assert_eq!(
+            found.crozier_only,
+            BTreeSet::from(
+                [
+                    "src/fern/_/__init__.py",
+                    "src/fern/_/client.py",
+                    "src/fern/_/raw_client.py",
+                    "src/fern/_/types/__init__.py",
+                    "src/fern/_/types/ping.py"
+                ]
+                .map(String::from)
+            )
+        );
+        assert_eq!(
+            found.reference_only,
+            BTreeSet::from(["src/fern/raw_client.py", "src/fern/types/ping.py"].map(String::from))
+        );
+        assert!(empty_namespace_package_file(
+            &context,
+            "src/fern/raw_client.py",
+            Side::Reference
+        ));
+        assert!(!empty_namespace_package_file(
+            &context,
+            "src/fern/raw_client.py",
+            Side::Crozier
+        ));
+        let (fern, ours) = (["class Client:", ""], ["class FernApi:", "", ""]);
+        let root = Pair {
+            rel: "src/fern/client.py",
+            fern: &fern,
+            crozier: &ours,
+            context: &context,
+        };
+        assert_eq!(
+            empty_namespace_package_root(&root).unwrap(),
+            Some(Region {
+                fern: 0..2,
+                crozier: 0..3
+            })
+        );
+        let elsewhere = Pair {
+            rel: "src/fern/types/__init__.py",
+            ..root
+        };
+        assert_eq!(empty_namespace_package_root(&elsewhere).unwrap(), None);
+
+        // Each guard: a root client that is not the `_` client, a moved file that
+        // is not Fern's copy, a `_/client.py` differing outside its examples, and
+        // no trees at all find nothing.
+        let unfound = |edit: &dyn Fn(&mut Tree, &mut Tree)| {
+            let (mut reference, mut crozier) = empty_namespace_trees();
+            edit(&mut reference, &mut crozier);
+            let (fern_tree, crozier_tree) = (write_tree(&reference), write_tree(&crozier));
+            let context = Context::from_trees(fern_tree.path(), crozier_tree.path());
+            let found = context.empty_namespace();
+            found.crozier_only.is_empty()
+                && found.reference_only.is_empty()
+                && found.replaced.is_empty()
+        };
+        assert!(unfound(&|reference, _| {
+            reference[0].1 = reference[0].1.replace("from ..core.", "from .core.");
+        }));
+        assert!(unfound(&|_, crozier| crozier[4]
+            .1
+            .push_str("# kept\nx = 1\n")));
+        assert!(unfound(
+            &|_, crozier| crozier[3].1 = crozier[3].1.replace("return None", "return 1")
+        ));
+        assert!(Context::default().empty_namespace().replaced.is_empty());
+    }
+
+    #[test]
+    fn examples_are_the_only_lines_without_examples_drops() {
+        let text = "def f():\n    \"\"\"\n    Doc.\n\n    Examples\n    --------\n    client..f()\n    \"\"\"\n    return 1\n";
+        assert_eq!(
+            without_examples(text),
+            [
+                "def f():",
+                "    \"\"\"",
+                "    Doc.",
+                "",
+                "    \"\"\"",
+                "    return 1"
+            ]
+        );
+        // A line reading `Examples` without its underline is kept.
+        assert_eq!(without_examples("Examples\nx"), ["Examples", "x"]);
+    }
+
     #[test]
     fn the_stream_heading_rule_holds_only_on_the_declared_iterator() {
         let client = "class FernApi:\n    def watch(\n        self, *, request_options: typing.Optional[RequestOptions] = None\n    ) -> typing.Iterator[Tick]:\n        pass\n    def at(self) -> typing.Iterator[dt.datetime]:\n        pass\n    def raw(self) -> typing.Iterator[bytes]:\n        pass\nclass AsyncFernApi:\n    async def watch(self) -> typing.AsyncIterator[Tick]:\n        pass\n";
@@ -3007,6 +3479,22 @@ mod tests {
             &readme,
             &fern,
             &heading("watch", "typing.Iterator[Tick]")
+        ));
+        // A flat tree holds the linked `src/<package>/` module at its root.
+        let flat = Context::from_sources([("client.py", client)], [("client.py", client)]);
+        let flat = Pair {
+            context: &flat,
+            ..pair
+        };
+        assert!(stream_reference_return_type(
+            &flat,
+            &fern,
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
+        assert!(!stream_reference_return_type(
+            &flat,
+            &fern,
+            &heading("watch", "typing.Iterator[Other]")
         ));
         // A file compared on its own has no tree to read the method from.
         let alone = Context::default();
@@ -3757,6 +4245,147 @@ mod tests {
                 &["    profile={},"]
             )),
             Ok(None)
+        );
+    }
+
+    #[test]
+    fn the_flat_pager_docs_rule_takes_only_the_pager_documentation() {
+        let fern = [
+            "- [Exception Handling](#exception-handling)",
+            "- [Pagination](#pagination)",
+            "## Pagination",
+            "",
+            "```python",
+            "pager = client.list_entries(...)",
+            "```",
+            "",
+            "## Advanced",
+            "client = FernApi(",
+            "    ...,",
+            ")",
+            "pager = client.ledger.list_entries(...)",
+            "print(pager.response)  # access the typed response for the first page",
+            "for item in pager:",
+            "    print(item)  # access the underlying object(s)",
+            "for page in pager.iter_pages():",
+            "    print(page.response)  # access the typed response for each page",
+            "    for item in page:",
+            "        print(item)  # access the underlying object(s)",
+            "```",
+        ];
+        let crozier = [
+            "- [Exception Handling](#exception-handling)",
+            "## Advanced",
+            "client = FernApi(...)",
+            "response = client.ledger.with_raw_response.list_entries(...)",
+            "print(response.headers)  # access the response headers",
+            "print(response.status_code)  # access the response status code",
+            "print(response.data)  # access the underlying object",
+            "```",
+        ];
+        let found = flat_pagination_pager_docs(&pair("README.md", &fern, &crozier)).unwrap();
+        assert_eq!(
+            found,
+            Some(Region {
+                fern: 1..20,
+                crozier: 1..7
+            })
+        );
+        // Only the README, and only where crozier documents no pager itself.
+        assert!(
+            flat_pagination_pager_docs(&pair("reference.md", &fern, &crozier))
+                .unwrap()
+                .is_none()
+        );
+        assert!(flat_pagination_pager_docs(&pair("README.md", &fern, &fern))
+            .unwrap()
+            .is_none());
+        // One more changed line anywhere is not this departure.
+        let mut other = crozier;
+        other[0] = "- [Exceptions](#exceptions)";
+        assert!(
+            flat_pagination_pager_docs(&pair("README.md", &fern, &other))
+                .unwrap()
+                .is_none()
+        );
+        // Nor is a snippet whose walk is not Fern's pager walk.
+        let mut walked = fern;
+        walked[16] = "    print(page.headers)";
+        assert!(
+            flat_pagination_pager_docs(&pair("README.md", &walked, &crozier))
+                .unwrap()
+                .is_none()
+        );
+    }
+
+    #[test]
+    fn the_repeated_keyword_rule_takes_only_a_constructor_call_repeat() {
+        let fern = [
+            "client = FernApi(",
+            "    api_key=\"<value>\",",
+            "    api_key=\"<X-Api-Key>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        let crozier = [
+            "client = FernApi(",
+            "    api_key=\"<value>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        let found =
+            repeated_credential_example_keyword(&pair("README.md", &fern, &crozier)).unwrap();
+        assert_eq!(
+            found,
+            Some(Region {
+                fern: 2..3,
+                crozier: 2..2
+            })
+        );
+        // Any `client.py` reads the same; another file does not.
+        assert!(
+            repeated_credential_example_keyword(&pair("src/fern/client.py", &fern, &crozier))
+                .unwrap()
+                .is_some()
+        );
+        assert!(repeated_credential_example_keyword(&pair(
+            "src/fern/raw_client.py",
+            &fern,
+            &crozier
+        ))
+        .unwrap()
+        .is_none());
+        // crozier keeping the repeat, or dropping the first keyword instead, is
+        // not the departure.
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &fern, &fern))
+                .unwrap()
+                .is_none()
+        );
+        let wrong = [
+            "client = FernApi(",
+            "    api_key=\"<X-Api-Key>\",",
+            ")",
+            "client.relay(",
+            "    to=\"to\",",
+            ")",
+        ];
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &fern, &wrong))
+                .unwrap()
+                .is_none()
+        );
+        // A repeated keyword in a method call is no constructor call.
+        let method = ["client.relay(", "    to=\"a\",", "    to=\"b\",", ")"];
+        let once = ["client.relay(", "    to=\"a\",", ")"];
+        assert!(
+            repeated_credential_example_keyword(&pair("README.md", &method, &once))
+                .unwrap()
+                .is_none()
         );
     }
 

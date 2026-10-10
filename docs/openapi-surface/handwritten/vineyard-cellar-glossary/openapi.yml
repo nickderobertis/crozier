@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Vineyard Cellar
+  version: 1.2.0
+  description: Tank batches and tasting vocabulary for a vineyard's cellar.
+servers:
+  - url: https://cellar.vineyard.test
+tags:
+  - name: Fermentation
+    description: Tank batches.
+paths:
+  /phrases:
+    get:
+      operationId: listPhrases
+      responses:
+        '200':
+          description: Tasting phrases.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Phrase'
+  /tanks/{tankId}/batch:
+    get:
+      operationId: getTankBatch
+      parameters:
+        - name: tankId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The batch in the tank.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Batch'
+components:
+  schemas:
+    Phrase:
+      type: object
+      x-fern-sdk-group-name: glossary
+      required: [text]
+      properties:
+        text:
+          type: string
+        language:
+          type: string
+    Batch:
+      type: object
+      x-tags: [Fermentation]
+      required: [litres]
+      properties:
+        litres:
+          type: number
+        grape:
+          type: string
+    Tank:
+      type: object
+      properties:
+        id:
+          type: string

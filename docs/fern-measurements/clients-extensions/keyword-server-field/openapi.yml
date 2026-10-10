@@ -1,0 +1,12 @@
+openapi: 3.0.3
+info: {title: Probe, version: '1'}
+servers:
+  - url: https://main.test
+paths:
+  /ping:
+    get:
+      operationId: ping
+      servers:
+        - url: https://kw.test
+          x-fern-server-name: class
+      responses: {'204': {description: ok}}

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "41f49cbaa377f871ee86726c9ce880a335bdfad6d2c8c679d721aef59cf16b61"
+
+[[covers]]
+key = "operation-pagination-offset"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#offset-pagination"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

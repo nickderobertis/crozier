@@ -960,7 +960,11 @@ pub fn enum_visit_param(value: &str) -> String {
 
 /// Names Fern suffixes with `_` (keeping the wire name as an alias): Python hard
 /// keywords (syntactically un-usable as identifiers) plus the specific builtins
-/// observed in Fern's output. The builtin set is deliberately evidence-based —
+/// observed in Fern's output. `complex` is one: a `Complex` schema's module is
+/// `complex_.py` and a `complex` property is `complex_`, while a measured
+/// generation over some eighty other builtin and stdlib names (`str`, `range`,
+/// `dict`, `type`, `id`, …) leaves every one of those modules unsuffixed. The
+/// builtin set is deliberately evidence-based —
 /// only names confirmed by a measured generation belong here, since over-munging a
 /// name Fern leaves alone would break the byte-for-byte match. Expand it as new
 /// measurements confirm more.
@@ -969,7 +973,7 @@ pub fn is_reserved(name: &str) -> bool {
     // Builtins/module names Fern munges in *field/type* contexts.
     // Method names are narrower — see `is_reserved_method`.
     const RESERVED_BUILTINS: &[&str] = &[
-        "all", "bool", "float", "int", "list", "long", "map", "set", "uuid",
+        "all", "bool", "complex", "float", "int", "list", "long", "map", "set", "uuid",
     ];
     PYTHON_KEYWORDS.contains(&name) || RESERVED_BUILTINS.contains(&name)
 }
@@ -997,15 +1001,16 @@ pub fn model_field_name(wire_name: &str) -> String {
     }
 }
 
-/// Reserved-word check for *derived method* names. Fern safe-names Python keywords
-/// and the builtin `all` (a REST "list all" method → `all_`), but — unlike field and
-/// type names — leaves other builtins alone: appwrite's derived `list` stays `list`,
-/// not `list_`, and `bool`/`set`/… likewise. Evidence-based against the golden corpus
-/// (the only `_`-suffixed method names Fern emits are keywords, `all`, and dunders);
-/// widen only when a measured generation shows Fern suffixing another method name.
+/// Reserved-word check for *derived method* names, tagged or not. Fern safe-names
+/// every name [`is_reserved`] holds except `list` and `set`: an operation `all`,
+/// `bool`, `complex`, `float`, `int`, `long`, `map` or `uuid` is that name with a
+/// trailing `_`, while appwrite's derived `list` stays `list` and an untagged
+/// operation `set` stays `set`. Evidence-based against the golden corpus and
+/// measured generations; widen only when a measured generation shows Fern
+/// suffixing another method name.
 #[must_use]
 pub fn is_reserved_method(name: &str) -> bool {
-    PYTHON_KEYWORDS.contains(&name) || name == "all"
+    is_reserved(name) && !matches!(name, "list" | "set")
 }
 
 /// Apply Python's mandatory keyword escaping without treating ordinary builtins
@@ -1017,6 +1022,13 @@ pub fn escape_python_keyword(mut name: String) -> String {
         name.push('_');
     }
     name
+}
+
+/// Whether `name` is a Python hard keyword, the part of [`is_reserved`] Fern
+/// escapes even inside a prefixed collision name.
+#[must_use]
+pub fn is_python_keyword(name: &str) -> bool {
+    PYTHON_KEYWORDS.contains(&name)
 }
 
 /// Python hard keywords — reserved in every naming context.
@@ -1034,16 +1046,33 @@ mod tests {
     #[test]
     fn method_reserved_set_is_narrower_than_general() {
         // Fern safe-names `all` and keywords as method names (apideck's `all_`,
-        // `import_`) but leaves other builtins alone (appwrite's `list`, not `list_`).
+        // `import_`) but leaves `list` and `set` alone (appwrite's `list`).
         assert!(is_reserved_method("all"));
         assert!(is_reserved_method("import"));
+        assert!(is_reserved_method("bool"));
         assert!(!is_reserved_method("list"));
-        assert!(!is_reserved_method("bool"));
+        assert!(!is_reserved_method("set"));
+        assert!(!is_reserved_method("dict"));
         // The general set still guards field/type names, so `list`/`bool`
         // stay reserved there.
         assert!(is_reserved("list"));
         assert!(is_reserved("bool"));
         assert!(is_reserved("all"));
+    }
+
+    #[test]
+    fn complex_is_reserved_in_every_naming_context() {
+        // Fern writes a `Complex` schema to `complex_.py`, a `complex` property
+        // and argument as `complex_`, and an operation `complex` as `complex_`.
+        assert_eq!(module_name("Complex"), "complex_");
+        assert_eq!(field_name("complex"), "complex_");
+        assert!(is_reserved_method("complex"));
+        // The adjacent builtins Fern leaves alone stay unsuffixed.
+        for name in ["str", "range", "dict", "type", "id", "object", "format"] {
+            assert_eq!(module_name(&to_pascal_case(name)), name);
+            assert_eq!(field_name(name), name);
+            assert!(!is_reserved_method(name));
+        }
     }
 
     #[test]

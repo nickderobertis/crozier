@@ -92,3 +92,25 @@ refuse in both modes, naming the declared header and constructor name. They
 are never generated under repaired names. The independently authored Warehouse
 Ledger complete golden remains the adjacent valid constructor-name control,
 including the canonical alias and conflicting values.
+
+## Idempotency-argument cases
+
+Fresh independently authored probes give an idempotent operation an
+idempotency header whose argument the method cannot take: an
+[empty name](idempotency-header-empty-name-probe.yml) (header `-`), a name
+[repeating a query parameter](idempotency-header-parameter-collision-probe.yml),
+and [two headers](idempotency-header-shared-name-probe.yml) stemming to one
+name once `X-` is stripped. Each was measured with CLI 5.67.1 and Python SDK
+5.20.0 through `tools/fern-goldens/generate-fern-fixture.sh` with its default
+settings (packaged preview, package `fern`, client `FernApi`, Python enums).
+Fern's own checks pass; each generation exits 1 with no SDK tree because
+`ruff check` rejects the signature: a missing argument name for the
+[empty name](evaluation-logs/idempotency-header-empty-name.generate.log), and
+`Duplicate keyword argument "firing_token"` for the
+[query collision](evaluation-logs/idempotency-header-parameter-collision.generate.log)
+and the [shared name](evaluation-logs/idempotency-header-shared-name.generate.log).
+These are name-only faults: crozier refuses all three in both modes, naming
+the operation, the header and the argument, and never renames one. The
+`x-crozier-idempotency-headers` spelling refuses the same way and wins over a
+conflicting `x-fern-*` list. The independently authored Parcel Courier Desk
+complete golden remains the adjacent valid idempotency control.

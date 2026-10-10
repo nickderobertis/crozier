@@ -223,6 +223,33 @@ pub struct Environment {
     pub url_template: String,
     /// Server URL variables exposed as optional root-client constructor parameters.
     pub variables: Vec<ServerUrlVariable>,
+    /// The URLs operations reach beside the document's own, `(field, url)` in
+    /// first-appearance order: one per distinct `x-fern-server-name` an
+    /// operation-level server carries. Empty for a one-URL environment, the
+    /// `enum.Enum`; otherwise each member is an object whose `base` field is its
+    /// server and whose other fields are these, and each endpoint names its field
+    /// ([`EndpointExtensions::environment_field`]).
+    // llmlint: ignore[invalid_states_unrepresentable] The two forms share every other field of `Environment`, and an empty list is exactly Fern's own switch: it writes the multi-URL class precisely when an operation names a server, so a separate variant would duplicate the shared fields to restate this one test.
+    pub urls: Vec<(String, String)>,
+}
+
+/// The field of a multi-URL environment an operation's requests read.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EnvironmentField {
+    /// The document's own server URL.
+    Base,
+    /// The field an operation server's name declares (`archive`, `class_`).
+    // llmlint: ignore[invalid_states_unrepresentable] The only producer is `environment_field`, which builds the name with `python_parameter_name` (a non-empty identifier, keywords escaped), and `Ir::unemittable_extension` refuses a document whose operation server is named `base`; a newtype would restate those two checks for one producer.
+    Named(String),
+}
+
+impl std::fmt::Display for EnvironmentField {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            EnvironmentField::Base => f.write_str("base"),
+            EnvironmentField::Named(field) => f.write_str(field),
+        }
+    }
 }
 
 /// One variable from the default server's URL template.
@@ -263,24 +290,31 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     // are not — and the URL shape does not enter into it (a templated or
     // root-relative URL described `Production` is still `PRODUCTION`).
     const NAMED_ENVIRONMENTS: [&str; 2] = ["production", "sandbox"];
-    let mut named: IndexMap<&str, &crate::openapi::Server> = IndexMap::new();
+    // A server naming itself by `x-fern-server-name` (or crozier's spelling) is
+    // that member, the declared name in SCREAMING_SNAKE (`main` is `MAIN`), and
+    // every such server is one: two named servers are `MAIN` and `BACKUP`.
+    let mut named: IndexMap<String, &crate::openapi::Server> = IndexMap::new();
     for server in &doc.servers {
         let name = server
-            .description
-            .as_deref()
-            .map(str::trim)
-            .and_then(|description| {
-                NAMED_ENVIRONMENTS
-                    .into_iter()
-                    .find(|named| description.eq_ignore_ascii_case(named))
+            .server_name()
+            .map(|name| naming::to_snake_case(name).to_ascii_uppercase())
+            .or_else(|| {
+                server
+                    .description
+                    .as_deref()
+                    .map(str::trim)
+                    .and_then(|description| {
+                        NAMED_ENVIRONMENTS
+                            .into_iter()
+                            .find(|named| description.eq_ignore_ascii_case(named))
+                    })
+                    .map(str::to_ascii_uppercase)
             });
         if let Some(name) = name {
             named.insert(name, server);
         }
     }
-    let mut named = named
-        .into_iter()
-        .map(|(name, server)| (name.to_ascii_uppercase(), server));
+    let mut named = named.into_iter();
     let (default_name, default) = named.next().unwrap_or(("DEFAULT".to_string(), first));
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
@@ -298,7 +332,201 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
                 default: variable.default.clone(),
             })
             .collect(),
+        urls: operation_server_urls(doc),
     })
+}
+
+/// The `(field, url)` pairs an operation-level server names
+/// (`x-fern-server-name`, either spelling), distinct by field, in document
+/// order: the fields of Fern's multi-URL environment beside `base`.
+fn operation_server_urls(doc: &OpenApi) -> Vec<(String, String)> {
+    let mut urls: Vec<(String, String)> = Vec::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            for server in &op.servers {
+                let Some(name) = server.server_name() else {
+                    continue;
+                };
+                let field = python_parameter_name(name);
+                if !urls.iter().any(|(known, _)| *known == field) {
+                    urls.push((field, resolve_server_url(server)));
+                }
+            }
+        }
+    }
+    urls
+}
+
+/// The environment field an operation's requests read in a multi-URL
+/// environment: its first named server's, unless that server is the
+/// document's own, which is `base` — as is every operation declaring none.
+fn environment_field(doc: &OpenApi, op: &Operation) -> EnvironmentField {
+    op.servers
+        .first()
+        .filter(|server| doc.servers.first().is_none_or(|own| own.url != server.url))
+        .and_then(|server| server.server_name())
+        .map_or(EnvironmentField::Base, |name| {
+            EnvironmentField::Named(python_parameter_name(name))
+        })
+}
+
+/// Whether `name` is an ASCII Python identifier: non-empty, not digit-led,
+/// and only ASCII letters, digits and `_`. Python admits some non-ASCII
+/// identifiers too, but not every Unicode letter or digit (`²`, `١`), so
+/// anything outside ASCII is refused rather than guessed at.
+fn is_ascii_python_identifier(name: &str) -> bool {
+    !name.starts_with(|c: char| c.is_ascii_digit())
+        && !name.is_empty()
+        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+}
+
+/// A declared name as Fern writes a Python parameter or attribute from it:
+/// snake_case with illegal characters `_`, a digit-led name `_`-prefixed and a
+/// keyword `_`-suffixed (`class` is `class_`).
+fn python_parameter_name(name: &str) -> String {
+    let name = naming::sanitize_identifier(&naming::to_snake_case(name));
+    if naming::is_python_keyword(&name) {
+        format!("{name}_")
+    } else {
+        name
+    }
+}
+
+impl Ir {
+    /// Why what an extension declares cannot be emitted, if it cannot. Fern's
+    /// output for each of these breaks, loses or renames what the author
+    /// declared, so crozier asks for another value:
+    ///
+    /// - an idempotency header that is no HTTP header name, whose quotes or
+    ///   backslashes would break the generated literal;
+    /// - a credential prefix carrying `{` or `}`, which Fern writes into the
+    ///   header's f-string, where it is interpolation rather than text;
+    /// - a server name whose environment member is no Python identifier — one
+    ///   starting with a digit, which Fern's examples write as an attribute that
+    ///   is not Python (`Environment.1ST`), carrying punctuation, or empty;
+    /// - a credential or operation server field whose declared name is
+    ///   separators only, which leaves no Python name;
+    /// - an operation server named `base`, the environment field holding the
+    ///   document's own URL;
+    /// - a basic scheme's username and password of one name, or a credential
+    ///   named like one of the root client's own constructor parameters,
+    ///   `self` among them.
+    #[must_use]
+    pub fn unemittable_extension(&self) -> Option<String> {
+        // An HTTP header name is a token (RFC 9110 `tchar`), which no quote or
+        // backslash can break out of the generated string literal.
+        let token = |name: &str| {
+            !name.is_empty()
+                && name
+                    .chars()
+                    .all(|c| c.is_ascii_alphanumeric() || "!#$%&'*+-.^_`|~".contains(c))
+        };
+        if let Some(header) = self
+            .endpoints
+            .iter()
+            .flat_map(|endpoint| &endpoint.extensions.idempotency_headers)
+            .find(|header| !token(&header.wire_name))
+        {
+            return Some(format!(
+                "the document's `x-fern-idempotency-headers` (or `x-crozier-idempotency-headers`) \
+                 names `{}`, which is no HTTP header name; declare a header name of letters, \
+                 digits and `!#$%&'*+-.^_`|~` only",
+                header.wire_name.escape_debug()
+            ));
+        }
+        if let Auth::ApiKey {
+            prefix: Some(prefix),
+            ..
+        } = &self.auth
+        {
+            if prefix.contains(['{', '}']) {
+                return Some(format!(
+                    "a security scheme's header prefix `{prefix}` carries `{{` or `}}`, which the \
+                     client's f-string would read as interpolation; declare the prefix without \
+                     braces"
+                ));
+            }
+        }
+        if let Some(environment) = &self.environment {
+            let members = std::iter::once(&environment.default.0)
+                .chain(environment.others.iter().map(|(name, _)| name));
+            if let Some(member) = members
+                .into_iter()
+                .find(|name| !is_ascii_python_identifier(name))
+            {
+                return Some(if member.starts_with(|c: char| c.is_ascii_digit()) {
+                    format!(
+                        "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
+                         environment member `{member}`, which starts with a digit and is no \
+                         Python identifier; give that server a name starting with a letter"
+                    )
+                } else {
+                    format!(
+                        "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
+                         environment member `{}`, which is no ASCII Python identifier; give \
+                         that server a name of ASCII letters, digits and separators",
+                        member.escape_debug()
+                    )
+                });
+            }
+            if environment.urls.iter().any(|(field, _)| field.is_empty()) {
+                return Some(
+                    "an operation server's `x-fern-server-name` (or `x-crozier-server-name`) \
+                     names no environment field once separators are dropped; give that server \
+                     a name with a letter or digit"
+                        .to_string(),
+                );
+            }
+            if environment.urls.iter().any(|(field, _)| field == "base") {
+                return Some(
+                    "an operation server's `x-fern-server-name` (or `x-crozier-server-name`) \
+                     names the environment field `base`, which holds the document's own server \
+                     URL; give that server another name"
+                        .to_string(),
+                );
+            }
+        }
+        if let Auth::Basic {
+            username, password, ..
+        } = &self.auth
+        {
+            if username.param == password.param {
+                return Some(format!(
+                    "the basic scheme's `x-fern-basic` (or `x-crozier-basic`) names both its \
+                     username and its password `{}`; give them distinct names",
+                    username.param
+                ));
+            }
+        }
+        // An additional header scheme's credential is a promoted header.
+        let declared_headers = self
+            .global_headers
+            .iter()
+            .filter_map(|header| header.credential.as_ref())
+            .map(|credential| credential.param.as_str());
+        self.auth
+            .credentials()
+            .into_iter()
+            .map(|credential| credential.param.as_str())
+            .chain(declared_headers)
+            .find(|param| {
+                param.is_empty() || *param == "self" || ROOT_CLIENT_PARAMETERS.contains(param)
+            })
+            .map(|param| {
+                if param.is_empty() {
+                    "a security scheme's `x-crozier-*` (or `x-fern-*`) naming extension names its \
+                     credential with separators only, which leaves no Python parameter name; \
+                     name it with a letter or digit"
+                        .to_string()
+                } else {
+                    format!(
+                        "a security scheme names its credential `{param}`, which is the client \
+                         constructor's own `{param}` parameter; name it otherwise with the \
+                         scheme's `x-crozier-*` (or `x-fern-*`) naming extension"
+                    )
+                }
+            })
+    }
 }
 
 /// The root client's own keyword parameters, which a server URL variable cannot
@@ -341,7 +569,11 @@ fn server_variable_py_name(wire_name: &str) -> String {
 /// variable `default` (`https://.../{basePath}` + `/v1` →
 /// `https://.../%2Fv1`), matching Fern's URI-template expansion.
 fn resolve_server_url(server: &crate::openapi::Server) -> String {
-    let mut url = server.url.clone();
+    // `x-fern-default-url` replaces the expansion outright (a templated
+    // `https://{region}.lockers.test/v2` is `https://lockers.test/v2`).
+    let mut url = server
+        .default_url()
+        .map_or_else(|| server.url.clone(), str::to_string);
     for (name, var) in &server.variables {
         url = url.replace(
             &format!("{{{name}}}"),
@@ -387,6 +619,12 @@ pub struct GlobalHeader {
     pub py_name: String,
     /// Whether, and how, the constructor field must be given.
     pub presence: HeaderPresence,
+    /// The credential this header carries when an additional header `apiKey`
+    /// scheme promotes it: its parameter (this field's `py_name`) and the
+    /// environment variable `x-fern-header: {env: …}` (or crozier's spelling)
+    /// defaults it to, a required field then checked once the client is built.
+    /// `None` for a header an operation parameter promotes.
+    pub credential: Option<Credential>,
 }
 
 /// How a promoted header's constructor field is given. The type is that of the
@@ -600,12 +838,14 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(header_param_stem(&wire_name)),
                 wire_name,
                 presence,
+                credential: None,
             }
         })
         .collect();
     // Fern also treats additional header apiKey security schemes as SDK-wide
     // constructor fields. The first apiKey scheme is the auth credential
-    // (`api_key`); subsequent header schemes are named from their wire header.
+    // (`api_key`); subsequent header schemes are named from their wire header,
+    // unless their header extension names them.
     // An api-key header may also ride every operation as an explicit parameter.
     // Removing it from `seen` above and appending the scheme-derived field here
     // avoids a duplicate while preserving Fern's grouping (ordinary headers,
@@ -620,6 +860,7 @@ fn global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
                 py_name: naming::field_name(&header.name),
                 wire_name: header.header.clone(),
                 presence: HeaderPresence::Required(HeaderType::Str),
+                credential: None,
             });
         }
     }
@@ -718,10 +959,18 @@ fn additional_api_key_global_headers(doc: &OpenApi) -> Vec<GlobalHeader> {
             if is_transport_managed_header(wire_name) {
                 return None;
             }
+            // A scheme's `x-fern-header` (or `x-crozier-header`, which wins on
+            // the node) names the field and its environment default, as Fern
+            // reads it; its `prefix` Fern does not send on an additional header.
+            let credential = Credential::named(
+                &naming::field_name(header_param_stem(wire_name)),
+                &scheme.header_credential(),
+            );
             Some(GlobalHeader {
-                py_name: naming::field_name(header_param_stem(wire_name)),
+                py_name: credential.param.clone(),
                 wire_name: wire_name.clone(),
                 presence: HeaderPresence::Required(HeaderType::Str),
+                credential: Some(credential),
             })
         })
         .collect()
@@ -795,22 +1044,47 @@ pub enum Auth {
         header: String,
         /// Whether every operation is authenticated (the credential is required).
         required: bool,
+        /// The credential's parameter (`api_key` unless the scheme names it).
+        credential: Credential,
+        /// The text the key is sent behind (`f"Meter {self.meter_token}"`).
+        // llmlint: ignore[invalid_states_unrepresentable] Fern takes the prefix verbatim, so any declared text is the value; the one text crozier cannot emit, a brace, is refused at the boundary by `Ir::unemittable_extension` before any file is written, and a newtype would restate that one check.
+        prefix: Option<String>,
     },
     /// A bearer `token` (str or callable), sent as `Authorization: Bearer`.
     Bearer {
         /// Whether every operation is authenticated (the token is required).
         required: bool,
+        /// The credential's parameter (`token` unless the scheme names it).
+        credential: Credential,
     },
     /// HTTP `basic` credentials: a required `username`/`password` pair (each a
     /// `str` or callable), sent via `httpx.BasicAuth` as `Authorization: Basic`.
     Basic {
         /// Whether every operation requires Basic auth.
         required: bool,
+        /// The username's parameter (`username` unless the scheme names it).
+        username: Credential,
+        /// The password's parameter (`password` unless the scheme names it).
+        password: Credential,
     },
     /// No authentication: the document declares no security schemes, so the client
     /// wrapper carries no credential and adds no `Authorization` header — matching
     /// Fern's wrapper for an unauthenticated API.
     None,
+}
+
+impl Auth {
+    /// Every credential, in constructor order.
+    #[must_use]
+    pub fn credentials(&self) -> Vec<&Credential> {
+        match self {
+            Auth::ApiKey { credential, .. } | Auth::Bearer { credential, .. } => vec![credential],
+            Auth::Basic {
+                username, password, ..
+            } => vec![username, password],
+            Auth::None => Vec::new(),
+        }
+    }
 }
 
 /// Derive the [`Auth`] model: the first supported declared scheme selects the
@@ -874,6 +1148,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
             if s.ty == SecuritySchemeType::ApiKey
                 && s.location == Some(ParameterLocation::Header) =>
         {
+            let naming = s.header_credential();
             Auth::ApiKey {
                 header: s.name.clone().unwrap_or_default(),
                 required: doc
@@ -882,19 +1157,28 @@ fn auth_model(doc: &OpenApi) -> Auth {
                     .is_some_and(|requirements| requirements.iter().any(|r| !r.is_empty()))
                     || all_operations_authenticated(doc)
                     || doc.security.is_none(),
+                credential: Credential::named("api_key", &naming),
+                prefix: naming.prefix,
             }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Bearer) => {
             let required = all_operations_authenticated(doc);
-            Auth::Bearer { required }
+            Auth::Bearer {
+                required,
+                credential: Credential::named("token", &s.bearer_credential()),
+            }
         }
         Some(s) if s.ty == SecuritySchemeType::Http && s.scheme == Some(HttpAuthScheme::Basic) => {
+            let (username, password) = s.basic_credentials();
             Auth::Basic {
                 required: all_operations_authenticated(doc),
+                username: Credential::named("username", &username),
+                password: Credential::named("password", &password),
             }
         }
         Some(s) if s.ty == SecuritySchemeType::OAuth2 => Auth::Bearer {
             required: all_operations_authenticated(doc),
+            credential: Credential::plain("token"),
         },
         // An `openIdConnect` scheme is a bearer token to Fern, required on the
         // same terms as OAuth2's: the Virtual Cell's `openId` scheme leaves
@@ -902,6 +1186,7 @@ fn auth_model(doc: &OpenApi) -> Auth {
         // scheme on every operation makes it required.
         Some(s) if s.ty == SecuritySchemeType::OpenIdConnect => Auth::Bearer {
             required: all_operations_authenticated(doc),
+            credential: Credential::plain("token"),
         },
         // No scheme Fern supports: it defines no auth at all. OneVoice's
         // requirement names a cookie `apiKey` and its other scheme is
@@ -909,6 +1194,41 @@ fn auth_model(doc: &OpenApi) -> Auth {
         // whose operations require such a scheme are refused outright (*Endpoint
         // requires auth, but no auth is defined*).
         _ => Auth::None,
+    }
+}
+
+/// A credential's constructor parameter: its Python name, and the environment
+/// variable the root client defaults it to (`x-fern-bearer: {env: …}`), whose
+/// absence it then reports with an `ApiError`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Credential {
+    /// The parameter's Python name (`token`, `lift_pass`).
+    // llmlint: ignore[invalid_states_unrepresentable] A credential is built only by `Credential::named` (which normalizes a declared name to a Python identifier, escaping keywords) and `Credential::plain` (crozier's literal defaults), and `Ir::unemittable_extension` refuses a name colliding with the constructor's own parameters; a newtype would retype a string twenty-five emitter sites format.
+    pub param: String,
+    /// The environment variable the root client reads it from, if any.
+    pub env: Option<String>,
+}
+
+impl Credential {
+    /// The credential named `default` unless `naming` declares a name.
+    #[must_use]
+    pub fn named(default: &str, naming: &crate::openapi::CredentialNaming) -> Self {
+        Credential {
+            param: naming
+                .name
+                .as_deref()
+                .map_or_else(|| default.to_string(), python_parameter_name),
+            env: naming.env.clone(),
+        }
+    }
+
+    /// The credential named `default`, with no environment default.
+    #[must_use]
+    pub fn plain(default: &str) -> Self {
+        Credential {
+            param: default.to_string(),
+            env: None,
+        }
     }
 }
 
@@ -1267,6 +1587,9 @@ pub struct Endpoint {
     pub query_params: Vec<QueryParam>,
     /// Header parameters, in declaration order.
     pub header_params: Vec<HeaderParam>,
+    /// The operation-level extensions that shape only its method: idempotency
+    /// arguments and the retry policy.
+    pub extensions: EndpointExtensions,
     /// String headers with schema defaults, sent on every request but omitted
     /// from the public method signature.
     pub constant_headers: Vec<(String, String)>,
@@ -1554,6 +1877,27 @@ impl QueryParam {
     pub fn argument_required(&self) -> bool {
         self.required && !self.nullable
     }
+}
+
+/// An endpoint's operation-level extensions (`x-fern-idempotent` with the
+/// document's `x-fern-idempotency-headers`, and `x-fern-retries`), each in
+/// either spelling. Empty by default.
+#[derive(Debug, Default)]
+pub struct EndpointExtensions {
+    /// The idempotency headers an idempotent operation takes: optional `str`
+    /// arguments after its body fields (`X-Dedupe-Token` is `dedupe_token`),
+    /// sent in its `headers`.
+    pub idempotency_headers: Vec<HeaderParam>,
+    /// Whether the operation sends its request with retries off
+    /// (`x-fern-retries: {disabled: true}`).
+    pub retries_disabled: bool,
+    /// Whether the operation declared a pagination contract the layout leaves
+    /// without a pager (the flat tree): the pagination runtime still ships.
+    // llmlint: ignore[invalid_states_unrepresentable] `Endpoint::pagination` is an existing IR field other generator code builds and reads, so it keeps its type; this flag is set only where the flat layout clears that pagination, so the two are never both set.
+    pub pagination_declared: bool,
+    /// In a multi-URL environment, the field whose URL the operation's requests
+    /// go to (`base`, or an operation server's name); `None` otherwise.
+    pub environment_field: Option<EnvironmentField>,
 }
 
 /// A resolved header parameter, rendered as a keyword-only method argument and a
@@ -2183,6 +2527,11 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
     for (key, schema) in &doc.components.schemas {
         builder.add_named(&naming::class_name(key), schema);
     }
+    // A webhook naming its SDK group and method (`x-fern-sdk-group-name` beside
+    // `x-fern-sdk-method-name`) has its inline payload named for both and placed
+    // in the group's package (`parcels/types/delivered_parcels_payload.py`);
+    // any other is `{Method}{Event}Payload` in the root `types/`.
+    let mut webhook_placements: Vec<(String, String)> = Vec::new();
     for (event, item) in &doc.webhooks {
         for (method, operation) in item.operations() {
             let Some(schema) = operation
@@ -2196,7 +2545,25 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             if schema.reference.is_some() {
                 continue;
             }
-            let name = naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")));
+            let name = match (operation.sdk_method_name(), declared_group(operation)) {
+                (Some(sdk_method), Some(group)) => {
+                    let name = naming::sanitize_identifier(&format!(
+                        "{}{}Payload",
+                        naming::to_pascal_case(sdk_method),
+                        naming::to_pascal_case(group.last().copied().unwrap_or_default())
+                    ));
+                    webhook_placements.push((
+                        name.clone(),
+                        group
+                            .iter()
+                            .map(|segment| group_segment_module(segment))
+                            .collect::<Vec<_>>()
+                            .join("/"),
+                    ));
+                    name
+                }
+                _ => naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_"))),
+            };
             builder.add_named(&name, schema);
         }
     }
@@ -2348,6 +2715,48 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         .unwrap_or_else(|| crate::config::default_client_class_name(config.package_name.as_str()));
     let environment = environment_model(doc, &client_name);
 
+    // A component declaring an SDK group (`x-fern-sdk-group-name`, either
+    // spelling) or `x-tags` is written into that group's or first tag's package,
+    // `glossary/types/phrase.py`, as Fern places it, rather than the root
+    // `types/`; the root still re-exports it through the package.
+    let mut types = builder.types;
+    for (name, schema) in &doc.components.schemas {
+        let module = schema
+            .sdk_group_name()
+            .map(|segments| {
+                segments
+                    .iter()
+                    .map(|segment| group_segment_module(segment))
+                    .collect::<Vec<_>>()
+                    .join("/")
+            })
+            .or_else(|| schema.placement_tag().map(snake_module));
+        let Some(module) = module.filter(|module| !module.is_empty()) else {
+            continue;
+        };
+        let class = ref_to_class(&format!("#/components/schemas/{name}"));
+        if let Some(index) = types.iter().position(|decl| decl.name() == class) {
+            let decl = types.remove(index);
+            tag_types.push(TagTypeDecl { module, decl });
+        }
+    }
+    for (class, module) in webhook_placements {
+        if let Some(index) = types.iter().position(|decl| decl.name() == class) {
+            let decl = types.remove(index);
+            tag_types.push(TagTypeDecl { module, decl });
+        }
+    }
+
+    // Fern's flat tree is its token-less local run, which writes the pagination
+    // runtime and its exports but returns each paginated method's page model
+    // rather than a pager: the operation keeps only the mark that it declared a
+    // contract.
+    if config.layout == crate::settings::Layout::Flat {
+        for ep in &mut endpoints {
+            ep.extensions.pagination_declared = ep.pagination.take().is_some();
+        }
+    }
+
     // A literal enum is a plain string at runtime: Fern serializes an enum
     // header with `str(..)` rather than `.value`, and examples an enum value as
     // its string rather than a member access.
@@ -2366,7 +2775,7 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         package_name: config.package_name.as_str().to_string(),
         project_name: config.project_name.clone(),
         client_name,
-        types: builder.types,
+        types,
         tag_types,
         endpoint_modules: endpoint_modules(doc),
         empty_endpoint_namespace,
@@ -3596,7 +4005,18 @@ fn build_endpoint(
         for field in fields {
             if parameter_names.contains(field.py_name.as_str()) {
                 if let Some(prefix) = &field.collision_prefix {
-                    field.py_name = format!("{prefix}_{}", field.py_name);
+                    // Fern prefixes a reserved builtin unsuffixed (a `complex`
+                    // body property beside a `complex` query is
+                    // `…_request_complex`) but keeps a keyword's `_`
+                    // (waylay's `query_input_from_`).
+                    let base = field
+                        .py_name
+                        .strip_suffix('_')
+                        .filter(|base| {
+                            naming::is_reserved(base) && !naming::is_python_keyword(base)
+                        })
+                        .unwrap_or(&field.py_name);
+                    field.py_name = format!("{prefix}_{base}");
                     if doc.openapi.starts_with("3.1") {
                         field.collision_prefix = None;
                     }
@@ -3695,6 +4115,28 @@ fn build_endpoint(
         pagination: endpoint_pagination(doc, op, &query_params),
         query_params,
         header_params,
+        extensions: EndpointExtensions {
+            idempotency_headers: if op.idempotent() {
+                doc.idempotency_headers()
+                    .into_iter()
+                    .map(|header| HeaderParam {
+                        wire_name: header.to_string(),
+                        py_name: naming::field_name(header_param_stem(header)),
+                        type_ref: TypeRef::Primitive(Prim::Str),
+                        required: false,
+                        docstring: None,
+                        example: None,
+                        enum_value: false,
+                    })
+                    .collect()
+            } else {
+                Vec::new()
+            },
+            retries_disabled: op.retries_disabled(),
+            pagination_declared: false,
+            environment_field: (!operation_server_urls(doc).is_empty())
+                .then(|| environment_field(doc, op)),
+        },
         header_order,
         constant_headers,
         request_body,
@@ -4002,18 +4444,35 @@ fn build_endpoint(
 pub struct EndpointPagination {
     /// The Python attribute on the parsed response holding the page's items.
     pub results: String,
-    /// The attribute chain up to (but excluding) the cursor itself — the optional
-    /// container the emitted `if … is not None` guards on. Empty when the cursor
-    /// sits at the top level of the response model.
-    pub next_cursor_container: Vec<String>,
-    /// The cursor attribute itself, e.g. the `next_page_token` of
-    /// `["pagination", "next_page_token"]`. Split from its container at
-    /// construction so the pair cannot represent a chain with no cursor.
-    pub next_cursor_leaf: String,
-    /// The Python name of the request parameter carrying the cursor.
+    /// How the next page is requested: from a cursor the response carries, or by
+    /// stepping an offset.
+    pub advance: PageAdvance,
+    /// The Python name of the request parameter the advance writes: the cursor,
+    /// or the offset.
+    // llmlint: ignore[names_match_behavior] `cursor_param` is an existing IR field other generator code reads by that name; its doc comment states that it names the offset parameter too.
     pub cursor_param: String,
     /// The element type of the item list, which parameterizes the pager.
     pub item_type: TypeRef,
+}
+
+/// How a pager requests its next page.
+#[derive(Debug, Clone)]
+pub enum PageAdvance {
+    /// The cursor form: the response's next cursor, written back to the request.
+    Cursor {
+        /// The attribute chain up to (but excluding) the cursor itself — the
+        /// optional container the emitted `if … is not None` guards on. Empty
+        /// when the cursor sits at the top level of the response model.
+        container: Vec<String>,
+        /// The cursor attribute itself, e.g. the `next_page_token` of
+        /// `["pagination", "next_page_token"]`. Split from its container at
+        /// construction so the pair cannot represent a chain with no cursor.
+        // llmlint: ignore[invalid_states_unrepresentable] The leaf is the last segment `str::split` yields over the declared response path, so a cursor always exists, each segment passing through `naming::model_field_name` like every other model attribute crozier emits.
+        leaf: String,
+    },
+    /// The offset form (`x-fern-pagination: {offset: …, results: …}`): the
+    /// request's offset, defaulting to 1, stepped by one while a page has items.
+    Offset,
 }
 
 /// Resolve the declared pagination contract against the operation's own response
@@ -4027,11 +4486,18 @@ fn endpoint_pagination(
 ) -> Option<EndpointPagination> {
     let declared = op.pagination()?;
     let results = declared.results_property()?;
-    let next_cursor = declared.next_cursor_property()?;
-    let cursor = declared.cursor_property()?;
+    let offset = declared
+        .cursor_property()
+        .is_none()
+        .then(|| declared.offset_property())
+        .flatten();
+    let request_param = match offset {
+        Some(offset) => offset,
+        None => declared.cursor_property()?,
+    };
     let cursor_param = query_params
         .iter()
-        .find(|param| param.wire_name == cursor)?
+        .find(|param| param.wire_name == request_param)?
         .py_name
         .clone();
     let response = success_response_schema(op)?;
@@ -4044,22 +4510,32 @@ fn endpoint_pagination(
         .properties
         .get(results)
         .and_then(|list| list.items.as_deref())?;
-    let item_type = items
-        .reference
-        .as_deref()
-        .map(|reference| TypeRef::Named(ref_to_class(reference)))?;
-    // `str::split` always yields at least one segment, so the chain always has a
-    // cursor to pop; splitting it here is what keeps a cursor-less chain
-    // unrepresentable downstream.
-    let mut next_cursor_container: Vec<String> = next_cursor
-        .split('.')
-        .map(naming::model_field_name)
-        .collect();
-    let next_cursor_leaf = next_cursor_container.pop()?;
+    // A component item, or a scalar one (Fern's `SyncPager[str, …]`); any other
+    // inline item would be a type the pager cannot name.
+    let item_type = match base_type_ref(items) {
+        named @ TypeRef::Named(_) => named,
+        TypeRef::Primitive(prim) if prim != Prim::Any && items.reference.is_none() => {
+            TypeRef::Primitive(prim)
+        }
+        _ => return None,
+    };
+    let advance = if offset.is_some() {
+        PageAdvance::Offset
+    } else {
+        // `str::split` always yields at least one segment, so the chain always
+        // has a cursor to pop; splitting it here is what keeps a cursor-less
+        // chain unrepresentable downstream.
+        let mut container: Vec<String> = declared
+            .next_cursor_property()?
+            .split('.')
+            .map(naming::model_field_name)
+            .collect();
+        let leaf = container.pop()?;
+        PageAdvance::Cursor { container, leaf }
+    };
     Some(EndpointPagination {
         results: naming::model_field_name(results),
-        next_cursor_container,
-        next_cursor_leaf,
+        advance,
         cursor_param,
         item_type,
     })
@@ -6308,6 +6784,23 @@ struct InlineHoister<'a> {
 }
 
 impl InlineHoister<'_> {
+    /// The class an inline schema hoists to: the type name it declares
+    /// (`x-crozier-type-name` over `x-fern-type-name`), else `derived`. Only a
+    /// grouped operation's inline schemas still declare one here, because the
+    /// others were lifted into components; Fern names those by the declaration
+    /// inside the sub-client's `types/`, `workshop/types/stance.py`. A name a
+    /// component already holds keeps `derived`, as the lifting does.
+    fn declared_or(&self, derived: String, schema: &Schema) -> String {
+        schema
+            .declared_type_name()
+            .map(crate::openapi::declared_type_key)
+            .filter(|key| {
+                self.schemas
+                    .is_none_or(|schemas| !schemas.contains_key(key))
+            })
+            .unwrap_or(derived)
+    }
+
     fn hoist_discriminated_union(
         &mut self,
         name: &str,
@@ -6834,8 +7327,28 @@ impl InlineHoister<'_> {
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if prop_schema.reference.is_none() && is_map(prop_schema) && !is_optional(prop_schema) {
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                let name = self.declared_or(
+                    format!("{}Value", naming::child_class_name(owner, prop)),
+                    value,
+                );
+                // A grouped operation's map value declaring a type name is that
+                // named type even as an enum (`Dict[str, PegWood]`), where an
+                // anonymous one stays an inline literal union.
+                if value.reference.is_none() && value.declared_type_name().is_some() {
+                    if let Some(values) = string_enum_values(value) {
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            value,
+                            &name,
+                            values,
+                            clean_doc(value.description.as_deref()),
+                        )));
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(name)),
+                        );
+                    }
+                }
                 if value.reference.is_none() && is_inline_struct(value) {
-                    let name = format!("{}Value", naming::child_class_name(owner, prop));
                     self.hoist_object(&name, value);
                     return TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
@@ -6924,7 +7437,7 @@ impl InlineHoister<'_> {
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
-                let name = naming::child_class_name(parent, prop);
+                let name = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
                 self.out.push(TypeDecl::Enum(build_enum(
                     prop_schema,
                     &name,
@@ -6935,13 +7448,13 @@ impl InlineHoister<'_> {
             }
         }
         if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
-            let nested = naming::child_class_name(parent, prop);
+            let nested = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
         }
         if prop_schema.reference.is_none() {
             if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
-                let name = naming::child_class_name(parent, prop);
+                let name = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -7069,7 +7582,7 @@ impl InlineHoister<'_> {
         if item_schema.reference.is_some() {
             return None;
         }
-        let item_name = format!("{ctx}Item");
+        let item_name = self.declared_or(format!("{ctx}Item"), item_schema);
         if let Some(target) = self
             .schemas
             .zip(described_all_of_ref(item_schema))
@@ -7387,7 +7900,7 @@ impl InlineHoister<'_> {
             return None;
         }
         let values = string_enum_values(item)?;
-        let name = format!("{ctx}Item");
+        let name = self.declared_or(format!("{ctx}Item"), item);
         self.out.push(TypeDecl::Enum(build_enum(
             item,
             &name,
@@ -8395,6 +8908,12 @@ fn first_tag(op: &Operation) -> Option<&str> {
     op.tags.iter().map(|t| t.trim()).find(|t| !t.is_empty())
 }
 
+/// Whether an operation declares tags and every one is empty: Fern groups it
+/// under the empty tag, the `_` sub-client.
+fn only_empty_tags(op: &Operation) -> bool {
+    !op.tags.is_empty() && first_tag(op).is_none()
+}
+
 /// The generated Python method name for an operation.
 ///
 /// Fern derives it from the `operationId` when there is one, and synthesizes it
@@ -8515,10 +9034,32 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
             // whole id is the method (bunq's `CREATE_AttachmentPublic`).
             naming::sanitize_identifier(&naming::to_snake_case(id))
         }
+    } else if let Some(name) = method_from_hyphenated_tag_id(id, first_tag(op)) {
+        name
     } else {
         method_from_groupless_id(id, first_tag(op))
     };
     naming::escape_python_keyword(method)
+}
+
+/// The method name for a `<tag>-<method>` operationId: one hyphen, whose prefix
+/// spells the operation's tag. Fern reads it like the `.`/`_` group forms and
+/// lowercases the method segment verbatim (`gates-checkStatus` under `Gates` is
+/// `checkstatus`), then safe-names a reserved builtin (`fences-all` is `all_`).
+/// Two hyphens, a prefix naming something else, or no tag fall through to
+/// [`method_from_groupless_id`] (`locks-check-status` is `check_status`).
+fn method_from_hyphenated_tag_id(id: &str, tag: Option<&str>) -> Option<String> {
+    let (prefix, method) = id.split_once('-')?;
+    if method.is_empty() || method.contains('-') || !operation_id_matches_tag_spelling(prefix, tag?)
+    {
+        return None;
+    }
+    let ident = naming::sanitize_identifier(&method.to_ascii_lowercase());
+    Some(if naming::is_reserved_method(&ident) {
+        format!("{ident}_")
+    } else {
+        ident
+    })
 }
 
 /// A FastAPI operationId under a tag, with the `{path}_{method}` suffix FastAPI
@@ -8638,14 +9179,10 @@ fn method_from_groupless_id(id: &str, tag: Option<&str>) -> String {
     // This name is *derived* (a tag prefix stripped off a camelCase id), so — unlike
     // the verbatim `method_from_grouped_id` — reserved words are safe-named the way
     // Fern does it: a "list all" endpoint under tag `Activities` becomes `all_`, not
-    // the builtin-shadowing `all`. Uses the method-specific reserved set (keywords +
-    // `all`), so appwrite's derived `list` stays `list`, matching Fern.
+    // the builtin-shadowing `all`. Uses the method-specific reserved set, tagged or
+    // not, so appwrite's derived `list` and an untagged `set` stay as they are.
     let ident = naming::sanitize_identifier(&method);
-    let reserved = tag.map_or_else(
-        || naming::is_reserved(&ident),
-        |_| naming::is_reserved_method(&ident),
-    );
-    if reserved {
+    if naming::is_reserved_method(&ident) {
         format!("{ident}_")
     } else {
         ident
@@ -8841,7 +9378,7 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
     // and joined by a space: `sessions` under `Agent Sessions` is `Sessions`,
     // `server` under `Capabilities` is `Server`, and
     // `["catalogs", "mcpServers"]` is `Catalogs McpServers`.
-    if let Some(segments) = op.sdk_group_name() {
+    if let Some(segments) = declared_group(op) {
         let letters = |value: &str| {
             value
                 .chars()
@@ -8864,6 +9401,9 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
         if let Some(tag) = first_tag(op) {
             return tag_pascal(tag);
         }
+    }
+    if only_empty_tags(op) && !id.is_empty() && !id.contains('.') {
+        return "_".to_string();
     }
     if id.contains('.') {
         if let Some((group, _)) = id.split_once('.') {
@@ -8922,10 +9462,10 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     // consulted. A list names a *nested* path, which becomes a `/`-joined module
     // (`["catalogs", "mcpServers"]` -> `catalogs/mcp_servers`) — the one place a
     // module holds more than one directory segment.
-    if let Some(segments) = op.sdk_group_name() {
+    if let Some(segments) = declared_group(op) {
         return segments
             .iter()
-            .map(|segment| snake_module(segment))
+            .map(|segment| group_segment_module(segment))
             .collect::<Vec<_>>()
             .join("/");
     }
@@ -8937,6 +9477,11 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
         return String::new();
     }
     if first_tag(op).is_none() && !id.contains('.') {
+        // Tagged only by the empty string, the operation is grouped by that
+        // empty tag, which Fern calls `_`.
+        if only_empty_tags(op) {
+            return "_".to_string();
+        }
         return String::new();
     }
     if id.contains('.') {
@@ -8974,6 +9519,28 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
     naming::sanitize_identifier(&naming::to_snake_case(&path_group(url)))
 }
 
+/// The `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` path an operation
+/// declares, honoured only beside a declared method name: Fern places an
+/// operation that names a group but no method by its tag and `operationId`, as
+/// if no group were declared (an untagged `listHoists` under `[harbor, hoists]` is
+/// the root client's `list_hoists`).
+fn declared_group(op: &Operation) -> Option<Vec<&str>> {
+    op.sdk_method_name()?;
+    op.sdk_group_name()
+}
+
+/// The module a declared group segment names: [`snake_module`], keeping the
+/// segment's leading underscores (`[_dispatch, _private]` is
+/// `_dispatch/_private`, `client._dispatch._private`).
+fn group_segment_module(segment: &str) -> String {
+    let name = segment.trim_start_matches('_');
+    format!(
+        "{}{}",
+        &segment[..segment.len() - name.len()],
+        snake_module(name)
+    )
+}
+
 /// The snake-cased, identifier-safe module name a tag maps to (`attachment-public`
 /// → `attachment_public`, `DagRun` → `dag_run`).
 fn snake_module(tag: &str) -> String {
@@ -8998,18 +9565,26 @@ fn compact_module(tag: &str) -> String {
 
 /// Whether an operation should be grouped by its `group_method` operationId prefix
 /// rather than by its tag. True when the operation has no tag (the prefix is all we
-/// have), or when the prefix *is* the tag — the operationId genuinely encodes the
-/// group (`parcelRouting_dispatch…` under tag `ParcelRouting`, `warehouse_labels_…`
-/// under `WarehouseLabels`). False when a tag is present but the prefix is
-/// unrelated to it (bunq's `CREATE_…`/`READ_…` verbs under resource tags), where Fern
-/// groups by the tag and keeps the whole operationId as the method. Comparison is on
-/// the alphanumeric-only lowercasing of each, so `parcelrouting` ≡ `ParcelRouting`
-/// and `warehouse_labels` ≡ `WarehouseLabels` but `create` ≢ `attachment-public`.
+/// have), or when the prefix *is* the tag: its words, split at every character
+/// other than a letter or digit, are the tag's own words as Fern's
+/// `getEndpointLocation` splits a tag ([`fern_location_tokens`]), compared
+/// lowercase. So `documents_documenttype_get` under `Documents/DocumentType`,
+/// `parcelRouting_dispatch` under `ParcelRouting` and `warehouse_labels_get` under
+/// `warehouseLabels` are grouped, while `q_x_schedule` under `QX`,
+/// `warehouse_labels_list` under `WarehouseLabels` and `parcelRouting_dispatch`
+/// under `Parcel-Routing` keep the tag as the group and the whole id as the method,
+/// as do bunq's `CREATE_…`/`READ_…` verbs under resource tags.
 fn group_prefix_is_tag(op: &Operation, id: &str) -> bool {
-    match first_tag(op) {
-        None => true,
-        Some(tag) => alnum_lower(&module_from_grouped_id(id)) == alnum_lower(tag),
-    }
+    let Some(tag) = first_tag(op) else {
+        return true;
+    };
+    let prefix = id.rsplit_once('_').map_or(id, |(prefix, _)| prefix);
+    let prefix_words: Vec<String> = prefix
+        .split(|c: char| !c.is_ascii_alphanumeric())
+        .filter(|word| !word.is_empty())
+        .map(str::to_ascii_lowercase)
+        .collect();
+    prefix_words == fern_location_tokens(tag)
 }
 
 fn first_segment_is_tag(op: &Operation, id: &str) -> bool {
@@ -14217,13 +14792,14 @@ mod tests {
         build_endpoint, build_enum, described_all_of_ref, discriminant_strips,
         document_discriminant_strips, endpoint_module, environment_model, extensible_enum,
         fern_imports_no_endpoint_example, full_type_ref_resolved, global_headers, hoist_fields,
-        int_prim, member_fields, method_from_grouped_id, module_from_grouped_id, module_identifier,
-        oauth_scope_enum, optional_type_ref, parameter_example, path_group, property_description,
-        query_parameter_example, ref_to_class, request_and_response_refs_match,
-        request_schema_use_count, resolve_request_body, resolve_schema_pointer, response_schema,
-        sample_string_of_length, scalar_body, success_response_entry, synthesized_method_name,
-        title_from_tag, variant_class_name, AliasType, Auth, Builder, Field, InlineHoister,
-        ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
+        int_prim, member_fields, method_from_grouped_id, method_from_hyphenated_tag_id,
+        module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
+        parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
+        request_and_response_refs_match, request_schema_use_count, resolve_request_body,
+        resolve_schema_pointer, response_schema, sample_string_of_length, scalar_body,
+        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name,
+        AliasType, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody, TypeDecl,
+        TypeRef,
     };
     use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
 
@@ -14241,6 +14817,87 @@ mod tests {
             deprecated: false,
             admits_only_empty_object: false,
         }
+    }
+
+    #[test]
+    fn declared_names_become_python_parameters_as_fern_writes_them() {
+        assert_eq!(super::python_parameter_name("Archive Host"), "archive_host");
+        assert_eq!(super::python_parameter_name("class"), "class_");
+        assert_eq!(super::python_parameter_name("2fa"), "_2fa");
+        assert_eq!(super::python_parameter_name("lift-pass"), "lift_pass");
+    }
+
+    #[test]
+    fn operation_servers_make_environment_fields_and_pick_each_requests_field() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "servers": [{"url": "https://lockers.test/v2"}],
+            "paths": {
+                "/lockers": {"get": {"responses": {}}},
+                "/archive": {"get": {"servers": [
+                    {"url": "https://archive.lockers.test/v1", "x-fern-server-name": "Archive Host"}
+                ], "responses": {}}},
+                "/own": {"get": {"servers": [
+                    {"url": "https://lockers.test/v2", "x-crozier-server-name": "main"}
+                ], "responses": {}}},
+            },
+        }))
+        .unwrap();
+        assert_eq!(
+            super::operation_server_urls(&doc),
+            [
+                (
+                    "archive_host".to_string(),
+                    "https://archive.lockers.test/v1".to_string()
+                ),
+                ("main".to_string(), "https://lockers.test/v2".to_string()),
+            ]
+        );
+        let field =
+            |route: &str| super::environment_field(&doc, doc.paths[route].get.as_ref().unwrap());
+        assert_eq!(field("/lockers"), super::EnvironmentField::Base);
+        assert_eq!(
+            field("/archive"),
+            super::EnvironmentField::Named("archive_host".to_string())
+        );
+        // A first server that is the document's own reads `base`.
+        assert_eq!(field("/own"), super::EnvironmentField::Base);
+        assert_eq!(field("/archive").to_string(), "archive_host");
+        assert_eq!(super::EnvironmentField::Base.to_string(), "base");
+    }
+
+    #[test]
+    fn hyphenated_tag_ids_lowercase_the_method_segment() {
+        let tag = Some("Gates");
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-checkStatus", tag).as_deref(),
+            Some("checkstatus")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("Gates-openAll", tag).as_deref(),
+            Some("openall")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-all", tag).as_deref(),
+            Some("all_")
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-list", tag).as_deref(),
+            Some("list")
+        );
+        // Two hyphens, another prefix, no method or no tag are not this form.
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-check-status", tag),
+            None
+        );
+        assert_eq!(
+            method_from_hyphenated_tag_id("other-checkStatus", tag),
+            None
+        );
+        assert_eq!(method_from_hyphenated_tag_id("gates-", tag), None);
+        assert_eq!(
+            method_from_hyphenated_tag_id("gates-checkStatus", None),
+            None
+        );
     }
 
     #[test]
@@ -15152,7 +15809,10 @@ mod tests {
         )
         .expect("document deserializes");
 
-        let Auth::ApiKey { header, required } = auth_model(&doc) else {
+        let Auth::ApiKey {
+            header, required, ..
+        } = auth_model(&doc)
+        else {
             panic!("the supported header key should be primary");
         };
         assert_eq!(header, "X-Api-Key");
@@ -15598,6 +16258,62 @@ mod tests {
             endpoint_method_name(&o, "GET", "/v2/catalog/info"),
             "catalog_info"
         );
+    }
+
+    #[test]
+    fn a_declared_group_needs_a_method_name_and_keeps_leading_underscores() {
+        use super::endpoint_module;
+        let operation = |value: serde_json::Value| -> crate::openapi::Operation {
+            serde_json::from_value(value).expect("operation deserializes")
+        };
+        let o = operation(serde_json::json!({
+            "operationId": "callCar",
+            "x-fern-sdk-group-name": ["_lift", "_staff"],
+            "x-fern-sdk-method-name": "summon",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "_lift/_staff");
+        let o = operation(serde_json::json!({
+            "operationId": "ringBell",
+            "x-crozier-sdk-group-name": "__lobby",
+            "x-crozier-sdk-method-name": "ring",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "__lobby");
+        // Without a method name the group is ignored: untagged is the root
+        // client, tagged is the tag's.
+        let o = operation(serde_json::json!({
+            "operationId": "listHoists",
+            "x-fern-sdk-group-name": ["harbor", "hoists"],
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "");
+        let o = operation(serde_json::json!({
+            "operationId": "listTugs",
+            "tags": ["Docks"],
+            "x-crozier-sdk-group-name": "marina",
+        }));
+        assert_eq!(endpoint_module(&o, "/x"), "docks");
+    }
+
+    #[test]
+    fn a_prefix_groups_only_when_its_words_are_the_tags_words() {
+        use super::{endpoint_method_name, endpoint_module};
+        // An all-capitals tag spelled letter for letter by a split prefix keeps
+        // the tag as the module and the whole id as the method.
+        let o = op("q_x_schedule", "QX");
+        assert_eq!(endpoint_module(&o, "/x"), "qx");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "q_x_schedule");
+        let o = op("parcelRouting_dispatch", "Parcel-Routing");
+        assert_eq!(endpoint_module(&o, "/x"), "parcel_routing");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "parcel_routing_dispatch"
+        );
+        // Word for word, the prefix is the group.
+        let o = op("documents_documenttype_get", "Documents/DocumentType");
+        assert_eq!(endpoint_module(&o, "/x"), "documents_documenttype");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "get");
+        let o = op("warehouse_labels_get", "warehouseLabels");
+        assert_eq!(endpoint_module(&o, "/x"), "warehouse_labels");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "get");
     }
 
     #[test]

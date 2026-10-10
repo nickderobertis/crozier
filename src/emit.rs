@@ -17,9 +17,9 @@ use serde::Serialize;
 
 use crate::error::{Error, Result};
 use crate::ir::{
-    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
-    EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
-    QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
+    is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Credential,
+    Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType,
+    PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -413,10 +413,7 @@ impl Imports {
         let depth = match &self.loc {
             RefLoc::PackageRoot => 0,
             RefLoc::RootTypes | RefLoc::Errors => 1,
-            // Fern's explicit empty dotted namespace writes its client files at the
-            // package root but imports `core` as though they sat in a tag package,
-            // so a nameless client module still counts as one level deep.
-            RefLoc::Client(module) => module_depth(module).max(1),
+            RefLoc::Client(module) => module_depth(module),
             RefLoc::TagTypes(module) => module_depth(module) + 1,
         };
         ".".repeat(depth + 1)
@@ -440,12 +437,9 @@ impl Imports {
         let root = self.root_prefix();
         match self.tag_types.get(class) {
             // A package-root type lives at `{pkg}.types.{m}`; so does a tag type
-            // whose owning tag is the package root itself. The empty dotted
-            // namespace reads that one from where its files actually sit, at the
-            // package root, rather than from the tag depth its `core` imports use.
+            // whose owning tag is the package root itself.
             Some(tag) if tag.is_empty() => match &self.loc {
                 RefLoc::RootTypes => format!(".{m}"),
-                RefLoc::Client(module) if module.is_empty() => format!(".types.{m}"),
                 _ => format!("{root}types.{m}"),
             },
             // A tag-scoped type lives at `{pkg}.{tag}.types.{m}`.
@@ -1647,7 +1641,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         for decl in decls {
             let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
             let repair = repair_map.get(decl.name());
-            let empty_namespace = ir.empty_endpoint_namespace && *module == "_";
             let location = if module.is_empty() {
                 RefLoc::RootTypes
             } else {
@@ -1663,18 +1656,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 repair,
             )?;
             files.push(GeneratedFile {
-                path: if empty_namespace {
-                    PathBuf::from(format!("src/{pkg}/types/{}.py", decl.module()))
-                } else {
-                    PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module()))
-                },
+                path: PathBuf::from(format!("src/{pkg}/{module}/types/{}.py", decl.module())),
                 contents: file,
             });
         }
         // The root `types/` package has one aggregator, written below over the
         // component types *and* these hoisted ones; a second one here would land
         // on the same path and lose whichever was written first.
-        if !(module.is_empty() || ir.empty_endpoint_namespace && *module == "_") {
+        if !module.is_empty() {
             files.push(tag_types_init_file(&env, pkg, module, decls)?);
         }
     }
@@ -1683,9 +1672,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // the auth-shaped `client_wrapper.py`.
     files.extend(core_files(
         pkg,
-        ir.endpoints
-            .iter()
-            .any(|endpoint| endpoint.pagination.is_some()),
+        ir.endpoints.iter().any(|endpoint| {
+            endpoint.pagination.is_some() || endpoint.extensions.pagination_declared
+        }),
         ir.enum_type,
     ));
     // Fern's flat tree has no publishing identity, so its wrapper sends no
@@ -1697,6 +1686,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         &ir.global_headers,
         &ir.client_path_parameters,
         ir.default_max_retries,
+        ir.environment.as_ref(),
     ));
 
     // `environment.py`: the server-environment enum, when the document declares
@@ -1710,13 +1700,8 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // hoisted inline types, in which case it is a lazy loader re-exporting them,
     // or it has nested sub-packages, in which case it is a lazy loader over those.
     for module in ir.endpoint_modules.iter().chain(parent_modules.iter()) {
-        if ir.empty_endpoint_namespace && module == "_" {
-            continue;
-        }
-        if let Some(decls) = tag_type_modules.get(module.as_str()) {
-            files.push(tag_pkg_init_file(&env, pkg, module, decls)?);
-        } else if let Some(names) = children.get(module.as_str()) {
-            let child_types: Vec<(String, Vec<String>)> = names
+        let child_types = |names: &[String]| -> Vec<(String, Vec<String>)> {
+            names
                 .iter()
                 .filter_map(|child| {
                     let decls = tag_type_modules.get(child.as_str())?;
@@ -1727,7 +1712,20 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                     exported.sort();
                     Some((module_stem(child).to_string(), exported))
                 })
-                .collect();
+                .collect()
+        };
+        if let Some(decls) = tag_type_modules.get(module.as_str()) {
+            let names = children.get(module.as_str()).cloned().unwrap_or_default();
+            files.push(tag_pkg_init_file(
+                &env,
+                pkg,
+                module,
+                decls,
+                &names,
+                &child_types(&names),
+            )?);
+        } else if let Some(names) = children.get(module.as_str()) {
+            let child_types = child_types(names);
             files.push(module_pkg_init_file(
                 &env,
                 pkg,
@@ -1741,6 +1739,28 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 contents: "\n\n\n\n".to_string(),
             });
         }
+    }
+
+    // A package that only holds types (a component placed by its SDK group or
+    // `x-tags`) has no client, so no module above wrote its `__init__.py`.
+    let type_only_modules: Vec<String> = tag_type_modules
+        .keys()
+        .filter(|module| {
+            !module.is_empty()
+                && !ir.endpoint_modules.iter().any(|m| m == *module)
+                && !parent_modules.iter().any(|m| m == *module)
+        })
+        .map(|module| (*module).to_string())
+        .collect();
+    for module in &type_only_modules {
+        files.push(tag_pkg_init_file(
+            &env,
+            pkg,
+            module,
+            &tag_type_modules[module.as_str()],
+            &[],
+            &[],
+        )?);
     }
 
     let root_eps: Vec<&Endpoint> = ir
@@ -1757,7 +1777,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             "",
             &root_eps,
             &tag_map,
-            false,
         )?);
     }
 
@@ -1773,10 +1792,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             .filter(|e| &e.module == module)
             .collect();
         if !eps.is_empty() && eps.iter().all(|e| e.emittable) {
-            if ir.empty_endpoint_namespace && module == "_" {
-                emittable_modules.push(module);
-                continue;
-            }
             files.push(raw_client_file(
                 &env,
                 pkg,
@@ -1784,7 +1799,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 module,
                 &eps,
                 &tag_map,
-                false,
             )?);
             let cx = ClientCtx {
                 yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -1799,7 +1813,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
                 tag_types: &tag_map,
                 global_headers: &ir.global_headers,
                 client_path_parameters: &ir.client_path_parameters,
-                empty_namespace: false,
                 sdk_first_party: packaged || pkg == "fern",
                 children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
             };
@@ -1819,7 +1832,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             module,
             &[],
             &tag_map,
-            false,
         )?);
         let cx = ClientCtx {
             yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
@@ -1834,7 +1846,6 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             tag_types: &tag_map,
             global_headers: &ir.global_headers,
             client_path_parameters: &ir.client_path_parameters,
-            empty_namespace: false,
             sdk_first_party: packaged || pkg == "fern",
             children: children.get(module.as_str()).map_or(&[][..], Vec::as_slice),
         };
@@ -1892,63 +1903,14 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     if !ir.types.is_empty() || !root_tag_types.is_empty() {
         files.push(types_init_file(&env, pkg, &ir.types, root_tag_types)?);
     }
-    files.push(root_init_file(&env, pkg, ir, &root_modules)?);
-
-    // Fern treats a leading-dot operationId (`.GetThing`) as an explicit empty
-    // endpoint namespace. Its empty tag package lands at the package root and is
-    // emitted after the ordinary root surface, so `client.py` and `__init__.py`
-    // are intentionally overwritten by the tag-client variants. Preserve that
-    // observable (if unusual) file collision for compatibility.
-    let empty_namespace_eps: Vec<&Endpoint> = ir
-        .endpoints
-        .iter()
-        .filter(|endpoint| endpoint.module == "_")
-        .collect();
-    let empty_namespace_emittable = ir.empty_endpoint_namespace
-        && !empty_namespace_eps.is_empty()
-        && empty_namespace_eps
+    // The root package lists a types-only package beside the client ones.
+    let mut init_modules = root_modules.clone();
+    init_modules.extend(
+        type_only_modules
             .iter()
-            .all(|endpoint| endpoint.emittable);
-    if empty_namespace_emittable {
-        let mut empty_namespace_tag_map = tag_map.clone();
-        for name in &ir.empty_namespace_types {
-            empty_namespace_tag_map.insert(name.clone(), String::new());
-        }
-        files.push(raw_client_file(
-            &env,
-            pkg,
-            &ir.client_name,
-            "",
-            &empty_namespace_eps,
-            &empty_namespace_tag_map,
-            true,
-        )?);
-        let cx = ClientCtx {
-            yaml_unquoted_timestamps: ir.yaml_unquoted_timestamps.as_ref(),
-            pkg,
-            client_name: &ir.client_name,
-            module: "",
-            types: &ir.types,
-            enum_type: ir.enum_type,
-            tag_decls: &ir.tag_types,
-            auth: &ir.auth,
-            has_environment: ir.environment.is_some(),
-            tag_types: &empty_namespace_tag_map,
-            global_headers: &ir.global_headers,
-            client_path_parameters: &ir.client_path_parameters,
-            empty_namespace: true,
-            sdk_first_party: packaged || pkg == "fern",
-            children: &[],
-        };
-        files.push(client_file(&env, &cx, &empty_namespace_eps)?);
-        let empty_namespace_types: Vec<&TypeDecl> = ir
-            .tag_types
-            .iter()
-            .filter(|decl| decl.module == "_")
-            .map(|decl| &decl.decl)
-            .collect();
-        files.push(tag_pkg_init_file(&env, pkg, "", &empty_namespace_types)?);
-    }
+            .filter(|module| !module.contains('/')),
+    );
+    files.push(root_init_file(&env, pkg, ir, &init_modules)?);
 
     // Generated `README.md` (usage examples from the first endpoint) and the
     // per-endpoint `reference.md`.
@@ -1998,12 +1960,54 @@ fn environment_file(
     pkg: &str,
     environment: &crate::ir::Environment,
 ) -> Result<GeneratedFile> {
-    let mut body = format!(
-        "import enum\n\n\nclass {}(enum.Enum):\n",
-        environment.enum_name
-    );
-    for (member, url) in environment.members() {
-        body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+    let mut body = String::new();
+    if environment.urls.is_empty() {
+        body.push_str(&format!(
+            "import enum\n\n\nclass {}(enum.Enum):\n",
+            environment.enum_name
+        ));
+        for (member, url) in environment.members() {
+            body.push_str(&format!("    {member} = \"{}\"\n", escape_py_str(url)));
+        }
+    } else {
+        // A multi-URL environment: each member an instance whose `base` is its
+        // server and whose other fields are the operation servers' URLs.
+        let name = &environment.enum_name;
+        let fields: Vec<&str> = std::iter::once("base")
+            .chain(environment.urls.iter().map(|(field, _)| field.as_str()))
+            .collect();
+        body.push_str(&format!(
+            "from __future__ import annotations\n\n\nclass {name}:\n"
+        ));
+        for (member, _) in environment.members() {
+            body.push_str(&format!("    {member}: {name}\n"));
+        }
+        body.push_str(&format!(
+            "\n    def __init__(self, *, {}):\n",
+            fields
+                .iter()
+                .map(|field| format!("{field}: str"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        ));
+        for field in &fields {
+            body.push_str(&format!("        self.{field} = {field}\n"));
+        }
+        for (member, url) in environment.members() {
+            let arguments: Vec<String> =
+                std::iter::once(format!("base=\"{}\"", escape_py_str(url)))
+                    .chain(
+                        environment
+                            .urls
+                            .iter()
+                            .map(|(field, url)| format!("{field}=\"{}\"", escape_py_str(url))),
+                    )
+                    .collect();
+            body.push_str(&format!(
+                "\n\n{name}.{member} = {name}({})\n",
+                arguments.join(", ")
+            ));
+        }
     }
     let contents = render(
         env,
@@ -2273,17 +2277,38 @@ fn tag_pkg_init_file(
     pkg: &str,
     module: &str,
     decls: &[&TypeDecl],
+    children: &[String],
+    child_types: &[(String, Vec<String>)],
 ) -> Result<GeneratedFile> {
     let mut names: Vec<String> = decls
         .iter()
         .flat_map(|d| d.exported_names().into_iter().map(str::to_string))
         .collect();
     names.sort();
-    let type_checking = from_import_block(".types", &names, 4);
-    let pairs: Vec<(String, String)> = names
+    let mut type_checking = from_import_block(".types", &names, 4);
+    let mut pairs: Vec<(String, String)> = names
         .iter()
         .map(|n| (n.clone(), ".types".to_string()))
         .collect();
+    // A group with a child group exports the child too, after its own types
+    // (Fern's `yard/__init__.py` lists `from . import cranes` beside the
+    // `.types` it hoisted), and re-exports the child's hoisted types.
+    let child_names: Vec<String> = children
+        .iter()
+        .map(|child| module_stem(child).to_string())
+        .collect();
+    type_checking.push_str(&from_import_block(".", &child_names, 4));
+    for name in &child_names {
+        pairs.push((name.clone(), format!(".{name}")));
+        names.push(name.clone());
+    }
+    for (child, exported) in child_types {
+        type_checking.push_str(&from_import_block(&format!(".{child}"), exported, 4));
+        for name in exported {
+            pairs.push((name.clone(), format!(".{child}")));
+            names.push(name.clone());
+        }
+    }
     Ok(GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/{module}/__init__.py")),
         contents: render_lazy_loader(env, &type_checking, &pairs, &names)?,
@@ -2747,7 +2772,19 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         || first.request_body.is_some();
     let complex = first.method_name != "_" && has_arguments;
     let err_call = abbrev_call(4, &client_call_prefix(first), complex);
-    let raw_call = abbrev_call(0, &raw_client_call_prefix(first), complex);
+    // A paginated endpoint's raw-response snippet walks its pager, as Fern's
+    // does; any other reads the raw client's response.
+    let raw_block = if first.pagination.is_some() {
+        format!(
+            "client = @@CLIENT@@(\n    ...,\n)\npager = {}\nprint(pager.response)  # access the typed response for the first page\nfor item in pager:\n    print(item)  # access the underlying object(s)\nfor page in pager.iter_pages():\n    print(page.response)  # access the typed response for each page\n    for item in page:\n        print(item)  # access the underlying object(s)\n",
+            abbrev_call(0, &client_call_prefix(first), complex)
+        )
+    } else {
+        format!(
+            "client = @@CLIENT@@(...)\n{}\nprint(response.headers)  # access the response headers\nprint(response.status_code)  # access the response status code\nprint(response.data)  # access the underlying object\n",
+            abbrev_call(0, &raw_client_call_prefix(first), complex)
+        )
+    };
     let retry_prefix = client_call_prefix(first);
     let retry_call = format!(
         "{retry_prefix}({}request_options={{",
@@ -2924,6 +2961,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         .replace("@@ORG@@", &org)
         .replace("@@PROJECT@@", &ir.project_name)
         .replace("@@PKG@@", pkg)
+        .replace("@@RAW_BLOCK@@", &raw_block)
         .replace("@@CLIENT@@", &ir.client_name)
         .replace("@@ASYNC@@", &async_name)
         .replace(
@@ -2934,7 +2972,6 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
             ),
         )
         .replace("@@ERR_CALL@@", &err_call)
-        .replace("@@RAW_CALL@@", &raw_call)
         .replace("@@RETRY_CALL@@", &retry_call)
         .replace("@@USAGE@@", &sync_example)
         .replace("@@ASYNC_EXAMPLE@@", &async_example);
@@ -3137,7 +3174,16 @@ fn reference_entry(
     } else {
         mp.body
     };
-    let mut reference_body = reference_body;
+    // Fern's reference writer does not document an idempotency argument.
+    let mut reference_body: Vec<DocParam> = reference_body
+        .into_iter()
+        .filter(|param| {
+            !ep.extensions
+                .idempotency_headers
+                .iter()
+                .any(|header| header.py_name == param.name)
+        })
+        .collect();
     if let Some(RequestBody::Inline(fields)) = &ep.request_body {
         reference_body.sort_by_key(|param| {
             fields
@@ -3631,80 +3677,133 @@ fn core_init_with_pagination(asset: &str) -> String {
 /// argument. Each fragment carries its own trailing newline where the template
 /// expects one.
 struct AuthWrapper {
-    param: String,
+    /// Each credential's `(name, constructor parameter line)`; a credential a
+    /// promoted header of the same name already declares is not declared again.
+    params: Vec<(String, String)>,
     assign: String,
     header_block: String,
     token_method: String,
-    super_arg: String,
+}
+
+impl AuthWrapper {
+    /// The constructor parameters no name in `taken` already declares.
+    fn param(&self, taken: &std::collections::HashSet<&str>) -> String {
+        self.params
+            .iter()
+            .filter(|(name, _)| !taken.contains(name.as_str()))
+            .map(|(_, line)| line.as_str())
+            .collect()
+    }
+
+    /// The `super().__init__` arguments no name in `taken` already passes.
+    fn super_arg(&self, taken: &std::collections::HashSet<&str>) -> String {
+        self.params
+            .iter()
+            .filter(|(name, _)| !taken.contains(name.as_str()))
+            .map(|(name, _)| format!("{name}={name}, "))
+            .collect()
+    }
 }
 
 fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
+    // The callable-or-string getter Fern writes for a bearer or basic credential.
+    let getter = |param: &str, required: bool| {
+        if required {
+            format!("    def _get_{param}(self) -> str:\n        if isinstance(self._{param}, str):\n            return self._{param}\n        else:\n            return self._{param}()\n\n")
+        } else {
+            format!("    def _get_{param}(self) -> typing.Optional[str]:\n        if isinstance(self._{param}, str) or self._{param} is None:\n            return self._{param}\n        else:\n            return self._{param}()\n\n")
+        }
+    };
+    let callable = |required: bool| {
+        if required {
+            "typing.Union[str, typing.Callable[[], str]]".to_string()
+        } else {
+            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string()
+        }
+    };
     match auth {
-        Auth::ApiKey { header, required } => {
-            let param = if *required {
-                "        api_key: str,\n".to_string()
+        Auth::ApiKey {
+            header,
+            required,
+            credential,
+            prefix,
+        } => {
+            let p = &credential.param;
+            let value = prefix.as_ref().map_or_else(
+                || format!("self.{p}"),
+                |prefix| format!("f\"{} {{self.{p}}}\"", escape_py_str(prefix)),
+            );
+            let (ty, header_block) = if *required {
+                (
+                    "str".to_string(),
+                    format!("        headers[\"{header}\"] = {value}\n"),
+                )
             } else {
-                "        api_key: typing.Optional[str] = None,\n".to_string()
-            };
-            let header_block = if *required {
-                format!("        headers[\"{header}\"] = self.api_key\n")
-            } else {
-                format!(
-                    "        if self.api_key is not None:\n            headers[\"{header}\"] = self.api_key\n"
+                (
+                    "typing.Optional[str] = None".to_string(),
+                    format!("        if self.{p} is not None:\n            headers[\"{header}\"] = {value}\n"),
                 )
             };
             AuthWrapper {
-                param,
-                assign: "        self.api_key = api_key\n".to_string(),
+                params: vec![(p.clone(), format!("        {p}: {ty},\n"))],
+                assign: format!("        self.{p} = {p}\n"),
                 header_block,
                 token_method: String::new(),
-                super_arg: "api_key=api_key, ".to_string(),
             }
         }
-        Auth::Bearer { required } => {
-            let (param, header_block, token_method) = if *required {
-                (
-                    "        token: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
-                    "        headers[\"Authorization\"] = f\"Bearer {self._get_token()}\"\n"
-                        .to_string(),
-                    "    def _get_token(self) -> str:\n        if isinstance(self._token, str):\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
-                )
+        Auth::Bearer {
+            required,
+            credential,
+        } => {
+            let p = &credential.param;
+            let header_block = if *required {
+                format!("        headers[\"Authorization\"] = f\"Bearer {{self._get_{p}()}}\"\n")
             } else {
-                (
-                    "        token: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
-                    "        token = self._get_token()\n        if token is not None:\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n".to_string(),
-                    "    def _get_token(self) -> typing.Optional[str]:\n        if isinstance(self._token, str) or self._token is None:\n            return self._token\n        else:\n            return self._token()\n\n".to_string(),
-                )
+                format!("        {p} = self._get_{p}()\n        if {p} is not None:\n            headers[\"Authorization\"] = f\"Bearer {{{p}}}\"\n")
             };
             AuthWrapper {
-                param,
-                assign: "        self._token = token\n".to_string(),
+                params: vec![(
+                    p.clone(),
+                    format!("        {p}: {},\n", callable(*required)),
+                )],
+                assign: format!("        self._{p} = {p}\n"),
                 header_block,
-                token_method,
-                super_arg: "token=token, ".to_string(),
+                token_method: getter(p, *required),
             }
         }
-        Auth::Basic { required: true } => AuthWrapper {
-            param: "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n".to_string(),
-            assign: "        self._username = username\n        self._password = password\n".to_string(),
-            header_block: "        headers[\"Authorization\"] = httpx.BasicAuth(self._get_username(), self._get_password())._auth_header\n".to_string(),
-            token_method: "    def _get_username(self) -> str:\n        if isinstance(self._username, str):\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> str:\n        if isinstance(self._password, str):\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
-            super_arg: "username=username, password=password, ".to_string(),
-        },
-        Auth::Basic { required: false } => AuthWrapper {
-            param: "        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n        password: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n".to_string(),
-            assign: "        self._username = username\n        self._password = password\n".to_string(),
-            header_block: "        username = self._get_username()\n        password = self._get_password()\n        if username is not None and password is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth(username, password)._auth_header\n".to_string(),
-            token_method: "    def _get_username(self) -> typing.Optional[str]:\n        if isinstance(self._username, str) or self._username is None:\n            return self._username\n        else:\n            return self._username()\n\n    def _get_password(self) -> typing.Optional[str]:\n        if isinstance(self._password, str) or self._password is None:\n            return self._password\n        else:\n            return self._password()\n\n".to_string(),
-            super_arg: "username=username, password=password, ".to_string(),
-        },
+        Auth::Basic {
+            required,
+            username,
+            password,
+        } => {
+            let (u, w) = (&username.param, &password.param);
+            let header_block = if *required {
+                format!("        headers[\"Authorization\"] = httpx.BasicAuth(self._get_{u}(), self._get_{w}())._auth_header\n")
+            } else {
+                format!("        {u} = self._get_{u}()\n        {w} = self._get_{w}()\n        if {u} is not None and {w} is not None:\n            headers[\"Authorization\"] = httpx.BasicAuth({u}, {w})._auth_header\n")
+            };
+            AuthWrapper {
+                params: vec![
+                    (
+                        u.clone(),
+                        format!("        {u}: {},\n", callable(*required)),
+                    ),
+                    (
+                        w.clone(),
+                        format!("        {w}: {},\n", callable(*required)),
+                    ),
+                ],
+                assign: format!("        self._{u} = {u}\n        self._{w} = {w}\n"),
+                header_block,
+                token_method: getter(u, *required) + &getter(w, *required),
+            }
+        }
         // No auth: no credential parameter, assignment, header, or token helper.
         Auth::None => AuthWrapper {
-            param: String::new(),
+            params: Vec::new(),
             assign: String::new(),
             header_block: String::new(),
             token_method: String::new(),
-            super_arg: String::new(),
         },
     }
 }
@@ -3717,88 +3816,148 @@ struct AuthClient {
     wrapper_arg: String,
     doc_param: String,
     example_line: String,
+    /// The checks a required credential read from the environment gets once the
+    /// client is built.
+    check: String,
 }
 
-fn auth_client_parts(auth: &Auth) -> AuthClient {
-    // Each credential is a `(name, type)` pair; basic auth carries two
-    // (`username`/`password`), every other scheme exactly one.
-    let creds: Vec<(&str, String)> = match auth {
-        Auth::ApiKey { required: true, .. } => vec![("api_key", "str".to_string())],
+fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> AuthClient {
+    // Each credential: its parameter, its type, and whether the client requires
+    // it; basic auth carries two (`username`/`password`), every other scheme one.
+    let callable = "typing.Union[str, typing.Callable[[], str]]";
+    let creds: Vec<(&Credential, &str, bool)> = match auth {
         Auth::ApiKey {
-            required: false, ..
-        } => vec![("api_key", "typing.Optional[str] = None".to_string())],
-        Auth::Bearer { required: true } => vec![(
-            "token",
-            "typing.Union[str, typing.Callable[[], str]]".to_string(),
-        )],
-        Auth::Bearer { required: false } => vec![(
-            "token",
-            "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-        )],
-        Auth::Basic { required: true } => vec![
-            (
-                "username",
-                "typing.Union[str, typing.Callable[[], str]]".to_string(),
-            ),
-            (
-                "password",
-                "typing.Union[str, typing.Callable[[], str]]".to_string(),
-            ),
-        ],
-        Auth::Basic { required: false } => vec![
-            (
-                "username",
-                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-            ),
-            (
-                "password",
-                "typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None".to_string(),
-            ),
+            required,
+            credential,
+            ..
+        } => vec![(credential, "str", *required)],
+        Auth::Bearer {
+            required,
+            credential,
+        } => vec![(credential, callable, *required)],
+        Auth::Basic {
+            required,
+            username,
+            password,
+        } => vec![
+            (username, callable, *required),
+            (password, callable, *required),
         ],
         Auth::None => Vec::new(),
     };
+    // A credential read from the environment is optional in the signature,
+    // defaulting to the variable, and a required one is checked once the client
+    // is built (`x-fern-bearer: {env: …}`).
+    let ctor_ty = |credential: &Credential, ty: &str, required: bool| match &credential.env {
+        Some(env) => format!(
+            "typing.Optional[{ty}] = os.getenv(\"{}\")",
+            escape_py_str(env)
+        ),
+        None if required => ty.to_string(),
+        None => format!("typing.Optional[{ty}] = None"),
+    };
+    let doc_ty = |credential: &Credential, ty: &str, required: bool| {
+        if required && credential.env.is_none() {
+            ty.to_string()
+        } else {
+            format!("typing.Optional[{ty}]")
+        }
+    };
+    let declared = |credential: &&Credential| !taken.contains(credential.param.as_str());
     let ctor_param: String = creds
         .iter()
-        .map(|(name, ty)| format!("        {name}: {ty},\n"))
+        .filter(|(credential, _, _)| declared(credential))
+        .map(|(credential, ty, required)| {
+            format!(
+                "        {}: {},\n",
+                credential.param,
+                ctor_ty(credential, ty, *required)
+            )
+        })
         .collect();
-    // The docstring type drops the ` = None` default suffix a parameter carries.
     let doc_param: String = creds
         .iter()
-        .map(|(name, ty)| {
-            let doc_ty = ty.strip_suffix(" = None").unwrap_or(ty);
-            format!("    {name} : {doc_ty}\n")
+        .map(|(credential, ty, required)| {
+            format!(
+                "    {} : {}\n",
+                credential.param,
+                doc_ty(credential, ty, *required)
+            )
         })
         .collect();
     // The wrapper call passes each credential through; the template supplies the
     // final newline, so the joined block carries none.
     let wrapper_arg = creds
         .iter()
-        .map(|(name, _)| format!("            {name}={name},\n"))
+        .filter(|(credential, _, _)| declared(credential))
+        .map(|(credential, _, _)| format!("            {0}={0},\n", credential.param))
         .collect::<String>()
         .trim_end_matches('\n')
         .to_string();
+    // A credential sharing a promoted header's parameter is passed once (the
+    // `repeated-credential-example-keyword` departure).
     let example_line: String = auth_example_args(auth)
         .iter()
+        .filter(|arg| !taken.contains(keyword_name(arg)))
         .map(|arg| format!("        {arg},\n"))
+        .collect();
+    let check: String = creds
+        .iter()
+        .filter(|(credential, _, required)| *required && declared(credential))
+        .filter_map(|(credential, _, _)| {
+            Some(env_check(&credential.param, credential.env.as_ref()?))
+        })
         .collect();
     AuthClient {
         ctor_param,
         wrapper_arg,
         doc_param,
         example_line,
+        check,
     }
+}
+
+/// The root client's check that a required credential read from the
+/// environment variable `env` was given one way or the other.
+fn env_check(param: &str, env: &str) -> String {
+    format!(
+        "        if {param} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {param} or setting {}\")\n",
+        escape_py_str(env)
+    )
+}
+
+/// The environment variable a promoted header's constructor field defaults to:
+/// an additional header `apiKey` scheme's declared `env`.
+fn header_env(header: &GlobalHeader) -> Option<&str> {
+    header.credential.as_ref()?.env.as_deref()
+}
+
+/// Every credential of `auth`, in constructor order.
+fn auth_credentials(auth: &Auth) -> Vec<&Credential> {
+    auth.credentials()
 }
 
 /// The credential arguments in a worked `Examples` client instantiation, e.g.
 /// `["token=\"YOUR_TOKEN\""]` or, for basic auth, both `username`/`password` lines
 /// (each with no indent or trailing comma — the caller adds those).
-fn auth_example_args(auth: &Auth) -> Vec<&'static str> {
-    match auth {
-        Auth::ApiKey { .. } => vec!["api_key=\"YOUR_API_KEY\""],
-        Auth::Bearer { .. } => vec!["token=\"YOUR_TOKEN\""],
-        Auth::Basic { .. } => vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""],
-        Auth::None => Vec::new(),
-    }
+fn auth_example_args(auth: &Auth) -> Vec<String> {
+    auth_credentials(auth)
+        .into_iter()
+        .map(|credential| {
+            // A keyword's escape (`class_`) is not in the placeholder: Fern
+            // writes `class_="YOUR_CLASS"`.
+            let stem = credential
+                .param
+                .strip_suffix('_')
+                .filter(|stem| naming::is_python_keyword(stem))
+                .unwrap_or(&credential.param);
+            format!(
+                "{}=\"YOUR_{}\"",
+                credential.param,
+                stem.to_ascii_uppercase()
+            )
+        })
+        .collect()
 }
 
 /// A header parameter's synthesized example. Fern fills a header with its own
@@ -3846,6 +4005,7 @@ fn client_wrapper_file(
     global_headers: &[GlobalHeader],
     client_path_parameters: &[ClientPathParameter],
     default_max_retries: u32,
+    environment: Option<&crate::ir::Environment>,
 ) -> GeneratedFile {
     let a = auth_wrapper_parts(auth);
     // A defaulted header trails every built-in field instead (see
@@ -3855,6 +4015,11 @@ fn client_wrapper_file(
         .iter()
         .cloned()
         .partition(|h| h.default().is_some());
+    // A credential a promoted header of the same name already declares is not
+    // declared or passed again: Fern's two `X-Api-Key` schemes, or a bearer named
+    // `api_key` beside one, share the header's `api_key` parameter.
+    let taken: std::collections::HashSet<&str> =
+        leading.iter().map(|h| h.py_name.as_str()).collect();
     let tr_param: String = trailing
         .iter()
         .map(|h| format!("        {}: typing.Optional[str] = None,\n", h.py_name))
@@ -3976,7 +4141,7 @@ fn client_wrapper_file(
     }
     c.push_str("\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
     c.push_str(&client_assign);
     c.push_str(&a.assign);
@@ -4001,21 +4166,44 @@ fn client_wrapper_file(
     c.push_str(&a.token_method);
     c.push_str("    def get_custom_headers(self) -> typing.Optional[typing.Dict[str, str]]:\n        return self._headers\n\n    def get_base_url(self) -> str:\n        return self._base_url\n\n    def get_timeout(self) -> typing.Optional[float]:\n        return self._timeout\n\n    def get_max_retries(self) -> int:\n        return self._max_retries\n\n    def get_stream_reconnection_enabled(self) -> bool:\n        return self._stream_reconnection_enabled if self._stream_reconnection_enabled is not None else True\n\n    def get_max_stream_reconnection_attempts(self) -> typing.Optional[int]:\n        return self._max_stream_reconnection_attempts\n\n\nclass SyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        httpx_client: httpx.Client,\n    ):\n        super().__init__(\n            "));
     c.push_str(&client_super);
-    c.push_str(&a.super_arg);
+    c.push_str(&a.super_arg(&taken));
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self.httpx_client = HttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            logging_config=self._logging,\n        )\n\n\nclass AsyncClientWrapper(BaseClientWrapper):\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
-    c.push_str(&a.param);
+    c.push_str(&a.param(&taken));
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}        async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,\n        httpx_client: httpx.AsyncClient,\n    ):\n        super().__init__(\n            "));
     c.push_str(&client_super);
-    c.push_str(&a.super_arg);
+    c.push_str(&a.super_arg(&taken));
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
     c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
+    // A multi-URL environment replaces the single `base_url` throughout: the
+    // wrapper is built from, keeps and serves the environment, each request
+    // naming its field's URL.
+    let c = match environment.filter(|environment| !environment.urls.is_empty()) {
+        None => c,
+        Some(environment) => {
+            let name = &environment.enum_name;
+            c.replacen(
+                "from .http_client import AsyncHttpClient, HttpClient\n",
+                &format!("from ..environment import {name}\nfrom .http_client import AsyncHttpClient, HttpClient\n"),
+                1,
+            )
+            .replace("        base_url: str,\n", &format!("        environment: {name},\n"))
+            .replacen("        self._base_url = base_url\n", "        self._environment = environment\n", 1)
+            .replacen(
+                "    def get_base_url(self) -> str:\n        return self._base_url\n",
+                &format!("    def get_environment(self) -> {name}:\n        return self._environment\n"),
+                1,
+            )
+            .replace("            base_url=base_url,\n", "            environment=environment,\n")
+            .replace("            base_url=self.get_base_url,\n", "")
+        }
+    };
     GeneratedFile {
         path: PathBuf::from(format!("src/{pkg}/core/client_wrapper.py")),
         contents: c,
@@ -4985,6 +5173,17 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
             })
             .collect(),
     };
+    // An idempotent operation's idempotency headers follow its body, optional
+    // `str` arguments with no description (Fern's `dedupe_token`).
+    let mut body = body;
+    body.extend(ep.extensions.idempotency_headers.iter().map(|idempotency| {
+        optional_arg(
+            raw_type_str_ctx(&idempotency.type_ref, imports, true),
+            idempotency.required,
+            idempotency.docstring.clone(),
+            idempotency.py_name.clone(),
+        )
+    }));
 
     MethodParams {
         inner,
@@ -5084,35 +5283,48 @@ fn pager_success_branch(
             "                _items = _parsed_response.{}",
             pagination.results
         ),
-        "                _has_next = False".to_string(),
-        "                _get_next = None".to_string(),
     ];
-    // The cursor's container is optional on the response model, so the whole
-    // advance is guarded on it; a cursor declared at the top level needs no guard.
-    let container = &pagination.next_cursor_container;
-    let (indent, holder) = if container.is_empty() {
-        ("                ", "_parsed_response".to_string())
-    } else {
-        let holder = format!("_parsed_response.{}", container.join("."));
-        lines.push(format!("                if {holder} is not None:"));
-        ("                    ", holder)
+    let (indent, next_value) = match &pagination.advance {
+        PageAdvance::Cursor { container, leaf } => {
+            // The cursor's container is optional on the response model, so the
+            // whole advance is guarded on it; a cursor declared at the top level
+            // needs no guard.
+            // A guarded advance starts from no next page, which the guard then
+            // overwrites; an unguarded one assigns both outright.
+            let (indent, holder) = if container.is_empty() {
+                ("                ", "_parsed_response".to_string())
+            } else {
+                let holder = format!("_parsed_response.{}", container.join("."));
+                lines.push("                _has_next = False".to_string());
+                lines.push("                _get_next = None".to_string());
+                lines.push(format!("                if {holder} is not None:"));
+                ("                    ", holder)
+            };
+            lines.push(format!("{indent}_parsed_next = {holder}.{leaf}"));
+            lines.push(format!(
+                "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
+            ));
+            (indent, "_parsed_next".to_string())
+        }
+        PageAdvance::Offset => {
+            // The offset form reads no cursor: a page with items has a next one,
+            // one offset on (`x-fern-pagination: {offset: …}`).
+            lines.push("                _has_next = len(_items or []) > 0".to_string());
+            (
+                "                ",
+                format!("{} + 1", pagination.cursor_param),
+            )
+        }
     };
-    lines.push(format!(
-        "{indent}_parsed_next = {holder}.{}",
-        pagination.next_cursor_leaf
-    ));
-    lines.push(format!(
-        "{indent}_has_next = _parsed_next is not None and _parsed_next != \"\""
-    ));
     // The recursive call: every argument the method took, with the cursor replaced
-    // by the one just parsed.
+    // by the one just parsed, or the offset by the next one.
     let mut args: Vec<String> = Vec::new();
     for param in &ep.path_params {
         args.push(param.py_name.clone());
     }
     for param in &ep.query_params {
         let value = if param.py_name == pagination.cursor_param {
-            "_parsed_next"
+            next_value.as_str()
         } else {
             param.py_name.as_str()
         };
@@ -5151,8 +5363,11 @@ fn pager_success_branch(
 /// signature that names it has already registered one.
 fn pager_doc_type(pagination: &EndpointPagination, inner: &str, is_async: bool) -> String {
     let pager = if is_async { "AsyncPager" } else { "SyncPager" };
-    let TypeRef::Named(item) = &pagination.item_type else {
-        return inner.to_string();
+    let item = match &pagination.item_type {
+        TypeRef::Named(item) => item.clone(),
+        // A scalar names no import, so a scratch registry renders it.
+        primitive @ TypeRef::Primitive(_) => raw_type_str(primitive, &mut Imports::default()),
+        _ => return inner.to_string(),
     };
     format!("{pager}[{item}, {inner}]")
 }
@@ -5327,12 +5542,15 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     } else {
         imports.core_local("http_response", "HttpResponse")
     };
-    let mut lines: Vec<String> = vec![format!(
+    let mut lines: Vec<String> = offset_default_preamble(ep);
+    lines.extend(retries_disabled_preamble(ep));
+    lines.push(format!(
         "        _response = {await_}self._client_wrapper.httpx_client.request("
-    )];
+    ));
     if ep.path != "/" {
         lines.push(format!("            {},", url_arg(ep, imports)));
     }
+    lines.extend(environment_base_url(ep));
     lines.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut lines, ep, imports);
     lines.extend(["        )".to_string(), "        try:".to_string()]);
@@ -5406,6 +5624,44 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
     ]);
     lines.push(format!("        raise {api_error}(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)"));
     lines.join("\n")
+}
+
+/// A request's `base_url` argument in a multi-URL environment: the URL of the
+/// environment field the operation reads (`get_environment().archive`).
+fn environment_base_url(ep: &Endpoint) -> Option<String> {
+    ep.extensions.environment_field.as_ref().map(|field| {
+        format!("            base_url=self._client_wrapper.get_environment().{field},")
+    })
+}
+
+/// An offset-paginated operation's first statement: its offset argument
+/// defaulted to the first page (`page = page if page is not None else 1`), as
+/// Fern writes it, then a blank line.
+fn offset_default_preamble(ep: &Endpoint) -> Vec<String> {
+    match &ep.pagination {
+        Some(pagination) if matches!(pagination.advance, PageAdvance::Offset) => vec![
+            format!(
+                "        {0} = {0} if {0} is not None else 1",
+                pagination.cursor_param
+            ),
+            String::new(),
+        ],
+        _ => Vec::new(),
+    }
+}
+
+/// The request options an operation with `x-fern-retries: {disabled: true}`
+/// sends in place of the caller's: theirs with `max_retries` set to 0, written
+/// ahead of the request call; nothing for any other operation.
+fn retries_disabled_preamble(ep: &Endpoint) -> Vec<String> {
+    if !ep.extensions.retries_disabled {
+        return Vec::new();
+    }
+    vec![
+        "        _request_options_with_retries_disabled: typing.Optional[RequestOptions] = (".to_string(),
+        "            {**request_options, \"max_retries\": 0} if request_options is not None else {\"max_retries\": 0}".to_string(),
+        "        )".to_string(),
+    ]
 }
 
 /// Append an endpoint's httpx call arguments (indent 12) to `lines` — the query
@@ -5902,7 +6158,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
         _ => None,
     };
-    if content_type.is_some() || !ep.header_params.is_empty() || !ep.constant_headers.is_empty() {
+    if content_type.is_some()
+        || !ep.header_params.is_empty()
+        || !ep.constant_headers.is_empty()
+        || !ep.extensions.idempotency_headers.is_empty()
+    {
         lines.push("            headers={".to_string());
         if let Some(value) = content_type {
             lines.push(format!("                \"content-type\": \"{value}\","));
@@ -5941,9 +6201,21 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 .unwrap_or(usize::MAX)
         });
         lines.extend(headers.into_iter().map(|(_, line)| line));
+        // The idempotency headers follow the operation's own, in the order the
+        // document lists them.
+        lines.extend(ep.extensions.idempotency_headers.iter().map(|hp| {
+            format!(
+                "                \"{}\": str({1}) if {1} is not None else None,",
+                hp.wire_name, hp.py_name
+            )
+        }));
         lines.push("            },".to_string());
     }
-    lines.push("            request_options=request_options,".to_string());
+    lines.push(if ep.extensions.retries_disabled {
+        "            request_options=_request_options_with_retries_disabled,".to_string()
+    } else {
+        "            request_options=request_options,".to_string()
+    });
     // A request body passes the `OMIT` sentinel so unset optionals drop out.
     if ep.request_body.is_some() {
         lines.push("            omit=OMIT,".to_string());
@@ -6047,12 +6319,14 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_stream_docstring(ep, &mp, &return_type);
 
-    let mut call: Vec<String> = vec![format!(
+    let mut call: Vec<String> = retries_disabled_preamble(ep);
+    call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
-    )];
+    ));
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
+    call.extend(environment_base_url(ep));
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -6281,12 +6555,14 @@ fn raw_binary_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports
     let sig = signature(ep, &mp, &return_type, is_async);
     let docstring = raw_binary_stream_docstring(ep, &mp, &return_type);
 
-    let mut call: Vec<String> = vec![format!(
+    let mut call: Vec<String> = retries_disabled_preamble(ep);
+    call.push(format!(
         "        {async_with} self._client_wrapper.httpx_client.stream("
-    )];
+    ));
     if ep.path != "/" {
         call.push(format!("            {},", url_arg(ep, imports)));
     }
+    call.extend(environment_base_url(ep));
     call.push(format!("            method=\"{}\",", ep.http_method));
     append_request_call_args(&mut call, ep, imports);
     call.push("        ) as _response:".to_string());
@@ -6445,6 +6721,18 @@ fn root_client_file(
     }
     imports.add_plain("typing");
     imports.add_plain("httpx");
+    // A credential read from the environment defaults to `os.getenv`, and a
+    // required one is reported missing with an `ApiError`.
+    if auth_credentials(auth)
+        .iter()
+        .any(|credential| credential.env.is_some())
+        || global_headers
+            .iter()
+            .any(|header| header_env(header).is_some())
+    {
+        imports.add_plain("os");
+        imports.add_core("api_error", "ApiError");
+    }
     imports.add_core("client_wrapper", "AsyncClientWrapper");
     imports.add_core("client_wrapper", "SyncClientWrapper");
     imports.add_core("logging", "LogConfig");
@@ -6576,7 +6864,7 @@ fn root_client_file(
     )?);
     // When environments are in play, a module-level `_get_base_url` resolves the
     // explicit `base_url` or falls back to the selected environment's URL.
-    if let Some(e) = environment {
+    if let Some(e) = environment.filter(|e| e.urls.is_empty()) {
         body.push_str(&format!(
             "\n\n\ndef _get_base_url(*, base_url: typing.Optional[str] = None, environment: {enum}) -> str:\n    if base_url is not None:\n        return base_url\n    elif environment is not None:\n        return environment.value\n    else:\n        raise Exception(\"Please pass in either base_url or environment to construct the client\")",
             enum = e.enum_name,
@@ -6642,7 +6930,6 @@ fn root_client_methods(
         tag_types: tag_map,
         global_headers,
         client_path_parameters,
-        empty_namespace: false,
         sdk_first_party: true,
         children: &[],
     };
@@ -6689,15 +6976,32 @@ fn root_client_class(
     } else {
         (client_name.to_string(), "SyncClientWrapper", "httpx.Client")
     };
-    let a = auth_client_parts(auth);
+    let leading_names: std::collections::HashSet<&str> = cfg
+        .global_headers
+        .iter()
+        .filter(|h| h.default().is_none())
+        .map(|h| h.py_name.as_str())
+        .collect();
+    let a = auth_client_parts(auth, &leading_names);
     // With an environment, `base_url` becomes optional, an `environment` parameter
     // (defaulting to the first server) is added, and the wrapper's `base_url` is
     // resolved through `_get_base_url`.
     let e = environment.map(EnvClientParts::new);
-    let base_url_doc_ty = if e.is_some() {
-        "typing.Optional[str]"
+    // A multi-URL environment (operation-level servers) has no single base URL
+    // to override: the client takes only the environment, and the wrapper
+    // carries it whole.
+    let multi_url = environment.is_some_and(|environment| !environment.urls.is_empty());
+    let base_url_doc = if multi_url {
+        String::new()
     } else {
-        "str"
+        format!(
+            "    base_url : {}\n        The base url to use for requests from the client.\n\n",
+            if e.is_some() {
+                "typing.Optional[str]"
+            } else {
+                "str"
+            }
+        )
     };
     let env_doc = e.as_ref().map_or_else(String::new, |e| e.doc.clone());
     let server_variable_doc = e
@@ -6710,10 +7014,14 @@ fn root_client_class(
     let server_variable_init = e
         .as_ref()
         .map_or_else(String::new, |e| e.server_variable_init.clone());
-    let wrapper_base_url = e.as_ref().map_or_else(
-        || "base_url".to_string(),
-        |_| "_get_base_url(base_url=base_url, environment=environment)".to_string(),
-    );
+    let wrapper_location = if multi_url {
+        "environment=environment".to_string()
+    } else {
+        e.as_ref().map_or_else(
+            || "base_url=base_url".to_string(),
+            |_| "base_url=_get_base_url(base_url=base_url, environment=environment)".to_string(),
+        )
+    };
     // A defaulted header trails `logging` instead and is in no example (see
     // [`GlobalHeader::default`]); the `353-string-default-*` authored probes
     // byte-match the resulting `client.py` end to end.
@@ -6751,7 +7059,7 @@ fn root_client_class(
             format!("    {} : {ty}\n", parameter.py_name)
         })
         .chain(global_headers.iter().map(|h| {
-            let ty = if h.required() {
+            let ty = if h.required() && header_env(h).is_none() {
                 global_header_annotation(h)
             } else {
                 format!("typing.Optional[{}]", global_header_annotation(h))
@@ -6766,7 +7074,14 @@ fn root_client_class(
             distinct_global_header_params(global_headers)
                 .into_iter()
                 .map(|h| {
-                    if h.required() {
+                    if let Some(env) = header_env(h) {
+                        format!(
+                            "        {}: typing.Optional[{}] = os.getenv(\"{}\"),\n",
+                            h.py_name,
+                            global_header_annotation(h),
+                            escape_py_str(env)
+                        )
+                    } else if h.required() {
                         format!("        {}: {},\n", h.py_name, global_header_annotation(h))
                     } else {
                         format!(
@@ -6778,12 +7093,14 @@ fn root_client_class(
                 }),
         )
         .collect();
+    // Two promoted headers sharing a parameter pass it once (the
+    // `repeated-credential-example-keyword` departure): Fern repeats it.
     let client_param_example: String = client_path_parameters
         .iter()
         .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
         .chain(
-            global_headers
-                .iter()
+            distinct_global_header_params(global_headers)
+                .into_iter()
                 .map(|header| format!("        {},\n", global_header_example(header))),
         )
         .collect();
@@ -6831,12 +7148,20 @@ fn root_client_class(
         wrapper_arg: a.wrapper_arg,
         doc_param: a.doc_param,
         example_line: a.example_line,
-        base_url_doc_ty: base_url_doc_ty.to_string(),
+        auth_check: distinct_global_header_params(global_headers)
+            .into_iter()
+            .filter(|h| h.required())
+            .filter_map(|h| {
+                Some(env_check(&h.py_name, header_env(h)?))
+            })
+            .collect::<String>()
+            + &a.check,
+        base_url_doc,
         env_doc,
         server_variable_doc,
         base_url_ctor,
         server_variable_init,
-        wrapper_base_url,
+        wrapper_location,
         example_base_url: if e.is_some() {
             String::new()
         } else {
@@ -6918,9 +7243,11 @@ struct RootClientView {
     wrapper_arg: String,
     doc_param: String,
     example_line: String,
-    /// The docstring type for `base_url` (`str`, or `typing.Optional[str]` with an
-    /// environment).
-    base_url_doc_ty: String,
+    /// The checks a required credential read from the environment gets.
+    auth_check: String,
+    /// The `base_url` docstring block (`str`, or `typing.Optional[str]` with an
+    /// environment; empty with a multi-URL environment, which takes none).
+    base_url_doc: String,
     /// The `environment` docstring `Parameters` block (empty without environments).
     env_doc: String,
     /// Root-client parameter documentation for variables in the first server URL.
@@ -6929,9 +7256,10 @@ struct RootClientView {
     base_url_ctor: String,
     /// Constructor statements that apply explicitly supplied server URL variables.
     server_variable_init: String,
-    /// The value passed to the client wrapper's `base_url` (`base_url`, or a
-    /// `_get_base_url(...)` call with environments).
-    wrapper_base_url: String,
+    /// What the client wrapper is constructed from: `base_url=…` (`base_url`, or a
+    /// `_get_base_url(...)` call with environments), or `environment=environment`
+    /// for a multi-URL environment.
+    wrapper_location: String,
     /// The `Examples` client instantiation's `base_url` line (empty with
     /// environments, which drop it).
     example_base_url: String,
@@ -7031,6 +7359,11 @@ impl EnvClientParts {
                 url = escape_py_str(&e.url_template),
             )
         };
+        // A multi-URL environment replaces `base_url`.
+        let base_url_ctor = match e.urls.is_empty() {
+            true => "        base_url: typing.Optional[str] = None,\n",
+            false => "",
+        };
         EnvClientParts {
             // Fern's docstring here leaks the import statement onto the description
             // line and pads the block with blank lines; reproduced verbatim.
@@ -7038,7 +7371,7 @@ impl EnvClientParts {
                 "    environment : {enum_name}\n        The environment to use for requests from the client. from .environment import {enum_name}\n\n\n\n        Defaults to {default}\n\n\n\n"
             ),
             ctor: format!(
-                "        base_url: typing.Optional[str] = None,\n        environment: {enum_name} = {default},\n{variable_ctor}"
+                "{base_url_ctor}        environment: {enum_name} = {default},\n{variable_ctor}"
             ),
             server_variable_doc,
             server_variable_init,
@@ -7095,8 +7428,6 @@ struct ClientCtx<'a> {
     tag_types: &'a BTreeMap<String, String>,
     global_headers: &'a [GlobalHeader],
     client_path_parameters: &'a [ClientPathParameter],
-    /// Whether this tag client is Fern's explicit empty dotted namespace.
-    empty_namespace: bool,
     /// Whether Fern's isort pass files the SDK's own imports as first-party; see
     /// [`ExampleCtx::sdk_first_party`].
     sdk_first_party: bool,
@@ -7394,15 +7725,8 @@ fn client_stream_docstring(
         untyped_arguments: BTreeSet::new(),
         sdk_first_party: cx.sdk_first_party,
     };
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -7528,17 +7852,7 @@ fn client_binary_stream_docstring(
         sdk_first_party: cx.sdk_first_party,
     };
     if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
-        .then(|| {
-            build_example(
-                ep,
-                is_async,
-                cx.module,
-                cx.pkg,
-                cx.client_name,
-                &mut ctx,
-                cx.empty_namespace,
-            )
-        })
+        .then(|| build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx))
         .flatten()
     {
         lines.push(String::new());
@@ -7630,15 +7944,8 @@ fn client_docstring(cx: &ClientCtx, ep: &Endpoint, mp: &MethodParams, is_async: 
     };
     // With an example, one blank line separates the `Returns` block from
     // `Examples`; without one, close straight after (like the raw docstring).
-    if let Some(ex_lines) = build_example(
-        ep,
-        is_async,
-        cx.module,
-        cx.pkg,
-        cx.client_name,
-        &mut ctx,
-        cx.empty_namespace,
-    ) {
+    if let Some(ex_lines) = build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx)
+    {
         lines.push(String::new());
         lines.push("        Examples".to_string());
         lines.push("        --------".to_string());
@@ -9649,7 +9956,6 @@ fn build_example(
     pkg: &str,
     client_name: &str,
     ctx: &mut ExampleCtx,
-    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     build_example_inner(
         ep,
@@ -9662,7 +9968,6 @@ fn build_example(
         false,
         None,
         false,
-        empty_namespace,
     )
 }
 
@@ -9693,7 +9998,6 @@ fn build_documentation_example(
         true,
         environment,
         reference,
-        false,
     )
 }
 
@@ -9729,7 +10033,6 @@ fn build_example_inner(
     documentation: bool,
     environment: Option<&crate::ir::Environment>,
     reference: bool,
-    empty_namespace: bool,
 ) -> Option<Vec<String>> {
     if matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         || !endpoint_has_worked_example(ep)
@@ -10478,13 +10781,7 @@ fn build_example_inner(
     } else {
         &ep.method_name
     };
-    let receiver = if empty_namespace {
-        format!(
-            "{}client..{}",
-            if is_async { "await " } else { "" },
-            method_name
-        )
-    } else if module.is_empty() {
+    let receiver = if module.is_empty() {
         format!(
             "{}client.{}",
             if is_async { "await " } else { "" },
@@ -10656,26 +10953,31 @@ fn build_example_inner(
         for parameter in ctx.client_path_parameters {
             client_args.push(format!("    {},", client_path_parameter_example(parameter)));
         }
-        for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
+        let leading: Vec<GlobalHeader> = ctx
+            .global_headers
+            .iter()
+            .filter(|h| h.default().is_none())
+            .cloned()
+            .collect();
+        for h in distinct_global_header_params(&leading) {
             client_args.push(format!("    {},", global_header_example(h)));
         }
+        // A credential sharing a promoted header's parameter is passed once (the
+        // `repeated-credential-example-keyword` departure): Fern repeats it.
         for arg in auth_example_args(ctx.auth) {
-            client_args.push(format!("    {arg},"));
+            if !ctx
+                .global_headers
+                .iter()
+                .any(|h| h.default().is_none() && keyword_name(&arg) == h.py_name)
+            {
+                client_args.push(format!("    {arg},"));
+            }
         }
     }
     if !ctx.has_environment {
         client_args.push("    base_url=\"https://yourhost.com/path/to/api\",".to_string());
     }
-    let client_block = if empty_namespace && !client_args.is_empty() {
-        vec![format!(
-            "client = {example_name}({} )",
-            client_args
-                .iter()
-                .map(|argument| argument.trim())
-                .collect::<Vec<_>>()
-                .join(" ")
-        )]
-    } else if client_args.is_empty() {
+    let client_block = if client_args.is_empty() {
         vec![format!("client = {example_name}()")]
     } else {
         let mut block = vec![format!("client = {example_name}(")];
@@ -10707,16 +11009,12 @@ fn build_example_inner(
     out.push(String::new());
     out.extend(client_block);
     if is_async {
-        if !empty_namespace {
-            out.push(String::new());
-            out.push(String::new());
-        }
+        out.push(String::new());
+        out.push(String::new());
         out.push("async def main() -> None:".to_string());
         out.extend(call.split('\n').map(String::from));
-        if !empty_namespace {
-            out.push(String::new());
-            out.push(String::new());
-        }
+        out.push(String::new());
+        out.push(String::new());
         out.push("asyncio.run(main())".to_string());
     } else {
         out.extend(call.split('\n').map(String::from));
@@ -10772,16 +11070,33 @@ fn documentation_client_example_args(
                 .filter(|header| header.required() && !header.py_type().is_list())
                 .map(|header| format!("{}=\"<{}>\"", header.py_name, header.wire_name)),
         )
-        .collect()
+        .fold(Vec::new(), |mut args: Vec<String>, arg| {
+            // Each keyword once (the `repeated-credential-example-keyword`
+            // departure): a credential and a promoted header sharing a parameter
+            // are one argument, where Fern writes the keyword twice.
+            if !args
+                .iter()
+                .any(|seen| keyword_name(seen) == keyword_name(&arg))
+            {
+                args.push(arg);
+            }
+            args
+        })
+}
+
+fn keyword_name(arg: &str) -> &str {
+    arg.split_once('=').map_or(arg, |(name, _)| name)
 }
 
 fn documentation_auth_example_args(auth: &Auth) -> Vec<String> {
     match auth {
-        Auth::ApiKey { .. } => vec!["api_key=\"<value>\"".to_string()],
-        Auth::Bearer { .. } => vec!["token=\"<token>\"".to_string()],
-        Auth::Basic { .. } => vec![
-            "username=\"<username>\"".to_string(),
-            "password=\"<password>\"".to_string(),
+        Auth::ApiKey { credential, .. } => vec![format!("{}=\"<value>\"", credential.param)],
+        Auth::Bearer { credential, .. } => vec![format!("{}=\"<token>\"", credential.param)],
+        Auth::Basic {
+            username, password, ..
+        } => vec![
+            format!("{}=\"<username>\"", username.param),
+            format!("{}=\"<password>\"", password.param),
         ],
         Auth::None => Vec::new(),
     }
@@ -11025,11 +11340,8 @@ fn raw_client_file(
     module: &str,
     endpoints: &[&Endpoint],
     tag_types: &BTreeMap<String, String>,
-    empty_namespace: bool,
 ) -> Result<GeneratedFile> {
-    let loc = if empty_namespace {
-        RefLoc::Client(String::new())
-    } else if module.is_empty() {
+    let loc = if module.is_empty() {
         RefLoc::PackageRoot
     } else {
         RefLoc::Client(module.to_string())
@@ -11053,17 +11365,17 @@ fn raw_client_file(
         imports.add_core("request_options", "RequestOptions");
     }
 
-    let class_stem = if module.is_empty() && !empty_namespace {
+    let class_stem = if module.is_empty() {
         root_client_name.to_string()
     } else {
         naming::to_pascal_case(module_stem(module))
     };
-    let sync_class = if module.is_empty() && !empty_namespace {
+    let sync_class = if module.is_empty() {
         format!("Raw{class_stem}")
     } else {
         format!("Raw{class_stem}Client")
     };
-    let async_class_name = if module.is_empty() && !empty_namespace {
+    let async_class_name = if module.is_empty() {
         format!("AsyncRaw{class_stem}")
     } else {
         format!("AsyncRaw{class_stem}Client")
@@ -11334,6 +11646,7 @@ mod tests {
         DeclSettings, Example, ExampleCtx, FieldView, ForwardRepair, Imports, ParamRow, RefLoc,
         ReferenceEntryView, RenderedField, RootClientView, RootModuleView, Slot,
     };
+    use crate::ir::Credential;
     use crate::ir::{
         AliasType, Auth, BodyField, DiscriminatedUnion, Endpoint, EnumMember, EnumType,
         ErrorResponse, Field, FormBody, GlobalHeader, HeaderParam, HeaderType, Ir, ObjectType,
@@ -11745,12 +12058,15 @@ mod tests {
             wrapper_arg: "            token=token,".to_string(),
             doc_param: "    token : str\n\n".to_string(),
             example_line: "        token=\"YOUR_TOKEN\",\n".to_string(),
-            base_url_doc_ty: "str".to_string(),
+            auth_check: String::new(),
+            base_url_doc:
+                "    base_url : str\n        The base url to use for requests from the client.\n\n"
+                    .to_string(),
             env_doc: String::new(),
             server_variable_doc: String::new(),
             base_url_ctor: "        base_url: str,\n".to_string(),
             server_variable_init: String::new(),
-            wrapper_base_url: "base_url".to_string(),
+            wrapper_location: "base_url=base_url".to_string(),
             example_base_url: "        base_url=\"https://yourhost.com/path/to/api\",\n"
                 .to_string(),
             client_param_doc: String::new(),
@@ -12005,13 +12321,13 @@ mod tests {
         }));
         let auth = Auth::None;
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("endpoint has an example")
             .join("\n");
         assert!(!rendered.contains("request="), "{rendered}");
         ep.openapi_31 = false;
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("legacy endpoint has an example")
             .join("\n");
         assert!(!rendered.contains("request="), "{rendered}");
@@ -12021,7 +12337,7 @@ mod tests {
             body.required = true;
         }
         let mut ctx = example_ctx(&[], &[], &auth);
-        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "projects", "fern", "FernApi", &mut ctx)
             .expect("required unknown body has an example")
             .join("\n");
         assert!(
@@ -12030,14 +12346,36 @@ mod tests {
         );
     }
 
+    fn api_key_auth(header: &str, required: bool) -> Auth {
+        Auth::ApiKey {
+            header: header.to_string(),
+            required,
+            credential: Credential::plain("api_key"),
+            prefix: None,
+        }
+    }
+
+    fn bearer_auth(required: bool) -> Auth {
+        Auth::Bearer {
+            required,
+            credential: Credential::plain("token"),
+        }
+    }
+
+    fn basic_auth(required: bool) -> Auth {
+        Auth::Basic {
+            required,
+            username: Credential::plain("username"),
+            password: Credential::plain("password"),
+        }
+    }
+
     #[test]
     fn auth_fragments_cover_every_scheme() {
+        let free = std::collections::HashSet::new();
         // api-key required: public `api_key`, unconditional header, no token helper.
-        let w = auth_wrapper_parts(&Auth::ApiKey {
-            header: "X-API-Key".to_string(),
-            required: true,
-        });
-        assert_eq!(w.param, "        api_key: str,\n");
+        let w = auth_wrapper_parts(&api_key_auth("X-API-Key", true));
+        assert_eq!(w.param(&free), "        api_key: str,\n");
         assert_eq!(w.assign, "        self.api_key = api_key\n");
         assert_eq!(
             w.header_block,
@@ -12046,78 +12384,75 @@ mod tests {
         assert!(w.token_method.is_empty());
         // The `super().__init__` arg carries a trailing separator so the following
         // `headers=` kwarg needs no leading comma (which the no-auth arm would omit).
-        assert_eq!(w.super_arg, "api_key=api_key, ");
+        assert_eq!(w.super_arg(&free), "api_key=api_key, ");
 
         // No auth: every credential fragment is empty, so the wrapper carries no
         // token and `super().__init__(headers=...)` has no dangling comma.
         let none = auth_wrapper_parts(&Auth::None);
-        assert!(none.param.is_empty());
+        assert!(none.param(&free).is_empty());
         assert!(none.assign.is_empty());
         assert!(none.header_block.is_empty());
         assert!(none.token_method.is_empty());
-        assert!(none.super_arg.is_empty());
-        assert!(auth_client_parts(&Auth::None).ctor_param.is_empty());
+        assert!(none.super_arg(&free).is_empty());
+        assert!(auth_client_parts(&Auth::None, &free).ctor_param.is_empty());
         assert!(auth_example_args(&Auth::None).is_empty());
 
         // api-key optional: nullable param and a guarded header write.
-        let w = auth_wrapper_parts(&Auth::ApiKey {
-            header: "X-Key".to_string(),
-            required: false,
-        });
-        assert_eq!(w.param, "        api_key: typing.Optional[str] = None,\n");
+        let w = auth_wrapper_parts(&api_key_auth("X-Key", false));
+        assert_eq!(
+            w.param(&free),
+            "        api_key: typing.Optional[str] = None,\n"
+        );
         assert_eq!(
             w.header_block,
             "        if self.api_key is not None:\n            headers[\"X-Key\"] = self.api_key\n"
         );
 
         // bearer required vs optional: the token helper's signature differs.
-        let req = auth_wrapper_parts(&Auth::Bearer { required: true });
+        let req = auth_wrapper_parts(&bearer_auth(true));
         assert!(req.token_method.contains("-> str:"));
         assert!(req.header_block.contains("f\"Bearer {self._get_token()}\""));
-        let opt = auth_wrapper_parts(&Auth::Bearer { required: false });
+        let opt = auth_wrapper_parts(&bearer_auth(false));
         assert!(opt.token_method.contains("-> typing.Optional[str]:"));
-        assert!(opt.param.contains("typing.Optional[typing.Union[str"));
+        assert!(opt
+            .param(&free)
+            .contains("typing.Optional[typing.Union[str"));
 
         // The root-client fragments and example arg track the same schemes.
-        let c = auth_client_parts(&Auth::ApiKey {
-            header: "X-API-Key".to_string(),
-            required: true,
-        });
+        let c = auth_client_parts(&api_key_auth("X-API-Key", true), &free);
         assert_eq!(c.ctor_param, "        api_key: str,\n");
         assert_eq!(c.doc_param, "    api_key : str\n");
         assert_eq!(c.example_line, "        api_key=\"YOUR_API_KEY\",\n");
+        assert!(c.check.is_empty());
 
         // The remaining root-client arms (the docstring drops a ` = None` default).
-        let c = auth_client_parts(&Auth::ApiKey {
-            header: "X-Key".to_string(),
-            required: false,
-        });
+        let c = auth_client_parts(&api_key_auth("X-Key", false), &free);
         assert_eq!(
             c.ctor_param,
             "        api_key: typing.Optional[str] = None,\n"
         );
         assert_eq!(c.doc_param, "    api_key : typing.Optional[str]\n");
-        let c = auth_client_parts(&Auth::Bearer { required: true });
+        let c = auth_client_parts(&bearer_auth(true), &free);
         assert_eq!(
             c.ctor_param,
             "        token: typing.Union[str, typing.Callable[[], str]],\n"
         );
-        let c = auth_client_parts(&Auth::Bearer { required: false });
+        let c = auth_client_parts(&bearer_auth(false), &free);
         assert!(c.ctor_param.contains("typing.Optional[typing.Union[str"));
         assert!(!c.doc_param.contains(" = None"));
 
         // basic: a required `username`/`password` pair everywhere a single
         // credential would otherwise appear.
-        let w = auth_wrapper_parts(&Auth::Basic { required: true });
-        assert!(w.param.contains("username: typing.Union[str"));
-        assert!(w.param.contains("password: typing.Union[str"));
+        let w = auth_wrapper_parts(&basic_auth(true));
+        assert!(w.param(&free).contains("username: typing.Union[str"));
+        assert!(w.param(&free).contains("password: typing.Union[str"));
         assert!(w.assign.contains("self._username = username"));
         assert!(w.assign.contains("self._password = password"));
         assert!(w.header_block.contains("httpx.BasicAuth("));
         assert!(w.token_method.contains("def _get_username(self) -> str:"));
         assert!(w.token_method.contains("def _get_password(self) -> str:"));
-        assert_eq!(w.super_arg, "username=username, password=password, ");
-        let c = auth_client_parts(&Auth::Basic { required: true });
+        assert_eq!(w.super_arg(&free), "username=username, password=password, ");
+        let c = auth_client_parts(&basic_auth(true), &free);
         assert_eq!(
             c.ctor_param,
             "        username: typing.Union[str, typing.Callable[[], str]],\n        password: typing.Union[str, typing.Callable[[], str]],\n"
@@ -12134,22 +12469,159 @@ mod tests {
             c.example_line,
             "        username=\"YOUR_USERNAME\",\n        password=\"YOUR_PASSWORD\",\n"
         );
+        let w = auth_wrapper_parts(&basic_auth(false));
+        assert!(w
+            .header_block
+            .contains("if username is not None and password is not None:"));
 
         assert_eq!(
-            auth_example_args(&Auth::Bearer { required: true }),
+            auth_example_args(&bearer_auth(true)),
             vec!["token=\"YOUR_TOKEN\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::ApiKey {
-                header: "X".to_string(),
-                required: false
-            }),
+            auth_example_args(&api_key_auth("X", false)),
             vec!["api_key=\"YOUR_API_KEY\""]
         );
         assert_eq!(
-            auth_example_args(&Auth::Basic { required: true }),
+            auth_example_args(&basic_auth(true)),
             vec!["username=\"YOUR_USERNAME\"", "password=\"YOUR_PASSWORD\""]
         );
+    }
+
+    #[test]
+    fn named_credentials_carry_their_name_prefix_and_environment() {
+        let free = std::collections::HashSet::new();
+        let meter = Auth::ApiKey {
+            header: "X-Meter-Key".to_string(),
+            required: true,
+            credential: Credential::plain("meter_token"),
+            prefix: Some("Meter".to_string()),
+        };
+        let w = auth_wrapper_parts(&meter);
+        assert_eq!(
+            w.header_block,
+            "        headers[\"X-Meter-Key\"] = f\"Meter {self.meter_token}\"\n"
+        );
+        assert_eq!(
+            auth_example_args(&meter),
+            vec!["meter_token=\"YOUR_METER_TOKEN\""]
+        );
+        let lift = Auth::Bearer {
+            required: true,
+            credential: Credential {
+                param: "lift_pass".to_string(),
+                env: Some("LIFT_PASS".to_string()),
+            },
+        };
+        let c = auth_client_parts(&lift, &free);
+        assert_eq!(
+            c.ctor_param,
+            "        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv(\"LIFT_PASS\"),\n"
+        );
+        assert_eq!(
+            c.doc_param,
+            "    lift_pass : typing.Optional[typing.Union[str, typing.Callable[[], str]]]\n"
+        );
+        assert!(c.check.contains("if lift_pass is None:"));
+        assert!(c
+            .check
+            .contains("passing in lift_pass or setting LIFT_PASS"));
+        assert!(auth_wrapper_parts(&lift)
+            .token_method
+            .contains("def _get_lift_pass(self) -> str:"));
+        // A credential a promoted header already declares is neither declared,
+        // passed nor exampled again, but still documented and assigned.
+        let taken: std::collections::HashSet<&str> = ["api_key"].into_iter().collect();
+        let shared = api_key_auth("X-Api-Key", true);
+        let c = auth_client_parts(&shared, &taken);
+        assert!(c.ctor_param.is_empty() && c.wrapper_arg.is_empty() && c.example_line.is_empty());
+        assert_eq!(c.doc_param, "    api_key : str\n");
+        let w = auth_wrapper_parts(&shared);
+        assert!(w.param(&taken).is_empty() && w.super_arg(&taken).is_empty());
+        assert_eq!(w.assign, "        self.api_key = api_key\n");
+    }
+
+    #[test]
+    fn an_offset_pager_defaults_and_steps_its_offset() {
+        let mut ep = endpoint(
+            "/entries",
+            Vec::new(),
+            Some(TypeRef::Named("EntryPage".to_string())),
+        );
+        ep.query_params = vec![QueryParam {
+            wire_name: "page".to_string(),
+            py_name: "page".to_string(),
+            type_ref: TypeRef::Primitive(Prim::Int),
+            required: false,
+            nullable: false,
+            convert: false,
+            comma_separated: false,
+            allow_multiple: false,
+            one_or_many: false,
+            example: None,
+            example_is_scalar: false,
+            aliased_datetime: None,
+            docstring: None,
+            default: None,
+        }];
+        ep.pagination = Some(crate::ir::EndpointPagination {
+            results: "entries".to_string(),
+            advance: crate::ir::PageAdvance::Offset,
+            cursor_param: "page".to_string(),
+            item_type: TypeRef::Named("Entry".to_string()),
+        });
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("page = page if page is not None else 1"),
+            "{out}"
+        );
+        assert!(out.contains("_has_next = len(_items or []) > 0"), "{out}");
+        assert!(out.contains("page=page + 1,"), "{out}");
+        assert!(
+            !out.contains("_parsed_next") && !out.contains("_get_next = None"),
+            "{out}"
+        );
+    }
+
+    #[test]
+    fn endpoint_extensions_add_an_idempotency_argument_and_disable_retries() {
+        let mut ep = endpoint("/parcels", Vec::new(), None);
+        ep.http_method = "POST";
+        ep.extensions = crate::ir::EndpointExtensions {
+            idempotency_headers: vec![HeaderParam {
+                wire_name: "X-Dedupe-Token".to_string(),
+                py_name: "dedupe_token".to_string(),
+                type_ref: TypeRef::Primitive(Prim::Str),
+                required: false,
+                docstring: None,
+                example: None,
+                enum_value: false,
+            }],
+            retries_disabled: true,
+            pagination_declared: false,
+            environment_field: None,
+        };
+        let out = raw_method(&ep, false, &mut Imports::default());
+        assert!(
+            out.contains("dedupe_token: typing.Optional[str] = None"),
+            "{out}"
+        );
+        assert!(
+            out.contains(
+                "\"X-Dedupe-Token\": str(dedupe_token) if dedupe_token is not None else None,"
+            ),
+            "{out}"
+        );
+        assert!(out.contains(
+            "_request_options_with_retries_disabled: typing.Optional[RequestOptions] = ("
+        ));
+        assert!(out.contains("request_options=_request_options_with_retries_disabled,"));
+        let plain = raw_method(
+            &endpoint("/parcels", Vec::new(), None),
+            false,
+            &mut Imports::default(),
+        );
+        assert!(!plain.contains("retries_disabled") && !plain.contains("dedupe_token"));
     }
 
     fn endpoint(path: &str, params: Vec<PathParam>, response: Option<TypeRef>) -> Endpoint {
@@ -12166,6 +12638,7 @@ mod tests {
             client_path_params: Vec::new(),
             query_params: Vec::new(),
             header_params: Vec::new(),
+            extensions: crate::ir::EndpointExtensions::default(),
             constant_headers: Vec::new(),
             header_order: Vec::new(),
             request_body: None,
@@ -14215,15 +14688,19 @@ mod tests {
         }));
         ep.response_doc = Some("Created widget.".to_string());
 
-        let auth = Auth::Bearer { required: true };
+        let auth = Auth::Bearer {
+            required: true,
+            credential: Credential::plain("token"),
+        };
         let global_headers = [GlobalHeader {
             wire_name: "X-Tenant".to_string(),
             py_name: "tenant".to_string(),
             presence: crate::ir::HeaderPresence::Required(HeaderType::Str),
+            credential: None,
         }];
         let mut ctx = example_ctx(&[], &[], &auth);
         ctx.global_headers = &global_headers;
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("wildcard request has a worked example")
             .join("\n");
         let trace = rendered.find("trace=\"trace-1\"").unwrap();
@@ -14302,7 +14779,7 @@ mod tests {
             },
         ]));
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, true, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("inline request has an async example")
             .join("\n");
         assert!(rendered.contains("import asyncio"), "{rendered}");
@@ -14375,7 +14852,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_none(),
             "a list path parameter beside a body suppresses the example"
@@ -14391,7 +14867,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_some(),
             "a scalar path parameter beside a body keeps it"
@@ -14408,7 +14883,6 @@ mod tests {
                 "fern",
                 "FernApi",
                 &mut ctx,
-                false
             )
             .is_some(),
             "a list path parameter with no body keeps it"
@@ -14483,7 +14957,7 @@ mod tests {
         let auth = Auth::None;
         let types = [alias];
         let mut ctx = example_ctx(&types, &[], &auth);
-        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+        let executable = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx)
             .expect("referenced request has an executable example")
             .join("\n");
         assert!(executable.contains("eps_bearer_setup=[\"epsBearerSetup\", \"epsBearerSetup\"]"));
@@ -14501,7 +14975,7 @@ mod tests {
         ep.request_body_required = false;
         ep.request_body_has_multipart_related = false;
         let mut ctx = example_ctx(&types, &[], &auth);
-        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx, false)
+        let optional = build_example(&ep, false, "contexts", "fern", "FernApi", &mut ctx)
             .expect("optional request has an example")
             .join("\n");
         assert!(optional.contains("_5g_mm_cause_value=0"), "{optional}");
@@ -14547,7 +15021,7 @@ mod tests {
     }
 
     #[test]
-    fn generation_covers_root_and_explicit_empty_endpoint_namespaces() {
+    fn the_empty_namespace_is_an_importable_underscore_package() {
         let mut root = endpoint("/root", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
         root.openapi_31 = true;
         root.module.clear();
@@ -14575,9 +15049,7 @@ mod tests {
         explicit_empty.method_name = "empty".to_string();
 
         let mut ir = ir_with(vec![root, explicit_empty]);
-        ir.empty_endpoint_namespace = true;
         ir.endpoint_modules = vec!["_".to_string()];
-        ir.empty_namespace_types = vec!["EmptyResult".to_string()];
         ir.tag_types = vec![TagTypeDecl {
             module: "_".to_string(),
             decl: TypeDecl::Alias(AliasType {
@@ -14588,15 +15060,33 @@ mod tests {
                 docstring: None,
             }),
         }];
-        let files = generate(&ir).expect("root and explicit empty namespaces generate");
-        assert!(files
+        let files = generate(&ir).expect("root and empty namespaces generate");
+        let file = |rel: &str| {
+            files
+                .iter()
+                .find(|file| file.path == std::path::Path::new(rel))
+                .unwrap_or_else(|| panic!("{rel} is not generated"))
+        };
+        // The `_` namespace is a package of its own, its types inside it, and
+        // the root client reaches it through a `_` property.
+        for rel in [
+            "src/fern/_/__init__.py",
+            "src/fern/_/client.py",
+            "src/fern/_/raw_client.py",
+            "src/fern/_/types/empty_result.py",
+            "src/fern/raw_client.py",
+        ] {
+            file(rel);
+        }
+        assert!(!files
             .iter()
-            .any(|file| file.path.ends_with("src/fern/client.py")));
-        assert!(files
-            .iter()
-            .any(|file| file.path.ends_with("src/fern/raw_client.py")));
-        assert!(files.iter().any(|file| file.path.ends_with("README.md")));
-        assert!(files.iter().any(|file| file.path.ends_with("reference.md")));
+            .any(|file| file.path == std::path::Path::new("src/fern/types/empty_result.py")));
+        let root = &file("src/fern/client.py").contents;
+        assert!(root.contains("class FernApi:") && root.contains("    def _(self):"));
+        assert!(file("src/fern/_/client.py")
+            .contents
+            .contains("from ..core.client_wrapper import"));
+        assert!(file("reference.md").contents.contains("client._.empty("));
     }
 
     #[test]
@@ -14654,7 +15144,7 @@ mod tests {
         ];
 
         let mut ctx = example_ctx(&[], &[], &Auth::None);
-        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx, false)
+        let rendered = build_example(&ep, false, "widgets", "acme", "AcmeApi", &mut ctx)
             .expect("bodyless query endpoint has a worked example")
             .join("\n");
         // Whether an optional query example survives at all is decided while
@@ -14752,7 +15242,6 @@ mod tests {
             tag_types: &tags,
             global_headers: &[],
             client_path_parameters: &[],
-            empty_namespace: false,
             sdk_first_party: true,
             children: &[],
         };

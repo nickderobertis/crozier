@@ -112,6 +112,12 @@ pub fn generate(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
+    if let Some(message) = ir.unemittable_extension() {
+        return Err(Error::InvalidSpec {
+            path: args.spec.clone(),
+            message,
+        });
+    }
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;
@@ -187,6 +193,12 @@ pub fn render_files(args: GenerateArgs) -> Result<Vec<GeneratedFile>> {
     config.enum_type = args.enum_type;
     config.default_max_retries = args.default_max_retries;
     let ir = ir::build(&doc, &config);
+    if let Some(message) = ir.unemittable_extension() {
+        return Err(Error::InvalidSpec {
+            path: args.spec.clone(),
+            message,
+        });
+    }
     document_refusals::check_sdk(&mut doc, &ir, &config, &args.spec, args.fern_strict)?;
     name_refusals::validate(&doc, &args.spec, args.fern_strict, &ir)?;
     name_refusals::validate_ir(&ir, &doc, &args.spec, args.fern_strict)?;

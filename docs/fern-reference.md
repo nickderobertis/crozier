@@ -123,13 +123,23 @@ extension not listed here does not change crozier's output.
 | --- | --- | --- | --- |
 | `x-fern-audiences` | `x-crozier-audiences` | operation | The audience labels the `audiences` setting filters on. |
 | `x-fern-ignore` | `x-crozier-ignore` | operation, component schema, parameter | Leaves the node out of the SDK. |
-| `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation | The sub-client the method belongs to; a list nests it. |
-| `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. |
+| `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation, component schema | On an operation, the sub-client the method belongs to (a list nests it), honoured only beside a method name; on a component, the package its type is written into. |
+| `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. A sequence of strings is read joined by `,`, as Fern reads it (`[fetch]` is `fetch`). |
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | request-body media | Each named representation generates its own method; the crozier spelling wins on that media node. |
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response: `format: sse` as Server-Sent Events, which a `terminator` ends; `true` or `format: json` as JSON lines; `false`, like no extension, leaves the response's media types to decide. A `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |
 | `x-fern-property-name` | `x-crozier-property-name` | object property | The property's Python name, both the model field and the request keyword argument. Its JSON key on the wire stays the property's key. |
+| `x-fern-header` | `x-crozier-header` | header `apiKey` security scheme | The credential's constructor parameter (`name`), the text its value is sent behind (`prefix`), and the environment variable it defaults to (`env`). On a second header scheme, whose credential is a promoted header, `name` and `env` apply but Fern sends no `prefix`. |
+| `x-fern-bearer` | `x-crozier-bearer` | http `bearer` security scheme | The credential's constructor parameter (`name`) and the environment variable it defaults to (`env`). |
+| `x-fern-token-variable-name` | `x-crozier-token-variable-name` | http `bearer` security scheme | The credential's constructor parameter, when the bearer extension names none. |
+| `x-fern-basic` | `x-crozier-basic` | http `basic` security scheme | The `username` and `password` parameters' `name` and `env`. For this and the three rows above, a credential name that is a Python keyword is escaped as Fern escapes it (`class` is `class_`); one naming a client constructor parameter (`timeout`, `headers`, …) is refused, exit 1, asking for another name. |
+| `x-fern-server-name` | `x-crozier-server-name` | server | The environment member's name (`primary` is `PRIMARY`); every server naming itself is a member, the first the default. On an operation's own server, a field of the environment object beside `base` that the operation's requests read. A keyword field is escaped (`class_`); a name making a digit-led member, or an operation server named `base`, is refused, exit 1. |
+| `x-fern-default-url` | `x-crozier-default-url` | server | The environment member's value, in place of the expanded `url`. |
+| `x-fern-idempotency-headers` | `x-crozier-idempotency-headers` | document | The headers (`[{header: X-Dedupe-Token}]`) an idempotent operation takes. |
+| `x-fern-idempotent` | `x-crozier-idempotent` | operation | Gives the method an optional argument per idempotency header after its body fields (`dedupe_token`), sent as that header. |
+| `x-fern-retries` | `x-crozier-retries` | operation | `{disabled: true}` sends the request with `max_retries` 0, whatever the caller's options say. |
+| `x-fern-webhook` | `x-crozier-webhook` | path operation | `true` leaves the operation out of the client; the schemas it names stay ordinary types. |
 | `x-fern-base-path` | `x-crozier-base-path` | document | A path every route sits under: a string, or an object with `path`, `paths-include-base-path` and `parameters`. Each `{placeholder}` in the object form's `path` leaves every method and becomes a client constructor argument, `Optional[str]` with the `default` a `parameters` map entry gives it, else a required `str`. |
 | `x-fern-parameter-name` | `x-crozier-parameter-name` | parameter | Names the SDK argument while retaining the parameter wire name. |
 | `x-fern-default` | `x-crozier-default` | query parameter | Supplies the generated argument default. |

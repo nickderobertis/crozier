@@ -190,6 +190,7 @@ inventory=(
   adyen_capital_matches_fern_output
   apivideo_android_uploader_matches_fern_output
   truefoundry_trueforge_matches_fern_output
+  truefoundry_trueforge_flat_matches_fern
   volview_backend_contract_matches_fern_output
   osparc_simcore_webserver_matches_fern_output
   helixdb_http_api_matches_fern_output

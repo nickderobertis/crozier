@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "796ecf70b0cc4dcd777afd06f196cf4c471cb60d6bb5d5be56891cca9cc42dda"
+
+[[covers]]
+key = "webhook-inline-json-body-named"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#named-webhook-payload"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

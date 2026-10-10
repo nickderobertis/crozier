@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "ef49d56d473f0273a0c592e4a584c02697a8fc99fb2a7d3621d98f5f076f5ec3"
+
+[[covers]]
+key = "server-default-url-templated"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#server-default-url-extension"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Film Shot Planner
+  version: 2.0.1
+  description: Plans the camera set-ups for a day's shooting.
+servers:
+  - url: https://planner.film.test
+paths:
+  /scenes/{sceneId}/settings:
+    get:
+      operationId: getSettings
+      parameters:
+        - name: sceneId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The scene's camera settings.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [mode]
+                properties:
+                  mode:
+                    type: string
+                    enum: [wide, medium, close]
+                    x-fern-type-name: ShotSize
+                  lens:
+                    type: object
+                    x-fern-type-name: LensSpec
+                    properties:
+                      focalLength:
+                        type: integer
+                      anamorphic:
+                        type: boolean
+                  light:
+                    type: string
+                    enum: [day, night]
+                  takes:
+                    type: array
+                    items:
+                      type: string
+                      enum: [good, hold, no-good]
+                      x-fern-type-name: TakeMark
+                  filters:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      enum: [soft, hard]
+                      x-fern-type-name: FilterGrade
+                  rig:
+                    x-fern-type-name: CameraRig
+                    oneOf:
+                      - type: object
+                        properties:
+                          dolly:
+                            type: string
+                      - type: string
+  /scenes/{sceneId}/slates:
+    get:
+      operationId: listSlates
+      x-fern-pagination: true
+      parameters:
+        - name: sceneId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: after
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One page of the scene's slates.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slates:
+                    type: array
+                    items:
+                      type: string
+                  after:
+                    type: string
+  /crew/call-sheet:
+    get:
+      operationId: getCallSheet
+      x-fern-sdk-group-name: crew
+      x-fern-sdk-method-name: callSheet
+      responses:
+        '200':
+          description: The crew's call sheet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  call:
+                    type: string
+                    enum: [early, standard, late]
+                    x-fern-type-name: CallWindow
+                  unit:
+                    type: object
+                    x-fern-type-name: CrewUnit
+                    properties:
+                      name:
+                        type: string
+                  gear:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      enum: [packed, missing]
+                      x-fern-type-name: GearState
+components:
+  schemas:
+    Camera:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+        iso:
+          type: string
+          enum: [low, high]
+          x-fern-type-name: IsoBand

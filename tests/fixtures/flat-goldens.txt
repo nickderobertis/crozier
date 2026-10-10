@@ -18,3 +18,4 @@ client-class-name|
 audience-filter-strict|
 eos.local-extra-fields-forbid|
 swagger-petstore-organization|swagger-petstore
+truefoundry-trueforge|

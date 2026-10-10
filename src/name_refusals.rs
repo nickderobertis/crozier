@@ -98,6 +98,10 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
         tags: Vec::new(),
         base_path_crozier: None,
         base_path_fern: None,
+        idempotency_headers_crozier: None,
+        idempotency_headers_fern: None,
+        pagination_crozier: None,
+        pagination_fern: None,
         global_headers_crozier: None,
         global_headers_fern: None,
         sdk_variables_crozier: None,
@@ -1067,6 +1071,63 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
         }
         source_reference_names(source, node, &format!("#/components/schemas/{name}"), path)?;
     }
+    // An inline schema declaring a type name is lifted into that type (see
+    // `openapi::normalize_inline_declared_type_names`), so a name already held
+    // by a component or an earlier inline declaration is one type to Fern: it
+    // generates the merge of an identical schema and refuses one that differs
+    // (this class's `evidence/inline-declared-type-name-*`).
+    let mut held: std::collections::HashMap<String, (String, serde_yaml_ng::Value)> = types
+        .iter()
+        .map(|(key, (name, _, body))| {
+            (
+                key.clone(),
+                (format!("component schema {name:?}"), body.clone()),
+            )
+        })
+        .collect();
+    for (name, node) in source["components"]["schemas"]
+        .as_mapping()
+        .into_iter()
+        .flatten()
+    {
+        if let Some(name) = name.as_str() {
+            inline_type_names(
+                node,
+                &format!("#/components/schemas/{name}"),
+                &mut held,
+                path,
+            )?;
+        }
+    }
+    for (route, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            if !crate::ir::endpoint_module(op, route).is_empty() {
+                continue;
+            }
+            let operation = &source["paths"][route][method.to_ascii_lowercase()];
+            let mut bodies = vec![source_target(source, &operation["requestBody"])];
+            bodies.extend(
+                operation["responses"]
+                    .as_mapping()
+                    .into_iter()
+                    .flat_map(|mapping| mapping.values())
+                    .map(|response| source_target(source, response)),
+            );
+            for media in bodies.into_iter().flat_map(|body| {
+                body["content"]
+                    .as_mapping()
+                    .into_iter()
+                    .flat_map(|mapping| mapping.values())
+            }) {
+                inline_type_names(
+                    &media["schema"],
+                    &format!("{method} {route}"),
+                    &mut held,
+                    path,
+                )?;
+            }
+        }
+    }
     for (route, item) in &doc.paths {
         for (method, _) in item.operations() {
             let operation = &source["paths"][route][method.to_ascii_lowercase()];
@@ -1117,6 +1178,50 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
                 )?;
             }
         }
+    }
+    Ok(())
+}
+
+/// Refuse an inline schema under `node` whose declared type name is already
+/// held by a different schema, recording each new declaration in `held` in the
+/// order the lifting reads them: properties, items, map values, then members.
+fn inline_type_names(
+    node: &serde_yaml_ng::Value,
+    location: &str,
+    held: &mut std::collections::HashMap<String, (String, serde_yaml_ng::Value)>,
+    path: &Path,
+) -> Result<()> {
+    if node.get("$ref").is_some() || crate::openapi::refusal_node_ignored(node) {
+        return Ok(());
+    }
+    let mut children: Vec<&serde_yaml_ng::Value> = node["properties"]
+        .as_mapping()
+        .into_iter()
+        .flat_map(|mapping| mapping.values())
+        .collect();
+    children.push(&node["items"]);
+    children.push(&node["additionalProperties"]);
+    for members in ["oneOf", "anyOf", "allOf"] {
+        children.extend(node[members].as_sequence().into_iter().flatten());
+    }
+    for child in children {
+        if !child.is_mapping() || child.get("$ref").is_some() {
+            continue;
+        }
+        if let Some(declared) = crate::openapi::refusal_type_name(child) {
+            let key = crate::openapi::declared_type_key(declared);
+            let body = without_type_names(child);
+            match held.get(&key) {
+                Some((holder, held_body)) if *held_body != body => {
+                    return Err(refusal(path, Class::TypeNameCollision, format!("{location} declares type {key} inline with a different schema than {holder}; give them distinct declared type names")));
+                }
+                Some(_) => {}
+                None => {
+                    held.insert(key, (format!("the inline declaration in {location}"), body));
+                }
+            }
+        }
+        inline_type_names(child, location, held, path)?;
     }
     Ok(())
 }

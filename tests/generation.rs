@@ -3244,6 +3244,12 @@ paths:
       responses:
         "204":
           description: ""
+  /routes:
+    get:
+      operationId: map
+      responses:
+        "204":
+          description: ""
 "##;
 
 #[test]
@@ -3253,8 +3259,10 @@ fn synthesized_names_cover_verb_resource_and_reserved_munge() {
     let client = &files["src/acme/client.py"];
     assert!(client.contains("def put_inventory("), "{client}");
     assert!(client.contains("def delete_id("), "{client}");
-    // A groupless `list` operationId collides with the builtin and becomes `list_`.
-    assert!(client.contains("def list_("), "{client}");
+    // A groupless `map` operationId collides with a builtin Fern reserves and
+    // becomes `map_`; `list` is one Fern leaves alone as a method name.
+    assert!(client.contains("def map_("), "{client}");
+    assert!(client.contains("def list("), "{client}");
 }
 
 /// Binary success responses use Fern's context-managed byte-stream API in both
@@ -4186,12 +4194,9 @@ fn fixture_match_count(
         match crozier::parity::compare_file(&context, rel, actual, fern) {
             Ok(compared) if compared.matches() => {
                 counted.insert(rel.clone());
-                observed.extend(
-                    compared
-                        .departures
-                        .iter()
-                        .map(|departure| (rel.clone(), departure.line, departure.id.to_string())),
-                );
+                observed.extend(compared.departures.iter().map(|departure| {
+                    (rel.clone(), departure.line.get(), departure.id.to_string())
+                }));
             }
             // A module a row names must match under the engine; any other
             // module that differs is uncounted.
@@ -14506,6 +14511,59 @@ components:
         order(reference, "client.put_hook(", "    "),
         ["id", "url", "state"],
         "{reference}"
+    );
+}
+
+/// `render_files`, the library's in-memory entry point, refuses an extension
+/// value crozier cannot emit exactly as `generate` does, naming the conflict,
+/// and renders the document once the value is corrected: a server named `1st`
+/// would make the digit-led environment member `1ST`, while `first` makes
+/// `FIRST`.
+#[test]
+fn render_files_refuses_an_unemittable_extension_and_renders_its_correction() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let render_named = |server_name: &str| {
+        let path = dir.path().join(format!("{server_name}.yml"));
+        std::fs::write(
+            &path,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Names, version: '1'}}\nservers:\n  - url: https://one.test\n    x-crozier-server-name: {server_name}\npaths:\n  /ping:\n    get:\n      operationId: ping\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .unwrap();
+        render_files(GenerateArgs {
+            spec: path,
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+            layout: crozier::settings::Layout::Packaged,
+        })
+    };
+    let refused = render_named("1st")
+        .expect_err("a digit-led environment member is refused")
+        .to_string();
+    assert!(
+        refused.contains("makes the environment member `1ST`, which starts with a digit"),
+        "{refused}"
+    );
+    let files = render_named("first").expect("the corrected name renders");
+    let environment = files
+        .iter()
+        .find(|file| file.path.ends_with("environment.py"))
+        .expect("an environment module");
+    assert!(
+        environment
+            .contents
+            .contains("FIRST = \"https://one.test\""),
+        "{}",
+        environment.contents
     );
 }
 

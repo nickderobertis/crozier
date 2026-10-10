@@ -48,6 +48,18 @@ pub struct OpenApi {
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
     pub openapi: String,
+    /// `x-crozier-pagination` / `x-fern-pagination` at the document root: the
+    /// contract an operation's `x-fern-pagination: true` takes.
+    #[serde(rename = "x-crozier-pagination", default)]
+    pub(crate) pagination_crozier: Option<Pagination>,
+    #[serde(rename = "x-fern-pagination", default)]
+    pub(crate) pagination_fern: Option<Pagination>,
+    /// `x-crozier-idempotency-headers` / `x-fern-idempotency-headers`: the headers
+    /// an idempotent operation takes. Read through [`OpenApi::idempotency_headers`].
+    #[serde(rename = "x-crozier-idempotency-headers", default)]
+    pub(crate) idempotency_headers_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-idempotency-headers", default)]
+    pub(crate) idempotency_headers_fern: Option<serde_json::Value>,
     /// Document metadata.
     #[serde(default)]
     pub info: Info,
@@ -219,6 +231,27 @@ impl BasePath {
 }
 
 impl OpenApi {
+    /// The idempotency headers an idempotent operation takes, each its wire
+    /// name: `x-crozier-idempotency-headers` over `x-fern-idempotency-headers`, a
+    /// list of `{header: …}` entries; an entry without a string `header` is
+    /// skipped.
+    #[must_use]
+    pub fn idempotency_headers(&self) -> Vec<&str> {
+        self.idempotency_headers_crozier
+            .as_ref()
+            .or(self.idempotency_headers_fern.as_ref())
+            .and_then(serde_json::Value::as_array)
+            .map(|entries| {
+                entries
+                    .iter()
+                    .filter_map(|entry| entry.get("header")?.as_str())
+                    .map(str::trim)
+                    .filter(|header| !header.is_empty())
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
     /// The document's base path: `x-crozier-base-path` when present, else
     /// `x-fern-base-path` (the [dual-header policy](self#fern-compatible-extensions)).
     #[must_use]
@@ -268,6 +301,52 @@ pub struct Server {
     /// URL template variables, each with a `default` Fern substitutes into the URL.
     #[serde(default)]
     pub variables: IndexMap<String, ServerVariable>,
+    /// `x-crozier-server-name` / `x-fern-server-name`: the environment member's
+    /// name. Read through [`Server::server_name`].
+    #[serde(rename = "x-crozier-server-name", default)]
+    pub(crate) server_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-server-name", default)]
+    pub(crate) server_name_fern: Option<serde_json::Value>,
+    /// `x-crozier-default-url` / `x-fern-default-url`: the environment member's
+    /// value in place of the expanded `url`. Read through [`Server::default_url`].
+    #[serde(rename = "x-crozier-default-url", default)]
+    pub(crate) default_url_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-default-url", default)]
+    pub(crate) default_url_fern: Option<serde_json::Value>,
+}
+
+impl Server {
+    fn extension_text<'a>(
+        crozier: Option<&'a serde_json::Value>,
+        fern: Option<&'a serde_json::Value>,
+    ) -> Option<&'a str> {
+        crozier
+            .or(fern)
+            .and_then(serde_json::Value::as_str)
+            .map(str::trim)
+            .filter(|text| !text.is_empty())
+    }
+
+    /// The environment member name this server declares, canonicalizing on
+    /// `x-crozier-server-name` over `x-fern-server-name` (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn server_name(&self) -> Option<&str> {
+        Self::extension_text(
+            self.server_name_crozier.as_ref(),
+            self.server_name_fern.as_ref(),
+        )
+    }
+
+    /// The URL this server's environment member takes in place of its expanded
+    /// `url`: `x-crozier-default-url` over `x-fern-default-url`.
+    #[must_use]
+    pub fn default_url(&self) -> Option<&str> {
+        Self::extension_text(
+            self.default_url_crozier.as_ref(),
+            self.default_url_fern.as_ref(),
+        )
+    }
 }
 
 /// A server URL template variable. Only the `default` is modeled — Fern substitutes
@@ -344,6 +423,106 @@ pub struct SecurityScheme {
     /// For `type: oauth2`, the available flows and their scope descriptions.
     #[serde(default)]
     pub flows: Option<OAuthFlows>,
+    /// `x-crozier-header` / `x-fern-header`: a header `apiKey` credential's
+    /// parameter `name`, the `prefix` its value is sent with, and the `env`
+    /// variable it defaults to. Read through [`SecurityScheme::header_credential`].
+    #[serde(rename = "x-crozier-header", default)]
+    pub(crate) header_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-header", default)]
+    pub(crate) header_fern: Option<serde_json::Value>,
+    /// `x-crozier-bearer` / `x-fern-bearer`: a bearer credential's parameter
+    /// `name` and `env` variable. Read through [`SecurityScheme::bearer_credential`].
+    #[serde(rename = "x-crozier-bearer", default)]
+    pub(crate) bearer_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-bearer", default)]
+    pub(crate) bearer_fern: Option<serde_json::Value>,
+    /// `x-crozier-basic` / `x-fern-basic`: the `username` and `password`
+    /// credentials' `name` and `env`. Read through [`SecurityScheme::basic_credentials`].
+    #[serde(rename = "x-crozier-basic", default)]
+    pub(crate) basic_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-basic", default)]
+    pub(crate) basic_fern: Option<serde_json::Value>,
+    /// `x-crozier-token-variable-name` / `x-fern-token-variable-name`: a bearer
+    /// credential's parameter name. Read through [`SecurityScheme::bearer_credential`].
+    #[serde(rename = "x-crozier-token-variable-name", default)]
+    pub(crate) token_variable_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-token-variable-name", default)]
+    pub(crate) token_variable_name_fern: Option<serde_json::Value>,
+}
+
+/// How a security scheme's credential is named in the generated client: the
+/// declared parameter `name`, the `env` variable it defaults to, and (for a
+/// header key) the `prefix` its value is sent behind. Each is `None` when the
+/// extension leaves it out or gives it a blank or non-string value.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct CredentialNaming {
+    pub name: Option<String>,
+    pub env: Option<String>,
+    pub prefix: Option<String>,
+}
+
+impl CredentialNaming {
+    fn from_value(value: Option<&serde_json::Value>) -> Self {
+        let field = |key: &str| {
+            value
+                .and_then(|value| value.get(key))
+                .and_then(serde_json::Value::as_str)
+                .map(str::trim)
+                .filter(|text| !text.is_empty())
+                .map(str::to_string)
+        };
+        CredentialNaming {
+            name: field("name"),
+            env: field("env"),
+            prefix: field("prefix"),
+        }
+    }
+}
+
+impl SecurityScheme {
+    /// The header `apiKey` credential's naming, canonicalizing on
+    /// `x-crozier-header` over `x-fern-header` (see the [dual-header
+    /// policy](self#fern-compatible-extensions)).
+    #[must_use]
+    pub fn header_credential(&self) -> CredentialNaming {
+        CredentialNaming::from_value(self.header_crozier.as_ref().or(self.header_fern.as_ref()))
+    }
+
+    /// The bearer credential's naming: `x-crozier-bearer` over `x-fern-bearer`,
+    /// whose `name` outranks `x-crozier-token-variable-name` over
+    /// `x-fern-token-variable-name`.
+    #[must_use]
+    pub fn bearer_credential(&self) -> CredentialNaming {
+        let mut naming = CredentialNaming::from_value(
+            self.bearer_crozier.as_ref().or(self.bearer_fern.as_ref()),
+        );
+        naming.prefix = None;
+        if naming.name.is_none() {
+            naming.name = self
+                .token_variable_name_crozier
+                .as_ref()
+                .or(self.token_variable_name_fern.as_ref())
+                .and_then(serde_json::Value::as_str)
+                .map(str::trim)
+                .filter(|text| !text.is_empty())
+                .map(str::to_string);
+        }
+        naming
+    }
+
+    /// The basic credentials' naming, `(username, password)`: `x-crozier-basic`
+    /// over `x-fern-basic`, each part's `name` and `env`.
+    #[must_use]
+    pub fn basic_credentials(&self) -> (CredentialNaming, CredentialNaming) {
+        let declared = self.basic_crozier.as_ref().or(self.basic_fern.as_ref());
+        let part = |key: &str| {
+            let mut naming =
+                CredentialNaming::from_value(declared.and_then(|value| value.get(key)));
+            naming.prefix = None;
+            naming
+        };
+        (part("username"), part("password"))
+    }
 }
 
 /// OAuth2 flow declarations. crozier only needs the scope maps to reproduce
@@ -395,16 +574,29 @@ pub enum SecuritySchemeType {
 
 /// The `scheme` of an `http` security scheme. Only `bearer` (which crozier
 /// reproduces) and `basic` are named; anything else is [`HttpAuthScheme::Other`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
+/// HTTP authentication scheme names are case-insensitive, and Fern reads them
+/// so: `scheme: Bearer` generates exactly what `bearer` does.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpAuthScheme {
     /// `bearer`.
     Bearer,
     /// `basic`.
     Basic,
     /// Any other HTTP auth scheme.
-    #[serde(other)]
     Other,
+}
+
+impl<'de> Deserialize<'de> for HttpAuthScheme {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        let name = String::deserialize(deserializer)?;
+        Ok(match name.to_ascii_lowercase().as_str() {
+            "bearer" => HttpAuthScheme::Bearer,
+            "basic" => HttpAuthScheme::Basic,
+            _ => HttpAuthScheme::Other,
+        })
+    }
 }
 
 /// One path's operations, keyed by HTTP method. Only the methods crozier
@@ -517,17 +709,49 @@ pub struct Operation {
     /// [`Operation::sdk_group_name`]).
     #[serde(rename = "x-fern-sdk-group-name", default)]
     sdk_group_name_fern: Option<SdkGroupName>,
+    /// `x-crozier-idempotent` / `x-fern-idempotent`: whether the operation takes
+    /// the document's idempotency headers. Read through [`Operation::idempotent`].
+    #[serde(rename = "x-crozier-idempotent", default)]
+    pub(crate) idempotent_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-idempotent", default)]
+    pub(crate) idempotent_fern: Option<serde_json::Value>,
+    /// `servers`: the base URLs this operation alone is served from, in place of
+    /// the document's. Fern reads a named one (`x-fern-server-name`) as a field
+    /// of a multi-URL environment.
+    #[serde(default, deserialize_with = "de_servers")]
+    pub servers: Vec<Server>,
+    /// `x-crozier-webhook` / `x-fern-webhook`: the operation describes a webhook
+    /// the API sends rather than an endpoint the SDK calls. Read through
+    /// [`Operation::webhook_marked`].
+    #[serde(rename = "x-crozier-webhook", default)]
+    pub(crate) webhook_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-webhook", default)]
+    pub(crate) webhook_fern: Option<serde_json::Value>,
+    /// `x-crozier-retries` / `x-fern-retries`: the operation's retry policy.
+    /// Read through [`Operation::retries_disabled`].
+    #[serde(rename = "x-crozier-retries", default)]
+    pub(crate) retries_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-retries", default)]
+    pub(crate) retries_fern: Option<serde_json::Value>,
     /// `x-crozier-sdk-method-name`: the generated method's name, overriding the one
     /// derived from `operationId`/summary/route (canonical spelling). Read via
     /// [`Operation::sdk_method_name`], which also honours the
     /// `x-fern-sdk-method-name` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
-    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    #[serde(
+        rename = "x-crozier-sdk-method-name",
+        default,
+        deserialize_with = "de_sdk_method_name"
+    )]
     sdk_method_name_crozier: Option<String>,
     /// `x-fern-sdk-method-name`: the Fern spelling of the method-name override.
     /// Superseded by `x-crozier-sdk-method-name` when both appear (see
     /// [`Operation::sdk_method_name`]).
-    #[serde(rename = "x-fern-sdk-method-name", default)]
+    #[serde(
+        rename = "x-fern-sdk-method-name",
+        default,
+        deserialize_with = "de_sdk_method_name"
+    )]
     sdk_method_name_fern: Option<String>,
     /// `x-crozier-streaming`: how this operation streams, and (when it declares a
     /// `stream-condition`) the request property that selects between the streaming
@@ -549,11 +773,11 @@ pub struct Operation {
     /// also honours the `x-fern-pagination` variant per the
     /// [dual-header policy](self#fern-compatible-extensions).
     #[serde(rename = "x-crozier-pagination", default)]
-    pagination_crozier: Option<Pagination>,
+    pagination_crozier: Option<DeclaredPagination>,
     /// `x-fern-pagination`: the Fern spelling of the pagination contract. Superseded
     /// by `x-crozier-pagination` when both appear (see [`Operation::pagination`]).
     #[serde(rename = "x-fern-pagination", default)]
-    pagination_fern: Option<Pagination>,
+    pagination_fern: Option<DeclaredPagination>,
     /// A human description; becomes the method docstring's summary line.
     #[serde(default)]
     pub description: Option<String>,
@@ -662,6 +886,36 @@ impl Operation {
         (!segments.is_empty()).then_some(segments)
     }
 
+    /// Whether the operation is idempotent (`x-crozier-idempotent` over
+    /// `x-fern-idempotent`, see the [dual-header
+    /// policy](self#fern-compatible-extensions)): only the boolean `true` is.
+    #[must_use]
+    pub fn idempotent(&self) -> bool {
+        self.idempotent_crozier
+            .as_ref()
+            .or(self.idempotent_fern.as_ref())
+            == Some(&serde_json::Value::Bool(true))
+    }
+
+    /// Whether the operation is marked a webhook (`x-crozier-webhook` over
+    /// `x-fern-webhook`): only the boolean `true` marks it.
+    #[must_use]
+    pub fn webhook_marked(&self) -> bool {
+        self.webhook_crozier.as_ref().or(self.webhook_fern.as_ref())
+            == Some(&serde_json::Value::Bool(true))
+    }
+
+    /// Whether the operation disables retries: `x-crozier-retries` over
+    /// `x-fern-retries` is a mapping whose `disabled` is `true`.
+    #[must_use]
+    pub fn retries_disabled(&self) -> bool {
+        self.retries_crozier
+            .as_ref()
+            .or(self.retries_fern.as_ref())
+            .and_then(|retries| retries.get("disabled"))
+            == Some(&serde_json::Value::Bool(true))
+    }
+
     /// The declared method-name override, canonicalizing on the
     /// `x-crozier-sdk-method-name` spelling (see the [dual-header
     /// policy](self#fern-compatible-extensions)). A blank value is no override.
@@ -686,9 +940,16 @@ impl Operation {
     /// policy](self#fern-compatible-extensions)).
     #[must_use]
     pub fn pagination(&self) -> Option<&Pagination> {
-        self.pagination_crozier
+        match self
+            .pagination_crozier
             .as_ref()
-            .or(self.pagination_fern.as_ref())
+            .or(self.pagination_fern.as_ref())?
+        {
+            DeclaredPagination::Contract(contract) => Some(contract),
+            // Resolved against the root contract at load time
+            // (`normalize_root_pagination`); a boolean left here names none.
+            DeclaredPagination::Root(_) => None,
+        }
     }
 
     /// The declared streaming contract, canonicalizing on the
@@ -889,16 +1150,55 @@ pub enum SdkGroupName {
 
 /// One entry of `x-crozier-enum` / `x-fern-enum`: the Python member name a wire
 /// value is given, in place of the identifier derived from the value itself.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct EnumValueName {
     /// The member name (`USD` for the value `$`).
     #[serde(default)]
     pub name: Option<String>,
 }
 
+/// An operation's `x-crozier-pagination` / `x-fern-pagination`: a contract of
+/// its own, or a boolean, `true` taking the document's root contract (Fern's
+/// `x-fern-pagination: true`) and `false` declaring none.
+#[derive(Debug, Clone)]
+pub(crate) enum DeclaredPagination {
+    Contract(Pagination),
+    Root(bool),
+}
+
+impl<'de> Deserialize<'de> for DeclaredPagination {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct Declared;
+        impl<'de> serde::de::Visitor<'de> for Declared {
+            type Value = DeclaredPagination;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str(
+                    "a pagination contract, or a boolean taking the document's root contract",
+                )
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                value: bool,
+            ) -> std::result::Result<Self::Value, E> {
+                Ok(DeclaredPagination::Root(value))
+            }
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> std::result::Result<Self::Value, A::Error> {
+                Pagination::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                    .map(DeclaredPagination::Contract)
+            }
+        }
+        deserializer.deserialize_any(Declared)
+    }
+}
+
 /// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
-/// request members that drive a generated pager. Only the cursor form is modelled,
-/// which is the one Fern's Python generator emits a `SyncPager`/`AsyncPager` for.
+/// request members that drive a generated pager: the cursor form, or the offset
+/// form (`offset` with no `cursor`).
 #[derive(Debug, Default, Clone, Deserialize)]
 pub struct Pagination {
     /// The request property holding the cursor, as a dotted path
@@ -934,6 +1234,12 @@ impl Pagination {
     #[must_use]
     pub fn results_property(&self) -> Option<&str> {
         self.results.as_deref().map(strip_selector_prefix)
+    }
+
+    /// The request-side offset property name, with `$request.` stripped.
+    #[must_use]
+    pub fn offset_property(&self) -> Option<&str> {
+        self.offset.as_deref().map(strip_selector_prefix)
     }
 }
 
@@ -1244,7 +1550,7 @@ pub struct Components {
 
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]
 /// is set) or an inline schema described by the remaining fields.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Schema {
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
@@ -1382,6 +1688,17 @@ pub struct Schema {
     /// by `x-crozier-type-name` when both appear (see [`Schema::declared_type_name`]).
     #[serde(rename = "x-fern-type-name", default)]
     pub(crate) type_name_fern: Option<String>,
+    /// `x-crozier-sdk-group-name` / `x-fern-sdk-group-name` on a component: the
+    /// group package its type is written into. Read through
+    /// [`Schema::sdk_group_name`].
+    #[serde(rename = "x-crozier-sdk-group-name", default)]
+    pub(crate) sdk_group_name_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-sdk-group-name", default)]
+    pub(crate) sdk_group_name_fern: Option<serde_json::Value>,
+    /// `x-tags`: the tags a component belongs to, the first naming the package
+    /// its type is written into. Read through [`Schema::placement_tag`].
+    #[serde(rename = "x-tags", default)]
+    pub(crate) x_tags: Option<serde_json::Value>,
     /// `x-crozier-enum`: per-value member names for a string enum, keyed by wire
     /// value (canonical spelling). Read via [`Schema::enum_member_names`], which
     /// also honours the `x-fern-enum` variant per the
@@ -1467,6 +1784,42 @@ impl Schema {
             .or(self.property_name_fern.as_deref())
             .map(str::trim)
             .filter(|name| !name.is_empty())
+    }
+
+    /// The SDK group a component declares (`x-crozier-sdk-group-name` over
+    /// `x-fern-sdk-group-name`, see the [dual-header
+    /// policy](self#fern-compatible-extensions)): a string or a list of
+    /// segments; blank segments drop.
+    #[must_use]
+    pub fn sdk_group_name(&self) -> Option<Vec<&str>> {
+        let declared = self
+            .sdk_group_name_crozier
+            .as_ref()
+            .or(self.sdk_group_name_fern.as_ref())?;
+        let segments: Vec<&str> = match declared {
+            serde_json::Value::String(name) => vec![name.trim()],
+            serde_json::Value::Array(names) => names
+                .iter()
+                .filter_map(serde_json::Value::as_str)
+                .map(str::trim)
+                .collect(),
+            _ => Vec::new(),
+        };
+        let segments: Vec<&str> = segments.into_iter().filter(|s| !s.is_empty()).collect();
+        (!segments.is_empty()).then_some(segments)
+    }
+
+    /// The first non-blank `x-tags` entry of a component, the tag whose package
+    /// Fern writes its type into.
+    #[must_use]
+    pub fn placement_tag(&self) -> Option<&str> {
+        self.x_tags
+            .as_ref()?
+            .as_array()?
+            .iter()
+            .filter_map(serde_json::Value::as_str)
+            .map(str::trim)
+            .find(|tag| !tag.is_empty())
     }
 
     /// The SDK type name this schema declares, canonicalizing on the
@@ -1576,7 +1929,7 @@ impl Schema {
 /// declared the `properties` key. Fern distinguishes `properties: {}` (a closed,
 /// argument-free request payload) from an object with no `properties` key (an
 /// open-map request argument), even though both maps are empty after parsing.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct SchemaProperties {
     values: IndexMap<String, Schema>,
     declared: bool,
@@ -1659,6 +2012,55 @@ where
     D: serde::Deserializer<'de>,
 {
     Ok(Option::<IndexMap<String, String>>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+/// Deserialize an SDK method-name override. Fern also accepts it written as a
+/// sequence of strings and reads the sequence the way JavaScript stringifies an
+/// array, its members joined by `,`: `[fetch]` names the method `fetch` and
+/// `[fetch, grab]` names it `fetch_grab`. An empty sequence, which Fern fails
+/// on, is refused.
+fn de_sdk_method_name<'de, D>(deserializer: D) -> std::result::Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    struct MethodName;
+    impl<'de> serde::de::Visitor<'de> for MethodName {
+        type Value = Option<String>;
+        fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+            formatter.write_str("a method name: a string, or a sequence of strings")
+        }
+        fn visit_str<E: serde::de::Error>(self, name: &str) -> std::result::Result<Self::Value, E> {
+            Ok(Some(name.to_string()))
+        }
+        fn visit_unit<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+            Ok(None)
+        }
+        fn visit_none<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
+            Ok(None)
+        }
+        fn visit_some<S: serde::Deserializer<'de>>(
+            self,
+            deserializer: S,
+        ) -> std::result::Result<Self::Value, S::Error> {
+            deserializer.deserialize_any(self)
+        }
+        fn visit_seq<A: serde::de::SeqAccess<'de>>(
+            self,
+            mut sequence: A,
+        ) -> std::result::Result<Self::Value, A::Error> {
+            let mut names = Vec::new();
+            while let Some(name) = sequence.next_element::<String>()? {
+                names.push(name);
+            }
+            if names.is_empty() {
+                // Fern fails on an empty sequence too, so it names no method
+                // crozier could match.
+                return Err(serde::de::Error::invalid_length(0, &self));
+            }
+            Ok(Some(names.join(",")))
+        }
+    }
+    deserializer.deserialize_any(MethodName)
 }
 
 /// Deserialize a schema's `deprecated` mark: `true` only for the boolean `true`.
@@ -1934,7 +2336,7 @@ fn malformed_schema() -> Schema {
 }
 
 /// A `oneOf`/`anyOf` discriminator object.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Discriminator {
     /// The property whose value selects the union variant.
     #[serde(rename = "propertyName", default)]
@@ -1946,7 +2348,7 @@ pub struct Discriminator {
 }
 
 /// `type` as a single string or (3.1) a list of strings.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum TypeField {
     /// A single type name.
@@ -1967,7 +2369,7 @@ impl TypeField {
 }
 
 /// `additionalProperties`: either a boolean flag or a value schema.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum AdditionalProperties {
     /// `true`/`false`.
@@ -2120,7 +2522,10 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
+    normalize_webhook_operations(&mut doc);
+    normalize_root_pagination(&mut doc);
     normalize_declared_type_names(&mut doc);
+    normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -2778,6 +3183,151 @@ fn normalize_declared_type_names(doc: &mut OpenApi) {
         })
         .collect();
     rename_component_schemas(doc, &renames);
+}
+
+/// Resolve each operation's `x-fern-pagination: true` (or crozier's spelling)
+/// to the document root's contract, `x-crozier-pagination` over
+/// `x-fern-pagination`, as Fern reads it; with no root contract, or `false`, the
+/// operation declares none.
+fn normalize_root_pagination(doc: &mut OpenApi) {
+    let root = doc
+        .pagination_crozier
+        .clone()
+        .or_else(|| doc.pagination_fern.clone());
+    for item in doc.paths.values_mut().chain(doc.webhooks.values_mut()) {
+        for op in item.operation_slots().into_iter().flatten() {
+            // The crozier spelling, once declared, decides alone: its `false`
+            // (or a `true` with no root contract) leaves no Fern contract behind.
+            if op.pagination_crozier.is_some() {
+                op.pagination_fern = None;
+            }
+            for declared in [&mut op.pagination_crozier, &mut op.pagination_fern] {
+                if let Some(DeclaredPagination::Root(take)) = declared {
+                    *declared = take
+                        .then(|| root.clone())
+                        .flatten()
+                        .map(DeclaredPagination::Contract);
+                }
+            }
+        }
+    }
+}
+
+/// Drop every path operation marked `x-fern-webhook: true` (or crozier's
+/// spelling): it describes a request the API sends, so Fern gives the client no
+/// method for it, while the schemas it names stay ordinary types (a `$ref` body
+/// `Bid` is still `types/bid.py`, no longer folded into a method's arguments).
+fn normalize_webhook_operations(doc: &mut OpenApi) {
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            if slot.as_ref().is_some_and(Operation::webhook_marked) {
+                *slot = None;
+            }
+        }
+    }
+}
+
+/// Lift every inline schema that declares a type name (`x-crozier-type-name`,
+/// or `x-fern-type-name`) into a component of that name, leaving a `$ref` where
+/// it stood, wherever Fern's type for it is a root type: under a component, or
+/// in an operation the root client carries. Fern names such a schema by the
+/// declaration — a response property's inline enum declaring `ShotSize` is
+/// `types/shot_size.py`, not `GetSettingsResponseMode` — as it would a
+/// component. An operation grouped into a sub-client keeps its inline schemas,
+/// whose types Fern writes into that sub-client's own `types/`. A name already
+/// held — by a component, or by an inline schema lifted before — is one type to
+/// Fern: a declaration whose schema is the holder's is merged into it (a `$ref`
+/// to the holder), while one that differs stays inline, so nothing a document
+/// declares is overwritten; `name_refusals` refuses that collision, as Fern does.
+fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
+    /// `taken` maps each held name to its holder's schema without its type
+    /// name, the shape a later declaration of the name is compared with, and
+    /// the inline schema lifted here to hold it, if any.
+    type Taken = IndexMap<String, (Schema, Option<Schema>)>;
+    fn without_type_name(schema: &Schema) -> Schema {
+        Schema {
+            type_name_crozier: None,
+            type_name_fern: None,
+            ..schema.clone()
+        }
+    }
+    fn lift(schema: &mut Schema, taken: &mut Taken) {
+        let lift_child = |child: &mut Schema, taken: &mut Taken| {
+            if child.reference.is_none() {
+                if let Some(key) = child.declared_type_name().map(declared_type_key) {
+                    let shape = without_type_name(child);
+                    let merges = taken.get(&key).is_some_and(|(held, _)| *held == shape);
+                    if merges || !taken.contains_key(&key) {
+                        let reference = Schema {
+                            reference: Some(format!("#/components/schemas/{key}")),
+                            ..Schema::default()
+                        };
+                        let mut lifted = std::mem::replace(child, reference);
+                        if merges {
+                            return;
+                        }
+                        taken.insert(key.clone(), (shape.clone(), None));
+                        lift(&mut lifted, taken);
+                        taken.insert(key, (shape, Some(lifted)));
+                        return;
+                    }
+                }
+            }
+            lift(child, taken);
+        };
+        for child in schema.properties.values_mut() {
+            lift_child(child, taken);
+        }
+        if let Some(items) = schema.items.as_deref_mut() {
+            lift_child(items, taken);
+        }
+        if let Some(AdditionalProperties::Schema(values)) = schema.additional_properties.as_mut() {
+            lift_child(values, taken);
+        }
+        for members in [&mut schema.one_of, &mut schema.any_of, &mut schema.all_of]
+            .into_iter()
+            .flatten()
+        {
+            for member in members {
+                lift_child(member, taken);
+            }
+        }
+    }
+    let mut taken: Taken = doc
+        .components
+        .schemas
+        .iter()
+        .map(|(key, schema)| (key.clone(), (without_type_name(schema), None)))
+        .collect();
+    for schema in doc.components.schemas.values_mut() {
+        lift(schema, &mut taken);
+    }
+    for (url, item) in &mut doc.paths {
+        for op in item.operation_slots().into_iter().flatten() {
+            if !crate::ir::endpoint_module(op, url).is_empty() {
+                continue;
+            }
+            let bodies = op
+                .request_body
+                .iter_mut()
+                .flat_map(|body| body.content.values_mut())
+                .chain(
+                    op.responses
+                        .values_mut()
+                        .flat_map(|response| response.content.values_mut()),
+                );
+            for media in bodies {
+                if let Some(schema) = media.schema.as_mut() {
+                    lift(schema, &mut taken);
+                }
+            }
+        }
+    }
+    for (key, (_, lifted)) in taken {
+        if let Some(schema) = lifted {
+            doc.components.schemas.insert(key, schema);
+        }
+    }
 }
 
 /// The component key a declared type name is renamed to: the name itself, with
@@ -3655,6 +4205,215 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_component_reads_its_group_and_placement_tag() {
+        let schema =
+            |value: serde_json::Value| -> Schema { serde_json::from_value(value).unwrap() };
+        let placed = schema(serde_json::json!({
+            "x-fern-sdk-group-name": "lexicon",
+            "x-crozier-sdk-group-name": [" glossary ", ""],
+            "x-tags": [" ", "Fermentation", "Cellar"],
+        }));
+        assert_eq!(placed.sdk_group_name(), Some(vec!["glossary"]));
+        assert_eq!(placed.placement_tag(), Some("Fermentation"));
+        let plain = schema(serde_json::json!({"x-fern-sdk-group-name": 3, "x-tags": "Cellar"}));
+        assert_eq!(plain.sdk_group_name(), None);
+        assert_eq!(plain.placement_tag(), None);
+    }
+
+    #[test]
+    fn a_boolean_pagination_takes_the_root_contract() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "x-fern-pagination": {"offset": "$request.page", "results": "$response.items"},
+            "paths": {"/p": {
+                "get": {"x-fern-pagination": true, "responses": {}},
+                "put": {"x-fern-pagination": false, "responses": {}},
+                "post": {"x-crozier-pagination": {"cursor": "$request.c", "next_cursor": "$response.n",
+                                                  "results": "$response.items"},
+                         "x-fern-pagination": true, "responses": {}},
+            }},
+        }))
+        .expect("a document");
+        normalize_root_pagination(&mut doc);
+        let item = &doc.paths["/p"];
+        let get = item
+            .get
+            .as_ref()
+            .unwrap()
+            .pagination()
+            .expect("the root contract");
+        assert_eq!(get.offset_property(), Some("page"));
+        assert!(item.put.as_ref().unwrap().pagination().is_none());
+        let post = item
+            .post
+            .as_ref()
+            .unwrap()
+            .pagination()
+            .expect("its own contract");
+        assert_eq!(post.cursor_property(), Some("c"));
+        let refused: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({"x-fern-pagination": "yes"}));
+        assert!(refused
+            .expect_err("a string is no pagination")
+            .to_string()
+            .contains("a pagination contract, or a boolean"));
+    }
+
+    #[test]
+    fn a_webhook_marked_operation_is_dropped_and_its_neighbour_kept() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {"/hooks": {
+                "post": {"x-fern-webhook": true, "responses": {}},
+                "put": {"x-fern-webhook": true, "x-crozier-webhook": false, "responses": {}},
+                "get": {"x-fern-webhook": "yes", "responses": {}},
+            }},
+        }))
+        .expect("a document");
+        normalize_webhook_operations(&mut doc);
+        let methods: Vec<&str> = doc.paths["/hooks"]
+            .operations()
+            .into_iter()
+            .map(|(m, _)| m)
+            .collect();
+        assert_eq!(methods, ["GET", "PUT"]);
+    }
+
+    #[test]
+    fn an_inline_schema_declaring_a_type_name_is_lifted_to_that_component() {
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "paths": {"/s": {"get": {"responses": {"200": {"description": "ok", "content": {
+                "application/json": {"schema": {"type": "object", "properties": {
+                    "mode": {"type": "string", "enum": ["a"], "x-fern-type-name": "ShotSize"},
+                    "taken": {"type": "string", "enum": ["b"], "x-crozier-type-name": "Camera"},
+                    "plain": {"type": "string", "enum": ["c"]},
+                }}}}}}}}},
+            "components": {"schemas": {"Camera": {"type": "object", "properties": {
+                "iso": {"type": "array", "items": {"type": "string", "enum": ["low"],
+                        "x-fern-type-name": "IsoBand"}},
+            }}}},
+        }))
+        .expect("a document");
+        normalize_inline_declared_type_names(&mut doc);
+        let keys: Vec<&String> = doc.components.schemas.keys().collect();
+        assert_eq!(keys, ["Camera", "IsoBand", "ShotSize"]);
+        let response = &doc.paths["/s"].get.as_ref().unwrap().responses["200"].content
+            ["application/json"]
+            .schema
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            response.properties["mode"].reference.as_deref(),
+            Some("#/components/schemas/ShotSize")
+        );
+        // A name a component already holds stays inline, as does an undeclared one.
+        assert!(response.properties["taken"].reference.is_none());
+        assert!(response.properties["plain"].reference.is_none());
+        assert_eq!(
+            doc.components.schemas["Camera"].properties["iso"]
+                .items
+                .as_ref()
+                .unwrap()
+                .reference
+                .as_deref(),
+            Some("#/components/schemas/IsoBand")
+        );
+    }
+
+    #[test]
+    fn idempotency_and_retry_extensions_canonicalize_on_the_crozier_spelling() {
+        let op: Operation = serde_json::from_value(serde_json::json!({
+            "x-fern-idempotent": false,
+            "x-crozier-idempotent": true,
+            "x-fern-retries": {"disabled": true},
+            "x-crozier-retries": {"disabled": false},
+        }))
+        .expect("an operation");
+        assert!(op.idempotent());
+        assert!(!op.retries_disabled());
+        let op: Operation =
+            serde_json::from_value(serde_json::json!({"x-fern-retries": {"disabled": true}}))
+                .expect("an operation");
+        assert!(op.retries_disabled() && !op.idempotent());
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "x-fern-idempotency-headers": [{"header": "X-Fern"}],
+            "x-crozier-idempotency-headers": [{"header": " X-Dedupe "}, {"name": "no-header"}, 7],
+        }))
+        .expect("a document");
+        assert_eq!(doc.idempotency_headers(), vec!["X-Dedupe"]);
+    }
+
+    #[test]
+    fn server_extensions_canonicalize_on_the_crozier_spelling() {
+        let server: Server = serde_json::from_value(serde_json::json!({
+            "url": "https://{r}.a.test",
+            "x-fern-server-name": "main",
+            "x-crozier-server-name": " primary ",
+            "x-fern-default-url": "https://fern.a.test",
+        }))
+        .expect("a server");
+        assert_eq!(server.server_name(), Some("primary"));
+        assert_eq!(server.default_url(), Some("https://fern.a.test"));
+        let blank: Server = serde_json::from_value(serde_json::json!({
+            "url": "https://a.test",
+            "x-fern-server-name": " ",
+            "x-crozier-default-url": 7,
+        }))
+        .expect("a server");
+        assert_eq!(blank.server_name(), None);
+        assert_eq!(blank.default_url(), None);
+    }
+
+    #[test]
+    fn an_http_scheme_name_reads_case_insensitively() {
+        let scheme = |name: &str| -> HttpAuthScheme {
+            serde_json::from_value(serde_json::json!(name)).expect("a scheme name")
+        };
+        assert_eq!(scheme("Bearer"), HttpAuthScheme::Bearer);
+        assert_eq!(scheme("BASIC"), HttpAuthScheme::Basic);
+        assert_eq!(scheme("bearer"), HttpAuthScheme::Bearer);
+        assert_eq!(scheme("Digest"), HttpAuthScheme::Other);
+    }
+
+    #[test]
+    fn a_method_name_sequence_reads_joined_as_fern_reads_it() {
+        let name = |extension: serde_json::Value| {
+            let op: Operation = serde_json::from_value(serde_json::json!({
+                "operationId": "getLockers",
+                "x-fern-sdk-method-name": extension,
+            }))
+            .expect("operation deserializes");
+            op.sdk_method_name().map(str::to_string)
+        };
+        assert_eq!(
+            name(serde_json::json!("vacancies")).as_deref(),
+            Some("vacancies")
+        );
+        assert_eq!(
+            name(serde_json::json!(["vacancies"])).as_deref(),
+            Some("vacancies")
+        );
+        assert_eq!(
+            name(serde_json::json!(["claim", "now"])).as_deref(),
+            Some("claim,now")
+        );
+        assert_eq!(name(serde_json::Value::Null), None);
+        let empty: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({"x-fern-sdk-method-name": []}));
+        assert!(empty
+            .expect_err("an empty sequence names no method")
+            .to_string()
+            .contains("invalid length 0"));
+        let mapping: std::result::Result<Operation, _> =
+            serde_json::from_value(serde_json::json!({
+                "x-crozier-sdk-method-name": {"name": "vacancies"},
+            }));
+        assert!(mapping
+            .expect_err("a mapping is no method name")
+            .to_string()
+            .contains("a string, or a sequence of strings"));
+    }
 
     #[test]
     fn a_base_path_reads_its_placeholders_and_their_map_form_defaults() {

@@ -2244,6 +2244,232 @@ class GrammarContractTests(unittest.TestCase):
 
     DOC = REPO / "docs" / "openapi-surface-coverage.md"
 
+    def test_predicate_grammar_regenerator_finds_committed_document_current(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/update-predicate-grammar.py"), "--check"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_predicate_grammar_regenerator_repairs_only_grammar_and_is_idempotent(self) -> None:
+        script = REPO / "tools/surface-census/update-predicate-grammar.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        stale = original.replace("`info.title:non-ascii`", "`info.title:removed-predicate`", 1)
+        self.assertNotEqual(original, stale)
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            document.write_text(stale, encoding="utf-8")
+            command = [sys.executable, str(script), "--document", str(document)]
+            check = subprocess.run([*command, "--check"], capture_output=True, text=True, check=False)
+            self.assertEqual(1, check.returncode, check.stderr)
+            self.assertEqual("", check.stdout)
+            self.assertIn("regenerate", check.stderr)
+            self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            for _ in range(2):
+                update = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual(0, update.returncode, update.stderr)
+                self.assertEqual("", update.stdout)
+                self.assertEqual("", update.stderr)
+                self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_repairs_counts_and_context_list(self) -> None:
+        original = self.DOC.read_text(encoding="utf-8")
+        stale = re.sub(r"closed list of\s+\d+", "closed list of\n999", original, count=1)
+        stale = re.sub(r"\*\*[A-Z][a-z-]+ of the \d+", "**One of the 999", stale, count=1)
+        stale = re.sub(r"The other\s+[a-z-]+ —", "The other\none —", stale, count=1)
+        before, after = stale.split("The other\none", 1)
+        stale = (
+            before
+            + "The other\none"
+            + after.replace("`components.schemas:cycle-into-cycle`", "`components.schemas:absent-cycle`", 1)
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            document.write_text(stale, encoding="utf-8")
+            command = [
+                sys.executable,
+                str(REPO / "tools/surface-census/update-predicate-grammar.py"),
+                "--document",
+                str(document),
+            ]
+            check = subprocess.run([*command, "--check"], capture_output=True, text=True, check=False)
+            self.assertEqual(1, check.returncode, check.stderr)
+            self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            update = subprocess.run(command, capture_output=True, text=True, check=False)
+            self.assertEqual((0, "", ""), (update.returncode, update.stdout, update.stderr))
+            self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_rejects_malformed_documents_without_writing(self) -> None:
+        original = self.DOC.read_text(encoding="utf-8")
+
+        def located(pattern: str) -> str:
+            match = re.search(pattern, original)
+            if match is None:
+                self.fail(f"the grammar section no longer matches {pattern!r}")
+            return match.group()
+
+        for before, after in [
+            ("A shape the two kinds above", "Missing start"),
+            ("A predicate selector is a selector like any other everywhere else:", "Missing end"),
+            ("\n- ", "\n* "),
+            (located(r"\n\*\*[A-Z][a-z-]+ of"), "\nmissing partition of"),
+            (located(r"closed list of\s+\d+"), "missing total"),
+            (located(r"[A-Z][a-z-]+ of the \d+ are node-local\*\*"), "missing local count**"),
+            (located(r"The other\s+[a-z-]+ —"), "missing context count —"),
+        ]:
+            with self.subTest(before=before), tempfile.TemporaryDirectory() as directory:
+                document = Path(directory) / "coverage.md"
+                malformed = original.replace(before, after)
+                self.assertNotEqual(original, malformed)
+                document.write_text(malformed, encoding="utf-8")
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(REPO / "tools/surface-census/update-predicate-grammar.py"),
+                        "--document",
+                        str(document),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("restore", result.stderr)
+                self.assertEqual(malformed, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_reports_missing_and_non_utf8_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            command = [
+                sys.executable,
+                str(REPO / "tools/surface-census/update-predicate-grammar.py"),
+                "--document",
+                str(document),
+            ]
+            for content in [None, b"\xff"]:
+                if content is not None:
+                    document.write_bytes(content)
+                result = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("restore the input file", result.stderr)
+                if content is not None:
+                    self.assertEqual(content, document.read_bytes())
+                else:
+                    self.assertFalse(document.exists())
+
+    def test_predicate_grammar_regenerator_reports_write_failure(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            document = Path(directory) / "coverage.md"
+            stale = self.DOC.read_text(encoding="utf-8").replace("`info.title:non-ascii`", "`info.title:absent`", 1)
+            document.write_text(stale, encoding="utf-8")
+            document.chmod(0o444)
+            try:
+                try:
+                    with document.open("a", encoding="utf-8"):
+                        pass
+                except PermissionError:
+                    pass
+                else:
+                    self.skipTest("filesystem does not enforce read-only mode for this user")
+                result = subprocess.run(
+                    [
+                        sys.executable,
+                        str(REPO / "tools/surface-census/update-predicate-grammar.py"),
+                        "--document",
+                        str(document),
+                    ],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn("ensure it is writable", result.stderr)
+                self.assertEqual(stale, document.read_text(encoding="utf-8"))
+            finally:
+                document.chmod(0o644)
+
+    def test_predicate_grammar_regenerator_reports_invalid_census_configuration(self) -> None:
+        script = REPO / "tools/surface-census/update-predicate-grammar.py"
+        source = REPO / "tools/surface-census/openapi-surface-census.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        for addition, diagnostic in [
+            (None, "restore the input file"),
+            ('\nDOCUMENT_COMPARING_PREDICATES = frozenset({"absent"})\n', "reconcile DOCUMENT_COMPARING_PREDICATES"),
+            (
+                '\nPREDICATES.update({f"schema.synthetic:case-{i}": "authored boundary" for i in range(100)})\n',
+                "extend number_words",
+            ),
+        ]:
+            with self.subTest(diagnostic=diagnostic), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                scripts = root / "tools" / "surface-census"
+                scripts.mkdir(parents=True)
+                (root / "tools" / "corpus").mkdir()
+                shutil.copyfile(script, scripts / script.name)
+                shutil.copyfile(
+                    REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
+                )
+                if addition is not None:
+                    (scripts / source.name).write_text(source.read_text(encoding="utf-8") + addition, encoding="utf-8")
+                document = root / "coverage.md"
+                document.write_text(original, encoding="utf-8")
+                result = subprocess.run(
+                    [sys.executable, str(scripts / script.name), "--document", str(document)],
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(2, result.returncode, result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual(original, document.read_text(encoding="utf-8"))
+
+    def test_predicate_grammar_regenerator_renders_small_teen_and_exact_ten_counts(self) -> None:
+        source = REPO / "tools/surface-census/openapi-surface-census.py"
+        script = REPO / "tools/surface-census/update-predicate-grammar.py"
+        original = self.DOC.read_text(encoding="utf-8")
+        for total, contextual, local_word, contextual_word in [
+            (6, 2, "Four", "two"),
+            (25, 12, "Thirteen", "twelve"),
+            (30, 10, "Twenty", "ten"),
+        ]:
+            with self.subTest(total=total), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                scripts = root / "tools" / "surface-census"
+                scripts.mkdir(parents=True)
+                (root / "tools" / "corpus").mkdir()
+                shutil.copyfile(script, scripts / script.name)
+                shutil.copyfile(
+                    REPO / "tools/corpus/corpus_remote_ref_pins.py", root / "tools/corpus/corpus_remote_ref_pins.py"
+                )
+                (scripts / source.name).write_text(
+                    source.read_text(encoding="utf-8")
+                    + f"\nPREDICATES = dict(list(PREDICATES.items())[:{total}])\n"
+                    + f"DOCUMENT_COMPARING_PREDICATES = tuple(list(PREDICATES)[:{contextual}])\n",
+                    encoding="utf-8",
+                )
+                document = root / "coverage.md"
+                document.write_text(original, encoding="utf-8")
+                command = [sys.executable, str(scripts / script.name), "--document", str(document)]
+                update = subprocess.run(command, capture_output=True, text=True, check=False)
+                self.assertEqual((0, "", ""), (update.returncode, update.stdout, update.stderr))
+                generated = document.read_text(encoding="utf-8")
+                self.assertIn(f"**{local_word} of the {total} are node-local**", generated)
+                self.assertIn(f"The other\n{contextual_word} —", generated)
+                self.assertEqual(
+                    original.split("A shape the two kinds above", 1)[0],
+                    generated.split("A shape the two kinds above", 1)[0],
+                )
+                end = "A predicate selector is a selector like any other everywhere else:"
+                self.assertEqual(original.split(end, 1)[1], generated.split(end, 1)[1])
+                check = subprocess.run([*command, "--check"], capture_output=True, text=True, check=False)
+                self.assertEqual((0, "", ""), (check.returncode, check.stdout, check.stderr))
+
     def backticked(self, start: str, end: str) -> set[str]:
         text = self.DOC.read_text(encoding="utf-8")
         self.assertIn(start, text, f"the grammar section no longer says {start!r}")
@@ -2298,8 +2524,9 @@ class GrammarContractTests(unittest.TestCase):
         # make the spelling a valued selector over a field nothing declares. It
         # admits a `$` too, because the field a pointer-form predicate reads is
         # spelled `$ref`: the gate widens to the spelling rather than the spelling
-        # bending to the gate.
-        documented = set(re.findall(r"`([A-Za-z][A-Za-z.$]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body))
+        # bending to the gate. A `-` is admitted for the same reason: a vendor
+        # extension's field is spelled `x-fern-sdk-group-name`.
+        documented = set(re.findall(r"`([A-Za-z][A-Za-z.$-]*:[a-z$-]+(?:=[A-Za-z0-9-]+)?)`", body))
         self.assertEqual(set(census.PREDICATES), documented)
         stated = re.search(
             r"The predicates are themselves a closed list of\s+(\d+)",
@@ -2382,6 +2609,28 @@ class GrammarContractTests(unittest.TestCase):
             "components.schemas:fields-reach-cycles-unsorted",
             "components.schemas:cycle-into-cycle",
             "mediaType.schema:closed-empty-object-property",
+            "securityScheme.x-fern-header:named",
+            "securityScheme.x-fern-bearer:named",
+            "securityScheme.x-fern-basic:named-or-env",
+            "securityScheme.x-fern-token-variable-name:bearer",
+            "components.securitySchemes:duplicate-api-key-header",
+            "securityScheme.scheme:capitalised-http",
+            "operation.x-fern-pagination:cursor",
+            "operation.x-fern-pagination:offset",
+            "operation.x-fern-pagination:boolean-over-root",
+            "operation.x-fern-pagination:nullable-response",
+            "operation.tags:empty-string",
+            "operation.x-fern-sdk-group-name:types-beside-child-group",
+            "operation.x-fern-idempotent:with-root-headers",
+            "operation.x-fern-retries:disabled",
+            "operation.servers:named-beside-document-server",
+            "server.x-fern-default-url:templated",
+            "server.x-fern-server-name:several-undescribed",
+            "schema.x-fern-sdk-group-name:component",
+            "schema.x-tags:component",
+            "schema.x-fern-type-name:inline-property",
+            "openapi.webhooks:inline-json-body-named",
+            "operation.x-fern-webhook:true",
             # Read the document's version, or an operation's route.
             "parameter.schema:nullable-array-items-oas-three-zero",
             "parameter.schema:required-nullable-scalar-oas-three-zero",
@@ -2401,46 +2650,32 @@ class GrammarContractTests(unittest.TestCase):
         paragraph drifted once already, when a node-local predicate was added and
         the word before "of the 26" stayed put.
         """
-        words = {
-            "Twenty": 20,
-            "Twenty-one": 21,
-            "Twenty-two": 22,
-            "Twenty-three": 23,
-            "Twenty-four": 24,
-            "Twenty-five": 25,
-            "Thirty-eight": 38,
-            "Thirty-nine": 39,
-            "Forty": 40,
-            "Forty-one": 41,
-            "Sixty-seven": 67,
-            "Sixty-eight": 68,
-            "Sixty-nine": 69,
-            "Seventy": 70,
-            "Seventy-one": 71,
-            "Seventy-four": 74,
-            "four": 4,
-            "five": 5,
-            "six": 6,
-            "seven": 7,
-            "eight": 8,
-            "nine": 9,
-            "seventeen": 17,
-            "eighteen": 18,
-            "twenty": 20,
-            "twenty-one": 21,
-            "twenty-three": 23,
-            "twenty-four": 24,
-            "thirty-one": 31,
-            "thirty-two": 32,
-            "thirty-three": 33,
-            "thirty-four": 34,
-            "thirty-five": 35,
-            "thirty-six": 36,
-            "thirty-seven": 37,
-            "forty-one": 41,
-            "forty-two": 42,
-            "forty-six": 46,
-        }
+        units = [
+            "zero",
+            "one",
+            "two",
+            "three",
+            "four",
+            "five",
+            "six",
+            "seven",
+            "eight",
+            "nine",
+            "ten",
+            "eleven",
+            "twelve",
+            "thirteen",
+            "fourteen",
+            "fifteen",
+            "sixteen",
+            "seventeen",
+            "eighteen",
+            "nineteen",
+        ]
+        tens = ["_", "_", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+        words = {word: n for n, word in enumerate(units)}
+        words |= {tens[n // 10] + (f"-{units[n % 10]}" if n % 10 else ""): n for n in range(20, 100)}
+        words |= {word.capitalize(): n for word, n in words.items()}
         text = self.DOC.read_text(encoding="utf-8")
         stated = re.search(r"\*\*([A-Z][a-z-]+) of the (\d+) are node-local\*\*", text)
         self.assertIsNotNone(stated, "the grammar no longer states its node-local count")
@@ -2458,6 +2693,7 @@ class GrammarContractTests(unittest.TestCase):
             "the two stated families do not partition the closed list",
         )
         self.assertEqual(len(self.DOCUMENT_COMPARING_PREDICATES), comparing)
+        self.assertEqual(self.DOCUMENT_COMPARING_PREDICATES, frozenset(census.DOCUMENT_COMPARING_PREDICATES))
         for selector in sorted(self.DOCUMENT_COMPARING_PREDICATES):
             with self.subTest(selector=selector):
                 self.assertIn(selector, census.PREDICATES)
@@ -4488,6 +4724,15 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         - {
             "components.schemas:nonidentifier-name",
             "components.schemas:same-primitive-union",
+            "components.schemas:complex-module-name",
+            "operation.operationId:untagged-list-or-set",
+            "operation.operationId:hyphenated-tag-method",
+            "operation.operationId:tag-spelled-split-prefix",
+            "operation.operationId:all-caps-tag-split-prefix",
+            "operation.x-fern-sdk-group-name:leading-underscore",
+            "operation.x-fern-sdk-group-name:without-method-name",
+            "operation.x-fern-sdk-method-name:sequence",
+            *census.clients_extensions_selectors(),
             "components.schemas:fields-reach-cycles-unsorted",
             "components.schemas:cycle-into-cycle",
             "mediaType.schema:closed-empty-object-property",
@@ -8370,7 +8615,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
             r"the `handwritten` rows\..*?They are not among the (\d+) and never count as a "
             r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
-            r"rows\..*?(\d+) are `golden` rows resting only on residual goldens whose code moves no "
+            r"rows\..*?(\d+) (?:are|is a) `golden` rows? resting only on residual goldens whose code moves no "
             r"byte-matched file.*?The other (\d+) are `golden` rows declared only by.*?"
             r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\.",
             headline,
@@ -12728,6 +12973,41 @@ class NamingMirrorTests(unittest.TestCase):
                     f"re-derive operation.operationId:digit-leading-method from src/ir.rs's {name}",
                 )
 
+    def test_the_extension_accessor_ports_track_their_rust_functions(self) -> None:
+        """`sdk_group_segments` and `sdk_method_named` port `Operation`'s accessors.
+
+        Pinned by the same normalized-body digest the other ports use, read from
+        `src/openapi.rs`, so an edit to either accessor's precedence or blank
+        handling fails here until the port is read again.
+        """
+        for (path, name), pinned in census.EXTENSION_ACCESSOR_PORT_DIGESTS.items():
+            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
+            start = next(
+                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+            )
+            if start is None:
+                self.fail(f"{path} declares no fn {name}")
+            depth, started = 0, False
+            for end in range(start, len(lines)):
+                for char in lines[end]:
+                    if char == "{":
+                        depth, started = depth + 1, True
+                    elif char == "}":
+                        depth -= 1
+                if started and depth == 0:
+                    break
+            kept = [
+                " ".join(line.split())
+                for line in lines[start : end + 1]
+                if line.strip() and not line.strip().startswith("//")
+            ]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census port of {path}'s {name}",
+                )
+
     def test_the_example_ports_track_their_rust_functions(self) -> None:
         """`deprecated_member` and `fern_reads_date_time` port crozier's own functions.
 
@@ -13412,6 +13692,597 @@ class ShapePredicateSelectorControls(unittest.TestCase):
     """The real CLI must count each shape predicate — cycles, closed empty objects,
     misspelled scalars, unions, promotable headers, unrequired tags and security
     scheme references — and not the near miss beside it."""
+
+    def test_complex_module_name_has_a_positive_and_decoys(self) -> None:
+        selector = "components.schemas:complex-module-name"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, name in (
+                ("positive", "Complex"),
+                ("lower", "complex"),
+                ("longer", "ComplexNumber"),
+                ("builtin", "Range"),
+            ):
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {},
+                            "components": {"schemas": {name: {"type": "object"}}},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "lower"): 1}, rows(completed))
+
+    def test_tag_spelled_split_prefix_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:tag-spelled-split-prefix"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, (tag, operation_id) in {
+                "positive": ("QX", "q_x_schedule"),
+                "lower-tag": ("multiword", "multi_word_run"),
+                "split-tag": ("Parcel-Routing", "parcelRouting_dispatch"),
+                "word-for-word": ("Documents/DocumentType", "documents_documenttype_get"),
+                "one-segment": ("ParcelRouting", "parcelRouting_dispatch"),
+                "camel-tag": ("warehouseLabels", "warehouse_labels_get"),
+                "other-prefix": ("QX", "c_d_schedule"),
+            }.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {
+                                "/q": {
+                                    "get": {
+                                        "tags": [tag],
+                                        "operationId": operation_id,
+                                        "responses": {"204": {"description": "ok"}},
+                                    }
+                                }
+                            },
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(selector, "positive"): 1, (selector, "lower-tag"): 1, (selector, "split-tag"): 1}, rows(completed)
+        )
+
+    def test_clients_extensions_sites_have_a_positive_and_a_decoy_each(self) -> None:
+        """Each document-level client-construction predicate counts its shape alone."""
+        ok = {"204": {"description": "ok"}}
+        page = {
+            "200": {
+                "description": "ok",
+                "content": {"application/json": {"schema": {"$ref": "#/components/schemas/Page"}}},
+            }
+        }
+
+        def doc(**fields: object) -> dict:
+            return {"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, "paths": {}, **fields}
+
+        def schemes(**entries: object) -> dict:
+            return {"components": {"securitySchemes": entries}}
+
+        def ops(*operations: dict, **fields: object) -> dict:
+            return doc(paths={f"/p{n}": {"post": {"responses": ok, **op}} for n, op in enumerate(operations)}, **fields)
+
+        cases = {
+            "securityScheme.x-fern-header:named": (
+                doc(
+                    **schemes(
+                        K={
+                            "type": "apiKey",
+                            "in": "header",
+                            "name": "X-K",
+                            "x-fern-header": {"name": "meter", "prefix": "M"},
+                        }
+                    )
+                ),
+                doc(**schemes(K={"type": "apiKey", "in": "header", "name": "X-K", "x-fern-header": {"prefix": "M"}})),
+            ),
+            "securityScheme.x-fern-bearer:named": (
+                doc(**schemes(B={"type": "http", "scheme": "bearer", "x-crozier-bearer": {"name": "pass"}})),
+                doc(**schemes(B={"type": "http", "scheme": "basic", "x-fern-bearer": {"name": "pass"}})),
+            ),
+            "securityScheme.x-fern-basic:named-or-env": (
+                doc(**schemes(B={"type": "http", "scheme": "basic", "x-fern-basic": {"password": {"env": "PASS"}}})),
+                doc(**schemes(B={"type": "http", "scheme": "basic", "x-fern-basic": {}})),
+            ),
+            "securityScheme.x-fern-token-variable-name:bearer": (
+                doc(**schemes(B={"type": "http", "scheme": "bearer", "x-fern-token-variable-name": "apiKey"})),
+                doc(
+                    **schemes(
+                        O={"type": "oauth2"},
+                        B={"type": "http", "scheme": "bearer", "x-fern-token-variable-name": "apiKey"},
+                    )
+                ),
+            ),
+            "components.securitySchemes:duplicate-api-key-header": (
+                doc(
+                    security=[{"A": []}, {"B": []}],
+                    **schemes(
+                        A={"type": "apiKey", "in": "header", "name": "X-Api-Key"},
+                        B={"type": "apiKey", "in": "header", "name": "x-api-key"},
+                    ),
+                ),
+                doc(
+                    security=[{"A": []}],
+                    **schemes(
+                        A={"type": "apiKey", "in": "header", "name": "X-Api-Key"},
+                        B={"type": "apiKey", "in": "header", "name": "X-Api-Key"},
+                    ),
+                ),
+            ),
+            "securityScheme.scheme:capitalised-http": (
+                doc(**schemes(B={"type": "http", "scheme": "Bearer"})),
+                doc(**schemes(B={"type": "http", "scheme": "bearer"})),
+            ),
+            "operation.x-fern-pagination:cursor": (
+                ops({"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"}}),
+                ops({"x-fern-pagination": {"cursor": "$request.c"}}),
+            ),
+            "operation.x-fern-pagination:offset": (
+                ops({"x-crozier-pagination": {"offset": "$request.o", "results": "$response.r"}}),
+                ops({"x-fern-pagination": {"offset": "$request.o", "cursor": "$request.c"}}),
+            ),
+            "operation.x-fern-pagination:boolean-over-root": (
+                ops({"x-fern-pagination": True}, **{"x-fern-pagination": {"offset": "$request.o"}}),
+                ops({"x-fern-pagination": True}),
+            ),
+            "operation.x-fern-pagination:nullable-response": (
+                ops(
+                    {"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"}, "responses": page},
+                    components={"schemas": {"Page": {"type": "object", "nullable": True}}},
+                ),
+                ops(
+                    {"x-fern-pagination": {"cursor": "$request.c", "next_cursor": "$response.n"}, "responses": page},
+                    components={"schemas": {"Page": {"type": "object"}}},
+                ),
+            ),
+            "operation.tags:empty-string": (
+                ops({"tags": [""], "operationId": "listBeacons"}),
+                ops({"tags": [""], "operationId": ".GetBeacons"}),
+            ),
+            "operation.x-fern-sdk-group-name:types-beside-child-group": (
+                ops(
+                    {
+                        "x-fern-sdk-group-name": ["yard"],
+                        "x-fern-sdk-method-name": "book",
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {"slot": {"type": "string", "enum": ["a"]}},
+                                    }
+                                }
+                            }
+                        },
+                    },
+                    {"x-fern-sdk-group-name": ["yard", "cranes"], "x-fern-sdk-method-name": "lift"},
+                ),
+                ops(
+                    {
+                        "x-fern-sdk-group-name": ["yard"],
+                        "x-fern-sdk-method-name": "book",
+                        "requestBody": {
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {"slot": {"type": "string", "enum": ["a"]}},
+                                    }
+                                }
+                            }
+                        },
+                    }
+                ),
+            ),
+            "operation.x-fern-idempotent:with-root-headers": (
+                ops({"x-fern-idempotent": True}, **{"x-fern-idempotency-headers": [{"header": "X-I"}]}),
+                ops({"x-fern-idempotent": True}),
+            ),
+            "operation.x-fern-retries:disabled": (
+                ops({"x-fern-retries": {"disabled": True}}),
+                ops({"x-fern-retries": {"disabled": False}}),
+            ),
+            "operation.servers:named-beside-document-server": (
+                ops(
+                    {"servers": [{"url": "https://a", "x-fern-server-name": "archive"}]}, servers=[{"url": "https://b"}]
+                ),
+                ops(
+                    {
+                        "servers": [
+                            {"url": "https://b", "x-fern-server-name": "base"},
+                            {"url": "https://a", "x-fern-server-name": "archive"},
+                        ]
+                    },
+                    servers=[{"url": "https://b"}],
+                ),
+            ),
+            "server.x-fern-default-url:templated": (
+                doc(servers=[{"url": "https://{r}.x", "x-fern-default-url": "https://x"}]),
+                doc(servers=[{"url": "https://x", "x-fern-default-url": "https://x"}]),
+            ),
+            "server.x-fern-server-name:several-undescribed": (
+                doc(
+                    servers=[
+                        {"url": "https://a", "x-fern-server-name": "main"},
+                        {"url": "https://b", "x-fern-server-name": "backup"},
+                    ]
+                ),
+                doc(
+                    servers=[
+                        {"url": "https://a", "x-fern-server-name": "main"},
+                        {"url": "https://b", "x-fern-server-name": "backup", "description": "B"},
+                    ]
+                ),
+            ),
+            "schema.x-fern-sdk-group-name:component": (
+                doc(components={"schemas": {"P": {"type": "object", "x-fern-sdk-group-name": "g"}}}),
+                doc(components={"schemas": {"P": {"type": "object"}}}),
+            ),
+            "schema.x-tags:component": (
+                doc(components={"schemas": {"P": {"type": "object", "x-tags": ["T"]}}}),
+                doc(components={"schemas": {"P": {"type": "object", "x-tags": []}}}),
+            ),
+            "schema.x-fern-type-name:inline-property": (
+                doc(
+                    components={
+                        "schemas": {
+                            "P": {
+                                "type": "object",
+                                "properties": {"m": {"type": "string", "enum": ["a"], "x-fern-type-name": "Mode"}},
+                            }
+                        }
+                    }
+                ),
+                doc(components={"schemas": {"P": {"type": "object", "x-fern-type-name": "Mode"}}}),
+            ),
+            "openapi.webhooks:inline-json-body-named": (
+                doc(
+                    webhooks={
+                        "w": {
+                            "post": {
+                                "x-fern-sdk-method-name": "delivered",
+                                "responses": ok,
+                                "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}},
+                            }
+                        }
+                    }
+                ),
+                doc(
+                    webhooks={
+                        "w": {
+                            "post": {
+                                "responses": ok,
+                                "requestBody": {"content": {"application/json": {"schema": {"type": "object"}}}},
+                            }
+                        }
+                    }
+                ),
+            ),
+            "operation.x-fern-webhook:true": (ops({"x-crozier-webhook": True}), ops({"x-fern-webhook": False})),
+        }
+        self.assertEqual(set(census.clients_extensions_selectors()), set(cases))
+        for selector, (positive, decoy) in cases.items():
+            with self.subTest(selector=selector), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                write_fixture(root, "positive", json.dumps(positive))
+                write_fixture(root, "decoy", json.dumps(decoy))
+                completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual(
+                    {(selector, "positive"): rows(completed).get((selector, "positive"), 0)}, rows(completed)
+                )
+                self.assertGreaterEqual(rows(completed).get((selector, "positive"), 0), 1)
+
+    def test_the_clients_extensions_walk_contract_agrees_with_the_shared_keys(self) -> None:
+        """The node's walk contract restates `witness-search-keys.tsv` row for row.
+
+        `witness-search-clients-extensions/keys.tsv` is the `--contract` its
+        archived APIs.guru walk ran under, so it stays its own file; each key it
+        shares with the region keys must name the same selector and census
+        status, and no selector may sit under a different key in the two.
+        """
+        surface = REPO / "docs" / "openapi-surface"
+
+        def read(path: Path) -> dict[str, tuple[str, str]]:
+            with path.open(encoding="utf-8", newline="") as handle:
+                return {
+                    row["key"]: (row["selector"], row["census_status"])
+                    for row in csv.DictReader(handle, delimiter="\t")
+                }
+
+        shared = read(surface / "witness-search-keys.tsv")
+        walked = read(surface / "witness-search-clients-extensions" / "keys.tsv")
+        for key, fields in walked.items():
+            with self.subTest(key=key):
+                if key in shared:
+                    self.assertEqual(shared[key], fields)
+                for other, (selector, _) in shared.items():
+                    if selector == fields[0]:
+                        self.assertEqual(key, other, f"{selector} is keyed differently in the two files")
+
+    def test_inline_type_names_are_counted_wherever_a_property_schema_stands(self) -> None:
+        """A component's, a response body's and a webhook's inline property each count once.
+
+        A `$ref`'d property, a component schema's own type name and an example
+        shaped like a schema count nowhere.
+        """
+        mode = {"type": "string", "enum": ["a"], "x-crozier-type-name": "Mode"}
+        body = {"type": "object", "properties": {"mode": mode}, "example": {"properties": {"m": mode}}}
+        document = {
+            "openapi": "3.1.0",
+            "info": {"title": "t", "version": "1"},
+            "paths": {
+                "/settings": {
+                    "get": {
+                        "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": body}}}}
+                    }
+                }
+            },
+            "webhooks": {
+                "w": {
+                    "post": {
+                        "requestBody": {"content": {"application/json": {"schema": body}}},
+                        "responses": {"204": {"description": "ok"}},
+                    }
+                }
+            },
+            "components": {
+                "schemas": {
+                    "P": {
+                        "type": "object",
+                        "x-fern-type-name": "Own",
+                        "properties": {"m": {"type": "string", "x-fern-type-name": "Mode"}, "r": {"$ref": "#/x"}},
+                    }
+                }
+            },
+        }
+        selector = "schema.x-fern-type-name:inline-property"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "placed", json.dumps(document))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "placed"): 3}, rows(completed))
+
+    def test_request_body_predicates_skip_content_that_is_no_mapping(self) -> None:
+        """A list or scalar `requestBody.content` is no JSON body: counted nowhere, no crash."""
+        malformed = {
+            "operation.x-fern-sdk-group-name:types-beside-child-group": {
+                "paths": {
+                    "/a": {
+                        "post": {
+                            "x-fern-sdk-group-name": ["yard"],
+                            "x-fern-sdk-method-name": "book",
+                            "requestBody": {"content": ["application/json"]},
+                            "responses": {},
+                        }
+                    },
+                    "/b": {
+                        "post": {
+                            "x-fern-sdk-group-name": ["yard", "cranes"],
+                            "x-fern-sdk-method-name": "lift",
+                            "responses": {},
+                        }
+                    },
+                }
+            },
+            "openapi.webhooks:inline-json-body-named": {
+                "paths": {},
+                "webhooks": {
+                    "w": {
+                        "post": {
+                            "x-fern-sdk-method-name": "delivered",
+                            "responses": {},
+                            "requestBody": {"content": "application/json"},
+                        }
+                    }
+                },
+            },
+        }
+        for selector, fields in malformed.items():
+            with self.subTest(selector=selector), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                write_fixture(
+                    root,
+                    "malformed",
+                    json.dumps({"openapi": "3.1.0", "info": {"title": "t", "version": "1"}, **fields}),
+                )
+                completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                self.assertEqual({}, rows(completed))
+
+    def test_sdk_method_name_sequence_reads_the_winning_spelling(self) -> None:
+        selector = "operation.x-fern-sdk-method-name:sequence"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extensions in {
+                "fern": {"x-fern-sdk-method-name": ["fetch"]},
+                "crozier": {"x-crozier-sdk-method-name": ["claim", "now"]},
+                "crozier-string-wins": {"x-crozier-sdk-method-name": "claim", "x-fern-sdk-method-name": ["fetch"]},
+                "string": {"x-fern-sdk-method-name": "fetch"},
+                "mapping": {"x-fern-sdk-method-name": {"name": "fetch"}},
+                "empty": {"x-fern-sdk-method-name": []},
+            }.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {
+                                "/q": {
+                                    "get": {
+                                        "operationId": "op",
+                                        **extensions,
+                                        "responses": {"204": {"description": "ok"}},
+                                    }
+                                }
+                            },
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "fern"): 1, (selector, "crozier"): 1}, rows(completed))
+
+    def test_sdk_group_name_predicates_read_both_spellings(self) -> None:
+        under = "operation.x-fern-sdk-group-name:leading-underscore"
+        without = "operation.x-fern-sdk-group-name:without-method-name"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, extensions in {
+                "under": {"x-fern-sdk-group-name": ["lift", "_staff"], "x-fern-sdk-method-name": "go"},
+                "under-crozier": {"x-crozier-sdk-group-name": "_lobby", "x-fern-sdk-method-name": "go"},
+                "crozier-wins": {
+                    "x-crozier-sdk-group-name": "lobby",
+                    "x-fern-sdk-group-name": "_lobby",
+                    "x-fern-sdk-method-name": "go",
+                },
+                "without": {"x-fern-sdk-group-name": ["harbor", "hoists"]},
+                "blank-method": {"x-crozier-sdk-group-name": "quay", "x-crozier-sdk-method-name": " "},
+                "plain": {"x-fern-sdk-group-name": "quay", "x-crozier-sdk-method-name": "list"},
+            }.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {
+                                "/q": {
+                                    "get": {
+                                        "operationId": "op",
+                                        **extensions,
+                                        "responses": {"204": {"description": "ok"}},
+                                    }
+                                }
+                            },
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", under, "--selector", without)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual(
+            {(under, "under"): 1, (under, "under-crozier"): 1, (without, "without"): 1, (without, "blank-method"): 1},
+            rows(completed),
+        )
+
+    def test_all_caps_tag_split_prefix_counts_only_an_all_caps_tag(self) -> None:
+        selector = "operation.operationId:all-caps-tag-split-prefix"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, (tag, operation_id) in {
+                "positive": ("QX", "q_x_schedule"),
+                "digits": ("A1B", "a_1_b_run"),
+                "mixed": ("Qx", "q_x_run"),
+                "one-letter": ("Q", "q_run"),
+                "grouped": ("QX", "qx_schedule"),
+            }.items():
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {
+                                "/q": {
+                                    "get": {
+                                        "tags": [tag],
+                                        "operationId": operation_id,
+                                        "responses": {"204": {"description": "ok"}},
+                                    }
+                                }
+                            },
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "digits"): 1}, rows(completed))
+
+    def test_hyphenated_tag_method_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:hyphenated-tag-method"
+
+        def operation(operation_id: str, **fields: object) -> dict:
+            return {
+                "operationId": operation_id,
+                "tags": ["Gates"],
+                "responses": {"204": {"description": "ok"}},
+                **fields,
+            }
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, op in (
+                ("positive", operation("gates-checkStatus")),
+                ("lower", operation("gates-ping")),
+                ("two-hyphens", operation("gates-check-status")),
+                ("other-prefix", operation("other-checkStatus")),
+                ("underscore", operation("gates-check_Status")),
+                ("named", operation("gates-checkStatus", **{"x-crozier-sdk-method-name": "check"})),
+                ("untagged", {"operationId": "gates-checkStatus", "responses": {"204": {"description": "ok"}}}),
+            ):
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {"/gates": {"get": op}},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1}, rows(completed))
+
+    def test_untagged_list_or_set_has_a_positive_and_decoys(self) -> None:
+        selector = "operation.operationId:untagged-list-or-set"
+
+        def operation(**fields: object) -> dict:
+            return {"responses": {"204": {"description": "ok"}}, **fields}
+
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for fixture, op in (
+                ("positive", operation(operationId="set")),
+                ("empty-tags", operation(operationId="list", tags=[])),
+                ("tagged", operation(operationId="list", tags=["Bins"])),
+                ("named", operation(operationId="set", **{"x-fern-sdk-method-name": "put"})),
+                ("other", operation(operationId="map")),
+            ):
+                write_fixture(
+                    root,
+                    fixture,
+                    json.dumps(
+                        {
+                            "openapi": "3.1.0",
+                            "info": {"title": fixture, "version": "1"},
+                            "paths": {"/bins": {"get": op}},
+                        }
+                    ),
+                )
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "positive"): 1, (selector, "empty-tags"): 1}, rows(completed))
 
     def census_one(self, selector: str, documents: dict[str, dict]) -> dict:
         """Census each `(fixture, document)` pair for one selector, offline."""
@@ -14588,7 +15459,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(36, len(rows))
+        self.assertEqual(39, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}

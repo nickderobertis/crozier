@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: Signal Box
+  version: 1.2.0
+  description: Relay control for a railway signal box.
+servers:
+  - url: https://box.signals.test
+paths:
+  /relays/reset:
+    post:
+      operationId: resetRelay
+      x-fern-sdk-group-name: _relays
+      x-fern-sdk-method-name: reset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [relay]
+              properties:
+                relay:
+                  type: string
+                  description: The relay's lever number.
+      responses:
+        '204':
+          description: The relay was reset.
+  /audit:
+    get:
+      operationId: exportAudit
+      x-fern-sdk-group-name: [_audit, _trail]
+      x-fern-sdk-method-name: export
+      responses:
+        '200':
+          description: The audit trail.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditEntry'
+  /relays/{relayId}:
+    get:
+      operationId: relayStatus
+      x-fern-sdk-group-name: [signals]
+      x-fern-sdk-method-name: status
+      parameters:
+        - name: relayId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The relay's state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelayState'
+
+components:
+  schemas:
+    RelayState:
+      type: object
+      required: [state]
+      properties:
+        state:
+          type: string
+          enum: [energised, released, fault]
+    AuditEntry:
+      type: object
+      required: [at, action]
+      properties:
+        at:
+          type: string
+          format: date-time
+        action:
+          type: string
+        operator:
+          type: string

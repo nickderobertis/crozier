@@ -84,6 +84,31 @@
     certified generator's own date-example form and leaves string placeholders intact.
   evidence: docs/departures/evidence/date-header-constructor-example.md
 
+- id: empty-namespace-package
+  kind: fern-defect
+  trigger: >-
+    Operations Fern groups under the empty namespace it calls `_`: tagged only
+    with the empty string, or an `operationId` with an empty dotted prefix
+    (`.GetThing`).
+  fern: >-
+    The `_` package's files written at the package root rather than under
+    `_/`: the root `client.py`, `raw_client.py` and `__init__.py` are the `_`
+    sub-client's and its package marker (importing `..core` from above the
+    package), its hoisted types sit in the root `types/`, the root client is
+    lost, and docstring examples call `client..method()`; `README.md` and
+    `reference.md` call `client._.method()` and link `src/<package>/_/client.py`.
+  crozier: >-
+    The same `_` package under `_/` (its `client.py` but for its examples,
+    `raw_client.py`, `__init__.py` and `types/` files Fern's root copies), the
+    root `client.py` and `__init__.py` the root client and package exporting
+    it with a `_` property, and examples calling `client._.method()`.
+  reason: >-
+    The tree cannot be imported: the root package exports no client and its
+    `client.py` imports from above the top-level package, so the documented
+    `from <package> import <Client>` and `client._.method()` raise
+    `ImportError`.
+  evidence: docs/departures/evidence/empty-namespace-package.md
+
 - id: fern-metadata-generator-config
   kind: provenance
   trigger: >-
@@ -103,6 +128,27 @@
     crozier ships one fixed provenance record rather than imitating the
     configuration of a Fern run it did not make.
   evidence: docs/departures/evidence/fern-metadata-generator-config.md
+
+- id: flat-pagination-pager-docs
+  kind: fern-defect
+  trigger: >-
+    A paginated operation (`x-fern-pagination`, cursor or offset form) in the
+    flat layout, Fern's token-less local tree, whose paginated method returns
+    the page model rather than a pager: `README.md`.
+  fern: >-
+    A `Pagination` table-of-contents entry and section saying paginated
+    requests return a `SyncPager` or `AsyncPager` and walking
+    `pager.iter_pages()`, and a raw-response snippet reading `pager.response`
+    and `pager.iter_pages()` off the method's return value.
+  crozier: >-
+    No `Pagination` entry or section, and the raw-response snippet reading the
+    raw client's `response.headers`, `response.status_code` and
+    `response.data`.
+  reason: >-
+    The examples contradict the generated code: the method returns the page
+    model, which has no `iter_pages` or `response`, so the documented walk
+    raises `AttributeError`.
+  evidence: docs/departures/evidence/flat-pagination-pager-docs.md
 
 - id: init-type-checking-import-order
   kind: ordering
@@ -214,6 +260,24 @@
     contradicts the generated code: the import fails, so the snippet cannot run.
   evidence: docs/departures/evidence/readme-client-class-casing.md
 
+- id: repeated-credential-example-keyword
+  kind: fern-defect
+  trigger: >-
+    Two credentials that resolve to one constructor parameter: two header
+    `apiKey` schemes naming the same `X-Api-Key` header, two whose headers
+    stem to one name (`X-API-KEY` and `API-KEY`), or a bearer scheme whose
+    `x-fern-token-variable-name` is `apiKey` beside such a header scheme:
+    `README.md`, `reference.md` and every `client.py`.
+  fern: >-
+    Client constructor examples passing the shared keyword twice
+    (`FernApi(api_key="YOUR_API_KEY", api_key="YOUR_API_KEY", ...)`).
+  crozier: >-
+    The keyword once, as the constructor declares it.
+  reason: >-
+    A call repeating a keyword argument does not bind: Python rejects it as a
+    `SyntaxError` before the example runs, so the documented client cannot be
+    built as written.
+  evidence: docs/departures/evidence/repeated-credential-example-keyword.md
 - id: request-alias-reference-parameters
   kind: fern-defect
   trigger: An aliased object JSON body is flattened into method arguments but reference.md advertises a whole request argument.

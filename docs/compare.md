@@ -154,8 +154,9 @@ the package does not define, and so on. Each is an entry of the
 [departure catalog](departures/README.md), compiled into crozier, whose rule
 recognises exactly Fern's construct and crozier's replacement. The comparison
 applies every rule and lists each departure it applied by catalog id, file and
-crozier's 1-based line — in the human report (`intended departures applied`)
-and in the JSON report's `comparison.departures`. A generator whose only
+crozier's 1-based line, or line 0 for a departure accounting for a whole file
+only one side has — in the human report (`intended departures applied`) and in
+the JSON report's `comparison.departures`. A generator whose only
 differences are departures is `matched`, exit 0.
 
 A rule never excuses a file: a difference no rule explains still makes the

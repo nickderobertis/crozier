@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "f5bc20ab2491b794b7d275c2e55370e0be4c216dfe95279929498da68a4a7f07"
+
+[[covers]]
+key = "security-scheme-header-extension-named"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#header-credential-extension"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

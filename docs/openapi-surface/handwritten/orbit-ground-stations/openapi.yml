@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Orbit Ground Stations
+  version: 0.6.1
+  description: Downlink passes over a satellite's ground stations.
+servers:
+  - url: https://passes.groundstation.test
+    x-fern-server-name: primary
+  - url: https://failover.groundstation.test
+    x-fern-server-name: failover
+paths:
+  /passes:
+    get:
+      operationId: listPasses
+      responses:
+        '200':
+          description: Upcoming passes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pass'
+components:
+  schemas:
+    Pass:
+      type: object
+      required: [station, aos]
+      properties:
+        station:
+          type: string
+        aos:
+          type: string
+          format: date-time
+        band:
+          type: string
+          enum: [s, x, ka]

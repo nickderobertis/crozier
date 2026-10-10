@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Auction House
+  version: 3.1.0
+  description: Lots on sale at a timed online auction.
+servers:
+  - url: https://api.auction.test
+paths:
+  /lots:
+    get:
+      operationId: listLots
+      parameters:
+        - name: closingBefore
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Open lots.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lot'
+  /notifications/bid-placed:
+    post:
+      operationId: bidPlaced
+      x-fern-webhook: true
+      summary: Sent to the seller when a bid is placed on their lot.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bid'
+      responses:
+        '200':
+          description: Acknowledged.
+components:
+  schemas:
+    Lot:
+      type: object
+      required: [id, title]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        state:
+          type: string
+          enum: [open, closing, sold]
+    Bid:
+      type: object
+      required: [lot, amount]
+      properties:
+        lot:
+          type: string
+        amount:
+          type: number
+        proxy:
+          type: boolean

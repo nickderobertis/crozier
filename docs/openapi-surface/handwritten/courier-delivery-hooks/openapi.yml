@@ -1,0 +1,64 @@
+openapi: 3.1.0
+info:
+  title: Courier Delivery Hooks
+  version: 2.4.0
+  description: Parcel tracking for a courier, with the events it posts back.
+servers:
+  - url: https://api.courier.test
+paths:
+  /parcels/{parcelId}:
+    get:
+      operationId: trackParcel
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The parcel's last scan.
+          content:
+            application/json:
+              schema:
+                type: string
+webhooks:
+  parcelDelivered:
+    post:
+      x-fern-sdk-group-name: parcels
+      x-fern-sdk-method-name: delivered
+      summary: Posted when a parcel is signed for.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [parcel, at]
+              properties:
+                parcel:
+                  type: string
+                at:
+                  type: string
+                  format: date-time
+                signedBy:
+                  type: string
+      responses:
+        '200':
+          description: Acknowledged.
+  routeChanged:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                route:
+                  type: string
+                reason:
+                  type: string
+                  enum: [weather, traffic, depot]
+      responses:
+        '200':
+          description: Acknowledged.

@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Parcel Courier Desk
+  version: 1.5.0
+  description: Hands parcels to couriers at a depot counter.
+servers:
+  - url: https://desk.courier.test
+x-fern-idempotency-headers:
+  - header: X-Dedupe-Token
+paths:
+  /parcels:
+    post:
+      operationId: shipParcel
+      x-fern-idempotent: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [weight]
+              properties:
+                weight:
+                  type: number
+                  description: Kilograms on the counter scale.
+                service:
+                  type: string
+                  enum: [standard, express]
+      responses:
+        '200':
+          description: The consignment number.
+          content:
+            application/json:
+              schema:
+                type: string
+  /parcels/{parcelId}:
+    delete:
+      operationId: cancelParcel
+      x-fern-retries:
+        disabled: true
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Cancelled.
+    get:
+      operationId: trackParcel
+      parameters:
+        - name: parcelId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Where the parcel is.
+          content:
+            application/json:
+              schema:
+                type: string

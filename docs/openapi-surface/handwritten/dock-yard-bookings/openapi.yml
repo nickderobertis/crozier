@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Dock Yard Bookings
+  version: 1.0.0
+  description: Books berth slots and the yard's cranes at a container dock.
+servers:
+  - url: https://bookings.dockyard.test
+paths:
+  /yard/slots:
+    post:
+      operationId: bookYardSlot
+      x-fern-sdk-group-name: [yard]
+      x-fern-sdk-method-name: book
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slot]
+              properties:
+                slot:
+                  type: string
+                  enum: [morning, afternoon, night]
+                vessel:
+                  type: string
+      responses:
+        '204':
+          description: Booked.
+  /yard/cranes:
+    get:
+      operationId: listYardCranes
+      x-fern-sdk-group-name: [yard, cranes]
+      x-fern-sdk-method-name: list
+      responses:
+        '200':
+          description: Crane ids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

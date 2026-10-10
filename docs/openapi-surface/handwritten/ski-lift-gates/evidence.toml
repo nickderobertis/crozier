@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "724d326fabe42fd40787b46fd65f7dc71781a2cf06ad9bfcdeb357f030cc8bf9"
+
+[[covers]]
+key = "security-scheme-bearer-extension-named"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#bearer-credential-extension"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

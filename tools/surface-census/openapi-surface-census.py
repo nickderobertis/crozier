@@ -1292,6 +1292,10 @@ PREDICATES = {
         "examples leave out unless it is required"
     ),
     "components.schemas:nonidentifier-name": "one per component schema name whose class-name casing contains a character sanitize_identifier replaces with an underscore",
+    "components.schemas:complex-module-name": (
+        "one per component schema name whose class's module stem is `complex`, the "
+        "builtin Fern reserves, so its type module is `complex_.py`"
+    ),
     "operation.requestBody:body-prefixed-single-use": (
         "one per Operation Object other than a GET or HEAD whose request body's "
         "`application/json` schema is a `$ref` to a `components.schemas` entry named "
@@ -1427,6 +1431,104 @@ PREDICATES = {
         "`src/openapi.rs` resolves"
     ),
     "operation.tags:multiple": ("one per Operation Object whose `tags` array holds more than one member"),
+    "operation.operationId:hyphenated-tag-method": (
+        "one per Operation Object under the Paths Object with no SDK method-name "
+        "extension whose operationId is `<prefix>-<method>`, one hyphen and no `_` "
+        "or `.`, the prefix spelling its first tag and the method camel-cased, so "
+        "Fern's lowercased method differs from its snake-cased one"
+    ),
+    "operation.operationId:tag-spelled-split-prefix": (
+        "one per tagged Operation Object under the Paths Object with no SDK group- or "
+        "method-name extension whose operationId `<prefix>_<method>`, no `.`, has a "
+        "prefix spelling its first tag letter for letter but not word for word as "
+        "Fern splits the tag (`q_x_schedule` under `QX`), so the tag names the module "
+        "and the whole id the method"
+    ),
+    "operation.operationId:all-caps-tag-split-prefix": (
+        "one per Operation Object `operation.operationId:tag-spelled-split-prefix` "
+        "counts whose first tag is all capitals, several of them (`QX`)"
+    ),
+    "operation.x-fern-sdk-method-name:sequence": (
+        "one per Operation Object under the Paths Object whose SDK method name "
+        "(`x-crozier-sdk-method-name` over `x-fern-sdk-method-name`) is written as a "
+        "sequence of strings rather than a string"
+    ),
+    "operation.x-fern-sdk-group-name:leading-underscore": (
+        "one per Operation Object under the Paths Object declaring an SDK method name "
+        "whose SDK group name (`x-crozier-sdk-group-name` over `x-fern-sdk-group-name`) "
+        "has a segment starting with `_`, which Fern keeps in the module path"
+    ),
+    "operation.x-fern-sdk-group-name:without-method-name": (
+        "one per Operation Object under the Paths Object declaring a non-blank SDK "
+        "group name (either spelling) and no SDK method name, which Fern then ignores"
+    ),
+    "securityScheme.x-fern-header:named": (
+        "one per header `apiKey` Security Scheme Object whose `x-fern-header` (or `x-crozier-header`, which wins) names the credential"
+    ),
+    "securityScheme.x-fern-bearer:named": (
+        "one per `http` `bearer` Security Scheme Object whose `x-fern-bearer` (or `x-crozier-bearer`) names the credential"
+    ),
+    "securityScheme.x-fern-basic:named-or-env": (
+        "one per `http` `basic` Security Scheme Object whose `x-fern-basic` (or `x-crozier-basic`) gives its username or password a `name` or an `env`"
+    ),
+    "securityScheme.x-fern-token-variable-name:bearer": (
+        "one per `http` `bearer` Security Scheme Object declaring a non-blank `x-fern-token-variable-name` (or `x-crozier-token-variable-name`) that is the document's first scheme of a kind Fern supports, so it is the credential Fern names"
+    ),
+    "components.securitySchemes:duplicate-api-key-header": (
+        "one per header `apiKey` Security Scheme Object naming, case-insensitively, the same header as an earlier one, a header whose name stems to `api_key` (`X-Api-Key`), with both schemes offered by the document's `security`"
+    ),
+    "securityScheme.scheme:capitalised-http": (
+        "one per `http` Security Scheme Object whose `scheme` is `bearer` or `basic` spelled with a capital"
+    ),
+    "operation.x-fern-pagination:cursor": (
+        "one per path Operation Object whose pagination extension (either spelling) is a mapping with `cursor` and `next_cursor`"
+    ),
+    "operation.x-fern-pagination:offset": (
+        "one per path Operation Object whose pagination extension (either spelling) is a mapping with `offset` and no `cursor`"
+    ),
+    "operation.x-fern-pagination:boolean-over-root": (
+        "one per path Operation Object whose pagination extension is `true` in a document whose root declares a pagination mapping"
+    ),
+    "operation.x-fern-pagination:nullable-response": (
+        "one per path Operation Object with a pagination mapping whose 200 `application/json` schema references a component declared `nullable: true`"
+    ),
+    "operation.tags:empty-string": (
+        "one per path Operation Object whose only tag is the empty string, that declares no SDK group name and whose operationId does not begin with `.` (which names the `_` group itself)"
+    ),
+    "operation.x-fern-sdk-group-name:types-beside-child-group": (
+        "one per path Operation Object declaring an SDK group and method name whose group is a proper prefix of another operation's declared group and whose inline request body has an inline `enum` property"
+    ),
+    "operation.x-fern-idempotent:with-root-headers": (
+        "one per path Operation Object marked `x-fern-idempotent: true` (either spelling) in a document whose root declares idempotency headers"
+    ),
+    "operation.x-fern-retries:disabled": (
+        "one per path Operation Object whose retries extension (either spelling) is a mapping with `disabled: true`"
+    ),
+    "operation.servers:named-beside-document-server": (
+        "one per path Operation Object whose `servers` are one named (`x-fern-server-name`, either spelling) URL other than the document's single server's"
+    ),
+    "server.x-fern-default-url:templated": (
+        "one per document Server Object with a templated `url` that declares `x-fern-default-url` (either spelling)"
+    ),
+    "server.x-fern-server-name:several-undescribed": (
+        "one per document Server Object naming itself by `x-fern-server-name` (either spelling) without a `description`, in a document with two or more such servers"
+    ),
+    "schema.x-fern-sdk-group-name:component": (
+        "one per `components.schemas` entry declaring an SDK group name (either spelling)"
+    ),
+    "schema.x-tags:component": ("one per `components.schemas` entry declaring a non-empty `x-tags` list"),
+    "schema.x-fern-type-name:inline-property": (
+        "one per inline property Schema Object anywhere in the document (a component's, a body's, a parameter's or a webhook's; never a `components.schemas` entry itself or a `$ref`), declaring `x-fern-type-name` (either spelling)"
+    ),
+    "openapi.webhooks:inline-json-body-named": (
+        "one per `webhooks` Operation Object whose `application/json` request body is an inline schema and that declares an SDK group or method name"
+    ),
+    "operation.x-fern-webhook:true": ("one per path Operation Object marked `x-fern-webhook: true` (either spelling)"),
+    "operation.operationId:untagged-list-or-set": (
+        "one per Operation Object under the Paths Object with no tag and no SDK "
+        "method-name extension whose operationId is exactly `list` or `set`, the "
+        "builtins Fern leaves unsuffixed as method names"
+    ),
     "operation.operationId:duplicate": (
         "one per Operation Object whose `operationId` value is declared by more than "
         "one Operation Object of the same document, so a value written twice counts two"
@@ -1652,6 +1754,79 @@ PREDICATES = {
         "`serde` reads one into the `Option` fields `is_unknown` tests"
     ),
 }
+
+# Predicates that read document context rather than one object-model node.
+# GrammarContractTests independently reconciles this partition and its prose.
+DOCUMENT_COMPARING_PREDICATES = (
+    "operation.operationId:duplicate",
+    "openapi.paths:normalized-collision",
+    "components.schemas:normalized-collision",
+    "schema.$ref:undeclared-component-head",
+    "schema.$ref:resolves-to-component",
+    "schema.oneOf:discriminated-union",
+    "schema.anyOf:discriminated-union",
+    "schema.discriminator:inheritance-union",
+    "parameter.schema:subset-header-string-default",
+    "parameter.schema:promoted-date-header",
+    "parameter.schema:single-required-header",
+    "operation.operationId:digit-leading-method",
+    "operation.responses:wildcard-binary",
+    "parameter.example:non-scalar-query",
+    "mediaType.examples:named-beside-example",
+    "mediaType.examples:named-only",
+    "schema.example:on-ref-to-object",
+    "schema.example:on-ref-to-enum",
+    "schema.example:on-ref-to-union",
+    "schema.example:on-ref-to-alias",
+    "operation.requestBody:body-prefixed-single-use",
+    "operation.requestBody:titled-inline-container-oas-three-zero",
+    "operation.responses:empty-schema-success-oas-three-zero",
+    "operation.responses:schemaless-text-success",
+    "operation.responses:schemaless-download-success",
+    "operation.responses:suffixed-status-key",
+    "operation.requestBody:schemaless-json",
+    "operation.responses:schemaless-wav-success",
+    "operation.responses:space-suffixed-status-key",
+    "operation.requestBody:blank-description-optional-object",
+    "operation.requestBody:described-inline-scalar",
+    "operation.requestBody:plain-string-map",
+    "operation.responses:contentless-two-hundred-with-created",
+    "operation.responses:event-stream-binary",
+    "operation.responses:event-stream-inline-const-union",
+    "operation.responses:event-stream-item-schema-ref",
+    "operation.responses:event-stream-event-dispatch",
+    "mediaType.schema:allof-parent-body",
+    "mediaType.example:nested-null-member",
+    "mediaType.example:deprecated-property",
+    "components.schemas:fields-reach-cycles-unsorted",
+    "components.schemas:cycle-into-cycle",
+    "mediaType.schema:closed-empty-object-property",
+    "securityScheme.x-fern-header:named",
+    "securityScheme.x-fern-bearer:named",
+    "securityScheme.x-fern-basic:named-or-env",
+    "securityScheme.x-fern-token-variable-name:bearer",
+    "components.securitySchemes:duplicate-api-key-header",
+    "securityScheme.scheme:capitalised-http",
+    "operation.x-fern-pagination:cursor",
+    "operation.x-fern-pagination:offset",
+    "operation.x-fern-pagination:boolean-over-root",
+    "operation.x-fern-pagination:nullable-response",
+    "operation.tags:empty-string",
+    "operation.x-fern-sdk-group-name:types-beside-child-group",
+    "operation.x-fern-idempotent:with-root-headers",
+    "operation.x-fern-retries:disabled",
+    "operation.servers:named-beside-document-server",
+    "server.x-fern-default-url:templated",
+    "server.x-fern-server-name:several-undescribed",
+    "schema.x-fern-sdk-group-name:component",
+    "schema.x-tags:component",
+    "schema.x-fern-type-name:inline-property",
+    "openapi.webhooks:inline-json-body-named",
+    "operation.x-fern-webhook:true",
+    "parameter.schema:nullable-array-items-oas-three-zero",
+    "parameter.schema:required-nullable-scalar-oas-three-zero",
+    "operation.parameters:path-order-oas-three-one",
+)
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
 # combination of fields rather than one field, written with the composition
@@ -2275,7 +2450,7 @@ BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
     "hoist_union_variant": "d18b44f1eb2c3221",
-    "prop_type_ref": "e2046726db880b3c",
+    "prop_type_ref": "dacd8fd26f972801",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }
@@ -2693,7 +2868,7 @@ _PYTHON_KEYWORDS = frozenset(
     }
 )
 # Builtins Fern munges in field contexts; `naming::is_reserved` is the two sets.
-_RESERVED_BUILTINS = frozenset({"all", "bool", "float", "int", "list", "long", "map", "set", "uuid"})
+_RESERVED_BUILTINS = frozenset({"all", "bool", "complex", "float", "int", "list", "long", "map", "set", "uuid"})
 # A path template expression: `{userId}` in `/users/{userId}/roles`.
 _TEMPLATE_EXPRESSION = re.compile(r"\{([^{}]*)\}")
 
@@ -2810,6 +2985,12 @@ def _field_snake_case(wire_name: str) -> str:
 def is_reserved(name: str) -> bool:
     """`naming::is_reserved`: a Python keyword or a builtin Fern munges in fields."""
     return name in _PYTHON_KEYWORDS or name in _RESERVED_BUILTINS
+
+
+def is_reserved_method(name: str) -> bool:
+    """`naming::is_reserved_method`: reserved, save the `list` and `set` builtins
+    Fern leaves unsuffixed as method names."""
+    return is_reserved(name) and name not in {"list", "set"}
 
 
 def field_name(wire_name: str) -> str:
@@ -2931,7 +3112,7 @@ _ENUM_DEBURR_EXCEPTIONS = dict(
     )
 )
 
-# The enum-member predicates mirror these Rust functions. The offline tier
+# The enum-member and reserved-method predicates mirror these Rust functions. The offline tier
 # recomputes each normalized-body digest and the DEBURRED_LATIN table digest,
 # so an upstream branch or mapping edit requires a fresh case reading here.
 NAMING_PORT_DIGESTS = {
@@ -2951,6 +3132,7 @@ NAMING_PORT_DIGESTS = {
     "to_snake_case": "3c9366b3588a08c6",
     "class_name": "c91fec9908234a17",
     "DEBURRED_LATIN": "0a6e4bed130d170a",
+    "is_reserved_method": "6c7d2d1e00b4d9a6",
 }
 
 
@@ -3161,17 +3343,18 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "efd3a74154b2040b",
+    "endpoint_method_name": "b7d16062ff7109d6",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
-    "method_from_groupless_id": "7b4f62c5899ec99b",
+    "method_from_groupless_id": "3ba287086971a152",
+    "method_from_hyphenated_tag_id": "4eb571e881d67d51",
     "operation_id_tag_prefix": "6b9d3e0baac71cd4",
     "stripped_suffix_has_acronym": "2fc2a5586fdf1c7d",
     "fastapi_endpoint_name": "00ebd39bf3393e58",
     "method_from_grouped_id": "9a11a75c28c3f3a0",
-    "group_prefix_is_tag": "f1defc0f47feecb2",
+    "group_prefix_is_tag": "78ed5d765ae5f67f",
     "first_segment_is_tag": "bf92317b81b95eff",
     "fern_location_tokens": "e26dd8f74b3d5c03",
     "is_fern_camel_case": "7d911765a9cc2c34",
@@ -3225,6 +3408,13 @@ def _alnum_lower(text: str) -> str:
 def _module_from_grouped_id(text: str) -> str:
     prefix = text.rsplit("_", 1)[0] if "_" in text else text
     return to_snake_case(prefix) if "_" in prefix else prefix.lower()
+
+
+def _group_prefix_is_tag(text: str, tag: str) -> bool:
+    """`group_prefix_is_tag` for a tagged id: the prefix's words are the tag's tokens."""
+    prefix = text.rsplit("_", 1)[0] if "_" in text else text
+    words = [word.lower() for word in re.split(r"[^A-Za-z0-9]", prefix) if word]
+    return words == _fern_location_tokens(tag)
 
 
 def _fern_camel(name: str) -> bool:
@@ -3296,8 +3486,339 @@ def _groupless_method(text: str, tag: str | None) -> tuple[str, bool]:
     else:
         method = snake[len(tag_snake) + 1 :] if snake.startswith(f"{tag_snake}_") else snake
     ident, prefixed = _sanitized(method)
-    reserved = is_reserved(ident) if tag is None else (ident in _PYTHON_KEYWORDS or ident == "all")
-    return (f"{ident}_" if reserved else ident), prefixed
+    return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
+
+
+# `sdk_group_segments` and `sdk_method_named` port `Operation` accessors, and the
+# method-name deserializer, of `src/openapi.rs`; NamingMirrorTests recomputes each
+# one's normalized-body digest, so an accessor edited there fails until its port is
+# read again here.
+EXTENSION_ACCESSOR_PORT_DIGESTS = {
+    ("src/openapi.rs", "sdk_group_name"): "4c285625fb40715e",
+    ("src/openapi.rs", "sdk_method_name"): "05643ea13596fa87",
+    ("src/openapi.rs", "de_sdk_method_name"): "3cee342419e818ec",
+}
+
+
+def sdk_group_segments(operation: dict[Any, Any]) -> list[str]:
+    """`Operation::sdk_group_name`: the crozier spelling wins; blank segments drop."""
+    for extension in ("x-crozier-sdk-group-name", "x-fern-sdk-group-name"):
+        if extension in operation:
+            declared = operation[extension]
+            values = declared if isinstance(declared, list) else [declared]
+            return [value.strip() for value in values if isinstance(value, str) and value.strip()]
+    return []
+
+
+def sdk_method_named(operation: dict[Any, Any]) -> bool:
+    """`Operation::sdk_method_name`: either spelling, a blank value naming nothing.
+
+    A sequence of strings is read joined by `,`, as `de_sdk_method_name` reads it.
+    """
+    for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
+        if extension in operation:
+            named = operation[extension]
+            if isinstance(named, list) and named and all(isinstance(item, str) for item in named):
+                named = ",".join(named)
+            return isinstance(named, str) and bool(named.strip())
+    return False
+
+
+def sdk_method_name_sequence(operation: dict[Any, Any]) -> bool:
+    """`operation.x-fern-sdk-method-name:sequence`: the winning spelling is a list."""
+    for extension in ("x-crozier-sdk-method-name", "x-fern-sdk-method-name"):
+        if extension in operation:
+            named = operation[extension]
+            return isinstance(named, list) and bool(named) and all(isinstance(item, str) for item in named)
+    return False
+
+
+def clients_extensions_selectors() -> list[str]:
+    """The predicates `clients_extensions_sites` emits, in declaration order."""
+    start = list(PREDICATES).index("securityScheme.x-fern-header:named")
+    end = list(PREDICATES).index("operation.x-fern-webhook:true")
+    return list(PREDICATES)[start : end + 1]
+
+
+def _extension(node: Any, base: str) -> Any:
+    """The `x-crozier-<base>` value of a node, else its `x-fern-<base>` (crozier wins)."""
+    if not isinstance(node, dict):
+        return None
+    return node.get(f"x-crozier-{base}", node.get(f"x-fern-{base}"))
+
+
+def _mapping(value: Any) -> dict[Any, Any]:
+    """`value` when it is a mapping, else an empty one, so a census of a malformed
+    document counts no site there rather than failing the whole walk."""
+    return value if isinstance(value, dict) else {}
+
+
+def json_media(operation: dict[Any, Any]) -> Any:
+    """An operation's `application/json` request media, or None when its
+    `requestBody` or `content` is not a mapping."""
+    request_body = operation.get("requestBody")
+    content = request_body.get("content") if isinstance(request_body, dict) else None
+    return content.get("application/json") if isinstance(content, dict) else None
+
+
+def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
+    """The client- and package-construction shapes, read off the whole document."""
+    found: list[str] = []
+    components = _mapping(document.get("components"))
+    schemes = _mapping(components.get("securitySchemes"))
+    headers_seen: set[str] = set()
+    supported = [
+        scheme
+        for scheme in schemes.values()
+        if isinstance(scheme, dict)
+        and (
+            (scheme.get("type") == "apiKey" and scheme.get("in") == "header")
+            or (scheme.get("type") == "http" and str(scheme.get("scheme") or "").lower() in ("bearer", "basic"))
+            or scheme.get("type") in ("oauth2", "openIdConnect")
+        )
+    ]
+    for scheme in schemes.values():
+        if not isinstance(scheme, dict):
+            continue
+        kind, http = scheme.get("type"), str(scheme.get("scheme") or "")
+        if kind == "http" and http.lower() in ("bearer", "basic") and http != http.lower():
+            found.append("securityScheme.scheme:capitalised-http")
+        match (kind, scheme.get("in"), http.lower()):
+            case ("apiKey", "header", _):
+                header = _extension(scheme, "header")
+                if isinstance(header, dict) and isinstance(header.get("name"), str) and header["name"].strip():
+                    found.append("securityScheme.x-fern-header:named")
+                name = str(scheme.get("name") or "").lower()
+                offered = (
+                    {
+                        scheme_name
+                        for requirement in document.get("security") or []
+                        if isinstance(requirement, dict)
+                        for scheme_name in requirement
+                    }
+                    if isinstance(document.get("security"), list)
+                    else set()
+                )
+                if (
+                    name in headers_seen
+                    and name.removeprefix("x-").replace("-", "_") == "api_key"
+                    and sum(
+                        1
+                        for key, other in schemes.items()
+                        if key in offered and isinstance(other, dict) and str(other.get("name") or "").lower() == name
+                    )
+                    >= 2
+                ):
+                    found.append("components.securitySchemes:duplicate-api-key-header")
+                headers_seen.add(name)
+            case ("http", _, "bearer"):
+                bearer = _extension(scheme, "bearer")
+                if isinstance(bearer, dict) and isinstance(bearer.get("name"), str) and bearer["name"].strip():
+                    found.append("securityScheme.x-fern-bearer:named")
+                variable = _extension(scheme, "token-variable-name")
+                if isinstance(variable, str) and variable.strip() and supported and supported[0] is scheme:
+                    found.append("securityScheme.x-fern-token-variable-name:bearer")
+            case ("http", _, "basic"):
+                basic = _extension(scheme, "basic")
+                if isinstance(basic, dict) and any(
+                    isinstance(part, dict)
+                    and any(isinstance(part.get(key), str) and part[key].strip() for key in ("name", "env"))
+                    for part in (basic.get("username"), basic.get("password"))
+                ):
+                    found.append("securityScheme.x-fern-basic:named-or-env")
+    schemas = _mapping(components.get("schemas"))
+    for schema in schemas.values():
+        if not isinstance(schema, dict):
+            continue
+        if _extension(schema, "sdk-group-name") not in (None, "", []):
+            found.append("schema.x-fern-sdk-group-name:component")
+        if isinstance(schema.get("x-tags"), list) and schema["x-tags"]:
+            found.append("schema.x-tags:component")
+
+    def inline_type_names(node: Any, depth: int = 0) -> int:
+        """Inline property schemas declaring a type name anywhere under `node`.
+
+        Every `properties` map in the document is read — under a component, a
+        request or response body, a parameter or a webhook alike — while an
+        `example` or `examples` value is data, never a schema.
+        """
+        if depth > 200:
+            return 0
+        match node:
+            case list():
+                return sum(inline_type_names(item, depth + 1) for item in node)
+            case dict():
+                count = 0
+                properties = node.get("properties")
+                for value in properties.values() if isinstance(properties, dict) else []:
+                    if (
+                        isinstance(value, dict)
+                        and "$ref" not in value
+                        and _extension(value, "type-name") not in (None, "")
+                    ):
+                        count += 1
+                    count += inline_type_names(value, depth + 1)
+                for key, value in node.items():
+                    if key not in ("properties", "example", "examples"):
+                        count += inline_type_names(value, depth + 1)
+                return count
+            case _:
+                return 0
+
+    found += ["schema.x-fern-type-name:inline-property"] * inline_type_names(document)
+    servers = (
+        [server for server in document.get("servers") or [] if isinstance(server, dict)]
+        if isinstance(document.get("servers"), list)
+        else []
+    )
+    for server in servers:
+        if "{" in str(server.get("url") or "") and _extension(server, "default-url") not in (None, ""):
+            found.append("server.x-fern-default-url:templated")
+    named = [
+        server
+        for server in servers
+        if _extension(server, "server-name") not in (None, "") and not server.get("description")
+    ]
+    if len(named) >= 2:
+        found += ["server.x-fern-server-name:several-undescribed"] * len(named)
+    root_pagination = isinstance(_extension(document, "pagination"), dict)
+    root_idempotency = bool(_extension(document, "idempotency-headers"))
+    paths = _mapping(document.get("paths"))
+    operations = [
+        operation
+        for item in paths.values()
+        if isinstance(item, dict)
+        for method, operation in item.items()
+        if method in ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+        and isinstance(operation, dict)
+    ]
+    groups = [sdk_group_segments(operation) for operation in operations]
+    for operation, group in zip(operations, groups, strict=True):
+        pagination = _extension(operation, "pagination")
+        if isinstance(pagination, dict):
+            if "cursor" in pagination and "next_cursor" in pagination:
+                found.append("operation.x-fern-pagination:cursor")
+            if "offset" in pagination and "cursor" not in pagination:
+                found.append("operation.x-fern-pagination:offset")
+            success = (
+                ((operation.get("responses") or {}).get("200") or {})
+                if isinstance(operation.get("responses"), dict)
+                else {}
+            )
+            media = (
+                ((success.get("content") or {}).get("application/json") or {})
+                if isinstance(success, dict) and isinstance(success.get("content"), dict)
+                else {}
+            )
+            reference = (
+                (media.get("schema") or {}).get("$ref")
+                if isinstance(media, dict) and isinstance(media.get("schema"), dict)
+                else None
+            )
+            if isinstance(reference, str) and reference.startswith("#/components/schemas/"):
+                target = schemas.get(reference.rsplit("/", 1)[1])
+                if isinstance(target, dict) and target.get("nullable") is True:
+                    found.append("operation.x-fern-pagination:nullable-response")
+        if pagination is True and root_pagination:
+            found.append("operation.x-fern-pagination:boolean-over-root")
+        if (
+            operation.get("tags") == [""]
+            and not group
+            and not str(operation.get("operationId") or "").strip().startswith(".")
+        ):
+            found.append("operation.tags:empty-string")
+        if _extension(operation, "idempotent") is True and root_idempotency:
+            found.append("operation.x-fern-idempotent:with-root-headers")
+        retries = _extension(operation, "retries")
+        if isinstance(retries, dict) and retries.get("disabled") is True:
+            found.append("operation.x-fern-retries:disabled")
+        own = operation.get("servers") if isinstance(operation.get("servers"), list) else []
+        if (
+            len(servers) == 1
+            and len(own) == 1
+            and isinstance(own[0], dict)
+            and _extension(own[0], "server-name") not in (None, "")
+            and own[0].get("url") != servers[0].get("url")
+        ):
+            found.append("operation.servers:named-beside-document-server")
+        if _extension(operation, "webhook") is True:
+            found.append("operation.x-fern-webhook:true")
+        if (
+            group
+            and sdk_method_named(operation)
+            and any(len(other) > len(group) and other[: len(group)] == group for other in groups)
+        ):
+            body = json_media(operation)
+            schema = body.get("schema") if isinstance(body, dict) else None
+            properties = schema.get("properties") if isinstance(schema, dict) and "$ref" not in schema else None
+            if isinstance(properties, dict) and any(
+                isinstance(value, dict) and "$ref" not in value and isinstance(value.get("enum"), list)
+                for value in properties.values()
+            ):
+                found.append("operation.x-fern-sdk-group-name:types-beside-child-group")
+    webhooks = _mapping(document.get("webhooks"))
+    for item in webhooks.values():
+        if not isinstance(item, dict):
+            continue
+        for method, operation in item.items():
+            if method not in ("get", "put", "post", "delete", "patch") or not isinstance(operation, dict):
+                continue
+            body = json_media(operation)
+            schema = body.get("schema") if isinstance(body, dict) else None
+            if (
+                isinstance(schema, dict)
+                and "$ref" not in schema
+                and (sdk_group_segments(operation) or sdk_method_named(operation))
+            ):
+                found.append("openapi.webhooks:inline-json-body-named")
+    return found
+
+
+def tag_spelled_split_prefix(operation: dict[Any, Any]) -> bool:
+    """`operation.operationId:tag-spelled-split-prefix`: see its PREDICATES entry."""
+    if any(
+        key in operation
+        for key in (
+            "x-fern-sdk-method-name",
+            "x-crozier-sdk-method-name",
+            "x-fern-sdk-group-name",
+            "x-crozier-sdk-group-name",
+        )
+    ):
+        return False
+    operation_id = operation.get("operationId")
+    tag = _first_tag(operation)
+    if not isinstance(operation_id, str) or tag is None:
+        return False
+    text = operation_id.strip()
+    if "." in text or "_" not in text:
+        return False
+    prefix = text.rsplit("_", 1)[0]
+    first = text.split("_", 1)
+    return (
+        not ("_" in first[1] and _alnum_lower(first[0]) == _alnum_lower(tag))
+        and _alnum_lower(prefix) == _alnum_lower(tag)
+        and not _group_prefix_is_tag(text, tag)
+    )
+
+
+def hyphenated_tag_method(operation: dict[Any, Any]) -> bool:
+    """`operation.operationId:hyphenated-tag-method`: see its PREDICATES entry."""
+    if any(key in operation for key in ("x-fern-sdk-method-name", "x-crozier-sdk-method-name")):
+        return False
+    operation_id = operation.get("operationId")
+    tag = _first_tag(operation)
+    if not isinstance(operation_id, str) or tag is None:
+        return False
+    text = operation_id.strip()
+    prefix, _, method = text.partition("-")
+    return (
+        bool(method)
+        and not any(char in text for char in "_.{}/:")
+        and "-" not in method
+        and _matches_tag_spelling(prefix, tag)
+        and _ascii_lower(method) != to_snake_case(method)
+    )
 
 
 def operation_method_prefixed(operation: dict[Any, Any], method: str, url: str) -> bool:
@@ -3369,11 +3890,23 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
             remainder = id_words[len(tag_words) :]
             camel = remainder[0] + "".join(word[:1].upper() + word[1:] for word in remainder[1:])
             return _sanitized(to_snake_case(camel))
-        if _alnum_lower(_module_from_grouped_id(text)) == _alnum_lower(tag):
+        if _group_prefix_is_tag(text, tag):
             group, _, rest = text.rpartition("_")
             return _sanitized(to_snake_case(text) if "_" in group else rest.lower())
         return _sanitized(to_snake_case(text))
+    hyphenated = _hyphenated_tag_method(text, tag)
+    if hyphenated is not None:
+        return hyphenated
     return _groupless_method(text, tag)
+
+
+def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | None:
+    """`method_from_hyphenated_tag_id`: `<tag>-<method>`, the method lowercased."""
+    prefix, _, method = text.partition("-")
+    if tag is None or not method or "-" in method or not _matches_tag_spelling(prefix, tag):
+        return None
+    ident, prefixed = _sanitized(_ascii_lower(method))
+    return (f"{ident}_" if is_reserved_method(ident) else ident), prefixed
 
 
 def normalized_path(template: str) -> str:
@@ -4447,7 +4980,7 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # are: an edit there fails until the port is read again.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "c0c3d57f9ea6b36a",
-    "global_headers": "67106ae1452fce15",
+    "global_headers": "811a7d2a03cc038b",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
@@ -4933,6 +5466,25 @@ class Census:
                 found.append("operation.parameters:path-order-oas-three-one")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
+            if (
+                node.get("operationId") in ("list", "set")
+                and not node.get("tags")
+                and not any(key in node for key in ("x-fern-sdk-method-name", "x-crozier-sdk-method-name"))
+            ):
+                found.append("operation.operationId:untagged-list-or-set")
+            if sdk_method_name_sequence(node):
+                found.append("operation.x-fern-sdk-method-name:sequence")
+            segments = sdk_group_segments(node)
+            if segments and not sdk_method_named(node):
+                found.append("operation.x-fern-sdk-group-name:without-method-name")
+            if segments and sdk_method_named(node) and any(segment.startswith("_") for segment in segments):
+                found.append("operation.x-fern-sdk-group-name:leading-underscore")
+            if tag_spelled_split_prefix(node):
+                found.append("operation.operationId:tag-spelled-split-prefix")
+                if re.fullmatch(r"[A-Z][A-Z0-9]+", _first_tag(node) or ""):
+                    found.append("operation.operationId:all-caps-tag-split-prefix")
+            if hyphenated_tag_method(node):
+                found.append("operation.operationId:hyphenated-tag-method")
             if self.wildcard_binary_response(node):
                 found.append("operation.responses:wildcard-binary")
             found += self.body_and_response_predicates(node, method, url)
@@ -5469,9 +6021,12 @@ class Census:
             and any(ord(char) > 127 for char in node["title"])
         ):
             found.append("info.title:non-ascii")
+        if kind_name == "openapi":
+            found += clients_extensions_sites(node)
         if kind_name == "components":
             found += self.class_name_collisions(node.get("schemas"))
             found += self.class_name_sanitizations(node.get("schemas"))
+            found += self.complex_module_names(node.get("schemas"))
             found += self.same_primitive_unions(node.get("schemas"))
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
@@ -5941,6 +6496,17 @@ class Census:
             "components.schemas:nonidentifier-name"
             for key in node
             if isinstance(key, str) and not key.startswith("x-") and needs_sanitizing(key)
+        ]
+
+    @staticmethod
+    def complex_module_names(node: Any) -> list[str]:
+        """One per component name `module_name` stems to `complex` (`naming::is_reserved`)."""
+        if not isinstance(node, dict):
+            return []
+        return [
+            "components.schemas:complex-module-name"
+            for key in node
+            if isinstance(key, str) and not key.startswith("x-") and to_snake_case(to_pascal_case(key)) == "complex"
         ]
 
     @staticmethod

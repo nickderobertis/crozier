@@ -1,0 +1,1 @@
+{"openapi": "3.0.3", "info": {"title": "Kiln Bookings", "version": "1.0.0"}, "servers": [{"url": "https://kiln.example.org"}], "x-fern-idempotency-headers": [{"header": "-"}], "paths": {"/firings": {"post": {"operationId": "bookFiring", "x-fern-idempotent": true, "responses": {"204": {"description": "Booked"}}}}}}

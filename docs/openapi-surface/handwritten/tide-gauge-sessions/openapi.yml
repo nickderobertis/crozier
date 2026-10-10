@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: Tide Gauge
+  version: 1.0.2
+  description: Water levels from a harbour's tide gauges.
+servers:
+  - url: https://gauge.harbour.test
+paths:
+  /tides:
+    get:
+      operationId: listTides
+      security:
+        - Session: []
+      parameters:
+        - name: gauge
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Levels over the last day.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Level'
+components:
+  securitySchemes:
+    Session:
+      type: http
+      scheme: Bearer
+  schemas:
+    Level:
+      type: object
+      required: [at, metres]
+      properties:
+        at:
+          type: string
+          format: date-time
+        metres:
+          type: number
+        trend:
+          type: string
+          enum: [rising, falling, slack]

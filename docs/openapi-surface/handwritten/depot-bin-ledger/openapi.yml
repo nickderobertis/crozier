@@ -1,0 +1,180 @@
+openapi: 3.0.3
+info:
+  title: Depot Bin Ledger
+  version: 1.4.0
+  description: Tracks the collection bins at a recycling depot.
+servers:
+  - url: https://ledger.depot.test
+paths:
+  /bins:
+    get:
+      operationId: list
+      summary: Every bin on the depot floor.
+      responses:
+        '200':
+          description: The bins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bin'
+  /bins/{binId}/fill:
+    put:
+      operationId: set
+      summary: Record how full a bin is.
+      parameters:
+        - name: binId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Fill'
+      responses:
+        '200':
+          description: The bin after the reading.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Bin'
+  /routes:
+    get:
+      operationId: map
+      summary: The collection route through the depot.
+      responses:
+        '200':
+          description: Ordered bin ids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /sensors:
+    get:
+      tags: [Sensors]
+      operationId: list
+      responses:
+        '200':
+          description: Sensor ids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /sensors/{sensorId}/level:
+    get:
+      tags: [Sensors]
+      operationId: float
+      summary: A float sensor's level.
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Level, from 0 to 1.
+          content:
+            application/json:
+              schema:
+                type: number
+  /sensors/{sensorId}/lid:
+    get:
+      tags: [Sensors]
+      operationId: bool
+      summary: Whether a lid sensor reads closed.
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: True when closed.
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /sensors/{sensorId}/lifts:
+    get:
+      tags: [Sensors]
+      operationId: int
+      summary: A lift counter's count.
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lifts since the last service.
+          content:
+            application/json:
+              schema:
+                type: integer
+  /sensors/{sensorId}/odometer:
+    get:
+      tags: [Sensors]
+      operationId: long
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lifetime lifts.
+          content:
+            application/json:
+              schema:
+                type: integer
+                format: int64
+  /sensors/{sensorId}/serial:
+    get:
+      tags: [Sensors]
+      operationId: uuid
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The sensor's hardware id.
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+components:
+  schemas:
+    Bin:
+      type: object
+      required: [id, material]
+      properties:
+        id:
+          type: string
+        material:
+          type: string
+          enum: [glass, paper, metal]
+        fill:
+          type: number
+    Fill:
+      type: object
+      required: [fill]
+      properties:
+        fill:
+          type: number
+          description: Fraction of the bin in use.

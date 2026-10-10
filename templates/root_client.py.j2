@@ -4,10 +4,7 @@ class {{ class_name }}:
 
     Parameters
     ----------
-    base_url : {{ base_url_doc_ty }}
-        The base url to use for requests from the client.
-
-{{ env_doc }}{{ server_variable_doc }}{{ client_param_doc }}{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
+{{ base_url_doc }}{{ env_doc }}{{ server_variable_doc }}{{ client_param_doc }}{{ doc_param }}    headers : typing.Optional[typing.Dict[str, str]]
         Additional headers to send with every request.
 
 {{ async_token_doc }}    timeout : typing.Optional[float]
@@ -57,8 +54,8 @@ class {{ class_name }}:
 {{ tr_ctor }}    ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else {{ default_max_retries }}
-{{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
-            base_url={{ wrapper_base_url }},
+{{ auth_check }}{{ server_variable_init }}        self._client_wrapper = {{ wrapper }}(
+            {{ wrapper_location }},
 {{ client_param_wrapper }}{{ wrapper_arg }}
             headers=headers,
 {{ async_token_wrapper }}            httpx_client=httpx_client

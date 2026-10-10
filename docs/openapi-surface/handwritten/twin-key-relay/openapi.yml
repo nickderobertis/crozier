@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Twin Key Relay
+  version: 1.0.4
+  description: A relay that accepts either of two key issuers' keys.
+servers:
+  - url: https://relay.keys.test
+security:
+  - issuerA: []
+  - issuerB: []
+paths:
+  /messages:
+    post:
+      operationId: relayMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to, body]
+              properties:
+                to:
+                  type: string
+                body:
+                  type: string
+                priority:
+                  type: string
+                  enum: [low, high]
+      responses:
+        '202':
+          description: Accepted for relay.
+components:
+  securitySchemes:
+    issuerA:
+      type: apiKey
+      in: header
+      name: X-Api-Key
+    issuerB:
+      type: apiKey
+      in: header
+      name: X-Api-Key

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "99828329ae21ffe96af0bd406f8a89e3f1b4071f2c246d46ca1321d492375736"
+
+[[covers]]
+key = "operation-id-all-caps-tag-split-prefix"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#all-caps-tag-spelled-by-a-split-prefix"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

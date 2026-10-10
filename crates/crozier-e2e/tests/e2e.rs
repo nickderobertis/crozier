@@ -821,6 +821,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
+        (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -1189,6 +1190,12 @@ fn assert_generated_tree_matches(
         if c.unmatched.contains(&rel.as_str()) {
             continue;
         }
+        if !out.join(&rel).is_file() {
+            if let Some(id) = parity::file_departure(&context, &rel, parity::Side::Reference) {
+                observed.push((rel, 0, id.to_string()));
+                continue;
+            }
+        }
         let generated = std::fs::read_to_string(out.join(&rel))
             .unwrap_or_else(|e| panic!("crozier did not write {rel}: {e}"));
         let expected = std::fs::read_to_string(expected_root.join(&rel))
@@ -1211,17 +1218,20 @@ fn assert_generated_tree_matches(
             );
         }
     }
-    let failures = ledger.check(&observed, &|_| true);
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
-
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
     // merely because the golden lacks it.
     for rel in walk_files(out) {
-        assert!(
-            expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()),
-            "Crozier emitted {rel}, but the Fern fixture has no corresponding file"
-        );
+        if expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()) {
+            continue;
+        }
+        let id =
+            parity::file_departure(&context, &rel, parity::Side::Crozier).unwrap_or_else(|| {
+                panic!("Crozier emitted {rel}, but the Fern fixture has no corresponding file")
+            });
+        observed.push((rel, 0, id.to_string()));
     }
+    let failures = ledger.check(&observed, &|_| true);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 
     // The declared crozier-only set is held to the same staleness contract as
     // `unmatched`: a listed file that reached the golden must enter byte
@@ -1758,28 +1768,47 @@ fn golden_tree_failures(
     out: &Path,
 ) -> Vec<String> {
     let mut failures = Vec::new();
-    let expected_files = walk_files(expected_root);
-    let generated_files = walk_files(out);
-    if generated_files != expected_files {
+    let expected_files: std::collections::BTreeSet<String> =
+        walk_files(expected_root).into_iter().collect();
+    let generated_files: std::collections::BTreeSet<String> = walk_files(out).into_iter().collect();
+    let context = Context::from_trees(expected_root, out);
+    let mut observed = Vec::new();
+    // A file only one side has is a difference unless a catalog file rule
+    // accounts for it.
+    let only = expected_files
+        .difference(&generated_files)
+        .map(|rel| (rel, parity::Side::Reference))
+        .chain(
+            generated_files
+                .difference(&expected_files)
+                .map(|rel| (rel, parity::Side::Crozier)),
+        );
+    let mut unexplained = Vec::new();
+    for (rel, side) in only {
+        match parity::file_departure(&context, rel, side) {
+            Some(id) => observed.push((rel.clone(), 0, id.to_string())),
+            None => unexplained.push(rel.as_str()),
+        }
+    }
+    if !unexplained.is_empty() {
         failures.push(format!(
-            "{key}: crozier's file set over {source} differs from {}",
-            expected_root.display()
+            "{key}: crozier's file set over {source} differs from {} at {}",
+            expected_root.display(),
+            unexplained.join(", ")
         ));
         return failures;
     }
-    let context = Context::from_trees(expected_root, out);
-    let mut observed = Vec::new();
-    for rel in expected_files {
-        let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
-        let expected = std::fs::read_to_string(expected_root.join(&rel)).unwrap_or_default();
-        let compared = match parity::compare_file(&context, &rel, &generated, &expected) {
+    for rel in expected_files.intersection(&generated_files) {
+        let generated = std::fs::read_to_string(out.join(rel)).unwrap_or_default();
+        let expected = std::fs::read_to_string(expected_root.join(rel)).unwrap_or_default();
+        let compared = match parity::compare_file(&context, rel, &generated, &expected) {
             Ok(compared) => compared,
             Err(error) => {
                 failures.push(format!("{key}: {rel}: {error}"));
                 continue;
             }
         };
-        observed.extend(observed_in(&rel, &compared));
+        observed.extend(observed_in(rel, &compared));
         if let Some(diff) = compared.diff() {
             failures.push(format!(
                 "{key}: generated {rel} differs from the committed Fern measurement \
@@ -1994,6 +2023,186 @@ const AUTHORED_PROBES_DIR: &str = "docs/openapi-surface/authored-probes";
 /// compares, one directory per case.
 const PARAMETER_LOWERING_DIR: &str = "docs/fern-measurements/parameter-lowering";
 
+/// The client-construction trees `clients_extensions_measurements_match_fern`
+/// compares, one directory per case, each Fern's output under a setting other
+/// than its document's own gate uses.
+const CLIENTS_EXTENSIONS_DIR: &str = "docs/fern-measurements/clients-extensions";
+
+/// Each `CLIENTS_EXTENSIONS_DIR` case: its directory, the document crozier
+/// generates it from, and the setting Fern's tree was measured under.
+const CLIENTS_EXTENSIONS_CASES: &[(&str, &str, &[&str])] = &[
+    (
+        "auction-house-bids-literals",
+        "docs/openapi-surface/handwritten/auction-house-bids/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "beacon-registry-pages-flat",
+        "docs/openapi-surface/handwritten/beacon-registry-pages/openapi.yml",
+        &["--layout", "flat"],
+    ),
+    (
+        "beacon-registry-pages-literals",
+        "docs/openapi-surface/handwritten/beacon-registry-pages/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "cargo-hold-pallets-literals",
+        "docs/openapi-surface/handwritten/cargo-hold-pallets/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "courier-delivery-hooks-literals",
+        "docs/openapi-surface/handwritten/courier-delivery-hooks/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "crane-hire-cursor",
+        "docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml",
+        &[],
+    ),
+    (
+        "crane-hire-cursor-flat",
+        "docs/fern-measurements/clients-extensions/crane-hire-cursor/openapi.yml",
+        &["--layout", "flat"],
+    ),
+    (
+        "depot-bin-ledger-literals",
+        "docs/openapi-surface/handwritten/depot-bin-ledger/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "dock-yard-bookings-literals",
+        "docs/openapi-surface/handwritten/dock-yard-bookings/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "ferry-berth-desk-literals",
+        "docs/openapi-surface/handwritten/ferry-berth-desk/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "film-shot-planner-literals",
+        "docs/openapi-surface/handwritten/film-shot-planner/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "grid-valve-console-literals",
+        "docs/openapi-surface/handwritten/grid-valve-console/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "harbour-pilot-regions-literals",
+        "docs/openapi-surface/handwritten/harbour-pilot-regions/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "impedance-complex-reading-literals",
+        "docs/openapi-surface/handwritten/impedance-complex-reading/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "keyword-bearer-name",
+        "docs/fern-measurements/clients-extensions/keyword-bearer-name/openapi.yml",
+        &[],
+    ),
+    (
+        "keyword-server-field",
+        "docs/fern-measurements/clients-extensions/keyword-server-field/openapi.yml",
+        &[],
+    ),
+    (
+        "lamp-room-log-literals",
+        "docs/openapi-surface/handwritten/lamp-room-log/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "ledger-records-offset-flat",
+        "docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml",
+        &["--layout", "flat"],
+    ),
+    (
+        "ledger-records-offset-literals",
+        "docs/openapi-surface/handwritten/ledger-records-offset/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "lock-keeper-vault-literals",
+        "docs/openapi-surface/handwritten/lock-keeper-vault/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "locker-archive-hosts-literals",
+        "docs/openapi-surface/handwritten/locker-archive-hosts/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "locker-bank-claims-literals",
+        "docs/openapi-surface/handwritten/locker-bank-claims/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "meter-reader-gateway-literals",
+        "docs/openapi-surface/handwritten/meter-reader-gateway/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "orbit-ground-stations-literals",
+        "docs/openapi-surface/handwritten/orbit-ground-stations/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "parcel-courier-desk-literals",
+        "docs/openapi-surface/handwritten/parcel-courier-desk/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "relay-station-header-names",
+        "docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml",
+        &[],
+    ),
+    (
+        "relay-station-shared-name",
+        "docs/fern-measurements/clients-extensions/relay-station-shared-name/openapi.yml",
+        &[],
+    ),
+    (
+        "rfid-door-panel-literals",
+        "docs/openapi-surface/handwritten/rfid-door-panel/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "signal-box-relays-literals",
+        "docs/openapi-surface/handwritten/signal-box-relays/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "ski-lift-gates-literals",
+        "docs/openapi-surface/handwritten/ski-lift-gates/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "tide-gauge-sessions-literals",
+        "docs/openapi-surface/handwritten/tide-gauge-sessions/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "twin-key-relay-literals",
+        "docs/openapi-surface/handwritten/twin-key-relay/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "vineyard-cellar-glossary-literals",
+        "docs/openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "weather-buoy-feeds",
+        "docs/fern-measurements/clients-extensions/weather-buoy-feeds/openapi.yml",
+        &[],
+    ),
+];
+
 /// The naming tickets' (#350, #354, #357) authored probes are the case
 /// directories `376-<ticket>-<shape>`; `authored_probe_measurements_match_fern`
 /// byte-compares each against Fern's tree by default. A document Fern refused
@@ -2202,6 +2411,55 @@ components:
     );
 }
 
+/// `type-name-collision`: an inline schema declaring a type name a different
+/// schema already holds — a component, or an earlier inline declaration — is
+/// refused in both modes under either spelling, exit 1 with nothing written,
+/// naming the operation, the type and its holder; pinned Fern refuses both. The
+/// same name over the component's own schema is merged into it, as Fern merges
+/// it, and a distinct declared name generates.
+#[test]
+fn inline_declared_type_name_collisions_refuse_and_identical_ones_merge() {
+    let evidence = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    let scratch = tempfile::tempdir().unwrap();
+    for (probe, element) in [
+        (
+            "inline-declared-type-name-component.yml",
+            "GET /glazes declares type Finish inline with a different schema than component schema \"Finish\"",
+        ),
+        (
+            "inline-declared-type-name-inline.yml",
+            "GET /glazes declares type Finish inline with a different schema than the inline declaration in GET /glazes",
+        ),
+    ] {
+        let fern = std::fs::read_to_string(evidence.join(probe)).unwrap();
+        for spelling in ["x-fern-type-name", "x-crozier-type-name"] {
+            let spec = scratch.path().join(format!("{spelling}-{probe}"));
+            std::fs::write(&spec, fern.replace("x-fern-type-name", spelling)).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures("type-name-collision", &run, element, false);
+                assert!(failures.is_empty(), "{spelling} {probe}: {}", failures.join("\n"));
+            }
+        }
+    }
+    let merged = evidence.join("inline-declared-type-name-same.yml");
+    assert_generates_in_both_modes(&merged, "inline-declared-type-name-same");
+    let run = refusal_run(&crozier, &merged, false).unwrap();
+    let types = run.target.join("src/fern/types");
+    assert!(!types.join("get_glaze_response_finish.py").exists());
+    let response = std::fs::read_to_string(types.join("get_glaze_response.py")).unwrap();
+    assert!(
+        response.contains("finish: typing.Optional[Finish] = None"),
+        "{response}"
+    );
+    let control = evidence.join("inline-declared-type-name-control.yml");
+    assert_generates_in_both_modes(&control, "inline-declared-type-name-control");
+    let run = refusal_run(&crozier, &control, false).unwrap();
+    assert!(run.target.join("src/fern/types/glaze_finish.py").is_file());
+}
+
 /// `x-crozier-type-name` is the canonical spelling of `x-fern-type-name`
 /// (AGENTS.md, the dual-header policy): alone it names a component exactly as
 /// the Fern spelling with the same value does, and beside a different Fern
@@ -2240,6 +2498,74 @@ fn canonical_type_name_hint_names_components_like_fern_spelling() {
         ));
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// An inline schema's type name reads crozier's spelling on its own and wins
+/// over a conflicting Fern spelling on the same node: written as
+/// `x-crozier-type-name` alone, or beside a different `x-fern-type-name`, the
+/// `film-shot-planner` fixture generates the tree its Fern spelling does, which
+/// `handwritten_fixtures_match_fern_goldens` holds to Fern's. The losing Fern
+/// names appear nowhere.
+#[test]
+fn inline_type_names_read_crozier_spelling_over_fern() {
+    let fixture = std::fs::read_to_string(
+        repo_root().join("docs/openapi-surface/handwritten/film-shot-planner/openapi.yml"),
+    )
+    .expect("the film-shot-planner fixture");
+    let declared = ["ShotSize", "LensSpec"];
+    for name in declared {
+        assert!(
+            fixture.contains(&format!("x-fern-type-name: {name}\n")),
+            "the fixture declares {name} inline"
+        );
+    }
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |case: &str, text: &str| {
+        let spec = dir.path().join(format!("{case}.yml"));
+        std::fs::write(&spec, text).expect("write spec");
+        let out = dir.path().join(case);
+        probe_command(&spec, &out).assert().success();
+        walk_files(&out)
+            .into_iter()
+            .map(|rel| {
+                let text = std::fs::read_to_string(out.join(&rel)).expect("generated file");
+                (rel, text)
+            })
+            .collect::<Vec<_>>()
+    };
+    let reference = generate("fern", &fixture);
+    assert!(
+        reference
+            .iter()
+            .any(|(rel, _)| rel.ends_with("types/shot_size.py")),
+        "the Fern spelling names the inline enum ShotSize"
+    );
+    let mut crozier = fixture.clone();
+    let mut conflict = fixture.clone();
+    for name in declared {
+        let fern = format!("x-fern-type-name: {name}\n");
+        let indent = fixture
+            .lines()
+            .find(|line| line.trim_start() == fern.trim_end())
+            .map(|line| &line[..line.len() - line.trim_start().len()])
+            .expect("the declaration line");
+        crozier = crozier.replace(&fern, &format!("x-crozier-type-name: {name}\n"));
+        conflict = conflict.replace(
+            &fern,
+            &format!("x-fern-type-name: Decoy{name}\n{indent}x-crozier-type-name: {name}\n"),
+        );
+    }
+    for (case, text) in [("crozier", crozier), ("conflict", conflict)] {
+        let tree = generate(case, &text);
+        assert_eq!(
+            reference, tree,
+            "{case}: the tree differs from the Fern spelling's"
+        );
+        assert!(
+            tree.iter().all(|(_, text)| !text.contains("Decoy")),
+            "{case}: a losing Fern name survives"
+        );
+    }
 }
 
 /// Every authored-probe measurement, found by listing
@@ -4151,6 +4477,580 @@ fn handwritten_check_answer(code: Option<i32>, stdout: &[u8], stderr: &[u8]) -> 
         .map(|(name, declared)| (name.clone(), declared.clone()))
         .collect();
     (evidence, failures)
+}
+
+/// The server extensions read crozier's spelling on its own and win over a
+/// conflicting Fern spelling on the same server: `x-*-server-name` names the
+/// environment member and `x-*-default-url` gives its value.
+#[test]
+fn server_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases: [(&str, &str, &[&str], &[&str]); 3] = [
+        (
+            "name",
+            "  - url: https://a.test\n    x-crozier-server-name: primary\n  - url: https://b.test\n    x-crozier-server-name: failover\n",
+            &["PRIMARY = \"https://a.test\"", "FAILOVER = \"https://b.test\""],
+            &["DEFAULT"],
+        ),
+        (
+            "name-conflict",
+            "  - url: https://a.test\n    x-fern-server-name: main\n    x-crozier-server-name: primary\n",
+            &["PRIMARY = \"https://a.test\""],
+            &["MAIN", "DEFAULT"],
+        ),
+        (
+            "default-url-conflict",
+            "  - url: https://{r}.a.test\n    variables: {r: {default: north}}\n    x-fern-default-url: https://fern.a.test\n    x-crozier-default-url: https://crozier.a.test\n",
+            &["DEFAULT = \"https://crozier.a.test\""],
+            &["fern.a.test", "north.a.test"],
+        ),
+    ];
+    for (name, servers, present, absent) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Stations, version: '1'}}\nservers:\n{servers}paths:\n  /passes:\n    get:\n      operationId: listPasses\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let environment =
+            std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+        for text in present {
+            assert!(
+                environment.contains(text),
+                "{name}: lacks `{text}`:\n{environment}"
+            );
+        }
+        for text in absent {
+            assert!(
+                !environment.contains(text),
+                "{name}: `{text}` survives:\n{environment}"
+            );
+        }
+    }
+}
+
+/// A second header `apiKey` scheme takes its constructor field from its own
+/// `x-fern-header` or `x-crozier-header`, crozier's value winning on the node:
+/// written in crozier's spelling alone, or beside a different Fern value, the
+/// certified `relay-station-header-names` document generates the same tree. A
+/// second scheme whose field would be a client constructor parameter, declared
+/// (`timeout`) or derived from its header (`Timeout`), is refused, exit 1 and
+/// nothing written.
+#[test]
+fn additional_header_scheme_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let certified =
+        std::fs::read_to_string(repo_root().join(
+            "docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml",
+        ))
+        .expect("certified spec");
+    let fern = "x-fern-header: {name: relayPass, prefix: Station, env: STATION_TOKEN}";
+    assert!(
+        certified.contains(fern),
+        "the certified spec declares {fern}"
+    );
+    let generate = |name: &str, spec_text: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(&spec, spec_text).expect("write spec");
+        let out = dir.path().join(name);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let tree = |out: &Path| -> Vec<(String, String)> {
+        walk_files(out)
+            .into_iter()
+            .map(|rel| {
+                let text = std::fs::read_to_string(out.join(&rel)).expect("generated file");
+                (rel, text)
+            })
+            .collect()
+    };
+    let (assert, reference) = generate("fern", &certified);
+    assert.success();
+    let wrapper = std::fs::read_to_string(reference.join("src/fern/core/client_wrapper.py"))
+        .expect("wrapper");
+    assert!(
+        wrapper.contains("headers[\"X-Station-Token\"] = self._relay_pass"),
+        "{wrapper}"
+    );
+    for (name, extensions) in [
+        ("crozier", fern.replace("x-fern-header", "x-crozier-header")),
+        (
+            "conflict",
+            format!(
+                "x-fern-header: {{name: wrongName}}, {}",
+                fern.replace("x-fern-header", "x-crozier-header")
+            ),
+        ),
+    ] {
+        let (assert, out) = generate(name, &certified.replace(fern, &extensions));
+        assert.success();
+        assert_eq!(tree(&reference), tree(&out), "{name}: the tree differs");
+    }
+    for (name, extensions, says) in [
+        (
+            "declared-timeout",
+            "x-crozier-header: {name: timeout}".to_string(),
+            "names its credential `timeout`",
+        ),
+        (
+            "derived-timeout",
+            String::new(),
+            "names its credential `timeout`",
+        ),
+    ] {
+        let mut text = certified.replace(fern, &extensions);
+        if extensions.is_empty() {
+            text = text
+                .replace(", }", "}")
+                .replace("X-Station-Token", "Timeout");
+        }
+        let (assert, out) = generate(name, &text);
+        assert
+            .failure()
+            .code(1)
+            .stderr(predicates::str::contains(says));
+        assert!(
+            !out.join("src").exists(),
+            "{name}: a refused document writes nothing"
+        );
+    }
+}
+
+/// A name an extension declares that crozier cannot emit as Fern's SDK is
+/// refused at the boundary, exit 1 with the conflict named and nothing written:
+/// a server name making a digit-led environment member, an operation server
+/// named `base` (the document's own URL), a credential named like a client
+/// constructor parameter, a header prefix with braces, which Fern writes into
+/// an f-string, an idempotency header that is no HTTP header name, a basic
+/// scheme naming its username and password alike, a server name making a
+/// member or field that is no ASCII Python identifier (punctuated, non-ASCII
+/// or empty), and a credential named with separators
+/// only or `self`. A keyword name is escaped instead, as Fern escapes it
+/// (`class` is `class_`), and generates.
+#[test]
+fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, body: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!("openapi: 3.0.3\ninfo: {{title: Names, version: '1'}}\n{body}"),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let ping = |servers: &str| {
+        format!("paths:\n  /ping:\n    get:\n      operationId: ping\n{servers}      responses: {{'204': {{description: ok}}}}\n")
+    };
+    let cases = [
+        (
+            "digit-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 1st\n{}",
+                ping("")
+            ),
+            "makes the environment member `1ST`, which starts with a digit",
+        ),
+        (
+            "base-field",
+            format!(
+                "servers:\n  - url: https://main.test\n{}",
+                ping("      servers:\n        - url: https://other.test\n          x-fern-server-name: base\n")
+            ),
+            "names the environment field `base`",
+        ),
+        (
+            "braced-prefix",
+            format!(
+                "security: [{{Key: []}}]\n{}components:\n  securitySchemes:\n    Key: {{type: apiKey, in: header, name: X-Key, x-fern-header: {{prefix: 'Key {{x}}'}}}}\n",
+                ping("")
+            ),
+            "header prefix `Key {x}` carries `{` or `}`",
+        ),
+        (
+            "quoted-idempotency-header",
+            format!(
+                "x-fern-idempotency-headers: [{{header: 'Idem\"pot'}}]\n{}",
+                ping("      x-fern-idempotent: true\n")
+            ),
+            "names `Idem\\\"pot`, which is no HTTP header name",
+        ),
+        (
+            "one-basic-name",
+            format!(
+                "security: [{{Login: []}}]\n{}components:\n  securitySchemes:\n    Login: {{type: http, scheme: basic, x-fern-basic: {{username: {{name: who}}, password: {{name: who}}}}}}\n",
+                ping("")
+            ),
+            "names both its username and its password `who`",
+        ),
+        (
+            "timeout-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-crozier-bearer: {{name: timeout}}}}\n",
+                ping("")
+            ),
+            "names its credential `timeout`, which is the client constructor's own `timeout` parameter",
+        ),
+        (
+            "punctuated-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 'a!b'\n{}",
+                ping("")
+            ),
+            "makes the environment member `A!B`, which is no ASCII Python identifier",
+        ),
+        (
+            "superscript-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 'a\u{b2}'\n{}",
+                ping("")
+            ),
+            "which is no ASCII Python identifier",
+        ),
+        (
+            "separator-only-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-fern-server-name: '---'\n{}",
+                ping("")
+            ),
+            "which is no ASCII Python identifier",
+        ),
+        (
+            "separator-only-field",
+            format!(
+                "servers:\n  - url: https://main.test\n{}",
+                ping("      servers:\n        - url: https://other.test\n          x-crozier-server-name: '---'\n")
+            ),
+            "names no environment field once separators are dropped",
+        ),
+        (
+            "separator-only-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-fern-bearer: {{name: '---'}}}}\n",
+                ping("")
+            ),
+            "names its credential with separators only",
+        ),
+        (
+            "self-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-crozier-bearer: {{name: self}}}}\n",
+                ping("")
+            ),
+            "names its credential `self`, which is the client constructor's own `self` parameter",
+        ),
+    ];
+    for (name, body, says) in cases {
+        let (assert, out) = generate(name, &body);
+        assert
+            .failure()
+            .code(1)
+            .stderr(predicates::str::contains(says));
+        assert!(
+            !out.join("src").exists(),
+            "{name}: a refused document writes nothing"
+        );
+    }
+    let (assert, out) = generate(
+        "keyword",
+        &format!(
+            "servers:\n  - url: https://main.test\n{}",
+            ping("      servers:\n        - url: https://kw.test\n          x-crozier-server-name: class\n")
+        ),
+    );
+    assert.success();
+    let environment =
+        std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+    assert!(
+        environment.contains("def __init__(self, *, base: str, class_: str):"),
+        "{environment}"
+    );
+}
+
+/// An operation's own named server takes its name from either spelling, the
+/// crozier one winning a conflict: the environment gains that field beside
+/// `base`, and the operation's request reads it.
+#[test]
+fn operation_server_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases = [
+        ("fern", "x-fern-server-name: archive", "archive", None),
+        ("crozier", "x-crozier-server-name: archive", "archive", None),
+        (
+            "conflict",
+            "x-fern-server-name: vault\n          x-crozier-server-name: archive",
+            "archive",
+            Some("vault"),
+        ),
+    ];
+    for (name, extension, field, loser) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Lockers, version: '1'}}\nservers:\n  - url: https://lockers.test\npaths:\n  /rentals:\n    get:\n      operationId: listRentals\n      servers:\n        - url: https://archive.lockers.test\n          {extension}\n      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let environment =
+            std::fs::read_to_string(out.join("src/fern/environment.py")).expect("environment");
+        assert!(
+            environment.contains(&format!(
+                "base=\"https://lockers.test\", {field}=\"https://archive.lockers.test\""
+            )),
+            "{name}: lacks the `{field}` field:\n{environment}"
+        );
+        let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+        assert!(
+            raw.contains(&format!("get_environment().{field}")),
+            "{name}: the request does not read `{field}`:\n{raw}"
+        );
+        if let Some(loser) = loser {
+            assert!(
+                !environment.contains(loser) && !raw.contains(loser),
+                "{name}: the fern spelling `{loser}` survives"
+            );
+        }
+    }
+}
+
+/// An `http` scheme's name is case-insensitive, as Fern reads it: an operation
+/// requiring `scheme: Bearer` or `scheme: BASIC` generates the lowercase scheme's
+/// client. The nearby refusal stands: a scheme Fern does not import (`Digest`),
+/// in any case, is still refused as the operation's undefined auth, exit 1 and
+/// nothing written.
+#[test]
+fn http_scheme_names_read_case_insensitively_and_unimported_schemes_still_refuse() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |scheme: &str| {
+        let spec = dir.path().join(format!("{scheme}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Tides, version: '1'}}\npaths:\n  /tides:\n    get:\n      operationId: listTides\n      security: [{{Session: []}}]\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  securitySchemes:\n    Session: {{type: http, scheme: {scheme}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(scheme);
+        (probe_command(&spec, &out).assert(), out)
+    };
+    let wrapper = |out: &Path| {
+        std::fs::read_to_string(out.join("src/fern/core/client_wrapper.py")).expect("wrapper")
+    };
+    let (assert, out) = generate("Bearer");
+    assert.success();
+    assert!(wrapper(&out).contains("headers[\"Authorization\"] = f\"Bearer {self._get_token()}\""));
+    let (assert, out) = generate("BASIC");
+    assert.success();
+    assert!(wrapper(&out).contains("httpx.BasicAuth("));
+    for unimported in ["Digest", "digest"] {
+        let (assert, out) = generate(unimported);
+        assert.failure().code(1).stderr(predicates::str::contains(
+            "endpoint-auth-undefined: GET /tides security/Session",
+        ));
+        assert!(
+            !out.join("src").exists(),
+            "a refused document writes nothing"
+        );
+    }
+}
+
+/// The security-scheme naming extensions read crozier's spelling on its own and
+/// win over a conflicting Fern spelling on the same scheme: the header key's
+/// parameter and prefix, the bearer's parameter (from `x-*-bearer` or, failing
+/// that, `x-*-token-variable-name`), and basic auth's parameter names. Each
+/// credential is declared, assigned and sent under the winning name, and the
+/// losing Fern-spelled name appears nowhere.
+#[test]
+fn security_scheme_naming_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let cases: [(&str, &str, &[&str], &[&str]); 5] = [
+        (
+            "header",
+            "type: apiKey\n      in: header\n      name: X-Valve-Key\n      x-crozier-header: {name: valveToken, prefix: Valve}",
+            &["valve_token: str", "headers[\"X-Valve-Key\"] = f\"Valve {self.valve_token}\""],
+            &["api_key"],
+        ),
+        (
+            "header-conflict",
+            "type: apiKey\n      in: header\n      name: X-Valve-Key\n      x-fern-header: {name: meterToken, prefix: Meter}\n      x-crozier-header: {name: gateToken}",
+            &["gate_token: str", "headers[\"X-Valve-Key\"] = self.gate_token"],
+            &["meter_token", "Meter "],
+        ),
+        (
+            "bearer-conflict",
+            "type: http\n      scheme: bearer\n      x-fern-bearer: {name: liftPass}\n      x-crozier-bearer: {name: rider}",
+            &["rider: typing.Union[str, typing.Callable[[], str]]", "def _get_rider(self) -> str:"],
+            &["lift_pass", "_get_token"],
+        ),
+        (
+            "token-variable-conflict",
+            "type: http\n      scheme: bearer\n      x-fern-token-variable-name: apiKey\n      x-crozier-token-variable-name: rideKey",
+            &["ride_key: typing.Union[str, typing.Callable[[], str]]", "def _get_ride_key(self) -> str:"],
+            &["api_key", "_get_token"],
+        ),
+        (
+            "basic-conflict",
+            "type: http\n      scheme: basic\n      x-fern-basic: {username: {name: keeper}}\n      x-crozier-basic: {username: {name: clerk}}",
+            &["clerk: typing.Union[str, typing.Callable[[], str]]", "httpx.BasicAuth(self._get_clerk(), self._get_password())"],
+            &["keeper", "_get_username"],
+        ),
+    ];
+    for (name, scheme, present, absent) in cases {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Gates, version: '1'}}\nsecurity: [{{Cred: []}}]\npaths:\n  /gates:\n    get:\n      operationId: listGates\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  securitySchemes:\n    Cred:\n      {scheme}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let wrapper =
+            std::fs::read_to_string(out.join("src/fern/core/client_wrapper.py")).expect("wrapper");
+        let client = std::fs::read_to_string(out.join("src/fern/client.py")).expect("client");
+        for text in present {
+            assert!(
+                wrapper.contains(text),
+                "{name}: the wrapper lacks `{text}`:\n{wrapper}"
+            );
+        }
+        for text in absent {
+            assert!(
+                !wrapper.contains(text) && !client.contains(text),
+                "{name}: `{text}` survives the crozier spelling"
+            );
+        }
+    }
+}
+
+/// An SDK method name written as a sequence generates under either spelling, the
+/// members joined as Fern joins them; beside a conflicting `x-fern-sdk-method-name`
+/// the `x-crozier-sdk-method-name` sequence wins. The nearby malformed forms, a
+/// mapping and an empty sequence (on which Fern fails too), are still refused at
+/// the boundary with an actionable parse error and nothing written.
+#[test]
+fn sdk_method_name_sequence_reads_either_spelling_and_malformed_forms_are_refused() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, extensions: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Lockers, version: '1'}}\npaths:\n  /lockers:\n    get:\n      operationId: getLockers\n{extensions}      responses: {{'204': {{description: ok}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        let assert = probe_command(&spec, &out).assert();
+        (assert, out)
+    };
+    let client =
+        |out: &Path| std::fs::read_to_string(out.join("src/fern/client.py")).expect("client.py");
+    let (assert, out) = generate("fern", "      x-fern-sdk-method-name: [vacancies]\n");
+    assert.success();
+    assert!(client(&out).contains("def vacancies("));
+    let (assert, out) = generate("crozier", "      x-crozier-sdk-method-name: [claim, now]\n");
+    assert.success();
+    assert!(client(&out).contains("def claim_now("));
+    let (assert, out) = generate(
+        "both",
+        "      x-fern-sdk-method-name: [vacancies]\n      x-crozier-sdk-method-name: [free]\n",
+    );
+    assert.success();
+    let both = client(&out);
+    assert!(
+        both.contains("def free(") && !both.contains("def vacancies("),
+        "{both}"
+    );
+    let (assert, out) = generate(
+        "mapping",
+        "      x-fern-sdk-method-name: {name: vacancies}\n",
+    );
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains("x-fern-sdk-method-name"));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
+    let (assert, out) = generate("empty", "      x-crozier-sdk-method-name: []\n");
+    assert
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains("x-crozier-sdk-method-name"))
+        .stderr(predicates::str::contains("invalid length 0"));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
+}
+
+/// The client-construction cases under `docs/fern-measurements/clients-extensions/`:
+/// crozier generates each case's document under the case's setting, and the whole
+/// tree is held to Fern's `fern-expected/` under the hand-written gate's
+/// normalization. The case table and the directory agree both ways, so a tree no
+/// case compares, or a case with no tree, fails.
+#[test]
+fn clients_extensions_measurements_match_fern() {
+    let root = repo_root();
+    let mut directories: Vec<String> = std::fs::read_dir(root.join(CLIENTS_EXTENSIONS_DIR))
+        .expect("the measurement directory exists")
+        .filter_map(Result::ok)
+        .filter(|entry| entry.path().is_dir())
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .collect();
+    directories.sort();
+    let mut cases: Vec<String> = CLIENTS_EXTENSIONS_CASES
+        .iter()
+        .map(|(case, _, _)| (*case).to_string())
+        .collect();
+    cases.sort();
+    assert_eq!(
+        directories, cases,
+        "{CLIENTS_EXTENSIONS_DIR}: every case directory needs a CLIENTS_EXTENSIONS_CASES row"
+    );
+    let mut failures = Vec::new();
+    for (case, spec, setting) in CLIENTS_EXTENSIONS_CASES {
+        let expected = root
+            .join(CLIENTS_EXTENSIONS_DIR)
+            .join(case)
+            .join("fern-expected");
+        let out = tempfile::tempdir().expect("case output tempdir");
+        let result = probe_command(&root.join(spec), out.path())
+            .args(*setting)
+            .output()
+            .expect("run crozier");
+        if !result.status.success() {
+            failures.push(format!(
+                "{case}: crozier failed over {spec}: {}",
+                String::from_utf8_lossy(&result.stderr)
+            ));
+            continue;
+        }
+        match departure_ledger().golden(&golden_path(&expected), &[]) {
+            Ok(ledger) => {
+                failures.extend(golden_tree_failures(
+                    case,
+                    spec,
+                    &ledger,
+                    &expected,
+                    out.path(),
+                ));
+            }
+            Err(found) => failures.extend(found),
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n\n"));
 }
 
 /// The check's answer is taken only when its status and its list agree and
@@ -6437,7 +7337,13 @@ fn observed_in(rel: &str, compared: &parity::FileComparison) -> Vec<Observed> {
     compared
         .departures
         .iter()
-        .map(|departure| (rel.to_string(), departure.line, departure.id.to_string()))
+        .map(|departure| {
+            (
+                rel.to_string(),
+                departure.line.get(),
+                departure.id.to_string(),
+            )
+        })
         .collect()
 }
 
@@ -9013,7 +9919,6 @@ const WEBFLOW_V2: Corpus = Corpus {
     client_class_name: None,
     extra_fields: None,
     unmatched: &[
-        "README.md",
         "reference.md",
         "src/fern/__init__.py",
         "src/fern/analyze/__init__.py",
@@ -9022,13 +9927,10 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/analyze/reports/raw_client.py",
         "src/fern/analyze/reports/types/__init__.py",
         "src/fern/analyze/reports/types/top_pages_reports_request_sort_by.py",
-        "src/fern/assets/raw_client.py",
-        "src/fern/client.py",
         "src/fern/collections/__init__.py",
         "src/fern/collections/client.py",
         "src/fern/collections/fields/__init__.py",
         "src/fern/collections/fields/client.py",
-        "src/fern/collections/fields/raw_client.py",
         "src/fern/collections/fields/types/__init__.py",
         "src/fern/collections/fields/types/create_fields_request_body.py",
         "src/fern/collections/fields/types/create_fields_response.py",
@@ -9075,7 +9977,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/items/types/single_item_field_data.py",
         "src/fern/collections/items/types/single_live_item.py",
         "src/fern/collections/items/types/single_live_item_field_data.py",
-        "src/fern/collections/raw_client.py",
         "src/fern/collections/types/__init__.py",
         "src/fern/collections/types/create_collections_request_fields_item.py",
         "src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py",
@@ -9099,7 +10000,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/comments/types/comment_created_payload_payload_type.py",
         "src/fern/components/__init__.py",
         "src/fern/components/client.py",
-        "src/fern/components/raw_client.py",
         "src/fern/components/types/__init__.py",
         "src/fern/components/types/get_content_components_response_nodes_item_component_instance_property_overrides_item.py",
         "src/fern/components/types/update_content_components_request_nodes_item.py",
@@ -9111,10 +10011,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/components/types/update_content_components_request_nodes_item_property_overrides_property_overrides_item.py",
         "src/fern/components/types/update_content_components_request_nodes_item_text.py",
         "src/fern/components/types/update_content_components_request_nodes_item_waiting_text.py",
-        "src/fern/core/client_wrapper.py",
-        "src/fern/custom_fonts/raw_client.py",
-        "src/fern/ecommerce/raw_client.py",
-        "src/fern/environment.py",
         "src/fern/forms/__init__.py",
         "src/fern/forms/client.py",
         "src/fern/forms/raw_client.py",
@@ -9125,7 +10021,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/forms/types/form_submission_payload_payload_schema_item_field_type.py",
         "src/fern/forms/types/list_submissions_forms_response.py",
         "src/fern/inventory/__init__.py",
-        "src/fern/inventory/raw_client.py",
         "src/fern/inventory/types/__init__.py",
         "src/fern/inventory/types/ecomm_inventory_changed_payload.py",
         "src/fern/inventory/types/ecomm_inventory_changed_payload_payload.py",
@@ -9151,7 +10046,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/items/types/collection_item_unpublished_payload_payload.py",
         "src/fern/items/types/collection_item_unpublished_payload_payload_field_data.py",
         "src/fern/orders/__init__.py",
-        "src/fern/orders/raw_client.py",
         "src/fern/orders/types/__init__.py",
         "src/fern/orders/types/ecomm_new_order_payload.py",
         "src/fern/orders/types/ecomm_new_order_payload_payload.py",
@@ -9227,7 +10121,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_total.py",
         "src/fern/pages/__init__.py",
         "src/fern/pages/client.py",
-        "src/fern/pages/raw_client.py",
         "src/fern/pages/scripts/client.py",
         "src/fern/pages/scripts/raw_client.py",
         "src/fern/pages/scripts/types/get_custom_code_scripts_response.py",
@@ -9253,34 +10146,22 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/types/update_static_content_request_nodes_item_text.py",
         "src/fern/pages/types/update_static_content_request_nodes_item_waiting_text.py",
         "src/fern/products/client.py",
-        "src/fern/products/raw_client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/scripts/raw_client.py",
         "src/fern/sites/__init__.py",
-        "src/fern/sites/activity_logs/raw_client.py",
-        "src/fern/sites/comments/raw_client.py",
-        "src/fern/sites/forms/raw_client.py",
-        "src/fern/sites/google_tag/raw_client.py",
-        "src/fern/sites/plans/raw_client.py",
-        "src/fern/sites/raw_client.py",
         "src/fern/sites/redirects/client.py",
         "src/fern/sites/redirects/raw_client.py",
         "src/fern/sites/robots_txt/client.py",
-        "src/fern/sites/robots_txt/raw_client.py",
         "src/fern/sites/scripts/client.py",
         "src/fern/sites/scripts/raw_client.py",
         "src/fern/sites/types/__init__.py",
         "src/fern/sites/types/site_publish_payload.py",
         "src/fern/sites/types/site_publish_payload_payload.py",
         "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
-        "src/fern/sites/well_known/raw_client.py",
-        "src/fern/token/raw_client.py",
         "src/fern/types/__init__.py",
         "src/fern/webhooks/client.py",
         "src/fern/webhooks/raw_client.py",
         "src/fern/workspaces/__init__.py",
         "src/fern/workspaces/audit_logs/__init__.py",
-        "src/fern/workspaces/audit_logs/raw_client.py",
         "src/fern/workspaces/audit_logs/types/__init__.py",
         "src/fern/workspaces/audit_logs/types/custom_role.py",
         "src/fern/workspaces/audit_logs/types/get_workspace_audit_logs_audit_logs_response_items_item.py",
@@ -11351,6 +12232,14 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
             unmatched: &[],
         }),
     },
+    // A registered real document declaring cursor pagination: Fern's flat tree
+    // returns each paginated method's page model, the pagination runtime still
+    // shipped, and its README documents the pager the method does not return
+    // (the `flat-pagination-pager-docs` departure).
+    FlatGolden {
+        fixture: "truefoundry-trueforge",
+        corpus: None,
+    },
 ];
 
 /// The spec and settings a flat golden drives crozier with.
@@ -11404,7 +12293,7 @@ fn golden_differences(
     let observed: Vec<Observed> = compared
         .departures
         .into_iter()
-        .map(|departure| (departure.file, departure.line, departure.id))
+        .map(|departure| (departure.file, departure.location.as_number(), departure.id))
         .collect();
     let failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))
@@ -11482,6 +12371,7 @@ flat_goldens! {
     audience_filter_strict_flat_matches_fern => "audience-filter-strict",
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
+    truefoundry_trueforge_flat_matches_fern => "truefoundry-trueforge",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec
@@ -13068,33 +13958,33 @@ fn spaced_operation_id_generates_valid_python() {
 }
 
 #[test]
-fn empty_dotted_operation_namespace_overwrites_the_root_surface() {
+fn empty_dotted_operation_namespace_is_an_underscore_package_beside_the_root_client() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    get:\n      operationId: .ListWidgets\n      responses:\n        '200':\n          description: OK\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  count: { type: integer }\n",
     );
+    let read =
+        |rel: &str| std::fs::read_to_string(out.join(rel)).unwrap_or_else(|e| panic!("{rel}: {e}"));
+    // The `_` package sits under `_/`, its hoisted type inside it, where Fern
+    // writes it over the package root (the `empty-namespace-package` departure).
+    let client = read("src/acme/_/client.py");
     assert!(
-        !out.join("src/acme/_").exists(),
-        "an explicit empty namespace must not invent an underscore package"
+        client.contains("class Client:") && client.contains("def listwidgets("),
+        "{client}"
     );
-    let client =
-        std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
-    let raw = std::fs::read_to_string(out.join("src/acme/raw_client.py"))
-        .expect("root raw client is generated");
-    let init = std::fs::read_to_string(out.join("src/acme/__init__.py"))
-        .expect("package initializer is generated");
+    assert!(read("src/acme/_/raw_client.py").contains("class RawClient:"));
+    assert!(out
+        .join("src/acme/_/types/list_widgets_response.py")
+        .is_file());
+    assert!(read("src/acme/_/__init__.py").contains("ListWidgetsResponse"));
+    let root = read("src/acme/client.py");
     assert!(
-        client.contains("class Client:")
-            && client.contains("def listwidgets(")
-            && !client.contains("class AcmeApi:")
-            && raw.contains("class RawClient:")
-            && out
-                .join("src/acme/types/list_widgets_response.py")
-                .is_file()
-            && init.contains("ListWidgetsResponse")
-            && !init.contains("AcmeApi")
-            && !init.contains("__version__"),
-        "Fern's empty tag package should overwrite the ordinary root files: {client}\n{init}"
+        root.contains("class AcmeApi:") && root.contains("    def _(self):"),
+        "{root}"
     );
+    assert!(read("src/acme/__init__.py").contains("\"AcmeApi\": \".client\""));
+    assert!(!out.join("src/acme/raw_client.py").exists());
+    assert!(!out.join("src/acme/types/list_widgets_response.py").exists());
+    assert_valid_python(&out);
 }
 
 #[test]
@@ -18940,6 +19830,544 @@ print("ok")
     assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
 }
 
+/// An operation Fern groups under the empty namespace `_` — tagged only with
+/// the empty string, or an `operationId` with an empty dotted prefix — is
+/// importable and callable the way `README.md` documents it:
+/// `from fern import FernApi` and `client._.<method>()`, sync and async, the
+/// hoisted response type importable from `fern._`, each request answered by a
+/// local server. Fern's own committed tree for the fixture fails that
+/// import (the `empty-namespace-package` departure).
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_empty_namespace_package_imports_and_answers_its_documented_call() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let lamps = repo_root().join("docs/openapi-surface/handwritten/lamp-room-log");
+    let dotted = dir.path().join("dotted.yml");
+    std::fs::write(
+        &dotted,
+        "openapi: 3.0.3\ninfo: {title: Lamps, version: '1'}\npaths:\n  /Locales/:\n    get:\n      operationId: .GetLocales\n      tags: ['']\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  default: {type: string}\n",
+    )
+    .expect("write the dotted spec");
+    let script = |call: &str| {
+        format!(
+            r#"
+import asyncio
+import http.server
+import json
+import threading
+
+from fern import AsyncFernApi, FernApi
+
+sent = []
+
+
+class Lamps(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        sent.append(self.path)
+        answer = [{{"id": "l-1", "colour": "red"}}] if self.path.startswith("/lamps") else {{"default": "en"}}
+        body = json.dumps(answer).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Lamps)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+base_url = f"http://127.0.0.1:{{server.server_port}}"
+client = FernApi(base_url=base_url)
+asynchronous = AsyncFernApi(base_url=base_url)
+{call}
+print(sent)
+"#
+        )
+    };
+    let lamp_call = r#"
+from fern import LampColour
+
+lamps = client._.list_lamps(colour=LampColour.RED)
+assert [(lamp.id, lamp.colour) for lamp in lamps] == [("l-1", LampColour.RED)], lamps
+assert asyncio.run(asynchronous._.list_lamps())[0].id == "l-1"
+"#;
+    let dotted_call = r#"
+from fern._ import GetLocalesResponse
+
+locales = client._.getlocales()
+assert isinstance(locales, GetLocalesResponse) and locales.default == "en", locales
+assert asyncio.run(asynchronous._.getlocales()).default == "en"
+"#;
+    for (spec, call, sent) in [
+        (
+            lamps.join("openapi.yml"),
+            lamp_call,
+            "['/lamps?colour=red', '/lamps']",
+        ),
+        (dotted.clone(), dotted_call, "['/Locales/', '/Locales/']"),
+    ] {
+        let sdk = dir.path().join(spec.file_stem().expect("a spec name"));
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let py = sdk_python_env(&sdk.join("pyproject.toml"))
+            .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+        let run = std::process::Command::new(&py)
+            .args(["-c", &script(call)])
+            .current_dir(sdk.join("src"))
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .env("PYTHON_COLORS", "0")
+            .output()
+            .expect("drive the generated client");
+        assert!(
+            run.status.success(),
+            "{}: {}",
+            spec.display(),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), sent);
+
+        // Fern's tree for the fixture fails the documented import; a copy is
+        // imported so the committed golden gains no bytecode. PYTHON_COLORS=0
+        // keeps a CI FORCE_COLOR from splitting the matched traceback line.
+        if call == lamp_call {
+            let fern_src = dir.path().join("fern-src");
+            copy_dir(&lamps.join("fern-expected/src"), &fern_src);
+            let fern = std::process::Command::new(&py)
+                .args(["-c", &script(call)])
+                .current_dir(&fern_src)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .env("PYTHON_COLORS", "0")
+                .output()
+                .expect("import Fern's tree");
+            let stderr = String::from_utf8_lossy(&fern.stderr);
+            assert!(
+                !fern.status.success()
+                    && stderr
+                        .contains("ImportError: cannot import name 'AsyncFernApi' from 'fern'"),
+                "{stderr}"
+            );
+        }
+    }
+}
+
+/// A second header `apiKey` scheme named and env-defaulted by `x-fern-header`
+/// behaves as the certified `relay-station-header-names` SDK documents it: the
+/// `relay_pass` field defaults to `STATION_TOKEN` and is sent bare in
+/// `X-Station-Token` beside the primary key; an explicit `relay_pass` wins; and
+/// with neither, constructing the client raises `ApiError`. Each request is
+/// answered by a local server.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_additional_header_scheme_reads_its_declared_name_and_environment() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = repo_root()
+        .join("docs/fern-measurements/clients-extensions/relay-station-header-names/openapi.yml");
+    let script = r#"
+import http.server
+import json
+import os
+import threading
+
+from fern import FernApi
+from fern.core.api_error import ApiError
+
+seen = []
+
+
+class Station(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        seen.append((self.headers.get("X-Primary-Key"), self.headers.get("X-Station-Token")))
+        body = json.dumps(["r-1"]).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Station)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+base_url = f"http://127.0.0.1:{server.server_port}"
+assert FernApi(base_url=base_url, api_key="k").list_readings() == ["r-1"]
+assert FernApi(base_url=base_url, api_key="k", relay_pass="explicit").list_readings() == ["r-1"]
+del os.environ["STATION_TOKEN"]
+try:
+    FernApi(base_url=base_url, api_key="k", relay_pass=None)
+except ApiError as error:
+    missing = "STATION_TOKEN" in str(error.body)
+else:
+    missing = False
+print(seen, missing)
+"#;
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+    let run = std::process::Command::new(&py)
+        .args(["-c", script])
+        .current_dir(sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .env("STATION_TOKEN", "from-env")
+        .output()
+        .expect("drive the generated client");
+    assert!(
+        run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&run.stdout).trim(),
+        "[('k', 'from-env'), ('k', 'explicit')] True"
+    );
+}
+
+/// An idempotent operation sends the idempotency header its caller gives and
+/// leaves it off when not given, and an operation whose `x-fern-retries` is
+/// `{disabled: true}` makes one attempt against a server answering `503` where
+/// its neighbour, with the default policy, makes three. Driven through the
+/// generated client of the `parcel-courier-desk` hand-written fixture against a
+/// local server.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_idempotency_headers_and_disabled_retries_behave_as_declared() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = repo_root().join("docs/openapi-surface/handwritten/parcel-courier-desk/openapi.yml");
+    let script = r#"
+import http.server
+import json
+import threading
+
+from fern import FernApi
+from fern.core.api_error import ApiError
+
+seen = []
+
+
+class Desk(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        self.rfile.read(int(self.headers["Content-Length"]))
+        seen.append(("POST", self.headers.get("X-Dedupe-Token")))
+        body = json.dumps("C-1").encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def unavailable(self):
+        seen.append((self.command, None))
+        self.send_response(503)
+        self.send_header("Retry-After", "0")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    do_DELETE = unavailable
+    do_GET = unavailable
+
+    def log_message(self, *args):
+        pass
+
+
+server = http.server.HTTPServer(("127.0.0.1", 0), Desk)
+threading.Thread(target=server.serve_forever, daemon=True).start()
+client = FernApi(base_url=f"http://127.0.0.1:{server.server_port}")
+assert client.ship_parcel(weight=2.5, dedupe_token="t-1") == "C-1"
+assert client.ship_parcel(weight=2.5) == "C-1"
+
+
+def attempts(call):
+    before = len(seen)
+    try:
+        call()
+    except ApiError as error:
+        assert error.status_code == 503, error
+    else:
+        raise AssertionError("a 503 did not raise")
+    return len(seen) - before
+
+
+print(seen[:2], attempts(lambda: client.cancel_parcel("p-1")), attempts(lambda: client.track_parcel("p-1")))
+"#;
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the SDK runtime check needs a Python env: {reason}"));
+    let run = std::process::Command::new(&py)
+        .args(["-c", script])
+        .current_dir(sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("drive the generated client");
+    assert!(
+        run.status.success(),
+        "{}",
+        String::from_utf8_lossy(&run.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&run.stdout).trim(),
+        "[('POST', 't-1'), ('POST', None)] 1 3"
+    );
+}
+
+/// A component's SDK group places its type in crozier's spelling on its own and
+/// over a conflicting Fern spelling.
+#[test]
+fn component_group_names_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, groups: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Cellar, version: '1'}}\npaths:\n  /phrases:\n    get:\n      operationId: listPhrases\n      responses: {{'200': {{description: ok, content: {{application/json: {{schema: {{$ref: '#/components/schemas/Phrase'}}}}}}}}}}\ncomponents:\n  schemas:\n    Phrase:\n      type: object\n{groups}      properties: {{text: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        out
+    };
+    let out = generate("crozier", "      x-crozier-sdk-group-name: glossary\n");
+    assert!(out.join("src/fern/glossary/types/phrase.py").is_file());
+    let out = generate(
+        "conflict",
+        "      x-fern-sdk-group-name: lexicon\n      x-crozier-sdk-group-name: glossary\n",
+    );
+    assert!(out.join("src/fern/glossary/types/phrase.py").is_file());
+    assert!(!out.join("src/fern/lexicon").exists());
+}
+
+/// A pagination contract over a response the document declares `nullable: true`
+/// is refused by default and under `--fern-strict`: exit 1, nothing written, and
+/// a line naming the class, the operation, the property read and the nullable
+/// component, for the cursor form and the offset form alike. The adjacent
+/// document without `nullable` generates its pager.
+#[test]
+fn paginated_nullable_response_refuses_in_both_modes_beside_a_generating_control() {
+    let probe = repo_root().join("docs/fern-refusals/paginated-nullable-response/probe.yml");
+    let dir = tempfile::tempdir().expect("tempdir");
+    for (name, strict) in [("default", false), ("strict", true)] {
+        let out = dir.path().join(name);
+        let mut command = probe_command(&probe, &out);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().failure().code(1).stderr(predicates::str::contains(
+            "paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage",
+        ));
+        assert!(!out.exists() || std::fs::read_dir(&out).unwrap().next().is_none());
+    }
+    // The offset form reads no next cursor, so the element names the items it
+    // reads instead; Fern refuses it with the class's diagnostic too.
+    let offset = dir.path().join("offset.yml");
+    std::fs::write(
+        &offset,
+        std::fs::read_to_string(&probe)
+            .unwrap()
+            .replace(
+                "        cursor: $request.after\n        next_cursor: $response.next\n",
+                "        offset: $request.page\n",
+            )
+            .replace(
+                "        - name: after\n          in: query\n          schema:\n            type: string\n",
+                "        - name: page\n          in: query\n          schema:\n            type: integer\n",
+            ),
+    )
+    .unwrap();
+    for (name, strict) in [("offset-default", false), ("offset-strict", true)] {
+        let out = dir.path().join(name);
+        let mut command = probe_command(&offset, &out);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().failure().code(1).stderr(predicates::str::contains(
+            "paginated-nullable-response: GET /jobs pagination reads $response.jobs off nullable JobPage",
+        ));
+        assert!(!out.exists() || std::fs::read_dir(&out).unwrap().next().is_none());
+    }
+    let control = dir.path().join("control.yml");
+    std::fs::write(
+        &control,
+        std::fs::read_to_string(&probe)
+            .unwrap()
+            .replace("      nullable: true\n", ""),
+    )
+    .unwrap();
+    let out = dir.path().join("control");
+    probe_command(&control, &out).assert().success();
+    let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(raw.contains("SyncPager[Job, JobPage]"), "{raw}");
+}
+
+/// Pagination's boolean form takes the document's root contract in either
+/// spelling, crozier's winning when both appear: `x-crozier-pagination: true`
+/// under a root `x-crozier-pagination` offset contract pages by offset while the
+/// root `x-fern-pagination` cursor contract beside it is ignored, and `false`
+/// declares no pager, even beside the operation's own `x-fern-pagination`.
+#[test]
+fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, flag: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Beacons, version: '1'}}\nx-fern-pagination: {{cursor: $request.after, next_cursor: $response.next, results: $response.beacons}}\nx-crozier-pagination: {{offset: $request.page, results: $response.beacons}}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: {flag}\n      parameters:\n        - {{name: page, in: query, schema: {{type: integer}}}}\n        - {{name: after, in: query, schema: {{type: string}}}}\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  next: {{type: string}}\n                  beacons: {{type: array, items: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client")
+    };
+    let paged = generate("true", "true");
+    assert!(
+        paged.contains("page = page if page is not None else 1"),
+        "{paged}"
+    );
+    assert!(paged.contains("page=page + 1,"));
+    assert!(!paged.contains("_parsed_next"));
+    let unpaged = generate("false", "false");
+    assert!(!unpaged.contains("Pager"), "{unpaged}");
+    // Crozier's `false` beside the operation's own Fern contract still wins.
+    let overruled = generate(
+        "false-over-fern",
+        "false\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}",
+    );
+    assert!(!overruled.contains("Pager"), "{overruled}");
+    // With no root contract, crozier's `true` takes none, and still overrules
+    // the operation's own Fern contract: no pager.
+    let spec = dir.path().join("rootless.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Beacons, version: '1'}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: true\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}\n      parameters:\n        - {name: after, in: query, schema: {type: string}}\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  next: {type: string}\n                  beacons: {type: array, items: {type: string}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("rootless");
+    probe_command(&spec, &out).assert().success();
+    let rootless = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(!rootless.contains("Pager"), "{rootless}");
+    assert!(!out.join("src/fern/core/pagination.py").exists());
+    // The nearby malformed form, neither a contract nor a boolean, is still
+    // refused at the boundary, exit 1 and nothing written.
+    let spec = dir.path().join("number.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Beacons, version: '1'}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: 7\n      responses: {'204': {description: ok}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("number");
+    probe_command(&spec, &out)
+        .assert()
+        .failure()
+        .code(1)
+        .stderr(predicates::str::contains(
+            "paths./beacons.get.x-crozier-pagination: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract",
+        ));
+    assert!(
+        !out.join("src").exists(),
+        "a refused document writes nothing"
+    );
+}
+
+/// A path operation marked a webhook in crozier's spelling has no method and its
+/// `$ref` body stays an ordinary type; a conflicting `x-crozier-webhook: false`
+/// beside `x-fern-webhook: true` keeps the method.
+#[test]
+fn webhook_marks_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let generate = |name: &str, marks: &str| {
+        let spec = dir.path().join(format!("{name}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Auction, version: '1'}}\npaths:\n  /lots:\n    get:\n      operationId: listLots\n      responses: {{'204': {{description: ok}}}}\n  /hooks/bid:\n    post:\n      operationId: bidPlaced\n{marks}      requestBody:\n        content:\n          application/json:\n            schema: {{$ref: '#/components/schemas/Bid'}}\n      responses: {{'204': {{description: ok}}}}\ncomponents:\n  schemas:\n    Bid:\n      type: object\n      properties: {{lot: {{type: string}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(name);
+        probe_command(&spec, &out).assert().success();
+        let client = std::fs::read_to_string(out.join("src/fern/client.py")).expect("client");
+        (
+            client.contains("def bid_placed("),
+            out.join("src/fern/types/bid.py").is_file(),
+        )
+    };
+    assert_eq!(
+        generate("crozier", "      x-crozier-webhook: true\n"),
+        (false, true)
+    );
+    assert_eq!(
+        generate(
+            "conflict",
+            "      x-fern-webhook: true\n      x-crozier-webhook: false\n"
+        ),
+        (true, false)
+    );
+}
+
+/// The idempotency and retry extensions read crozier's spelling on its own and
+/// win over a conflicting Fern spelling: the document's idempotency headers,
+/// an operation's idempotent mark, and its retry policy.
+#[test]
+fn idempotency_and_retry_extensions_read_crozier_spelling_over_fern() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("desk.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Desk, version: '1'}\nx-fern-idempotency-headers: [{header: X-Fern-Token}]\nx-crozier-idempotency-headers: [{header: X-Crozier-Token}]\npaths:\n  /parcels:\n    post:\n      operationId: shipParcel\n      x-fern-idempotent: false\n      x-crozier-idempotent: true\n      responses: {'204': {description: ok}}\n    delete:\n      operationId: cancelParcels\n      x-crozier-retries: {disabled: true}\n      responses: {'204': {description: ok}}\n    get:\n      operationId: listParcels\n      x-fern-retries: {disabled: true}\n      x-crozier-retries: {disabled: false}\n      responses: {'204': {description: ok}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(
+        raw.contains("crozier_token: typing.Optional[str] = None"),
+        "{raw}"
+    );
+    assert!(raw.contains(
+        "\"X-Crozier-Token\": str(crozier_token) if crozier_token is not None else None"
+    ));
+    assert!(!raw.contains("fern_token"));
+    // Only the crozier-spelled `disabled: true` turns retries off.
+    assert_eq!(
+        raw.matches("request_options=_request_options_with_retries_disabled")
+            .count(),
+        2
+    );
+    let list = raw.split("def list_parcels").nth(1).expect("list_parcels");
+    let list = list.split("def ").next().unwrap_or(list);
+    assert!(
+        !list.contains("_request_options_with_retries_disabled"),
+        "{list}"
+    );
+}
+
 /// `default-max-retries` decides how many times a generated client retries a
 /// failed request when the caller does not say: against a local server that
 /// answers every request `503`, a client generated with `0` makes one attempt
@@ -20930,6 +22358,68 @@ fn global_header_constructor_name_refusals_accept_both_aliases_and_canonical_pre
     }
 }
 
+/// The idempotency-argument refusals read the canonical spelling too: under
+/// `x-crozier-idempotency-headers` each probe refuses in both modes, still when a
+/// harmless `x-fern-*` list conflicts, while a harmless canonical list beside the
+/// faulty `x-fern-*` one wins and generates.
+#[test]
+fn idempotency_argument_refusals_accept_both_aliases_and_canonical_precedence() {
+    let root = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    let harmless = serde_json::json!([{"header": "Kiln-Request"}]);
+    for (probe, element) in [
+        (
+            "idempotency-header-empty-name-probe.yml",
+            "POST /firings idempotency header \"-\" argument \"\"",
+        ),
+        (
+            "idempotency-header-shared-name-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
+    ] {
+        let original: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(root.join(probe)).unwrap()).unwrap();
+        for conflict in [false, true] {
+            let mut document = original.clone();
+            let headers = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-idempotency-headers")
+                .unwrap();
+            document["x-crozier-idempotency-headers"] = headers;
+            if conflict {
+                document["x-fern-idempotency-headers"] = harmless.clone();
+            }
+            let scratch = tempfile::tempdir().unwrap();
+            let spec = scratch.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures("generator-lint-failure", &run, element, strict);
+                assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            }
+        }
+        let mut document = original.clone();
+        document["x-crozier-idempotency-headers"] = harmless.clone();
+        let scratch = tempfile::tempdir().unwrap();
+        let spec = scratch.path().join("openapi.json");
+        std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+        assert_generates_in_both_modes(&spec, probe);
+        let raw_client = std::fs::read_to_string(
+            refusal_run(&crozier, &spec, false)
+                .unwrap()
+                .target
+                .join("src/fern/raw_client.py"),
+        )
+        .unwrap();
+        assert!(
+            raw_client.contains("kiln_request: typing.Optional[str] = None"),
+            "{raw_client}"
+        );
+    }
+}
+
 /// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
 /// `ruff check` rejects is refused in both modes, naming the element, while
 /// every measured near-miss Fern generates from writes the same SDK in both.
@@ -20945,6 +22435,18 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         ),
         ("global-header-punctuation-name-probe.yml", "global header \"X-Ledger\" constructor name \"/\""),
         ("global-header-empty-name-probe.yml", "global header \"X-Ledger\" constructor name \"\""),
+        (
+            "idempotency-header-empty-name-probe.yml",
+            "POST /firings idempotency header \"-\" argument \"\"",
+        ),
+        (
+            "idempotency-header-parameter-collision-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
+        (
+            "idempotency-header-shared-name-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
         (
             "tag-suffix-collision-probe.yml",
