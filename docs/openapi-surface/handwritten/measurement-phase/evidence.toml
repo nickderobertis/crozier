@@ -17,7 +17,7 @@ renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
 
 [[covers]]
 key = "enum"
-arm = 'src/ir.rs::EnumType::example_member[if let Some\(selected\) = self\.members\.iter\(\)\.find\(]'
+arm = 'src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]'
 search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -13322,8 +13322,8 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
-                    example_default: false,
-                }],
+                }]
+                .into(),
                 docstring: None,
             }),
         ];
@@ -13464,8 +13464,8 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
-                    example_default: false,
-                }],
+                }]
+                .into(),
                 docstring: None,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
@@ -13752,8 +13752,8 @@ mod tests {
                 value: "alpha".to_string(),
                 visit_param: "alpha".to_string(),
                 docstring: None,
-                example_default: false,
-            }],
+            }]
+            .into(),
             docstring: None,
         });
         let alias = TypeDecl::Alias(AliasType {
@@ -13989,7 +13989,7 @@ mod tests {
         let empty_enum = TypeDecl::Enum(EnumType {
             name: "EmptyEnum".to_string(),
             module: "empty_enum".to_string(),
-            members: Vec::new(),
+            members: Vec::new().into(),
             docstring: None,
         });
         let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
@@ -14783,8 +14783,8 @@ mod tests {
                     visit_param: "ready".to_string(),
                     value: "ready\"now".to_string(),
                     docstring: Some("Ready member.".to_string()),
-                    example_default: false,
-                }],
+                }]
+                .into(),
                 docstring: Some("State enum.".to_string()),
             },
             &RefLoc::RootTypes,

@@ -949,7 +949,6 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
             } else {
                 clean_doc(Some(doc))
             },
-            example_default: false,
         })
         .collect();
     Some(EnumType {
@@ -1953,34 +1952,75 @@ pub struct EnumType {
     /// Module (file stem).
     pub module: String,
     /// The members, in declaration order.
-    pub members: Vec<EnumMember>,
+    pub members: EnumMembers,
     /// Optional docstring.
     pub docstring: Option<String>,
 }
 
+/// An enum's members in declaration order, read-only once built, with at most
+/// one of them selected as the scalar-narrowed default example. The selection
+/// is an index into these same members, set only after checking that it names
+/// one, and the members cannot change afterwards, so a selection always names
+/// a declared member of the enum that holds it.
+#[derive(Debug, Clone, Default)]
+pub struct EnumMembers {
+    members: Vec<EnumMember>,
+    example: Option<usize>,
+}
+
+impl From<Vec<EnumMember>> for EnumMembers {
+    fn from(members: Vec<EnumMember>) -> Self {
+        Self {
+            members,
+            example: None,
+        }
+    }
+}
+
+impl FromIterator<EnumMember> for EnumMembers {
+    fn from_iter<I: IntoIterator<Item = EnumMember>>(members: I) -> Self {
+        members.into_iter().collect::<Vec<_>>().into()
+    }
+}
+
+impl std::ops::Deref for EnumMembers {
+    type Target = [EnumMember];
+
+    fn deref(&self) -> &[EnumMember] {
+        &self.members
+    }
+}
+
+impl<'a> IntoIterator for &'a EnumMembers {
+    type Item = &'a EnumMember;
+    type IntoIter = std::slice::Iter<'a, EnumMember>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.members.iter()
+    }
+}
+
 impl EnumType {
     /// Make the member whose wire value is `value` the scalar-narrowed default
-    /// example, and no other; a value this declaration does not contain selects
-    /// nothing and leaves any earlier selection in place.
+    /// example; a value this declaration does not contain selects nothing and
+    /// leaves any earlier selection in place.
     pub(crate) fn select_example_member(&mut self, value: &str) -> bool {
-        if !self.members.iter().any(|member| member.value == value) {
+        let Some(index) = self.members.iter().position(|member| member.value == value) else {
             return false;
-        }
-        for member in &mut self.members {
-            member.example_default = member.value == value;
-        }
+        };
+        self.members.example = Some(index);
         true
     }
 
     pub(crate) fn has_corrected_example(&self) -> bool {
-        self.members.iter().any(|member| member.example_default)
+        self.members.example.is_some()
     }
 
     /// The synthesized example's member, retaining declaration order when no
     /// use-site pattern requires a different default.
     pub(crate) fn example_member(&self) -> Option<&EnumMember> {
-        if let Some(selected) = self.members.iter().find(|member| member.example_default) {
-            return Some(selected);
+        if let Some(index) = self.members.example {
+            return self.members.get(index);
         }
         self.members.first()
     }
@@ -1997,11 +2037,6 @@ pub struct EnumMember {
     pub visit_param: String,
     /// Optional member docstring.
     pub docstring: Option<String>,
-    /// Whether this member is the scalar-narrowed default example. The selection
-    /// lives on the member it names, so it cannot outlive that member or move to
-    /// another enum; only `EnumType::select_example_member` sets it, and type
-    /// emission ignores it.
-    pub(crate) example_default: bool,
 }
 
 /// Return `ident` unchanged the first time it is seen, or a `_{n}`-suffixed
@@ -2075,7 +2110,6 @@ fn build_enum(
                 visit_param,
                 value,
                 docstring,
-                example_default: false,
             })
         })
         .collect();
@@ -21576,24 +21610,13 @@ mod tests {
         assert_eq!(enumeration.example_member().unwrap().value, "recording");
         assert!(!enumeration.select_example_member("absent"));
         assert_eq!(enumeration.example_member().unwrap().value, "recording");
-        // The selection is the member itself: it follows an edit to that member,
-        // a new selection replaces it, and removing the member leaves the
-        // declaration's first member as the uncorrected default.
-        enumeration.members[1].value = "changed".into();
-        assert_eq!(enumeration.example_member().unwrap().value, "changed");
+        // A later selection replaces the earlier one, even of the first member,
+        // and a copy of the enum keeps the selection with its own members.
         assert!(enumeration.select_example_member("preparation"));
-        assert_eq!(
-            enumeration
-                .members
-                .iter()
-                .filter(|member| member.example_default)
-                .count(),
-            1
-        );
-        assert!(enumeration.select_example_member("changed"));
-        enumeration.members.pop();
-        assert!(!enumeration.has_corrected_example());
+        assert!(enumeration.has_corrected_example());
         assert_eq!(enumeration.example_member().unwrap().value, "preparation");
+        let copied = enumeration.clone();
+        assert_eq!(copied.example_member().unwrap().value, "preparation");
         let empty = build_enum(&source, "Empty", Vec::new(), None);
         assert!(empty.example_member().is_none());
     }
