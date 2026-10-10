@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "ee37daf4e709957042ba8ea9d7e6ff51453572772186b6e22d45d5608738f1c0"
+
+[[covers]]
+key = "discriminated-variant-date-value-snippet"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

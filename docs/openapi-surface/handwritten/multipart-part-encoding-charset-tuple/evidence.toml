@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "adea6b54fe3cd468ff846abc700fcdd2d21dad086dc0518767827e71344f779e"
+
+[[covers]]
+key = "multipart-part-encoding-charset-tuple"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

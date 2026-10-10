@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Cheese Cellar
+  version: 1.0.0
+paths:
+  /wheels:
+    get:
+      operationId: listWheels
+      tags: [wheels]
+      parameters:
+        - name: rind
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/RindFilter"
+      responses:
+        "200":
+          description: The matching wheels.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Rind:
+      type: string
+      enum: [washed, bloomy]
+    RindFilter:
+      oneOf:
+        - $ref: "#/components/schemas/Rind"
+        - type: array
+          items:
+            $ref: "#/components/schemas/Rind"

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "66837574ac4be1631cf1e9e6963294dd6a5f5f36bbbc781fdfbe186feb76e6e4"
+
+[[covers]]
+key = "enum-union-body-example-first-member-value"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

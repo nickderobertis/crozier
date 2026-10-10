@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "e8cd8196fa4524d1f7a295c27e33d3aa1a126344438fd293521513e3694243af"
+
+[[covers]]
+key = "patch-inline-nullable-unrequired-props-omit"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

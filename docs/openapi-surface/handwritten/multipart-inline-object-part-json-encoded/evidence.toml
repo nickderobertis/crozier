@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "75523602cc30373043a2fd629db1e9cef8aa4f38a10c6efba68323f11d35afbe"
+
+[[covers]]
+key = "multipart-inline-object-part-json-encoded"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Lock Keeper
+  version: 1.0.0
+paths:
+  /sluices/{sluiceId}:
+    get:
+      operationId: fetchSluice
+      tags: [sluices]
+      parameters:
+        - name: sluiceId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The sluice.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sluice"
+components:
+  schemas:
+    Sluice:
+      type: object
+      required: [name, lastOpenedAt]
+      properties:
+        name:
+          type: string
+        lastOpenedAt:
+          type: string
+          nullable: true

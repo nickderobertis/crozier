@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Darkroom Lab
+  version: 1.0.0
+paths:
+  /prints:
+    post:
+      operationId: orderPrint
+      tags: [prints]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                negative:
+                  type: string
+                  format: binary
+                instructions: {}
+            encoding:
+              negative:
+                contentType: image/tiff
+              instructions:
+                contentType: "application/json; charset=utf-8"
+      responses:
+        "204":
+          description: The print was ordered.

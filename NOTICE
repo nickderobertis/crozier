@@ -536,3 +536,12 @@ Additional streaming specification:
     The repository's LICENSE at that revision grants Apache-2.0 redistribution;
     corpus row 1600 records the immutable reference. The unmodified source and
     Fern-generated output are vendored, with Python comments stripped as above.
+
+Additional multipart request specification:
+
+  * Swagger2OpenAPI Converter API: the APIs.guru OpenAPI Directory's copy at
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/mermade.org.uk/openapi-converter/1.0.0/openapi.yaml.
+    The document's info.license grants MIT redistribution, inside the
+    aggregation's CC0-1.0 LICENSE; corpus row 2400 records the immutable
+    reference. The unmodified source and Fern-generated output are vendored,
+    with Python comments stripped as above.

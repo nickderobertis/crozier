@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Dye House
+  version: 1.0.0
+paths:
+  /vats/{vatId}/shade:
+    get:
+      operationId: fetchShade
+      tags: [vats]
+      parameters:
+        - name: vatId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The shade in that vat.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Shade"
+components:
+  schemas:
+    Mordant:
+      type: string
+      enum: [alum, iron, tin]
+    Shade:
+      oneOf:
+        - $ref: "#/components/schemas/Mordant"
+        - type: string
+          const: indigo
+        - type: string
