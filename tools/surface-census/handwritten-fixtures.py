@@ -38,7 +38,7 @@ import sys
 import tempfile
 import tomllib
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, Final, Literal, NamedTuple, NewType
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -56,7 +56,8 @@ TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
 # Optional generation settings: absent, crozier and Fern generate the whole API.
 OPTIONAL_TOP_LEVEL = ("audiences",)
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
-VERDICTS = ("exhausted", "search-incomplete", "config-gated")
+SearchVerdict = Literal["exhausted", "search-incomplete", "config-gated"]
+VERDICTS: tuple[SearchVerdict, ...] = ("exhausted", "search-incomplete", "config-gated")
 # A verdict only an arm-search record states, beside the settlement rule's
 # outcomes: the arm runs only under a generation setting no search probe sets.
 ARM_VERDICTS = ("config-gated",)
@@ -119,17 +120,22 @@ class Fixture(NamedTuple):
     audiences: tuple[str, ...]
 
 
+# The census key of the shape a cover proves, shared with the region row it settles.
+ShapeKey = NewType("ShapeKey", str)
+E2E_KIND: Final = "handwritten-e2e"
+
+
 class E2ECover(NamedTuple):
     """One validated `handwritten-e2e.toml` cover: a multi-document loopback journey."""
 
-    kind: str
-    key: str
+    kind: Literal["handwritten-e2e"]
+    key: ShapeKey
     fixture: str
     test: str
     evidence: str
     golden: str
     search: str
-    verdict: str
+    verdict: SearchVerdict
     renewed: str
 
 
@@ -496,12 +502,26 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
                 f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each"
             )
             continue
-        cover = E2ECover(**table)
-        key = cover.key
-        where = f"handwritten-e2e `{key}`"
-        if cover.kind != "handwritten-e2e":
-            failures.append(f"{where}: invalid kind `{cover.kind}` — set kind to handwritten-e2e")
+        where = f"handwritten-e2e `{table['key']}`"
+        if table["kind"] != E2E_KIND:
+            failures.append(f"{where}: invalid kind `{table['kind']}` — set kind to handwritten-e2e")
             continue
+        verdict = next((known for known in VERDICTS if known == table["verdict"]), None)
+        if verdict is None:
+            failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
+            continue
+        cover = E2ECover(
+            kind=E2E_KIND,
+            key=ShapeKey(table["key"]),
+            fixture=table["fixture"],
+            test=table["test"],
+            evidence=table["evidence"],
+            golden=table["golden"],
+            search=table["search"],
+            verdict=verdict,
+            renewed=table["renewed"],
+        )
+        key = cover.key
         if key in keys:
             failures.append(f"{where}: duplicate key — keep exactly one registry cover for this shape")
             continue
@@ -536,9 +556,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         names_prefix = any(name in body and value == golden_prefix for name, value in constants)
         if cover.golden not in body and not (names_prefix and f"{fixture_name}/{golden_suffix}" in body):
             failures.append(f"{where}: the gated test must name this certified golden")
-        if cover.verdict not in VERDICTS:
-            failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
-        elif committed_path(cover.search.partition("#")[0]) is None or committed_path(cover.renewed) is None:
+        if committed_path(cover.search.partition("#")[0]) is None or committed_path(cover.renewed) is None:
             failures.append(
                 f"{where}: invalid search {cover.search!r} or renewed {cover.renewed!r} — replace it with a repository-relative path without parent traversal"
             )
