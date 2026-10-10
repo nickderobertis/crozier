@@ -1150,7 +1150,7 @@ pub enum SdkGroupName {
 
 /// One entry of `x-crozier-enum` / `x-fern-enum`: the Python member name a wire
 /// value is given, in place of the identifier derived from the value itself.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct EnumValueName {
     /// The member name (`USD` for the value `$`).
     #[serde(default)]
@@ -1550,7 +1550,7 @@ pub struct Components {
 
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]
 /// is set) or an inline schema described by the remaining fields.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Schema {
     /// A `$ref` pointer, e.g. `#/components/schemas/User`.
     #[serde(rename = "$ref", default)]
@@ -1929,7 +1929,7 @@ impl Schema {
 /// declared the `properties` key. Fern distinguishes `properties: {}` (a closed,
 /// argument-free request payload) from an object with no `properties` key (an
 /// open-map request argument), even though both maps are empty after parsing.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, PartialEq)]
 pub struct SchemaProperties {
     values: IndexMap<String, Schema>,
     declared: bool,
@@ -2336,7 +2336,7 @@ fn malformed_schema() -> Schema {
 }
 
 /// A `oneOf`/`anyOf` discriminator object.
-#[derive(Debug, Default, Clone, Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Deserialize)]
 pub struct Discriminator {
     /// The property whose value selects the union variant.
     #[serde(rename = "propertyName", default)]
@@ -2348,7 +2348,7 @@ pub struct Discriminator {
 }
 
 /// `type` as a single string or (3.1) a list of strings.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum TypeField {
     /// A single type name.
@@ -2369,7 +2369,7 @@ impl TypeField {
 }
 
 /// `additionalProperties`: either a boolean flag or a value schema.
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum AdditionalProperties {
     /// `true`/`false`.
@@ -3234,23 +3234,41 @@ fn normalize_webhook_operations(doc: &mut OpenApi) {
 /// declaration — a response property's inline enum declaring `ShotSize` is
 /// `types/shot_size.py`, not `GetSettingsResponseMode` — as it would a
 /// component. An operation grouped into a sub-client keeps its inline schemas,
-/// whose types Fern writes into that sub-client's own `types/`; and a name a
-/// component already holds stays inline, so nothing a document declares is
-/// overwritten.
+/// whose types Fern writes into that sub-client's own `types/`. A name already
+/// held — by a component, or by an inline schema lifted before — is one type to
+/// Fern: a declaration whose schema is the holder's is merged into it (a `$ref`
+/// to the holder), while one that differs stays inline, so nothing a document
+/// declares is overwritten; `name_refusals` refuses that collision, as Fern does.
 fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
-    fn lift(schema: &mut Schema, taken: &mut IndexMap<String, Option<Schema>>) {
-        let lift_child = |child: &mut Schema, taken: &mut IndexMap<String, Option<Schema>>| {
+    /// `taken` maps each held name to its holder's schema without its type
+    /// name, the shape a later declaration of the name is compared with, and
+    /// the inline schema lifted here to hold it, if any.
+    type Taken = IndexMap<String, (Schema, Option<Schema>)>;
+    fn without_type_name(schema: &Schema) -> Schema {
+        Schema {
+            type_name_crozier: None,
+            type_name_fern: None,
+            ..schema.clone()
+        }
+    }
+    fn lift(schema: &mut Schema, taken: &mut Taken) {
+        let lift_child = |child: &mut Schema, taken: &mut Taken| {
             if child.reference.is_none() {
                 if let Some(key) = child.declared_type_name().map(declared_type_key) {
-                    if !taken.contains_key(&key) {
+                    let shape = without_type_name(child);
+                    let merges = taken.get(&key).is_some_and(|(held, _)| *held == shape);
+                    if merges || !taken.contains_key(&key) {
                         let reference = Schema {
                             reference: Some(format!("#/components/schemas/{key}")),
                             ..Schema::default()
                         };
                         let mut lifted = std::mem::replace(child, reference);
-                        taken.insert(key.clone(), None);
+                        if merges {
+                            return;
+                        }
+                        taken.insert(key.clone(), (shape.clone(), None));
                         lift(&mut lifted, taken);
-                        taken.insert(key, Some(lifted));
+                        taken.insert(key, (shape, Some(lifted)));
                         return;
                     }
                 }
@@ -3275,11 +3293,11 @@ fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
             }
         }
     }
-    let mut taken: IndexMap<String, Option<Schema>> = doc
+    let mut taken: Taken = doc
         .components
         .schemas
-        .keys()
-        .map(|key| (key.clone(), None))
+        .iter()
+        .map(|(key, schema)| (key.clone(), (without_type_name(schema), None)))
         .collect();
     for schema in doc.components.schemas.values_mut() {
         lift(schema, &mut taken);
@@ -3305,7 +3323,7 @@ fn normalize_inline_declared_type_names(doc: &mut OpenApi) {
             }
         }
     }
-    for (key, lifted) in taken {
+    for (key, (_, lifted)) in taken {
         if let Some(schema) = lifted {
             doc.components.schemas.insert(key, schema);
         }

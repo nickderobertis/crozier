@@ -2383,31 +2383,53 @@ components:
     );
 }
 
-/// An inline schema declaring a type name a component already holds is never
-/// lifted over that component: the component keeps its own shape and the
-/// inline enum keeps its positional name, whichever spelling declares it.
+/// `type-name-collision`: an inline schema declaring a type name a different
+/// schema already holds — a component, or an earlier inline declaration — is
+/// refused in both modes under either spelling, exit 1 with nothing written,
+/// naming the operation, the type and its holder; pinned Fern refuses both. The
+/// same name over the component's own schema is merged into it, as Fern merges
+/// it, and a distinct declared name generates.
 #[test]
-fn inline_declared_type_name_never_overwrites_a_component() {
-    let dir = tempfile::tempdir().expect("tempdir");
-    for spelling in ["x-fern-type-name", "x-crozier-type-name"] {
-        let spec = dir.path().join(format!("{spelling}.yml"));
-        std::fs::write(
-            &spec,
-            format!(
-                "openapi: 3.0.3\ninfo: {{title: Studio, version: '1'}}\npaths:\n  /palettes:\n    get:\n      operationId: getPalette\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  tone: {{type: string, enum: [warm, cool], {spelling}: Tone}}\n                  base: {{$ref: '#/components/schemas/Tone'}}\ncomponents:\n  schemas:\n    Tone: {{type: object, properties: {{label: {{type: string}}}}}}\n"
-            ),
-        )
-        .expect("write spec");
-        let out = dir.path().join(spelling);
-        probe_command(&spec, &out).assert().success();
-        let types = out.join("src/fern/types");
-        let tone = std::fs::read_to_string(types.join("tone.py")).expect("component Tone");
-        assert!(tone.contains("class Tone(UniversalBaseModel)"), "{tone}");
-        assert!(tone.contains("label: typing.Optional[str]"), "{tone}");
-        let inline = std::fs::read_to_string(types.join("get_palette_response_tone.py"))
-            .expect("the inline enum keeps its positional name");
-        assert!(inline.contains("WARM = \"warm\""), "{inline}");
+fn inline_declared_type_name_collisions_refuse_and_identical_ones_merge() {
+    let evidence = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    let scratch = tempfile::tempdir().unwrap();
+    for (probe, element) in [
+        (
+            "inline-declared-type-name-component.yml",
+            "GET /glazes declares type Finish inline with a different schema than component schema \"Finish\"",
+        ),
+        (
+            "inline-declared-type-name-inline.yml",
+            "GET /glazes declares type Finish inline with a different schema than the inline declaration in GET /glazes",
+        ),
+    ] {
+        let fern = std::fs::read_to_string(evidence.join(probe)).unwrap();
+        for spelling in ["x-fern-type-name", "x-crozier-type-name"] {
+            let spec = scratch.path().join(format!("{spelling}-{probe}"));
+            std::fs::write(&spec, fern.replace("x-fern-type-name", spelling)).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures("type-name-collision", &run, element, false);
+                assert!(failures.is_empty(), "{spelling} {probe}: {}", failures.join("\n"));
+            }
+        }
     }
+    let merged = evidence.join("inline-declared-type-name-same.yml");
+    assert_generates_in_both_modes(&merged, "inline-declared-type-name-same");
+    let run = refusal_run(&crozier, &merged, false).unwrap();
+    let types = run.target.join("src/fern/types");
+    assert!(!types.join("get_glaze_response_finish.py").exists());
+    let response = std::fs::read_to_string(types.join("get_glaze_response.py")).unwrap();
+    assert!(
+        response.contains("finish: typing.Optional[Finish] = None"),
+        "{response}"
+    );
+    let control = evidence.join("inline-declared-type-name-control.yml");
+    assert_generates_in_both_modes(&control, "inline-declared-type-name-control");
+    let run = refusal_run(&crozier, &control, false).unwrap();
+    assert!(run.target.join("src/fern/types/glaze_finish.py").is_file());
 }
 
 /// `x-crozier-type-name` is the canonical spelling of `x-fern-type-name`
