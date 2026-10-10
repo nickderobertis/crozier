@@ -8126,6 +8126,7 @@ const CORPORA: &[&Corpus] = &[
     &WAYLAY_QUERIES,
     &CONFLUENT_KAFKA_CONNECT,
     &NETGSM_SMS,
+    &ZYLON_PRIVATE_GPT,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11165,6 +11166,20 @@ const NETGSM_SMS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
+/// revision declaring `x-fern-streaming`: two `stream-condition` operations with
+/// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
+const ZYLON_PRIVATE_GPT: Corpus = Corpus {
+    api: "zylon-private-gpt",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `millenium-falcon-challenge`: corpus row 319, the Millennium Falcon challenge's odds API,
 /// whose `POST /odds` posts a FastAPI `Body_odds_odds_post` body nothing else names
 const MILLENIUM_FALCON_CHALLENGE: Corpus = Corpus {
@@ -11910,6 +11925,11 @@ fn confluent_kafka_connect_matches_fern_output() {
 #[test]
 fn netgsm_sms_matches_fern_output() {
     assert_committed_corpus_matches(&NETGSM_SMS);
+}
+
+#[test]
+fn zylon_private_gpt_matches_fern_output() {
+    assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
 }
 
 #[test]
@@ -24216,6 +24236,167 @@ fn namespaced_enum_collisions_follow_the_parameter_location() {
         "namespaced-header-enum-diff-tag",
     ] {
         assert_generates_in_both_modes(&evidence.join(format!("{case}.yml")), case);
+    }
+}
+
+/// A component named like a request type Fern synthesizes for a
+/// `stream-condition` split — `{Ctx}Request` or `{Ctx}StreamRequest` — is refused
+/// in both modes, exit 1 and nothing written, naming the operation and the
+/// component; a name-only fault is never generated under a repaired name. The
+/// adjacent control, whose SDK method name moves the split clear of the body's
+/// name, generates (type-name-collision/evidence/stream-split-*.pinned-fern.log).
+#[test]
+fn stream_split_request_name_collisions_refuse_in_both_modes() {
+    let evidence = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("type-name-collision/evidence");
+    for (case, element) in [
+        (
+            "stream-split-request-name",
+            r#"POST /lookups stream-condition request type LookupRequest collides with component schema "LookupRequest""#,
+        ),
+        (
+            "stream-split-stream-request-name",
+            r#"POST /lookups stream-condition request type LookupStreamRequest collides with component schema "LookupStreamRequest""#,
+        ),
+        (
+            "stream-split-sdk-method-request-name",
+            r#"POST /lookups stream-condition request type FindRequest collides with component schema "FindRequest""#,
+        ),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &evidence.join(format!("{case}.yml")), strict).unwrap();
+            let failures = refused_failures("type-name-collision", &run, element, strict);
+            assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
+            assert_eq!(run.stderr.lines().count(), 1, "{case}: {}", run.stderr);
+        }
+    }
+    assert_generates_in_both_modes(
+        &evidence.join("stream-split-sdk-method-control.yml"),
+        "stream-split-sdk-method-control",
+    );
+}
+
+/// Runs each streaming fixture's journey (`e2e/streaming_journeys.py`) over the
+/// SDK crozier generates and over Fern's certified tree, so the behaviour it
+/// asserts is Fern's as well as crozier's.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_streaming_journeys_hold_for_crozier_and_fern() {
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/streaming_journeys.py");
+    let handwritten = repo_root().join(HANDWRITTEN_DIR);
+    let mut cases: Vec<(&str, PathBuf, PathBuf)> = [
+        "event-stream-binary-download",
+        "event-stream-const-tagged-union",
+        "event-stream-event-dispatch",
+        "event-stream-item-schema",
+        "stream-condition-ref-body-header",
+        "stream-condition-shared-body",
+        "stream-condition-union-body",
+        "streaming-extension-boolean",
+        "streaming-extension-sse-format",
+        "streaming-extension-terminator",
+    ]
+    .into_iter()
+    .map(|name| {
+        (
+            name,
+            handwritten.join(name).join("openapi.yml"),
+            handwritten.join(name).join("fern-expected/src"),
+        )
+    })
+    .collect();
+    cases.push((
+        "zylon-private-gpt",
+        repo_root().join("tests/fixtures/corpus-sources/zylon-private-gpt/openapi.json"),
+        fixture_dir("zylon-private-gpt").join("expected/src"),
+    ));
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let directory = tempfile::tempdir().expect("streaming SDKs");
+    for (name, spec, fern_src) in cases {
+        let sdk = directory.path().join(name);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&sdk)
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+            ])
+            .assert()
+            .success();
+        for (side, src) in [("crozier", sdk.join("src")), ("fern", fern_src)] {
+            let run = std::process::Command::new(&python)
+                .arg(&script)
+                .arg(name)
+                .arg(&src)
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .expect("run the streaming journeys");
+            assert!(
+                run.status.success(),
+                "{name} ({side}): {}{}",
+                String::from_utf8_lossy(&run.stdout),
+                String::from_utf8_lossy(&run.stderr)
+            );
+            assert_eq!(
+                String::from_utf8_lossy(&run.stdout).trim(),
+                format!("{name}: ok"),
+                "{name} ({side})"
+            );
+        }
+    }
+}
+
+/// The `stream-reference-return-type` departure's evidence journey: over Fern's
+/// certified tree, `reference.md`'s heading contradicts the method's declared
+/// return and what iterating it yields; over crozier's, all three agree.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_stream_reference_heading_states_the_returned_iterator() {
+    let script = repo_root().join("crates/crozier-e2e/tests/e2e/stream_reference_heading.py");
+    let fixture = repo_root()
+        .join(HANDWRITTEN_DIR)
+        .join("streaming-extension-terminator");
+    let directory = tempfile::tempdir().expect("terminator SDK");
+    let sdk = directory.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(fixture.join("openapi.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    for (root, expectation, succeeds) in [
+        (fixture.join("fern-expected"), "contradicts", true),
+        (fixture.join("fern-expected"), "agrees", false),
+        (sdk.clone(), "agrees", true),
+    ] {
+        let run = std::process::Command::new(&python)
+            .arg(&script)
+            .arg(&root)
+            .arg(expectation)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .expect("run the heading journey");
+        assert_eq!(
+            run.status.success(),
+            succeeds,
+            "{} {expectation}: {}{}",
+            root.display(),
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
     }
 }
 

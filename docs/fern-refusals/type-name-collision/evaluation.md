@@ -47,3 +47,33 @@ and one declaring a name the other holds as its key
 ([probe](evidence/376-350-declared-type-name-taken.yml),
 [pinned Fern](evidence/376-350-declared-type-name-taken.pinned-fern.log)).
 crozier refuses those two in both modes, naming both components.
+
+The detector also covers the request types of a `stream-condition` split. Pinned
+Fern gives an operation declaring `x-fern-streaming`'s `stream-condition` two
+methods, and it synthesizes a request type for each: `{Ctx}Request` and
+`{Ctx}StreamRequest`. `Ctx` is the PascalCase of the SDK method name, or else
+of the `operationId`. A component schema already holding either name is
+`already declared in this file`. It does not matter whether the schema is the
+operation's own body or any other component. These fresh probes show the
+refusal at check and at generate:
+
+- a body schema named `LookupRequest` for `operationId: lookup`
+  ([probe](evidence/stream-split-request-name.yml),
+  [pinned Fern](evidence/stream-split-request-name.pinned-fern.log));
+- one named `LookupStreamRequest`
+  ([probe](evidence/stream-split-stream-request-name.yml),
+  [pinned Fern](evidence/stream-split-stream-request-name.pinned-fern.log));
+- one named `FindRequest` for `x-fern-sdk-method-name: find`
+  ([probe](evidence/stream-split-sdk-method-request-name.yml),
+  [pinned Fern](evidence/stream-split-sdk-method-request-name.pinned-fern.log)).
+
+The adjacent control checks and generates: the same `LookupRequest` body under
+`x-fern-sdk-method-name: find`
+([probe](evidence/stream-split-sdk-method-control.yml),
+[pinned Fern](evidence/stream-split-sdk-method-control.pinned-fern.log)).
+crozier byte-matches that control's tree. The fault is name-only: the document
+is valid OpenAPI, and every operation, body and response in it would generate
+if one name changed. Because the fault is only a name, crozier refuses it in both
+modes, with `type-name-collision: POST /lookups stream-condition request type
+LookupRequest collides with component schema "LookupRequest"`. It never
+generates the split under a repaired name.

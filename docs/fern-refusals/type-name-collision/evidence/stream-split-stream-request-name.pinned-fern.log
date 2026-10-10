@@ -1,0 +1,31 @@
+Fern CLI 5.67.1, python-sdk 5.20.0
+check exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> lookup_stream
+        issue: LookupStreamRequest is already declared in this file
+
+Found 1 error and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 1 error and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
+
+generate exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <workspace>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> service -> endpoints -> lookup_stream
+                  __package__.yml
+                  [error] LookupStreamRequest is already declared in this file
+                  
+::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> lookup_stream%0A__package__.yml%0A[error] LookupStreamRequest is already declared in this file
+[api]: python-sdk Found 1 errors and 2 warnings in 0.849 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 1 errors and 2 warnings in 0.849 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

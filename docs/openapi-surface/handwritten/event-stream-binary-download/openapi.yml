@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: Hydrophone Recorder
+  version: 2.1.0
+paths:
+  /recordings/live:
+    get:
+      operationId: listenLive
+      summary: Listen to the live hydrophone feed
+      parameters:
+        - name: channel
+          in: query
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Encoded audio frames as they are captured.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                format: binary

@@ -1372,7 +1372,31 @@ Four of them shape the client tree and its methods, and corpus row 108
   paginated endpoint.
 - **`streaming`** with a `stream-condition` splits one operation into two methods,
   `<name>_stream` and `<name>`, each sending the condition's request field as the
-  literal that half means; the field is an argument of neither.
+  literal that half means; the field is an argument of neither, and no worked
+  example passes it. An `sdk-method-name` names both halves. Without one, the
+  buffered half takes the operation's own derived name, and the streaming half
+  is the whole `operationId` snake-cased: corpus row 1600's
+  `prompt_completion_v1_completions_post` splits into
+  `prompt_completion_v1completions_post_stream` and `prompt_completion`. A union
+  body gets one alias per half (`{Half}Request`). A body schema a buffered
+  operation also posts loses its model; one only the split posts keeps it. Both
+  halves keep a referenced body's JSON content-type header.
+- **How a stream is framed** follows the extension, measured at Fern 5.20.0.
+  `format: sse` decodes Server-Sent Events over any success media, ending at the
+  `terminator`'s `data` when one is declared. `format: json`, the boolean
+  `true`, and a `stream-condition` naming no format stream newline-delimited JSON
+  (`iter_lines` and `json.loads`), skipping blank and malformed lines. `false`,
+  and a mapping naming neither a format nor a condition, leave the response's
+  media to decide, as no extension does. Without the extension, a `text/event-stream`-only
+  success streams events, typed from its `schema`, else its `itemSchema`
+  (Fern reads `itemSchema` on no other media type). An inline
+  union hoists the same `{Ctx}Response` a JSON body would, and a binary schema
+  downloads bytes instead. A chunk that is a `oneOf` discriminated on `event`,
+  whose `$ref` variants declare exactly `event` and `data`, is dispatched on each
+  event's SSE `event` field. Each of those shapes is proven by a hand-written
+  fixture or corpus row 1600, and the
+  [witness search](openapi-surface/witness-search-streaming/README.md) records
+  why.
 
 ### Three naming shapes measured on probes, not real specifications
 

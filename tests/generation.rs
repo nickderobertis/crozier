@@ -14567,6 +14567,542 @@ fn render_files_refuses_an_unemittable_extension_and_renders_its_correction() {
     );
 }
 
+/// One GET whose 200 declares `media` (a YAML flow mapping of media types) and
+/// whose operation carries `extensions` (operation-level YAML lines).
+fn streaming_operation(extensions: &str, media: &str) -> String {
+    format!(
+        r##"openapi: 3.0.3
+info: {{ title: Feed, version: "1" }}
+paths:
+  /items/feed:
+    get:
+      operationId: feedItems
+{extensions}
+      responses:
+        "200":
+          description: Items.
+          content: {media}
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        label: {{ type: string }}
+    Chunk:
+      type: object
+      properties:
+        piece: {{ type: string }}
+"##
+    )
+}
+
+const JSON_MEDIA: &str =
+    r##"{ application/json: { schema: { $ref: "#/components/schemas/Item" } } }"##;
+const SSE_MEDIA: &str =
+    r##"{ text/event-stream: { schema: { $ref: "#/components/schemas/Chunk" } } }"##;
+
+/// How the generated raw client frames one operation's stream, or `None` when it
+/// buffers the response.
+fn stream_framing(raw: &str) -> Option<&'static str> {
+    if raw.contains("_response.iter_lines()") && raw.contains("_response.aiter_lines()") {
+        Some("json-lines")
+    } else if raw.contains("_event_source.iter_sse()") && raw.contains("_event_source.aiter_sse()")
+    {
+        Some("sse")
+    } else if raw.contains("self._client_wrapper.httpx_client.request(") {
+        None
+    } else {
+        panic!("neither a stream nor a buffered call: {raw}")
+    }
+}
+
+/// Every form of the streaming extension frames the stream as Fern 5.20.0 does,
+/// in both spellings: the boolean `true` and `format: json` stream JSON lines
+/// over any media, `format: sse` decodes events over any media, and `false` or a
+/// mapping naming no format leaves the response's media to decide.
+#[test]
+fn streaming_extension_forms_frame_the_stream_as_declared() {
+    for spelling in ["x-fern-streaming", "x-crozier-streaming"] {
+        for (value, media, expected) in [
+            ("true", JSON_MEDIA, Some("json-lines")),
+            ("true", SSE_MEDIA, Some("json-lines")),
+            ("false", JSON_MEDIA, None),
+            ("{ format: json }", SSE_MEDIA, Some("json-lines")),
+            ("{ format: sse }", JSON_MEDIA, Some("sse")),
+            ("{}", SSE_MEDIA, Some("sse")),
+            ("{}", JSON_MEDIA, None),
+            // `false` declares no stream, so an SSE-only response still
+            // streams events on its media type, as Fern 5.20.0 does.
+            ("false", SSE_MEDIA, Some("sse")),
+        ] {
+            let files = render(&streaming_operation(
+                &format!("      {spelling}: {value}"),
+                media,
+            ));
+            let raw = &files["src/acme/raw_client.py"];
+            assert_eq!(
+                stream_framing(raw),
+                expected,
+                "{spelling}: {value} over {media}\n{raw}"
+            );
+        }
+    }
+    // A JSON-lines stream parses each non-empty line as the chunk type, skipping
+    // a line that does not parse.
+    let files = render(&streaming_operation(
+        "      x-fern-streaming: true",
+        JSON_MEDIA,
+    ));
+    let raw = &files["src/acme/raw_client.py"];
+    assert!(raw.contains("if len(_text) == 0:"), "{raw}");
+    assert!(raw.contains("object_=json.loads(_text),"), "{raw}");
+    assert!(raw.contains("type_=Item,"), "{raw}");
+    assert!(!raw.contains("EventSource"), "{raw}");
+}
+
+/// The SSE `terminator` ends the stream at that `data`, in both spellings;
+/// without one, an event carrying no data ends it.
+#[test]
+fn a_declared_terminator_ends_the_event_stream() {
+    for spelling in ["x-fern-streaming", "x-crozier-streaming"] {
+        let files = render(&streaming_operation(
+            &format!("      {spelling}: {{ format: sse, terminator: \"[DONE]\" }}"),
+            SSE_MEDIA,
+        ));
+        let raw = &files["src/acme/raw_client.py"];
+        assert_eq!(
+            raw.matches(r#"if _sse.data == "[DONE]":"#).count(),
+            2,
+            "{raw}"
+        );
+        assert!(!raw.contains("if _sse.data == None:"), "{raw}");
+    }
+    let files = render(&streaming_operation("", SSE_MEDIA));
+    let raw = &files["src/acme/raw_client.py"];
+    assert_eq!(raw.matches("if _sse.data == None:").count(), 2, "{raw}");
+}
+
+/// `x-crozier-streaming` wins over `x-fern-streaming` on the same operation,
+/// whichever form either takes.
+#[test]
+fn the_crozier_streaming_spelling_wins_a_conflict() {
+    let both = |crozier: &str, fern: &str, media: &str| {
+        let files = render(&streaming_operation(
+            &format!("      x-crozier-streaming: {crozier}\n      x-fern-streaming: {fern}"),
+            media,
+        ));
+        files["src/acme/raw_client.py"].clone()
+    };
+    assert_eq!(stream_framing(&both("false", "true", JSON_MEDIA)), None);
+    assert_eq!(
+        stream_framing(&both("true", "false", JSON_MEDIA)),
+        Some("json-lines")
+    );
+    let raw = both(
+        r#"{ format: sse, terminator: "[A]" }"#,
+        r#"{ format: json, terminator: "[B]" }"#,
+        JSON_MEDIA,
+    );
+    assert_eq!(stream_framing(&raw), Some("sse"), "{raw}");
+    assert!(raw.contains(r#"if _sse.data == "[A]":"#), "{raw}");
+    assert!(!raw.contains("[B]"), "{raw}");
+}
+
+/// A format other than `sse` or `json` is a parse error naming the extension.
+#[test]
+fn an_unknown_streaming_format_is_refused() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        streaming_operation("      x-fern-streaming: { format: websocket }", JSON_MEDIA),
+    )
+    .unwrap();
+    let error = crozier::openapi::load(&path).unwrap_err().to_string();
+    assert!(error.contains("x-fern-streaming"), "{error}");
+    assert!(error.contains("websocket"), "{error}");
+}
+
+/// Neither a boolean nor a mapping is a parse error naming the extension.
+#[test]
+fn a_streaming_extension_of_another_type_is_refused() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("api.yml");
+    std::fs::write(
+        &path,
+        streaming_operation("      x-fern-streaming: sse", JSON_MEDIA),
+    )
+    .unwrap();
+    let error = crozier::openapi::load(&path).unwrap_err().to_string();
+    assert!(error.contains("x-fern-streaming"), "{error}");
+    assert!(
+        error.contains("a boolean or a streaming mapping"),
+        "{error}"
+    );
+}
+
+/// A binary event-stream schema is a download, not events; `itemSchema` types
+/// each event; and `reference.md` heads a stream with the iterator its method
+/// returns while a download keeps `typing.Iterator[bytes]`.
+#[test]
+fn event_stream_schemas_decide_download_item_type_and_heading() {
+    let binary = render(&streaming_operation(
+        "",
+        "{ text/event-stream: { schema: { type: string, format: binary } } }",
+    ));
+    let raw = &binary["src/acme/raw_client.py"];
+    assert!(
+        raw.contains("_response.iter_bytes(chunk_size=_chunk_size)"),
+        "{raw}"
+    );
+    assert!(!raw.contains("EventSource"), "{raw}");
+    assert!(
+        binary["reference.md"].contains("feed_items</a>() -> typing.Iterator[bytes]</code>"),
+        "{}",
+        binary["reference.md"]
+    );
+    let item = render(&streaming_operation(
+        "",
+        r##"{ text/event-stream: { itemSchema: { $ref: "#/components/schemas/Chunk" } } }"##,
+    ));
+    assert!(
+        item["src/acme/client.py"].contains("-> typing.Iterator[Chunk]:"),
+        "{}",
+        item["src/acme/client.py"]
+    );
+    assert!(
+        item["reference.md"].contains("feed_items</a>() -> typing.Iterator[Chunk]</code>"),
+        "{}",
+        item["reference.md"]
+    );
+    // A shared `components.responses` entry's `itemSchema` types the stream an
+    // operation referencing it returns.
+    let shared = render(
+        &streaming_operation("", "{}")
+            .replace(
+                "        \"200\":\n          description: Items.\n          content: {}\n",
+                "        \"200\": { $ref: \"#/components/responses/Feed\" }\n",
+            )
+            .replace(
+                "components:\n",
+                "components:\n  responses:\n    Feed:\n      description: Items.\n      content:\n        text/event-stream:\n          itemSchema: { $ref: \"#/components/schemas/Chunk\" }\n",
+            ),
+    );
+    assert!(
+        shared["src/acme/client.py"].contains("-> typing.Iterator[Chunk]:"),
+        "{}",
+        shared["src/acme/client.py"]
+    );
+    // `itemSchema` on a buffered JSON body is not read: Fern 5.20.0 types it
+    // `typing.Any`, as a media type declaring no schema.
+    let json_item = render(&streaming_operation(
+        "",
+        r##"{ application/json: { itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
+    ));
+    assert!(
+        json_item["src/acme/client.py"].contains(") -> typing.Any:"),
+        "{}",
+        json_item["src/acme/client.py"]
+    );
+    // A `schema` declared beside `itemSchema` types the events, as at Fern 5.20.0.
+    let both = render(&streaming_operation(
+        "",
+        r##"{ text/event-stream: { schema: { $ref: "#/components/schemas/Chunk" }, itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
+    ));
+    assert!(
+        both["src/acme/client.py"].contains("-> typing.Iterator[Chunk]:"),
+        "{}",
+        both["src/acme/client.py"]
+    );
+}
+
+const DISPATCH_SPEC: &str = r##"openapi: 3.0.3
+info: { title: Ferry, version: "1" }
+paths:
+  /movements:
+    get:
+      operationId: watchMovements
+      responses:
+        "200":
+          description: Movements.
+          content:
+            text/event-stream:
+              schema: { $ref: "#/components/schemas/Movement" }
+components:
+  schemas:
+    Movement:
+      oneOf:
+        - $ref: "#/components/schemas/Departure"
+        - $ref: "#/components/schemas/Arrival"
+      discriminator:
+        propertyName: event
+        MAPPING
+    Departure:
+      type: object
+      required: [event, data]
+      properties:
+        event: { type: string, enum: [departed] }
+        data: { $ref: "#/components/schemas/Berth" }
+    Arrival:
+      type: object
+      required: [event, data]
+      properties:
+        event: { type: string, enum: [arrived] }
+        data: { $ref: "#/components/schemas/Berth" }EXTRA
+    Berth:
+      type: object
+      properties:
+        terminal: { type: string }
+"##;
+
+/// An SSE union discriminated on `event` over `event`/`data`-only variants
+/// dispatches on the SSE `event` field: in mapping order with a mapping, in
+/// `oneOf` order by each variant's `const` or enum value without one. A variant
+/// with any other property keeps the ordinary parse.
+#[test]
+fn an_event_discriminated_stream_dispatches_on_the_sse_event() {
+    let mapped = render(&DISPATCH_SPEC.replace(
+        "MAPPING",
+        "mapping: { arrived: \"#/components/schemas/Arrival\", departed: \"#/components/schemas/Departure\" }",
+    ).replace("EXTRA", ""));
+    let raw = &mapped["src/acme/raw_client.py"];
+    let arrived = raw.find(r#"if _sse.event == "arrived":"#).expect(raw);
+    let departed = raw.find(r#"elif _sse.event == "departed":"#).expect(raw);
+    assert!(arrived < departed, "{raw}");
+    assert!(
+        raw.contains("type_=Departure,") && raw.contains("object_=json.loads(_sse.data),"),
+        "{raw}"
+    );
+    assert!(raw.contains("Failed to parse SSE event 'arrived'"), "{raw}");
+    assert!(!raw.contains("parse_sse_obj"), "{raw}");
+    let unmapped = render(&DISPATCH_SPEC.replace("MAPPING", "").replace("EXTRA", ""));
+    let raw = &unmapped["src/acme/raw_client.py"];
+    let departed = raw.find(r#"if _sse.event == "departed":"#).expect(raw);
+    let arrived = raw.find(r#"elif _sse.event == "arrived":"#).expect(raw);
+    assert!(departed < arrived, "{raw}");
+    let constant = render(
+        &DISPATCH_SPEC
+            .replace("openapi: 3.0.3", "openapi: 3.1.0")
+            .replace("enum: [departed]", "const: departed")
+            .replace("enum: [arrived]", "const: arrived")
+            .replace("MAPPING", "")
+            .replace("EXTRA", ""),
+    );
+    let raw = &constant["src/acme/raw_client.py"];
+    let departed = raw.find(r#"if _sse.event == "departed":"#).expect(raw);
+    let arrived = raw.find(r#"elif _sse.event == "arrived":"#).expect(raw);
+    assert!(departed < arrived, "{raw}");
+    assert!(!raw.contains("parse_sse_obj"), "{raw}");
+    let extra = render(
+        &DISPATCH_SPEC
+            .replace("MAPPING", "")
+            .replace("EXTRA", "\n        sequence: { type: integer }"),
+    );
+    let raw = &extra["src/acme/raw_client.py"];
+    assert!(raw.contains("parse_sse_obj("), "{raw}");
+    assert!(!raw.contains("_sse.event =="), "{raw}");
+}
+
+/// One `stream-condition` operation over `body`, beside `extra` paths and
+/// `components`.
+fn condition_spec(operation: &str, body: &str, extra: &str, components: &str) -> String {
+    format!(
+        r##"openapi: 3.0.3
+info: {{ title: Planner, version: "1" }}
+paths:
+  /plans:
+    post:
+{operation}
+      x-fern-streaming:
+        format: sse
+        stream-condition: $request.live
+        response: {{ $ref: "#/components/schemas/Plan" }}
+        response-stream: {{ $ref: "#/components/schemas/Plan" }}
+      requestBody:
+        content:
+          application/json:
+            schema: {body}
+      responses:
+        "200":
+          description: The plan.
+          content:
+            application/json: {{ schema: {{ $ref: "#/components/schemas/Plan" }} }}
+            text/event-stream: {{ schema: {{ $ref: "#/components/schemas/Plan" }} }}
+{extra}
+components:
+  schemas:
+    Plan:
+      type: object
+      properties:
+        legs: {{ type: integer }}
+{components}
+"##
+    )
+}
+
+const PLAN_BODY: &str = "    PlanBody:\n      type: object\n      properties:\n        origin: { type: string }\n        live: { type: boolean }\n";
+
+/// A `stream-condition` split with no `format`, or `format: json`, over a
+/// success that declares only `application/json`: the streaming half reads that
+/// media as JSON lines and the buffered half returns the model, as measured at
+/// Fern 5.20.0.
+#[test]
+fn a_json_stream_condition_streams_its_json_media_as_lines() {
+    for format in ["", "\n        format: json"] {
+        let files = render(&format!(
+            r##"openapi: 3.0.3
+info: {{ title: Glossary, version: "1" }}
+paths:
+  /define:
+    post:
+      operationId: define
+      x-fern-streaming:{format}
+        stream-condition: $request.live
+        response: {{ $ref: "#/components/schemas/Definition" }}
+        response-stream: {{ $ref: "#/components/schemas/Definition" }}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [term]
+              properties:
+                term: {{ type: string }}
+                live: {{ type: boolean }}
+      responses:
+        "200":
+          description: The definition.
+          content:
+            application/json: {{ schema: {{ $ref: "#/components/schemas/Definition" }} }}
+components:
+  schemas:
+    Definition:
+      type: object
+      properties:
+        text: {{ type: string }}
+"##
+        ));
+        let raw = &files["src/acme/raw_client.py"];
+        let stream = raw.find("def define_stream(").expect(raw);
+        let buffered = raw.find("def define(").expect(raw);
+        let streamed = &raw[stream..buffered];
+        assert!(
+            streamed.contains("for _text in _response.iter_lines():")
+                && streamed.contains("object_=json.loads(_text),")
+                && streamed.contains(r#""live": True,"#),
+            "{format:?}: {streamed}"
+        );
+        assert!(!raw.contains("EventSource"), "{format:?}: {raw}");
+        let client = &files["src/acme/client.py"];
+        assert!(
+            client.contains("-> typing.Iterator[Definition]:") && client.contains("-> Definition:"),
+            "{format:?}: {client}"
+        );
+    }
+}
+
+/// A `stream-condition` split's halves: the streaming half is named from the
+/// whole `operationId` and the buffered half by the operation's own name; a
+/// referenced body keeps its model and sends the JSON content-type; a body a
+/// buffered operation also posts loses its model; and a union body gets one
+/// alias per half.
+#[test]
+fn stream_condition_halves_name_type_and_send_as_fern_does() {
+    let named = render(&condition_spec(
+        "      operationId: plan_route_plans_post\n      tags: [planning]",
+        r##"{ $ref: "#/components/schemas/PlanBody" }"##,
+        "",
+        PLAN_BODY,
+    ));
+    let client = &named["src/acme/planning/client.py"];
+    assert!(
+        client.contains("def plan_route_plans_post_stream("),
+        "{client}"
+    );
+    assert!(client.contains("def plan_route("), "{client}");
+    let raw = &named["src/acme/planning/raw_client.py"];
+    assert_eq!(
+        raw.matches(r#""content-type": "application/json","#)
+            .count(),
+        4,
+        "{raw}"
+    );
+    assert!(named.contains_key("src/acme/types/plan_body.py"));
+    // A worked example never passes the condition field.
+    assert!(!client.contains("live="), "{client}");
+
+    let shared = render(&condition_spec(
+        "      operationId: plan",
+        r##"{ $ref: "#/components/schemas/PlanBody" }"##,
+        "  /plans/estimate:\n    post:\n      operationId: estimate\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: \"#/components/schemas/PlanBody\" }\n      responses:\n        \"200\":\n          description: A rough plan.\n          content:\n            application/json: { schema: { $ref: \"#/components/schemas/Plan\" } }",
+        PLAN_BODY,
+    ));
+    assert!(!shared.contains_key("src/acme/types/plan_body.py"));
+    assert_eq!(
+        shared["src/acme/raw_client.py"]
+            .matches(r#""content-type": "application/json","#)
+            .count(),
+        6,
+        "{}",
+        shared["src/acme/raw_client.py"]
+    );
+
+    let union = render(&condition_spec(
+        "      operationId: plan\n      x-fern-sdk-method-name: quote",
+        r##"{ $ref: "#/components/schemas/PlanInput" }"##,
+        "",
+        "    PlanInput:\n      x-fern-undiscriminated: true\n      oneOf:\n        - { $ref: \"#/components/schemas/ByRail\" }\n        - { $ref: \"#/components/schemas/ByRoad\" }\n    ByRail:\n      type: object\n      required: [gauge]\n      properties:\n        gauge: { type: string }\n    ByRoad:\n      type: object\n      required: [axles]\n      properties:\n        axles: { type: integer }\n",
+    ));
+    for (half, alias) in [
+        ("quote_stream", "QuoteStreamRequest"),
+        ("quote", "QuoteRequest"),
+    ] {
+        let module = format!("src/acme/types/{}.py", alias_module(alias));
+        assert!(
+            union[&module].contains(&format!("{alias} = typing.Union[ByRail, ByRoad]")),
+            "{}",
+            union[&module]
+        );
+        let client = &union["src/acme/client.py"];
+        let signature = &client[client.find(&format!("    def {half}(")).expect(client)..];
+        let signature = &signature[..signature.find(":\n").expect(signature)];
+        assert!(
+            signature.contains(&format!("request: {alias},")),
+            "{signature}"
+        );
+    }
+}
+
+fn alias_module(alias: &str) -> String {
+    let mut out = String::new();
+    for (index, c) in alias.chars().enumerate() {
+        if c.is_ascii_uppercase() && index > 0 {
+            out.push('_');
+        }
+        out.push(c.to_ascii_lowercase());
+    }
+    out
+}
+
+/// `reference.md` documents the condition field as a bare `typing.Literal` after
+/// the required fields and ahead of the optional ones.
+#[test]
+fn the_reference_documents_the_condition_after_required_fields() {
+    let files = render(&condition_spec(
+        "      operationId: plan",
+        "{ type: object, required: [origin], properties: { notes: { type: string }, live: { type: boolean }, origin: { type: string } } }",
+        "",
+        "",
+    ));
+    let reference = &files["reference.md"];
+    let section = &reference[..reference.find("</details>").expect(reference)];
+    let origin = section.find("**origin:** `str`").expect(section);
+    let live = section.find("**live:** `typing.Literal`").expect(section);
+    let notes = section.find("**notes:**").expect(section);
+    assert!(origin < live && live < notes, "{section}");
+}
+
 #[test]
 fn inline_named_media_examples_keep_json_headers_beside_surviving_ref_control() {
     let files = render_registered_request_source("portfoliooptimizer.io");

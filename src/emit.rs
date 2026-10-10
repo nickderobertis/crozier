@@ -19,7 +19,7 @@ use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Credential,
     Endpoint, EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType,
-    PageAdvance, Prim, QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    PageAdvance, Prim, QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -3192,18 +3192,17 @@ fn reference_entry(
                 .map_or(usize::MAX, |field| field.reference_order)
         });
         // The field a stream condition fixes is not a method argument, but the
-        // reference documents it — as a bare `typing.Literal`, ahead of the rest.
+        // reference documents it — as a bare `typing.Literal`, after the required
+        // fields and ahead of the optional ones: it takes no default, so the
+        // required-first ordering below places it last of the required.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
-                reference_body.insert(
-                    0,
-                    DocParam {
-                        name: field.py_name.clone(),
-                        annotation: "typing.Literal".to_string(),
-                        default: None,
-                        description: field.docstring.clone(),
-                    },
-                );
+                reference_body.push(DocParam {
+                    name: field.py_name.clone(),
+                    annotation: "typing.Literal".to_string(),
+                    default: None,
+                    description: field.docstring.clone(),
+                });
             }
         }
     }
@@ -3334,7 +3333,14 @@ fn reference_entry(
         } else {
             ""
         },
-        return_type: reference_return_type(ep, &mp.inner),
+        return_type: reference_return_type(
+            ep,
+            &mp.inner,
+            &sse_chunk(
+                ep,
+                &mut Imports::at(RefLoc::Client(module.to_string()), tag_types),
+            ),
+        ),
         description: ep
             .docstring
             .as_ref()
@@ -3380,8 +3386,16 @@ pub(crate) fn reference_param_annotation(annotation: &str) -> String {
 /// rather than with the `dt.` alias the generated Python imports them under —
 /// the same prose spelling [`reference_param_annotation`] applies to the
 /// parameter rows, so no golden's `reference.md` ever carries a `dt.` type.
-fn reference_return_type(ep: &Endpoint, response: &str) -> String {
-    let rendered = if ep.binary_response || ep.streaming {
+///
+/// A stream is headed with the iterator its method returns, `chunk` typed —
+/// where Fern heads every stream `typing.Iterator[bytes]` (the
+/// `stream-reference-return-type` departure); a binary download does return
+/// `typing.Iterator[bytes]`.
+fn reference_return_type(ep: &Endpoint, response: &str, chunk: &str) -> String {
+    let streamed = format!("typing.Iterator[{chunk}]");
+    let rendered = if ep.streaming {
+        streamed.as_str()
+    } else if ep.binary_response {
         "typing.Iterator[bytes]"
     } else {
         response
@@ -6108,7 +6122,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && ep.body_response_same_ref
                             && !ep.body_schema_titled
                             && !resource_envelope)
+                        // A `stream-condition` body escapes this drop as it
+                        // escapes the surviving-schema one above, and for the
+                        // same reason: Fern sends the condition beside it.
                         && !(ep.query_params.is_empty()
+                            && ep.stream_condition.is_none()
                             && matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_shape == BodySchemaShape::Ref
                                 && (!ep.body_schema_dropped
@@ -6236,6 +6254,15 @@ fn sse_chunk(ep: &Endpoint, imports: &mut Imports) -> String {
         .map_or_else(|| "typing.Any".to_string(), |ty| raw_type_str(ty, imports))
 }
 
+/// The `_sse.data` value that ends a Server-Sent-Events stream: the declared
+/// terminator, or `None` — an event carrying no data — when none is declared.
+fn sse_end(terminator: Option<&str>) -> String {
+    terminator.map_or_else(
+        || "None".to_string(),
+        |end| format!("\"{}\"", escape_py_str(end)),
+    )
+}
+
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
 /// chunks over the `core.http_sse` runtime, matching Fern's shape (issue #43).
@@ -6243,12 +6270,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_plain("contextlib");
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("logging", "error");
-    imports.add_from("logging", "warning");
     imports.add_core("api_error", "ApiError");
-    imports.add_core("http_sse._api", "EventSource");
     imports.add_core("parse_error", "ParsingError");
-    imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
@@ -6309,18 +6332,59 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     call.push("        ) as _response:".to_string());
 
     let inner_return = format!("{wrapper}(response=_response, data=_iter())");
-    let body = format!(
-        "\
-{call}
-
-            {async_kw}def _stream() -> {wrapper}[{data_type}]:
-                try:
-                    if 200 <= _response.status_code < 300:
-
-                        {async_kw}def _iter():
-                            _event_source = EventSource(_response)
+    let iter_body = match ep.stream_protocol.as_ref().unwrap_or(&StreamProtocol::Sse {
+        terminator: None,
+        events: Vec::new(),
+    }) {
+        StreamProtocol::Sse { terminator, events } if !events.is_empty() => {
+            imports.add_plain("json");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // Each event's `event` field picks the model its JSON `data` parses
+            // as; an event no branch names is skipped.
+            let branches: Vec<String> = events
+                .iter()
+                .enumerate()
+                .map(|(index, dispatched)| {
+                    let model = raw_type_str(&TypeRef::Named(dispatched.model.clone()), imports);
+                    let keyword = if index == 0 { "if" } else { "elif" };
+                    let event = escape_py_str(&dispatched.event);
+                    format!(
+                        "                                {keyword} _sse.event == \"{event}\":
+                                    try:
+                                        yield typing.cast(
+                                            {model},
+                                            parse_obj_as(
+                                                type_={model},
+                                                object_=json.loads(_sse.data),
+                                            ),
+                                        )
+                                    except Exception as e:
+                                        warning(f\"Failed to parse SSE event '{event}': {{e}}, sse: {{_sse!r}}\")"
+                    )
+                })
+                .collect();
+            format!(
+                "                            _event_source = EventSource(_response)
                             {for_kw} _sse in _event_source.{iter_sse}():
-                                if _sse.data == None:
+                                if _sse.data == {end}:
+                                    return
+{branches}",
+                end = sse_end(terminator.as_deref()),
+                branches = branches.join("\n"),
+            )
+        }
+        StreamProtocol::Sse { terminator, .. } => {
+            imports.add_from("logging", "error");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_sse_obj");
+            let end = sse_end(terminator.as_deref());
+            format!(
+                "                            _event_source = EventSource(_response)
+                            {for_kw} _sse in _event_source.{iter_sse}():
+                                if _sse.data == {end}:
                                     return
                                 try:
                                     yield typing.cast(
@@ -6339,7 +6403,45 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                 except Exception as e:
                                     error(
                                         f\"Unexpected error processing SSE event: {{type(e).__name__}}: {{e}}, sse: {{_sse!r}}\"
+                                    )"
+            )
+        }
+        StreamProtocol::JsonLines => {
+            imports.add_plain("json");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // One chunk per non-empty line; Fern skips a line that does not parse.
+            let iter_lines = if is_async {
+                "aiter_lines"
+            } else {
+                "iter_lines"
+            };
+            format!(
+                "                            {for_kw} _text in _response.{iter_lines}():
+                                try:
+                                    if len(_text) == 0:
+                                        continue
+                                    yield typing.cast(
+                                        {chunk},
+                                        parse_obj_as(
+                                            type_={chunk},
+                                            object_=json.loads(_text),
+                                        ),
                                     )
+                                except Exception:
+                                    pass"
+            )
+        }
+    };
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        {async_kw}def _iter():
+{iter_body}
                             return
 
                         return {inner_return}
@@ -10462,6 +10564,13 @@ fn build_example_inner(
                     example_fields.sort_by_key(|field| field.declaration_order);
                 }
             }
+            // The field a stream condition fixes is no argument, so no example
+            // passes it, even where the schema's own example writes it.
+            example_fields.retain(|field| {
+                ep.stream_condition
+                    .as_ref()
+                    .is_none_or(|(wire, _)| *wire != field.wire_name)
+            });
             for f in example_fields {
                 let supplied_example = f
                     .example
@@ -10700,11 +10809,23 @@ fn build_example_inner(
         } else {
             args
         };
-        let rendered = Example::Call(receiver, args).render(call_indent);
+        let example = Example::Call(receiver, args);
+        let rendered = example.render(call_indent);
         if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
+            // Fern's snippet formatter (ruff at width 80) parenthesizes the
+            // assignment's right-hand side when `response = <call>(` overflows
+            // and the call's opening line fits once indented a level deeper.
+            let head = rendered.lines().next().unwrap_or_default();
+            let assigned = if pad.len() + "response = ".len() + head.len() > 80
+                && pad.len() + 4 + head.len() <= 80
+            {
+                format!("(\n{pad}    {}\n{pad})", example.render(call_indent + 4))
+            } else {
+                rendered
+            };
             format!(
-                "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
+                "{pad}response = {assigned}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
             )
         } else if ep.pagination.is_some() && !documentation {
             // A pager's worked example shows both ways of consuming it: item by
@@ -12561,6 +12682,7 @@ mod tests {
             reference_description_suffix: String::new(),
             streaming: false,
             stream_chunk: None,
+            stream_protocol: None,
             text_response: false,
             markdown_response: false,
             binary_response: false,
@@ -12805,20 +12927,20 @@ mod tests {
         // The `<summary>` line is prose, so it uses Fern's full spelling rather
         // than the `dt.` alias the generated Python imports the types under.
         assert_eq!(
-            super::reference_return_type(&endpoint, "dt.datetime"),
+            super::reference_return_type(&endpoint, "dt.datetime", "bytes"),
             " -> datetime.datetime"
         );
         assert_eq!(
-            super::reference_return_type(&endpoint, "typing.Optional[dt.date]"),
+            super::reference_return_type(&endpoint, "typing.Optional[dt.date]", "bytes"),
             " -> typing.Optional[datetime.date]"
         );
         // A type that merely contains `dt` as part of a name is untouched, and a
         // `None` response still renders no suffix at all.
         assert_eq!(
-            super::reference_return_type(&endpoint, "UpdtStatus"),
+            super::reference_return_type(&endpoint, "UpdtStatus", "bytes"),
             " -> UpdtStatus"
         );
-        assert_eq!(super::reference_return_type(&endpoint, "None"), "");
+        assert_eq!(super::reference_return_type(&endpoint, "None", "bytes"), "");
     }
 
     #[test]
