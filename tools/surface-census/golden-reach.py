@@ -393,6 +393,19 @@ def golden_test_cwd(repo_root: Path) -> Path:
     return repo_root / "crates" / "crozier-e2e"
 
 
+def run_golden_test(
+    e2e: list[str], test: str, repo_root: Path, env: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
+    """Run one golden test alone through the e2e binary `e2e`, from [`golden_test_cwd`]."""
+    return subprocess.run(
+        [*e2e, "--exact", test, "--test-threads", "1", "--quiet"],
+        cwd=golden_test_cwd(repo_root),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def uncommitted_changes(repo_root: Path) -> list[str]:
     """Tracked paths that differ from `HEAD` — what a measurement stamped with
     `HEAD` would silently include."""
@@ -492,13 +505,7 @@ def measure(args: argparse.Namespace) -> int:
     def one(test: str) -> tuple[str, str | None]:
         with tempfile.TemporaryDirectory(prefix="golden-reach-") as scratch:
             raw = Path(scratch)
-            run = subprocess.run(
-                [str(e2e), "--exact", test, "--test-threads", "1", "--quiet"],
-                cwd=golden_test_cwd(repo_root),
-                capture_output=True,
-                text=True,
-                env=dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
-            )
+            run = run_golden_test([str(e2e)], test, repo_root, dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")))
             if run.returncode != 0:
                 return test, (run.stdout + run.stderr)[-3000:]
             profiles = sorted(str(p) for p in raw.glob("*.profraw"))
