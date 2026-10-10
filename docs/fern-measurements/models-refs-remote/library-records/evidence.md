@@ -17,8 +17,10 @@ crozier binary through failed HTTP acquisition and successful recovery, then
 compares every file in both directions through `src/parity.rs` in both enum
 modes. Catalogue's Curator pointer resolves in its defining document, and the
 direct response retains Curator's named component identity.
-`remote_model_controls_reject_an_unexplained_dependency_mismatch` verifies that
-changing the resolved dependency annotation to Any still fails comparison.
+`remote_model_controls_reject_an_unexplained_dependency_mismatch` runs
+`crozier compare` over the same loopback documents: the certified tree as the
+reference matches, and a reference whose catalogue types the dependency as Any
+is a mismatch naming that one file.
 The ledger admits only existing identity and metadata departures.
 
 ## Multi-file cover contract

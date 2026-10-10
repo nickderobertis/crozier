@@ -249,6 +249,90 @@ fn narrowed_enum_departure_requires_source_validity_and_rejects_other_changes() 
     .matches());
 }
 
+/// Departure normalization reads the same complete source the generator does:
+/// Fern's example against the replacement is accepted only where no
+/// composition was dropped when the document loaded.
+#[test]
+fn narrowed_enum_departure_declines_a_dropped_composition() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-measurements/models-refs-composed-narrowing/dossier-status");
+    let spec = fixture.join("openapi.yml");
+    let composition = "      allOf:\n      - maxLength: 5\n";
+    let text = std::fs::read_to_string(&spec).unwrap();
+    assert!(text.contains(composition));
+    let work = tempfile::tempdir().expect("plain composition document");
+    let golden = fixture.join("fern-expected");
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let corrected = reference.replace(
+        "standing=DossierStanding.DRAFT,",
+        "standing=DossierStanding.SEALED,",
+    );
+    assert_ne!(corrected, reference);
+    let composed = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    assert!(
+        crozier::parity::compare_file(&composed, "README.md", &corrected, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let plain_spec = work.path().join("plain.yml");
+    std::fs::write(&plain_spec, text.replace(composition, "")).unwrap();
+    let plain = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&plain_spec).unwrap());
+    let accepted =
+        crozier::parity::compare_file(&plain, "README.md", &corrected, &reference).unwrap();
+    assert!(accepted.matches(), "{:?}", accepted.diff());
+}
+
+/// The departure holds only the complete-schema member: Fern's example
+/// replaced by the member the pattern alone would pick is an unexplained
+/// mismatch, as is any correction of the unsatisfiable charter.
+#[test]
+fn narrowed_enum_departure_requires_every_enclosing_constraint() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/harbour-window");
+    let spec = fixture.join("openapi.yml");
+    let golden = fixture.join("fern-expected");
+    let context = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let accepted = reference.replace("window=CrossingWindow.SLACK,", "window=CrossingWindow.EBB,");
+    assert_ne!(accepted, reference);
+    let compared =
+        crozier::parity::compare_file(&context, "README.md", &accepted, &reference).unwrap();
+    assert!(compared.matches(), "{:?}", compared.diff());
+    let pattern_only = reference.replace(
+        "window=CrossingWindow.SLACK,",
+        "window=CrossingWindow.FLOOD,",
+    );
+    assert!(
+        crozier::parity::compare_file(&context, "README.md", &pattern_only, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let client = std::fs::read_to_string(golden.join("src/fern/client.py")).unwrap();
+    for replacement in [
+        "CharterWindow.EBB",
+        "CharterWindow.FLOOD",
+        "CharterWindow.NEAP",
+    ] {
+        let changed = client.replace(
+            "window=CharterWindow.SLACK,",
+            &format!("window={replacement},"),
+        );
+        assert_ne!(changed, client);
+        assert!(
+            crozier::parity::compare_file(&context, "src/fern/client.py", &changed, &client)
+                .unwrap()
+                .diff()
+                .is_some(),
+            "{replacement}"
+        );
+    }
+}
+
 #[test]
 fn property_metadata_survives_the_public_generation_pipeline() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");

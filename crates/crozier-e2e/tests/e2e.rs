@@ -2512,27 +2512,86 @@ fn material_register_matches_certified_fern_tree() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
+/// `crozier compare` over a config naming `spec`, whose reference command copies
+/// the certified Fern tree `certified` with `edit` (relative path, from, to)
+/// applied — the reference SDK a migrating user's own Fern run would write.
+/// Returns the exit status and the JSON report's one result.
+#[cfg(unix)]
+fn compare_with_certified_reference(
+    spec: &Path,
+    certified: &Path,
+    edit: Option<(&str, &str, &str)>,
+) -> (i32, serde_json::Value) {
+    let work = tempfile::tempdir().expect("compare workspace");
+    let reference = work.path().join("reference");
+    copy_dir(certified, &reference);
+    if let Some((rel, from, to)) = edit {
+        let text = std::fs::read_to_string(reference.join(rel)).expect("certified file");
+        let changed = text.replace(from, to);
+        assert_ne!(text, changed, "the reference edit must change {rel}");
+        std::fs::write(reference.join(rel), changed).unwrap();
+    }
+    let config = work.path().join("crozier.yml");
+    std::fs::write(
+        &config,
+        format!(
+            "spec: {}\npackage-name: fern\nproject-name: default_package_name\n\
+             reference:\n  command: cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            spec.display(),
+            reference.display()
+        ),
+    )
+    .unwrap();
+    let output = crozier()
+        .arg("compare")
+        .arg(&config)
+        .args(["--json", "-"])
+        .output()
+        .expect("run crozier compare");
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("compare's JSON report");
+    let results = report["results"].as_array().expect("report results");
+    assert_eq!(results.len(), 1, "{report:#}");
+    (
+        output.status.code().expect("exit status"),
+        results[0].clone(),
+    )
+}
+
+/// The certified tree matches through `crozier compare`, and a reference that
+/// differs from it by one ordinary annotation is a mismatch naming that file:
+/// the adjacent scalar shapes are not swept up by any departure.
+#[cfg(unix)]
 #[test]
 fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
-    let fixture =
-        repo_root().join("docs/openapi-surface/handwritten/material-register/fern-expected");
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/material-register");
+    let spec = fixture.join("openapi.yml");
+    let certified = fixture.join("fern-expected");
+    let (code, result) = compare_with_certified_reference(&spec, &certified, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
+    );
     let rel = "src/fern/types/material.py";
-    let expected = std::fs::read_to_string(fixture.join(rel)).expect("certified model");
-    let changed = expected.replace(
-        "density: typing.Optional[float]",
-        "density: typing.Optional[int]",
+    let (code, result) = compare_with_certified_reference(
+        &spec,
+        &certified,
+        Some((
+            rel,
+            "density: typing.Optional[float]",
+            "density: typing.Optional[int]",
+        )),
     );
-    assert_ne!(
-        expected, changed,
-        "the negative control must change an annotation"
+    assert_eq!(
+        code, 3,
+        "an ordinary number annotation mismatch must fail: {result:#}"
     );
-    let context = Context::from_trees(&fixture, &fixture);
-    assert!(
-        parity::compare_file(&context, rel, &changed, &expected)
-            .expect("compare the adjacent scalar control")
-            .diff()
-            .is_some(),
-        "an ordinary number annotation mismatch must fail parity"
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!([rel]),
+        "{result:#}"
     );
 }
 
@@ -17286,25 +17345,51 @@ fn remote_model_components_match_the_certified_fern_tree() {
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
 
+/// `crozier compare` fetches the external document over loopback HTTP and
+/// matches the certified tree, while a reference whose catalogue types its
+/// external dependency as `Any` (what resolving the pointer against the root
+/// would produce) is a mismatch naming that file.
+#[cfg(unix)]
 #[test]
 fn remote_model_controls_reject_an_unexplained_dependency_mismatch() {
-    let fixture = repo_root()
+    let server = LocalDocumentServer::start(&[(
+        "/models.yml",
+        include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"),
+    )]);
+    let source = tempfile::tempdir().expect("remote source");
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    );
+    std::fs::write(&spec, text.replace("@REMOTE_URL@", &server.base_url)).unwrap();
+    let certified = repo_root()
         .join(MODELS_REFS_REMOTE_DIR)
         .join("library-records/fern-expected");
-    let rel = "src/fern/types/catalogue.py";
-    let expected = std::fs::read_to_string(fixture.join(rel)).expect("certified catalogue");
-    let changed = expected.replace("typing.Optional[Curator]", "typing.Optional[typing.Any]");
-    assert_ne!(
-        expected, changed,
-        "the dependency control must change a type"
+    let (code, result) = compare_with_certified_reference(&spec, &certified, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
     );
-    let context = Context::from_trees(&fixture, &fixture);
-    assert!(
-        parity::compare_file(&context, rel, &changed, &expected)
-            .expect("compare a dependency mismatch")
-            .diff()
-            .is_some(),
-        "an unexplained dependency mismatch must fail parity"
+    let rel = "src/fern/types/catalogue.py";
+    let (code, result) = compare_with_certified_reference(
+        &spec,
+        &certified,
+        Some((
+            rel,
+            "typing.Optional[Curator]",
+            "typing.Optional[typing.Any]",
+        )),
+    );
+    assert_eq!(
+        code, 3,
+        "an unexplained dependency mismatch must fail: {result:#}"
+    );
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!([rel]),
+        "{result:#}"
     );
 }
 
@@ -23646,30 +23731,6 @@ fn composed_narrowing_declines_the_example_correction_and_matches_certified_fern
         let readme = std::fs::read_to_string(out.join("README.md")).unwrap();
         assert!(readme.contains(expected), "{expected}\n{readme}");
     }
-
-    // Departure normalization reads the same complete source: Fern's example
-    // against the replacement is accepted only where no composition was dropped.
-    let golden = fixture.join("fern-expected");
-    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
-    let corrected = reference.replace(
-        "standing=DossierStanding.DRAFT,",
-        "standing=DossierStanding.SEALED,",
-    );
-    assert_ne!(corrected, reference);
-    let composed = Context::from_trees(&golden, &golden)
-        .with_source_document(crozier::openapi::load(&spec).unwrap());
-    assert!(
-        parity::compare_file(&composed, "README.md", &corrected, &reference)
-            .unwrap()
-            .diff()
-            .is_some()
-    );
-    let plain_spec = work.path().join("plain.yml");
-    std::fs::write(&plain_spec, text.replace(composition, "")).unwrap();
-    let plain = Context::from_trees(&golden, &golden)
-        .with_source_document(crozier::openapi::load(&plain_spec).unwrap());
-    let accepted = parity::compare_file(&plain, "README.md", &corrected, &reference).unwrap();
-    assert!(accepted.matches(), "{:?}", accepted.diff());
 }
 
 #[test]
@@ -23719,47 +23780,6 @@ fn enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern()
             out.path(),
         );
         assert!(failures.is_empty(), "{}", failures.join("\n"));
-    }
-
-    // The departure holds only the complete-schema member: Fern's example
-    // replaced by the member the pattern alone would pick is an unexplained
-    // mismatch, as is any correction of the unsatisfiable charter.
-    let golden = fixture.join("fern-expected");
-    let context = Context::from_trees(&golden, &golden)
-        .with_source_document(crozier::openapi::load(&spec).unwrap());
-    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
-    let accepted = reference.replace("window=CrossingWindow.SLACK,", "window=CrossingWindow.EBB,");
-    assert_ne!(accepted, reference);
-    let compared = parity::compare_file(&context, "README.md", &accepted, &reference).unwrap();
-    assert!(compared.matches(), "{:?}", compared.diff());
-    let pattern_only = reference.replace(
-        "window=CrossingWindow.SLACK,",
-        "window=CrossingWindow.FLOOD,",
-    );
-    assert!(
-        parity::compare_file(&context, "README.md", &pattern_only, &reference)
-            .unwrap()
-            .diff()
-            .is_some()
-    );
-    let client = std::fs::read_to_string(golden.join("src/fern/client.py")).unwrap();
-    for replacement in [
-        "CharterWindow.EBB",
-        "CharterWindow.FLOOD",
-        "CharterWindow.NEAP",
-    ] {
-        let changed = client.replace(
-            "window=CharterWindow.SLACK,",
-            &format!("window={replacement},"),
-        );
-        assert_ne!(changed, client);
-        assert!(
-            parity::compare_file(&context, "src/fern/client.py", &changed, &client)
-                .unwrap()
-                .diff()
-                .is_some(),
-            "{replacement}"
-        );
     }
 }
 
