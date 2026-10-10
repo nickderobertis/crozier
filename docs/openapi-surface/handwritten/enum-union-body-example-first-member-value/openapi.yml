@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Bell Ringers
+  version: 1.0.0
+paths:
+  /peals:
+    post:
+      operationId: ringPeal
+      tags: [peals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Method"
+      responses:
+        "204":
+          description: The peal was rung.
+components:
+  schemas:
+    Doubles:
+      type: string
+      enum: [grandsire, stedman]
+    Minor:
+      type: string
+      enum: [cambridge, oxford]
+    Method:
+      oneOf:
+        - $ref: "#/components/schemas/Doubles"
+        - $ref: "#/components/schemas/Minor"

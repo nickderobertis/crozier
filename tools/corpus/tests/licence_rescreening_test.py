@@ -151,13 +151,13 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
             "curedao/curedao-monorepo",
         ):
             self.assertIn(expected, documents, f"{expected} fell out of the set")
-        for expected in ("security.md:509", "parameters.md:432", "schemas.md:1273"):
+        for expected in ("security.md:509", "parameters.md:435", "schemas.md:1287"):
             self.assertIn(expected, rows, f"{expected} fell out of the in-scope rows")
 
     def test_a_pooled_region_row_splits_into_its_members(self) -> None:
         """The ten SwaggerHub documents of one `schemas.md` row are ten."""
         gate = load_gate()
-        row = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").split("\n")[1279]
+        row = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8").split("\n")[1289]
         candidate = row.strip().strip("|").split(" | ")[0]
         self.assertEqual(len(gate.documents_in(candidate)), 10)
 
@@ -165,7 +165,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
         """`witness-found` rows are answers, not blocked candidates."""
         gate = load_gate()
         _, rows = gate.authoritative(REPO)
-        self.assertNotIn("bodies-media.md:274", rows)
+        self.assertNotIn("bodies-media.md:275", rows)
 
 
 class TheGateStillDiscriminates(unittest.TestCase):

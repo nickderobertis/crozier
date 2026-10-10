@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Apiary Log
+  version: 1.0.0
+paths:
+  /hives/{hiveId}/yield:
+    get:
+      operationId: fetchYield
+      tags: [hives]
+      parameters:
+        - name: hiveId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The season's honey yield.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/honey_yield"
+components:
+  schemas:
+    honey_yield:
+      type: object
+      required: [kilograms]
+      properties:
+        kilograms:
+          type: number

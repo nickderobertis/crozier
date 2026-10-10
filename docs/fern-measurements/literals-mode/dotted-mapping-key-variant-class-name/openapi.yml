@@ -1,0 +1,45 @@
+openapi: 3.0.3
+info:
+  title: Hangar Doors
+  version: 1.0.0
+paths:
+  /notices/latest:
+    get:
+      operationId: latestNotice
+      tags: [notices]
+      responses:
+        "200":
+          description: The most recent door notice.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notice"
+components:
+  schemas:
+    Locking:
+      type: object
+      required: [kind, door]
+      properties:
+        kind:
+          type: string
+        door:
+          type: string
+    Unlocking:
+      type: object
+      required: [kind, door]
+      properties:
+        kind:
+          type: string
+        door:
+          type: string
+        keyholder:
+          type: string
+    Notice:
+      oneOf:
+        - $ref: "#/components/schemas/Locking"
+        - $ref: "#/components/schemas/Unlocking"
+      discriminator:
+        propertyName: kind
+        mapping:
+          door.locked: "#/components/schemas/Locking"
+          door.unlocked: "#/components/schemas/Unlocking"

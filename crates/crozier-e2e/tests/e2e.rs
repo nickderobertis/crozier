@@ -49,6 +49,16 @@ mod overlay_goldens;
 #[path = "e2e/unions.rs"]
 mod unions;
 
+/// The parity shapes measured under Fern's default `enum_type`, against
+/// crozier's `--enum-type literals`.
+#[path = "e2e/literals_mode.rs"]
+mod literals_mode;
+
+/// The registered real specifications proving parity shapes, held to the
+/// shapes they declare.
+#[path = "e2e/real_witnesses.rs"]
+mod real_witnesses;
+
 /// The per-golden ledger of intended departures every golden comparison holds
 /// its observed departures to.
 #[path = "../../../tests/support/departures_ledger.rs"]
@@ -840,6 +850,24 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
                 add(
                     format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
                     departures_ledger::ComparedGolden::default(),
+                );
+            }
+        }
+    }
+    if let Ok(entries) = std::fs::read_dir(root.join(literals_mode::LITERALS_MODE_DIR)) {
+        for entry in entries.filter_map(Result::ok) {
+            if entry.path().join(literals_mode::TREE).is_dir() {
+                add(
+                    format!(
+                        "{}/{}/{}",
+                        literals_mode::LITERALS_MODE_DIR,
+                        entry.file_name().to_string_lossy(),
+                        literals_mode::TREE
+                    ),
+                    departures_ledger::ComparedGolden {
+                        excluded: vec![literals_mode::MANIFEST.to_string()],
+                        carve_outs: Default::default(),
+                    },
                 );
             }
         }
@@ -7285,6 +7313,7 @@ const CORPORA: &[&Corpus] = &[
     &CONFLUENT_KAFKA_CONNECT,
     &NETGSM_SMS,
     &ZYLON_PRIVATE_GPT,
+    &MERMADE_OPENAPI_CONVERTER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -10340,6 +10369,19 @@ const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `mermade-openapi-converter`: corpus row 2400, the Swagger2OpenAPI converter,
+/// whose multipart bodies carry an optional one-value string enum part.
+const MERMADE_OPENAPI_CONVERTER: Corpus = Corpus {
+    api: "mermade-openapi-converter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 const NETGSM_SMS: Corpus = Corpus {
     api: "netgsm-sms",
     package_name: "fern",
@@ -11111,6 +11153,13 @@ fn confluent_kafka_connect_matches_fern_output() {
 fn netgsm_sms_matches_fern_output() {
     assert_committed_corpus_matches(&NETGSM_SMS);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); this one generates a six-operation document in about two seconds, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn mermade_openapi_converter_matches_fern_output() {
+    assert_committed_corpus_matches(&MERMADE_OPENAPI_CONVERTER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn zylon_private_gpt_matches_fern_output() {

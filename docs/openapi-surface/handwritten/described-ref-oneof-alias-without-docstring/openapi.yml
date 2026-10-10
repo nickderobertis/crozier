@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Racks
+  version: 1.0.0
+paths:
+  /planters/{planterId}:
+    get:
+      operationId: fetchPlanter
+      tags: [planters]
+      parameters:
+        - name: planterId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The planter on that rack.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Planter"
+components:
+  schemas:
+    Trough:
+      type: object
+      required: [lengthCm]
+      properties:
+        lengthCm:
+          type: integer
+    Basket:
+      type: object
+      required: [hanging]
+      properties:
+        hanging:
+          type: boolean
+    Planter:
+      description: A rack holds troughs and hanging baskets alike.
+      oneOf:
+        - $ref: "#/components/schemas/Trough"
+        - $ref: "#/components/schemas/Basket"

@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Weather Station
+  version: 1.0.0
+paths:
+  /gusts/latest:
+    get:
+      operationId: latestGust
+      tags: [gusts]
+      responses:
+        "200":
+          description: The latest gust reading.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Gust"
+components:
+  schemas:
+    Gust:
+      oneOf:
+        - type: string
+        - type: string
+        - type: array
+          items:
+            type: integer
+        - type: array
+          items:
+            type: integer

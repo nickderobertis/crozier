@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Glider Club
+  version: 1.0.0
+paths:
+  /launches/{launchId}:
+    get:
+      operationId: fetchLaunch
+      tags: [launches]
+      parameters:
+        - name: launchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The launch.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Launch"
+components:
+  schemas:
+    Winch:
+      type: object
+      required: [cableM]
+      properties:
+        cableM:
+          type: integer
+    Aerotow:
+      type: object
+      required: [towplane]
+      properties:
+        towplane:
+          type: string
+    Launch:
+      type: object
+      required: [glider]
+      properties:
+        glider:
+          type: string
+        releaseHeightM:
+          type: integer
+      oneOf:
+        - $ref: "#/components/schemas/Winch"
+        - $ref: "#/components/schemas/Aerotow"

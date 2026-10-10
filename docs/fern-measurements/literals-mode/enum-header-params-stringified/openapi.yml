@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Tram Depot
+  version: 1.0.0
+paths:
+  /trams:
+    get:
+      operationId: listTrams
+      tags: [trams]
+      parameters:
+        - name: line
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: X-Shift
+          in: header
+          required: true
+          schema:
+            $ref: "#/components/schemas/Shift"
+        - name: X-Traction
+          in: header
+          required: false
+          schema:
+            $ref: "#/components/schemas/Traction"
+      responses:
+        "204":
+          description: The trams were listed.
+  /trams/idle:
+    get:
+      operationId: countIdle
+      tags: [trams]
+      responses:
+        "204":
+          description: The idle trams were counted.
+components:
+  schemas:
+    Shift:
+      type: string
+      enum: [early, late]
+    Traction:
+      type: string
+      enum: [overhead, battery]
