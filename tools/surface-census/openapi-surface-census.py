@@ -3644,20 +3644,26 @@ def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
         """
         if depth > 200:
             return 0
-        if isinstance(node, list):
-            return sum(inline_type_names(item, depth + 1) for item in node)
-        if not isinstance(node, dict):
-            return 0
-        count = 0
-        properties = node.get("properties")
-        for value in properties.values() if isinstance(properties, dict) else []:
-            if isinstance(value, dict) and "$ref" not in value and _extension(value, "type-name") not in (None, ""):
-                count += 1
-            count += inline_type_names(value, depth + 1)
-        for key, value in node.items():
-            if key not in ("properties", "example", "examples"):
-                count += inline_type_names(value, depth + 1)
-        return count
+        match node:
+            case list():
+                return sum(inline_type_names(item, depth + 1) for item in node)
+            case dict():
+                count = 0
+                properties = node.get("properties")
+                for value in properties.values() if isinstance(properties, dict) else []:
+                    if (
+                        isinstance(value, dict)
+                        and "$ref" not in value
+                        and _extension(value, "type-name") not in (None, "")
+                    ):
+                        count += 1
+                    count += inline_type_names(value, depth + 1)
+                for key, value in node.items():
+                    if key not in ("properties", "example", "examples"):
+                        count += inline_type_names(value, depth + 1)
+                return count
+            case _:
+                return 0
 
     found += ["schema.x-fern-type-name:inline-property"] * inline_type_names(document)
     servers = (
