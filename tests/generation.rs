@@ -4194,12 +4194,9 @@ fn fixture_match_count(
         match crozier::parity::compare_file(&context, rel, actual, fern) {
             Ok(compared) if compared.matches() => {
                 counted.insert(rel.clone());
-                observed.extend(
-                    compared
-                        .departures
-                        .iter()
-                        .map(|departure| (rel.clone(), departure.line, departure.id.to_string())),
-                );
+                observed.extend(compared.departures.iter().map(|departure| {
+                    (rel.clone(), departure.line.get(), departure.id.to_string())
+                }));
             }
             // A module a row names must match under the engine; any other
             // module that differs is uncounted.

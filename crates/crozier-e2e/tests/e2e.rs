@@ -4550,7 +4550,8 @@ fn additional_header_scheme_names_read_crozier_spelling_over_fern() {
 /// constructor parameter, a header prefix with braces, which Fern writes into
 /// an f-string, an idempotency header that is no HTTP header name, a basic
 /// scheme naming its username and password alike, a server name making a
-/// punctuated or empty member or field, and a credential named with separators
+/// member or field that is no ASCII Python identifier (punctuated, non-ASCII
+/// or empty), and a credential named with separators
 /// only or `self`. A keyword name is escaped instead, as Fern escapes it
 /// (`class` is `class_`), and generates.
 #[test]
@@ -4624,7 +4625,15 @@ fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 "servers:\n  - url: https://one.test\n    x-crozier-server-name: 'a!b'\n{}",
                 ping("")
             ),
-            "makes the environment member `A!B`, which is no Python identifier",
+            "makes the environment member `A!B`, which is no ASCII Python identifier",
+        ),
+        (
+            "superscript-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 'a\u{b2}'\n{}",
+                ping("")
+            ),
+            "which is no ASCII Python identifier",
         ),
         (
             "separator-only-member",
@@ -4632,7 +4641,7 @@ fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 "servers:\n  - url: https://one.test\n    x-fern-server-name: '---'\n{}",
                 ping("")
             ),
-            "which is no Python identifier",
+            "which is no ASCII Python identifier",
         ),
         (
             "separator-only-field",
@@ -7251,7 +7260,13 @@ fn observed_in(rel: &str, compared: &parity::FileComparison) -> Vec<Observed> {
     compared
         .departures
         .iter()
-        .map(|departure| (rel.to_string(), departure.line, departure.id.to_string()))
+        .map(|departure| {
+            (
+                rel.to_string(),
+                departure.line.get(),
+                departure.id.to_string(),
+            )
+        })
         .collect()
 }
 
@@ -12160,7 +12175,7 @@ fn golden_differences(
     let observed: Vec<Observed> = compared
         .departures
         .into_iter()
-        .map(|departure| (departure.file, departure.line, departure.id))
+        .map(|departure| (departure.file, departure.location.as_number(), departure.id))
         .collect();
     let failures = ledger.check(&observed, &|rel| {
         file_filter.is_none_or(|filter| rel.contains(filter))

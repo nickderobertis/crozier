@@ -34,7 +34,7 @@
 //!
 //! The tree rules ([`compare_trees`]): the comparison is bidirectional (a file
 //! on only one side is a difference unless a catalog file rule accounts for it
-//! — reported at line 0, as the whole file), a symbolic link on either side is refused
+//! — reported as the whole file, [`Location::WholeFile`]), a symbolic link on either side is refused
 //! rather than followed, and the `.crozier-fern-golden.json` provenance record a
 //! committed golden carries is not part of either tree. A rule that reads the
 //! trees (which classes each defines) sees them whole.
@@ -44,6 +44,7 @@
 //! module's tests), so stripping both sides serves both inputs with one rule.
 
 use std::collections::BTreeSet;
+use std::num::NonZeroUsize;
 use std::path::Path;
 
 use crate::departures::{self, Context, Pair};
@@ -61,8 +62,8 @@ pub const PROVENANCE_FILE: &str = ".crozier-fern-golden.json";
 /// catalog id.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct FileDeparture {
-    /// crozier's line where the departure starts.
-    pub line: usize,
+    /// crozier's 1-based line where the departure starts.
+    pub line: NonZeroUsize,
     /// The catalog entry's id.
     pub id: &'static str,
 }
@@ -163,7 +164,7 @@ pub fn compare_file(
                 region.fern.clone().map(|i| (fern[i], None)),
             );
             departures.push(FileDeparture {
-                line: region.crozier.start + 1,
+                line: NonZeroUsize::MIN.saturating_add(region.crozier.start),
                 id,
             });
             break;
@@ -220,7 +221,7 @@ pub fn compare_file(
             };
             if let Some((id, origin)) = claimed {
                 departures.push(FileDeparture {
-                    line: origin + 1,
+                    line: NonZeroUsize::MIN.saturating_add(origin),
                     id,
                 });
             }
@@ -456,11 +457,31 @@ pub enum Difference {
 pub struct AppliedDeparture {
     /// The file's `/`-separated path relative to the tree root.
     pub file: String,
-    /// crozier's 1-based line where it starts, or 0 for a whole file only one
-    /// side has.
-    pub line: usize,
+    /// Where in the file it applies.
+    pub location: Location,
     /// The catalog entry's id.
     pub id: String,
+}
+
+/// Where an [`AppliedDeparture`] applies.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum Location {
+    /// A whole file only one side has, which a file rule accounts for.
+    WholeFile,
+    /// crozier's 1-based line where it starts.
+    Line(NonZeroUsize),
+}
+
+impl Location {
+    /// The location as the departure ledger and the compare report write it:
+    /// the 1-based line, or 0 for a whole file.
+    #[must_use]
+    pub fn as_number(self) -> usize {
+        match self {
+            Location::WholeFile => 0,
+            Location::Line(line) => line.get(),
+        }
+    }
 }
 
 /// The comparison of two whole trees.
@@ -515,7 +536,7 @@ pub fn compare_trees(
                 Some(id) => {
                     comparison.departures.push(AppliedDeparture {
                         file: rel.clone(),
-                        line: 0,
+                        location: Location::WholeFile,
                         id: id.to_string(),
                     });
                     None
@@ -534,7 +555,7 @@ pub fn compare_trees(
                     .departures
                     .extend(departures.into_iter().map(|departure| AppliedDeparture {
                         file: rel.clone(),
-                        line: departure.line,
+                        location: Location::Line(departure.line),
                         id: departure.id.to_string(),
                     }));
                 difference
@@ -609,7 +630,7 @@ mod tests {
         compared
             .departures
             .iter()
-            .map(|departure| (departure.line, departure.id))
+            .map(|departure| (departure.line.get(), departure.id))
             .collect()
     }
 
@@ -986,7 +1007,7 @@ mod tests {
             .iter()
             .map(|departure| {
                 assert_eq!(departure.id, "empty-namespace-package");
-                (departure.file.as_str(), departure.line)
+                (departure.file.as_str(), departure.location.as_number())
             })
             .collect();
         assert_eq!(
@@ -1065,7 +1086,7 @@ mod tests {
             found.departures,
             [AppliedDeparture {
                 file: "core/client_wrapper.py".into(),
-                line: 2,
+                location: Location::Line(NonZeroUsize::new(2).unwrap()),
                 id: "sdk-identity-header-prefix".into(),
             }]
         );
@@ -1102,7 +1123,7 @@ mod tests {
             found.departures,
             [AppliedDeparture {
                 file: "README.md".into(),
-                line: 1,
+                location: Location::Line(NonZeroUsize::MIN),
                 id: "readme-client-class-casing".into(),
             }]
         );

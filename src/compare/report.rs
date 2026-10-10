@@ -280,7 +280,8 @@ pub struct Departure {
     pub id: String,
     /// The file, relative to the SDK root.
     pub file: String,
-    /// crozier's 1-based line where the departure starts.
+    /// crozier's 1-based line where the departure starts, or 0 when it
+    /// accounts for a whole file only one side has.
     pub line: usize,
 }
 

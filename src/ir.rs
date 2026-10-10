@@ -369,12 +369,14 @@ fn environment_field(doc: &OpenApi, op: &Operation) -> EnvironmentField {
         })
 }
 
-/// Whether `name` is a Python identifier: non-empty, not digit-led, and only
-/// letters, digits and `_`.
-fn is_python_identifier(name: &str) -> bool {
+/// Whether `name` is an ASCII Python identifier: non-empty, not digit-led,
+/// and only ASCII letters, digits and `_`. Python admits some non-ASCII
+/// identifiers too, but not every Unicode letter or digit (`²`, `١`), so
+/// anything outside ASCII is refused rather than guessed at.
+fn is_ascii_python_identifier(name: &str) -> bool {
     !name.starts_with(|c: char| c.is_ascii_digit())
         && !name.is_empty()
-        && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+        && name.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
 }
 
 /// A declared name as Fern writes a Python parameter or attribute from it:
@@ -447,7 +449,10 @@ impl Ir {
         if let Some(environment) = &self.environment {
             let members = std::iter::once(&environment.default.0)
                 .chain(environment.others.iter().map(|(name, _)| name));
-            if let Some(member) = members.into_iter().find(|name| !is_python_identifier(name)) {
+            if let Some(member) = members
+                .into_iter()
+                .find(|name| !is_ascii_python_identifier(name))
+            {
                 return Some(if member.starts_with(|c: char| c.is_ascii_digit()) {
                     format!(
                         "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
@@ -457,8 +462,8 @@ impl Ir {
                 } else {
                     format!(
                         "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
-                         environment member `{}`, which is no Python identifier; give that \
-                         server a name of letters, digits and separators",
+                         environment member `{}`, which is no ASCII Python identifier; give \
+                         that server a name of ASCII letters, digits and separators",
                         member.escape_debug()
                     )
                 });
