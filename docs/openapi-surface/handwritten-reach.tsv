@@ -15,6 +15,8 @@ format-scalar-bodies	format-time	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Pri
 format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	1	1
 format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
+harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
+harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]	5	5
 header-subset-string-default	parameter-in-header	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	1	1
 http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
