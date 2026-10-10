@@ -1,0 +1,95 @@
+openapi: 3.0.3
+info:
+  title: RFID Door Panel
+  version: 3.0.1
+  description: Badge readers and door groups behind a building's access panel.
+servers:
+  - url: https://panel.doors.test/v3
+paths:
+  /rfid/scans:
+    post:
+      tags: [RFID]
+      operationId: r_f_i_d_scan
+      summary: Report a badge held to a reader.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Scan'
+      responses:
+        '200':
+          description: Whether the door opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Decision'
+  /rfid/readers:
+    get:
+      tags: [RFID]
+      operationId: rfid_list
+      responses:
+        '200':
+          description: Reader ids.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /badge-readers/{readerId}:
+    get:
+      tags: [Badge Readers]
+      operationId: badgeReaders_get
+      parameters:
+        - name: readerId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The reader.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reader'
+  /doors/groups:
+    get:
+      tags: [Doors/DoorGroups]
+      operationId: doors_doorgroups_list
+      responses:
+        '200':
+          description: Door group names.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    Scan:
+      type: object
+      required: [reader, badge]
+      properties:
+        reader:
+          type: string
+        badge:
+          type: string
+          description: The badge's serial, in hex.
+    Decision:
+      type: object
+      required: [outcome]
+      properties:
+        outcome:
+          type: string
+          enum: [granted, denied, tailgate]
+    Reader:
+      type: object
+      required: [id]
+      properties:
+        id:
+          type: string
+        door:
+          type: string

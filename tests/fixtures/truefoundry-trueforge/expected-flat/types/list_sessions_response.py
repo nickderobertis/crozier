@@ -1,0 +1,22 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .session import Session
+from .token_pagination import TokenPagination
+
+
+class ListSessionsResponse(UniversalBaseModel):
+    data: typing.List[Session]
+    pagination: TokenPagination
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

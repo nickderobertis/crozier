@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "5dbb00931ed8271b2e252ed53d469d4a0e6f0ece0f941caade321e0ce8116064"
+
+[[covers]]
+key = "security-scheme-basic-extension-named"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#basic-credential-extension"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

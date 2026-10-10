@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "ad79019aaa455d9bce042972274c179b12d9bf6cf759c4304565c18e4acc43af"
+
+[[covers]]
+key = "operation-sdk-group-name-leading-underscore"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-name-with-a-leading-underscore"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9130727e7de71f165ff8313cf91febb6e7fb2196bbf7c1a39cdab31c9e25129d"
+
+[[covers]]
+key = "operation-group-types-beside-child-group"
+search = "docs/openapi-surface/witness-search-clients-extensions/README.md#group-with-types-beside-a-child-group"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-clients-extensions/README.md"

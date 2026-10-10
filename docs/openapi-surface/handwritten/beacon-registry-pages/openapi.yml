@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Beacon Registry
+  version: 0.3.0
+  description: Emergency locator beacons registered to vessels.
+servers:
+  - url: https://registry.beacons.test
+x-fern-pagination:
+  offset: $request.page
+  results: $response.beacons
+paths:
+  /beacons:
+    get:
+      operationId: listBeacons
+      x-fern-pagination: true
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: One page of beacons.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BeaconPage'
+components:
+  schemas:
+    BeaconPage:
+      type: object
+      properties:
+        beacons:
+          type: array
+          items:
+            type: string

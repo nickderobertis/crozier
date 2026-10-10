@@ -374,7 +374,7 @@
           "type": "string"
         },
         "line": {
-          "description": "crozier's 1-based line where the departure starts.",
+          "description": "crozier's 1-based line where the departure starts, or 0 when it\naccounts for a whole file only one side has.",
           "type": "integer",
           "format": "uint",
           "minimum": 0

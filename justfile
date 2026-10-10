@@ -298,6 +298,10 @@ handwritten-reach *args:
 surface-census *args:
     "$(bash ./scripts/census-python.sh)" ./tools/surface-census/openapi-surface-census.py "$@"
 
+# Regenerate the predicate grammar list and counts from census constants.
+predicate-grammar:
+    python3 tools/surface-census/update-predicate-grammar.py
+
 # Boundary coverage for `surface-census`: drives the REAL script over the REAL
 # vendored source documents, offline, so the gate keeps the instrument honest
 # without the network the unscoped recipe needs. Part of `check` (the recipe

@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Tow Truck Dispatch
+  version: 1.0.0
+paths:
+  /jobs:
+    get:
+      operationId: listJobs
+      x-fern-pagination:
+        cursor: $request.after
+        next_cursor: $response.next
+        results: $response.jobs
+      parameters:
+        - name: after
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One page of tow jobs, or null when the depot is closed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobPage'
+components:
+  schemas:
+    Job:
+      type: object
+      properties:
+        plate:
+          type: string
+    JobPage:
+      type: object
+      nullable: true
+      properties:
+        next:
+          type: string
+        jobs:
+          type: array
+          items:
+            $ref: '#/components/schemas/Job'

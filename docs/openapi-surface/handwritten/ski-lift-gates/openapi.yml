@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Ski Lift Gates
+  version: 4.2.0
+  description: Turnstiles at the base of a ski lift.
+servers:
+  - url: https://gates.lift.test
+security:
+  - Pass: []
+paths:
+  /gates/{gateId}/scans:
+    post:
+      operationId: scanPass
+      parameters:
+        - name: gateId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [skier]
+              properties:
+                skier:
+                  type: string
+      responses:
+        '200':
+          description: Whether the turnstile opened.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Turnstile'
+components:
+  securitySchemes:
+    Pass:
+      type: http
+      scheme: bearer
+      x-fern-bearer:
+        name: liftPass
+        env: LIFT_PASS
+  schemas:
+    Turnstile:
+      type: object
+      required: [open]
+      properties:
+        open:
+          type: boolean
+        reason:
+          type: string
+          enum: [expired, wrong_lift, ok]

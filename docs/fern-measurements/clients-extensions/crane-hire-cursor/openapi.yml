@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Crane Hire
+  version: 2.2.0
+  description: Mobile cranes available to hire from a plant yard.
+servers:
+  - url: https://hire.cranes.test
+paths:
+  /cranes:
+    get:
+      operationId: listCranes
+      x-fern-pagination:
+        cursor: $request.after
+        next_cursor: $response.next
+        results: $response.cranes
+      parameters:
+        - name: after
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One page of cranes.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CranePage'
+components:
+  schemas:
+    Crane:
+      type: object
+      required: [id, tonnes]
+      properties:
+        id:
+          type: string
+        tonnes:
+          type: number
+        boom:
+          type: string
+          enum: [lattice, telescopic]
+    CranePage:
+      type: object
+      properties:
+        next:
+          type: string
+        cranes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Crane'
