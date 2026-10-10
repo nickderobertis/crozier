@@ -24,7 +24,7 @@ tempfile = "3"
 name = "crozier"
 # Literal, not inherited: release-plz is the only version driver and bumps this
 # line; no other member is ever released.
-version = "0.0.109"
+version = "0.0.110"
 edition.workspace = true
 description = "Ultra-fast OpenAPI-to-SDK code generator that matches Fern's output, byte for byte."
 license.workspace = true
