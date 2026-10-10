@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.112](https://github.com/nickderobertis/crozier/compare/v0.0.111...v0.0.112) - 2026-10-10
+
+### Fixed
+
+- *(parity)* match clients extensions ([#485](https://github.com/nickderobertis/crozier/pull/485))
+
 ## [0.0.111](https://github.com/nickderobertis/crozier/compare/v0.0.110...v0.0.111) - 2026-10-10
 
 ### Other
