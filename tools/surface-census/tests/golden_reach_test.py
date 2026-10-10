@@ -647,6 +647,33 @@ class MeasurementInputTests(unittest.TestCase):
             self.assertIn("commit them first", str(refused.exception))
             self.assertFalse((root / "out").exists())
 
+    def test_golden_tests_run_where_the_tooling_ruff_config_does_not_reach_generated_output(self) -> None:
+        """A golden runs from the e2e crate's directory, as cargo runs it, not the root.
+
+        crozier's `ruff format --stdin-filename` resolves configuration from its
+        working directory; from the root the tooling's `[tool.ruff]` excludes a
+        generated `templates/` package, which then comes back unformatted.
+        """
+        cwd = golden_reach.golden_test_cwd(REPO)
+        self.assertEqual(REPO / "crates" / "crozier-e2e", cwd)
+        self.assertTrue((cwd / "Cargo.toml").is_file())
+        line = "x = {" + ", ".join(f'"key_{n:02}": {n}' for n in range(12)) + "}\n"
+        self.assertGreater(len(line), 120)
+
+        def ruff_format(directory: Path) -> str:
+            return subprocess.run(
+                ["ruff", "format", "--line-length", "120", "--stdin-filename", "src/acme/templates/__init__.py", "-"],
+                cwd=directory,
+                input=line,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=True,
+            ).stdout
+
+        self.assertEqual(line, ruff_format(REPO))
+        self.assertTrue(ruff_format(cwd).startswith("x = {\n"))
+
     def test_a_tests_filter_that_is_no_regex_is_refused_before_anything_builds(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             with self.assertRaises(SystemExit) as refused:

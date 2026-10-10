@@ -383,6 +383,16 @@ def _covered(export: Path, repo_root: Path) -> tuple[dict[str, list[list[int]]],
     return universe, {f: v for f, v in hit.items() if v}
 
 
+def golden_test_cwd(repo_root: Path) -> Path:
+    """Where a golden test runs: the e2e crate's directory, as cargo runs it.
+
+    From the root, the crozier a golden spawns runs `ruff format` under the
+    tooling's own `[tool.ruff]`, whose `templates` exclude leaves a generated
+    `templates/` package unformatted and fails its golden.
+    """
+    return repo_root / "crates" / "crozier-e2e"
+
+
 def uncommitted_changes(repo_root: Path) -> list[str]:
     """Tracked paths that differ from `HEAD` — what a measurement stamped with
     `HEAD` would silently include."""
@@ -484,11 +494,7 @@ def measure(args: argparse.Namespace) -> int:
             raw = Path(scratch)
             run = subprocess.run(
                 [str(e2e), "--exact", test, "--test-threads", "1", "--quiet"],
-                # The crate's directory, where cargo runs it: from the root, the
-                # crozier it spawns runs `ruff format` under the tooling's own
-                # `[tool.ruff]`, whose `templates` exclude leaves a generated
-                # `templates/` package unformatted and fails its golden.
-                cwd=repo_root / "crates" / "crozier-e2e",
+                cwd=golden_test_cwd(repo_root),
                 capture_output=True,
                 text=True,
                 env=dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
