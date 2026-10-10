@@ -989,8 +989,25 @@ def config_gated_arm_verdict(
     `handwritten-reach.tsv` shows a cover's fixture, declaring no setting,
     executing it. Otherwise no one verdict is stated (`None`).
     """
-    gates = read_measurements(regions_dir / "handwritten-config-gates.tsv", GATE_COLUMNS)
-    if site in {row.site for row in gates if row.key == key}:
+    gates = [
+        row
+        for row in read_measurements(regions_dir / "handwritten-config-gates.tsv", GATE_COLUMNS)
+        if (row.key, row.site) == (key, site)
+    ]
+    if gates:
+        with_setting = [row for row in gates if row.setting != "-"]
+        without = [row for row in gates if row.setting == "-"]
+        if (
+            not with_setting
+            or not without
+            or any(row.regions_executed == 0 for row in with_setting)
+            or any(row.regions_executed for row in without)
+        ):
+            fail(
+                f"handwritten-config-gates.tsv: `{key}`'s arm `{site}` is not a measured gate — it needs a run "
+                "with the setting that executes it and a run without one that does not; re-run "
+                "`just handwritten-reach`"
+            )
         stated = config_gated_verdict(text, key)
         return None if stated is None else _verdict(stated, f"{key}'s gate table")
     citing = [

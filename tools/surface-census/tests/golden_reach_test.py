@@ -561,6 +561,31 @@ class ReportTests(unittest.TestCase):
                 self.assertNotEqual(0, run.returncode)
                 self.assertIn(f"flag-set.md: states no one verdict for `{self.FLAG_SET_ARM}`", run.stderr)
 
+    def test_a_gate_ledger_row_that_is_not_a_measured_gate_is_refused(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        site = self.FLAG_SET_ARM
+        cases = {
+            # Only the run without the setting: nothing shows the setting reaches the arm.
+            "settingless-only": [f"fx\tflag-set\t{site}\t-\t0\t1"],
+            # Only the run with the setting: nothing shows the arm is unreached without it.
+            "setting-only": [f"fx\tflag-set\t{site}\taudiences=public\t1\t1"],
+            # Neither run executes the arm, so the setting gates nothing.
+            "neither-executes": [f"fx\tflag-set\t{site}\t-\t0\t1", f"fx\tflag-set\t{site}\taudiences=public\t0\t1"],
+            # The arm runs without the setting too, so it is not gated.
+            "both-execute": [f"fx\tflag-set\t{site}\t-\t1\t1", f"fx\tflag-set\t{site}\taudiences=public\t1\t1"],
+        }
+        for case, gates in cases.items():
+            with self.subTest(case=case):
+                index = self.arms_index()
+                before = index.read_text(encoding="utf-8")
+                self.gated_record()
+                self.measurements(gates, [])
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(f"`flag-set`'s arm `{site}` is not a measured gate", run.stderr)
+                self.assertIn("re-run `just handwritten-reach`", run.stderr)
+                self.assertEqual(before, index.read_text(encoding="utf-8"), "a refused run rewrote the index")
+
     def test_report_restates_the_coverage_index_arm_sections_from_the_ledger_it_writes(self) -> None:
         index = self.repo / "docs" / "openapi-surface-coverage.md"
         index.write_text(

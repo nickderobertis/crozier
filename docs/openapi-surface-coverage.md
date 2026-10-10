@@ -1817,9 +1817,10 @@ deciding and the last being a total tiebreak:
 The six region files, read as one body of work. Two measurements feed it:
 
 - **`just surface-census`**, for the classifications and for criterion 4. The
-  current walk is the **2026-10-09** one, pinned by digest (`1326b7bf…`) in
-  [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation),
-  which `just check` now runs. Since issue #352 the census's population is the
+  current walk is the one whose date and digest
+  [`document-paths.md`'s snapshot reconciliation](openapi-surface/document-paths.md#snapshot-reconciliation)
+  pins, which `just check` now runs; neither is restated here, so it has one
+  source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
   acquires 263 sources (corpus rows through 332 and rows 1200, 1201 and 1600, after
   the withdrawals of rows 224 and 223, with the `crozier-property-name` feature
