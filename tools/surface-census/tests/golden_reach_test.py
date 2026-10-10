@@ -338,6 +338,9 @@ class ReportTests(unittest.TestCase):
             encoding="utf-8",
             newline="\n",
         )
+
+    def reset_arms_index(self) -> None:
+        """An openapi-surface-coverage.md holding only the empty arm-count and arm-table blocks `--write` fills."""
         (self.repo / "docs" / "openapi-surface-coverage.md").write_text(
             f"# Index\n\n{golden_reach.ARM_COUNTS_BEGIN}\n{golden_reach.ARM_COUNTS_END}\n\n"
             f"{golden_reach.ARM_TABLE_BEGIN}\n{golden_reach.ARM_TABLE_END}\n",
@@ -347,6 +350,7 @@ class ReportTests(unittest.TestCase):
 
     def test_an_ordinary_record_gives_its_unreached_arm_the_one_verdict_it_states(self) -> None:
         self.write_search_record(("flag-set", "exhausted"), ("flag-set", "exhausted"))
+        self.reset_arms_index()
         run = self.run_report("--write")
         self.assertEqual(0, run.returncode, run.stderr)
         text = (self.repo / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
@@ -354,6 +358,7 @@ class ReportTests(unittest.TestCase):
 
     def test_an_ordinary_record_stating_an_unsupported_verdict_is_refused(self) -> None:
         self.write_search_record(("flag-set", "abandoned"))
+        self.reset_arms_index()
         run = self.run_report("--write")
         self.assertNotEqual(0, run.returncode)
         self.assertIn("flag-set.md states the verdict 'abandoned', not one of", run.stderr)
@@ -361,12 +366,14 @@ class ReportTests(unittest.TestCase):
 
     def test_an_ordinary_record_stating_no_verdict_for_its_key_is_refused(self) -> None:
         self.write_search_record(("flag-orphan", "exhausted"))
+        self.reset_arms_index()
         run = self.run_report("--write")
         self.assertNotEqual(0, run.returncode)
         self.assertIn("flag-set.md: states no one verdict for `src/demo.rs::handles[\\} else \\{]`", run.stderr)
 
     def test_an_ordinary_record_stating_conflicting_verdicts_is_refused(self) -> None:
         self.write_search_record(("flag-set", "exhausted"), ("flag-set", "search-incomplete"))
+        self.reset_arms_index()
         run = self.run_report("--write")
         self.assertNotEqual(0, run.returncode)
         self.assertIn("flag-set.md: states no one verdict for `src/demo.rs::handles[\\} else \\{]`", run.stderr)

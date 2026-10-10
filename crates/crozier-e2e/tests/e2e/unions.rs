@@ -368,3 +368,50 @@ fn union_refusal_controls_hold_beside_the_generating_shapes() {
         }
     }
 }
+
+/// A discriminator's declared Python name is trimmed before use, and a blank
+/// one declares nothing: padding either spelling still generates the certified
+/// tree, while a blank `x-fern-property-name`, or a blank canonical
+/// `x-crozier-property-name` beside a usable Fern one (the crozier spelling
+/// wins even when blank), leaves the `"$class"` discriminant refused in both
+/// modes, as with no declaration at all.
+#[test]
+fn discriminator_property_names_are_trimmed_and_blanks_declare_nothing() {
+    const NAME: &str = "telescope-renamed-discriminant";
+    let key = "x-fern-property-name: targetClass";
+    for (spelling, padded) in [
+        ("x-fern", "x-fern-property-name: '  targetClass  '"),
+        ("x-crozier", "x-crozier-property-name: \"\\ttargetClass \""),
+    ] {
+        let (_dir, spec) = edited(NAME, |text| {
+            assert!(text.contains(key), "the fixture writes no {key}");
+            text.replacen(key, padded, 1)
+        });
+        let failures = matches_golden(NAME, &spec);
+        assert!(
+            failures.is_empty(),
+            "a padded {spelling} property name: {}",
+            failures.join("\n")
+        );
+    }
+
+    let crozier = super::crozier;
+    let element = "#/components/schemas/Target discriminant \"$class\"";
+    for (label, replacement) in [
+        (
+            "a blank x-fern-property-name",
+            "x-fern-property-name: ' '".to_string(),
+        ),
+        (
+            "a blank x-crozier-property-name beside x-fern-property-name: targetClass",
+            "x-crozier-property-name: ''\n        x-fern-property-name: targetClass".to_string(),
+        ),
+    ] {
+        let (_dir, spec) = edited(NAME, |text| text.replacen(key, &replacement, 1));
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).expect("crozier runs");
+            let failures = refused_failures("discriminant-value-unsuitable", &run, element, strict);
+            assert!(failures.is_empty(), "{label}: {}", failures.join("\n"));
+        }
+    }
+}
