@@ -206,7 +206,9 @@ fn union_literals_overlays_are_exactly_the_fixtures() {
     assert_eq!(found, FIXTURES);
 }
 
-/// `fixture`'s document with `edit` applied, written to a scratch file.
+/// A spelling variant of a committed fixture (alias, conflict, bare) kept off
+/// the fixture itself, whose golden certifies only its own bytes; hold the
+/// returned directory until crozier has read the path.
 fn edited(name: &str, edit: impl Fn(&str) -> String) -> (tempfile::TempDir, PathBuf) {
     let text = std::fs::read_to_string(fixture(name).join("openapi.yml")).expect("fixture");
     let dir = tempfile::tempdir().expect("tempdir");

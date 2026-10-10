@@ -324,6 +324,52 @@ class ReportTests(unittest.TestCase):
         self.assertIn("; arm search [record](golden-reach-witnesses/searches/flag-set.md)", cells["flag-set"][5])
         self.assertNotIn("arm search", cells["flag-orphan"][5])
 
+    def write_search_record(self, *outcomes: tuple[str, str]) -> None:
+        """`flag-set`'s ordinary arm-search record, one exhaustive-search row per `(key, outcome)`."""
+        records = self.repo / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        records.mkdir(parents=True, exist_ok=True)
+        rows = "".join(f"| `{key}` | `apis.guru` | `{outcome}` | — | — | — | — |\n" for key, outcome in outcomes)
+        (records / "flag-set.md").write_text(
+            "# Arm search: `flag-set`\n\n"
+            f"{golden_reach.EXHAUSTIVE_SEARCH_HEADING}\n\n"
+            "| key | source | outcome | queries | walk | candidates | screens |\n"
+            "|---|---|---|---|---|---|---|\n" + rows,
+            encoding="utf-8",
+            newline="\n",
+        )
+        (self.repo / "docs" / "openapi-surface-coverage.md").write_text(
+            f"# Index\n\n{golden_reach.ARM_COUNTS_BEGIN}\n{golden_reach.ARM_COUNTS_END}\n\n"
+            f"{golden_reach.ARM_TABLE_BEGIN}\n{golden_reach.ARM_TABLE_END}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+    def test_an_ordinary_record_gives_its_unreached_arm_the_one_verdict_it_states(self) -> None:
+        self.write_search_record(("flag-set", "exhausted"), ("flag-set", "exhausted"))
+        run = self.run_report("--write")
+        self.assertEqual(0, run.returncode, run.stderr)
+        text = (self.repo / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+        self.assertIn("| 2 | `flag-set` | `src/demo.rs::handles[\\} else \\{]` | 1 | `exhausted` | — |", text)
+
+    def test_an_ordinary_record_stating_an_unsupported_verdict_is_refused(self) -> None:
+        self.write_search_record(("flag-set", "abandoned"))
+        run = self.run_report("--write")
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("flag-set.md states the verdict 'abandoned', not one of", run.stderr)
+        self.assertIn("correct it, then re-run", run.stderr)
+
+    def test_an_ordinary_record_stating_no_verdict_for_its_key_is_refused(self) -> None:
+        self.write_search_record(("flag-orphan", "exhausted"))
+        run = self.run_report("--write")
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("flag-set.md: states no one verdict for `src/demo.rs::handles[\\} else \\{]`", run.stderr)
+
+    def test_an_ordinary_record_stating_conflicting_verdicts_is_refused(self) -> None:
+        self.write_search_record(("flag-set", "exhausted"), ("flag-set", "search-incomplete"))
+        run = self.run_report("--write")
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("flag-set.md: states no one verdict for `src/demo.rs::handles[\\} else \\{]`", run.stderr)
+
     def test_report_restates_the_coverage_index_arm_sections_from_the_ledger_it_writes(self) -> None:
         index = self.repo / "docs" / "openapi-surface-coverage.md"
         index.write_text(
