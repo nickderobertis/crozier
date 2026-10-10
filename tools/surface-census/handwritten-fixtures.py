@@ -72,7 +72,6 @@ EVIDENCE_CELL = re.compile(
     r"search: (?P<verdict>[a-z-]+) \(\[record\]\((?P<link>[^)\s]+)\)\)$"
 )
 E2E_COVERS = REGIONS / "handwritten-e2e.toml"
-E2E_FIELDS = {"kind", "key", "fixture", "test", "evidence", "golden", "search", "verdict", "renewed"}
 E2E_EVIDENCE_CELL = re.compile(
     r"^handwritten-e2e: (?P<fixture>docs/fern-measurements/[a-z0-9/-]+); "
     r"test: (?P<test>[a-z0-9_]+); evidence: \[note\]\((?P<evidence>[^)\s]+)\); "
@@ -118,6 +117,23 @@ class Fixture(NamedTuple):
     digest: str
     covers: tuple[Cover, ...]
     audiences: tuple[str, ...]
+
+
+class E2ECover(NamedTuple):
+    """One validated `handwritten-e2e.toml` cover: a multi-document loopback journey."""
+
+    kind: str
+    key: str
+    fixture: str
+    test: str
+    evidence: str
+    golden: str
+    search: str
+    verdict: str
+    renewed: str
+
+
+E2E_FIELDS = set(E2ECover._fields)
 
 
 def table_cells(line: str) -> list[str]:
@@ -470,36 +486,37 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
 
     test_path = root / "crates" / "crozier-e2e" / "tests" / "e2e.rs"
     test_source = test_path.read_text(encoding="utf-8") if test_path.is_file() else ""
-    for cover in data["covers"]:
+    for table in data["covers"]:
         if (
-            not isinstance(cover, dict)
-            or set(cover) != E2E_FIELDS
-            or not all(isinstance(v, str) and v for v in cover.values())
+            not isinstance(table, dict)
+            or set(table) != E2E_FIELDS
+            or not all(isinstance(v, str) and v for v in table.values())
         ):
             failures.append(
                 f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each"
             )
             continue
-        key = cover["key"]
+        cover = E2ECover(**table)
+        key = cover.key
         where = f"handwritten-e2e `{key}`"
-        if cover["kind"] != "handwritten-e2e":
-            failures.append(f"{where}: invalid kind `{cover['kind']}` — set kind to handwritten-e2e")
+        if cover.kind != "handwritten-e2e":
+            failures.append(f"{where}: invalid kind `{cover.kind}` — set kind to handwritten-e2e")
             continue
         if key in keys:
             failures.append(f"{where}: duplicate key — keep exactly one registry cover for this shape")
             continue
         keys.add(key)
-        fixture = committed_path(cover["fixture"])
+        fixture = committed_path(cover.fixture)
         if fixture is None or not fixture.is_dir() or len(list(fixture.glob("*.yml"))) < 2:
             failures.append(f"{where}: commit the named multi-file fixture directory")
-        evidence = committed_path(cover["evidence"])
+        evidence = committed_path(cover.evidence)
         if evidence is None or not evidence.is_file():
             failures.append(f"{where}: commit the named evidence note")
-        golden = committed_path(cover["golden"])
+        golden = committed_path(cover.golden)
         if golden is None or not golden.is_dir() or not (golden / ".fern" / "metadata.json").is_file():
             failures.append(f"{where}: commit the complete certified golden")
         test = re.search(
-            r"#\[test\]\s*fn " + re.escape(cover["test"]) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source
+            r"#\[test\]\s*fn " + re.escape(cover.test) + r"\(\)\s*\{([\s\S]*?)(?=\n#\[test\]|\Z)", test_source
         )
         body = test.group(1) if test else ""
         required = (
@@ -508,34 +525,32 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
             "golden_tree_failures",
             "assert!(failures.is_empty()",
         )
-        fixture_include = cover["fixture"] + "/"
+        fixture_include = cover.fixture + "/"
         if not body or any(token not in body for token in required) or fixture_include not in body:
             failures.append(
                 f"{where}: name a gated real-binary test serving this fixture over loopback and comparing its complete tree"
             )
-        golden_prefix, _, golden_suffix = cover["golden"].rpartition("/")
+        golden_prefix, _, golden_suffix = cover.golden.rpartition("/")
         golden_prefix, _, fixture_name = golden_prefix.rpartition("/")
         constants = re.findall(r'const ([A-Z_]+): &str = "([^"]+)";', test_source)
         names_prefix = any(name in body and value == golden_prefix for name, value in constants)
-        if cover["golden"] not in body and not (names_prefix and f"{fixture_name}/{golden_suffix}" in body):
+        if cover.golden not in body and not (names_prefix and f"{fixture_name}/{golden_suffix}" in body):
             failures.append(f"{where}: the gated test must name this certified golden")
-        if cover["verdict"] not in VERDICTS:
+        if cover.verdict not in VERDICTS:
             failures.append(f"{where}: invalid real-specification search verdict — cite one of {', '.join(VERDICTS)}")
-        elif committed_path(cover["search"].partition("#")[0]) is None or committed_path(cover["renewed"]) is None:
+        elif committed_path(cover.search.partition("#")[0]) is None or committed_path(cover.renewed) is None:
             failures.append(
-                f"{where}: invalid search {cover['search']!r} or renewed {cover['renewed']!r} — replace it with a repository-relative path without parent traversal"
+                f"{where}: invalid search {cover.search!r} or renewed {cover.renewed!r} — replace it with a repository-relative path without parent traversal"
             )
         else:
-            failures += search_failures(
-                root, where, Cover(key, None, cover["search"], cover["verdict"], cover["renewed"])
-            )
+            failures += search_failures(root, where, Cover(key, None, cover.search, cover.verdict, cover.renewed))
         row = rows.get(key)
-        evidence_link = os.path.relpath(root / cover["evidence"], root / REGIONS).replace(os.sep, "/")
-        search_path, _, anchor = cover["search"].partition("#")
+        evidence_link = os.path.relpath(root / cover.evidence, root / REGIONS).replace(os.sep, "/")
+        search_path, _, anchor = cover.search.partition("#")
         search_link = os.path.relpath(root / search_path, root / REGIONS).replace(os.sep, "/") + "#" + anchor
         expected = (
-            f"handwritten-e2e: {cover['fixture']}; test: {cover['test']}; "
-            f"evidence: [note]({evidence_link}); search: {cover['verdict']} ([record]({search_link}))"
+            f"handwritten-e2e: {cover.fixture}; test: {cover.test}; "
+            f"evidence: [note]({evidence_link}); search: {cover.verdict} ([record]({search_link}))"
         )
         if row is None or row[1][3] != "handwritten" or row[1][4] != expected or any(row[1][5:8]):
             failures.append(

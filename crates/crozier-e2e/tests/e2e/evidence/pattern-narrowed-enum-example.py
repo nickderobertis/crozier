@@ -63,13 +63,13 @@ def main():
                 for node in ast.walk(ast.parse(snippet)):
                     if not isinstance(node, ast.keyword) or node.arg != "phase":
                         continue
-                    value_node = node.value
-                    if isinstance(value_node, ast.Constant) and isinstance(value_node.value, str):
-                        value = value_node.value
-                    elif isinstance(value_node, ast.Attribute) and isinstance(value_node.value, ast.Name):
-                        value = getattr(getattr(package, value_node.value.id), value_node.attr).value
-                    else:
-                        raise ValueError(f"unsupported phase expression: {ast.unparse(value_node)}")
+                    match node.value:
+                        case ast.Constant(value=str() as value):
+                            pass
+                        case ast.Attribute(value=ast.Name(id=enum_name), attr=member):
+                            value = getattr(getattr(package, enum_name), member).value
+                        case other:
+                            raise ValueError(f"unsupported phase expression: {ast.unparse(other)}")
                     if value != "preparation" or not list(validator.iter_errors(value)):
                         raise ValueError(f"phase={value!r} does not demonstrate the certified invalid default")
                     count += 1

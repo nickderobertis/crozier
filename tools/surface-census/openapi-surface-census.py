@@ -5814,26 +5814,27 @@ class Census:
                 or member.get("nullable") is True
             ):
                 return None
-            kind, form = member.get("type"), member.get("format")
-            # `normalize_float_type` of `src/openapi.rs` runs first and reads the
-            # non-standard `type: float` as a number its `format` cannot narrow.
-            if kind == "float":
-                return "float"
-            if kind == "string":
-                return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
-            if kind == "integer":
-                return "long" if form == "int64" else "int"
-            if kind == "number":
-                if form in ("int32", "int64", "uint64"):
+            form = member.get("format")
+            match member.get("type"):
+                # `normalize_float_type` of `src/openapi.rs` runs first and reads the
+                # non-standard `type: float` as a number its `format` cannot narrow.
+                case "float":
+                    return "float"
+                case "string":
+                    return {"date-time": "datetime", "date": "date", "json-string": "any"}.get(form, "str")
+                case "integer":
                     return "long" if form == "int64" else "int"
-                return "float"
-            if kind == "boolean":
-                override = member.get("x-crozier-type")
-                if override is None:
-                    override = member.get("x-fern-type")
-                if override in ("literal<true>", "literal<false>"):
-                    return override
-                return "bool"
+                case "number" if form in ("int32", "int64", "uint64"):
+                    return "long" if form == "int64" else "int"
+                case "number":
+                    return "float"
+                case "boolean":
+                    override = member.get("x-crozier-type")
+                    if override is None:
+                        override = member.get("x-fern-type")
+                    if override in ("literal<true>", "literal<false>"):
+                        return override
+                    return "bool"
             return None
 
         def same_primitive(schema: Any) -> bool:

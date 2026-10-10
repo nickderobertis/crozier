@@ -14533,65 +14533,67 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 target = root / relative
                 target.parent.mkdir(parents=True, exist_ok=True)
                 target.write_bytes(source.read_bytes())
-            if missing == "fixture":
-                (root / paths[5]).unlink()
-                (root / paths[6]).unlink()
-            elif missing == "test":
-                (root / "crates/crozier-e2e/tests/e2e.rs").write_text("", encoding="utf-8")
-            elif missing == "loopback":
-                target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(
-                    target.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8"
-                )
-            elif missing == "comparison":
-                target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(
-                    target.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8"
-                )
-            elif missing == "evidence":
-                (root / paths[3]).unlink()
-            elif missing == "search":
-                (root / paths[2]).unlink()
-            elif missing == "golden":
-                (root / paths[4]).unlink()
-            elif missing == "version":
-                target = root / paths[0]
-                target.write_text(target.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
-            elif missing == "fields":
-                target = root / paths[0]
-                target.write_text(
-                    target.read_text().replace(
-                        'fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"',
-                        'fixture = ""',
-                    ),
-                    encoding="utf-8",
-                )
-            elif missing == "row":
-                target = root / paths[1]
-                target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
-            elif missing == "golden-binding":
-                target = root / "crates/crozier-e2e/tests/e2e.rs"
-                target.write_text(
-                    target.read_text().replace(
-                        'format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'
-                    ),
-                    encoding="utf-8",
-                )
-            elif missing in ("registry-syntax", "kind", "duplicate", "verdict"):
-                target = root / paths[0]
-                text = target.read_text()
-                if missing == "registry-syntax":
-                    text = "[["
-                elif missing == "kind":
-                    text = text.replace('kind = "handwritten-e2e"', 'kind = "unknown"')
-                elif missing == "duplicate":
-                    text = text.replace(
-                        'key = "remote-ref-at-use-site-inlined"',
-                        'key = "remote-document-local-pointer-resolved-against-root"',
+            e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+            registry = root / paths[0]
+            match missing:
+                case "fixture":
+                    (root / paths[5]).unlink()
+                    (root / paths[6]).unlink()
+                case "test":
+                    e2e.write_text("", encoding="utf-8")
+                case "loopback":
+                    e2e.write_text(
+                        e2e.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8"
                     )
-                else:
-                    text = text.replace('verdict = "search-incomplete"', 'verdict = "unknown"')
-                target.write_text(text, encoding="utf-8")
+                case "comparison":
+                    e2e.write_text(
+                        e2e.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8"
+                    )
+                case "evidence":
+                    (root / paths[3]).unlink()
+                case "search":
+                    (root / paths[2]).unlink()
+                case "golden":
+                    (root / paths[4]).unlink()
+                case "version":
+                    registry.write_text(registry.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
+                case "fields":
+                    registry.write_text(
+                        registry.read_text().replace(
+                            'fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"',
+                            'fixture = ""',
+                        ),
+                        encoding="utf-8",
+                    )
+                case "row":
+                    target = root / paths[1]
+                    target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
+                case "golden-binding":
+                    e2e.write_text(
+                        e2e.read_text().replace(
+                            'format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'
+                        ),
+                        encoding="utf-8",
+                    )
+                case "registry-syntax":
+                    registry.write_text("[[", encoding="utf-8")
+                case "kind":
+                    registry.write_text(
+                        registry.read_text().replace('kind = "handwritten-e2e"', 'kind = "unknown"'), encoding="utf-8"
+                    )
+                case "duplicate":
+                    registry.write_text(
+                        registry.read_text().replace(
+                            'key = "remote-ref-at-use-site-inlined"',
+                            'key = "remote-document-local-pointer-resolved-against-root"',
+                        ),
+                        encoding="utf-8",
+                    )
+                case "verdict":
+                    registry.write_text(
+                        registry.read_text().replace('verdict = "search-incomplete"', 'verdict = "unknown"'),
+                        encoding="utf-8",
+                    )
             rows = gate.region_rows(root)
             if completeness:
                 entries = {
