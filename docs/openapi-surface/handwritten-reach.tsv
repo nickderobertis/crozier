@@ -19,7 +19,7 @@ format-scalar-bodies	format-uri	src/ir.rs::scalar_body[Some\("email" \x7c "hostn
 format-scalar-bodies	format-uri-reference	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 format-scalar-bodies	format-uri-template	src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	1	1
 harbour-window	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
-harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]	5	5
+harbour-window	enum	src/ir.rs::EnumType::example_member[if let Some\(selected\) = self\.members\.iter\(\)\.find\(]	1	1
 header-subset-string-default	parameter-in-header	src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]	1	1
 http-dpop-unrequired	http-dpop	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
 http-mutual-unrequired	http-mutual	src/ir.rs::auth_model[=_ => Auth::None,]	1	1
@@ -49,7 +49,7 @@ json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_o
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	27
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
 measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
-measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]	5	5
+measurement-phase	enum	src/ir.rs::EnumType::example_member[if let Some\(selected\) = self\.members\.iter\(\)\.find\(]	1	1
 multipart-alias-object	media-type-multipart	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
 multipart-json-module	media-type-multipart	src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]	1	1
 multipart-nullable-array	format-binary	src/ir.rs::hoist_form_object[if nullable_binary]	1	1
