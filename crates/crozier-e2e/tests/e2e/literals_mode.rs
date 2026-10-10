@@ -94,7 +94,8 @@ fn cases() -> Result<Vec<Case>, Vec<String>> {
     cases_in(repo_root())
 }
 
-/// [`cases`] over the checkout at `repo`.
+/// Split from [`cases`] so the malformed-manifest test can point the same
+/// validation at a scratch checkout instead of the committed overlays.
 fn cases_in(repo: &Path) -> Result<Vec<Case>, Vec<String>> {
     let root = repo.join(LITERALS_MODE_DIR);
     let mut dirs: Vec<PathBuf> = std::fs::read_dir(&root)
