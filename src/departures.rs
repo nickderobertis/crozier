@@ -1581,7 +1581,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 17] = [
+pub const RULE_IDS: [&str; 18] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
