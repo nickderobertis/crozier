@@ -4548,8 +4548,10 @@ fn additional_header_scheme_names_read_crozier_spelling_over_fern() {
 /// a server name making a digit-led environment member, an operation server
 /// named `base` (the document's own URL), a credential named like a client
 /// constructor parameter, a header prefix with braces, which Fern writes into
-/// an f-string, an idempotency header that is no HTTP header name, and a basic
-/// scheme naming its username and password alike. A keyword name is escaped instead, as Fern escapes it
+/// an f-string, an idempotency header that is no HTTP header name, a basic
+/// scheme naming its username and password alike, a server name making a
+/// punctuated or empty member or field, and a credential named with separators
+/// only or `self`. A keyword name is escaped instead, as Fern escapes it
 /// (`class` is `class_`), and generates.
 #[test]
 fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
@@ -4615,6 +4617,46 @@ fn extension_values_crozier_cannot_emit_are_refused_and_keywords_are_escaped() {
                 ping("")
             ),
             "names its credential `timeout`, which is the client constructor's own `timeout` parameter",
+        ),
+        (
+            "punctuated-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-crozier-server-name: 'a!b'\n{}",
+                ping("")
+            ),
+            "makes the environment member `A!B`, which is no Python identifier",
+        ),
+        (
+            "separator-only-member",
+            format!(
+                "servers:\n  - url: https://one.test\n    x-fern-server-name: '---'\n{}",
+                ping("")
+            ),
+            "which is no Python identifier",
+        ),
+        (
+            "separator-only-field",
+            format!(
+                "servers:\n  - url: https://main.test\n{}",
+                ping("      servers:\n        - url: https://other.test\n          x-crozier-server-name: '---'\n")
+            ),
+            "names no environment field once separators are dropped",
+        ),
+        (
+            "separator-only-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-fern-bearer: {{name: '---'}}}}\n",
+                ping("")
+            ),
+            "names its credential with separators only",
+        ),
+        (
+            "self-credential",
+            format!(
+                "security: [{{Session: []}}]\n{}components:\n  securitySchemes:\n    Session: {{type: http, scheme: bearer, x-crozier-bearer: {{name: self}}}}\n",
+                ping("")
+            ),
+            "names its credential `self`, which is the client constructor's own `self` parameter",
         ),
     ];
     for (name, body, says) in cases {

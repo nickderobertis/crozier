@@ -369,6 +369,14 @@ fn environment_field(doc: &OpenApi, op: &Operation) -> EnvironmentField {
         })
 }
 
+/// Whether `name` is a Python identifier: non-empty, not digit-led, and only
+/// letters, digits and `_`.
+fn is_python_identifier(name: &str) -> bool {
+    !name.starts_with(|c: char| c.is_ascii_digit())
+        && !name.is_empty()
+        && name.chars().all(|c| c.is_alphanumeric() || c == '_')
+}
+
 /// A declared name as Fern writes a Python parameter or attribute from it:
 /// snake_case with illegal characters `_`, a digit-led name `_`-prefixed and a
 /// keyword `_`-suffixed (`class` is `class_`).
@@ -390,13 +398,16 @@ impl Ir {
     ///   backslashes would break the generated literal;
     /// - a credential prefix carrying `{` or `}`, which Fern writes into the
     ///   header's f-string, where it is interpolation rather than text;
-    /// - a server name whose environment member starts with a digit, which
-    ///   Fern's examples write as an attribute that is not Python
-    ///   (`Environment.1ST`);
+    /// - a server name whose environment member is no Python identifier — one
+    ///   starting with a digit, which Fern's examples write as an attribute that
+    ///   is not Python (`Environment.1ST`), carrying punctuation, or empty;
+    /// - a credential or operation server field whose declared name is
+    ///   separators only, which leaves no Python name;
     /// - an operation server named `base`, the environment field holding the
     ///   document's own URL;
     /// - a basic scheme's username and password of one name, or a credential
-    ///   named like one of the root client's own constructor parameters.
+    ///   named like one of the root client's own constructor parameters,
+    ///   `self` among them.
     #[must_use]
     pub fn unemittable_extension(&self) -> Option<String> {
         // An HTTP header name is a token (RFC 9110 `tchar`), which no quote or
@@ -436,15 +447,29 @@ impl Ir {
         if let Some(environment) = &self.environment {
             let members = std::iter::once(&environment.default.0)
                 .chain(environment.others.iter().map(|(name, _)| name));
-            if let Some(member) = members
-                .into_iter()
-                .find(|name| name.starts_with(|c: char| c.is_ascii_digit()))
-            {
-                return Some(format!(
-                    "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
-                     environment member `{member}`, which starts with a digit and is no Python \
-                     identifier; give that server a name starting with a letter"
-                ));
+            if let Some(member) = members.into_iter().find(|name| !is_python_identifier(name)) {
+                return Some(if member.starts_with(|c: char| c.is_ascii_digit()) {
+                    format!(
+                        "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
+                         environment member `{member}`, which starts with a digit and is no \
+                         Python identifier; give that server a name starting with a letter"
+                    )
+                } else {
+                    format!(
+                        "a server's `x-fern-server-name` (or `x-crozier-server-name`) makes the \
+                         environment member `{}`, which is no Python identifier; give that \
+                         server a name of letters, digits and separators",
+                        member.escape_debug()
+                    )
+                });
+            }
+            if environment.urls.iter().any(|(field, _)| field.is_empty()) {
+                return Some(
+                    "an operation server's `x-fern-server-name` (or `x-crozier-server-name`) \
+                     names no environment field once separators are dropped; give that server \
+                     a name with a letter or digit"
+                        .to_string(),
+                );
             }
             if environment.urls.iter().any(|(field, _)| field == "base") {
                 return Some(
@@ -478,13 +503,22 @@ impl Ir {
             .into_iter()
             .map(|credential| credential.param.as_str())
             .chain(declared_headers)
-            .find(|param| ROOT_CLIENT_PARAMETERS.contains(param))
+            .find(|param| {
+                param.is_empty() || *param == "self" || ROOT_CLIENT_PARAMETERS.contains(param)
+            })
             .map(|param| {
-                format!(
-                    "a security scheme names its credential `{param}`, which is the client \
-                     constructor's own `{param}` parameter; name it otherwise with the \
-                     scheme's `x-crozier-*` (or `x-fern-*`) naming extension"
-                )
+                if param.is_empty() {
+                    "a security scheme's `x-crozier-*` (or `x-fern-*`) naming extension names its \
+                     credential with separators only, which leaves no Python parameter name; \
+                     name it with a letter or digit"
+                        .to_string()
+                } else {
+                    format!(
+                        "a security scheme names its credential `{param}`, which is the client \
+                         constructor's own `{param}` parameter; name it otherwise with the \
+                         scheme's `x-crozier-*` (or `x-fern-*`) naming extension"
+                    )
+                }
             })
     }
 }
