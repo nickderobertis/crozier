@@ -826,6 +826,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
+        ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
             departures_ledger_gate::REFERENCE_TREE,
@@ -2464,6 +2465,1434 @@ fn handwritten_fixtures_match_fern_goldens() {
     );
 }
 
+/// A byte-formatted text response streams in either enum mode. The complete
+/// certified tree is compared in both directions, and an unexplained change
+/// to the method remains a parity failure.
+#[test]
+fn byte_text_response_matches_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    let golden = "docs/openapi-surface/handwritten/byte-text-response/fern-expected";
+    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response");
+    for (mode, golden) in [
+        ("python-enums", golden),
+        (
+            "literals",
+            "docs/fern-measurements/bodies-responses/byte-text-response-literals/fern-expected",
+        ),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence = std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                .expect("literals evidence");
+            let declared = evidence
+                .split_once("Canonical tree SHA-256: `")
+                .expect("a declared canonical digest")
+                .1
+                .split('`')
+                .next()
+                .expect("the digest");
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger()
+            .golden(golden, &[])
+            .expect("golden ledger");
+        let out = tempfile::tempdir().expect("output");
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        let failures =
+            golden_tree_failures(mode, "byte text response", &ledger, &expected, out.path());
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        let client = out.path().join("src/fern/client.py");
+        let text = std::fs::read_to_string(&client).expect("generated client");
+        assert!(text.contains("def export_lanterns("), "{text}");
+        std::fs::write(
+            &client,
+            text.replace("def export_lanterns(", "def unexplained_export("),
+        )
+        .unwrap();
+        let failures = golden_tree_failures(
+            mode,
+            "induced unexplained mismatch",
+            &ledger,
+            &expected,
+            out.path(),
+        );
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.contains("src/fern/client.py")),
+            "{}",
+            failures.join("\n")
+        );
+    }
+}
+
+/// Resolving a byte-text component selects streaming; changing that component
+/// to an ordinary string restores the regular response method through the CLI.
+#[test]
+fn referenced_byte_text_response_streams_and_plain_text_recovers() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let spec = dir.path().join("openapi.yml");
+    let document = r#"openapi: 3.0.3
+info: {title: Lantern Export, version: '1'}
+paths:
+  /exports:
+    get:
+      operationId: export_lanterns
+      responses:
+        '200':
+          description: Lantern export
+          content:
+            text/plain:
+              schema: {$ref: '#/components/schemas/Export'}
+components:
+  schemas:
+    Export: {type: string, format: byte}
+"#;
+    for (format, streaming) in [("byte", true), ("uuid", false)] {
+        std::fs::write(
+            &spec,
+            document.replace("format: byte", &format!("format: {format}")),
+        )
+        .unwrap();
+        let out = dir.path().join(format);
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let raw = std::fs::read_to_string(out.join("src/fern/raw_client.py")).unwrap();
+        assert_eq!(
+            raw.contains("self._client_wrapper.httpx_client.stream("),
+            streaming,
+            "{raw}"
+        );
+        assert_eq!(raw.contains("_response.iter_bytes("), streaming, "{raw}");
+        assert_eq!(
+            raw.contains("self._client_wrapper.httpx_client.request("),
+            !streaming,
+            "{raw}"
+        );
+    }
+}
+
+/// The certified controls hold the JSON alternative's precedence and the
+/// non-string guard through the real binary, with complete file-set equality.
+#[test]
+fn byte_text_response_dispatch_controls_match_certified_output() {
+    let root = repo_root();
+    let fixture = root.join("docs/openapi-surface/handwritten/byte-text-response-controls");
+    let failures = filtered_tree_failures(
+        "byte text response controls",
+        "docs/openapi-surface/handwritten/byte-text-response-controls/fern-expected",
+        &fixture.join("openapi.yml"),
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+#[test]
+fn slashless_json_response_matches_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    let fixture = root.join("docs/openapi-surface/handwritten/slashless-json-response");
+    for (mode, golden) in [
+        ("python-enums", "docs/openapi-surface/handwritten/slashless-json-response/fern-expected"),
+        ("literals", "docs/fern-measurements/bodies-responses/slashless-json-response-literals/fern-expected"),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence = std::fs::read_to_string(expected.parent().unwrap().join("evidence.md")).unwrap();
+            let declared = evidence.split_once("Canonical tree SHA-256: `").unwrap().1.split('`').next().unwrap();
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output").arg(out.path())
+            .args(["--package-name", "fern", "--project-name", "default_package_name", "--enum-type", mode])
+            .assert().success();
+        let failures = golden_tree_failures(mode, "slashless JSON response", &ledger, &expected, out.path());
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+
+/// Complete certified pairs cover the object alias and the shadowing field;
+/// the required-file example correction is the only new permitted departure.
+#[test]
+fn multipart_object_encoding_matches_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["multipart-alias-object", "multipart-json-module"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("src/fern/client.py");
+            let generated = std::fs::read_to_string(&client).unwrap();
+            assert!(generated.contains("bearing=1"));
+            std::fs::write(&client, generated.replace("bearing=1", "bearing=91")).unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained object example value",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("client.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
+    let root = repo_root();
+    let script = root.join("docs/departures/evidence/multipart-object-required-file-example.py");
+    let python = runtime_python_env().expect("SDK runtime environment");
+    for (shape, argument) in [
+        ("multipart-alias-object", "alias"),
+        ("multipart-json-module", "json"),
+    ] {
+        for mode in ["python-enums", "literals"] {
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(
+                    root.join("docs/openapi-surface/handwritten")
+                        .join(shape)
+                        .join("openapi.yml"),
+                )
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records requests from actual emitted sync/async SDKs; crozier and the clients run unmodified. Real-network coverage belongs to the live Prism tier.
+            let run = std::process::Command::new(&python)
+                .arg(&script)
+                .arg(out.path().join("src"))
+                .arg(argument)
+                .args(["--examples", "valid", "--wire"])
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .unwrap();
+            // llmlint: ignore-end[e2e_not_mocked]
+            assert!(
+                run.status.success(),
+                "{shape}/{mode}: {}{}",
+                String::from_utf8_lossy(&run.stdout),
+                String::from_utf8_lossy(&run.stderr)
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_multipart_json_module_survives_path_query_and_header_parameters() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let original: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/multipart-alias-object/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    for location in ["path", "query", "header"] {
+        for mode in ["python-enums", "literals"] {
+            for content_type in [None, Some("application/json")] {
+                let mut source = original.clone();
+                let paths = source["paths"].as_object_mut().unwrap();
+                let mut item = paths.remove("/plans").unwrap();
+                item["post"]["parameters"] = serde_json::json!([{
+                    "name": "json", "in": location, "required": true,
+                    "schema": { "type": "string" }
+                }]);
+                if let Some(content_type) = content_type {
+                    item["post"]["requestBody"]["content"]["multipart/form-data"]["encoding"] =
+                        serde_json::json!({ "plan": { "contentType": content_type } });
+                }
+                paths.insert(
+                    if location == "path" {
+                        "/plans/{json}"
+                    } else {
+                        "/plans"
+                    }
+                    .to_string(),
+                    item,
+                );
+                if location == "header" {
+                    paths.insert(
+                        "/health".to_string(),
+                        serde_json::json!({
+                            "get": { "operationId": "health", "responses": {
+                                "204": { "description": "Healthy" }
+                            }}
+                        }),
+                    );
+                }
+                let input = tempfile::tempdir().unwrap();
+                let spec = input.path().join("openapi.json");
+                std::fs::write(&spec, serde_json::to_vec_pretty(&source).unwrap()).unwrap();
+                let out = tempfile::tempdir().unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec)
+                    .arg("--output")
+                    .arg(out.path())
+                    .args([
+                        "--package-name",
+                        "fern",
+                        "--project-name",
+                        "default_package_name",
+                        "--enum-type",
+                        mode,
+                    ])
+                    .assert()
+                    .success();
+                // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records requests from actual emitted sync/async SDKs; crozier and the clients run unmodified. Real-network coverage belongs to the live Prism tier.
+                let mut run = Command::new(&python);
+                run.env("PYTHONDONTWRITEBYTECODE", "1")
+                    .arg(
+                        root.join(
+                            "docs/departures/evidence/multipart-object-required-file-example.py",
+                        ),
+                    )
+                    .arg(out.path().join("src"))
+                    .args([
+                        "alias",
+                        "--examples",
+                        "valid",
+                        "--wire",
+                        "--json-parameter",
+                        location,
+                    ]);
+                if let Some(content_type) = content_type {
+                    run.args(["--part-content-type", content_type]);
+                }
+                let output = run.output().unwrap();
+                // llmlint: ignore-end[e2e_not_mocked]
+                assert!(
+                    output.status.success(),
+                    "{}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn inline_request_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli() {
+    let root = repo_root();
+    let original: serde_json::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/json-request-shapes/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let overlap: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join(
+            "docs/fern-measurements/bodies-responses/inline-body-overlap-refusals/writable-parent.openapi.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.json");
+    let out = tempfile::tempdir().unwrap();
+    std::fs::write(&spec, serde_json::to_vec_pretty(&overlap).unwrap()).unwrap();
+    // The certified pair also refuses this overlap; see
+    // docs/fern-measurements/bodies-responses/inline-body-overlap-refusals/evidence.md.
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args(["--package-name", "fern"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("request-property-name-collision"));
+    std::fs::write(&spec, serde_json::to_vec_pretty(&original).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py")).unwrap();
+    assert_eq!(client.matches("station: str,").count(), 2, "{client}");
+    assert_eq!(client.matches("cycles: int,").count(), 2, "{client}");
+    assert_eq!(
+        client.matches("\"station\": station,").count(),
+        2,
+        "{client}"
+    );
+}
+
+#[test]
+fn inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli() {
+    let root = repo_root();
+    let overlap: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(root.join(
+            "docs/fern-measurements/bodies-responses/inline-body-overlap-refusals/readonly-parent.openapi.json",
+        ))
+        .unwrap(),
+    )
+    .unwrap();
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&overlap).unwrap()).unwrap();
+    // The inherited `RunSettings.station` is readOnly, yet the certified pair still
+    // refuses it beside the inline `station` (readonly-parent.fern.log). The refusal
+    // precedes rendering, so it never surfaces as a formatter error.
+    for strict in [false, true] {
+        let out = input.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let assert = command.assert().failure().code(1);
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        assert!(
+            stderr.contains(
+                "request-property-name-collision: POST /runs body property \"station\" collides"
+            ),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!stderr.contains("ruff"), "{stderr}");
+        assert!(!out.exists(), "a refusal writes no output");
+    }
+    // The source-level fallback, reached when another schema fails to parse,
+    // classifies the same overlap rather than leaving only the parser's diagnostic.
+    let mut malformed = overlap.clone();
+    malformed["components"]["schemas"]["Malformed"] =
+        serde_json::json!({"type": "string", "nullable": 1});
+    std::fs::write(&spec, serde_json::to_vec_pretty(&malformed).unwrap()).unwrap();
+    let out = input.path().join("sdk-malformed");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains(
+            "request-property-name-collision: POST /runs body property \"station\" collides",
+        ));
+    assert!(!out.exists(), "a refusal writes no output");
+    // Renaming the own field leaves the read-only parent field disjoint, and the
+    // body generates with each argument declared once.
+    let mut disjoint = overlap.clone();
+    let body = &mut disjoint["paths"]["/runs"]["post"]["requestBody"]["content"]
+        ["application/json"]["schema"];
+    let own = body["properties"]["station"].take();
+    let properties = body["properties"].as_object_mut().unwrap();
+    properties.remove("station");
+    properties.insert("bench".to_owned(), own);
+    body["required"] = serde_json::json!(["cycles", "bench"]);
+    std::fs::write(&spec, serde_json::to_vec_pretty(&disjoint).unwrap()).unwrap();
+    let out = input.path().join("sdk-disjoint");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&out)
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(out.join("src/fern/raw_client.py")).unwrap();
+    assert_eq!(client.matches("bench: str,").count(), 2, "{client}");
+    assert_eq!(client.matches("\"bench\": bench,").count(), 2, "{client}");
+    assert!(client.matches("station: ").count() <= 2, "{client}");
+    assert_valid_python(&out);
+}
+
+/// An own readOnly request property shadowing an inherited one: over an
+/// optional parent property the certified pair generates, and crozier matches it
+/// in both enum modes; over a required one pinned Fern refuses
+/// (example-missing-required-property/evaluation-logs/fern-readonly-shadow-required*.generate.log).
+#[test]
+fn inline_body_read_only_own_overlap_matches_certified_output_and_refuses_a_required_parent() {
+    let root = repo_root();
+    let fixture = root.join("docs/openapi-surface/handwritten/inline-body-readonly-own-overlap");
+    for (mode, golden) in [
+        (
+            "python-enums",
+            "docs/openapi-surface/handwritten/inline-body-readonly-own-overlap/fern-expected",
+        ),
+        (
+            "literals",
+            "docs/fern-measurements/bodies-responses/inline-body-readonly-own-overlap-literals/fern-expected",
+        ),
+    ] {
+        let expected = root.join(golden);
+        if mode == "literals" {
+            let evidence =
+                std::fs::read_to_string(expected.parent().unwrap().join("evidence.md")).unwrap();
+            let declared = evidence
+                .split_once("Canonical tree SHA-256: `")
+                .unwrap()
+                .1
+                .split('`')
+                .next()
+                .unwrap();
+            assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+        }
+        let ledger = departure_ledger().golden(golden, &[]).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(fixture.join("openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        let failures = golden_tree_failures(
+            mode,
+            "inline body readOnly own overlap",
+            &ledger,
+            &expected,
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_valid_python(out.path());
+    }
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.yml");
+    let source = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+    let required = source.replace(
+        "    RunSettings:\n      type: object\n",
+        "    RunSettings:\n      type: object\n      required:\n        - station\n",
+    );
+    assert_ne!(required, source);
+    std::fs::write(&spec, &required).unwrap();
+    for strict in [false, true] {
+        let out = input.path().join(format!("sdk-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&out)
+            .args(["--package-name", "fern"]);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let assert = command.assert().failure().code(1);
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        assert!(
+            stderr.contains(
+                "example-missing-required-property: POST /runs request property \"station\" is readOnly but required by #/components/schemas/RunSettings"
+            ),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(!out.exists(), "a refusal writes no output");
+    }
+}
+
+#[test]
+fn multipart_object_alias_cycles_and_unknown_refs_recover_through_the_cli() {
+    let root = repo_root();
+    let original: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/multipart-alias-object/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let input = tempfile::tempdir().unwrap();
+    let spec = input.path().join("openapi.json");
+    let out = tempfile::tempdir().unwrap();
+    let mut cycle = original.clone();
+    cycle["components"]["schemas"]["PlanAlias"] =
+        serde_json::json!({"$ref": "#/components/schemas/PlanAlias"});
+    std::fs::write(&spec, serde_json::to_vec_pretty(&cycle).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let raw = out.path().join("src/fern/raw_client.py");
+    let client = std::fs::read_to_string(&raw).unwrap();
+    assert_eq!(client.matches("\"plan\": plan,").count(), 2, "{client}");
+    let mut unknown = original.clone();
+    unknown["components"]["schemas"]["PlanAlias"] =
+        serde_json::json!({"$ref": "#/components/schemas/Absent"});
+    std::fs::write(&spec, serde_json::to_vec_pretty(&unknown).unwrap()).unwrap();
+    // The public boundary rejects unknown references before the IR's defensive fallback;
+    // direct IR construction alone can reach that fallback, covered by its helper unit test.
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args(["--package-name", "fern"])
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("unresolved-schema-reference"));
+    assert_eq!(std::fs::read_to_string(&raw).unwrap(), client);
+    std::fs::write(&spec, serde_json::to_vec_pretty(&original).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path())
+        .args(["--package-name", "fern"])
+        .assert()
+        .success();
+    let client = std::fs::read_to_string(raw).unwrap();
+    assert_eq!(
+        client.matches("json.dumps(jsonable_encoder(plan))").count(),
+        2,
+        "{client}"
+    );
+}
+
+#[test]
+fn mixed_named_request_media_keep_the_single_operation_through_the_cli() {
+    let root = repo_root();
+    let original = std::fs::read_to_string(
+        root.join("docs/openapi-surface/handwritten/request-media-methods/openapi.yml"),
+    )
+    .unwrap();
+    for (omitted, blank_canonical) in [
+        ("append_card_note", false),
+        ("append_card_scan", false),
+        ("append_card_note", true),
+        ("append_card_scan", true),
+    ] {
+        let source = original.replace(
+            &format!("            x-fern-sdk-method-name: {omitted}\n"),
+            &if blank_canonical {
+                format!("            x-fern-sdk-method-name: {omitted}\n            x-crozier-sdk-method-name: \"   \"\n")
+            } else { String::new() },
+        );
+        let input = tempfile::tempdir().unwrap();
+        let spec = input.path().join("openapi.yml");
+        std::fs::write(&spec, source).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(out.path())
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py")).unwrap();
+        assert!(client.contains("def append_card("), "{omitted}: {client}");
+        assert!(!client.contains("def append_card_note("), "{omitted}");
+        assert!(!client.contains("def append_card_scan("), "{omitted}");
+        assert!(client.contains("content=request,"), "{omitted}");
+    }
+}
+
+#[test]
+fn alias_reference_scope_controls_keep_their_reference_body_through_the_cli() {
+    let root = repo_root();
+    let original: serde_json::Value = serde_yaml_ng::from_str(
+        &std::fs::read_to_string(
+            root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    for properties in [
+        serde_json::json!({}),
+        serde_json::json!({"request": {"type": "string"}}),
+    ] {
+        let mut source = original.clone();
+        source["components"]["schemas"]["Title"]["properties"] = properties.clone();
+        source["components"]["schemas"]["Title"]
+            .as_object_mut()
+            .unwrap()
+            .remove("required");
+        let input = tempfile::tempdir().unwrap();
+        let spec = input.path().join("openapi.json");
+        std::fs::write(&spec, serde_json::to_vec_pretty(&source).unwrap()).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(out.path())
+            .args(["--package-name", "fern"])
+            .assert()
+            .success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/raw_client.py")).unwrap();
+        assert!(
+            client.contains("def retitle_manifest("),
+            "{properties}: {client}"
+        );
+        if !properties.as_object().unwrap().is_empty() {
+            assert!(client.contains("request: typing.Optional[str]"), "{client}");
+        }
+        let reference = std::fs::read_to_string(out.path().join("reference.md")).unwrap();
+        assert!(
+            reference.contains("**request:** `TitleAlias`"),
+            "{properties}: {reference}"
+        );
+    }
+}
+
+#[test]
+fn named_request_media_match_certified_output_and_canonical_extensions() {
+    let root = repo_root();
+    for shape in ["request-media-methods"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            for spelling in [
+                "fern",
+                "crozier",
+                "conflicting",
+                "fern-padded",
+                "crozier-padded",
+            ] {
+                let source = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+                let source = match spelling {
+                    "crozier" => source.replace("x-fern-sdk-method-name", "x-crozier-sdk-method-name"),
+                    "conflicting" => source
+                        .replace("x-fern-sdk-method-name: append_card_note", "x-fern-sdk-method-name: ignored_json\n            x-crozier-sdk-method-name: append_card_note")
+                        .replace("x-fern-sdk-method-name: append_card_scan", "x-fern-sdk-method-name: ignored_scan\n            x-crozier-sdk-method-name: append_card_scan"),
+                    "fern-padded" | "crozier-padded" => {
+                        let padded = source
+                            .replace(": append_card_note", ": \"  append_card_note  \"")
+                            .replace(": append_card_scan", ": \"  append_card_scan  \"");
+                        if spelling == "crozier-padded" {
+                            padded.replace("x-fern-sdk-method-name", "x-crozier-sdk-method-name")
+                        } else { padded }
+                    }
+                    _ => source,
+                };
+                let input = tempfile::tempdir().unwrap();
+                let spec_path = input.path().join("openapi.yml");
+                std::fs::write(&spec_path, &source).unwrap();
+                let out = tempfile::tempdir().unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .args([
+                        "--package-name",
+                        "fern",
+                        "--project-name",
+                        "default_package_name",
+                        "--enum-type",
+                        mode,
+                    ])
+                    .assert()
+                    .success();
+                let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+                let client = out.path().join("src/fern/raw_client.py");
+                let text = std::fs::read_to_string(&client).unwrap();
+                assert!(text.contains("def append_card_note("));
+                assert!(text.contains("def append_card_scan("));
+                std::fs::write(client, text.replace("note: str", "note: int")).unwrap();
+                let failures = golden_tree_failures(
+                    mode,
+                    "unexplained named media annotation",
+                    &ledger,
+                    &expected,
+                    out.path(),
+                );
+                assert!(
+                    failures
+                        .iter()
+                        .any(|failure| failure.contains("raw_client.py differs")),
+                    "{failures:?}"
+                );
+                let invalid = source
+                    .replace(
+                        "x-crozier-sdk-method-name: \"  append_card_note  \"",
+                        "x-crozier-sdk-method-name: [invalid]",
+                    )
+                    .replace(
+                        "x-fern-sdk-method-name: \"  append_card_note  \"",
+                        "x-fern-sdk-method-name: [invalid]",
+                    )
+                    .replace(
+                        "x-crozier-sdk-method-name: append_card_note",
+                        "x-crozier-sdk-method-name: [invalid]",
+                    )
+                    .replace(
+                        "x-fern-sdk-method-name: append_card_note",
+                        "x-fern-sdk-method-name: [invalid]",
+                    );
+                std::fs::write(&spec_path, invalid).unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .assert()
+                    .failure()
+                    .stderr(predicate::str::contains("expected a string"));
+                std::fs::write(&spec_path, source).unwrap();
+                crozier_clean_env()
+                    .args(["--no-config", "generate", "python", "--spec"])
+                    .arg(&spec_path)
+                    .arg("--output")
+                    .arg(out.path())
+                    .args([
+                        "--package-name",
+                        "fern",
+                        "--project-name",
+                        "default_package_name",
+                        "--enum-type",
+                        mode,
+                    ])
+                    .assert()
+                    .success();
+                let failures = golden_tree_failures(
+                    mode,
+                    "recovered named media",
+                    &ledger,
+                    &expected,
+                    out.path(),
+                );
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            }
+        }
+    }
+}
+
+/// Nullable file dispatch, inherited description and 3.1 array headers match together.
+#[test]
+fn multipart_nullable_and_array_body_shapes_match_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["multipart-nullable-array"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("src/fern/raw_client.py");
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("page: typing.Optional[core.File]"));
+            std::fs::write(
+                client,
+                text.replace(
+                    "page: typing.Optional[core.File]",
+                    "page: typing.Optional[bytes]",
+                ),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained nullable file annotation",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("raw_client.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_nullable_multipart_files_send_their_payload_and_recover() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("crates/crozier-e2e/tests/e2e/multipart_nullable_wire.py");
+    Command::new(&python)
+        .arg(&script)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("required: sdk_src"));
+    for mode in ["python-enums", "literals"] {
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(root.join("docs/openapi-surface/handwritten/multipart-nullable-array/openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        Command::new(&python)
+            .arg(&script)
+            .arg(out.path().join("missing-sdk"))
+            .assert()
+            .code(2)
+            .stderr(predicate::str::contains(
+                "must contain the generated fern package",
+            ));
+        // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records requests from actual emitted sync/async SDKs; crozier and the clients run unmodified. Real-network coverage belongs to the live Prism tier.
+        let output = Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(&script)
+            .arg(out.path().join("src"))
+            .output()
+            .unwrap();
+        // llmlint: ignore-end[e2e_not_mocked]
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
+
+/// Multipart fields can use the operation-derived request component without a virtual collision.
+#[test]
+fn multipart_request_component_name_matches_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["multipart-request-name"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("src/fern/raw_client.py");
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("metadata: UploadEmblemRequest"));
+            std::fs::write(
+                client,
+                text.replace("metadata: UploadEmblemRequest", "metadata: str"),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained multipart argument",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("raw_client.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+/// The alias operation and exports match; only its contradictory reference is corrected.
+#[test]
+fn alias_object_request_matches_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["request-alias"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("reference.md");
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("**ticket:** `int`"));
+            assert!(text.contains("**caption:** `typing.Optional[str]` — Shown on cabinet labels."));
+            std::fs::write(
+                client,
+                text.replace("Shown on cabinet labels.", "Unexplained description."),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained alias description",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("reference.md differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_alias_body_reference_matches_the_actual_flattened_signature() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    for mode in ["python-enums", "literals"] {
+        let out = tempfile::tempdir().unwrap();
+        crozier_clean_env()
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"))
+            .arg("--output")
+            .arg(out.path())
+            .args([
+                "--package-name",
+                "fern",
+                "--project-name",
+                "default_package_name",
+                "--enum-type",
+                mode,
+            ])
+            .assert()
+            .success();
+        Command::new(&python)
+            .arg(root.join("docs/departures/evidence/request-alias-reference-parameters.py"))
+            .arg(out.path().join("missing-sdk"))
+            .arg("--reference")
+            .arg(out.path().join("reference.md"))
+            .args(["--expected", "valid"])
+            .assert()
+            .code(2)
+            .stderr(predicate::str::contains(
+                "must contain the generated fern package",
+            ));
+        // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records requests from actual emitted sync/async SDKs; crozier and the clients run unmodified. Real-network coverage belongs to the live Prism tier.
+        let output = Command::new(&python)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .arg(root.join("docs/departures/evidence/request-alias-reference-parameters.py"))
+            .arg(out.path().join("src"))
+            .arg("--reference")
+            .arg(out.path().join("reference.md"))
+            .args(["--expected", "valid"])
+            .output()
+            .unwrap();
+        // llmlint: ignore-end[e2e_not_mocked]
+        assert!(
+            output.status.success(),
+            "{}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+}
+
+/// Complete error declarations, exports and parsing agree in both enum modes.
+#[test]
+fn error_body_shapes_match_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["error-body-shapes"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let client = out.path().join("src/fern/types/conflict_error_body.py");
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("state: ConflictErrorBodyState"));
+            std::fs::write(
+                client,
+                text.replace("state: ConflictErrorBodyState", "state: str"),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained error annotation",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("conflict_error_body.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+/// Each full tree covers the request's signature, serialization, retained
+/// models and worked examples together, including the reference-header controls.
+#[test]
+fn json_request_shapes_match_certified_output_in_both_enum_modes() {
+    let root = repo_root();
+    for shape in ["json-request-shapes", "json-binary-path"] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(shape);
+        for mode in ["python-enums", "literals"] {
+            let golden = if mode == "python-enums" {
+                format!("docs/openapi-surface/handwritten/{shape}/fern-expected")
+            } else {
+                format!("docs/fern-measurements/bodies-responses/{shape}-literals/fern-expected")
+            };
+            let expected = root.join(&golden);
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let declared = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), declared);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(fixture.join("openapi.yml"))
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            let failures = golden_tree_failures(mode, shape, &ledger, &expected, out.path());
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+            let group = if shape == "json-binary-path" {
+                "depository"
+            } else {
+                "vault"
+            };
+            let client = out.path().join(format!("src/fern/{group}/client.py"));
+            let text = std::fs::read_to_string(&client).unwrap();
+            assert!(text.contains("request=b\"string\""));
+            std::fs::write(
+                client,
+                text.replace("request=b\"string\"", "request=b\"unexplained\""),
+            )
+            .unwrap();
+            let failures = golden_tree_failures(
+                mode,
+                "unexplained binary example value",
+                &ledger,
+                &expected,
+                out.path(),
+            );
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains("client.py differs")),
+                "{failures:?}"
+            );
+        }
+    }
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_binary_json_examples_have_their_actual_argument_type_and_encode() {
+    let root = repo_root();
+    let script = root.join("docs/departures/evidence/binary-json-body-example.py");
+    let python = runtime_python_env().expect("SDK runtime environment");
+    Command::new(&python)
+        .arg(&script)
+        .arg(root)
+        .args(["vault", "deposit_parcel", "--examples", "valid"])
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "method for group vault must be deposit_bundle",
+        ));
+    for (shape, group, method) in [
+        ("json-request-shapes", "vault", "deposit_bundle"),
+        ("json-binary-path", "depository", "deposit_parcel"),
+    ] {
+        for mode in ["python-enums", "literals"] {
+            let out = tempfile::tempdir().unwrap();
+            crozier_clean_env()
+                .args(["--no-config", "generate", "python", "--spec"])
+                .arg(
+                    root.join("docs/openapi-surface/handwritten")
+                        .join(shape)
+                        .join("openapi.yml"),
+                )
+                .arg("--output")
+                .arg(out.path())
+                .args([
+                    "--package-name",
+                    "fern",
+                    "--project-name",
+                    "default_package_name",
+                    "--enum-type",
+                    mode,
+                ])
+                .assert()
+                .success();
+            // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records requests from actual emitted sync/async SDKs; crozier and the clients run unmodified. Real-network coverage belongs to the live Prism tier.
+            let run = std::process::Command::new(&python)
+                .arg(&script)
+                .arg(out.path().join("src"))
+                .arg(group)
+                .arg(method)
+                .args(["--examples", "valid"])
+                .env("PYTHONDONTWRITEBYTECODE", "1")
+                .output()
+                .unwrap();
+            // llmlint: ignore-end[e2e_not_mocked]
+            assert!(
+                run.status.success(),
+                "{shape}/{mode}: {}{}",
+                String::from_utf8_lossy(&run.stdout),
+                String::from_utf8_lossy(&run.stderr)
+            );
+        }
+    }
+}
+
 /// Every `date-time` value crozier's worked examples write over the
 /// `unread-date-time-examples` hand-written fixture is an instant
 /// `datetime.datetime.fromisoformat` reads: a UTC `YYYY-MM-DD[T ]HH:MM:SS+00:00`
@@ -3137,22 +4566,79 @@ fn parameter_departures_reject_unexplained_complete_tree_differences() {
     }
     let root = repo_root().join("docs/openapi-surface/handwritten");
     let mut date_client = String::new();
-    for (case, id, file, from, to) in [
+    // (fixture, departure, file, edit to Fern's side, edit to crozier's side):
+    // each `(from, to)` replaces the first `from`, and the edits together leave
+    // a difference the departure must not explain.
+    type Edit = Option<(&'static str, &'static str)>;
+    let cases: [(&str, &str, &str, Edit, Edit); 8] = [
         (
             "observatory-client-date",
             "date-header-constructor-example",
             "src/fern/client.py",
-            "import typing",
-            "import typing\nUNEXPLAINED_VALUE = 17",
+            Some(("import typing", "import typing\nUNEXPLAINED_VALUE = 17")),
+            None,
+        ),
+        // crozier's corrected example must carry the exact date the
+        // correction substitutes; any other date is a regression.
+        (
+            "observatory-client-date",
+            "date-header-constructor-example",
+            "src/fern/client.py",
+            None,
+            Some((
+                "datetime.date.fromisoformat(\"2023-01-15\")",
+                "datetime.date.fromisoformat(\"2024-02-29\")",
+            )),
         ),
         (
             "observatory-client-variable",
             "sdk-variable-docs-examples",
             "reference.md",
-            "client.list_signals()",
-            "client.list_unrelated(...)",
+            Some(("client.list_signals()", "client.list_unrelated(...)")),
+            None,
         ),
-    ] {
+        // A positional placeholder on a method whose route does not read the
+        // lifted client field stays Fern's, even where crozier calls that
+        // method with no arguments.
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_unrelated</a>(...)")),
+            Some(("list_signals</a>()", "list_unrelated</a>()")),
+        ),
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            Some(("#### ⚙️ Parameters", "#### ⚙️ Arguments")),
+            None,
+        ),
+        // The lifted-method placeholder fallback drops `(...)` only on a
+        // method whose route reads the lifted client field.
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_unrelated</a>(...)")),
+            Some(("list_signals</a>()", "list_unrelated</a>()")),
+        ),
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_signals</a>(...)\n")),
+            None,
+        ),
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("#### ⚙️ Parameters", "#### ⚙️ Arguments")),
+            None,
+        ),
+    ];
+    for (case, id, file, fern_edit, crozier_edit) in cases {
         let expected = root.join(case).join("fern-expected");
         let actual = tempfile::tempdir().unwrap();
         probe_command(&root.join(case).join("openapi.yml"), actual.path())
@@ -3173,18 +4659,33 @@ fn parameter_departures_reject_unexplained_complete_tree_differences() {
             date_client =
                 std::fs::read_to_string(actual.path().join("src/fern/client.py")).unwrap();
         }
-        let edited = tempfile::tempdir().unwrap();
-        copy_tree(&expected, edited.path());
-        let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
-        assert!(text.contains(from));
-        std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+        let edit = |source: &Path, edit: Edit| {
+            let edited = tempfile::tempdir().unwrap();
+            copy_tree(source, edited.path());
+            if let Some((from, to)) = edit {
+                let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
+                assert!(text.contains(from), "{case}: {file} lacks {from}");
+                std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+            }
+            edited
+        };
+        let (fern, crozier) = (
+            edit(&expected, fern_edit),
+            edit(actual.path(), crozier_edit),
+        );
         let negative =
-            crozier::parity::compare_trees(edited.path(), actual.path(), None, true).unwrap();
-        assert!(negative.differences.iter().any(|(path, _)| path == file));
-        assert!(!negative
-            .departures
-            .iter()
-            .any(|departure| departure.file == file && departure.id == id));
+            crozier::parity::compare_trees(fern.path(), crozier.path(), None, true).unwrap();
+        assert!(
+            negative.differences.iter().any(|(path, _)| path == file),
+            "{case}: {fern_edit:?} / {crozier_edit:?} left no difference in {file}"
+        );
+        assert!(
+            !negative
+                .departures
+                .iter()
+                .any(|departure| departure.file == file && departure.id == id),
+            "{case}: {id} explained {fern_edit:?} / {crozier_edit:?}"
+        );
     }
 
     // A temporal-looking constructor example on a string header cannot use the

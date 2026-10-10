@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Card Index
+  version: 1.0.0
+paths:
+  /cards:
+    post:
+      operationId: appendCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            x-fern-sdk-method-name: append_card_note
+            schema:
+              type: object
+              required: [note]
+              properties:
+                note:
+                  type: string
+          image/png:
+            x-fern-sdk-method-name: append_card_scan
+            schema:
+              type: string
+              format: binary
+      responses:
+        "204":
+          description: Added

@@ -1,0 +1,336 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Orchard Workshop",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/registrations": {
+      "post": {
+        "operationId": "registerCrate",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrateRegistration"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Registered"
+          }
+        }
+      }
+    },
+    "/runs": {
+      "post": {
+        "operationId": "submitRun",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cycles",
+                  "station"
+                ],
+                "properties": {
+                  "cycles": {
+                    "type": "integer"
+                  },
+                  "station": {
+                    "type": "string",
+                    "description": "Own station label."
+                  }
+                },
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RunSettings"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Submitted"
+          }
+        }
+      }
+    },
+    "/vault": {
+      "put": {
+        "tags": [
+          "Vault"
+        ],
+        "operationId": "depositBundle",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Stored"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Vault"
+        ],
+        "operationId": "listBundles",
+        "responses": {
+          "200": {
+            "description": "Bundle names",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/preferences": {
+      "put": {
+        "operationId": "updatePreference",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preference"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Updated"
+          }
+        }
+      }
+    },
+    "/labels": {
+      "post": {
+        "operationId": "setLabels",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Recorded"
+          }
+        }
+      }
+    },
+    "/definitions": {
+      "post": {
+        "operationId": "defineMarker",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "example": {
+                "marker": "azimuth",
+                "active": true
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Defined"
+          }
+        }
+      }
+    },
+    "/readings": {
+      "post": {
+        "operationId": "echoReading",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Reading"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Echoed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Reading"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/summaries": {
+      "post": {
+        "operationId": "summarizeField",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FieldRecord"
+              },
+              "examples": {
+                "demonstration": {
+                  "$ref": "#/components/examples/FieldSample"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Summary",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FieldSummary"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "examples": {
+      "FieldSample": {
+        "value": {
+          "acreage": 7
+        }
+      }
+    },
+    "schemas": {
+      "RegistrationBase": {
+        "type": "object",
+        "required": [
+          "batch"
+        ],
+        "properties": {
+          "batch": {
+            "type": "string"
+          }
+        }
+      },
+      "CrateRegistration": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/RegistrationBase"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "aisle": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "additionalProperties": true
+      },
+      "RunSettings": {
+        "type": "object",
+        "required": [
+          "station"
+        ],
+        "properties": {
+          "station": {
+            "type": "string",
+            "description": "Inherited station label."
+          }
+        }
+      },
+      "Preference": {
+        "type": "object",
+        "nullable": true,
+        "required": [
+          "theme"
+        ],
+        "properties": {
+          "theme": {
+            "type": "string"
+          }
+        }
+      },
+      "Reading": {
+        "title": "Reading",
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "properties": {
+          "value": {
+            "type": "integer"
+          }
+        }
+      },
+      "FieldRecord": {
+        "type": "object",
+        "required": [
+          "acreage"
+        ],
+        "properties": {
+          "acreage": {
+            "type": "integer"
+          }
+        }
+      },
+      "FieldSummary": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FieldRecord"
+          },
+          {
+            "type": "object",
+            "required": [
+              "count"
+            ],
+            "properties": {
+              "count": {
+                "type": "integer"
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}

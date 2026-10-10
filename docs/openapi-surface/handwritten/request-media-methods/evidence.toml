@@ -1,0 +1,17 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "c191f8e4744d1c967b94e43d89523c6bdd9bf085ed0f52ffb4403e808bc1e746"
+
+[[covers]]
+key = "request-body-content"
+arm = 'src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]'
+search = "docs/openapi-surface/witness-search-request-media-methods/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-request-media-methods/README.md"
+
+[[covers]]
+key = "request-body-content"
+arm = 'src/openapi.rs::Operation::with_sdk_method_name'
+search = "docs/openapi-surface/witness-search-request-media-methods/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-request-media-methods/README.md"

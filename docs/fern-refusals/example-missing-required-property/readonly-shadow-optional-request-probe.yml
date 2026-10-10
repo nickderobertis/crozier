@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Orchard Workshop
+  version: 1.0.0
+paths:
+  /runs:
+    post:
+      operationId: submitRun
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - cycles
+              properties:
+                cycles:
+                  type: integer
+                station:
+                  type: string
+                  readOnly: true
+                  description: Station the workshop assigned.
+              allOf:
+                - $ref: '#/components/schemas/RunSettings'
+      responses:
+        '204':
+          description: Submitted
+components:
+  schemas:
+    RunSettings:
+      type: object
+      required:
+        - station
+      properties:
+        station:
+          type: string
+          description: Station label the run is booked on.

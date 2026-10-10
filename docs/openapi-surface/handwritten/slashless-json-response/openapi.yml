@@ -1,0 +1,46 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Observatory Ledger",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://ledger.example.com"
+    }
+  ],
+  "paths": {
+    "/observations/latest": {
+      "get": {
+        "operationId": "latest_observation",
+        "responses": {
+          "200": {
+            "description": "Latest observation",
+            "content": {
+              "vnd.observatory+json;version=2": {
+                "schema": {
+                  "$ref": "#/components/schemas/Observation"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Observation": {
+        "type": "object",
+        "required": [
+          "reading"
+        ],
+        "properties": {
+          "reading": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+generate-fern-fixture: running Fern (python-sdk@5.20.0, packaged) locally...
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to /tmp/tmp.C9J545Dcv3/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: /tmp/tmp-3147068-ECAn8jfNsCoD
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to /tmp/tmp.C9J545Dcv3/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.
+generate-fern-fixture: wrote 2 files to tests/fixtures/readonly-own-overlap-measurement/expected-literals
+generate-fern-fixture: review, then wire files into the e2e manifest (see docs/matching.md).

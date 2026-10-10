@@ -358,6 +358,9 @@ fn number_of(digits: &str) -> Option<i64> {
 struct Imports {
     /// Plain `import module [as alias]`, keyed by module for sorting.
     plain: BTreeMap<String, Option<String>>,
+    /// A multipart argument can shadow `json` in one method while another
+    /// method still needs the unaliased module in the same generated file.
+    json_module_alias: bool,
     /// `from module import a, b`, module -> sorted names.
     from: BTreeMap<String, BTreeSet<String>>,
     /// This file's location, for resolving relative imports of generated types.
@@ -567,6 +570,16 @@ impl Imports {
             .insert(module.to_string(), Some(alias.to_string()));
     }
 
+    fn json_module(&mut self, shadowed: bool) -> &'static str {
+        if shadowed {
+            self.json_module_alias = true;
+            "_json"
+        } else {
+            self.add_plain("json");
+            "json"
+        }
+    }
+
     fn add_from(&mut self, module: &str, name: &str) {
         self.from
             .entry(module.to_string())
@@ -595,8 +608,18 @@ impl Imports {
 
         // Fern orders generated modules naturally (`type9` before `type10`), while
         // the maps provide deterministic collection and de-duplication.
-        let mut plain: Vec<_> = self.plain.iter().collect();
-        plain.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        let mut plain: Vec<_> = self
+            .plain
+            .iter()
+            .map(|(module, alias)| (module.as_str(), alias.as_deref()))
+            .collect();
+        if self.json_module_alias {
+            plain.push(("json", Some("_json")));
+        }
+        plain.sort_by(|(a, alias_a), (b, alias_b)| {
+            natural_cmp(a, b).then_with(|| alias_a.cmp(alias_b))
+        });
+        plain.dedup();
         for (module, alias) in plain {
             let line = match alias {
                 Some(a) => format!("import {module} as {a}"),
@@ -2979,7 +3002,7 @@ struct ParamRow {
     suffix: String,
 }
 
-fn reference_param_suffix(description: Option<&str>) -> String {
+pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
     match description {
         // Importers sometimes retain leading blank lines around a one-line
         // description. Fern still renders those through the ordinary em-dash
@@ -3295,7 +3318,7 @@ fn reference_list_annotation(annotation: &str) -> String {
     annotation.replace("typing.Sequence[", "typing.List[")
 }
 
-fn reference_param_annotation(annotation: &str) -> String {
+pub(crate) fn reference_param_annotation(annotation: &str) -> String {
     let mut annotation = annotation.replace("dt.", "datetime.");
     if let Some(inner) = annotation
         .strip_prefix("typing.Optional[typing.Optional[")
@@ -5546,6 +5569,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             let mut data = String::new();
             let mut files = String::new();
+            let json_shadowed = form.fields.iter().any(|field| field.py_name == "json")
+                || ep.path_params.iter().any(|param| param.py_name == "json")
+                || ep.query_params.iter().any(|param| param.py_name == "json")
+                || ep.header_params.iter().any(|param| param.py_name == "json");
             for f in &form.fields {
                 if let Some(content_type) = &f.form_content_type {
                     if f.form_json {
@@ -5555,8 +5582,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         let encoded = if array_part && !is_json_like_media_type(content_type) {
                             format!("jsonable_encoder({})", f.py_name)
                         } else {
-                            imports.add_plain("json");
-                            format!("json.dumps(jsonable_encoder({}))", f.py_name)
+                            let module = imports.json_module(json_shadowed);
+                            format!("{module}.dumps(jsonable_encoder({}))", f.py_name)
                         };
                         let tuple = format!("(None, {encoded}, \"{content_type}\")");
                         if f.optional {
@@ -5590,9 +5617,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     continue;
                 }
                 let value = if f.form_json {
-                    imports.add_plain("json");
+                    let module = imports.json_module(json_shadowed);
                     imports.add_core("jsonable_encoder", "jsonable_encoder");
-                    let encoded = format!("json.dumps(jsonable_encoder({}))", f.py_name);
+                    let encoded = format!("{module}.dumps(jsonable_encoder({}))", f.py_name);
                     if f.optional {
                         format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
                     } else {
@@ -5718,6 +5745,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     && ep.body_schema_dropped
                     && ep.body_schema_shape == BodySchemaShape::Ref
                     || ep.reference_body_example.is_some()
+                        // Inline named examples keep their header. A surviving
+                        // referenced schema still follows the schema drop below.
+                        && (ep.body_schema_shape != BodySchemaShape::Ref || ep.body_schema_dropped)
                         && !ep.body_schema_is_success_response
                         && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
@@ -6543,6 +6573,7 @@ fn root_client_methods(
             None => imports.add_plain(&module),
         }
     }
+    imports.json_module_alias |= method_imports.json_module_alias;
     Ok(methods)
 }
 
@@ -9369,6 +9400,32 @@ fn lookup_decl<'a>(
     })
 }
 
+fn is_object_alias<'a>(
+    mut ty: &'a TypeRef,
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+) -> bool {
+    let mut seen = BTreeSet::new();
+    let mut alias_seen = false;
+    loop {
+        match ty {
+            TypeRef::Optional(inner) => ty = inner,
+            TypeRef::Named(name) if seen.insert(name) => {
+                match lookup_decl(types, tag_decls, name) {
+                    Some(TypeDecl::Alias(alias)) => {
+                        alias_seen = true;
+                        ty = &alias.target;
+                    }
+                    Some(TypeDecl::Object(_)) => return alias_seen,
+                    _ => return false,
+                }
+            }
+            TypeRef::Dict(_, _) => return alias_seen,
+            _ => return false,
+        }
+    }
+}
+
 /// The generated object a path parameter's type resolves to, through `Optional`
 /// and named aliases; `None` when the parameter is not object-typed at all.
 fn path_object_decl<'a>(
@@ -9974,6 +10031,15 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // The JSON binary example must have its generated bytes type. The
+            // matched method still passes the value directly to `json=`.
+            if s.type_ref == TypeRef::Primitive(Prim::Bytes)
+                && s.content_type
+                && s.content_type_override.is_none()
+                && matches!(&v, Example::Atom(value) if value == "\"string\"")
+            {
+                v = Example::Atom("b\"string\"".to_string());
+            }
             if untyped_path_parameter
                 && body_example.is_none()
                 && s.example.is_none()
@@ -10251,6 +10317,12 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .any(|field| field.form_content_type.is_some());
+            let requires_files = form.multipart
+                && form.fields.iter().any(|field| {
+                    field.form_json
+                        && (field.py_name == "json"
+                            || is_object_alias(&field.type_ref, ctx.types, ctx.tag_decls))
+                });
             let mut example_fields: Vec<_> = form
                 .fields
                 .iter()
@@ -10262,23 +10334,28 @@ fn build_example_inner(
                     (f.spec_required
                         || f.media_example
                         || ((related || reference) && f.is_file)
+                        || (documentation
+                            && f.is_file
+                            && matches!(f.type_ref, TypeRef::Optional(_)))
                         // A part that is a LIST of files is shown wherever the
                         // example is written, required or not: SFTPGo's optional
                         // `filenames` reaches `README.md` and the client docstring
                         // as well as `reference.md`, where DaniWeb's optional
                         // scalar `csv` reaches only the reference writer.
                         || f.is_file && matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
-                        && (documentation || !f.is_file)
+                        && (documentation
+                            || !f.is_file
+                            || requires_files && f.spec_required && !f.optional)
                 })
                 .collect();
             // Fern's reference writer lists required multipart file inputs before
             // the other required fields, even though executable signatures retain
             // the schema's required-first declaration order.
-            if reference && form.multipart {
+            if form.multipart && (reference || documentation && requires_files) {
                 example_fields.sort_by_key(|field| !field.is_file);
             }
             for f in example_fields {
-                let v = if documentation && f.is_file {
+                let v = if (documentation || requires_files) && f.is_file {
                     if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                         // A list of files is one flat placeholder list, not an
                         // exploded one: SFTPGo's `filenames` documents
@@ -11232,6 +11309,23 @@ mod tests {
                     "responses": {"204": {"description": "OK"}}}}
             }
         })
+    }
+
+    #[test]
+    fn multipart_json_module_imports_follow_each_methods_shadowing() {
+        for order in [[true, false], [false, true]] {
+            let mut imports = super::Imports::default();
+            for shadowed in order {
+                assert_eq!(
+                    imports.json_module(shadowed),
+                    if shadowed { "_json" } else { "json" }
+                );
+            }
+            assert_eq!(imports.render(), "import json\nimport json as _json");
+        }
+        let mut imports = super::Imports::default();
+        imports.json_module(true);
+        assert_eq!(imports.render(), "import json as _json");
     }
 
     #[test]

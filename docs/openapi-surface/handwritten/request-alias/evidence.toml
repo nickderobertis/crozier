@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "b5ebaca7e121d1dff79bc5eff0d14bcfd90a98525ec5f06b278790c3674bd1cb"
+
+[[covers]]
+key = "request-body-content"
+arm = 'src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]'
+search = "docs/openapi-surface/witness-search-request-alias/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-request-alias/README.md"
