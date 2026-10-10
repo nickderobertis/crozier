@@ -10836,6 +10836,335 @@
      }
     }
    }
+  },
+  "du-prop-oneof-fern-undiscriminated": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     },
+     "x-fern-discriminated": false
+    }
+   }
+  },
+  "du-prop-oneof-crozier-undiscriminated": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     },
+     "x-crozier-discriminated": false
+    }
+   }
+  },
+  "du-prop-oneof-crozier-wins-discriminated": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Dog"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "dog": "#/components/schemas/Dog"
+      }
+     },
+     "x-fern-discriminated": false,
+     "x-crozier-discriminated": true
+    }
+   }
+  },
+  "du-prop-oneof-all-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Lion"
+      },
+      {
+       "$ref": "#/components/schemas/Wolf"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "lion": "#/components/schemas/Lion",
+       "wolf": "#/components/schemas/Wolf"
+      }
+     }
+    }
+   }
+  },
+  "du-prop-oneof-half-dangling-mapping": {
+   "schemas": {
+    "Cat": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "cat"
+       ]
+      },
+      "meow": {
+       "type": "string"
+      }
+     }
+    },
+    "Dog": {
+     "type": "object",
+     "required": [
+      "kind"
+     ],
+     "properties": {
+      "kind": {
+       "type": "string",
+       "enum": [
+        "dog"
+       ]
+      },
+      "woof": {
+       "type": "string"
+      }
+     }
+    },
+    "Untagged": {
+     "type": "object",
+     "properties": {
+      "woof": {
+       "type": "string"
+      }
+     }
+    }
+   },
+   "body": {
+    "pet": {
+     "oneOf": [
+      {
+       "$ref": "#/components/schemas/Cat"
+      },
+      {
+       "$ref": "#/components/schemas/Wolf"
+      }
+     ],
+     "discriminator": {
+      "propertyName": "kind",
+      "mapping": {
+       "cat": "#/components/schemas/Cat",
+       "wolf": "#/components/schemas/Wolf"
+      }
+     }
+    }
+   }
   }
  },
  "cases": [
@@ -12529,6 +12858,18 @@
      "arms": [
       "prop_type_ref:13"
      ]
+    },
+    "du-prop-oneof-crozier-wins-discriminated": {
+     "form": "the written spelling with x-fern-discriminated false and x-crozier-discriminated true, the crozier spelling winning",
+     "arms": [
+      "prop_type_ref:13"
+     ]
+    },
+    "du-prop-oneof-all-dangling-mapping": {
+     "form": "two or more $ref members and a mapping every one of whose members and targets names a component the document does not declare",
+     "arms": [
+      "prop_type_ref:13"
+     ]
     }
    },
    "near": {
@@ -12597,6 +12938,27 @@
     },
     "du-prop-anyof-untyped-enum": {
      "part": "the anyOf head, which the oneOf reading does not count; its untyped `enum` tags also leave it an ordinary union",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-fern-undiscriminated": {
+     "part": "x-fern-discriminated false, which declares the union undiscriminated",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-crozier-undiscriminated": {
+     "part": "x-crozier-discriminated false, the canonical spelling of the same",
+     "arms": [],
+     "entered": {
+      "declaration": "Alias(MakeThingRequestPet)"
+     }
+    },
+    "du-prop-oneof-half-dangling-mapping": {
+     "part": "a mapping whose members and targets dangle only in part",
      "arms": [],
      "entered": {
       "declaration": "Alias(MakeThingRequestPet)"

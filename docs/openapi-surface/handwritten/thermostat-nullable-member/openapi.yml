@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Thermostat Control
+  version: 1.0.0
+paths:
+  /zones/{zone}:
+    get:
+      operationId: getZone
+      parameters:
+        - name: zone
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Zone state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Zone"
+components:
+  schemas:
+    Zone:
+      type: object
+      properties:
+        setpoint:
+          $ref: "#/components/schemas/Setpoint"
+    Setpoint:
+      oneOf:
+        - type: number
+          nullable: true
+        - type: boolean

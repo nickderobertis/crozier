@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "8e7be79610e7cac17d1b0737a8d35560053e08136ce478701a2dccd254ac1cad"
+
+[[covers]]
+key = "oneof-sole-non-null-member"
+arm = 'src/ir.rs::Builder::add_named[if variants\.len\(\) > 1 && is_inline_object\(only\)]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

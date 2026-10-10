@@ -269,6 +269,12 @@ golden-reach:
 golden-reach-report:
     python3 tools/surface-census/golden-reach.py report --write
 
+# Restate docs/openapi-surface-coverage.md's generated arm counts and arm table
+# from the committed golden-reach ledger, arm-search records, hand-written covers
+# and their measurements. No build, no network; `golden-reach-report` runs it too.
+golden-reach-arms:
+    python3 tools/surface-census/golden-reach.py arms
+
 # Which generated files each `golden` row resting only on a residual golden
 # (komga, short-io, webflow-v2) lands in, split by whether that golden test
 # byte-compares them: renders the witness with the feature perturbed and diffs

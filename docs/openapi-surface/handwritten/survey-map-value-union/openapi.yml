@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: Field Survey
+  version: 4.0.0
+paths:
+  /responses:
+    post:
+      operationId: submitResponse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [answers]
+              properties:
+                respondent:
+                  type: string
+                answers:
+                  oneOf:
+                    - type: object
+                      additionalProperties:
+                        anyOf:
+                          - type: integer
+                          - type: string
+                          - type: boolean
+                          - type: "null"
+                    - type: string
+                metadata:
+                  oneOf:
+                    - type: object
+                      additionalProperties:
+                        oneOf:
+                          - type: string
+                          - type: number
+                    - type: boolean
+      responses:
+        "204":
+          description: Stored

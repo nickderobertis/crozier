@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: Ferry Booking
+  version: 1.0.0
+paths:
+  /sailings/{sailing_id}/bookings:
+    post:
+      operationId: createBooking
+      parameters:
+        - name: sailing_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Booking"
+      responses:
+        "204":
+          description: Booked
+components:
+  schemas:
+    Booking:
+      type: object
+      required: [passenger]
+      properties:
+        passenger:
+          type: string
+        deck_space:
+          type: boolean
+    Berth:
+      oneOf:
+        - $ref: "#/components/schemas/VehicleBerth"
+        - $ref: "#/components/schemas/CabinBerth"
+        - $ref: "#/components/schemas/DeckBerth"
+      discriminator:
+        propertyName: category
+        mapping:
+          vehicle: "#/components/schemas/VehicleBerth"
+          cabin: "#/components/schemas/CabinBerth"
+          deck: "#/components/schemas/DeckBerth"
+  VehicleBerth:
+    type: object
+    properties:
+      category:
+        type: string
+      plate:
+        type: string
+  CabinBerth:
+    type: object
+    properties:
+      category:
+        type: string
+      bunks:
+        type: integer
+  DeckBerth:
+    type: object
+    properties:
+      category:
+        type: string

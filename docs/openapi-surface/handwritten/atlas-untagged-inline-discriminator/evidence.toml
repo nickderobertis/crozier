@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "69922a3856d5c8df61971ac117f4a6ad7b2bf11bfbb7c9332a8c918ba6946ede"
+
+[[covers]]
+key = "property-oneof-residual"
+arm = 'src/ir.rs::untagged_inline_discriminator[if untagged \{]'
+search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

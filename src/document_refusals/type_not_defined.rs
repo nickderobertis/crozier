@@ -7,6 +7,8 @@
 //! - A union Fern discriminates from its members' single-value property
 //!   names a member that a JSON request body also `$ref`s; Fern turns that body
 //!   into an inline request and the union's reference to the member dangles.
+//!   An explicit `oneOf` discriminator with a mapping does the same to a body
+//!   member that lacks the property it names.
 
 use super::{ignored_reference_node, yaml_pointer};
 use serde_yaml_ng::Value;
@@ -245,7 +247,12 @@ fn body_member_union(root: &Value) -> Option<String> {
     let mut bodies = std::collections::HashSet::new();
     let paths = root.get("paths").and_then(Value::as_mapping);
     for item in paths.into_iter().flatten().map(|(_, item)| item) {
-        for operation in METHODS.iter().filter_map(|method| item.get(*method)) {
+        // Fern drops a `GET` operation's body, so it never becomes an inline
+        // request: the hand-written `bakery-get-body-member` fixture's
+        // `previewLoaf` sends a union member as its `GET` body, and Fern
+        // generates the union and a method taking no body.
+        let bodied = METHODS.iter().filter(|method| **method != "get");
+        for operation in bodied.filter_map(|method| item.get(*method)) {
             if ignored_reference_node(operation) {
                 continue;
             }
@@ -286,17 +293,35 @@ fn find_union(
 ) -> Option<String> {
     for key in ["oneOf", "anyOf"] {
         if let Some(members) = schema.get(key).and_then(Value::as_sequence) {
-            if inferred_discriminant(root, members) {
-                let body_member = members.iter().position(|member| {
-                    member
-                        .get("$ref")
-                        .and_then(Value::as_str)
-                        .and_then(|reference| reference.strip_prefix(SCHEMA_PREFIX))
-                        .is_some_and(|name| bodies.contains(name))
+            let is_body = |member: &Value| {
+                member
+                    .get("$ref")
+                    .and_then(Value::as_str)
+                    .and_then(|reference| reference.strip_prefix(SCHEMA_PREFIX))
+                    .is_some_and(|name| bodies.contains(name))
+            };
+            let body_member = if inferred_discriminant(root, members) {
+                members.iter().position(is_body)
+            } else {
+                // The probe `explicit-discriminator-body-probe.yml`: Fern reads a
+                // mapped `oneOf` discriminator whatever the members declare,
+                // and a body member lacking its property is the document's fault.
+                let lacking = mapped_discriminant(schema, key).map(|property| {
+                    move |member: &Value| {
+                        resolve(root, member)
+                            .get("properties")
+                            .and_then(|properties| properties.get(property))
+                            .is_none()
+                    }
                 });
-                if let Some(index) = body_member {
-                    return Some(format!("{pointer}/{key}/{index}"));
-                }
+                lacking.and_then(|lacking| {
+                    members
+                        .iter()
+                        .position(|member| is_body(member) && lacking(member))
+                })
+            };
+            if let Some(index) = body_member {
+                return Some(format!("{pointer}/{key}/{index}"));
             }
         }
     }
@@ -326,6 +351,20 @@ fn find_union(
     children
         .into_iter()
         .find_map(|(pointer, child)| find_union(root, child, &pointer, bodies))
+}
+
+/// The property an explicit `oneOf` discriminator with a non-empty `mapping`
+/// names; Fern applies no discriminator to an `anyOf`.
+fn mapped_discriminant<'a>(schema: &'a Value, key: &str) -> Option<&'a str> {
+    let discriminator = schema.get("discriminator").filter(|_| key == "oneOf")?;
+    discriminator
+        .get("mapping")
+        .and_then(Value::as_mapping)
+        .filter(|mapping| !mapping.is_empty())?;
+    discriminator
+        .get("propertyName")
+        .and_then(Value::as_str)
+        .filter(|property| !property.is_empty())
 }
 
 /// At least two members, every one an object sharing a property whose only

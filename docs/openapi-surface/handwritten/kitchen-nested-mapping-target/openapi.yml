@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Kitchen Display
+  version: 2.0.0
+paths:
+  /tickets:
+    post:
+      operationId: fireTicket
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Course"
+      responses:
+        "204":
+          description: Fired
+components:
+  schemas:
+    Course:
+      type: object
+      required: [station]
+      properties:
+        station:
+          type: string
+      discriminator:
+        propertyName: station
+        mapping:
+          grill: "#/components/schemas/GrillCourse"
+          pastry: "#/components/schemas/PastryCourse"
+      oneOf:
+        - $ref: "#/components/schemas/GrillCourse"
+        - $ref: "#/components/schemas/PastryCourse"
+    GrillCourse:
+      oneOf:
+        - $ref: "#/components/schemas/SteakOrder"
+        - $ref: "#/components/schemas/SkewerOrder"
+    SteakOrder:
+      type: object
+      required: [station, doneness]
+      properties:
+        station:
+          type: string
+          enum: [grill]
+        doneness:
+          type: string
+    SkewerOrder:
+      type: object
+      required: [station, count]
+      properties:
+        station:
+          type: string
+          enum: [grill]
+        count:
+          type: integer
+    PastryCourse:
+      type: object
+      required: [station, item]
+      properties:
+        station:
+          type: string
+          enum: [pastry]
+        item:
+          type: string

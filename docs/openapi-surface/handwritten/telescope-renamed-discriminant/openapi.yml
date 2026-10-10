@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Telescope Scheduler
+  version: 3.1.0
+paths:
+  /observations:
+    post:
+      operationId: queueObservation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [target]
+              properties:
+                target:
+                  $ref: "#/components/schemas/Target"
+      responses:
+        "200":
+          description: Queued target
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Target"
+  /instruments/{instrument_id}:
+    get:
+      operationId: getInstrument
+      parameters:
+        - name: instrument_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: One instrument
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Instrument"
+components:
+  schemas:
+    Instrument:
+      oneOf:
+        - $ref: "#/components/schemas/Refractor"
+        - $ref: "#/components/schemas/Reflector"
+      discriminator:
+        propertyName: optics
+        x-fern-property-name: opticsKind
+        mapping:
+          lens: "#/components/schemas/Refractor"
+          mirror: "#/components/schemas/Reflector"
+    Refractor:
+      type: object
+      required: [aperture_mm]
+      properties:
+        aperture_mm:
+          type: integer
+    Reflector:
+      type: object
+      properties:
+        focal_ratio:
+          type: number
+    Target:
+      oneOf:
+        - $ref: "#/components/schemas/StarTarget"
+        - $ref: "#/components/schemas/GalaxyTarget"
+      discriminator:
+        propertyName: "$class"
+        x-fern-property-name: targetClass
+        mapping:
+          star: "#/components/schemas/StarTarget"
+          galaxy: "#/components/schemas/GalaxyTarget"
+    StarTarget:
+      type: object
+      required: [magnitude]
+      properties:
+        magnitude:
+          type: number
+        catalog_id:
+          type: string
+    GalaxyTarget:
+      type: object
+      properties:
+        redshift:
+          type: number
