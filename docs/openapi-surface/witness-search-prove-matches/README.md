@@ -189,5 +189,6 @@ differs:
 - `enum-extension-names-dropped-under-literals`: under `python_enums` Fern
   writes each `x-fern-enum` description as a member docstring
   (`src/fern/types/relation.py`, after `BELOW` and `DIFFERS`) and crozier
-  writes none, the `enum-value-description-extension-dropped` departure. No
-  search above reaches a witness for it.
+  writes none. No departure covers it, so it is a crozier `python_enums`
+  mismatch, left to a generator change. No search above reaches a witness for
+  it.
