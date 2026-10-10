@@ -65,6 +65,7 @@ const KINDS: &[Kind] = &[
             "enum-query-param",
             "enum-receiver-collision",
             "openfigi.com",
+            "aws-mobileanalytics",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

@@ -1,0 +1,60 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Signal Observatory",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://signals.example.net"
+    }
+  ],
+  "paths": {
+    "/signals": {
+      "get": {
+        "operationId": "listSignals",
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-fern-parameter-name": "band"
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "schema": {
+              "type": "integer"
+            },
+            "x-fern-default": "12"
+          },
+          {
+            "name": "obsolete",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "x-fern-ignore": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Warehouse Ledger",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://warehouse.example.net"
+    }
+  ],
+  "x-crozier-global-headers": [
+    {
+      "header": "X Ledger",
+      "name": "ledger"
+    }
+  ],
+  "paths": {
+    "/shipments": {
+      "get": {
+        "operationId": "listShipments",
+        "responses": {
+          "200": {
+            "description": "Shipments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

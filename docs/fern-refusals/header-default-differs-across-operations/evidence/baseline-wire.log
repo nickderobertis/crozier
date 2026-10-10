@@ -1,0 +1,7 @@
+Installed 16 packages in 120ms
+sent: [('GET', 'radial'), ('PUT', 'radial')]
+Traceback (most recent call last):
+  File "/home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/2/worktree/docs/fern-refusals/header-default-differs-across-operations/evidence/declared-default-wire.py", line 21, in <module>
+    assert sent == [("GET", "radial"), ("PUT", "linear")], f"operation defaults lost: {sent}"
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: operation defaults lost: [('GET', 'radial'), ('PUT', 'radial')]

@@ -51,6 +51,7 @@
     "e2eReads": [
       "{workspaceRoot}/docs/departures/**/*",
       "{workspaceRoot}/docs/fern-measurements/**/*",
+      "{workspaceRoot}/docs/fern-reference.md",
       "{workspaceRoot}/docs/fern-refusals/**/*",
       "{workspaceRoot}/docs/openapi-surface/**/*",
       "{workspaceRoot}/docs/openapi-surface-coverage.md",

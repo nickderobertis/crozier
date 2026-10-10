@@ -299,6 +299,8 @@ def bounded_reads(paths: dict[str, str], timeout: int, jobs: int) -> dict[str, d
                         break
                     started, reason = started or now, value
             except EOFError as error:
+                # The pipe closes before the process is reaped; its status exists only once it is.
+                child.join()
                 raise ChildProcessError(
                     f"the reader of sha256 {digest} exited {child.exitcode} without a verdict"
                 ) from error

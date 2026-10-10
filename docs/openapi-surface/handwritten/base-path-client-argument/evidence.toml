@@ -10,7 +10,7 @@ renewed = "docs/openapi-surface/witness-search-parameter-lowering/README.md"
 
 [[covers]]
 key = "parameter-in-path"
-arm = 'src/ir.rs::base_path_client_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]'
+arm = 'src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-in-path.md#witness-search-exhaustive"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/golden-reach-witnesses/searches/parameter-in-path.md"
