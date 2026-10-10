@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.110](https://github.com/nickderobertis/crozier/compare/v0.0.109...v0.0.110) - 2026-10-10
+
+### Fixed
+
+- *(parity)* match streaming ([#483](https://github.com/nickderobertis/crozier/pull/483))
+- *(parity)* match bodies responses ([#480](https://github.com/nickderobertis/crozier/pull/480))
+
 ## [0.0.109](https://github.com/nickderobertis/crozier/compare/v0.0.108...v0.0.109) - 2026-10-10
 
 ### Fixed
