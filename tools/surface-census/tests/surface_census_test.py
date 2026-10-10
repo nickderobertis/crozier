@@ -14028,9 +14028,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
             "paths": {
                 "/settings": {
                     "get": {
-                        "responses": {
-                            "200": {"description": "ok", "content": {"application/json": {"schema": body}}}
-                        }
+                        "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": body}}}}
                     }
                 }
             },
