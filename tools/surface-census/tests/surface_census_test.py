@@ -3187,6 +3187,7 @@ fn following() { let other = 42; }
             89: "eighty-nine",
             107: "one-hundred-and-seven",
             110: "one-hundred-and-ten",
+            111: "one-hundred-and-eleven",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -15685,7 +15686,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(40, len(rows))
+        self.assertEqual(41, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
