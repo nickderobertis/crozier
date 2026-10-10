@@ -133,6 +133,47 @@ def run(*args: str, env: dict[str, str] | None = None) -> subprocess.CompletedPr
     )
 
 
+# A startup hook for one run: once a reader enters the census walk, the alarm
+# `read_document` armed is raised early, after RECENSUS_TEST_WALK_LINES lines of the
+# census's code have run, so its bound is reached by a known amount of walk work,
+# however slow the runner is. Lines, not calls: much of the walk is loops.
+WALK_ALARM = """\
+import os, signal, sys
+_after = int(os.environ["RECENSUS_TEST_WALK_LINES"])
+_lines = None
+def _line(frame, event, arg):
+    global _lines
+    if event == "line" and _lines is not None and _lines < _after:
+        _lines += 1
+        if _lines == _after:
+            # The bound must be armed: the alarm is raised early, never set here.
+            if signal.alarm(0) == 0:
+                os.write(2, b"WALK_ALARM: the reader armed no census bound\\n")
+                os._exit(5)
+            signal.raise_signal(signal.SIGALRM)
+    return _line
+def _call(frame, event, arg):
+    global _lines
+    if not frame.f_code.co_filename.endswith("openapi-surface-census.py"):
+        return None
+    if _lines is None and frame.f_code.co_name == "census_document":
+        _lines = 0
+    return _line if _lines is not None and _lines < _after else None
+sys.settrace(_call)
+"""
+
+
+def walk_alarm(tmp: str, lines: int) -> dict[str, str]:
+    """The environment that runs the script with `WALK_ALARM` raising its alarm at `lines` lines."""
+    startup = Path(tmp) / "walk-alarm"
+    startup.mkdir(exist_ok=True)
+    (startup / "sitecustomize.py").write_text(WALK_ALARM, encoding="utf-8")
+    return {
+        "RECENSUS_TEST_WALK_LINES": str(lines),
+        "PYTHONPATH": os.pathsep.join(filter(None, (str(startup), os.environ.get("PYTHONPATH")))),
+    }
+
+
 class OpaqueContinuationTest(unittest.TestCase):
     def test_each_continuation_skips_opaque_history_and_refuses_unknown_versions(self) -> None:
         server = UpstreamServer(("127.0.0.1", 0), Upstream)
@@ -479,7 +520,10 @@ class FullYamlTest(unittest.TestCase):
     def test_a_census_walk_past_its_bound_or_its_depth_is_refused(self) -> None:
         # Aliases cost the parser nothing and the walk everything: eleven levels of eight
         # shared `allOf` members is 8^11 schemas to walk, and a 1,500-link chain kept under an
-        # `x-` extension is one schema 1,500 levels deep.
+        # `x-` extension is one schema 1,500 levels deep. Both are read at a bound no runner
+        # reaches. The bomb's bound is reached by work instead: `WALK_ALARM` raises the alarm
+        # the stage set after a fixed number of the walk's lines, so it lands inside the walk
+        # however slow the runner is; the chain's depth alone refuses it.
         bomb = [
             "openapi: 3.0.3",
             "info: {title: t, version: '1'}",
@@ -493,52 +537,50 @@ class FullYamlTest(unittest.TestCase):
         chain += [f"  - &l{n} {{type: array, items: *l{n - 1}}}" for n in range(1, 1500)]
         chain += ["components:", "  schemas:", "    Deep: *l1499"]
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp) / "evidence"
-            evidence = root / "witness-search-sourcegraph"
-            keys_file(evidence)
-            cache = Path(tmp) / "cache"
-            (cache / "documents").mkdir(parents=True)
-            rows = []
-            for name, text in (("bomb", bomb), ("chain", chain)):
+            refused = {}
+            for name, text, env in (("bomb", bomb, walk_alarm(tmp, 100_000)), ("chain", chain, None)):
+                root = Path(tmp) / name / "evidence"
+                evidence = root / "witness-search-sourcegraph"
+                keys_file(evidence)
+                cache = Path(tmp) / name / "cache"
+                (cache / "documents").mkdir(parents=True)
                 data = ("\n".join(text) + "\n").encode("utf-8")
                 digest = hashlib.sha256(data).hexdigest()
                 (cache / "documents" / f"{digest}.yaml").write_bytes(data)
-                rows.append(
-                    {
-                        "source": "sourcegraph",
-                        "key": KEY,
-                        "repository": f"github.com/example/{name}",
-                        "path": "a.yaml",
-                        "commit": "c" * 40,
-                        "sha256": digest,
-                        "disposition": "parse-failure",
-                    }
-                )
-            (evidence / "candidates.jsonl").write_text(
-                "".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8", newline="\n"
-            )
-            completed = run(
-                "--evidence-root",
-                str(root),
-                "full-yaml",
-                "--source",
-                "sourcegraph",
-                "--cache",
-                str(cache),
-                "--timeout",
-                "2",
-            )
-            self.assertEqual(0, completed.returncode, completed.stderr)
-            refused = {
-                r["repository"].rsplit("/", 1)[1]: r
-                for _, r in INDEX.jsonl(evidence / "candidates.jsonl")
-                if r.get("loader")
-            }
-            self.assertEqual({"census-refused"}, {r["disposition"] for r in refused.values()})
+                row = {
+                    "source": "sourcegraph",
+                    "key": KEY,
+                    "repository": f"github.com/example/{name}",
+                    "path": "a.yaml",
+                    "commit": "c" * 40,
+                    "sha256": digest,
+                    "disposition": "parse-failure",
+                }
+                (evidence / "candidates.jsonl").write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+                try:
+                    completed = run(
+                        "--evidence-root",
+                        str(root),
+                        "full-yaml",
+                        "--source",
+                        "sourcegraph",
+                        "--cache",
+                        str(cache),
+                        "--timeout",
+                        "600",
+                        env=env,
+                    )
+                except subprocess.TimeoutExpired:
+                    self.fail(f"the census walk over the {name} was not ended by its bound or its depth")
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                [refused[name]] = [r for _, r in INDEX.jsonl(evidence / "candidates.jsonl") if r.get("loader")]
+                self.assertEqual("census-refused", refused[name]["disposition"], refused[name])
+                self.assertIn(f"sha256 {digest}", refused[name]["diagnostic"])
             self.assertTrue(
                 refused["bomb"]["diagnostic"].startswith(
-                    "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 2 s; sha256 "
-                )
+                    "census walk over the ruamel.yaml 0.19.1 (YAML 1.2) reading exceeded 600 s; sha256 "
+                ),
+                refused["bomb"]["diagnostic"],
             )
             self.assertTrue(
                 refused["chain"]["diagnostic"].startswith(
@@ -546,7 +588,6 @@ class FullYamlTest(unittest.TestCase):
                 ),
                 refused["chain"]["diagnostic"],
             )
-            self.assertIn(f"sha256 {rows[1]['sha256']}", refused["chain"]["diagnostic"])
 
     def test_an_absent_copy_and_a_bad_bound_name_their_repair(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1413,14 +1454,18 @@ class LenientReadingTest(unittest.TestCase):
 # A startup hook for this run and every child it spawns: it removes
 # `signal.SIGALRM`, so a stage takes the branch it takes on Windows, and with
 # RECENSUS_TEST_DIE_ON set, a spawned reader opening that document dies there
-# without a verdict, as one the host kills would.
+# without a verdict, as one the host kills would. It closes its pipe a second
+# before it exits, so the stage always sees the pipe end before the process can
+# be reaped, the order a loaded host only sometimes gives.
 WITHOUT_SIGALRM = """\
-import multiprocessing, os, signal, sys
+import multiprocessing, os, signal, sys, time
 del signal.SIGALRM
 _doomed = os.environ.get("RECENSUS_TEST_DIE_ON")
 if _doomed:
     def _die(event, args):
         if event == "open" and _doomed in str(args[0]) and multiprocessing.parent_process() is not None:
+            os.closerange(3, os.sysconf("SC_OPEN_MAX") if hasattr(os, "sysconf") else 4096)
+            time.sleep(1)
             os._exit(3)
     sys.addaudithook(_die)
 """
