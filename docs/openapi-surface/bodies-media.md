@@ -93,6 +93,7 @@ and of an Encoding is this region's, while the Header Object it holds is the
 | multipart-inline-object-part-json-encoded | both | Media Type Object.schema (`multipart/form-data` inline object part) | handwritten | handwritten: multipart-inline-object-part-json-encoded; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 | multipart-part-encoding-charset-tuple | both | Encoding Object.contentType (a part content type with a `charset` parameter) | handwritten | handwritten: multipart-part-encoding-charset-tuple; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 | patch-inline-nullable-unrequired-props-omit | 3.0 | Media Type Object.schema (PATCH inline body of unrequired nullable properties) | handwritten | handwritten: patch-inline-nullable-unrequired-props-omit; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
+| stream-error-status-raises-typed-error | both | Responses Object (an event-stream success beside a JSON `400` typed string) | handwritten | handwritten: stream-error-status-raises-typed-error; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 | string-body-example-backslash-escaped | both | Media Type Object.example (a string body example with backslash escapes) | handwritten | handwritten: string-body-example-backslash-escaped; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 
 ## Method notes

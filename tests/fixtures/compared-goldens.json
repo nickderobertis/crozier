@@ -123,6 +123,11 @@
         ".crozier-overlay.json"
       ]
     },
+    "docs/fern-measurements/literals-mode/stream-error-status-raises-typed-error/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "docs/fern-measurements/literals-mode/string-body-example-backslash-escaped/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -285,6 +290,7 @@
     "docs/openapi-surface/handwritten/stream-condition-ref-body-header/fern-expected": {},
     "docs/openapi-surface/handwritten/stream-condition-shared-body/fern-expected": {},
     "docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected": {},
+    "docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected": {},
     "docs/openapi-surface/handwritten/streaming-extension-boolean/fern-expected": {},
     "docs/openapi-surface/handwritten/streaming-extension-sse-format/fern-expected": {},
     "docs/openapi-surface/handwritten/streaming-extension-terminator/fern-expected": {},

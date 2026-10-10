@@ -158,6 +158,7 @@ docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/fern
 docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/literals-mode/snake-case-component-name-pascal-class/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/literals-mode/stream-error-status-raises-typed-error/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/string-body-example-backslash-escaped/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/undiscriminated-ref-oneof-sibling-properties-dropped/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/union-of-enum-ref-const-and-string-members/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
@@ -883,6 +884,12 @@ docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected	src/f
 docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/stream-condition-union-body/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	reference.md	3	stream-reference-return-type
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/openapi-surface/handwritten/stream-error-status-raises-typed-error/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/streaming-extension-boolean/fern-expected	reference.md	2	stream-reference-return-type
 docs/openapi-surface/handwritten/streaming-extension-boolean/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/streaming-extension-boolean/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix

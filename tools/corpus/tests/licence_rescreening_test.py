@@ -165,7 +165,7 @@ class TheAuthoritativeSetComesFromTheRegionLedgers(unittest.TestCase):
         """`witness-found` rows are answers, not blocked candidates."""
         gate = load_gate()
         _, rows = gate.authoritative(REPO)
-        self.assertNotIn("bodies-media.md:274", rows)
+        self.assertNotIn("bodies-media.md:275", rows)
 
 
 class TheGateStillDiscriminates(unittest.TestCase):

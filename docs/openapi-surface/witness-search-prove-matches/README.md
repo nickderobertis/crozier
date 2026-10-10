@@ -100,6 +100,7 @@ shapes, so the detector above is what the search ran.
 | `patch-inline-nullable-unrequired-props-omit` | `search-incomplete` | 2 APIs.guru, 1 registered |
 | `query-param-ref-to-enum-or-array-union-converted` | `search-incomplete` | 0 |
 | `required-param-and-body-defaults-ignored` | `search-incomplete` | 0 |
+| `stream-error-status-raises-typed-error` | `search-incomplete` | 5 registered |
 | `string-body-example-backslash-escaped` | `search-incomplete` | 0 |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `search-incomplete` | 1 APIs.guru |
 | `union-of-enum-ref-const-and-string-members` | `search-incomplete` | 0 |
@@ -127,6 +128,7 @@ What became of every strict declarer of a key above, and why none is a witness.
 | `patch-inline-nullable-unrequired-props-omit` | `none-registrable` | `loket.nl/V2` crashes Fern's generator container (its formatter cannot parse the code it wrote) and `vercel.com/0.0.1` is refused by Fern (duplicate request property names); the registered `discord-com` declares every property nullable as an OpenAPI 3.1 `type: [..., "null"]` array, not the `nullable: true` spelling the shape is about |
 | `query-param-ref-to-enum-or-array-union-converted` | `none-registrable` | no document declares it |
 | `required-param-and-body-defaults-ignored` | `none-registrable` | no document declares both halves; 32 APIs.guru and 6 registered documents declare one |
+| `stream-error-status-raises-typed-error` | `none-registrable` | the five registered declarers (`dot-ai`, `standrig`, `truefoundry-trueforge`, `truefoundry-trueforge-5adde28`, `zoonk`) type their `400` body as an object, never the bare `type: string` whose `parse_obj_as(type_=str, …)` is the shape; no APIs.guru document declares the trigger |
 | `string-body-example-backslash-escaped` | `none-registrable` | no document declares it |
 | `undiscriminated-ref-oneof-sibling-properties-dropped` | `none-registrable` | its one declarer, `rebilly.com/2.1`, is licensed under Rebilly's own API License Agreement, a proprietary grant the corpus cannot redistribute |
 | `union-of-enum-ref-const-and-string-members` | `none-registrable` | no document declares it; two registered documents pair an enum `$ref` with one of the other two members only |
@@ -134,21 +136,15 @@ What became of every strict declarer of a key above, and why none is a witness.
 | `variant-nullable-value-optional-default-none` | `none-registrable` | the registered `tlon-notes`, `truefoundry-trueforge` and `truefoundry-trueforge-5adde28` spell the nullable value as an OpenAPI 3.1 `type` array, not `nullable: true` |
 | `variant-own-fields-before-allof-parent-fields` | `none-registrable` | its one declarer, `apple.com/sirikit-cloud-media/1.0.2`, is refused by Fern (a missing `method` discriminant) |
 
-## Blocked
+## Notes on two fixtures
 
-`stream-error-status-raises-typed-error` is not proven here. Fern's
-`reference.md` heading documents every server-sent-event method as returning
-`typing.Iterator[bytes]` while the generated method returns its event type
-(`typing.Iterator[Rotation]` in the document this search measured), and crozier
-reproduces it. That heading is a Fern defect, corrected by the streaming
-work's `stream-reference-return-type` departure, which is not yet on the
-default branch; until it is, no tree carrying the heading is committed, in
-either enum mode.
-Its search found no witness either: the five registered declarers
-(`dot-ai`, `standrig`, `truefoundry-trueforge`, `truefoundry-trueforge-5adde28`,
-`zoonk`) type their `400` body as an object, never the bare `type: string`
-whose `parse_obj_as(type_=str, …)` is the shape, and no APIs.guru document
-declares the trigger.
+The hand-written fixture of `stream-error-status-raises-typed-error` is
+compared with one catalogued departure. Fern's `reference.md` heads the
+server-sent-event method `-> typing.Iterator[bytes]` while the method returns
+`typing.Iterator[Rotation]`, and crozier corrects that heading under the
+`stream-reference-return-type` departure. Everything else in the tree, the
+`BadRequestError` raised from inside the stream included, matches byte for
+byte.
 
 The hand-written fixture of `multipart-inline-object-part-json-encoded`
 carries the inline object part without a file part. With a required file part

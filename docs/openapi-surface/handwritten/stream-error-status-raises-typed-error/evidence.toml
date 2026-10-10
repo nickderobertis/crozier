@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "aae83eafe187b6ebbd5ac68a4d6868a0aebb2eb0310e3d28390df896dd92f09f"
+
+[[covers]]
+key = "stream-error-status-raises-typed-error"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

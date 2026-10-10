@@ -265,7 +265,7 @@ fn case(name: &str) -> Case {
 fn literals_mode_measurements_match_fern() {
     let cases = cases().unwrap_or_else(|failures| panic!("{}", failures.join("\n")));
     assert!(
-        cases.len() >= 29,
+        cases.len() >= 30,
         "the literals-mode cases are missing: {:?}",
         cases.iter().map(|case| &case.name).collect::<Vec<_>>()
     );
