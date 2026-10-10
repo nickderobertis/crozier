@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "7faffd6b5701f8a6945ef502737710d81bd52f1eaec95e447ac789ee2e333ee6"
+
+[[covers]]
+key = "group-path-ending-in-api-nested-package"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

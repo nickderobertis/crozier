@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Trail Markers
+  version: 1.0.0
+paths:
+  /cairns:
+    post:
+      operationId: buildCairn
+      tags: [cairns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+              required: [summit]
+              properties:
+                summit:
+                  type: string
+            example:
+              summit: Kettle Crag
+              stones: 40
+      responses:
+        "204":
+          description: The cairn was recorded.

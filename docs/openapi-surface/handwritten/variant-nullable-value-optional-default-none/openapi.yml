@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: Tide Table
+  version: 1.0.0
+paths:
+  /tides/next:
+    get:
+      operationId: nextTide
+      tags: [tides]
+      responses:
+        "200":
+          description: The next tide.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tide"
+components:
+  schemas:
+    Measured:
+      type: object
+      required: [source, heightCm]
+      properties:
+        source:
+          type: string
+        heightCm:
+          type: integer
+          nullable: true
+    Predicted:
+      type: object
+      required: [source]
+      properties:
+        source:
+          type: string
+        heightCm:
+          type: number
+    Tide:
+      oneOf:
+        - $ref: "#/components/schemas/Measured"
+        - $ref: "#/components/schemas/Predicted"
+      discriminator:
+        propertyName: source
+        mapping:
+          gauge: "#/components/schemas/Measured"
+          almanac: "#/components/schemas/Predicted"

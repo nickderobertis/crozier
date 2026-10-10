@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "017768ce7675ed6bb1cb2f1cf8658a2630f71cbed0d96ea1f4c7f72da7967385"
+
+[[covers]]
+key = "described-ref-oneof-alias-without-docstring"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

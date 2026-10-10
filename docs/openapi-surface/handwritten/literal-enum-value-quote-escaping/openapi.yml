@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Shop Signage
+  version: 1.0.0
+paths:
+  /signs:
+    get:
+      operationId: listSigns
+      tags: [signs]
+      parameters:
+        - name: wording
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Wording"
+      responses:
+        "204":
+          description: The signs were listed.
+components:
+  schemas:
+    Wording:
+      type: string
+      enum:
+        - 'back\room'
+        - 'say "cheese"'
+        - "baker's dozen"
+        - "neither ' nor \" fits"
+        - 'café'
+        - 'open-every-weekday'
+        - 'closed-on-holidays'
+        - 'ring-bell-for-service'
+        - 'mind-the-step-down'
+        - 'cash-and-card-taken'

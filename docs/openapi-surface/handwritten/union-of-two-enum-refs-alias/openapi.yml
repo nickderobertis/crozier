@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Rail Signals
+  version: 1.0.0
+paths:
+  /aspects:
+    get:
+      operationId: listAspects
+      tags: [aspects]
+      parameters:
+        - name: indication
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/Indication"
+      responses:
+        "204":
+          description: The aspects were listed.
+components:
+  schemas:
+    LensColour:
+      type: string
+      enum: [amber, white]
+    ArmPosition:
+      type: string
+      enum: [raised, lowered]
+    Indication:
+      oneOf:
+        - $ref: "#/components/schemas/LensColour"
+        - $ref: "#/components/schemas/ArmPosition"

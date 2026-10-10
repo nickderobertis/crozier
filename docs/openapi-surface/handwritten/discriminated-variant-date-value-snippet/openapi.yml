@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Lending Desk
+  version: 1.0.0
+paths:
+  /loans/{loanId}/due:
+    put:
+      operationId: setDue
+      tags: [loans]
+      parameters:
+        - name: loanId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DueMarker"
+      responses:
+        "204":
+          description: The due marker was stored.
+components:
+  schemas:
+    CalendarDue:
+      type: object
+      required: [basis, value]
+      properties:
+        basis:
+          type: string
+        value:
+          type: string
+          format: date
+    ExactDue:
+      type: object
+      required: [basis, value]
+      properties:
+        basis:
+          type: string
+        value:
+          type: string
+          format: date-time
+    DueMarker:
+      oneOf:
+        - $ref: "#/components/schemas/CalendarDue"
+        - $ref: "#/components/schemas/ExactDue"
+      discriminator:
+        propertyName: basis
+        mapping:
+          calendar: "#/components/schemas/CalendarDue"
+          exact: "#/components/schemas/ExactDue"
