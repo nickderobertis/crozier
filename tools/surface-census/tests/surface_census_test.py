@@ -2128,6 +2128,35 @@ class ConfigGatedArmVerdictTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("`audiences` must be an array of audience names", run.stderr)
 
+    def test_a_measurement_count_int_cannot_read_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        reach = root / "docs" / "openapi-surface" / "handwritten-reach.tsv"
+        reach.write_text(reach.read_text(encoding="utf-8").replace("\t20\t20\n", "\t\u00b2\t20\n"), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("ending in two whole-number counts", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
+    def test_a_cover_with_an_empty_key_or_arm_is_refused(self) -> None:
+        for old, empty in (('key = "', 'key = ""\nunused = "'), ("arm = '", "arm = ''\nunused = '")):
+            with self.subTest(empty=empty.split(" ", 1)[0]):
+                root = self.tree(executed=20)
+                evidence = root / "docs" / "openapi-surface" / "handwritten" / "plain" / "evidence.toml"
+                evidence.write_text(evidence.read_text(encoding="utf-8").replace(old, empty), encoding="utf-8")
+                run = self.arms(root)
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn("every cover needs a non-empty string `key`", run.stderr)
+
+    def test_an_arm_marker_without_its_line_break_is_refused_with_its_fix(self) -> None:
+        root = self.tree(executed=20)
+        index = root / "docs" / "openapi-surface-coverage.md"
+        begin = golden_reach_script().ARM_COUNTS_BEGIN
+        index.write_text(index.read_text(encoding="utf-8").replace(begin + "\n", begin + " "), encoding="utf-8")
+        run = self.arms(root)
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("restore the markers", run.stderr)
+        self.assertNotIn("Traceback", run.stderr)
+
     def test_a_later_arm_no_setting_free_run_executes_states_no_verdict(self) -> None:
         run = self.arms(self.tree(executed=0))
         self.assertNotEqual(0, run.returncode)

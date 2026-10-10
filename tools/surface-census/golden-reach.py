@@ -903,7 +903,7 @@ def read_measurements(path: Path, columns: tuple[str, ...]) -> list[Measurement]
         if (
             len(cells) != len(columns)
             or not all(row[name] for name in columns)
-            or not (row["regions_executed"].isdigit() and row["regions"].isdigit())
+            or not all(re.fullmatch(r"[0-9]+", row[name]) for name in ("regions_executed", "regions"))
         ):
             fail(
                 f"{path}:{number} is not {len(columns)} filled cells ending in two whole-number counts; "
@@ -943,10 +943,12 @@ def handwritten_covers(regions_dir: Path = REGIONS_DIR) -> list[Cover]:
             if (
                 not isinstance(cover, dict)
                 or not isinstance(cover.get("key"), str)
+                or not cover["key"]
                 or not isinstance(cover.get("verdict"), str)
                 or not isinstance(arm, (str, type(None)))
+                or arm == ""
             ):
-                fail(f"{path}: every cover needs a string `key` and `verdict`, and a string `arm` if any")
+                fail(f"{path}: every cover needs a non-empty string `key` and `verdict`, and a non-empty `arm` if any")
             covers.append(
                 Cover(path.parent.name, cover["key"], arm, _verdict(cover["verdict"], str(path)), bool(audiences))
             )
@@ -1046,7 +1048,12 @@ def arm_counts_text(ledger: list[tuple[int, Reach]], rows: list[ArmRow]) -> str:
 
 
 def _replace_between(text: str, begin: str, end: str, body: str, path: Path) -> str:
-    if text.count(begin) != 1 or text.count(end) != 1 or text.index(begin) > text.index(end):
+    if (
+        text.count(begin) != 1
+        or text.count(begin + "\n") != 1
+        or text.count(end) != 1
+        or text.index(begin) > text.index(end)
+    ):
         fail(f"{path} carries no single `{begin}` ... `{end}` section; restore the markers, then re-run")
     head, rest = text.split(begin + "\n", 1)
     _old, tail = rest.split(end, 1)
