@@ -258,6 +258,8 @@ compares it. Row 224 is the one so far.
 | 330 | `marimo-client-class-name` | github-raw | https://raw.githubusercontent.com/marimo-team/marimo/257ea7a983e2dbe4627f0168072fdcd538c93c5c/packages/openapi/api.yaml | `257ea7a983e2dbe4627f0168072fdcd538c93c5c` | Apache-2.0 | committed | Row 95 with `client_class_name: DispatchClient`, proving configured client and raw-client names for package-root operations |
 | 331 | `confluent-kafka-connect` | github-raw | https://raw.githubusercontent.com/confluentinc/ccloud-sdk-go-v2/8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2/connect/v1/api/openapi.yaml | `8bbb22a67562e5784e8d3a4efa78c5c20b52d6f2` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Confluent's Kafka Connect API: connector-plugin configuration validation posts a plain string map with a declared request example; source SHA-256 `4d183aef6bb6e0b176e334c7e2d7ebc28e9cb022c4c0ef69956de9347a596839` |
 | 332 | `netgsm-sms` | github-raw | https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json | `33ca38622067e3730479aded9e56f6b1151bfeb5` | MIT (the publisher repository's pinned `LICENSE`) | committed | NetGSM's SMS API: required query arrays beside JSON responses and JSON request-body content-type headers; source SHA-256 `9b728d109dc796d8dd166616d5be2425f4530703ef059ec0a561709421509ae3` |
+| 1600 | `zylon-private-gpt` | github-raw | https://raw.githubusercontent.com/zylon-ai/private-gpt/8119842ae6f1f5ecfaf42b06fa0d1ffec675def4/fern/openapi/openapi.json | `8119842ae6f1f5ecfaf42b06fa0d1ffec675def4` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The PrivateGPT API as its publisher last declared it for Fern before the 2026 revamp: two operations whose `x-fern-streaming` names a `stream-condition` and no `format`, each answering a lone `application/json` 200 and named only by a tagged FastAPI `operationId`, so this row pins JSON-lines streaming halves and their naming against Fern |
+| 1800 | `aws-mobileanalytics` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | The document info.license grants redistribution under the policy in docs/corpus-licensing.md; the aggregator preserves publisher attribution | committed | AWS Mobile Analytics, converted from the publisher model identified in info.x-origin; the only operation declares required X-Amz-Client-Context header |
 
 ## Batch 2 — byte-matched (issue #77)
 
@@ -478,9 +480,10 @@ add a row over a small registered source rather than hunting a new spec.
 
 `client_class_name` set to the class name of one of the document's own
 resource sub-clients makes the root `client.py` define a class the sub-client
-import would otherwise bind — the collision hellopatient's TinyURL client hits
-with `client_class_name: TinyUrlClient` over its `TinyURL` resource. That spec
-carries no licence, only terms of service, so this row reproduces the collision
+import would otherwise bind — a collision first observed on a privately held
+specification whose configured client name equals one of its own resources'
+sub-client class names (that evidence is held privately). That spec cannot be
+published, so this row reproduces the collision
 over row 13's Apache-2.0 Ecosystem API instead: its `Ecosystem` resource's
 sub-client is `EcosystemClient`, the name a consumer of the "Ecosystem API"
 would give its client, and its four other resources pin that a sub-client
@@ -1627,6 +1630,30 @@ bodies. Its whole generated tree now byte-matches the certified pair; the
 request-body content-type repair removed the differences that previously
 blocked this real witness. `netgsm_sms_matches_fern_output` compares it in the
 deterministic corpus gate, with no unmatched files.
+
+## Row 1600 — stream-condition halves of a publisher's FastAPI document
+
+The PrivateGPT API (`zylon-ai/private-gpt`, Apache-2.0) is the first registered
+document declaring `x-fern-streaming` with a `stream-condition` and no `format`.
+Its `/v1/completions` and `/v1/chat/completions` each answer a lone
+`application/json` 200 and carry a tagged FastAPI `operationId` and no
+`x-fern-sdk-method-name`. The pin is the last revision before the publisher's
+2026 revamp dropped the extension. It was found by the streaming witness search
+([record](../../docs/openapi-surface/witness-search-streaming/README.md)).
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 1600 | `zylon-private-gpt` | a `stream-condition` without `format` over a JSON-only success; the halves named from a tagged FastAPI `operationId` | ✅ byte-matched after this row's repairs |
+
+The repairs: the streaming half streams newline-delimited JSON (`iter_lines`,
+`json.loads`) rather than buffering; it is named from the whole `operationId`
+(`prompt_completion_v1completions_post_stream`) while the buffered half keeps the
+operation's own name (`prompt_completion`); no worked example passes the
+condition field; `reference.md` documents it after the required fields; a
+docstring example whose `response = ` assignment overflows width 80 is
+parenthesized as Fern's snippet formatter lays it out; and `reference.md` heads
+each stream with the iterator its method returns (the
+`stream-reference-return-type` departure).
 
 ## Row 2400 — an optional one-value enum part of a multipart body
 

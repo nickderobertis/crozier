@@ -40,10 +40,10 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.practice.create_service_metadata(
-    practice_id="practice_id",
-    practice_service_metadata_create_practice_id="practice_id",
-    service_name="service_name",
+client.harbor.create_berth_assignment(
+    harbor_id="harbor_id",
+    harbor_berth_assignment_create_harbor_id="harbor_id",
+    vessel_name="vessel_name",
 )
 ```
 
@@ -62,10 +62,10 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.practice.create_service_metadata(
-        practice_id="practice_id",
-        practice_service_metadata_create_practice_id="practice_id",
-        service_name="service_name",
+    await client.harbor.create_berth_assignment(
+        harbor_id="harbor_id",
+        harbor_berth_assignment_create_harbor_id="harbor_id",
+        vessel_name="vessel_name",
     )
 
 
@@ -81,7 +81,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.practice.create_service_metadata(...)
+    client.harbor.create_berth_assignment(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -98,7 +98,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.practice.with_raw_response.create_service_metadata(...)
+response = client.harbor.with_raw_response.create_berth_assignment(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -129,7 +129,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.practice.create_service_metadata(..., request_options={
+client.harbor.create_berth_assignment(..., request_options={
     "max_retries": 1
 })
 ```
@@ -144,7 +144,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.practice.create_service_metadata(..., request_options={
+client.harbor.create_berth_assignment(..., request_options={
     "timeout": 1
 })
 ```

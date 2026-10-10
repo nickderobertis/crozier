@@ -1406,8 +1406,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-        self.assertEqual(len(rows), 54)
-        self.assertEqual(len({row["key"] for row in rows}), 54)
+        self.assertEqual(len(rows), 77)
+        self.assertEqual(len({row["key"] for row in rows}), 77)
         self.assertNotIn("request-body-string-map", {row["key"] for row in rows})
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],

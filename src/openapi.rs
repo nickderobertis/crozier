@@ -79,6 +79,27 @@ pub struct OpenApi {
     /// `x-crozier-base-path` when both appear.
     #[serde(rename = "x-fern-base-path", default)]
     pub base_path_fern: Option<BasePath>,
+    /// Explicit client-wide headers. (crozier spelling).
+    #[serde(rename = "x-crozier-global-headers", default)]
+    pub global_headers_crozier: Option<Vec<GlobalHeaderExtension>>,
+    /// Explicit client-wide headers. (fern spelling).
+    #[serde(rename = "x-fern-global-headers", default)]
+    pub global_headers_fern: Option<Vec<GlobalHeaderExtension>>,
+    /// Client-wide variables referenced by path parameters. (crozier spelling).
+    #[serde(rename = "x-crozier-sdk-variables", default)]
+    pub sdk_variables_crozier: Option<IndexMap<String, serde_json::Value>>,
+    /// Client-wide variables referenced by path parameters. (fern spelling).
+    #[serde(rename = "x-fern-sdk-variables", default)]
+    pub sdk_variables_fern: Option<IndexMap<String, serde_json::Value>>,
+}
+
+/// An explicitly declared client-wide header.
+#[derive(Debug, Clone, Deserialize)]
+pub struct GlobalHeaderExtension {
+    /// The header name sent on the wire.
+    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
+    /// The client constructor argument name.
+    pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
 
 /// A document-level base path (`x-crozier-base-path` / `x-fern-base-path`): a
@@ -205,6 +226,23 @@ impl OpenApi {
         self.base_path_crozier
             .as_ref()
             .or(self.base_path_fern.as_ref())
+    }
+
+    /// Explicit client-wide headers, with canonical spelling precedence.
+    #[must_use]
+    pub fn global_header_extensions(&self) -> &[GlobalHeaderExtension] {
+        self.global_headers_crozier
+            .as_deref()
+            .or(self.global_headers_fern.as_deref())
+            .unwrap_or_default()
+    }
+
+    /// Client-wide variables, with canonical spelling precedence.
+    #[must_use]
+    pub fn sdk_variables(&self) -> Option<&IndexMap<String, serde_json::Value>> {
+        self.sdk_variables_crozier
+            .as_ref()
+            .or(self.sdk_variables_fern.as_ref())
     }
 }
 
@@ -636,6 +674,13 @@ impl Operation {
             .filter(|name| !name.is_empty())
     }
 
+    /// A naming view for one request representation; the source operation is unchanged.
+    pub(crate) fn with_sdk_method_name(&self, name: &str) -> Self {
+        let mut view = self.clone();
+        view.sdk_method_name_crozier = Some(name.to_string());
+        view
+    }
+
     /// The declared pagination contract, canonicalizing on the
     /// `x-crozier-pagination` spelling (see the [dual-header
     /// policy](self#fern-compatible-extensions)).
@@ -654,6 +699,15 @@ impl Operation {
         self.streaming_crozier
             .as_deref()
             .or(self.streaming_fern.as_deref())
+            .filter(|streaming| streaming.declares_stream())
+    }
+
+    /// Replace the declared streaming contract, in both spellings, with
+    /// `streaming` — how one half of a `stream-condition` split sees the
+    /// operation.
+    pub(crate) fn set_streaming(&mut self, streaming: Option<Streaming>) {
+        self.streaming_crozier = streaming.map(Box::new);
+        self.streaming_fern = None;
     }
 
     /// Take out the `x-crozier-sdk-group-name` / `x-crozier-sdk-method-name`
@@ -686,14 +740,26 @@ pub(crate) struct CrozierNaming {
 }
 
 /// The value of `x-crozier-streaming` / `x-fern-streaming`: how an operation
-/// streams. An operation that declares a `stream-condition` generates *two*
-/// methods — one that sets the condition and streams, one that clears it and
-/// returns the buffered response.
+/// streams, written as a boolean or as a mapping. `true` streams the success
+/// response as newline-delimited JSON, as a mapping declaring `format: json`
+/// does; `false` declares no stream, leaving the response's media to decide as
+/// if no extension were written (see [`Streaming::declares_stream`]).
+#[derive(Debug, Clone)]
+pub enum Streaming {
+    /// The boolean form.
+    Flag(bool),
+    /// The mapping form, boxed: it embeds two schemas a boolean never carries.
+    Mapping(Box<StreamingMapping>),
+}
+
+/// The mapping form of the streaming extension. An operation that declares a
+/// `stream-condition` generates *two* methods — one that sets the condition and
+/// streams, one that clears it and returns the buffered response.
 #[derive(Debug, Default, Clone, Deserialize)]
-pub struct Streaming {
-    /// The stream encoding (`sse`).
+pub struct StreamingMapping {
+    /// The stream encoding.
     #[serde(default)]
-    pub format: Option<String>,
+    pub format: Option<StreamFormat>,
     /// The buffered response schema, used when the condition is cleared.
     #[serde(default)]
     pub response: Option<Schema>,
@@ -704,17 +770,109 @@ pub struct Streaming {
     /// (`$request.stream`).
     #[serde(rename = "stream-condition", default)]
     pub stream_condition: Option<String>,
+    /// The SSE `data` payload that ends the stream (`[DONE]`). Absent, an
+    /// event without data ends it.
+    #[serde(default)]
+    pub terminator: Option<String>,
+}
+
+/// How a declared stream is framed.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum StreamFormat {
+    /// Server-Sent Events (`sse`).
+    Sse,
+    /// Newline-delimited JSON (`json`).
+    Json,
+}
+
+impl<'de> Deserialize<'de> for Streaming {
+    fn deserialize<D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> std::result::Result<Self, D::Error> {
+        struct StreamingVisitor;
+        impl<'de> Visitor<'de> for StreamingVisitor {
+            type Value = Streaming;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a boolean or a streaming mapping")
+            }
+            fn visit_bool<E: serde::de::Error>(
+                self,
+                flag: bool,
+            ) -> std::result::Result<Streaming, E> {
+                Ok(Streaming::Flag(flag))
+            }
+            fn visit_map<A: MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> std::result::Result<Streaming, A::Error> {
+                StreamingMapping::deserialize(serde::de::value::MapAccessDeserializer::new(map))
+                    .map(|mapping| Streaming::Mapping(Box::new(mapping)))
+            }
+        }
+        deserializer.deserialize_any(StreamingVisitor)
+    }
 }
 
 impl Streaming {
+    /// Whether the extension declares a stream: every mapping and `true` do;
+    /// `false` declares none, so the response's media types decide, as for an
+    /// operation without the extension.
+    #[must_use]
+    pub fn declares_stream(&self) -> bool {
+        !matches!(self, Streaming::Flag(false))
+    }
+
+    /// The mapping, when the extension is written as one.
+    #[must_use]
+    pub fn mapping(&self) -> Option<&StreamingMapping> {
+        match self {
+            Streaming::Mapping(mapping) => Some(mapping),
+            Streaming::Flag(_) => None,
+        }
+    }
+
+    /// Whether the stream is Server-Sent Events rather than newline-delimited
+    /// JSON. Measured at Fern 5.20.0, only `format: sse` is SSE: `format: json`,
+    /// a `stream-condition` naming no format and the boolean `true` all stream
+    /// JSON lines, whatever media types the response declares.
+    #[must_use]
+    pub fn is_sse(&self) -> bool {
+        self.mapping()
+            .is_some_and(|mapping| mapping.format == Some(StreamFormat::Sse))
+    }
+
+    /// Whether the extension makes the operation stream without a
+    /// `stream-condition`: the boolean `true`, or a mapping naming a `format`.
+    /// A mapping naming neither leaves the operation to its response's media
+    /// types, as if it declared no extension (Fern streams `{}` over a
+    /// `text/event-stream` response and buffers it over an `application/json`
+    /// one).
+    #[must_use]
+    pub fn streams_unconditionally(&self) -> bool {
+        match self {
+            Streaming::Flag(flag) => *flag,
+            Streaming::Mapping(mapping) => {
+                self.condition_property().is_none() && mapping.format.is_some()
+            }
+        }
+    }
+
     /// The request property the condition names, with its `$request.` prefix
     /// stripped. `None` when the operation streams unconditionally.
     #[must_use]
     pub fn condition_property(&self) -> Option<&str> {
-        self.stream_condition
+        self.mapping()?
+            .stream_condition
             .as_deref()
             .map(strip_selector_prefix)
             .filter(|property| !property.is_empty())
+    }
+
+    /// The SSE `data` payload that ends the stream, when one is declared.
+    #[must_use]
+    pub fn terminator(&self) -> Option<&str> {
+        self.mapping()?.terminator.as_deref()
     }
 }
 
@@ -837,6 +995,61 @@ pub struct Parameter {
     /// Named OpenAPI examples, in declaration order.
     #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
+    /// Whether this parameter leaves the generated SDK. (crozier spelling).
+    #[serde(rename = "x-crozier-ignore", default)]
+    pub ignore_crozier: Option<bool>,
+    /// Whether this parameter leaves the generated SDK. (fern spelling).
+    #[serde(rename = "x-fern-ignore", default)]
+    pub ignore_fern: Option<bool>,
+    /// The SDK argument name; the wire name remains unchanged. (crozier spelling).
+    #[serde(rename = "x-crozier-parameter-name", default)]
+    pub parameter_name_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The SDK argument name; the wire name remains unchanged. (fern spelling).
+    #[serde(rename = "x-fern-parameter-name", default)]
+    pub parameter_name_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The generated argument default. (crozier spelling).
+    #[serde(rename = "x-crozier-default", default)]
+    pub default_crozier: Option<serde_json::Value>,
+    /// The generated argument default. (fern spelling).
+    #[serde(rename = "x-fern-default", default)]
+    pub default_fern: Option<serde_json::Value>,
+    /// The document SDK variable supplying this path parameter. (crozier spelling).
+    #[serde(rename = "x-crozier-sdk-variable", default)]
+    pub sdk_variable_crozier: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+    /// The document SDK variable supplying this path parameter. (fern spelling).
+    #[serde(rename = "x-fern-sdk-variable", default)]
+    pub sdk_variable_fern: Option<String>, // llmlint: ignore[invalid_states_unrepresentable] Frozen deserialized String contract: preserve the certified pair's document strings; complete parameter goldens prove their lowering without an unmeasured lexical restriction.
+}
+
+impl Parameter {
+    /// Whether the canonical ignore extension removes this parameter.
+    #[must_use]
+    pub fn ignored(&self) -> bool {
+        self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The canonical SDK argument name, falling back to the wire name.
+    #[must_use]
+    pub fn sdk_name(&self) -> &str {
+        self.parameter_name_crozier
+            .as_deref()
+            .or(self.parameter_name_fern.as_deref())
+            .unwrap_or(&self.name)
+    }
+
+    /// The canonical parameter default.
+    #[must_use]
+    pub fn sdk_default(&self) -> Option<&serde_json::Value> {
+        self.default_crozier.as_ref().or(self.default_fern.as_ref())
+    }
+
+    /// The canonical SDK variable supplying this parameter.
+    #[must_use]
+    pub fn sdk_variable(&self) -> Option<&str> {
+        self.sdk_variable_crozier
+            .as_deref()
+            .or(self.sdk_variable_fern.as_deref())
+    }
 }
 
 /// The value-bearing portion of an OpenAPI parameter example.
@@ -913,19 +1126,72 @@ pub struct Response {
 
 /// A media-type object carrying the body/response schema.
 #[derive(Debug, Default, Clone, Deserialize)]
+#[serde(from = "MediaTypeDecl")]
 pub struct MediaType {
-    /// The schema for this media type.
-    #[serde(default)]
+    /// Method name for this request representation, in the canonical spelling.
+    sdk_method_name_crozier: Option<String>,
+    /// Fern's spelling, read when the canonical one is absent.
+    sdk_method_name_fern: Option<String>,
+    /// The schema for this media type. A `text/event-stream` media type may
+    /// declare its schema per item as `itemSchema` instead, which Fern types each
+    /// streamed event from; [`load`] moves that item schema here when no `schema`
+    /// is declared beside it.
     pub schema: Option<Schema>,
+    /// The per-item schema as written (`itemSchema`), until [`load`] reads it.
+    /// Fern reads it only on `text/event-stream`: on `application/json` it types
+    /// the body `typing.Any`, as a media type declaring no schema.
+    item_schema: Option<Schema>,
     /// Optional example value for the media payload.
-    #[serde(default)]
     pub example: Option<serde_json::Value>,
     /// Named examples for the media payload, in declaration order.
-    #[serde(default)]
     pub examples: IndexMap<String, ParameterExample>,
     /// Per-part multipart serialization metadata.
-    #[serde(default)]
     pub encoding: IndexMap<String, Encoding>,
+}
+
+/// A media-type object as written, before its `itemSchema` folds into `schema`.
+#[derive(Deserialize)]
+struct MediaTypeDecl {
+    #[serde(rename = "x-crozier-sdk-method-name", default)]
+    sdk_method_name_crozier: Option<String>,
+    #[serde(rename = "x-fern-sdk-method-name", default)]
+    sdk_method_name_fern: Option<String>,
+    #[serde(default)]
+    schema: Option<Schema>,
+    #[serde(rename = "itemSchema", default)]
+    item_schema: Option<Schema>,
+    #[serde(default)]
+    example: Option<serde_json::Value>,
+    #[serde(default)]
+    examples: IndexMap<String, ParameterExample>,
+    #[serde(default)]
+    encoding: IndexMap<String, Encoding>,
+}
+
+impl From<MediaTypeDecl> for MediaType {
+    fn from(decl: MediaTypeDecl) -> Self {
+        MediaType {
+            sdk_method_name_crozier: decl.sdk_method_name_crozier,
+            sdk_method_name_fern: decl.sdk_method_name_fern,
+            schema: decl.schema,
+            item_schema: decl.item_schema,
+            example: decl.example,
+            examples: decl.examples,
+            encoding: decl.encoding,
+        }
+    }
+}
+
+impl MediaType {
+    /// The request representation's method name; crozier's spelling wins.
+    #[must_use]
+    pub fn sdk_method_name(&self) -> Option<&str> {
+        self.sdk_method_name_crozier
+            .as_deref()
+            .or(self.sdk_method_name_fern.as_deref())
+            .map(str::trim)
+            .filter(|name| !name.is_empty())
+    }
 }
 
 /// Serialization metadata for one multipart property.
@@ -1710,6 +1976,14 @@ pub enum AdditionalProperties {
     Schema(Box<Schema>),
 }
 
+/// Version header selected for refusal validation, with canonical precedence.
+pub(crate) fn refusal_version_header(node: &serde_yaml_ng::Value) -> Option<&str> {
+    node.get("x-crozier-version")
+        .or_else(|| node.get("x-fern-version"))?
+        .get("header")
+        .and_then(serde_yaml_ng::Value::as_str)
+}
+
 /// The declared SDK parameter name used by refusal validation only.
 /// Keep the dual-header precedence here with the other extension accessors.
 pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str> {
@@ -1823,6 +2097,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     // before anything reads the map, so the validation below and every later pass
     // see the Security Scheme Object the reference names.
     normalize_security_scheme_refs(&mut doc);
+    normalize_event_stream_item_schemas(&mut doc);
     // An apiKey scheme's `name` (the header/query/cookie carrying the key) is
     // required by OpenAPI; without it the generated header name would be empty.
     // Fail at the boundary rather than emit a broken client.
@@ -3097,6 +3372,27 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
     response.clone()
 }
 
+/// Type a `text/event-stream` response declaring only an `itemSchema` from that
+/// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
+/// wins, and any other media type's `itemSchema` is not read at all.
+fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
+    let fold = |response: &mut Response| {
+        if let Some(media) = response.content.get_mut("text/event-stream") {
+            if media.schema.is_none() {
+                media.schema = media.item_schema.take();
+            }
+        }
+    };
+    for item in doc.paths.values_mut() {
+        for slot in item.operation_slots() {
+            let Some(op) = slot else { continue };
+            op.responses.values_mut().for_each(fold);
+        }
+    }
+    // A shared response is folded before `normalize_responses` inlines it.
+    doc.components.responses.values_mut().for_each(fold);
+}
+
 /// Inline every `components.responses` `$ref` an operation points at, so generation
 /// sees each response's real `content` (and thus its response model) rather than an
 /// empty `$ref` shell.
@@ -3249,7 +3545,11 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 pub fn filter_ignored(doc: &mut OpenApi) {
     // Remove the ignored operations, then drop paths that are now empty.
     for item in doc.paths.values_mut() {
+        item.parameters.retain(|parameter| !parameter.ignored());
         for slot in item.operation_slots() {
+            if let Some(op) = slot.as_mut() {
+                op.parameters.retain(|parameter| !parameter.ignored());
+            }
             if slot.as_ref().is_some_and(|op| op.ignored()) {
                 *slot = None;
             }
@@ -4914,4 +5214,43 @@ mod refusal_name_tests {
             assert_eq!(schema.property_name(), expected, "{text}");
         }
     }
+}
+#[test]
+fn parameter_extensions_prefer_the_canonical_spelling() {
+    let parameter: Parameter = serde_json::from_value(serde_json::json!({
+        "name": "wire", "in": "query",
+        "x-fern-ignore": true, "x-crozier-ignore": false,
+        "x-fern-parameter-name": "old", "x-crozier-parameter-name": "new",
+        "x-fern-default": "10", "x-crozier-default": "20",
+        "x-fern-sdk-variable": "oldVariable", "x-crozier-sdk-variable": "newVariable"
+    }))
+    .unwrap();
+    assert!(!parameter.ignored());
+    assert_eq!(parameter.sdk_name(), "new");
+    assert_eq!(parameter.sdk_default(), Some(&serde_json::json!("20")));
+    assert_eq!(parameter.sdk_variable(), Some("newVariable"));
+    let fallback: Parameter = serde_json::from_value(serde_json::json!({"name": "wire"})).unwrap();
+    assert_eq!(fallback.sdk_name(), "wire");
+    assert!(fallback.sdk_default().is_none());
+    assert!(fallback.sdk_variable().is_none());
+}
+
+#[test]
+fn ignored_parameters_leave_operations_and_path_items() {
+    let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+        "openapi": "3.0.3", "paths": {"/signals": {
+            "parameters": [{"name": "old", "in": "query", "x-fern-ignore": true}],
+            "get": {"parameters": [
+                {"name": "removed", "in": "query", "x-crozier-ignore": true},
+                {"name": "kept", "in": "query", "x-fern-ignore": true, "x-crozier-ignore": false}
+            ], "responses": {"200": {"description": "Signals"}}}
+        }}
+    }))
+    .unwrap();
+    filter_ignored(&mut doc);
+    let item = &doc.paths["/signals"];
+    assert!(item.parameters.is_empty());
+    let operation = item.operations()[0].1;
+    assert_eq!(operation.parameters.len(), 1);
+    assert_eq!(operation.parameters[0].name, "kept");
 }

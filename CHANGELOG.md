@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.109](https://github.com/nickderobertis/crozier/compare/v0.0.108...v0.0.109) - 2026-10-10
+
+### Fixed
+
+- *(parity)* match parameters ([#469](https://github.com/nickderobertis/crozier/pull/469))
+
 ## [0.0.108](https://github.com/nickderobertis/crozier/compare/v0.0.107...v0.0.108) - 2026-10-08
 
 ### Other

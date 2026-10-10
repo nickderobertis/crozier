@@ -247,36 +247,36 @@ fn a_header_parameter_enum_named_like_a_root_schema_still_generates() {
     }
 }
 
-/// hellopatient's shape: a body property named like the operation's path
+/// A real-world overlay's shape: a body property named like the operation's path
 /// parameter, which `RENAME` (blank by default) can rename clear of it.
 const PATH_PARAMETER_BODY: &str = r#"paths:
-  /practice/{practice_id}/service-metadata:
+  /harbor/{harbor_id}/berth-assignments:
     post:
-      operationId: createServiceMetadata
+      operationId: createBerthAssignment
       parameters:
-        - {name: practice_id, in: path, required: true, schema: {type: string}}
+        - {name: harbor_id, in: path, required: true, schema: {type: string}}
       requestBody:
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/PracticeServiceMetadataCreate'}
+            schema: {$ref: '#/components/schemas/HarborBerthAssignmentCreate'}
       responses: {'200': {description: ok}}
-  /practice/{practice_id}/intents:
+  /harbor/{harbor_id}/voyages:
     post:
-      operationId: createIntent
+      operationId: createVoyage
       parameters:
-        - {name: practice_id, in: path, required: true, schema: {type: string}}
+        - {name: harbor_id, in: path, required: true, schema: {type: string}}
       requestBody:
         content:
           application/json:
             schema:
               type: object
-              properties: {practice_id: {type: string RENAME}}
+              properties: {harbor_id: {type: string RENAME}}
       responses: {'200': {description: ok}}
 components:
   schemas:
-    PracticeServiceMetadataCreate:
+    HarborBerthAssignmentCreate:
       type: object
-      properties: {practice_id: {type: string RENAME}, service_name: {type: string}}
+      properties: {harbor_id: {type: string RENAME}, vessel_name: {type: string}}
 "#;
 
 #[test]
@@ -284,7 +284,7 @@ fn a_body_property_named_like_a_path_parameter_is_refused() {
     assert_refused(
         &PATH_PARAMETER_BODY.replace(" RENAME", ""),
         "request-property-name-collision",
-        r#"POST /practice/{practice_id}/service-metadata body property "practice_id" collides with another request property"#,
+        r#"POST /harbor/{harbor_id}/berth-assignments body property "harbor_id" collides with another request property"#,
     );
 }
 
@@ -293,9 +293,9 @@ fn a_body_property_renamed_clear_of_a_path_parameter_generates() {
     // Either spelling of the property-name extension, on a referenced and an
     // inline body alike, gives the property a declared name Fern accepts.
     for rename in [
-        ", x-fern-property-name: body_practice_id",
-        ", x-crozier-property-name: body_practice_id",
-        ", x-crozier-property-name: body_practice_id, x-fern-property-name: other_practice_id",
+        ", x-fern-property-name: body_harbor_id",
+        ", x-crozier-property-name: body_harbor_id",
+        ", x-crozier-property-name: body_harbor_id, x-fern-property-name: other_harbor_id",
     ] {
         let dir = tempfile::tempdir().expect("temp dir");
         let spec = write(dir.path(), &PATH_PARAMETER_BODY.replace(" RENAME", rename));
@@ -313,6 +313,56 @@ fn a_blank_property_name_leaves_the_collision_refused() {
     assert_refused(
         &PATH_PARAMETER_BODY.replace(" RENAME", ", x-fern-property-name: ' '"),
         "request-property-name-collision",
-        r#"body property "practice_id" collides with another request property"#,
+        r#"body property "harbor_id" collides with another request property"#,
     );
+}
+
+/// The committed probe `docs/fern-refusals/type-name-collision/evidence/<name>.yml`.
+fn evidence_probe(name: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-refusals/type-name-collision/evidence")
+        .join(format!("{name}.yml"))
+}
+
+#[test]
+fn a_component_named_like_a_stream_condition_split_request_is_refused() {
+    // Pinned Fern synthesizes `{Ctx}Request` and `{Ctx}StreamRequest` for a
+    // stream-condition operation's two halves, the context being its SDK method
+    // name or else its operationId, and refuses a component already holding
+    // either name — the body's own schema or any other.
+    for (probe, element) in [
+        (
+            "stream-split-request-name",
+            r#"POST /lookups stream-condition request type LookupRequest collides with component schema "LookupRequest""#,
+        ),
+        (
+            "stream-split-stream-request-name",
+            r#"POST /lookups stream-condition request type LookupStreamRequest collides with component schema "LookupStreamRequest""#,
+        ),
+        (
+            "stream-split-sdk-method-request-name",
+            r#"POST /lookups stream-condition request type FindRequest collides with component schema "FindRequest""#,
+        ),
+    ] {
+        for strict in [false, true] {
+            let error = render(&evidence_probe(probe), strict)
+                .expect_err(&format!("{probe}: generated (strict: {strict})"));
+            assert!(
+                error.contains("type-name-collision: ") && error.contains(element),
+                "{probe} (strict: {strict}): {error}"
+            );
+            assert_eq!(error.contains("fern-strict"), strict, "{error}");
+        }
+    }
+}
+
+#[test]
+fn a_stream_condition_whose_method_name_clears_the_component_generates() {
+    // The control: an SDK method name moves the split's names off the body's
+    // `LookupRequest`, and pinned Fern generates.
+    for strict in [false, true] {
+        let files = render(&evidence_probe("stream-split-sdk-method-control"), strict)
+            .expect("the renamed split generates");
+        assert!(files > 0);
+    }
 }

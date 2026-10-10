@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Signal Observatory",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://signals.example.net"
+    }
+  ],
+  "paths": {
+    "/stations/{station_code}/signals": {
+      "get": {
+        "operationId": "listSignals",
+        "parameters": [
+          {
+            "name": "station_code",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "x-fern-sdk-variable": "stationCode"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-fern-sdk-variables": {
+    "stationCode": {
+      "type": "string"
+    }
+  }
+}

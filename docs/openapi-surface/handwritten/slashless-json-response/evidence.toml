@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "27f512adf4461f0a04edd67ca7de6b228c4d377f2744c4bb4f9c59dbd153e3cf"
+
+[[covers]]
+key = "media-type-malformed-key"
+arm = 'src/ir.rs::has_dispatchable_media[=^ {16}return true;$]'
+search = "docs/openapi-surface/witness-search-slashless-json-response/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-slashless-json-response/README.md"

@@ -52,6 +52,21 @@ detector is the shared example-value walker (`src/document_refusals/examples.rs`
 - **`x-fern-examples`** missing a required property
   ([fern-examples](evaluation-logs/fern-fern-examples.log)); a plain written
   example is not checked this way ([control](evaluation-logs/fern-written-example.log)).
+- **A readOnly own request property shadowing a required parent property**:
+  an inline JSON request body with its own `properties` and an `allOf` `$ref`
+  parent, where an own `readOnly` property redeclares a property the parent
+  requires. Fern's request example omits the readOnly property and then
+  validates against the parent's `required`
+  ([python-enums](evaluation-logs/fern-readonly-shadow-required.generate.log),
+  [literals](evaluation-logs/fern-readonly-shadow-required-literals.generate.log),
+  [optional request body](evaluation-logs/fern-readonly-shadow-optional-request.generate.log)).
+  Accepted: the same shadow over an optional parent property
+  ([python-enums](evaluation-logs/fern-readonly-shadow-optional-parent.generate.log),
+  [literals](evaluation-logs/fern-readonly-shadow-optional-parent-literals.generate.log)),
+  which is the certified handwritten fixture
+  [`inline-body-readonly-own-overlap`](../../openapi-surface/handwritten/inline-body-readonly-own-overlap/openapi.yml).
+  These are `fern generate` logs at the pin, and their diagnostic is the one
+  `fern check` reports for this class.
 
 Every accepted control generates identical bytes in both crozier modes. The
 [CLI assertion fails with only the nullable-parent rule disabled](evaluation-logs/refusal-e2e-induced-red.log);

@@ -27,7 +27,7 @@ Four rules make the number honest; none of them a `grep` obeys.
   `default`, `enum`, `const`) are never descended into for the same reason.
 * **A missing source is a hard failure, not a silent skip.** A missing committed
   document would otherwise report as declaring nothing,
-  and 213 of the 244 registered sources live in `corpus-sources/` (a split
+  and 215 of the 246 registered sources live in `corpus-sources/` (a split
   `tools/surface-census/tests/surface_census_test.py` holds to the registry, so it cannot drift). Pass
   `--allow-missing` to downgrade that to a warning, or `--original-fixtures-only` to
   census only the original fixture directories on purpose.
@@ -1252,6 +1252,14 @@ PREDICATES = {
         "`items` is a `oneOf` (else `anyOf`) of two or more non-null members, which "
         "`hoist_param_enum` of `src/ir.rs` hoists as the `{Param}Item` union"
     ),
+    "parameter.in:absent": "one per inline Parameter Object with a name and schema but no in field",
+    "parameter.schema:nullable-array-explode-false": "one per optional form query string array with nullable true and explode false",
+    "parameter.schema:nullable-array-items-oas-three-zero": "one per OpenAPI 3.0 query array with inline nullable scalar items",
+    "parameter.schema:required-nullable-scalar-oas-three-zero": "one per required OpenAPI 3.0 query parameter with inline nullable scalar schema",
+    "parameter.schema:date-union-query-oneof": "one per inline query oneOf with integer and date-formatted string members",
+    "parameter.schema:promoted-date-header": "one per date header carried by at least three quarters of operations",
+    "parameter.schema:single-required-header": "one per required header on a document's only operation",
+    "operation.parameters:path-order-oas-three-one": "one per OpenAPI 3.1 operation with untitled operation path parameters in a different order from the template and no path-level path parameters",
     "parameter.schema:subset-header-string-default": (
         "one per header Parameter Object declaring a non-empty string `default` whose name "
         "rides at least three quarters but not all of the document's operations and is "
@@ -1303,6 +1311,30 @@ PREDICATES = {
         "one per Operation Object whose 200 response declares no content while "
         "its 201 declares content, resolving local Response Object references: "
         "`success_response_with_content` of `src/ir.rs` selects the latter body"
+    ),
+    "operation.responses:event-stream-binary": (
+        "one per Operation Object whose success response's `text/event-stream` media "
+        "type has a schema resolving to `{type: string, format: binary}`, through local "
+        "`components.schemas` references: the body `is_streaming` of `src/ir.rs` "
+        "downloads as bytes rather than decoding as events"
+    ),
+    "operation.responses:event-stream-inline-const-union": (
+        "one per Operation Object whose success response's `text/event-stream` schema "
+        "is written inline as a `oneOf` of at least two inline objects, each tagging a "
+        "string property with a `const`, with no `discriminator`: the chunk "
+        "`stream_chunk_view` of `src/ir.rs` hoists as a discriminated union"
+    ),
+    "operation.responses:event-stream-item-schema-ref": (
+        "one per Operation Object whose success response's `text/event-stream` media "
+        "type declares no `schema` and an `itemSchema` that is a local "
+        "`components.schemas` reference: the per-item schema `MediaType` of "
+        "`src/openapi.rs` types each streamed event from"
+    ),
+    "operation.responses:event-stream-event-dispatch": (
+        "one per Operation Object whose success response's `text/event-stream` schema "
+        "is a reference to a `oneOf` of references discriminated on `event`, every "
+        "variant declaring exactly the properties `event` and `data`: the stream "
+        "`sse_event_dispatch` of `src/ir.rs` dispatches on the SSE `event` field"
     ),
     "operation.responses:empty-schema-success-oas-three-zero": (
         "one per Operation Object of an OpenAPI 3.0 document whose success response, "
@@ -3129,7 +3161,7 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "92a25efcc00ca5a9",
+    "endpoint_method_name": "efd3a74154b2040b",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
@@ -3694,7 +3726,7 @@ SCHEMA_RESPONSE_PORT_DIGESTS = {
     "success_response_entry": "668fb1266cbe71a1",
     "success_response_key": "f373029108feb261",
     "success_response_with_content": "10b3b17e00498b25",
-    "has_dispatchable_media": "0d3fe2386094f82f",
+    "has_dispatchable_media": "1778b0cd46695752",
 }
 
 
@@ -4415,7 +4447,7 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # are: an edit there fails until the port is read again.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "c0c3d57f9ea6b36a",
-    "global_headers": "7ff243e98bd3c60e",
+    "global_headers": "67106ae1452fce15",
     "is_transport_managed_header": "c0b5057117ba1977",
     "is_transport_managed_parameter": "a3891f0bee5ebb90",
     "is_promotion_reserved_header": "b353ea53022d5e0f",
@@ -4741,6 +4773,22 @@ class Census:
         tree_paths: set[Path] | None = None,
     ) -> None:
         self.counts: dict[str, int] = defaultdict(int)
+        version = document.get("openapi") if isinstance(document, dict) else None
+        self.openapi_version = version if isinstance(version, str) else ""
+        self.path_level_parameter_operations: set[int] = set()
+        paths = document.get("paths") if isinstance(document, dict) else None
+        for item in paths.values() if isinstance(paths, dict) else []:
+            if not isinstance(item, dict):
+                continue
+            parameters = item.get("parameters")
+            if isinstance(parameters, list) and any(
+                isinstance(parameter, dict) and parameter.get("in") == "path" for parameter in parameters
+            ):
+                self.path_level_parameter_operations.update(
+                    id(operation)
+                    for method, operation in item.items()
+                    if method in _HTTP_METHODS and isinstance(operation, dict)
+                )
         # The conjunctions this walk evaluates: the closed list every command
         # line runs, unless a caller hands in its own. A caller doing that gets
         # this same evaluator over this same walk — which is how a conjunction
@@ -4861,6 +4909,28 @@ class Census:
         found: list[str] = []
         if kind_name == "operation" and id(node) in self.operation_routes:
             method, url = self.operation_routes[id(node)]
+            path_parameters = (
+                [
+                    parameter
+                    for parameter in node.get("parameters", [])
+                    if isinstance(parameter, dict) and parameter.get("in") == "path"
+                ]
+                if isinstance(node.get("parameters"), list)
+                else []
+            )
+            declared = [parameter.get("name") for parameter in path_parameters]
+            template = re.findall(r"\{([^{}]+)\}", url)
+            if (
+                self.openapi_version.startswith("3.1")
+                and len(declared) > 1
+                and id(node) not in self.path_level_parameter_operations
+                and all(
+                    not isinstance(parameter.get("schema"), dict) or "title" not in parameter["schema"]
+                    for parameter in path_parameters
+                )
+                and declared != [name for name in template if name in declared]
+            ):
+                found.append("operation.parameters:path-order-oas-three-one")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if self.wildcard_binary_response(node):
@@ -4904,12 +4974,65 @@ class Census:
         return found
 
     def parameter_shape_predicates(self, node: dict[Any, Any]) -> list[str]:
-        """The two parameter-lowering shapes a Parameter Object's own schema declares."""
+        """Parameter-lowering shapes a Parameter Object's inline schema declares."""
         found: list[str] = []
         schema = node.get("schema")
         if not isinstance(schema, dict) or "$ref" in schema:
             return found
         location = node.get("in")
+        if "in" not in node and isinstance(node.get("name"), str) and "$ref" not in node:
+            found.append("parameter.in:absent")
+        if location == "query":
+            if (
+                self.openapi_version.startswith("3.0")
+                and node.get("required") is True
+                and schema.get("nullable") is True
+                and primary_type(schema.get("type")) in {"string", "integer", "number", "boolean"}
+            ):
+                found.append("parameter.schema:required-nullable-scalar-oas-three-zero")
+            members = schema.get("oneOf")
+            if (
+                isinstance(members, list)
+                and any(isinstance(member, dict) and member.get("type") == "integer" for member in members)
+                and any(
+                    isinstance(member, dict) and member.get("type") == "string" and member.get("format") == "date"
+                    for member in members
+                )
+            ):
+                found.append("parameter.schema:date-union-query-oneof")
+            if schema.get("type") == "array":
+                items = schema.get("items")
+                if (
+                    node.get("required") is not True
+                    and node.get("explode") is False
+                    and node.get("style", "form") == "form"
+                    and schema.get("nullable") is True
+                    and isinstance(items, dict)
+                    and items.get("type") == "string"
+                ):
+                    found.append("parameter.schema:nullable-array-explode-false")
+                if (
+                    self.openapi_version.startswith("3.0")
+                    and isinstance(items, dict)
+                    and "$ref" not in items
+                    and items.get("nullable") is True
+                    and primary_type(items.get("type")) in {"string", "integer", "number", "boolean"}
+                ):
+                    found.append("parameter.schema:nullable-array-items-oas-three-zero")
+        if location == "header":
+            name = node.get("name")
+            if self.operation_total == 1 and node.get("required") is True:
+                found.append("parameter.schema:single-required-header")
+            if (
+                primary_type(schema.get("type")) == "string"
+                and schema.get("format") == "date"
+                and isinstance(name, str)
+                and name.lower() not in UNPROMOTED_HEADERS
+                and name not in self.api_key_headers
+                and self.operation_total > 0
+                and self.header_operations.get(name, 0) * 4 >= self.operation_total * 3
+            ):
+                found.append("parameter.schema:promoted-date-header")
         if location == "query" and primary_type(schema.get("type")) == "array":
             items = schema.get("items")
             members = composition_members(items) if isinstance(items, dict) and "$ref" not in items else None
@@ -5041,7 +5164,14 @@ class Census:
             return (
                 not isinstance(content, dict)
                 or not content
-                or any(isinstance(media, str) and "/" in media and all(media.split("/", 1)) for media in content)
+                or any(
+                    isinstance(media, str)
+                    and (
+                        ("/" not in media and is_json_like_media_type(media))
+                        or ("/" in media and all(media.split("/", 1)))
+                    )
+                    for media in content
+                )
             )
 
         def content(value):
@@ -5225,6 +5355,7 @@ class Census:
                     found.append("operation.responses:schemaless-download-success")
                 if schemaless(lambda base: base == "audio/wav"):
                     found.append("operation.responses:schemaless-wav-success")
+        found += self.event_stream_predicates(success_content)
         responses = operation.get("responses")
         for code in responses if isinstance(responses, dict) else []:
             text = str(code)
@@ -5236,6 +5367,69 @@ class Census:
                 found.append("operation.responses:suffixed-status-key")
             if re.fullmatch(r"\d{3} +\S.*", text, re.S):
                 found.append("operation.responses:space-suffixed-status-key")
+        return found
+
+    def event_stream_predicates(self, success_content: Any) -> list[str]:
+        """The predicates of a success response's `text/event-stream` media type:
+        how `is_streaming`, `stream_chunk_view` and `sse_event_dispatch` of
+        `src/ir.rs` read it, resolving local `components.schemas` references."""
+        media = success_content.get("text/event-stream") if isinstance(success_content, dict) else None
+        if not isinstance(media, dict):
+            return []
+        found: list[str] = []
+        schema = media.get("schema")
+        item = media.get("itemSchema")
+        if (
+            schema is None
+            and isinstance(item, dict)
+            and isinstance(item.get("$ref"), str)
+            and item["$ref"].startswith(_COMPONENT_SCHEMAS_PREFIX)
+        ):
+            found.append("operation.responses:event-stream-item-schema-ref")
+        resolved = self.resolved_schema(schema)
+        if (
+            isinstance(resolved, dict)
+            and primary_type(resolved.get("type")) == "string"
+            and resolved.get("format") == "binary"
+        ):
+            found.append("operation.responses:event-stream-binary")
+        if isinstance(schema, dict) and "$ref" not in schema and "discriminator" not in schema:
+            members = schema.get("oneOf")
+
+            def const_tagged(member: Any) -> bool:
+                properties = member.get("properties") if isinstance(member, dict) else None
+                return (
+                    isinstance(member, dict)
+                    and "$ref" not in member
+                    and isinstance(properties, dict)
+                    and any(
+                        isinstance(value, dict)
+                        and primary_type(value.get("type")) == "string"
+                        and isinstance(value.get("const"), str)
+                        for value in properties.values()
+                    )
+                )
+
+            if isinstance(members, list) and len(members) >= 2 and all(map(const_tagged, members)):
+                found.append("operation.responses:event-stream-inline-const-union")
+        union = self.resolved_schema(schema) if isinstance(schema, dict) and "$ref" in schema else None
+        discriminator = union.get("discriminator") if isinstance(union, dict) else None
+        variants = union.get("oneOf") if isinstance(union, dict) else None
+        if (
+            isinstance(discriminator, dict)
+            and discriminator.get("propertyName") == "event"
+            and isinstance(variants, list)
+            and variants
+            and all(
+                isinstance(variant, dict)
+                and isinstance(variant.get("$ref"), str)
+                and isinstance(self.component_target(variant["$ref"]), dict)
+                and isinstance(self.component_target(variant["$ref"]).get("properties"), dict)
+                and set(self.component_target(variant["$ref"])["properties"]) == {"event", "data"}
+                for variant in variants
+            )
+        ):
+            found.append("operation.responses:event-stream-event-dispatch")
         return found
 
     def wildcard_binary_response(self, operation: dict[Any, Any]) -> bool:

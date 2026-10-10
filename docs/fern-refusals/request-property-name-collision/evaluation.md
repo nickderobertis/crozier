@@ -26,3 +26,12 @@ All 296 retrievable population documents refuse under strict mode with no output
 An accepted neighboring shape is retained: [pinned Fern control](evidence/request-readonly.pinned-fern.log).
 
 Fern also accepts [referenced read-only fields](evidence/request-readonly-reference.pinned-fern.log) and [repeated properties across inline allOf members](evidence/request-inline-allof-duplicates.pinned-fern.log). The detector preserves those cases.
+
+An inline body with its own `properties` and an `allOf` `$ref` parent is the
+exception: crozier flattens the parent's fields beside the own ones, and pinned
+Fern refuses an own property the parent redeclares even when the parent's is
+`readOnly`
+([writable](../../fern-measurements/bodies-responses/inline-body-overlap-refusals/writable-parent.fern.log),
+[read-only](../../fern-measurements/bodies-responses/inline-body-overlap-refusals/readonly-parent.fern.log)).
+The detector counts the read-only parent field for that shape alone, in both
+modes and in the source-level fallback.

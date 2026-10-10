@@ -647,6 +647,23 @@ class MeasurementInputTests(unittest.TestCase):
             self.assertIn("commit them first", str(refused.exception))
             self.assertFalse((root / "out").exists())
 
+    def test_a_golden_test_runs_alone_from_the_e2e_crates_directory(self) -> None:
+        """The measured run is launched from where cargo runs the e2e binary.
+
+        A real child stands in for the instrumented e2e binary and reports the
+        directory and arguments it was started with; the tooling's `[tool.ruff]`
+        at the root must not reach the crozier a golden spawns (`RealRuffTests`
+        in surface-reach drives the pinned ruff to show why).
+        """
+        report = "import json, os, sys; print(json.dumps([os.getcwd(), sys.argv[1:]]))"
+        run = golden_reach.run_golden_test(
+            [sys.executable, "-c", report], "petstore_matches_fern_output", REPO, dict(os.environ)
+        )
+        self.assertEqual(0, run.returncode, run.stderr)
+        cwd, argv = json.loads(run.stdout)
+        self.assertEqual((REPO / "crates" / "crozier-e2e").resolve(), Path(cwd).resolve())
+        self.assertEqual(["--exact", "petstore_matches_fern_output", "--test-threads", "1", "--quiet"], argv)
+
     def test_a_tests_filter_that_is_no_regex_is_refused_before_anything_builds(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             with self.assertRaises(SystemExit) as refused:

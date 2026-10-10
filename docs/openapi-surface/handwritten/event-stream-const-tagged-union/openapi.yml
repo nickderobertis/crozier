@@ -1,0 +1,39 @@
+openapi: 3.1.0
+info:
+  title: Tide Gauge Network
+  version: 0.4.0
+paths:
+  /stations/{stationId}/levels:
+    get:
+      operationId: followLevels
+      tags:
+        - stations
+      parameters:
+        - name: stationId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Water level readings as the tide turns.
+          content:
+            text/event-stream:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      trend:
+                        type: string
+                        const: flood
+                      height:
+                        type: number
+                  - type: object
+                    properties:
+                      trend:
+                        type: string
+                        const: ebb
+                      height:
+                        type: number
+                      slack:
+                        type: boolean

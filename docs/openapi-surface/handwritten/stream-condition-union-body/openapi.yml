@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Courier Pricing
+  version: 1.0.0
+paths:
+  /estimates:
+    post:
+      operationId: estimateDelivery
+      x-fern-sdk-method-name: estimate
+      x-fern-streaming:
+        format: sse
+        stream-condition: $request.live
+        response:
+          $ref: '#/components/schemas/Estimate'
+        response-stream:
+          $ref: '#/components/schemas/Estimate'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ParcelSpec'
+      responses:
+        '200':
+          description: The estimate.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Estimate'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Estimate'
+components:
+  schemas:
+    ParcelSpec:
+      x-fern-undiscriminated: true
+      oneOf:
+        - $ref: '#/components/schemas/TrackingCode'
+        - $ref: '#/components/schemas/Crate'
+    TrackingCode:
+      type: string
+      description: A previously booked parcel's tracking code.
+    Crate:
+      type: object
+      required:
+        - kilograms
+      properties:
+        kilograms:
+          type: number
+    Estimate:
+      type: object
+      properties:
+        cents:
+          type: integer

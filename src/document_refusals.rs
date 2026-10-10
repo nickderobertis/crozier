@@ -43,6 +43,8 @@ enum Class {
     ExampleNotEnumValue,
     ExampleUnexpectedProperty,
     ExampleMissingRequiredProperty,
+    HeaderDefaultDiffersAcrossOperations,
+    VersionHeaderRedeclaredAsParameter,
 }
 
 impl Class {
@@ -76,6 +78,10 @@ impl Class {
             Self::ExampleNotEnumValue => "example-not-enum-value",
             Self::ExampleUnexpectedProperty => "example-unexpected-property",
             Self::ExampleMissingRequiredProperty => "example-missing-required-property",
+            Self::HeaderDefaultDiffersAcrossOperations => {
+                "header-default-differs-across-operations"
+            }
+            Self::VersionHeaderRedeclaredAsParameter => "version-header-redeclared-as-parameter",
         }
     }
 }
@@ -1776,9 +1782,20 @@ fn check_reference_objects(
                     )?;
                     continue;
                 }
+                // A schema slot is a Schema Object, not a Reference Object of the
+                // enclosing kind: `itemSchema` is a sequential media type's
+                // per-item schema, so a `#/components/schemas` reference there is
+                // as valid as under `schema`.
                 if matches!(
                     key.as_str(),
-                    "schema" | "schemas" | "example" | "examples" | "default" | "enum" | "const"
+                    "schema"
+                        | "itemSchema"
+                        | "schemas"
+                        | "example"
+                        | "examples"
+                        | "default"
+                        | "enum"
+                        | "const"
                 ) || key.starts_with("x-")
                 {
                     continue;
@@ -1984,6 +2001,21 @@ pub fn check_sdk(
         return refusal(path, strict, Class::ExampleTypeMismatch, &element);
     }
     let class = Class::GeneratorLintFailure;
+    if let Some(header) = doc
+        .global_header_extensions()
+        .iter()
+        .find(|header| crate::naming::field_name(&header.name).is_empty())
+    {
+        return refusal(
+            path,
+            strict,
+            class,
+            &format!(
+                "global header {:?} constructor name {:?}",
+                header.header, header.name
+            ),
+        );
+    }
     for decl in ir
         .types
         .iter()

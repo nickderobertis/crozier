@@ -19,7 +19,7 @@ use crate::error::{Error, Result};
 use crate::ir::{
     is_json_like_media_type, Auth, BodyField, BodySchemaShape, ClientPathParameter, Endpoint,
     EndpointPagination, ErrorClass, Field, GlobalHeader, HeaderType, Ir, ObjectType, Prim,
-    QueryParam, RequestBody, TagTypeDecl, TypeDecl, TypeRef,
+    QueryParam, RequestBody, StreamProtocol, TagTypeDecl, TypeDecl, TypeRef,
 };
 use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
@@ -358,6 +358,9 @@ fn number_of(digits: &str) -> Option<i64> {
 struct Imports {
     /// Plain `import module [as alias]`, keyed by module for sorting.
     plain: BTreeMap<String, Option<String>>,
+    /// A multipart argument can shadow `json` in one method while another
+    /// method still needs the unaliased module in the same generated file.
+    json_module_alias: bool,
     /// `from module import a, b`, module -> sorted names.
     from: BTreeMap<String, BTreeSet<String>>,
     /// This file's location, for resolving relative imports of generated types.
@@ -567,6 +570,16 @@ impl Imports {
             .insert(module.to_string(), Some(alias.to_string()));
     }
 
+    fn json_module(&mut self, shadowed: bool) -> &'static str {
+        if shadowed {
+            self.json_module_alias = true;
+            "_json"
+        } else {
+            self.add_plain("json");
+            "json"
+        }
+    }
+
     fn add_from(&mut self, module: &str, name: &str) {
         self.from
             .entry(module.to_string())
@@ -595,8 +608,18 @@ impl Imports {
 
         // Fern orders generated modules naturally (`type9` before `type10`), while
         // the maps provide deterministic collection and de-duplication.
-        let mut plain: Vec<_> = self.plain.iter().collect();
-        plain.sort_by(|(a, _), (b, _)| natural_cmp(a, b));
+        let mut plain: Vec<_> = self
+            .plain
+            .iter()
+            .map(|(module, alias)| (module.as_str(), alias.as_deref()))
+            .collect();
+        if self.json_module_alias {
+            plain.push(("json", Some("_json")));
+        }
+        plain.sort_by(|(a, alias_a), (b, alias_b)| {
+            natural_cmp(a, b).then_with(|| alias_a.cmp(alias_b))
+        });
+        plain.dedup();
         for (module, alias) in plain {
             let line = match alias {
                 Some(a) => format!("import {module} as {a}"),
@@ -2438,6 +2461,23 @@ fn global_header_annotation(header: &crate::ir::GlobalHeader) -> String {
     }
 }
 
+/// A constructor example matching the header's type. Date fields use Fern's
+/// measured date-example form instead of an invalid string placeholder.
+fn global_header_example(header: &GlobalHeader) -> String {
+    if header.py_type() == HeaderType::Date {
+        format!(
+            "{}=datetime.date.fromisoformat(\"2023-01-15\")",
+            header.py_name
+        )
+    } else {
+        format!(
+            "{}=\"YOUR_{}\"",
+            header.py_name,
+            header.py_name.to_uppercase()
+        )
+    }
+}
+
 /// Render an abbreviated call `<prefix>(...)` for the README snippets: empty parens
 /// when the body is not complex, else a literal `...` placeholder. Fern 5.20 does
 /// not wrap these advanced README calls,
@@ -2962,7 +3002,7 @@ struct ParamRow {
     suffix: String,
 }
 
-fn reference_param_suffix(description: Option<&str>) -> String {
+pub(crate) fn reference_param_suffix(description: Option<&str>) -> String {
     match description {
         // Importers sometimes retain leading blank lines around a one-line
         // description. Fern still renders those through the ordinary em-dash
@@ -3106,18 +3146,17 @@ fn reference_entry(
                 .map_or(usize::MAX, |field| field.reference_order)
         });
         // The field a stream condition fixes is not a method argument, but the
-        // reference documents it — as a bare `typing.Literal`, ahead of the rest.
+        // reference documents it — as a bare `typing.Literal`, after the required
+        // fields and ahead of the optional ones: it takes no default, so the
+        // required-first ordering below places it last of the required.
         if let Some((wire, _)) = ep.stream_condition.as_ref() {
             if let Some(field) = fields.iter().find(|field| field.wire_name == *wire) {
-                reference_body.insert(
-                    0,
-                    DocParam {
-                        name: field.py_name.clone(),
-                        annotation: "typing.Literal".to_string(),
-                        default: None,
-                        description: field.docstring.clone(),
-                    },
-                );
+                reference_body.push(DocParam {
+                    name: field.py_name.clone(),
+                    annotation: "typing.Literal".to_string(),
+                    default: None,
+                    description: field.docstring.clone(),
+                });
             }
         }
     }
@@ -3248,7 +3287,14 @@ fn reference_entry(
         } else {
             ""
         },
-        return_type: reference_return_type(ep, &mp.inner),
+        return_type: reference_return_type(
+            ep,
+            &mp.inner,
+            &sse_chunk(
+                ep,
+                &mut Imports::at(RefLoc::Client(module.to_string()), tag_types),
+            ),
+        ),
         description: ep
             .docstring
             .as_ref()
@@ -3278,7 +3324,7 @@ fn reference_list_annotation(annotation: &str) -> String {
     annotation.replace("typing.Sequence[", "typing.List[")
 }
 
-fn reference_param_annotation(annotation: &str) -> String {
+pub(crate) fn reference_param_annotation(annotation: &str) -> String {
     let mut annotation = annotation.replace("dt.", "datetime.");
     if let Some(inner) = annotation
         .strip_prefix("typing.Optional[typing.Optional[")
@@ -3294,8 +3340,16 @@ fn reference_param_annotation(annotation: &str) -> String {
 /// rather than with the `dt.` alias the generated Python imports them under —
 /// the same prose spelling [`reference_param_annotation`] applies to the
 /// parameter rows, so no golden's `reference.md` ever carries a `dt.` type.
-fn reference_return_type(ep: &Endpoint, response: &str) -> String {
-    let rendered = if ep.binary_response || ep.streaming {
+///
+/// A stream is headed with the iterator its method returns, `chunk` typed —
+/// where Fern heads every stream `typing.Iterator[bytes]` (the
+/// `stream-reference-return-type` departure); a binary download does return
+/// `typing.Iterator[bytes]`.
+fn reference_return_type(ep: &Endpoint, response: &str, chunk: &str) -> String {
+    let streamed = format!("typing.Iterator[{chunk}]");
+    let rendered = if ep.streaming {
+        streamed.as_str()
+    } else if ep.binary_response {
         "typing.Iterator[bytes]"
     } else {
         response
@@ -3912,7 +3966,15 @@ fn client_wrapper_file(
     // survives `ruff format` and the e2e comment-strip folds it to the blank lines
     // Fern's own stripped header leaves, so the leading layout matches.
     c.push_str(HEADER);
-    c.push_str("\n\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
+    if global_headers
+        .iter()
+        .any(|header| matches!(header.py_type(), HeaderType::Date))
+    {
+        c.push_str("\n\nimport datetime as dt");
+    } else {
+        c.push('\n');
+    }
+    c.push_str("\nimport typing\n\nimport httpx\nfrom .http_client import AsyncHttpClient, HttpClient\nfrom .logging import LogConfig, Logger\n\n\nclass BaseClientWrapper:\n    def __init__(\n        self,\n        *,\n");
     c.push_str(&client_param);
     c.push_str(&a.param);
     c.push_str(&format!("        headers: typing.Optional[typing.Dict[str, str]] = None,\n        base_url: str,\n        timeout: typing.Optional[float] = None,\n        max_retries: int = {default_max_retries},\n        stream_reconnection_enabled: typing.Optional[bool] = None,\n        max_stream_reconnection_attempts: typing.Optional[int] = None,\n        logging: typing.Optional[typing.Union[LogConfig, Logger]] = None,\n{tr_param}    ):\n"));
@@ -4803,12 +4865,16 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
                     qp.py_name.clone(),
                 );
             }
-            optional_arg(
+            let mut parameter = optional_arg(
                 raw_type_str(&qp.type_ref, imports),
                 qp.argument_required(),
                 qp.docstring.clone(),
                 qp.py_name.clone(),
-            )
+            );
+            if let Some(default) = &qp.default {
+                parameter.default = Some(default.clone());
+            }
+            parameter
         })
         .collect();
     let header: Vec<DocParam> = ep
@@ -5504,6 +5570,10 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         Some(RequestBody::Form(form)) => {
             let mut data = String::new();
             let mut files = String::new();
+            let json_shadowed = form.fields.iter().any(|field| field.py_name == "json")
+                || ep.path_params.iter().any(|param| param.py_name == "json")
+                || ep.query_params.iter().any(|param| param.py_name == "json")
+                || ep.header_params.iter().any(|param| param.py_name == "json");
             for f in &form.fields {
                 if let Some(content_type) = &f.form_content_type {
                     if f.form_json {
@@ -5513,8 +5583,8 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                         let encoded = if array_part && !is_json_like_media_type(content_type) {
                             format!("jsonable_encoder({})", f.py_name)
                         } else {
-                            imports.add_plain("json");
-                            format!("json.dumps(jsonable_encoder({}))", f.py_name)
+                            let module = imports.json_module(json_shadowed);
+                            format!("{module}.dumps(jsonable_encoder({}))", f.py_name)
                         };
                         let tuple = format!("(None, {encoded}, \"{content_type}\")");
                         if f.optional {
@@ -5548,9 +5618,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     continue;
                 }
                 let value = if f.form_json {
-                    imports.add_plain("json");
+                    let module = imports.json_module(json_shadowed);
                     imports.add_core("jsonable_encoder", "jsonable_encoder");
-                    let encoded = format!("json.dumps(jsonable_encoder({}))", f.py_name);
+                    let encoded = format!("{module}.dumps(jsonable_encoder({}))", f.py_name);
                     if f.optional {
                         format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
                     } else {
@@ -5676,6 +5746,9 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     && ep.body_schema_dropped
                     && ep.body_schema_shape == BodySchemaShape::Ref
                     || ep.reference_body_example.is_some()
+                        // Inline named examples keep their header. A surviving
+                        // referenced schema still follows the schema drop below.
+                        && (ep.body_schema_shape != BodySchemaShape::Ref || ep.body_schema_dropped)
                         && !ep.body_schema_is_success_response
                         && matches!(body, RequestBody::Inline(_))
                     || !ep.header_params.is_empty()
@@ -5793,7 +5866,11 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                             && ep.body_response_same_ref
                             && !ep.body_schema_titled
                             && !resource_envelope)
+                        // A `stream-condition` body escapes this drop as it
+                        // escapes the surviving-schema one above, and for the
+                        // same reason: Fern sends the condition beside it.
                         && !(ep.query_params.is_empty()
+                            && ep.stream_condition.is_none()
                             && matches!(body, RequestBody::Inline(fields)
                             if ep.body_schema_shape == BodySchemaShape::Ref
                                 && (!ep.body_schema_dropped
@@ -5905,6 +5982,15 @@ fn sse_chunk(ep: &Endpoint, imports: &mut Imports) -> String {
         .map_or_else(|| "typing.Any".to_string(), |ty| raw_type_str(ty, imports))
 }
 
+/// The `_sse.data` value that ends a Server-Sent-Events stream: the declared
+/// terminator, or `None` — an event carrying no data — when none is declared.
+fn sse_end(terminator: Option<&str>) -> String {
+    terminator.map_or_else(
+        || "None".to_string(),
+        |end| format!("\"{}\"", escape_py_str(end)),
+    )
+}
+
 /// Build one streaming raw-client method (sync or async): a context-managed
 /// `httpx_client.stream(...)` that decodes Server-Sent Events into an iterator of
 /// chunks over the `core.http_sse` runtime, matching Fern's shape (issue #43).
@@ -5912,12 +5998,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     imports.add_plain("contextlib");
     imports.add_plain("typing");
     imports.add_from("json.decoder", "JSONDecodeError");
-    imports.add_from("logging", "error");
-    imports.add_from("logging", "warning");
     imports.add_core("api_error", "ApiError");
-    imports.add_core("http_sse._api", "EventSource");
     imports.add_core("parse_error", "ParsingError");
-    imports.add_core("pydantic_utilities", "parse_sse_obj");
     imports.add_from("pydantic", "ValidationError");
     if !ep.path_params.is_empty() || !ep.client_path_params.is_empty() {
         imports.add_core("jsonable_encoder", "encode_path_param");
@@ -5976,18 +6058,59 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
     call.push("        ) as _response:".to_string());
 
     let inner_return = format!("{wrapper}(response=_response, data=_iter())");
-    let body = format!(
-        "\
-{call}
-
-            {async_kw}def _stream() -> {wrapper}[{data_type}]:
-                try:
-                    if 200 <= _response.status_code < 300:
-
-                        {async_kw}def _iter():
-                            _event_source = EventSource(_response)
+    let iter_body = match ep.stream_protocol.as_ref().unwrap_or(&StreamProtocol::Sse {
+        terminator: None,
+        events: Vec::new(),
+    }) {
+        StreamProtocol::Sse { terminator, events } if !events.is_empty() => {
+            imports.add_plain("json");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // Each event's `event` field picks the model its JSON `data` parses
+            // as; an event no branch names is skipped.
+            let branches: Vec<String> = events
+                .iter()
+                .enumerate()
+                .map(|(index, dispatched)| {
+                    let model = raw_type_str(&TypeRef::Named(dispatched.model.clone()), imports);
+                    let keyword = if index == 0 { "if" } else { "elif" };
+                    let event = escape_py_str(&dispatched.event);
+                    format!(
+                        "                                {keyword} _sse.event == \"{event}\":
+                                    try:
+                                        yield typing.cast(
+                                            {model},
+                                            parse_obj_as(
+                                                type_={model},
+                                                object_=json.loads(_sse.data),
+                                            ),
+                                        )
+                                    except Exception as e:
+                                        warning(f\"Failed to parse SSE event '{event}': {{e}}, sse: {{_sse!r}}\")"
+                    )
+                })
+                .collect();
+            format!(
+                "                            _event_source = EventSource(_response)
                             {for_kw} _sse in _event_source.{iter_sse}():
-                                if _sse.data == None:
+                                if _sse.data == {end}:
+                                    return
+{branches}",
+                end = sse_end(terminator.as_deref()),
+                branches = branches.join("\n"),
+            )
+        }
+        StreamProtocol::Sse { terminator, .. } => {
+            imports.add_from("logging", "error");
+            imports.add_from("logging", "warning");
+            imports.add_core("http_sse._api", "EventSource");
+            imports.add_core("pydantic_utilities", "parse_sse_obj");
+            let end = sse_end(terminator.as_deref());
+            format!(
+                "                            _event_source = EventSource(_response)
+                            {for_kw} _sse in _event_source.{iter_sse}():
+                                if _sse.data == {end}:
                                     return
                                 try:
                                     yield typing.cast(
@@ -6006,7 +6129,45 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                 except Exception as e:
                                     error(
                                         f\"Unexpected error processing SSE event: {{type(e).__name__}}: {{e}}, sse: {{_sse!r}}\"
+                                    )"
+            )
+        }
+        StreamProtocol::JsonLines => {
+            imports.add_plain("json");
+            imports.add_core("pydantic_utilities", "parse_obj_as");
+            // One chunk per non-empty line; Fern skips a line that does not parse.
+            let iter_lines = if is_async {
+                "aiter_lines"
+            } else {
+                "iter_lines"
+            };
+            format!(
+                "                            {for_kw} _text in _response.{iter_lines}():
+                                try:
+                                    if len(_text) == 0:
+                                        continue
+                                    yield typing.cast(
+                                        {chunk},
+                                        parse_obj_as(
+                                            type_={chunk},
+                                            object_=json.loads(_text),
+                                        ),
                                     )
+                                except Exception:
+                                    pass"
+            )
+        }
+    };
+    let body = format!(
+        "\
+{call}
+
+            {async_kw}def _stream() -> {wrapper}[{data_type}]:
+                try:
+                    if 200 <= _response.status_code < 300:
+
+                        {async_kw}def _iter():
+{iter_body}
                             return
 
                         return {inner_return}
@@ -6276,6 +6437,12 @@ fn root_client_file(
         default_max_retries,
     } = cx;
     let mut imports = Imports::at(RefLoc::PackageRoot, tag_map);
+    if global_headers
+        .iter()
+        .any(|header| matches!(header.py_type(), HeaderType::Date))
+    {
+        imports.add_plain_as("datetime", "dt");
+    }
     imports.add_plain("typing");
     imports.add_plain("httpx");
     imports.add_core("client_wrapper", "AsyncClientWrapper");
@@ -6495,6 +6662,7 @@ fn root_client_methods(
             None => imports.add_plain(&module),
         }
     }
+    imports.json_module_alias |= method_imports.json_module_alias;
     Ok(methods)
 }
 
@@ -6613,13 +6781,11 @@ fn root_client_class(
     let client_param_example: String = client_path_parameters
         .iter()
         .map(|parameter| format!("        {},\n", client_path_parameter_example(parameter)))
-        .chain(global_headers.iter().map(|h| {
-            format!(
-                "        {}=\"YOUR_{}\",\n",
-                h.py_name,
-                h.py_name.to_uppercase()
-            )
-        }))
+        .chain(
+            global_headers
+                .iter()
+                .map(|header| format!("        {},\n", global_header_example(header))),
+        )
         .collect();
     let client_param_wrapper: String = client_path_parameters
         .iter()
@@ -6679,6 +6845,7 @@ fn root_client_class(
         client_param_doc,
         client_param_ctor,
         client_param_example,
+        client_example_imports: if global_headers.iter().any(|header| header.py_type() == HeaderType::Date) { "    import datetime\n\n" } else { "" }.to_string(),
         client_param_wrapper,
         tr_doc,
         tr_ctor,
@@ -6774,6 +6941,8 @@ struct RootClientView {
     client_param_doc: String,
     client_param_ctor: String,
     client_param_example: String,
+    /// Imports needed by the constructor's worked example.
+    client_example_imports: String,
     client_param_wrapper: String,
     /// Defaulted global-header lines (empty without any): the docstring
     /// `Parameters` entries, the constructor parameters and the client-wrapper call
@@ -9296,6 +9465,32 @@ fn lookup_decl<'a>(
     })
 }
 
+fn is_object_alias<'a>(
+    mut ty: &'a TypeRef,
+    types: &'a [TypeDecl],
+    tag_decls: &'a [TagTypeDecl],
+) -> bool {
+    let mut seen = BTreeSet::new();
+    let mut alias_seen = false;
+    loop {
+        match ty {
+            TypeRef::Optional(inner) => ty = inner,
+            TypeRef::Named(name) if seen.insert(name) => {
+                match lookup_decl(types, tag_decls, name) {
+                    Some(TypeDecl::Alias(alias)) => {
+                        alias_seen = true;
+                        ty = &alias.target;
+                    }
+                    Some(TypeDecl::Object(_)) => return alias_seen,
+                    _ => return false,
+                }
+            }
+            TypeRef::Dict(_, _) => return alias_seen,
+            _ => return false,
+        }
+    }
+}
+
 /// The generated object a path parameter's type resolves to, through `Optional`
 /// and named aliases; `None` when the parameter is not object-typed at all.
 fn path_object_decl<'a>(
@@ -9543,6 +9738,14 @@ fn build_example_inner(
     }
 
     ctx.documentation = documentation;
+    if !documentation
+        && ctx
+            .global_headers
+            .iter()
+            .any(|header| header.py_type() == HeaderType::Date)
+    {
+        ctx.uses_datetime = true;
+    }
     ctx.reference = reference;
     ctx.field_examples_ignored = ep.importer_example_missing;
     // A `*/*` binary download whose parameters carry a DECLARED example documents
@@ -9893,6 +10096,15 @@ fn build_example_inner(
                     .and_then(|example| ctx.value_from_example(&s.type_ref, example))
                     .unwrap_or_else(|| ctx.value(&s.type_ref, Slot::Plain))
             };
+            // The JSON binary example must have its generated bytes type. The
+            // matched method still passes the value directly to `json=`.
+            if s.type_ref == TypeRef::Primitive(Prim::Bytes)
+                && s.content_type
+                && s.content_type_override.is_none()
+                && matches!(&v, Example::Atom(value) if value == "\"string\"")
+            {
+                v = Example::Atom("b\"string\"".to_string());
+            }
             if untyped_path_parameter
                 && body_example.is_none()
                 && s.example.is_none()
@@ -10049,6 +10261,13 @@ fn build_example_inner(
                     example_fields.sort_by_key(|field| field.declaration_order);
                 }
             }
+            // The field a stream condition fixes is no argument, so no example
+            // passes it, even where the schema's own example writes it.
+            example_fields.retain(|field| {
+                ep.stream_condition
+                    .as_ref()
+                    .is_none_or(|(wire, _)| *wire != field.wire_name)
+            });
             for f in example_fields {
                 let supplied_example = f
                     .example
@@ -10170,6 +10389,12 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .any(|field| field.form_content_type.is_some());
+            let requires_files = form.multipart
+                && form.fields.iter().any(|field| {
+                    field.form_json
+                        && (field.py_name == "json"
+                            || is_object_alias(&field.type_ref, ctx.types, ctx.tag_decls))
+                });
             let mut example_fields: Vec<_> = form
                 .fields
                 .iter()
@@ -10181,23 +10406,28 @@ fn build_example_inner(
                     (f.spec_required
                         || f.media_example
                         || ((related || reference) && f.is_file)
+                        || (documentation
+                            && f.is_file
+                            && matches!(f.type_ref, TypeRef::Optional(_)))
                         // A part that is a LIST of files is shown wherever the
                         // example is written, required or not: SFTPGo's optional
                         // `filenames` reaches `README.md` and the client docstring
                         // as well as `reference.md`, where DaniWeb's optional
                         // scalar `csv` reaches only the reference writer.
                         || f.is_file && matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
-                        && (documentation || !f.is_file)
+                        && (documentation
+                            || !f.is_file
+                            || requires_files && f.spec_required && !f.optional)
                 })
                 .collect();
             // Fern's reference writer lists required multipart file inputs before
             // the other required fields, even though executable signatures retain
             // the schema's required-first declaration order.
-            if reference && form.multipart {
+            if form.multipart && (reference || documentation && requires_files) {
                 example_fields.sort_by_key(|field| !field.is_file);
             }
             for f in example_fields {
-                let v = if documentation && f.is_file {
+                let v = if (documentation || requires_files) && f.is_file {
                     if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                         // A list of files is one flat placeholder list, not an
                         // exploded one: SFTPGo's `filenames` documents
@@ -10282,11 +10512,23 @@ fn build_example_inner(
         } else {
             args
         };
-        let rendered = Example::Call(receiver, args).render(call_indent);
+        let example = Example::Call(receiver, args);
+        let rendered = example.render(call_indent);
         if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
+            // Fern's snippet formatter (ruff at width 80) parenthesizes the
+            // assignment's right-hand side when `response = <call>(` overflows
+            // and the call's opening line fits once indented a level deeper.
+            let head = rendered.lines().next().unwrap_or_default();
+            let assigned = if pad.len() + "response = ".len() + head.len() > 80
+                && pad.len() + 4 + head.len() <= 80
+            {
+                format!("(\n{pad}    {}\n{pad})", example.render(call_indent + 4))
+            } else {
+                rendered
+            };
             format!(
-                "{pad}response = {rendered}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
+                "{pad}response = {assigned}\n{pad}{for_kw} chunk in response:\n{pad}    yield chunk"
             )
         } else if ep.pagination.is_some() && !documentation {
             // A pager's worked example shows both ways of consuming it: item by
@@ -10415,11 +10657,7 @@ fn build_example_inner(
             client_args.push(format!("    {},", client_path_parameter_example(parameter)));
         }
         for h in ctx.global_headers.iter().filter(|h| h.default().is_none()) {
-            client_args.push(format!(
-                "    {}=\"YOUR_{}\",",
-                h.py_name,
-                h.py_name.to_uppercase()
-            ));
+            client_args.push(format!("    {},", global_header_example(h)));
         }
         for arg in auth_example_args(ctx.auth) {
             client_args.push(format!("    {arg},"));
@@ -11158,6 +11396,23 @@ mod tests {
     }
 
     #[test]
+    fn multipart_json_module_imports_follow_each_methods_shadowing() {
+        for order in [[true, false], [false, true]] {
+            let mut imports = super::Imports::default();
+            for shadowed in order {
+                assert_eq!(
+                    imports.json_module(shadowed),
+                    if shadowed { "_json" } else { "json" }
+                );
+            }
+            assert_eq!(imports.render(), "import json\nimport json as _json");
+        }
+        let mut imports = super::Imports::default();
+        imports.json_module(true);
+        assert_eq!(imports.render(), "import json as _json");
+    }
+
+    #[test]
     fn a_method_array_header_is_a_sequence_documented_as_a_list() {
         let files = files_for(header_array_document(
             serde_json::json!({"type": "array", "items": {"type": "string"}}),
@@ -11501,6 +11756,7 @@ mod tests {
             client_param_doc: String::new(),
             client_param_ctor: String::new(),
             client_param_example: String::new(),
+            client_example_imports: String::new(),
             client_param_wrapper: String::new(),
             tr_doc: String::new(),
             tr_ctor: String::new(),
@@ -11953,6 +12209,7 @@ mod tests {
             reference_description_suffix: String::new(),
             streaming: false,
             stream_chunk: None,
+            stream_protocol: None,
             text_response: false,
             markdown_response: false,
             binary_response: false,
@@ -12197,20 +12454,20 @@ mod tests {
         // The `<summary>` line is prose, so it uses Fern's full spelling rather
         // than the `dt.` alias the generated Python imports the types under.
         assert_eq!(
-            super::reference_return_type(&endpoint, "dt.datetime"),
+            super::reference_return_type(&endpoint, "dt.datetime", "bytes"),
             " -> datetime.datetime"
         );
         assert_eq!(
-            super::reference_return_type(&endpoint, "typing.Optional[dt.date]"),
+            super::reference_return_type(&endpoint, "typing.Optional[dt.date]", "bytes"),
             " -> typing.Optional[datetime.date]"
         );
         // A type that merely contains `dt` as part of a name is untouched, and a
         // `None` response still renders no suffix at all.
         assert_eq!(
-            super::reference_return_type(&endpoint, "UpdtStatus"),
+            super::reference_return_type(&endpoint, "UpdtStatus", "bytes"),
             " -> UpdtStatus"
         );
-        assert_eq!(super::reference_return_type(&endpoint, "None"), "");
+        assert_eq!(super::reference_return_type(&endpoint, "None", "bytes"), "");
     }
 
     #[test]
@@ -12711,6 +12968,7 @@ mod tests {
             type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
             required: true,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: true,
             allow_multiple: true,
@@ -12757,6 +13015,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Datetime),
             required: false,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -13910,6 +14169,7 @@ mod tests {
                 type_ref: TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
                 required: true,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -13925,6 +14185,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14298,6 +14559,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: false,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14347,6 +14609,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14362,6 +14625,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Str),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14377,6 +14641,7 @@ mod tests {
                 type_ref: TypeRef::Primitive(Prim::Int),
                 required: false,
                 nullable: false,
+                default: None,
                 convert: false,
                 comma_separated: false,
                 allow_multiple: false,
@@ -14426,6 +14691,7 @@ mod tests {
             type_ref: TypeRef::Primitive(Prim::Str),
             required: true,
             nullable: false,
+            default: None,
             convert: false,
             comma_separated: false,
             allow_multiple: false,
@@ -14681,6 +14947,133 @@ mod parameter_lowering_tests {
                 )
             })
             .collect()
+    }
+
+    #[test]
+    fn extension_parameters_keep_their_wire_names_and_defaults() {
+        let document: Value = serde_json::from_str(include_str!(
+            "../docs/openapi-surface/handwritten/observatory-query-extensions/openapi.yml"
+        ))
+        .unwrap();
+        let generated = files(document);
+        let client = &generated["src/api/client.py"];
+        let raw = &generated["src/api/raw_client.py"];
+        assert!(
+            client.contains("band: typing.Optional[str] = None"),
+            "{client}"
+        );
+        assert!(
+            client.contains("size: typing.Optional[int] = \"12\""),
+            "{client}"
+        );
+        assert!(raw.contains("\"channel\": band"), "{raw}");
+    }
+
+    #[test]
+    fn document_fields_and_nullable_arrays_reach_emitter_consumers() {
+        for (source, expected) in [
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-date/openapi.yml"
+                ),
+                "sampling_day: typing.Optional[dt.date] = None",
+            ),
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-headers/openapi.yml"
+                ),
+                "station: str",
+            ),
+            (
+                include_str!(
+                    "../docs/openapi-surface/handwritten/observatory-client-variable/openapi.yml"
+                ),
+                "station_code: str",
+            ),
+        ] {
+            let generated = files(serde_json::from_str(source).unwrap());
+            assert!(
+                generated["src/api/client.py"].contains(expected),
+                "{expected}"
+            );
+        }
+        let generated = files(
+            serde_json::from_str(include_str!(
+                "../docs/openapi-surface/handwritten/observatory-nullable-query/openapi.yml"
+            ))
+            .unwrap(),
+        );
+        assert!(generated["src/api/raw_client.py"].contains("\"kinds\": kinds"));
+        assert!(!generated["src/api/raw_client.py"].contains("join(map"));
+    }
+
+    fn departure_guard(case: &str, rel: &str, id: &str) {
+        let case_root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/openapi-surface/handwritten")
+            .join(case);
+        let document: Value =
+            serde_json::from_str(&std::fs::read_to_string(case_root.join("openapi.yml")).unwrap())
+                .unwrap();
+        let doc: crate::openapi::OpenApi = serde_json::from_value(document).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            "openapi.yml".into(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "FernApi",
+        )
+        .unwrap();
+        let generated = super::generate(&crate::ir::build(&doc, &config)).unwrap();
+        let out = tempfile::tempdir().unwrap();
+        for file in generated {
+            let path = out.path().join(file.path);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, file.contents).unwrap();
+        }
+        let expected = case_root.join("fern-expected");
+        let context = crate::departures::Context::from_trees(&expected, out.path());
+        let reference = std::fs::read_to_string(expected.join(rel)).unwrap();
+        let actual = std::fs::read_to_string(out.path().join(rel)).unwrap();
+        let compared = crate::parity::compare_file(&context, rel, &actual, &reference).unwrap();
+        assert!(compared.matches());
+        assert!(compared
+            .departures
+            .iter()
+            .any(|departure| departure.id == id));
+        let changed = actual.replacen(
+            if rel.ends_with(".py") {
+                "import typing"
+            } else {
+                "# Reference"
+            },
+            "unexplained adjacent change",
+            1,
+        );
+        assert!(
+            !crate::parity::compare_file(&context, rel, &changed, &reference)
+                .unwrap()
+                .matches()
+        );
+    }
+
+    #[test]
+    fn sdk_variable_documentation_departure_rejects_an_adjacent_mismatch() {
+        departure_guard(
+            "observatory-client-variable",
+            "reference.md",
+            "sdk-variable-docs-examples",
+        );
+    }
+
+    #[test]
+    fn date_header_example_departure_rejects_an_adjacent_mismatch() {
+        departure_guard(
+            "observatory-client-date",
+            "src/fern/client.py",
+            "date-header-constructor-example",
+        );
     }
 
     #[test]

@@ -1,0 +1,9 @@
+query	outcome	reported	retrieved
+"x-fern-streaming" filename:openapi.yml -org:fern-api	answered	18	18
+"x-fern-streaming" filename:openapi.yaml -org:fern-api	answered	0	0
+"x-fern-streaming" filename:openapi.json -org:fern-api	answered	64	20
+"x-crozier-streaming" -org:fern-api	answered	4	4
+"itemSchema" "text/event-stream" -org:fern-api	answered	114	20
+"text/event-stream" "format: binary" -org:fern-api	answered	2304	20
+"text/event-stream" "propertyName: event" -org:fern-api	answered	85	20
+"text/event-stream" "const:" "oneOf" -org:fern-api	answered	1336	20

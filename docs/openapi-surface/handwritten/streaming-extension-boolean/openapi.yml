@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Log Tailer
+  version: 1.0.0
+paths:
+  /logs/tail:
+    get:
+      operationId: tailLogs
+      x-fern-streaming: true
+      parameters:
+        - name: service
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Log lines.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogLine'
+components:
+  schemas:
+    LogLine:
+      type: object
+      properties:
+        level:
+          type: string
+        message:
+          type: string

@@ -2,7 +2,10 @@
 
 New parameter-lowering sites not executed by the registered golden-only runs:
 
-- `src/ir.rs::base_path_client_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]`
+- `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]`
+
+The helper was renamed from `base_path_client_parameters` without changing this
+handling; the recorded audit and incomplete verdict are unchanged.
 
 No arm-specific live query or registry walk ran. Each declared source still
 owes its search, so this bounded audit is `search-incomplete`, not exhaustion.

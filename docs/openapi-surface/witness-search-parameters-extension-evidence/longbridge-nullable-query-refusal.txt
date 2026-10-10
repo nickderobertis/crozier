@@ -1,0 +1,7 @@
+fern_cli_version=5.67.1
+fern_python_sdk_version=5.20.0
+generate_exit=1
+output_tree=none
+Failed to run command: ruff check --fix --no-cache --ignore E741 /fern/output
+subprocess.CalledProcessError: Command '['ruff', 'check', '--fix', '--no-cache', '--ignore', 'E741', '/fern/output']' returned non-zero exit status 1.
+publisher.run_ruff_check_fix("/fern/output", cwd="/")
