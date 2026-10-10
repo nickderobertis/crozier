@@ -6784,6 +6784,23 @@ struct InlineHoister<'a> {
 }
 
 impl InlineHoister<'_> {
+    /// The class an inline schema hoists to: the type name it declares
+    /// (`x-crozier-type-name` over `x-fern-type-name`), else `derived`. Only a
+    /// grouped operation's inline schemas still declare one here, because the
+    /// others were lifted into components; Fern names those by the declaration
+    /// inside the sub-client's `types/`, `workshop/types/stance.py`. A name a
+    /// component already holds keeps `derived`, as the lifting does.
+    fn declared_or(&self, derived: String, schema: &Schema) -> String {
+        schema
+            .declared_type_name()
+            .map(crate::openapi::declared_type_key)
+            .filter(|key| {
+                self.schemas
+                    .is_none_or(|schemas| !schemas.contains_key(key))
+            })
+            .unwrap_or(derived)
+    }
+
     fn hoist_discriminated_union(
         &mut self,
         name: &str,
@@ -7310,8 +7327,28 @@ impl InlineHoister<'_> {
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
         if prop_schema.reference.is_none() && is_map(prop_schema) && !is_optional(prop_schema) {
             if let Some(AdditionalProperties::Schema(value)) = &prop_schema.additional_properties {
+                let name = self.declared_or(
+                    format!("{}Value", naming::child_class_name(owner, prop)),
+                    value,
+                );
+                // A grouped operation's map value declaring a type name is that
+                // named type even as an enum (`Dict[str, PegWood]`), where an
+                // anonymous one stays an inline literal union.
+                if value.reference.is_none() && value.declared_type_name().is_some() {
+                    if let Some(values) = string_enum_values(value) {
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            value,
+                            &name,
+                            values,
+                            clean_doc(value.description.as_deref()),
+                        )));
+                        return TypeRef::Dict(
+                            Box::new(TypeRef::Primitive(Prim::Str)),
+                            Box::new(TypeRef::Named(name)),
+                        );
+                    }
+                }
                 if value.reference.is_none() && is_inline_struct(value) {
-                    let name = format!("{}Value", naming::child_class_name(owner, prop));
                     self.hoist_object(&name, value);
                     return TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
@@ -7400,7 +7437,7 @@ impl InlineHoister<'_> {
         }
         if prop_schema.reference.is_none() {
             if let Some(values) = string_enum_values(prop_schema) {
-                let name = naming::child_class_name(parent, prop);
+                let name = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
                 self.out.push(TypeDecl::Enum(build_enum(
                     prop_schema,
                     &name,
@@ -7411,13 +7448,13 @@ impl InlineHoister<'_> {
             }
         }
         if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
-            let nested = naming::child_class_name(parent, prop);
+            let nested = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
             self.hoist_object(&nested, prop_schema);
             return TypeRef::Named(nested);
         }
         if prop_schema.reference.is_none() {
             if let Some(members) = prop_schema.one_of.as_ref().or(prop_schema.any_of.as_ref()) {
-                let name = naming::child_class_name(parent, prop);
+                let name = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
                 let non_null: Vec<&Schema> = members
                     .iter()
                     .filter(|member| {
@@ -7545,7 +7582,7 @@ impl InlineHoister<'_> {
         if item_schema.reference.is_some() {
             return None;
         }
-        let item_name = format!("{ctx}Item");
+        let item_name = self.declared_or(format!("{ctx}Item"), item_schema);
         if let Some(target) = self
             .schemas
             .zip(described_all_of_ref(item_schema))
@@ -7863,7 +7900,7 @@ impl InlineHoister<'_> {
             return None;
         }
         let values = string_enum_values(item)?;
-        let name = format!("{ctx}Item");
+        let name = self.declared_or(format!("{ctx}Item"), item);
         self.out.push(TypeDecl::Enum(build_enum(
             item,
             &name,

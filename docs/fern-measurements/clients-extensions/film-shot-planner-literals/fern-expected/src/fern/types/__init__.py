@@ -7,18 +7,28 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .camera import Camera
+    from .camera_rig import CameraRig
+    from .camera_rig_dolly import CameraRigDolly
+    from .filter_grade import FilterGrade
     from .get_settings_response import GetSettingsResponse
     from .get_settings_response_light import GetSettingsResponseLight
     from .iso_band import IsoBand
     from .lens_spec import LensSpec
+    from .list_slates_response import ListSlatesResponse
     from .shot_size import ShotSize
+    from .take_mark import TakeMark
 _dynamic_imports: typing.Dict[str, str] = {
     "Camera": ".camera",
+    "CameraRig": ".camera_rig",
+    "CameraRigDolly": ".camera_rig_dolly",
+    "FilterGrade": ".filter_grade",
     "GetSettingsResponse": ".get_settings_response",
     "GetSettingsResponseLight": ".get_settings_response_light",
     "IsoBand": ".iso_band",
     "LensSpec": ".lens_spec",
+    "ListSlatesResponse": ".list_slates_response",
     "ShotSize": ".shot_size",
+    "TakeMark": ".take_mark",
 }
 
 
@@ -43,4 +53,16 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["Camera", "GetSettingsResponse", "GetSettingsResponseLight", "IsoBand", "LensSpec", "ShotSize"]
+__all__ = [
+    "Camera",
+    "CameraRig",
+    "CameraRigDolly",
+    "FilterGrade",
+    "GetSettingsResponse",
+    "GetSettingsResponseLight",
+    "IsoBand",
+    "LensSpec",
+    "ListSlatesResponse",
+    "ShotSize",
+    "TakeMark",
+]

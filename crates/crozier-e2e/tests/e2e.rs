@@ -2383,6 +2383,33 @@ components:
     );
 }
 
+/// An inline schema declaring a type name a component already holds is never
+/// lifted over that component: the component keeps its own shape and the
+/// inline enum keeps its positional name, whichever spelling declares it.
+#[test]
+fn inline_declared_type_name_never_overwrites_a_component() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    for spelling in ["x-fern-type-name", "x-crozier-type-name"] {
+        let spec = dir.path().join(format!("{spelling}.yml"));
+        std::fs::write(
+            &spec,
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Studio, version: '1'}}\npaths:\n  /palettes:\n    get:\n      operationId: getPalette\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  tone: {{type: string, enum: [warm, cool], {spelling}: Tone}}\n                  base: {{$ref: '#/components/schemas/Tone'}}\ncomponents:\n  schemas:\n    Tone: {{type: object, properties: {{label: {{type: string}}}}}}\n"
+            ),
+        )
+        .expect("write spec");
+        let out = dir.path().join(spelling);
+        probe_command(&spec, &out).assert().success();
+        let types = out.join("src/fern/types");
+        let tone = std::fs::read_to_string(types.join("tone.py")).expect("component Tone");
+        assert!(tone.contains("class Tone(UniversalBaseModel)"), "{tone}");
+        assert!(tone.contains("label: typing.Optional[str]"), "{tone}");
+        let inline = std::fs::read_to_string(types.join("get_palette_response_tone.py"))
+            .expect("the inline enum keeps its positional name");
+        assert!(inline.contains("WARM = \"warm\""), "{inline}");
+    }
+}
+
 /// `x-crozier-type-name` is the canonical spelling of `x-fern-type-name`
 /// (AGENTS.md, the dual-header policy): alone it names a component exactly as
 /// the Fern spelling with the same value does, and beside a different Fern
@@ -20162,6 +20189,19 @@ fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
         "false\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}",
     );
     assert!(!overruled.contains("Pager"), "{overruled}");
+    // With no root contract, crozier's `true` takes none, and still overrules
+    // the operation's own Fern contract: no pager.
+    let spec = dir.path().join("rootless.yml");
+    std::fs::write(
+        &spec,
+        "openapi: 3.0.3\ninfo: {title: Beacons, version: '1'}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: true\n      x-fern-pagination: {cursor: $request.after, next_cursor: $response.next, results: $response.beacons}\n      parameters:\n        - {name: after, in: query, schema: {type: string}}\n      responses:\n        '200':\n          description: ok\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  next: {type: string}\n                  beacons: {type: array, items: {type: string}}\n",
+    )
+    .expect("write spec");
+    let out = dir.path().join("rootless");
+    probe_command(&spec, &out).assert().success();
+    let rootless = std::fs::read_to_string(out.join("src/fern/raw_client.py")).expect("raw client");
+    assert!(!rootless.contains("Pager"), "{rootless}");
+    assert!(!out.join("src/fern/core/pagination.py").exists());
     // The nearby malformed form, neither a contract nor a boolean, is still
     // refused at the boundary, exit 1 and nothing written.
     let spec = dir.path().join("number.yml");

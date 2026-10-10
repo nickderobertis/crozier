@@ -1,5 +1,7 @@
 
 
+from __future__ import annotations
+
 import typing
 
 import httpx
@@ -9,6 +11,10 @@ from .core.request_options import RequestOptions
 from .environment import FernApiEnvironment
 from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.get_settings_response import GetSettingsResponse
+from .types.list_slates_response import ListSlatesResponse
+
+if typing.TYPE_CHECKING:
+    from .crew.client import AsyncCrewClient, CrewClient
 
 
 class FernApi:
@@ -91,6 +97,7 @@ class FernApi:
             logging=logging,
         )
         self._raw_client = RawFernApi(client_wrapper=self._client_wrapper)
+        self._crew: typing.Optional[CrewClient] = None
 
     @property
     def with_raw_response(self) -> RawFernApi:
@@ -130,6 +137,48 @@ class FernApi:
         """
         _response = self._raw_client.get_settings(scene_id, request_options=request_options)
         return _response.data
+
+    def list_slates(
+        self,
+        scene_id: str,
+        *,
+        after: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListSlatesResponse:
+        """
+        Parameters
+        ----------
+        scene_id : str
+
+        after : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListSlatesResponse
+            One page of the scene's slates.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi()
+        client.list_slates(
+            scene_id="sceneId",
+        )
+        """
+        _response = self._raw_client.list_slates(scene_id, after=after, request_options=request_options)
+        return _response.data
+
+    @property
+    def crew(self):
+        if self._crew is None:
+            from .crew.client import CrewClient
+
+            self._crew = CrewClient(client_wrapper=self._client_wrapper)
+        return self._crew
 
 
 def _make_default_async_client(
@@ -228,6 +277,7 @@ class AsyncFernApi:
             logging=logging,
         )
         self._raw_client = AsyncRawFernApi(client_wrapper=self._client_wrapper)
+        self._crew: typing.Optional[AsyncCrewClient] = None
 
     @property
     def with_raw_response(self) -> AsyncRawFernApi:
@@ -275,6 +325,56 @@ class AsyncFernApi:
         """
         _response = await self._raw_client.get_settings(scene_id, request_options=request_options)
         return _response.data
+
+    async def list_slates(
+        self,
+        scene_id: str,
+        *,
+        after: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> ListSlatesResponse:
+        """
+        Parameters
+        ----------
+        scene_id : str
+
+        after : typing.Optional[str]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        ListSlatesResponse
+            One page of the scene's slates.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi()
+
+
+        async def main() -> None:
+            await client.list_slates(
+                scene_id="sceneId",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.list_slates(scene_id, after=after, request_options=request_options)
+        return _response.data
+
+    @property
+    def crew(self):
+        if self._crew is None:
+            from .crew.client import AsyncCrewClient
+
+            self._crew = AsyncCrewClient(client_wrapper=self._client_wrapper)
+        return self._crew
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: FernApiEnvironment) -> str:

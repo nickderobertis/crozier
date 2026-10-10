@@ -6,24 +6,48 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
-    from .types import Camera, GetSettingsResponse, GetSettingsResponseLight, IsoBand, LensSpec, ShotSize
+    from .types import (
+        Camera,
+        CameraRig,
+        CameraRigDolly,
+        FilterGrade,
+        GetSettingsResponse,
+        GetSettingsResponseLight,
+        IsoBand,
+        LensSpec,
+        ListSlatesResponse,
+        ShotSize,
+        TakeMark,
+    )
+    from . import crew
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
+    from .crew import CallSheetCrewResponse, CallWindow, CrewUnit, GearState
     from .environment import FernApiEnvironment
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "CallSheetCrewResponse": ".crew",
+    "CallWindow": ".crew",
     "Camera": ".types",
+    "CameraRig": ".types",
+    "CameraRigDolly": ".types",
+    "CrewUnit": ".crew",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
+    "FilterGrade": ".types",
+    "GearState": ".crew",
     "GetSettingsResponse": ".types",
     "GetSettingsResponseLight": ".types",
     "IsoBand": ".types",
     "LensSpec": ".types",
+    "ListSlatesResponse": ".types",
     "ShotSize": ".types",
+    "TakeMark": ".types",
     "__version__": ".version",
+    "crew": ".crew",
 }
 
 
@@ -50,15 +74,25 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "CallSheetCrewResponse",
+    "CallWindow",
     "Camera",
+    "CameraRig",
+    "CameraRigDolly",
+    "CrewUnit",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
     "FernApiEnvironment",
+    "FilterGrade",
+    "GearState",
     "GetSettingsResponse",
     "GetSettingsResponseLight",
     "IsoBand",
     "LensSpec",
+    "ListSlatesResponse",
     "ShotSize",
+    "TakeMark",
     "__version__",
+    "crew",
 ]
