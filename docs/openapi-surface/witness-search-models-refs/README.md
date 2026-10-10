@@ -224,3 +224,19 @@ The bounded searches above assess complete scenario triggers. The regenerated go
 | `allof` | `none-registrable` | Bounded committed-source renewal recorded above; arm-level independent fixtures. |
 | `enum` | `none-registrable` | Bounded committed-source renewal recorded above; arm-level independent fixtures. |
 | `description` | `none-registrable` | Bounded committed-source renewal recorded above; arm-level independent fixtures. |
+
+## Composed narrowing constraints
+
+The `harbour-window` proof adds one trigger to `allof-enum-ref-narrowed-by-scalar-member`: the enclosing property schema declares its own `maxLength`, `minLength`, `pattern`, `enum`, `const` or `not` beside an `allOf` of a `$ref` to a string enum and a `type: string` member with a `pattern`. On 2026-10-09 a walk of every committed corpus source on this branch, 283 JSON and YAML files, read each parsed mapping recursively and resolved each `allOf` `$ref` within its own document or a relative file beside it. [`composed-narrowing.tsv`](composed-narrowing.tsv) records each file's SHA-256 and its complete-trigger count and pointers. No file declares the complete trigger, and none declares the partial narrowing without the enclosing constraint either. The search is bounded to that population, so it does not claim that no publisher declares the shape. These arm covers do not count as real witnesses.
+
+| key | verdict | handling arm and proof |
+|---|---|---|
+| `allof` | `search-incomplete` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]`: `harbour-window`. |
+| `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]`: `harbour-window`. |
+
+## Renewed composed narrowing search
+
+| key | result | proof |
+|---|---|---|
+| `allof` | `none-registrable` | Bounded committed-source walk recorded above; independent `harbour-window` arm-level fixture. |
+| `enum` | `none-registrable` | Bounded committed-source walk recorded above; independent `harbour-window` arm-level fixture. |

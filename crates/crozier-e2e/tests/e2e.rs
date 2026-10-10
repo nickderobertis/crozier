@@ -21998,15 +21998,13 @@ fn enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern()
     // so the example is `ebb`. `Charter.window` also adds `not: {enum: [ebb,
     // neap]}`, which leaves no member valid, so it keeps Fern's `slack`.
     let root = repo_root();
-    let fixture = root
-        .join(MODELS_REFS_COMPOSED_NARROWING_DIR)
-        .join("harbour-window");
+    let fixture = root.join(HANDWRITTEN_DIR).join("harbour-window");
     let spec = fixture.join("openapi.yml");
     let source = spec.to_str().expect("UTF-8 fixture path");
     for (mode, golden, corrected, kept) in [
         (
             None,
-            format!("{MODELS_REFS_COMPOSED_NARROWING_DIR}/harbour-window/fern-expected"),
+            format!("{HANDWRITTEN_DIR}/harbour-window/fern-expected"),
             "window=CrossingWindow.EBB,",
             "window=CharterWindow.SLACK,",
         ),

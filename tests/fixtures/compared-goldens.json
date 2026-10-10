@@ -2,7 +2,6 @@
   "goldens": {
     "docs/departures/evidence/readme-client-class-casing/fern-reference": {},
     "docs/fern-measurements/models-refs-composed-narrowing/dossier-status/fern-expected": {},
-    "docs/fern-measurements/models-refs-composed-narrowing/harbour-window/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/artefact-catalogue/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/blank-reading-description/fern-expected": {},
     "docs/fern-measurements/models-refs-literals/circuit-readings/fern-expected": {},
@@ -91,6 +90,7 @@
     "docs/openapi-surface/handwritten/format-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/garden-crown/fern-expected": {},
     "docs/openapi-surface/handwritten/gauge-public-fields/fern-expected": {},
+    "docs/openapi-surface/handwritten/harbour-window/fern-expected": {},
     "docs/openapi-surface/handwritten/header-subset-string-default/fern-expected": {},
     "docs/openapi-surface/handwritten/http-dpop-unrequired/fern-expected": {},
     "docs/openapi-surface/handwritten/http-mutual-unrequired/fern-expected": {},

@@ -57,7 +57,7 @@ one.
 ### An enclosing constraint
 
 The independently authored
-`docs/fern-measurements/models-refs-composed-narrowing/harbour-window` source
+`docs/openapi-surface/handwritten/harbour-window` source
 declares `TideWindow` (`slack`, `flood`, `ebb`, `neap`). Both use sites exclude
 `slack` with `^(?!slack$).*$`. `Crossing.window` adds `maxLength: 4` beside its
 `allOf`, so `flood`, the member the pattern alone admits first, is invalid too.
