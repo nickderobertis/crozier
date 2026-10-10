@@ -213,7 +213,7 @@ The bounded searches above assess complete scenario triggers. The regenerated go
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]`: `nullable-store`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]`: `union-sample`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]`: `measurement-phase`. |
-| `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]`: `measurement-phase`. |
+| `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selected\) = self\.members\.iter\(\)\.find\(]`: `measurement-phase`. |
 | `description` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]`: `blank-reading-description`. |
 
 ## Renewed handling-arm search
@@ -232,7 +232,7 @@ The `harbour-window` proof adds one trigger to `allof-enum-ref-narrowed-by-scala
 | key | verdict | handling arm and proof |
 |---|---|---|
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]`: `harbour-window`. |
-| `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selection\) = &self\.example_selection \{]`: `harbour-window`. |
+| `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(selected\) = self\.members\.iter\(\)\.find\(]`: `harbour-window`. |
 
 ## Renewed composed narrowing search
 

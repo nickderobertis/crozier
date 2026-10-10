@@ -949,10 +949,10 @@ fn oauth_scope_enum(doc: &OpenApi) -> Option<EnumType> {
             } else {
                 clean_doc(Some(doc))
             },
+            example_default: false,
         })
         .collect();
     Some(EnumType {
-        example_selection: None,
         name: "OauthScope".to_string(),
         module: "oauth_scope".to_string(),
         members,
@@ -1952,47 +1952,35 @@ pub struct EnumType {
     pub name: String,
     /// Module (file stem).
     pub module: String,
-    /// A validated member selection for the scalar-narrowed default example.
-    /// Only select_example_member assigns a selection; type emission ignores it.
-    pub(crate) example_selection: Option<EnumExampleSelection>,
     /// The members, in declaration order.
     pub members: Vec<EnumMember>,
     /// Optional docstring.
     pub docstring: Option<String>,
 }
 
-/// A selection can be constructed only after checking this enum's members.
-#[derive(Debug, Clone)]
-pub(crate) struct EnumExampleSelection {
-    index: usize,
-    value: String,
-}
-
 impl EnumType {
-    /// Select only a member this declaration actually contains.
+    /// Make the member whose wire value is `value` the scalar-narrowed default
+    /// example, and no other; a value this declaration does not contain selects
+    /// nothing and leaves any earlier selection in place.
     pub(crate) fn select_example_member(&mut self, value: &str) -> bool {
-        let Some(index) = self.members.iter().position(|member| member.value == value) else {
+        if !self.members.iter().any(|member| member.value == value) {
             return false;
-        };
-        self.example_selection = Some(EnumExampleSelection {
-            index,
-            value: self.members[index].value.clone(),
-        });
+        }
+        for member in &mut self.members {
+            member.example_default = member.value == value;
+        }
         true
     }
 
     pub(crate) fn has_corrected_example(&self) -> bool {
-        self.example_selection.is_some() && self.example_member().is_some()
+        self.members.iter().any(|member| member.example_default)
     }
 
     /// The synthesized example's member, retaining declaration order when no
     /// use-site pattern requires a different default.
     pub(crate) fn example_member(&self) -> Option<&EnumMember> {
-        if let Some(selection) = &self.example_selection {
-            return self
-                .members
-                .get(selection.index)
-                .filter(|member| member.value == selection.value);
+        if let Some(selected) = self.members.iter().find(|member| member.example_default) {
+            return Some(selected);
         }
         self.members.first()
     }
@@ -2009,6 +1997,11 @@ pub struct EnumMember {
     pub visit_param: String,
     /// Optional member docstring.
     pub docstring: Option<String>,
+    /// Whether this member is the scalar-narrowed default example. The selection
+    /// lives on the member it names, so it cannot outlive that member or move to
+    /// another enum; only `EnumType::select_example_member` sets it, and type
+    /// emission ignores it.
+    pub(crate) example_default: bool,
 }
 
 /// Return `ident` unchanged the first time it is seen, or a `_{n}`-suffixed
@@ -2082,11 +2075,11 @@ fn build_enum(
                 visit_param,
                 value,
                 docstring,
+                example_default: false,
             })
         })
         .collect();
     EnumType {
-        example_selection: None,
         name: name.to_string(),
         module: naming::module_name(name),
         members,
@@ -21583,13 +21576,24 @@ mod tests {
         assert_eq!(enumeration.example_member().unwrap().value, "recording");
         assert!(!enumeration.select_example_member("absent"));
         assert_eq!(enumeration.example_member().unwrap().value, "recording");
+        // The selection is the member itself: it follows an edit to that member,
+        // a new selection replaces it, and removing the member leaves the
+        // declaration's first member as the uncorrected default.
         enumeration.members[1].value = "changed".into();
-        assert!(enumeration.example_member().is_none());
-        assert!(!enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "changed");
+        assert!(enumeration.select_example_member("preparation"));
+        assert_eq!(
+            enumeration
+                .members
+                .iter()
+                .filter(|member| member.example_default)
+                .count(),
+            1
+        );
         assert!(enumeration.select_example_member("changed"));
         enumeration.members.pop();
-        assert!(enumeration.example_member().is_none());
         assert!(!enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "preparation");
         let empty = build_enum(&source, "Empty", Vec::new(), None);
         assert!(empty.example_member().is_none());
     }

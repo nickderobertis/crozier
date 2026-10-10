@@ -13315,7 +13315,6 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Enum(EnumType {
-                example_selection: None,
                 name: "Color".to_string(),
                 module: "color".to_string(),
                 members: vec![EnumMember {
@@ -13323,6 +13322,7 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
+                    example_default: false,
                 }],
                 docstring: None,
             }),
@@ -13457,7 +13457,6 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Enum(EnumType {
-                example_selection: None,
                 name: "Color".to_string(),
                 module: "color".to_string(),
                 members: vec![EnumMember {
@@ -13465,6 +13464,7 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
+                    example_default: false,
                 }],
                 docstring: None,
             }),
@@ -13745,7 +13745,6 @@ mod tests {
             docstring: None,
         });
         let kind = TypeDecl::Enum(EnumType {
-            example_selection: None,
             name: "Kind".to_string(),
             module: "kind".to_string(),
             members: vec![EnumMember {
@@ -13753,6 +13752,7 @@ mod tests {
                 value: "alpha".to_string(),
                 visit_param: "alpha".to_string(),
                 docstring: None,
+                example_default: false,
             }],
             docstring: None,
         });
@@ -13987,7 +13987,6 @@ mod tests {
             docstring: None,
         });
         let empty_enum = TypeDecl::Enum(EnumType {
-            example_selection: None,
             name: "EmptyEnum".to_string(),
             module: "empty_enum".to_string(),
             members: Vec::new(),
@@ -14777,7 +14776,6 @@ mod tests {
         let enum_output = render_enum(
             &environment(),
             &EnumType {
-                example_selection: None,
                 name: "State".to_string(),
                 module: "state".to_string(),
                 members: vec![EnumMember {
@@ -14785,6 +14783,7 @@ mod tests {
                     visit_param: "ready".to_string(),
                     value: "ready\"now".to_string(),
                     docstring: Some("Ready member.".to_string()),
+                    example_default: false,
                 }],
                 docstring: Some("State enum.".to_string()),
             },
