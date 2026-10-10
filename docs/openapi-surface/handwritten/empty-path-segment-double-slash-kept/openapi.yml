@@ -1,0 +1,23 @@
+openapi: 3.0.3
+info:
+  title: Airfield Hangars
+  version: 1.0.0
+paths:
+  /hangars/{hangarId}//bays/{bayId}:
+    delete:
+      operationId: clearBay
+      tags: [bays]
+      parameters:
+        - name: hangarId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: bayId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The bay was cleared.

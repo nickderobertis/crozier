@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "efcd11d13a7472a48f39038bf6c45dad2283a42392b223d13f35182a924d132f"
+
+[[covers]]
+key = "literal-enum-value-quote-escaping"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

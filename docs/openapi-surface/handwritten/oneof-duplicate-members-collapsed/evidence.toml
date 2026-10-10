@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "3a6a6885257eb77175f0cd9f60f8f8cf4997eeb646aa9c4db1cc2bdc5287ccce"
+
+[[covers]]
+key = "oneof-duplicate-members-collapsed"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

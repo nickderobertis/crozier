@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Thermostat Rules
+  version: 1.0.0
+paths:
+  /rules:
+    post:
+      operationId: addRule
+      tags: [rules]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [relation, threshold]
+              properties:
+                relation:
+                  $ref: "#/components/schemas/Relation"
+                threshold:
+                  type: number
+      responses:
+        "204":
+          description: The rule was added.
+components:
+  schemas:
+    Relation:
+      type: string
+      description: How a reading is weighed against the threshold.
+      enum: ["<", "!="]
+      x-fern-enum:
+        "<":
+          name: Below
+          description: The reading is under the threshold.
+        "!=":
+          name: Differs
+          description: The reading is anything but the threshold.

@@ -1654,3 +1654,19 @@ docstring example whose `response = ` assignment overflows width 80 is
 parenthesized as Fern's snippet formatter lays it out; and `reference.md` heads
 each stream with the iterator its method returns (the
 `stream-reference-return-type` departure).
+
+## Row 2400 — an optional one-value enum part of a multipart body
+
+The converter's `convert` operation posts a `multipart/form-data`
+body whose `validate` part is an optional string enum of one value. Fern keeps
+it an optional argument defaulting to `OMIT` rather than a constant, and
+crozier generates the same. The witness search that found it is
+[`witness-search-prove-matches`](../../docs/openapi-surface/witness-search-prove-matches/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2400 | `mermade-openapi-converter` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/mermade.org.uk/openapi-converter/1.0.0/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | MIT (`info.license`, inside the aggregating repository's own CC0-1.0 `LICENSE`) | committed | Mike Ralphson's Swagger2OpenAPI converter (`info.x-origin` records the publisher's own `Mermade/openapi-webconverter` contract), whose `multipart/form-data` bodies carry an optional one-value string enum part, `validate: [on]` |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2400 | `mermade-openapi-converter` | `multipart-single-value-enum-part-kept-optional` | ✅ byte-matched with no repair of its own |

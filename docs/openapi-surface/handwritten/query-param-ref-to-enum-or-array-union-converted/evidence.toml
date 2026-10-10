@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "74b8e77c20a95a34cdb8d7a479536e785daff532a99624671a3f72a1fda2c2dc"
+
+[[covers]]
+key = "query-param-ref-to-enum-or-array-union-converted"
+search = "docs/openapi-surface/witness-search-prove-matches/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-prove-matches/README.md"

@@ -1,0 +1,24 @@
+openapi: 3.0.3
+info:
+  title: Ferry Timetable
+  version: 1.0.0
+paths:
+  /sailings:
+    get:
+      operationId: listSailings
+      tags: [sailings]
+      parameters:
+        - name: sea
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/SeaState"
+      responses:
+        "204":
+          description: The sailings were listed.
+components:
+  schemas:
+    SeaState:
+      type: string
+      description: How rough the crossing is expected to be.
+      enum: [calm, choppy]

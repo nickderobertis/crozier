@@ -1,0 +1,53 @@
+openapi: 3.0.3
+info:
+  title: Dam Inspection
+  version: 1.0.0
+paths:
+  /dams/{damId}/wall:
+    get:
+      operationId: fetchWall
+      tags: [dams]
+      parameters:
+        - name: damId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The dam wall.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wall"
+components:
+  schemas:
+    Inspected:
+      type: object
+      required: [inspector]
+      properties:
+        inspector:
+          type: string
+    Gravity:
+      type: object
+      required: [baseM]
+      properties:
+        baseM:
+          type: number
+      allOf:
+        - $ref: "#/components/schemas/Inspected"
+    Embankment:
+      type: object
+      required: [inspector]
+      properties:
+        inspector:
+          type: string
+    Wall:
+      oneOf:
+        - $ref: "#/components/schemas/Gravity"
+        - $ref: "#/components/schemas/Embankment"
+      discriminator:
+        propertyName: build
+        mapping:
+          gravity: "#/components/schemas/Gravity"
+          embankment: "#/components/schemas/Embankment"
