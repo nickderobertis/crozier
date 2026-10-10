@@ -125,6 +125,7 @@ extension not listed here does not change crozier's output.
 | `x-fern-ignore` | `x-crozier-ignore` | operation, component schema, parameter | Leaves the node out of the SDK. |
 | `x-fern-sdk-group-name` | `x-crozier-sdk-group-name` | operation, component schema | On an operation, the sub-client the method belongs to (a list nests it), honoured only beside a method name; on a component, the package its type is written into. |
 | `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | operation | The method's name. A sequence of strings is read joined by `,`, as Fern reads it (`[fetch]` is `fetch`). |
+| `x-fern-sdk-method-name` | `x-crozier-sdk-method-name` | request-body media | Each named representation generates its own method; the crozier spelling wins on that media node. |
 | `x-fern-pagination` | `x-crozier-pagination` | operation | Returns a pager over the response's items. |
 | `x-fern-streaming` | `x-crozier-streaming` | operation | Streams the response; a `stream-condition` splits the method in two. |
 | `x-fern-enum` | `x-crozier-enum` | string enum schema | The member name for each value. |

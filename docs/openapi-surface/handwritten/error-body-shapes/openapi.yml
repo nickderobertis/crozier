@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Reservation Journal
+  version: 1.0.0
+paths:
+  /reservations:
+    get:
+      operationId: readReservations
+      responses:
+        '204':
+          description: Available
+        '400':
+          description: Invalid reservation
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/BadRequestError'
+                  - $ref: '#/components/schemas/CorruptReservation'
+                discriminator:
+                  propertyName: category
+                  mapping:
+                    occupied: '#/components/schemas/BadRequestError'
+                    corrupt: '#/components/schemas/CorruptReservation'
+        '403':
+          description: Access denied
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthorizationIssue'
+        '409':
+          description: Reservation conflict
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required: [state, context]
+                    properties:
+                      state:
+                        type: string
+                        enum: [scheduled, active]
+                      context:
+                        $ref: '#/components/schemas/JournalContext'
+components:
+  schemas:
+    JournalProblem:
+      type: object
+      required: [category, message]
+      properties:
+        category:
+          type: string
+        message:
+          type: string
+    BadRequestError:
+      description: The reservation is already occupied.
+      allOf:
+        - $ref: '#/components/schemas/JournalProblem'
+        - type: object
+          required: [category]
+          properties:
+            category:
+              type: string
+              enum: [occupied]
+    CorruptReservation:
+      description: The reservation contents are corrupt.
+      allOf:
+        - $ref: '#/components/schemas/JournalProblem'
+        - type: object
+          required: [category]
+          properties:
+            category:
+              type: string
+              enum: [corrupt]
+    AuthorizationIssue:
+      allOf:
+        - $ref: '#/components/schemas/JournalProblem'
+        - type: object
+          properties:
+            permission:
+              type: string
+    JournalContext:
+      type: object
+      required: [journal]
+      properties:
+        journal:
+          type: string
