@@ -1743,6 +1743,8 @@ DOCUMENT_COMPARING_PREDICATES = (
     "schema.anyOf:discriminated-union",
     "schema.discriminator:inheritance-union",
     "parameter.schema:subset-header-string-default",
+    "parameter.schema:promoted-date-header",
+    "parameter.schema:single-required-header",
     "operation.operationId:digit-leading-method",
     "operation.responses:wildcard-binary",
     "parameter.example:non-scalar-query",
@@ -1793,6 +1795,9 @@ DOCUMENT_COMPARING_PREDICATES = (
     "schema.x-fern-type-name:inline-property",
     "openapi.webhooks:inline-json-body-named",
     "operation.x-fern-webhook:true",
+    "parameter.schema:nullable-array-items-oas-three-zero",
+    "parameter.schema:required-nullable-scalar-oas-three-zero",
+    "operation.parameters:path-order-oas-three-one",
 )
 
 # The closed list of *conjunction* selectors, the fourth kind — a shape that is a
