@@ -40,6 +40,7 @@ import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -369,6 +370,195 @@ class ReportTests(unittest.TestCase):
         run = self.run_report("--write")
         self.assertNotEqual(0, run.returncode)
         self.assertIn("flag-set.md: states no one verdict for `src/demo.rs::handles[\\} else \\{]`", run.stderr)
+
+    # `flag-set`'s one unreached arm in the ledger `report --write` takes off the demo measurement.
+    FLAG_SET_ARM = "src/demo.rs::handles[\\} else \\{]"
+
+    def run_arms(self) -> subprocess.CompletedProcess[str]:
+        """`golden-reach.py arms` over the scratch repository, after `report --write` gives it a ledger."""
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--repo-root", str(self.repo), "arms"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+        )
+
+    def arms_index(self, text: str | None = None) -> Path:
+        """The scratch coverage index: one arm-count and one arm-table section, or `text`."""
+        index = self.repo / "docs" / "openapi-surface-coverage.md"
+        index.write_text(
+            text
+            if text is not None
+            else f"# Index\n\n{golden_reach.ARM_COUNTS_BEGIN}\n{golden_reach.ARM_COUNTS_END}\n\n"
+            f"{golden_reach.ARM_TABLE_BEGIN}\n{golden_reach.ARM_TABLE_END}\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        return index
+
+    def gated_record(self, gate_verdict: str = "config-gated") -> None:
+        """`flag-set`'s `config-gated` record: a gate table stating `gate_verdict` for the key."""
+        records = self.repo / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
+        records.mkdir(parents=True, exist_ok=True)
+        (records / "flag-set.md").write_text(
+            f"# Arm search: `flag-set`\n\n{golden_reach.CONFIG_GATE_HEADING}\n\n"
+            "| key | setting | gate | verdict |\n|---|---|---|---|\n"
+            f"| `flag-set` | `audiences` | `src/demo.rs::gate` | `{gate_verdict}` |\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+
+    def measurements(self, gates: list[str], reach: list[str]) -> None:
+        """The two `just handwritten-reach` ledgers, header first, each row given verbatim."""
+        regions = self.repo / "docs" / "openapi-surface"
+        (regions / "handwritten-config-gates.tsv").write_text(
+            "\n".join(["\t".join(golden_reach.GATE_COLUMNS), *gates]) + "\n", encoding="utf-8", newline="\n"
+        )
+        (regions / "handwritten-reach.tsv").write_text(
+            "\n".join(["\t".join(golden_reach.REACH_COLUMNS), *reach]) + "\n", encoding="utf-8", newline="\n"
+        )
+
+    def cover(self, fixture: str, verdict: str, *, audiences: bool = False, arm: str | None = None) -> None:
+        """A hand-written fixture whose `evidence.toml` covers `flag-set`'s arm with `verdict`."""
+        directory = self.repo / "docs" / "openapi-surface" / "handwritten" / fixture
+        directory.mkdir(parents=True, exist_ok=True)
+        spelled = (self.FLAG_SET_ARM if arm is None else arm).replace("'", "\\'")
+        (directory / "evidence.toml").write_text(
+            ('audiences = ["public"]\n\n' if audiences else "")
+            + f'[[covers]]\nkey = "flag-set"\narm = \'{spelled}\'\nverdict = "{verdict}"\n',
+            encoding="utf-8",
+            newline="\n",
+        )
+
+    def arms_table(self) -> str:
+        return (self.repo / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
+
+    def test_arms_restates_both_sections_and_then_reports_them_unchanged(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        run = self.run_arms()
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertEqual("golden-reach: arm sections restated\n", run.stdout)
+        self.assertIn(f"| 2 | `flag-set` | `{self.FLAG_SET_ARM}` | 1 | `not searched`", self.arms_table())
+        self.assertIn("2 unreached arms in all", self.arms_table())
+        again = self.run_arms()
+        self.assertEqual("golden-reach: arm sections unchanged\n", again.stdout)
+
+    def test_arms_refuses_an_index_whose_markers_are_missing_repeated_or_reversed(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        counts = f"{golden_reach.ARM_COUNTS_BEGIN}\n{golden_reach.ARM_COUNTS_END}\n"
+        table = f"{golden_reach.ARM_TABLE_BEGIN}\n{golden_reach.ARM_TABLE_END}\n"
+        broken = {
+            "missing": f"# Index\n\n{table}",
+            "repeated": f"# Index\n\n{counts}{counts}{table}",
+            "reversed": f"# Index\n\n{golden_reach.ARM_COUNTS_END}\n{golden_reach.ARM_COUNTS_BEGIN}\n{table}",
+        }
+        for case, text in broken.items():
+            with self.subTest(case=case):
+                index = self.arms_index(text)
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn("carries no single", run.stderr)
+                self.assertIn("restore the markers, then re-run", run.stderr)
+                self.assertEqual(text, index.read_text(encoding="utf-8"), "a refused run rewrote the index")
+
+    def test_arms_refuses_a_malformed_cover_declaration(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        directory = self.repo / "docs" / "openapi-surface" / "handwritten" / "bad-cover"
+        directory.mkdir(parents=True)
+        evidence = directory / "evidence.toml"
+        cases = {
+            "audiences-not-an-array": ('audiences = "public"\n', "`audiences` must be an array"),
+            "covers-not-an-array": ('covers = "flag-set"\n', "`audiences` must be an array"),
+            "cover-without-key": ('[[covers]]\nverdict = "exhausted"\n', "every cover needs a non-empty string"),
+            "empty-arm": ('[[covers]]\nkey = "flag-set"\narm = ""\nverdict = "exhausted"\n', "a non-empty `arm`"),
+            "unknown-verdict": ('[[covers]]\nkey = "flag-set"\nverdict = "abandoned"\n', "the verdict 'abandoned'"),
+        }
+        for case, (text, message) in cases.items():
+            with self.subTest(case=case):
+                evidence.write_text(text, encoding="utf-8", newline="\n")
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(str(evidence), run.stderr)
+                self.assertIn(message, run.stderr)
+
+    def test_arms_refuses_a_measurement_ledger_that_is_not_its_columns(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        self.gated_record()
+        site = self.FLAG_SET_ARM
+        cases = {
+            "wrong-header": (["fixture\tkey\tsite"], "does not start with the columns"),
+            "short-row": ([f"fx\tflag-set\t{site}\t-\t1"], "is not 6 filled cells"),
+            "empty-cell": ([f"fx\tflag-set\t{site}\t\t1\t1"], "is not 6 filled cells"),
+            "fractional-count": ([f"fx\tflag-set\t{site}\t-\t1.5\t2"], "is not 6 filled cells"),
+        }
+        gates = self.repo / "docs" / "openapi-surface" / "handwritten-config-gates.tsv"
+        for case, (rows, message) in cases.items():
+            with self.subTest(case=case):
+                self.measurements([], [])
+                if case == "wrong-header":
+                    gates.write_text(rows[0] + "\n", encoding="utf-8", newline="\n")
+                else:
+                    self.measurements(rows, [])
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(message, run.stderr)
+                self.assertIn("re-run `just handwritten-reach`", run.stderr)
+
+    def test_a_config_gated_arm_the_gate_measures_reads_the_gate_tables_verdict(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        self.gated_record()
+        self.measurements(
+            [
+                f"fx\tflag-set\t{self.FLAG_SET_ARM}\t-\t0\t1",
+                f"fx\tflag-set\t{self.FLAG_SET_ARM}\taudiences=public\t1\t1",
+            ],
+            [],
+        )
+        run = self.run_arms()
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn(f"| 2 | `flag-set` | `{self.FLAG_SET_ARM}` | 1 | `config-gated` |", self.arms_table())
+
+    def test_a_later_arm_of_a_gated_key_reads_its_settingless_executed_covers_verdict(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        self.arms_index()
+        self.gated_record()
+        self.cover("plain-fixture", "search-incomplete")
+        self.measurements([], [f"plain-fixture\tflag-set\t{self.FLAG_SET_ARM}\t1\t1"])
+        run = self.run_arms()
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn(
+            f"| 2 | `flag-set` | `{self.FLAG_SET_ARM}` | 1 | `search-incomplete` | `plain-fixture` |", self.arms_table()
+        )
+
+    def test_a_later_arm_of_a_gated_key_without_one_measured_settingless_verdict_is_refused(self) -> None:
+        self.assertEqual(0, self.run_report("--write").returncode)
+        executed = f"\tflag-set\t{self.FLAG_SET_ARM}\t1\t1"
+        cases = {
+            # The only cover declares a setting, so its run proves nothing ungated.
+            "set-up-cover": ([("set-up", "exhausted", True)], [f"set-up{executed}"]),
+            # The settingless cover's fixture never executes the arm.
+            "not-executed": ([("plain", "exhausted", False)], [f"plain\tflag-set\t{self.FLAG_SET_ARM}\t0\t1"]),
+            # Two settingless covers execute it, citing different verdicts.
+            "conflicting": (
+                [("plain", "exhausted", False), ("other", "search-incomplete", False)],
+                [f"plain{executed}", f"other{executed}"],
+            ),
+        }
+        for case, (covers, reach) in cases.items():
+            with self.subTest(case=case):
+                shutil.rmtree(self.repo / "docs" / "openapi-surface" / "handwritten", ignore_errors=True)
+                self.arms_index()
+                self.gated_record()
+                for fixture, verdict, audiences in covers:
+                    self.cover(fixture, verdict, audiences=audiences)
+                self.measurements([], reach)
+                run = self.run_arms()
+                self.assertNotEqual(0, run.returncode)
+                self.assertIn(f"flag-set.md: states no one verdict for `{self.FLAG_SET_ARM}`", run.stderr)
 
     def test_report_restates_the_coverage_index_arm_sections_from_the_ledger_it_writes(self) -> None:
         index = self.repo / "docs" / "openapi-surface-coverage.md"
