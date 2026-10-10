@@ -2347,11 +2347,16 @@ fn stream_reference_return_type(pair: &Pair<'_>, fern: &str, crozier: &str) -> b
     let Some((method, _)) = rest.split_once("</a>") else {
         return false;
     };
-    // `reference.md` links the packaged module (`src/<package>/…`); crozier's
-    // tree holds it at the same relative path.
-    pair.context
-        .crozier_method_returns()
-        .get(&(path.to_string(), method.to_string()))
+    // `reference.md` links the packaged module (`src/<package>/…`) in either
+    // layout; a packaged tree holds it at that path, a flat tree at the root.
+    let returns = pair.context.crozier_method_returns();
+    let declared = |path: &str| returns.get(&(path.to_string(), method.to_string()));
+    declared(path)
+        .or_else(|| {
+            path.strip_prefix("src/")
+                .and_then(|packaged| packaged.split_once('/'))
+                .and_then(|(_, flat)| declared(flat))
+        })
         .is_some_and(|declared| declared.replace("dt.", "datetime.") == annotation)
 }
 
@@ -3474,6 +3479,22 @@ mod tests {
             &readme,
             &fern,
             &heading("watch", "typing.Iterator[Tick]")
+        ));
+        // A flat tree holds the linked `src/<package>/` module at its root.
+        let flat = Context::from_sources([("client.py", client)], [("client.py", client)]);
+        let flat = Pair {
+            context: &flat,
+            ..pair
+        };
+        assert!(stream_reference_return_type(
+            &flat,
+            &fern,
+            &heading("watch", "typing.Iterator[Tick]")
+        ));
+        assert!(!stream_reference_return_type(
+            &flat,
+            &fern,
+            &heading("watch", "typing.Iterator[Other]")
         ));
         // A file compared on its own has no tree to read the method from.
         let alone = Context::default();

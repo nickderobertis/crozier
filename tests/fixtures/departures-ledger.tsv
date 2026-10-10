@@ -299,6 +299,7 @@ docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/vineyard-cellar-glossary-literals/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	reference.md	50	stream-reference-return-type
 docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
@@ -3176,6 +3177,8 @@ tests/fixtures/truefoundry-trueforge/expected-flat	README.md	16	flat-pagination-
 tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/truefoundry-trueforge/expected-flat	core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/truefoundry-trueforge/expected-flat	reference.md	2113	stream-reference-return-type
+tests/fixtures/truefoundry-trueforge/expected-flat	reference.md	2589	stream-reference-return-type
 tests/fixtures/truefoundry-trueforge/expected-flat	types/__init__.py	126	init-type-checking-import-order
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/twilio.com-twilio_messaging_v1/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
