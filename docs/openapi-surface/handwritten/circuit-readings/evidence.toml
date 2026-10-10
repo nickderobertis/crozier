@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "db2908781420a83c7bfec8d339a30917b8bb788a68ad0f44329e6d7b2a5aae4e"
+
+[[covers]]
+key = "allof-base-in-cycle-imported-after-class"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

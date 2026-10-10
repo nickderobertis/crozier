@@ -1,0 +1,16 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "8e36e90fdf1b4577949f304b9b4e2d40e8f1e2010e23957d551c6ca4f13a6aac"
+
+[[covers]]
+key = "allof-extends-oneof-object-refused"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -894,6 +894,9 @@ pub struct EnumValueName {
     /// The member name (`USD` for the value `$`).
     #[serde(default)]
     pub name: Option<String>,
+    /// The member documentation, emitted after its Python enum assignment.
+    #[serde(default)]
+    pub description: Option<String>,
 }
 
 /// The value of `x-crozier-pagination` / `x-fern-pagination`: the response and
@@ -1242,6 +1245,25 @@ pub struct Components {
     pub security_schemes: IndexMap<String, SecurityScheme>,
 }
 
+/// Supported Boolean literal overrides, with unknown spellings kept as overrides.
+#[derive(Debug, Clone, Deserialize)]
+#[serde(from = "String")]
+pub(crate) enum LiteralTypeOverride {
+    True,
+    False,
+    Unsupported,
+}
+
+impl From<String> for LiteralTypeOverride {
+    fn from(value: String) -> Self {
+        match value.as_str() {
+            "literal<true>" => Self::True,
+            "literal<false>" => Self::False,
+            _ => Self::Unsupported,
+        }
+    }
+}
+
 /// A JSON-Schema-ish node. A node is either a `$ref` (when [`Schema::reference`]
 /// is set) or an inline schema described by the remaining fields.
 #[derive(Debug, Default, Clone, Deserialize)]
@@ -1259,6 +1281,12 @@ pub struct Schema {
     /// Format qualifier (`date-time`, `uuid`, `base64`, ...).
     #[serde(default)]
     pub format: Option<String>,
+    /// Boolean literal type override; the crozier spelling is canonical.
+    #[serde(rename = "x-crozier-type", default)]
+    pub(crate) type_crozier: Option<LiteralTypeOverride>,
+    /// Fern-compatible spelling of the literal override.
+    #[serde(rename = "x-fern-type", default)]
+    pub(crate) type_fern: Option<LiteralTypeOverride>,
     /// The 3.1 `contentMediaType` of a string's content: `application/octet-stream`
     /// is how a 3.1 document spells a binary string that 3.0 spells `format: binary`.
     #[serde(rename = "contentMediaType", default)]
@@ -1310,6 +1338,9 @@ pub struct Schema {
     /// `allOf` members.
     #[serde(rename = "allOf", default, deserialize_with = "de_composition")]
     pub all_of: Option<Vec<Schema>>,
+    /// A negative-only union branch does not redeclare a positive property.
+    #[serde(rename = "not", default)]
+    pub(crate) not_schema: Option<serde_json::Value>,
     /// Human description; becomes a docstring.
     #[serde(default)]
     pub description: Option<String>,
@@ -1349,6 +1380,9 @@ pub struct Schema {
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
     pub nullable: Option<bool>,
+    /// Nullability inherited from the reference target, distinct from ignored siblings.
+    #[serde(skip)]
+    pub(crate) reference_nullable: bool,
     /// `deprecated: true`. Fern's worked examples leave out an optional property
     /// whose own schema is marked deprecated. Read leniently: any value but the
     /// boolean `true` is no mark, so a document spelling it otherwise still loads.
@@ -1443,9 +1477,38 @@ pub struct Schema {
     /// the origin has to outlive the rewrite.
     #[serde(skip)]
     pub unresolved_reference: bool,
+    /// Set when `normalize_empty_compositions` discarded a non-empty composition
+    /// from this scalar-typed node. Not a wire field. Fern generates the plain
+    /// type too, but a constraint inside the composition still binds the value,
+    /// so a correction that cannot see it must decline.
+    #[serde(skip)]
+    pub(crate) discarded_composition: bool,
+    /// Whether the node declares an applicator crozier never reads — `if`, or a
+    /// `$dynamicRef`/`$recursiveRef` — which can still constrain an instance.
+    /// Only their presence is kept, so a correction that validates a value
+    /// against this node declines rather than ignore them.
+    #[serde(rename = "if", default, deserialize_with = "de_present")]
+    pub(crate) conditional: bool,
+    #[serde(rename = "$dynamicRef", default, deserialize_with = "de_present")]
+    pub(crate) dynamic_ref: bool,
+    #[serde(rename = "$recursiveRef", default, deserialize_with = "de_present")]
+    pub(crate) recursive_ref: bool,
+}
+
+/// Record only that a keyword is present, whatever its value.
+fn de_present<'de, D: serde::Deserializer<'de>>(
+    deserializer: D,
+) -> std::result::Result<bool, D::Error> {
+    IgnoredAny::deserialize(deserializer).map(|_| true)
 }
 
 impl Schema {
+    /// Whether this node declares an applicator crozier drops at load
+    /// (`if`, `$dynamicRef`, `$recursiveRef`).
+    pub(crate) fn drops_applicator(&self) -> bool {
+        self.conditional || self.dynamic_ref || self.recursive_ref
+    }
+
     /// Whether this component schema is marked ignored and must not be emitted. The
     /// `x-crozier-ignore` flag is canonical: an explicit `false` keeps the schema
     /// even when `x-fern-ignore: true` is present (see the [dual-header
@@ -1453,6 +1516,24 @@ impl Schema {
     #[must_use]
     pub fn ignored(&self) -> bool {
         self.ignore_crozier.or(self.ignore_fern).unwrap_or(false)
+    }
+
+    /// The empty negative schema used to exclude a sibling union branch's field.
+    pub(crate) fn negative_only(&self) -> bool {
+        self.not_schema
+            .as_ref()
+            .and_then(serde_json::Value::as_object)
+            .is_some_and(serde_json::Map::is_empty)
+            && self.reference.is_none()
+            && self.ty.is_none()
+            && self.properties.is_empty()
+            && self.items.is_none()
+            && self.additional_properties.is_none()
+            && self.enum_values.is_none()
+            && self.const_value.is_none()
+            && self.all_of.is_none()
+            && self.one_of.is_none()
+            && self.any_of.is_none()
     }
 
     /// The declared Python name of the property this node is the value of,
@@ -1480,6 +1561,25 @@ impl Schema {
             .flatten()
             .map(String::as_str)
             .find(|name| !name.trim().is_empty())
+    }
+
+    /// A Boolean literal override; the canonical header wins even when unsupported.
+    pub(crate) fn bool_literal(&self) -> Option<bool> {
+        match self.type_crozier.as_ref().or(self.type_fern.as_ref())? {
+            LiteralTypeOverride::True => Some(true),
+            LiteralTypeOverride::False => Some(false),
+            LiteralTypeOverride::Unsupported => None,
+        }
+    }
+
+    /// Per-value docs read the same canonical extension map as member names.
+    pub(crate) fn enum_member_description(&self, value: &str) -> Option<&str> {
+        self.enum_names_crozier
+            .as_ref()
+            .or(self.enum_names_fern.as_ref())?
+            .get(value)?
+            .description
+            .as_deref()
     }
 
     /// The declared Python member name for each enum value, canonicalizing on the
@@ -2121,6 +2221,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_declared_type_names(&mut doc);
+    normalize_component_response_schema_refs(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
@@ -2356,9 +2457,70 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
                 node.ty.as_ref().and_then(TypeField::primary),
                 Some("string" | "integer" | "number" | "boolean")
             ) {
+                node.discarded_composition |= [&node.one_of, &node.any_of, &node.all_of]
+                    .into_iter()
+                    .any(Option::is_some);
                 node.one_of = None;
                 node.any_of = None;
                 node.all_of = None;
+            }
+        });
+    });
+}
+
+/// Preserve the response component's identity when its inline media schema is
+/// referenced directly. Unreferenced response schemas remain response metadata.
+fn normalize_component_response_schema_refs(doc: &mut OpenApi) {
+    let mut references = std::collections::BTreeSet::new();
+    for_each_root_schema(doc, &mut |root| {
+        for_each_schema_in(root, &mut |schema| {
+            if let Some(reference) = &schema.reference {
+                if reference.starts_with("#/components/responses/") {
+                    references.insert(reference.clone());
+                }
+            }
+        });
+    });
+    let mut replacements = IndexMap::new();
+    for reference in references {
+        let segments: Vec<_> = reference.split('/').collect();
+        if segments.len() != 7 || segments[4] != "content" || segments[6] != "schema" {
+            continue;
+        }
+        let decode = |value: &str| value.replace("~1", "/").replace("~0", "~");
+        let name = decode(segments[3]);
+        let Some(schema) = doc
+            .components
+            .responses
+            .get(&name)
+            .and_then(|response| response.content.get(&decode(segments[5])))
+            .and_then(|media| media.schema.as_ref())
+            .filter(|schema| {
+                schema.reference.is_none()
+                    && (schema.ty.as_ref().and_then(TypeField::primary) == Some("object")
+                        || !schema.properties.is_empty())
+            })
+            .cloned()
+        else {
+            continue;
+        };
+        // An existing schema owns the shared component identity.
+        if !doc.components.schemas.contains_key(&name) {
+            doc.components.schemas.insert(name.clone(), schema);
+        }
+        replacements.insert(
+            reference,
+            format!("#/components/schemas/{}", json_pointer_segment(&name)),
+        );
+    }
+    for_each_root_schema(doc, &mut |root| {
+        for_each_schema_in(root, &mut |schema| {
+            if let Some(replacement) = schema
+                .reference
+                .as_ref()
+                .and_then(|reference| replacements.get(reference))
+            {
+                schema.reference = Some(replacement.clone());
             }
         });
     });
@@ -2862,6 +3024,7 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
                 .is_some_and(|name| nullable.contains(name));
             if names {
                 node.nullable = Some(true);
+                node.reference_nullable = true;
             }
         });
     });
@@ -3566,6 +3729,23 @@ pub fn filter_ignored(doc: &mut OpenApi) {
     for key in &ignored_schemas {
         doc.components.schemas.shift_remove(key);
     }
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let ignored: std::collections::HashSet<String> = node
+                .properties
+                .iter()
+                .filter(|(_, property)| property.ignored())
+                .map(|(name, _)| name.clone())
+                .collect();
+            node.properties.retain(|name, _| !ignored.contains(name));
+            // Keep requirements inherited through composition; remove only
+            // ignored declarations. The public pipeline control is
+            // tests/generation.rs::property_metadata_survives_the_public_generation_pipeline.
+            if let RequiredNames::Listed(names) = &mut node.required {
+                names.retain(|name| !ignored.contains(name));
+            }
+        });
+    });
 }
 
 /// Seed a schema-closure walk with every `#/components/schemas/*` key the given

@@ -1,0 +1,13 @@
+openapi: 3.0.3
+info: {title: Library Model Definitions, version: 1.0.0}
+paths: {}
+components:
+  schemas:
+    Catalogue:
+      type: object
+      properties:
+        curator: {$ref: '#/components/schemas/Curator'}
+    Curator:
+      type: object
+      properties:
+        initials: {type: string}

@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Weave'
+components:
+  schemas:
+    Weave:
+      oneOf:
+      - type: object
+        properties:
+          kind:
+            type: string
+            enum:
+            - joined
+          threads:
+            $ref: '#/components/schemas/Thread'
+      - type: object
+        properties:
+          kind:
+            type: string
+            enum:
+            - loose
+          length:
+            type: integer
+      discriminator:
+        propertyName: kind
+    Thread:
+      oneOf:
+      - type: object
+        properties:
+          kind:
+            type: string
+            enum:
+            - woven
+          weave:
+            $ref: '#/components/schemas/Weave'
+      - type: object
+        properties:
+          kind:
+            type: string
+            enum:
+            - plain
+          color:
+            type: string
+      discriminator:
+        propertyName: kind

@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Records Office
+  version: 2.1.0
+paths:
+  /dossiers:
+    post:
+      operationId: file_dossier
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Dossier'
+      responses:
+        '204':
+          description: Filed
+components:
+  schemas:
+    DossierStatus:
+      type: string
+      description: Lifecycle status of a dossier.
+      enum:
+      - draft
+      - sealed
+      allOf:
+      - maxLength: 5
+    Dossier:
+      type: object
+      required:
+      - reference
+      - standing
+      properties:
+        reference:
+          type: string
+        standing:
+          allOf:
+          - $ref: '#/components/schemas/DossierStatus'
+          - type: string
+            pattern: ^(?!draft$).*$
+            description: A filed dossier is never a draft.

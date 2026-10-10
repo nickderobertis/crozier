@@ -1,0 +1,17 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "b4f9238f6a52031e33069ee949a0b103c6c88578fc12ad879cd8270001b1e2d8"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composed-narrowing-constraints"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "enum"
+arm = 'src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composed-narrowing-constraints"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -739,6 +739,22 @@ def load_script(path: str):
     return module
 
 
+_RUST_SPAN_REPORT = load_script("tools/surface-census/fixtures-coverage-report.py")
+
+
+def rust_function_body(lines: list[str], name: str) -> list[str]:
+    """Bound one Rust function with the coverage scanner's literal-aware lexer."""
+    start = next(
+        (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
+    )
+    if start is None:
+        raise AssertionError(f"source declares no fn {name}")
+    end = _RUST_SPAN_REPORT._item_end_line(lines, start - 1)
+    if end is None:
+        raise AssertionError(f"cannot bound fn {name}; check its Rust syntax")
+    return lines[start:end]
+
+
 def handwritten_covers(base: Path = HANDWRITTEN) -> list[tuple[str, str, str | None]]:
     """`(fixture, key, arm or None)` for every cover a hand-written fixture declares.
 
@@ -1299,15 +1315,20 @@ def completeness_failures(
             continue
         elif record is None and category == "handwritten":
             gate = load_script("tools/surface-census/handwritten-fixtures.py")
-            validated = gate.gate(root)
-            covers = []
-            for name in validated["fixtures"]:
-                fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
-                if fixture is not None:
-                    covers.extend(cover for cover in fixture.covers if cover.key == key and cover.arm is None)
-            if covers and not validated["failures"]:
+            if gate.E2E_EVIDENCE_CELL.match(cells[4]):
+                keys, cover_failures = gate.e2e_cover_failures(root, gate.region_rows(root))
+                covered = key in keys
+            else:
+                validated = gate.gate(root)
+                covered = False
+                for name in validated["fixtures"]:
+                    fixture, _found = gate.read_evidence(root / gate.HANDWRITTEN / name)
+                    if fixture is not None:
+                        covered |= any(cover.key == key and cover.arm is None for cover in fixture.covers)
+                cover_failures = validated["failures"]
+            if covered and not cover_failures:
                 continue
-            failures.extend(validated["failures"])
+            failures.extend(cover_failures)
             failures.append(
                 f"{key} ({region}.md, `{category}`): lacks both halves — no validated hand-written fixture "
                 "cover and its cited bounded search"
@@ -2611,19 +2632,7 @@ class GrammarContractTests(unittest.TestCase):
         body" the honesty check below has.
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
-        for index, line in enumerate(lines):
-            if not re.search(rf"\bfn {re.escape(name)}\s*[(<]", line):
-                continue
-            depth, started = 0, False
-            for cursor in range(index, len(lines)):
-                for char in lines[cursor]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                        if started and depth == 0:
-                            return lines[index : cursor + 1]
-        raise AssertionError(f"src/ir.rs declares no fn {name}")
+        return rust_function_body(lines, name)
 
     @classmethod
     def function_digest(cls, name: str) -> str:
@@ -2634,6 +2643,27 @@ class GrammarContractTests(unittest.TestCase):
             if line.strip() and not line.strip().startswith("//")
         ]
         return hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
+
+    def test_function_body_ignores_literal_and_comment_braces(self) -> None:
+        source = """fn held<'a>(value: &'a str) {
+    let text = "{";
+    let raw = r##"}"##;
+    let character = '{';
+    // { is not an opening brace.
+    /* { /* } */ { */
+}
+fn following() { let other = 42; }
+"""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "src").mkdir()
+            (root / "src/ir.rs").write_text(source, encoding="utf-8")
+            original = globals()["REPO"]
+            try:
+                globals()["REPO"] = root
+                self.assertEqual(source.splitlines()[:-1], self.function_body("held"))
+            finally:
+                globals()["REPO"] = original
 
     def test_the_case_table_and_the_case_analysis_carry_the_same_cases(self) -> None:
         """The two statements of one derivation, reconciled in both directions.
@@ -8559,7 +8589,7 @@ class RankedBacklogTests(unittest.TestCase):
         stated = re.search(r"(\w+) spec locations carry more than one row", flat)
         self.assertIsNotNone(stated, "the reconciliation no longer counts the shared locations")
         assert stated is not None
-        self.assertEqual(len(shared), {"Fifteen": 15}.get(stated.group(1)))
+        self.assertEqual(len(shared), {"Fifteen": 15, "Eighteen": 18}.get(stated.group(1)))
         named = 0
         for location, count in sorted(shared.items()):
             if f"`{location}`" not in flat:
@@ -12644,24 +12674,9 @@ class NamingMirrorTests(unittest.TestCase):
                 }
                 self.assertEqual(exceptions, census._ENUM_DEBURR_EXCEPTIONS)
             else:
-                start = next(
-                    (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)),
-                    None,
-                )
-                self.assertIsNotNone(start, f"src/naming.rs declares no fn {name}")
-                assert start is not None
-                depth, started = 0, False
-                for end in range(start, len(lines)):
-                    for char in lines[end]:
-                        if char == "{":
-                            depth, started = depth + 1, True
-                        elif char == "}":
-                            depth -= 1
-                    if started and depth == 0:
-                        break
                 kept = [
                     " ".join(line.split())
-                    for line in lines[start : end + 1]
+                    for line in rust_function_body(lines, name)
                     if line.strip() and not line.strip().startswith("//")
                 ]
                 actual = hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16]
@@ -12702,23 +12717,9 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.METHOD_NAME_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            assert start is not None
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
                 " ".join(line.split())
-                for line in lines[start : end + 1]
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12737,23 +12738,9 @@ class NamingMirrorTests(unittest.TestCase):
         """
         for (path, name), pinned in census.EXAMPLE_PORT_DIGESTS.items():
             lines = (REPO / path).read_text(encoding="utf-8").splitlines()
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"{path} declares no fn {name}")
-            assert start is not None
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
                 " ".join(line.split())
-                for line in lines[start : end + 1]
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12772,23 +12759,9 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.UNION_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            assert start is not None
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
                 " ".join(line.split())
-                for line in lines[start : end + 1]
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12796,6 +12769,33 @@ class NamingMirrorTests(unittest.TestCase):
                     pinned,
                     hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
                     f"re-read the census's union port of src/ir.rs's {name}",
+                )
+
+    def test_the_scalar_ports_track_their_rust_helpers(self) -> None:
+        """`number_prim` and the Boolean literal override behind `same_primitive_unions`.
+
+        Each helper is pinned by the same normalized-body digest, read from the
+        file that declares it, so an edit there fails here until the port is read
+        again. `Type::method` is bounded inside `impl ... for Type`.
+        """
+        for (path, name), pinned in census.SCALAR_PORT_DIGESTS.items():
+            lines = (REPO / path).read_text(encoding="utf-8").splitlines()
+            owner, _, method = name.rpartition("::")
+            if owner:
+                start = next(
+                    index
+                    for index, line in enumerate(lines)
+                    if re.match(rf"impl\b.*\bfor {re.escape(owner)}\s*\{{", line)
+                )
+                body = rust_function_body(lines[start:], method)
+            else:
+                body = rust_function_body(lines, name)
+            kept = [" ".join(line.split()) for line in body if line.strip() and not line.strip().startswith("//")]
+            with self.subTest(name=name):
+                self.assertEqual(
+                    pinned,
+                    hashlib.sha256("\n".join(kept).encode("utf-8")).hexdigest()[:16],
+                    f"re-read the census's scalar port of {path}'s {name}",
                 )
 
     def test_the_schema_and_response_ports_track_their_rust_functions(self) -> None:
@@ -12807,23 +12807,9 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.SCHEMA_RESPONSE_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            assert start is not None
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
                 " ".join(line.split())
-                for line in lines[start : end + 1]
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -12842,23 +12828,9 @@ class NamingMirrorTests(unittest.TestCase):
         """
         lines = (REPO / "src" / "ir.rs").read_text(encoding="utf-8").splitlines()
         for name, pinned in census.PARAMETER_PORT_DIGESTS.items():
-            start = next(
-                (index for index, line in enumerate(lines) if re.search(rf"\bfn {re.escape(name)}\s*[(<]", line)), None
-            )
-            self.assertIsNotNone(start, f"src/ir.rs declares no fn {name}")
-            assert start is not None
-            depth, started = 0, False
-            for end in range(start, len(lines)):
-                for char in lines[end]:
-                    if char == "{":
-                        depth, started = depth + 1, True
-                    elif char == "}":
-                        depth -= 1
-                if started and depth == 0:
-                    break
             kept = [
                 " ".join(line.split())
-                for line in lines[start : end + 1]
+                for line in rust_function_body(lines, name)
                 if line.strip() and not line.strip().startswith("//")
             ]
             with self.subTest(name=name):
@@ -13599,6 +13571,22 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Port": {
                     "oneOf": [{"type": "integer"}, {"type": "integer", "minimum": 1}, {"type": "integer", "maximum": 9}]
                 },
+                "Weight": {"oneOf": [{"type": "number", "format": "uint64"}, {"type": "integer"}]},
+                "Settings": {
+                    "oneOf": [{"type": "string", "format": "json-string"}, {"type": "string", "format": "json-string"}]
+                },
+                "Calibrated": {
+                    "oneOf": [
+                        {"type": "boolean", "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-crozier-type": "literal<true>"},
+                    ]
+                },
+                "MissingOverride": {
+                    "oneOf": [
+                        {"type": "boolean", "x-crozier-type": None, "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-crozier-type": "literal<true>"},
+                    ]
+                },
             },
             "decoys": {
                 "Nullable": {"anyOf": [{"type": "string"}, {"type": "string"}, {"type": "null"}]},
@@ -13607,6 +13595,14 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 "Lone": {"anyOf": [{"type": "string"}]},
                 "Typed": {"type": "string", **strings},
                 "Holder": {"type": "object", "properties": {"code": strings}},
+                "JsonText": {"oneOf": [{"type": "string", "format": "json-string"}, {"type": "string"}]},
+                "LiteralBool": {"oneOf": [{"type": "boolean", "x-fern-type": "literal<true>"}, {"type": "boolean"}]},
+                "CanonicalLiteral": {
+                    "oneOf": [
+                        {"type": "boolean", "x-crozier-type": "literal<false>", "x-fern-type": "literal<true>"},
+                        {"type": "boolean", "x-fern-type": "literal<true>"},
+                    ]
+                },
             },
         }
         with tempfile.TemporaryDirectory() as directory:
@@ -13626,7 +13622,7 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 )
             completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
         self.assertEqual(0, completed.returncode, completed.stderr)
-        self.assertEqual({(selector, "positive"): 2}, rows(completed))
+        self.assertEqual({(selector, "positive"): 6}, rows(completed))
 
     def test_query_items_union_counts_an_inline_items_union_and_not_its_near_misses(self) -> None:
         """An array query parameter whose inline `items` composes two members.
@@ -14588,7 +14584,7 @@ class ParityProofIndexTests(unittest.TestCase):
         rows = [
             cells for line in section.splitlines() if (cells := table_cells(line, 7)) and cells[0] not in {"gap", "---"}
         ]
-        self.assertEqual(36, len(rows))
+        self.assertEqual(37, len(rows))
         self.assertEqual(len(rows), len({row[0] for row in rows}))
         catalog = census.load_document(REPO / "assets/departures.yml")
         defects = {entry["id"] for entry in catalog if entry["kind"] == "fern-defect"}
@@ -14611,6 +14607,150 @@ class ParityProofIndexTests(unittest.TestCase):
                 for test in row[5].strip("`").split(";"):
                     name = test.strip().rsplit("::", 1)[-1]
                     self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
+
+
+class HandwrittenE2eCoversTests(unittest.TestCase):
+    """The additive multi-file cover uses real committed inputs and gate API."""
+
+    def check(self, missing: str | None = None, *, completeness: bool = False) -> list[str]:
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            paths = [
+                "docs/openapi-surface/handwritten-e2e.toml",
+                "docs/openapi-surface/schemas.md",
+                "docs/openapi-surface/witness-search-models-refs/README.md",
+                "docs/fern-measurements/models-refs-remote/library-records/evidence.md",
+                "docs/fern-measurements/models-refs-remote/library-records/fern-expected/.fern/metadata.json",
+                "docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml",
+                "docs/fern-measurements/models-refs-remote/library-records/documents/models.yml",
+                "crates/crozier-e2e/tests/e2e.rs",
+            ]
+            for relative in paths:
+                source = REPO / relative
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(source.read_bytes())
+            e2e = root / "crates/crozier-e2e/tests/e2e.rs"
+            registry = root / paths[0]
+            match missing:
+                case "fixture":
+                    (root / paths[5]).unlink()
+                    (root / paths[6]).unlink()
+                case "test":
+                    e2e.write_text("", encoding="utf-8")
+                case "loopback":
+                    e2e.write_text(
+                        e2e.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8"
+                    )
+                case "comparison":
+                    e2e.write_text(
+                        e2e.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8"
+                    )
+                case "evidence":
+                    (root / paths[3]).unlink()
+                case "search":
+                    (root / paths[2]).unlink()
+                case "golden":
+                    (root / paths[4]).unlink()
+                case "version":
+                    registry.write_text(registry.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
+                case "fields":
+                    registry.write_text(
+                        registry.read_text().replace(
+                            'fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"',
+                            'fixture = ""',
+                        ),
+                        encoding="utf-8",
+                    )
+                case "row":
+                    target = root / paths[1]
+                    target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
+                case "golden-binding":
+                    e2e.write_text(
+                        e2e.read_text().replace(
+                            'format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'
+                        ),
+                        encoding="utf-8",
+                    )
+                case "registry-syntax":
+                    registry.write_text("[[", encoding="utf-8")
+                case "kind":
+                    registry.write_text(
+                        registry.read_text().replace('kind = "handwritten-e2e"', 'kind = "unknown"'), encoding="utf-8"
+                    )
+                case "duplicate":
+                    registry.write_text(
+                        registry.read_text().replace(
+                            'key = "remote-ref-at-use-site-inlined"',
+                            'key = "remote-document-local-pointer-resolved-against-root"',
+                        ),
+                        encoding="utf-8",
+                    )
+                case "verdict":
+                    registry.write_text(
+                        registry.read_text().replace('verdict = "search-incomplete"', 'verdict = "unknown"'),
+                        encoding="utf-8",
+                    )
+            rows = gate.region_rows(root)
+            if completeness:
+                entries = {
+                    key: ("schemas", cells)
+                    for key, (_path, cells) in rows.items()
+                    if key in ("remote-document-local-pointer-resolved-against-root", "remote-ref-at-use-site-inlined")
+                }
+                return completeness_failures(
+                    entries, {"schemas": (root / paths[1]).read_text(encoding="utf-8")}, {}, root=root
+                )
+            _keys, failures = gate.e2e_cover_failures(root, rows)
+            return failures
+
+    def test_completeness_reads_the_committed_multi_file_covers(self) -> None:
+        self.assertEqual(self.check(completeness=True), [])
+        for missing in (
+            "fixture",
+            "test",
+            "loopback",
+            "comparison",
+            "evidence",
+            "search",
+            "golden",
+            "version",
+            "fields",
+            "golden-binding",
+            "registry-syntax",
+            "kind",
+            "duplicate",
+            "verdict",
+        ):
+            with self.subTest(missing=missing):
+                self.assertTrue(self.check(missing, completeness=True))
+
+    def test_committed_multi_file_covers_are_accepted(self) -> None:
+        self.assertEqual(self.check(), [])
+
+    def test_every_missing_piece_is_refused(self) -> None:
+        expected = {
+            "fixture": "multi-file fixture directory",
+            "test": "gated real-binary test",
+            "loopback": "gated real-binary test",
+            "comparison": "gated real-binary test",
+            "evidence": "evidence note",
+            "search": "search anchor does not resolve",
+            "golden": "complete certified golden",
+            "version": "expected version = 1",
+            "fields": "repair this cover table",
+            "row": "must name exactly",
+            "golden-binding": "must name this certified golden",
+            "registry-syntax": "restore the registry or repair its TOML syntax",
+            "kind": "set kind to handwritten-e2e",
+            "duplicate": "keep exactly one registry cover",
+            "verdict": "cite one of exhausted, search-incomplete, config-gated",
+        }
+        for missing, message in expected.items():
+            with self.subTest(missing=missing):
+                failures = self.check(missing)
+                self.assertTrue(any(message in failure for failure in failures), failures)
 
 
 if __name__ == "__main__":

@@ -44,6 +44,530 @@ fn render(spec: &str) -> HashMap<String, String> {
         .collect()
 }
 
+#[test]
+fn promoted_response_and_inline_cycle_models_keep_their_component_names() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let response =
+        render(&std::fs::read_to_string(root.join("parcel-response/openapi.yml")).unwrap());
+    assert!(response["src/acme/types/purged.py"].contains("class Purged(UniversalBaseModel)"));
+    assert!(
+        response["src/acme/types/read_parcel_response.py"].contains("typing.Union[Parcel, Purged]")
+    );
+    assert!(!response.contains_key("src/acme/types/schema.py"));
+    let cycle = render(&std::fs::read_to_string(root.join("woven-thread/openapi.yml")).unwrap());
+    assert!(cycle["src/acme/types/weave.py"].contains(
+        "update_forward_refs(Weave_Joined, Thread=Thread, ThreadWoven=ThreadWoven, Weave=Weave)"
+    ));
+    assert!(cycle["src/acme/types/thread.py"].contains(
+        "update_forward_refs(Thread_Woven, Thread=Thread, Weave=Weave, WeaveJoined=WeaveJoined)"
+    ));
+    assert!(!cycle["src/acme/types/weave_loose.py"].contains("update_forward_refs"));
+    let child = render(&std::fs::read_to_string(root.join("union-sample/openapi.yml")).unwrap());
+    assert!(child["src/acme/types/sample.py"].contains("voltage: typing.Optional[float]"));
+    assert!(child["src/acme/types/sample.py"].contains("bits: typing.Optional[int]"));
+}
+
+#[test]
+fn narrowed_enum_defaults_respect_the_pattern_without_changing_the_type() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/measurement-phase");
+    let source = std::fs::read_to_string(root.join("openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(files["README.md"].contains("phase=MeasurementPhase.RECORDING,"));
+    assert!(files["reference.md"].contains("phase=StoreInlineMeasurementRequestPhase.RECORDING,"));
+    assert!(files["src/acme/types/measurement_phase.py"].contains("PREPARATION = \"preparation\""));
+    let accepted_first = source.replace("^(?!preparation$).*$", "^.*$");
+    assert!(render(&accepted_first)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+    let malformed = source.replace("^(?!preparation$).*$", "'['");
+    assert!(render(&malformed)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+    // Every member is validated against the complete schema: the scalar
+    // member, the enum it narrows and the enclosing schema beside the `allOf`.
+    // A constraint `recording` satisfies keeps the correction; one it fails
+    // leaves no valid member, and one crozier cannot decide declines, so both
+    // keep Fern's first member.
+    let constrained = |site: &str, constraint: &str| match site {
+        "member" => source.replace(
+            "\n            pattern: ^(?!preparation$).*$",
+            &format!("\n            {constraint}\n            pattern: ^(?!preparation$).*$"),
+        ),
+        "target" => source.replace(
+            "    Phase:\n      type: string\n",
+            &format!("    Phase:\n      type: string\n      {constraint}\n"),
+        ),
+        _ => source.replace(
+            "        phase:\n          allOf:\n",
+            &format!("        phase:\n          {constraint}\n          allOf:\n"),
+        ),
+    };
+    for (site, constraint, member) in [
+        ("member", "minLength: 9", "RECORDING"),
+        ("member", "maxLength: 9", "RECORDING"),
+        ("member", "const: recording", "RECORDING"),
+        ("member", "not: { enum: [preparation] }", "RECORDING"),
+        ("member", "not: { type: string, maxLength: 3 }", "RECORDING"),
+        ("member", "not: false", "RECORDING"),
+        ("member", "minLength: 100", "PREPARATION"),
+        ("member", "maxLength: 1", "PREPARATION"),
+        ("member", "const: preparation", "PREPARATION"),
+        ("member", "not: { enum: [recording] }", "PREPARATION"),
+        ("member", "not: {}", "PREPARATION"),
+        ("member", "not: true", "PREPARATION"),
+        ("member", "format: uuid", "PREPARATION"),
+        ("member", "not: { format: uuid }", "PREPARATION"),
+        ("member", "not: { type: integer }", "RECORDING"),
+        ("member", "not: { type: [string] }", "PREPARATION"),
+        ("member", "not: { pattern: 1 }", "PREPARATION"),
+        ("member", "not: { enum: recording }", "PREPARATION"),
+        ("member", "not: { maxLength: -1 }", "PREPARATION"),
+        ("member", "not: [recording]", "PREPARATION"),
+        ("member", "if: { maxLength: 1 }", "PREPARATION"),
+        ("target", "pattern: ^.*$", "RECORDING"),
+        ("target", "minLength: 100", "PREPARATION"),
+        ("target", "maxLength: 1", "PREPARATION"),
+        ("target", "format: uuid", "PREPARATION"),
+        ("target", "not: { enum: [recording] }", "PREPARATION"),
+        ("target", "$dynamicRef: '#meta'", "PREPARATION"),
+        ("target", "$recursiveRef: '#'", "PREPARATION"),
+        ("enclosing", "maxLength: 9", "RECORDING"),
+        ("enclosing", "maxLength: 8", "PREPARATION"),
+        ("enclosing", "pattern: ^prep", "PREPARATION"),
+        ("enclosing", "type: array", "PREPARATION"),
+        (
+            "enclosing",
+            "$ref: '#/components/schemas/Phase'",
+            "PREPARATION",
+        ),
+        ("enclosing", "anyOf: [{ minLength: 1 }]", "PREPARATION"),
+        ("enclosing", "oneOf: [{ minLength: 1 }]", "PREPARATION"),
+    ] {
+        let changed = constrained(site, constraint);
+        assert_ne!(changed, source, "{site} {constraint}");
+        let expected = format!("phase=MeasurementPhase.{member},");
+        assert!(
+            render(&changed)["README.md"].contains(&expected),
+            "{site} {constraint}: expected {expected}"
+        );
+    }
+    // A composition on the enum is discarded at load; its constraints still
+    // bind the value, so the correction declines whatever they say.
+    for target in [
+        "allOf: [{ type: string }]",
+        "anyOf: [{ minLength: 1 }]",
+        "oneOf: [{ maxLength: 20 }]",
+    ] {
+        let further_constraint = constrained("target", target);
+        assert!(
+            render(&further_constraint)["README.md"]
+                .contains("phase=MeasurementPhase.PREPARATION,"),
+            "target {target}"
+        );
+    }
+    // An empty composition carries no constraint, so discarding it keeps the correction.
+    let empty_composition = source.replace(
+        "    Phase:\n      type: string\n",
+        "    Phase:\n      type: string\n      allOf: []\n",
+    );
+    assert!(render(&empty_composition)["README.md"].contains("phase=MeasurementPhase.RECORDING,"));
+    let no_valid = source.replace("^(?!preparation$).*$", "^excluded$");
+    assert!(render(&no_valid)["README.md"].contains("phase=MeasurementPhase.PREPARATION,"));
+}
+
+#[test]
+fn narrowed_enum_departure_requires_source_validity_and_rejects_other_changes() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/measurement-phase");
+    let reference = std::fs::read_to_string(root.join("fern-expected/README.md")).unwrap();
+    let corrected = reference.replace(
+        "phase=MeasurementPhase.PREPARATION,",
+        "phase=MeasurementPhase.RECORDING,",
+    );
+    assert_ne!(corrected, reference);
+    let context = crozier::departures::Context::default()
+        .with_source_document(crozier::openapi::load(&root.join("openapi.yml")).unwrap());
+    let accepted =
+        crozier::parity::compare_file(&context, "README.md", &corrected, &reference).unwrap();
+    assert!(accepted.matches(), "{:?}", accepted.diff());
+    assert_eq!(accepted.departures.len(), 2);
+    assert!(accepted
+        .departures
+        .iter()
+        .all(|departure| departure.id == "pattern-narrowed-enum-example"));
+    for changed in [
+        corrected.replace(
+            "https://yourhost.com/path/to/api",
+            "https://unexplained.example",
+        ),
+        corrected.replace("MeasurementPhase.RECORDING", "MeasurementPhase.EXCLUDED"),
+        corrected.replace("phase=", "different_phase="),
+    ] {
+        assert!(
+            !crozier::parity::compare_file(&context, "README.md", &changed, &reference)
+                .unwrap()
+                .matches()
+        );
+    }
+    assert!(!crozier::parity::compare_file(
+        &crozier::departures::Context::default(),
+        "README.md",
+        &corrected,
+        &reference
+    )
+    .unwrap()
+    .matches());
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "src/fern/raw_client.py",
+        &corrected,
+        &reference
+    )
+    .unwrap()
+    .matches());
+    let outside_reference = reference.replace("```python", "```text");
+    let outside_corrected = corrected.replace("```python", "```text");
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "README.md",
+        &outside_corrected,
+        &outside_reference
+    )
+    .unwrap()
+    .matches());
+    let client = std::fs::read_to_string(root.join("fern-expected/src/fern/client.py")).unwrap();
+    let runtime_line = client
+        .lines()
+        .find(|line| line.contains("phase=MeasurementPhase.PREPARATION,"))
+        .unwrap();
+    let changed_client = client.replace("Phase.PREPARATION,", "Phase.RECORDING,");
+    let runtime_suffix = format!("\ndef outside_examples():\n{runtime_line}\n");
+    assert!(!crozier::parity::compare_file(
+        &context,
+        "src/fern/client.py",
+        &(changed_client + &runtime_suffix),
+        &(client.clone() + &runtime_suffix)
+    )
+    .unwrap()
+    .matches());
+}
+
+/// Departure normalization reads the same complete source the generator does:
+/// Fern's example against the replacement is accepted only where no
+/// composition was dropped when the document loaded.
+#[test]
+fn narrowed_enum_departure_declines_a_dropped_composition() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/fern-measurements/models-refs-composed-narrowing/dossier-status");
+    let spec = fixture.join("openapi.yml");
+    let composition = "      allOf:\n      - maxLength: 5\n";
+    let text = std::fs::read_to_string(&spec).unwrap();
+    assert!(text.contains(composition));
+    let work = tempfile::tempdir().expect("plain composition document");
+    let golden = fixture.join("fern-expected");
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let corrected = reference.replace(
+        "standing=DossierStanding.DRAFT,",
+        "standing=DossierStanding.SEALED,",
+    );
+    assert_ne!(corrected, reference);
+    let composed = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    assert!(
+        crozier::parity::compare_file(&composed, "README.md", &corrected, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let plain_spec = work.path().join("plain.yml");
+    std::fs::write(&plain_spec, text.replace(composition, "")).unwrap();
+    let plain = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&plain_spec).unwrap());
+    let accepted =
+        crozier::parity::compare_file(&plain, "README.md", &corrected, &reference).unwrap();
+    assert!(accepted.matches(), "{:?}", accepted.diff());
+}
+
+/// The departure holds only the complete-schema member: Fern's example
+/// replaced by the member the pattern alone would pick is an unexplained
+/// mismatch, as is any correction of the unsatisfiable charter.
+#[test]
+fn narrowed_enum_departure_requires_every_enclosing_constraint() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("docs/openapi-surface/handwritten/harbour-window");
+    let spec = fixture.join("openapi.yml");
+    let golden = fixture.join("fern-expected");
+    let context = crozier::departures::Context::from_trees(&golden, &golden)
+        .with_source_document(crozier::openapi::load(&spec).unwrap());
+    let reference = std::fs::read_to_string(golden.join("README.md")).unwrap();
+    let accepted = reference.replace("window=CrossingWindow.SLACK,", "window=CrossingWindow.EBB,");
+    assert_ne!(accepted, reference);
+    let compared =
+        crozier::parity::compare_file(&context, "README.md", &accepted, &reference).unwrap();
+    assert!(compared.matches(), "{:?}", compared.diff());
+    let pattern_only = reference.replace(
+        "window=CrossingWindow.SLACK,",
+        "window=CrossingWindow.FLOOD,",
+    );
+    assert!(
+        crozier::parity::compare_file(&context, "README.md", &pattern_only, &reference)
+            .unwrap()
+            .diff()
+            .is_some()
+    );
+    let client = std::fs::read_to_string(golden.join("src/fern/client.py")).unwrap();
+    for replacement in [
+        "CharterWindow.EBB",
+        "CharterWindow.FLOOD",
+        "CharterWindow.NEAP",
+    ] {
+        let changed = client.replace(
+            "window=CharterWindow.SLACK,",
+            &format!("window={replacement},"),
+        );
+        assert_ne!(changed, client);
+        assert!(
+            crozier::parity::compare_file(&context, "src/fern/client.py", &changed, &client)
+                .unwrap()
+                .diff()
+                .is_some(),
+            "{replacement}"
+        );
+    }
+}
+
+#[test]
+fn property_metadata_survives_the_public_generation_pipeline() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    for (fixture, file, expected) in [
+        (
+            "blank-reading-description",
+            "src/acme/types/read_records_response.py",
+            "\"\"\" \"\"\"",
+        ),
+        (
+            "compass-member-notes",
+            "src/acme/types/compass.py",
+            "Towards the southern horizon.",
+        ),
+        (
+            "verified-seal",
+            "src/acme/types/seal.py",
+            "verified: typing.Optional[typing.Literal[True]]",
+        ),
+        (
+            "nullable-observer-notes",
+            "src/acme/types/read_records_response_observer.py",
+            "Observer of the measurement.",
+        ),
+        (
+            "required-marker-point",
+            "src/acme/types/marker.py",
+            "point: Point",
+        ),
+    ] {
+        let source = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let files = render(&source);
+        assert!(files[file].contains(expected), "{fixture}: {}", files[file]);
+    }
+    let source = std::fs::read_to_string(root.join("gauge-public-fields/openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(!files["src/acme/types/gauge.py"].contains("calibration_note"));
+    let required = source.replace(
+        "      type: object\n",
+        "      type: object\n      required: [display, calibration_note]\n",
+    );
+    let required_files = render(&required);
+    assert!(!required_files["src/acme/types/gauge.py"].contains("calibration_note"));
+    assert!(required_files["src/acme/types/gauge.py"].contains("display: str"));
+    let source_dir = tempfile::tempdir().unwrap();
+    let spec = source_dir.path().join("openapi.yml");
+    std::fs::write(&spec, &required).unwrap();
+    let mut parsed = crozier::openapi::load(&spec).unwrap();
+    crozier::openapi::filter_ignored(&mut parsed);
+    assert!(
+        matches!(&parsed.components.schemas["Gauge"].required, crozier::openapi::RequiredNames::Listed(names) if names == &["display"])
+    );
+    let restored = source.replace("x-fern-ignore: true", "x-crozier-ignore: false");
+    assert!(render(&restored)["src/acme/types/gauge.py"].contains("calibration_note"));
+    let source = std::fs::read_to_string(root.join("reservoir-ledger/openapi.yml")).unwrap();
+    let files = render(&source);
+    assert!(files["src/acme/raw_client.py"].contains("annotation=typing.Optional[Reservoir]"));
+}
+
+#[test]
+fn composed_models_keep_flat_fields_aliases_and_eager_superclasses() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    let cases = [
+        (
+            "circuit-readings",
+            "reading",
+            "class Reading(UniversalBaseModel):",
+        ),
+        ("garden-crown", "flower", "class Flower(Crown):"),
+        (
+            "artefact-catalogue",
+            "artifact",
+            "class Artifact(UniversalBaseModel):",
+        ),
+        ("mineral-sample", "pebble", "Pebble = Rock"),
+        (
+            "nullable-store",
+            "vacant_store",
+            "VacantStore = typing.Optional[Store]",
+        ),
+        (
+            "sampling-branches",
+            "reading",
+            "rate: typing.Optional[int] = pydantic.Field(default=None)",
+        ),
+    ];
+    for (fixture, module, expected) in cases {
+        let spec = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        let files = render(&spec);
+        let model = &files[&format!("src/acme/types/{module}.py")];
+        assert!(model.contains(expected), "{fixture}:\n{model}");
+        if fixture == "garden-crown" {
+            assert!(
+                model.find("from .crown import Crown").unwrap()
+                    < model.find("class Flower").unwrap()
+            );
+            assert!(!model.contains("update_forward_refs"));
+        } else if fixture == "circuit-readings" {
+            assert!(model.contains("update_forward_refs(Reading, Circuit=Circuit)"));
+        } else if fixture == "artefact-catalogue" {
+            assert_eq!(model.matches("mark: ").count(), 1);
+            assert!(model.contains("height: typing.Optional[int]"));
+            assert!(model.contains("drawer: typing.Optional[str]"));
+        } else if fixture == "sampling-branches" {
+            assert!(model.contains("Recorded sampling rate."));
+            let changed = spec.replace(
+                "rate:\n              not: {}",
+                "rate:\n              type: string",
+            );
+            assert_ne!(
+                changed, spec,
+                "the positive redeclaration control must change the schema"
+            );
+            let changed_files = render(&changed);
+            assert!(
+                changed_files["src/acme/types/reading.py"].contains("rate: typing.Optional[str]")
+            );
+        }
+    }
+}
+
+#[test]
+fn flattened_cyclic_parent_reach_is_retained_only_for_that_shape() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/openapi-surface/handwritten");
+    for (fixture, name, expected) in [
+        ("circuit-readings", "Reading", vec!["Circuit"]),
+        ("garden-crown", "Flower", vec![]),
+        ("artefact-catalogue", "Artifact", vec![]),
+    ] {
+        let spec = root.join(fixture).join("openapi.yml");
+        let doc = crozier::openapi::load(&spec).unwrap();
+        let config = crozier::config::GenerateConfig::new(
+            spec,
+            PathBuf::from("unused"),
+            Some("acme".into()),
+            Some("acme".into()),
+            None,
+            crozier::settings::ExtraFields::Allow,
+            &doc.info.title,
+        )
+        .unwrap();
+        let ir = crozier::ir::build(&doc, &config);
+        let model = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                crozier::ir::TypeDecl::Object(model) if model.name == name => Some(model),
+                _ => None,
+            })
+            .expect("declared model");
+        assert_eq!(model.reach_refs, expected);
+        let files = crozier::emit::generate(&ir).unwrap();
+        assert!(files
+            .iter()
+            .any(|file| file.contents.contains(&format!("class {name}("))));
+    }
+}
+
+#[test]
+fn material_register_formats_keep_their_certified_scalar_types() {
+    let spec = include_str!("../docs/openapi-surface/handwritten/material-register/openapi.yml");
+    let files = render(spec);
+    let model = &files["src/acme/types/material.py"];
+    for annotation in [
+        "mass: typing.Optional[int] = None",
+        "attributes: typing.Optional[typing.Any] = None",
+        "density: typing.Optional[float] = None",
+        "label: typing.Optional[str] = None",
+    ] {
+        assert!(model.contains(annotation), "missing {annotation}:\n{model}");
+    }
+    let unknown_formats = spec
+        .replace("format: uint64", "format: unrecognized-number")
+        .replace("format: json-string", "format: unrecognized-string");
+    let files = render(&unknown_formats);
+    let model = &files["src/acme/types/material.py"];
+    assert!(
+        model.contains("mass: typing.Optional[float] = None"),
+        "{model}"
+    );
+    assert!(
+        model.contains("attributes: typing.Optional[str] = None"),
+        "{model}"
+    );
+}
+
+#[test]
+fn remote_model_types_resolve_through_a_real_http_document() {
+    use std::io::{BufRead, BufReader, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").expect("loopback listener");
+    let address = listener.local_addr().unwrap();
+    let server = std::thread::spawn(move || {
+        let (mut stream, _) = listener.accept().expect("schema request");
+        let mut reader = BufReader::new(stream.try_clone().unwrap());
+        let mut line = String::new();
+        reader.read_line(&mut line).unwrap();
+        assert!(line.starts_with("GET /models.yml "), "{line}");
+        loop {
+            line.clear();
+            if reader.read_line(&mut line).unwrap() == 0 || line.trim().is_empty() {
+                break;
+            }
+        }
+        let body = include_str!(
+            "../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"
+        );
+        write!(
+            stream,
+            "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            body.len()
+        )
+        .unwrap();
+    });
+    let spec = include_str!(
+        "../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    )
+    .replace("@REMOTE_URL@", &format!("http://{address}"));
+    let files = render(&spec);
+    server.join().expect("the document was fetched once");
+    let catalogue = &files["src/acme/types/catalogue.py"];
+    assert!(
+        catalogue.contains("curator: typing.Optional[Curator] = None"),
+        "{catalogue}"
+    );
+    assert!(files.contains_key("src/acme/types/curator.py"));
+    let client = &files["src/acme/client.py"];
+    assert!(
+        client.contains("from .types.curator import Curator"),
+        "{client}"
+    );
+    assert!(!files
+        .keys()
+        .any(|path| path.contains("read_curator_response")));
+}
+
 /// [`render`] without the Fern refusal checks: the IR and emitter alone, for
 /// a guard that only a document crozier refuses reaches.
 fn render_ir(spec: &str) -> HashMap<String, String> {
@@ -15043,6 +15567,56 @@ fn the_reference_documents_the_condition_after_required_fields() {
     let live = section.find("**live:** `typing.Literal`").expect(section);
     let notes = section.find("**notes:**").expect(section);
     assert!(origin < live && live < notes, "{section}");
+}
+
+#[test]
+fn literal_boolean_request_and_path_examples_preserve_the_declared_value() {
+    let mut source = serde_json::json!({
+        "openapi":"3.0.3", "info":{"title":"Marker Controls","version":"1.0.0"},
+        "paths":{
+            "/markers":{"post":{"operationId":"store_marker", "requestBody":{"required":true,"content":{"application/json":{"schema":{"type":"object","required":["enabled","disabled","choice"],"properties":{
+                "enabled":{"type":"boolean","x-fern-type":"literal<true>"},
+                "disabled":{"type":"boolean","x-crozier-type":"literal<false>"},
+                "choice":{"anyOf":[{"type":"boolean","x-crozier-type":"literal<false>"},{"type":"string"}]}
+            }}}}}, "responses":{"204":{"description":"Stored"}}}},
+            "/markers/{marker}":{"get":{"operationId":"read_marker","parameters":[{"name":"marker","in":"path","required":true,"schema":{"$ref":"#/components/schemas/Marker"}}],"responses":{"204":{"description":"Read"}}}}
+        },
+        "components":{"schemas":{"Marker":{"type":"object","required":["enabled","disabled"],"properties":{
+            "enabled":{"type":"boolean","x-crozier-type":"literal<true>"},
+            "disabled":{"type":"boolean","x-fern-type":"literal<false>"}
+        }}}}
+    });
+    let files = render(&source.to_string());
+    assert!(files["src/acme/client.py"].contains("enabled: typing.Literal[True]"));
+    assert!(files["src/acme/client.py"].contains("disabled: typing.Literal[False]"));
+    assert!(
+        files["README.md"].contains("enabled=True,"),
+        "{}",
+        files["README.md"]
+    );
+    assert!(files["README.md"].contains("disabled=False,"));
+    assert!(files["reference.md"].contains("marker=Marker("));
+    let media =
+        &mut source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"];
+    media["example"] = serde_json::json!({"enabled":true,"disabled":false,"choice":false});
+    let matching = render(&source.to_string());
+    assert!(matching["README.md"].contains("choice=False,"));
+    for value in [serde_json::json!(true), serde_json::json!(17)] {
+        source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"]
+            ["example"]["choice"] = value;
+        let files = render(&source.to_string());
+        assert!(
+            files["README.md"].contains("choice=False,"),
+            "{}",
+            files["README.md"]
+        );
+        assert!(!files["README.md"].contains("choice=True,"));
+        assert!(!files["README.md"].contains("choice=17,"));
+    }
+    source["paths"]["/markers"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["enabled"]["x-crozier-type"] = serde_json::json!("literal<unsupported>");
+    let unsupported = render(&source.to_string());
+    assert!(unsupported["src/acme/client.py"].contains("enabled: bool"));
 }
 
 #[test]

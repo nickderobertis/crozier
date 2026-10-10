@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Artifact'
+components:
+  schemas:
+    Marked:
+      type: object
+      properties:
+        mark:
+          type: string
+        height:
+          type: integer
+    Filed:
+      type: object
+      properties:
+        mark:
+          type: string
+        drawer:
+          type: string
+    Artifact:
+      allOf:
+      - $ref: '#/components/schemas/Marked'
+      - $ref: '#/components/schemas/Filed'

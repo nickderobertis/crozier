@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compass'
+components:
+  schemas:
+    Compass:
+      type: string
+      enum:
+      - north
+      - south
+      x-fern-enum:
+        south:
+          description: Towards the southern horizon.

@@ -280,6 +280,8 @@ pub fn render_reference(entries: &[Departure]) -> String {
 /// its own has an empty context, so no rule that needs one applies to it.
 #[derive(Debug, Default)]
 pub struct Context {
+    source_document: Option<crate::openapi::OpenApi>,
+    source_enum_examples: OnceLock<Vec<SourceEnumExample>>,
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
@@ -304,6 +306,8 @@ impl Context {
             .find(|(path, _)| *path == "pyproject.toml")
             .and_then(|(_, text)| project_name(text));
         Context {
+            source_document: None,
+            source_enum_examples: OnceLock::new(),
             roots: None,
             reference_classes: OnceLock::from(classes(reference.iter().copied())),
             crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
@@ -329,6 +333,16 @@ impl Context {
             roots: Some((reference.to_path_buf(), crozier.to_path_buf())),
             ..Context::default()
         }
+    }
+
+    /// Add the parsed source document for rules whose validity depends on a
+    /// constraint that the generated Python does not retain. Existing callers
+    /// omit it, so source-dependent rules remain inactive for them.
+    #[must_use]
+    pub fn with_source_document(mut self, source: crate::openapi::OpenApi) -> Self {
+        self.source_document = Some(source);
+        self.source_enum_examples = OnceLock::new();
+        self
     }
 
     /// Classes the reference's modules define.
@@ -446,6 +460,95 @@ impl Context {
                 .map(|(rel, text)| (rel.as_str(), text.as_str())),
         )
     }
+}
+
+#[derive(Debug)]
+struct SourceEnumExample {
+    keyword: String,
+    enum_name: String,
+    first_value: String,
+    valid_value: String,
+    first_member: String,
+    valid_member: String,
+}
+
+/// Derive identities from the same IR as generation, including inline request
+/// hoists and renamed body arguments. The fixed package/client labels do not
+/// affect model identities; absent source or an unusable config grants no rule.
+fn source_enum_examples(source: Option<&crate::openapi::OpenApi>) -> Vec<SourceEnumExample> {
+    let Some(source) = source else {
+        return Vec::new();
+    };
+    // The constructor only rejects unsafe package names. The fixed "parity"
+    // segment is valid, and supplied names bypass title-derived defaults, so a
+    // loaded document cannot make this config fail. Keep defensive abstention
+    // if the constructor gains another validation condition in the future.
+    let Ok(config) = crate::config::GenerateConfig::new(
+        std::path::PathBuf::new(),
+        std::path::PathBuf::new(),
+        Some("parity".into()),
+        Some("parity".into()),
+        Some("ParityClient".into()),
+        crate::settings::ExtraFields::Allow,
+        &source.info.title,
+    ) else {
+        return Vec::new();
+    };
+    let ir = crate::ir::build(source, &config);
+    let enums: std::collections::HashMap<_, _> = ir
+        .types
+        .iter()
+        .filter_map(|decl| match decl {
+            crate::ir::TypeDecl::Enum(declaration) if declaration.has_corrected_example() => {
+                Some((declaration.name.as_str(), declaration))
+            }
+            _ => None,
+        })
+        .collect();
+    fn enum_name(reference: &crate::ir::TypeRef) -> Option<&str> {
+        match reference {
+            crate::ir::TypeRef::Named(name) => Some(name),
+            crate::ir::TypeRef::Optional(inner) => enum_name(inner),
+            _ => None,
+        }
+    }
+    let mut examples = Vec::new();
+    let mut add = |keyword: &str, reference: &crate::ir::TypeRef| {
+        let Some(declaration) = enum_name(reference).and_then(|name| enums.get(name)) else {
+            return;
+        };
+        let (Some(first), Some(valid)) =
+            (declaration.members.first(), declaration.example_member())
+        else {
+            return;
+        };
+        if first.value == valid.value {
+            return;
+        }
+        examples.push(SourceEnumExample {
+            keyword: keyword.into(),
+            enum_name: declaration.name.clone(),
+            first_value: first.value.clone(),
+            valid_value: valid.value.clone(),
+            first_member: first.name.clone(),
+            valid_member: valid.name.clone(),
+        });
+    };
+    for declaration in &ir.types {
+        if let crate::ir::TypeDecl::Object(object) = declaration {
+            for field in &object.fields {
+                add(&field.py_name, &field.type_ref);
+            }
+        }
+    }
+    for endpoint in &ir.endpoints {
+        if let Some(crate::ir::RequestBody::Inline(fields)) = &endpoint.request_body {
+            for field in fields {
+                add(&field.py_name, &field.type_ref);
+            }
+        }
+    }
+    examples
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -1478,7 +1581,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 17] = [
+pub const RULE_IDS: [&str; 18] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
@@ -1490,6 +1593,7 @@ pub const RULE_IDS: [&str; 17] = [
     "lifted-base-path-positional-example",
     "multipart-object-required-file-example",
     "nullable-items-docs",
+    "pattern-narrowed-enum-example",
     "readme-client-class-casing",
     "request-alias-reference-parameters",
     "sdk-identity-header-prefix",
@@ -1550,6 +1654,10 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "nullable-items-docs" => Rule {
             region: Some(nullable_items_docs),
+            ..none
+        },
+        "pattern-narrowed-enum-example" => Rule {
+            line: Some(pattern_narrowed_enum_example),
             ..none
         },
         "readme-client-class-casing" => Rule {
@@ -1817,6 +1925,85 @@ fn closed_empty_object_example_region(pair: &Pair<'_>) -> Result<Option<Region>,
 fn closed_empty_object_example_line(_: &Pair<'_>, fern: &str, crozier: &str) -> bool {
     keyword_argument(fern, &format!("{{{KEY_VALUE_PLACEHOLDER}}},"))
         .is_some_and(|(indent, keyword)| crozier == format!("{indent}{keyword}={{}},"))
+}
+
+/// Require every occurrence of the candidate line to be in an example. The
+/// line-rule interface does not carry an occurrence index, so a duplicated
+/// runtime line must conservatively prevent normalization too. The public-API
+/// integration control is `tests/generation.rs::narrowed_enum_departure_requires_source_validity_and_rejects_other_changes`;
+/// it checks missing source, non-Python fences and duplicated runtime lines.
+fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
+    let mut in_doc = false;
+    let mut example = false;
+    let mut found = false;
+    for line in lines {
+        if rel.ends_with(".py") {
+            if line.matches("\"\"\"").count() % 2 == 1 {
+                in_doc = !in_doc;
+                example = false;
+            }
+            if in_doc && line.trim() == "Examples" {
+                example = true;
+            }
+        } else if line.trim() == "```python" {
+            example = true;
+        } else if line.trim() == "```" {
+            example = false;
+        }
+        if *line == candidate {
+            if !example {
+                return false;
+            }
+            found = true;
+        }
+    }
+    found
+}
+
+/// Correct only a generated default rejected by a scalar use-site pattern.
+fn pattern_narrowed_enum_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "README.md" && pair.rel != "reference.md" && !pair.rel.ends_with("client.py") {
+        return false;
+    }
+    let examples = pair
+        .context
+        .source_enum_examples
+        .get_or_init(|| source_enum_examples(pair.context.source_document.as_ref()));
+    for example in examples {
+        for (old, new) in [
+            (
+                format!(
+                    "{}={}.{},",
+                    example.keyword, example.enum_name, example.first_member
+                ),
+                format!(
+                    "{}={}.{},",
+                    example.keyword, example.enum_name, example.valid_member
+                ),
+            ),
+            (
+                format!(
+                    "{}={},",
+                    example.keyword,
+                    serde_json::to_string(&example.first_value).unwrap_or_default()
+                ),
+                format!(
+                    "{}={},",
+                    example.keyword,
+                    serde_json::to_string(&example.valid_value).unwrap_or_default()
+                ),
+            ),
+        ] {
+            let indent = fern.len() - fern.trim_start().len();
+            if fern[indent..] == old && crozier == format!("{}{new}", &fern[..indent]) {
+                // Scan complete example regions only for a matching correction,
+                // not for every unrelated line in a large client module.
+                return documented_example_line(pair.rel, pair.fern, fern)
+                    && documented_example_line(pair.rel, pair.crozier, crozier);
+            }
+        }
+    }
+    false
 }
 
 /// The SDK-relative path of Fern's own metadata record.

@@ -73,6 +73,7 @@ schemars = "1"
 # temporary directories, never in the searched repository.
 tempfile = { workspace = true }
 thiserror = "2"
+fancy-regex = "0.16"
 
 [dev-dependencies]
 tempfile = { workspace = true }

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "90ae3415f8e0a32b59516e88d0c938679608883889164e5f9027e724fab9c3f7"
+
+[[covers]]
+key = "allof-union-branch-not-schema-overrides-property"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

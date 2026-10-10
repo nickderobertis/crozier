@@ -26,6 +26,7 @@
         "{workspaceRoot}/docs/openapi-surface/**/*",
         "{workspaceRoot}/docs/openapi-surface-coverage.md",
         "{workspaceRoot}/docs/fern-limitations.md",
+        "{workspaceRoot}/docs/fern-measurements/**/*",
         "{workspaceRoot}/docs/fern-refusals/**/*",
         "{workspaceRoot}/docs/corpus-licensing.md",
         "{workspaceRoot}/tests/fixtures/**/*",

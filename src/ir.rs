@@ -1910,6 +1910,8 @@ pub struct ObjectType {
     /// Base classes. Empty means `UniversalBaseModel`; non-empty comes from an
     /// `allOf` whose `$ref` members become superclasses.
     pub bases: Vec<String>,
+    /// Cyclic parents flattened into fields, retained only for import/repair reach.
+    pub reach_refs: Vec<String>,
     /// Fields, in document order.
     pub fields: Vec<Field>,
     /// Wire names explicitly present in this object's schema-level example.
@@ -1992,9 +1994,78 @@ pub struct EnumType {
     /// Module (file stem).
     pub module: String,
     /// The members, in declaration order.
-    pub members: Vec<EnumMember>,
+    pub members: EnumMembers,
     /// Optional docstring.
     pub docstring: Option<String>,
+}
+
+/// An enum's members in declaration order, read-only once built, with at most
+/// one of them selected as the scalar-narrowed default example. The selection
+/// is an index into these same members, set only after checking that it names
+/// one, and the members cannot change afterwards, so a selection always names
+/// a declared member of the enum that holds it.
+#[derive(Debug, Clone, Default)]
+pub struct EnumMembers {
+    members: Vec<EnumMember>,
+    example: Option<usize>,
+}
+
+impl From<Vec<EnumMember>> for EnumMembers {
+    fn from(members: Vec<EnumMember>) -> Self {
+        Self {
+            members,
+            example: None,
+        }
+    }
+}
+
+impl FromIterator<EnumMember> for EnumMembers {
+    fn from_iter<I: IntoIterator<Item = EnumMember>>(members: I) -> Self {
+        members.into_iter().collect::<Vec<_>>().into()
+    }
+}
+
+impl std::ops::Deref for EnumMembers {
+    type Target = [EnumMember];
+
+    fn deref(&self) -> &[EnumMember] {
+        &self.members
+    }
+}
+
+impl<'a> IntoIterator for &'a EnumMembers {
+    type Item = &'a EnumMember;
+    type IntoIter = std::slice::Iter<'a, EnumMember>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.members.iter()
+    }
+}
+
+impl EnumType {
+    /// Make the member whose wire value is `value` the scalar-narrowed default
+    /// example; a value this declaration does not contain selects nothing and
+    /// leaves any earlier selection in place.
+    pub(crate) fn select_example_member(&mut self, value: &str) -> bool {
+        let Some(index) = self.members.iter().position(|member| member.value == value) else {
+            return false;
+        };
+        self.members.example = Some(index);
+        true
+    }
+
+    pub(crate) fn has_corrected_example(&self) -> bool {
+        self.members.example.is_some()
+    }
+
+    /// The synthesized example's member, retaining declaration order when no
+    /// use-site pattern requires a different default.
+    pub(crate) fn example_member(&self) -> Option<&EnumMember> {
+        if let Some(index) = self.members.example {
+            return self.members.get(index);
+        }
+        self.members.first()
+    }
 }
 
 /// One member of an [`EnumType`].
@@ -2075,11 +2146,12 @@ fn build_enum(
                 member_params.insert(name.clone(), param.clone());
                 param
             };
+            let docstring = clean_doc(schema.enum_member_description(&value));
             Some(EnumMember {
                 name,
                 visit_param,
                 value,
-                docstring: None,
+                docstring,
             })
         })
         .collect();
@@ -2162,6 +2234,8 @@ pub enum Prim {
     Float,
     /// `bool`.
     Bool,
+    /// A Boolean constrained by the literal type extension.
+    LiteralBool(bool),
     /// `dt.datetime`.
     Datetime,
     /// `dt.date`.
@@ -6256,7 +6330,8 @@ fn hoist_inline_object(
             // body declares `members` as `type: [array, null]` and Fern passes
             // `annotation=Optional[Sequence[LobbyMemberRequest]]`. A `nullable`
             // beside a `$ref` is not that — 3.0 ignores a reference's siblings.
-            nullable: is_optional(prop_schema) && prop_schema.reference.is_none(),
+            nullable: is_optional(prop_schema)
+                && (prop_schema.reference.is_none() || prop_schema.reference_nullable),
             spec_required,
             // A property written as a `$ref` takes its example from the schema
             // it names, exactly as a parameter does: Audiobookshelf's
@@ -6269,7 +6344,10 @@ fn hoist_inline_object(
             }),
             media_example: false,
             schema_body_example: false,
-            docstring: declared_doc(prop_schema.description.as_deref()),
+            docstring: declared_doc(prop_schema.description.as_deref().or_else(|| {
+                scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
+                    .and_then(|(_, member)| member.description.as_deref())
+            })),
             is_file: false,
             form_json: false,
             form_content_type: None,
@@ -6469,7 +6547,12 @@ impl InlineHoister<'_> {
     /// Build a named [`ObjectType`] from an inline object schema, recursively
     /// hoisting its nested inline-object properties, and push it to `out`.
     fn hoist_object(&mut self, name: &str, schema: &Schema) {
-        self.hoist_object_with_doc(name, schema, clean_doc(schema.description.as_deref()));
+        let docstring = if schema.description.as_deref() == Some("") {
+            Some(String::new())
+        } else {
+            clean_doc(schema.description.as_deref())
+        };
+        self.hoist_object_with_doc(name, schema, docstring);
     }
 
     fn hoist_object_with_doc(&mut self, name: &str, schema: &Schema, docstring: Option<String>) {
@@ -6539,6 +6622,7 @@ impl InlineHoister<'_> {
             fields.extend(inherited);
         }
         self.out.push(TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: name.to_string(),
             module: naming::module_name(name),
             bases,
@@ -6810,8 +6894,11 @@ impl InlineHoister<'_> {
                 spec_required,
                 docstring: declared_doc(property_description(prop_schema, optional).or_else(
                     || {
-                        self.schemas
-                            .and_then(|schemas| merged_all_of_ref_description(prop_schema, schemas))
+                        self.schemas.and_then(|schemas| {
+                            scalar_narrowed_enum_ref(prop_schema, schemas)
+                                .and_then(|(_, member)| member.description.as_deref())
+                                .or_else(|| merged_all_of_ref_description(prop_schema, schemas))
+                        })
                     },
                 )),
                 example: schema_example_literal(prop_schema).or_else(|| {
@@ -6875,6 +6962,13 @@ impl InlineHoister<'_> {
     /// item) into `{parent}{PascalCase(prop)}`. A `$ref` or scalar passes through
     /// [`base_type_ref`].
     fn prop_type_ref(&mut self, parent: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let Some(declaration) = self.schemas.and_then(|schemas| {
+            scalar_narrowed_enum_type(naming::child_class_name(parent, prop), prop_schema, schemas)
+        }) {
+            let name = declaration.name.clone();
+            self.out.push(TypeDecl::Enum(declaration));
+            return TypeRef::Named(name);
+        }
         if let (Some(schemas), Some((reference, description))) =
             (self.schemas, described_all_of_ref(prop_schema))
         {
@@ -6951,8 +7045,12 @@ impl InlineHoister<'_> {
                 if non_null.len() == 1 && non_null.len() != members.len() {
                     let member = non_null[0];
                     if let Some(values) = string_enum_values(member) {
-                        self.out
-                            .push(TypeDecl::Enum(build_enum(member, &name, values, None)));
+                        self.out.push(TypeDecl::Enum(build_enum(
+                            member,
+                            &name,
+                            values,
+                            clean_doc(member.description.as_deref()),
+                        )));
                         return TypeRef::Named(name);
                     }
                     if let Some(reference) = member.reference.as_deref() {
@@ -6968,7 +7066,12 @@ impl InlineHoister<'_> {
                         self.hoist_object_with_doc(
                             &name,
                             member,
-                            clean_doc(prop_schema.description.as_deref()),
+                            clean_doc(
+                                prop_schema
+                                    .description
+                                    .as_deref()
+                                    .or(member.description.as_deref()),
+                            ),
                         );
                         return TypeRef::Named(name);
                     }
@@ -8097,11 +8200,11 @@ fn one_or_many_query_schema(schema: &Schema, required: bool) -> Option<&Schema> 
 
 /// The primitive for a `type: number` schema. Fern's importer keys the numeric
 /// type off `format` before `type`, so DaniWeb's `{type: number, format: int32}`
-/// fields land on Python `int` rather than `float`; only a non-integer format (or
-/// none) stays a float.
+/// fields land on Python `int` rather than `float`, as do unsigned 64-bit numbers;
+/// only a non-integer format (or none) stays a float.
 fn number_prim(schema: &Schema) -> Prim {
     match schema.format.as_deref() {
-        Some("int32" | "int64") => int_prim(schema),
+        Some("int32" | "int64" | "uint64") => int_prim(schema),
         _ => Prim::Float,
     }
 }
@@ -10275,22 +10378,26 @@ impl Builder<'_> {
             return;
         }
 
-        // An `allOf` holding one `$ref` and NOTHING else is an annotated
+        // An `allOf` holding one `$ref` and no fields is an annotated
         // reference rather than inheritance: SFTPGo's `AdminTOTPConfig` is
         // `allOf: [$ref BaseTOTPConfig]` alone and its golden is
         // `AdminTotpConfig = BaseTotpConfig`, not a subclass. A sibling of any
-        // kind makes it a model that inherits — declared properties, an explicit
-        // `type: object`, or the `additionalProperties` that makes Strapi's
+        // kind makes it a model that inherits — nonempty declared properties, an explicit
+        // `type: object` without a properties map, or the `additionalProperties` that makes Strapi's
         // `Entry` a `class Entry(DocumentMeta)`.
         if schema.properties.is_empty()
             && schema.additional_properties.is_none()
-            && !is_object_type(schema)
+            && (!is_object_type(schema) || schema.properties.declared())
         {
             if let Some(reference) = single_all_of_ref(schema) {
                 self.push_alias(
                     name,
                     module,
-                    TypeRef::Named(ref_to_class(reference)),
+                    if schema.explicitly_nullable() {
+                        optional_type_ref(TypeRef::Named(ref_to_class(reference)))
+                    } else {
+                        TypeRef::Named(ref_to_class(reference))
+                    },
                     docstring,
                 );
                 return;
@@ -10579,7 +10686,17 @@ impl Builder<'_> {
         // A nullability-only member inlines every base (see
         // [`is_nullable_annotation`]).
         let nullable_annotation = schema.all_of.iter().flatten().any(is_nullable_annotation);
-        let collides = nullable_annotation
+        let mut parent_properties = std::collections::HashSet::new();
+        let overlapping_parents = base_refs.iter().any(|(_, base)| {
+            base.properties
+                .keys()
+                .any(|field| !parent_properties.insert(field))
+        });
+        let cyclic_parent = raw_bases
+            .iter()
+            .any(|base| schema_reaches_type(base, name, schemas));
+        let flatten_all = nullable_annotation || overlapping_parents || cyclic_parent;
+        let collides = flatten_all
             || base_refs.iter().any(|(_, base)| {
                 base.properties
                     .keys()
@@ -10610,7 +10727,9 @@ impl Builder<'_> {
                     let mut merged = Schema::default();
                     for branch in branches {
                         for (prop, prop_schema) in &branch.properties {
-                            merged.properties.insert(prop.clone(), prop_schema.clone());
+                            if !prop_schema.negative_only() {
+                                merged.properties.insert(prop.clone(), prop_schema.clone());
+                            }
                         }
                     }
                     if !merged.properties.is_empty() {
@@ -10633,6 +10752,34 @@ impl Builder<'_> {
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if !schema.properties.is_empty() {
+            for member in schema.all_of.iter().flatten() {
+                let Some(parent) = member
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                else {
+                    continue;
+                };
+                if parent.ty.as_ref().and_then(TypeField::primary) != Some("object")
+                    || !parent.properties.is_empty()
+                {
+                    continue;
+                }
+                if let Some(branches) = &parent.one_of {
+                    for branch in branches {
+                        if let Some(target) = branch
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                        {
+                            let flattened = all_properties_of(schemas, target, 0);
+                            self.collect_fields(name, &flattened, &[], &mut fields);
+                        }
+                    }
+                }
+            }
+        }
         if let Some(example) = schema_example(schema).and_then(serde_json::Value::as_object) {
             for field in &mut fields {
                 if let Some(value) = example.get(&field.wire_name) {
@@ -10679,7 +10826,7 @@ impl Builder<'_> {
                 inherited_by_base.push(inherited);
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
-            overridden |= nullable_annotation;
+            overridden |= flatten_all;
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -10701,7 +10848,7 @@ impl Builder<'_> {
             // A nullability-only member is the exception: the model is a flat
             // copy of every base, each read with its whole `allOf` chain, and
             // extends nothing (see [`is_nullable_annotation`]).
-            let inlined_by_base = if nullable_annotation {
+            let inlined_by_base = if flatten_all {
                 inherited_by_base
             } else {
                 let mut extended = Vec::new();
@@ -10762,6 +10909,12 @@ impl Builder<'_> {
             }
         }
         self.types.push(TypeDecl::Object(ObjectType {
+            reach_refs: base_refs
+                .iter()
+                .zip(&raw_bases)
+                .filter(|(_, base)| schema_reaches_type(base, name, schemas))
+                .map(|((base_name, _), _)| base_name.clone())
+                .collect(),
             name: name.to_string(),
             module,
             bases,
@@ -10922,6 +11075,10 @@ impl Builder<'_> {
                                 })
                                 .and_then(|target| target.description.as_deref())
                         })
+                        .or_else(|| {
+                            scalar_narrowed_enum_ref(prop_schema, self.schemas)
+                                .and_then(|(_, member)| member.description.as_deref())
+                        })
                         .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas)),
                 ),
                 example: schema_example_literal(prop_schema)
@@ -11037,6 +11194,7 @@ impl Builder<'_> {
                 if let Some(target_name) = &target_name {
                     variant_targets.push(target_name.clone());
                 } else {
+                    variant_targets.push(variant_name.clone());
                     let mut standalone = variant.clone();
                     if origin_name.is_none() {
                         standalone.properties.shift_remove(&property_name);
@@ -11364,6 +11522,15 @@ impl Builder<'_> {
     /// The type of a property, hoisting an inline string enum to a named
     /// `enum.Enum` class `{Owner}{Prop}` (as Fern does for `typesAnimal`).
     fn field_type_ref(&mut self, owner: &str, prop: &str, prop_schema: &Schema) -> TypeRef {
+        if let Some(declaration) = scalar_narrowed_enum_type(
+            format!("{owner}{}", naming::class_name(prop)),
+            prop_schema,
+            self.schemas,
+        ) {
+            let name = declaration.name.clone();
+            self.types.push(TypeDecl::Enum(declaration));
+            return TypeRef::Named(name);
+        }
         if let Some((target, values)) = narrowed_string_ref(prop_schema, self.schemas) {
             let name = format!("{owner}{}", naming::class_name(prop));
             let docstring = prop_schema
@@ -12922,6 +13089,38 @@ fn restates_without_conflict(own: &Field, field: &Field) -> bool {
         && own.docstring == field.docstring
 }
 
+/// A base reaching its prospective child cannot be imported as a superclass:
+/// the two modules must instead declare flat models and repair their fields.
+fn schema_reaches_type<'a>(
+    schema: &'a Schema,
+    target: &str,
+    schemas: &'a IndexMap<String, Schema>,
+) -> bool {
+    let mut pending = vec![schema];
+    let mut visited = std::collections::HashSet::new();
+    while let Some(node) = pending.pop() {
+        if let Some(reference) = node.reference.as_deref() {
+            if ref_to_class(reference) == target {
+                return true;
+            }
+            if visited.insert(reference) {
+                if let Some(resolved) = resolve_ref_from_schemas(schemas, reference) {
+                    pending.push(resolved);
+                }
+            }
+        }
+        pending.extend(node.properties.values());
+        pending.extend(node.items.iter().map(Box::as_ref));
+        pending.extend(node.all_of.iter().flatten());
+        pending.extend(node.one_of.iter().flatten());
+        pending.extend(node.any_of.iter().flatten());
+        if let Some(AdditionalProperties::Schema(value)) = &node.additional_properties {
+            pending.push(value);
+        }
+    }
+    false
+}
+
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
 /// into its own, `$ref`s resolved, and the `allOf` itself dropped. A schema with
 /// no `allOf` comes back unchanged.
@@ -13275,6 +13474,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
     }
     match schema.ty.as_ref().and_then(|t| t.primary()) {
         Some("string") => match schema.format.as_deref() {
+            Some("json-string") => TypeRef::Primitive(Prim::Any),
             Some("date-time") => TypeRef::Primitive(Prim::Datetime),
             Some("date") => TypeRef::Primitive(Prim::Date),
             Some("binary") => TypeRef::Primitive(Prim::Bytes),
@@ -13284,7 +13484,12 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
         },
         Some("integer") => TypeRef::Primitive(int_prim(schema)),
         Some("number") => TypeRef::Primitive(number_prim(schema)),
-        Some("boolean") => TypeRef::Primitive(Prim::Bool),
+        Some("boolean") => {
+            if let Some(value) = schema.bool_literal() {
+                return TypeRef::Primitive(Prim::LiteralBool(value));
+            }
+            TypeRef::Primitive(Prim::Bool)
+        }
         Some("array") => {
             let item = schema
                 .items
@@ -13510,6 +13715,202 @@ fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
                 _ => None,
             },
         )
+}
+
+/// Lower the same scalar-narrowed enum at a named or inline object's use site.
+fn scalar_narrowed_enum_type(
+    name: String,
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<EnumType> {
+    let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
+    let values = target
+        .enum_values
+        .iter()
+        .flatten()
+        .filter_map(|value| value.as_str().map(str::to_owned))
+        .collect();
+    let mut declaration = build_enum(
+        target,
+        &name,
+        values,
+        clean_doc(
+            schema
+                .description
+                .as_deref()
+                .or(member.description.as_deref())
+                .or(target.description.as_deref()),
+        ),
+    );
+    if let Some(value) = narrowed_enum_example(schema, schemas) {
+        declaration.select_example_member(&value);
+    }
+    Some(declaration)
+}
+
+/// Select a schema-valid default example without changing the enum's public
+/// values: the scalar allOf member constrains those values at this use site.
+///
+/// Each member is validated against the complete schema the example documents:
+/// the enum, the scalar member, and the enclosing schema's own keywords beside
+/// its `allOf`. Fern's first member stands whenever it is valid, no member is,
+/// or any constraint cannot be decided here — one this validator does not
+/// read, or one load normalization dropped (`discarded_composition`).
+fn narrowed_enum_example(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<String> {
+    let (target, member) = scalar_narrowed_enum_ref(schema, schemas)?;
+    // The enclosing schema keeps its `allOf` only when it is not string-typed,
+    // so any `type` it declares contradicts the string members, and any other
+    // composition or reference beside the `allOf` is beyond this validator.
+    if schema.ty.is_some()
+        || schema.reference.is_some()
+        || schema.one_of.is_some()
+        || schema.any_of.is_some()
+    {
+        return None;
+    }
+    let values = target.enum_values.as_ref()?;
+    let first = values.first()?.as_str()?;
+    let admits = |value: &str| -> Option<bool> {
+        for node in [schema, target, member] {
+            if !string_node_admits(node, value)? {
+                return Some(false);
+            }
+        }
+        Some(true)
+    };
+    if admits(first)? {
+        return None;
+    }
+    for value in values.iter().filter_map(serde_json::Value::as_str) {
+        if admits(value)? {
+            return Some(value.to_owned());
+        }
+    }
+    None
+}
+
+/// Whether one string `value` satisfies `node`'s own string constraints, or
+/// `None` when that cannot be decided: a dropped composition, a dropped
+/// conditional, a `format`, an unreadable pattern or an unread `not` keyword.
+fn string_node_admits(node: &Schema, value: &str) -> Option<bool> {
+    if node.discarded_composition || node.drops_applicator() || node.format.is_some() {
+        return None;
+    }
+    let mut admitted = string_keywords_admit(
+        value,
+        node.enum_values.as_deref(),
+        node.const_value.as_ref(),
+        node.pattern.as_deref(),
+        node.min_length,
+        node.max_length,
+    )?;
+    if let Some(not) = &node.not_schema {
+        admitted &= !not_schema_admits(not, value)?;
+    }
+    Some(admitted)
+}
+
+/// The string keywords JSON Schema applies to a string instance. Lengths count
+/// code points, as JSON Schema does.
+fn string_keywords_admit(
+    value: &str,
+    enum_values: Option<&[serde_json::Value]>,
+    const_value: Option<&serde_json::Value>,
+    pattern: Option<&str>,
+    min_length: Option<u64>,
+    max_length: Option<u64>,
+) -> Option<bool> {
+    let length = u64::try_from(value.chars().count()).ok()?;
+    let matched = match pattern {
+        Some(pattern) => fancy_regex::Regex::new(pattern)
+            .ok()?
+            .is_match(value)
+            .ok()?,
+        None => true,
+    };
+    Some(
+        matched
+            && enum_values
+                .is_none_or(|values| values.iter().any(|item| item.as_str() == Some(value)))
+            && const_value.is_none_or(|constant| constant.as_str() == Some(value))
+            && min_length.is_none_or(|minimum| length >= minimum)
+            && max_length.is_none_or(|maximum| length <= maximum),
+    )
+}
+
+/// Whether a `not` keyword's schema admits `value`. Only the string keywords
+/// [`string_keywords_admit`] reads, `type` and annotations are decided; any
+/// other keyword leaves the answer undecided.
+fn not_schema_admits(not: &serde_json::Value, value: &str) -> Option<bool> {
+    let object = match not {
+        serde_json::Value::Bool(admits) => return Some(*admits),
+        serde_json::Value::Object(object) => object,
+        _ => return None,
+    };
+    const ANNOTATIONS: [&str; 5] = ["description", "title", "example", "examples", "default"];
+    const DECIDED: [&str; 6] = ["type", "enum", "const", "pattern", "minLength", "maxLength"];
+    if object
+        .keys()
+        .any(|key| !ANNOTATIONS.contains(&key.as_str()) && !DECIDED.contains(&key.as_str()))
+    {
+        return None;
+    }
+    let typed = match object.get("type") {
+        None => true,
+        Some(serde_json::Value::String(ty)) => ty == "string",
+        Some(_) => return None,
+    };
+    let length = |key: &str| match object.get(key) {
+        None => Some(None),
+        Some(bound) => bound.as_u64().map(Some),
+    };
+    let pattern = match object.get("pattern") {
+        None => None,
+        Some(pattern) => Some(pattern.as_str()?),
+    };
+    let enum_values = match object.get("enum") {
+        None => None,
+        Some(values) => Some(values.as_array()?.as_slice()),
+    };
+    Some(
+        typed
+            && string_keywords_admit(
+                value,
+                enum_values,
+                object.get("const"),
+                pattern,
+                length("minLength")?,
+                length("maxLength")?,
+            )?,
+    )
+}
+
+/// An enum component intersected with one scalar string member.
+fn scalar_narrowed_enum_ref<'a>(
+    schema: &'a Schema,
+    schemas: &'a IndexMap<String, Schema>,
+) -> Option<(&'a Schema, &'a Schema)> {
+    let members = schema.all_of.as_deref()?;
+    let [first, second] = members else {
+        return None;
+    };
+    let reference = first.reference.as_deref()?;
+    let member = second;
+    let target = resolve_ref_from_schemas(schemas, reference)?;
+    (target.ty.as_ref().and_then(TypeField::primary) == Some("string")
+        && target
+            .enum_values
+            .as_ref()
+            .is_some_and(|values| values.iter().all(|value| value.is_string()))
+        && member.reference.is_none()
+        && member.ty.as_ref().and_then(TypeField::primary) == Some("string")
+        && member.enum_values.is_none()
+        && member.pattern.is_some()
+        && member.properties.is_empty()
+        && member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.all_of.is_none())
+    .then_some((target, member))
 }
 
 /// A `$ref` to a plain string schema narrowed by inline `allOf` members that
@@ -13846,7 +14247,7 @@ fn own_deprecated(schema: &Schema) -> bool {
 /// an unknown (untyped) schema is bare `Any` and a containing field separately
 /// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
-    is_explicitly_nullable(schema)
+    (schema.reference.is_none() || schema.reference_nullable) && is_explicitly_nullable(schema)
         || is_null_variant(schema)
         || schema.all_of.iter().flatten().any(is_nullable_annotation)
 }
@@ -14248,6 +14649,7 @@ mod tests {
         let primitive = TypeRef::Primitive(Prim::Str);
         let types = vec![
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "GrandBase".to_string(),
                 module: "grand_base".to_string(),
                 bases: Vec::new(),
@@ -14259,6 +14661,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Base".to_string(),
                 module: "base".to_string(),
                 bases: vec!["GrandBase".to_string()],
@@ -14270,6 +14673,7 @@ mod tests {
                 docstring: None,
             }),
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Child".to_string(),
                 module: "child".to_string(),
                 bases: vec!["Base".to_string()],
@@ -16569,7 +16973,7 @@ mod tests {
                 .collect::<Vec<_>>(),
             ["cat", "dog"]
         );
-        assert!(union.variant_targets.is_empty());
+        assert_eq!(union.variant_targets, ["PetCat", "PetDog"]);
         assert_eq!(union.members[0].docstring.as_deref(), Some("A pet."));
         assert_eq!(union.members[1].docstring.as_deref(), Some("A pet."));
         assert_eq!(inferred_builder.types.len(), 2);
@@ -21467,6 +21871,34 @@ mod tests {
             Some(TypeRef::Primitive(Prim::Str))
         );
         assert!(!ir.endpoints[0].response_may_be_empty);
+    }
+    #[test]
+    fn enum_example_selection_accepts_only_declared_members() {
+        let source = Schema::default();
+        let mut enumeration = build_enum(
+            &source,
+            "Phase",
+            vec!["preparation".into(), "recording".into()],
+            None,
+        );
+        assert!(!enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "preparation");
+        assert!(!enumeration.select_example_member("absent"));
+        assert!(!enumeration.has_corrected_example());
+        assert!(enumeration.select_example_member("recording"));
+        assert!(enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "recording");
+        assert!(!enumeration.select_example_member("absent"));
+        assert_eq!(enumeration.example_member().unwrap().value, "recording");
+        // A later selection replaces the earlier one, even of the first member,
+        // and a copy of the enum keeps the selection with its own members.
+        assert!(enumeration.select_example_member("preparation"));
+        assert!(enumeration.has_corrected_example());
+        assert_eq!(enumeration.example_member().unwrap().value, "preparation");
+        let copied = enumeration.clone();
+        assert_eq!(copied.example_member().unwrap().value, "preparation");
+        let empty = build_enum(&source, "Empty", Vec::new(), None);
+        assert!(empty.example_member().is_none());
     }
     #[test]
     fn an_inline_body_never_appends_a_parent_field_an_own_field_redeclares() {

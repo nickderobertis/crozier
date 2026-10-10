@@ -810,6 +810,9 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
     for (dir, tree) in [
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
+        (MODELS_REFS_LITERALS_DIR, "fern-expected"),
+        (MODELS_REFS_REMOTE_DIR, "fern-expected"),
+        (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
@@ -1739,7 +1742,13 @@ fn golden_tree_failures(
         ));
         return failures;
     }
-    let context = Context::from_trees(expected_root, out);
+    let mut context = Context::from_trees(expected_root, out);
+    if Path::new(source).is_file() {
+        context = context.with_source_document(
+            crozier::openapi::load(Path::new(source))
+                .expect("the generated proof source remains valid"),
+        );
+    }
     let mut observed = Vec::new();
     for rel in expected_files {
         let generated = std::fs::read_to_string(out.join(&rel)).unwrap_or_default();
@@ -2428,6 +2437,10 @@ fn unwritten_module_imports_names_a_missing_module() {
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
+const MODELS_REFS_REMOTE_DIR: &str = "docs/fern-measurements/models-refs-remote";
+const MODELS_REFS_COMPOSED_NARROWING_DIR: &str =
+    "docs/fern-measurements/models-refs-composed-narrowing";
 
 /// Every hand-written generation fixture, found by listing
 /// `docs/openapi-surface/handwritten/` and nothing else, held to the contract
@@ -2448,6 +2461,443 @@ fn handwritten_fixtures_match_fern_goldens() {
          (docs/openapi-surface/handwritten/AGENTS.md):\n{}",
         failures.join("\n")
     );
+}
+
+/// Complete certified output for integer-valued numbers and encoded JSON strings,
+/// with adjacent ordinary scalar formats kept as controls.
+#[test]
+fn material_register_matches_certified_fern_tree() {
+    let root = repo_root();
+    let fixture = root.join("docs/openapi-surface/handwritten/material-register");
+    let source = tempfile::tempdir().expect("source recovery directory");
+    let spec = source.path().join("openapi.yml");
+    let missing_output = source.path().join("missing-sdk");
+    probe_command(&spec, &missing_output)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not read spec"));
+    assert!(
+        !missing_output.exists(),
+        "a missing source must write no SDK"
+    );
+    std::fs::copy(fixture.join("openapi.yml"), &spec).expect("restore the source");
+    let failures = filtered_tree_failures(
+        "material-register",
+        "docs/openapi-surface/handwritten/material-register/fern-expected",
+        &spec,
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let out = tempfile::tempdir().expect("literals output");
+    probe_command(&spec, out.path())
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let ledger = departure_ledger()
+        .golden(
+            "docs/fern-measurements/models-refs-literals/material-register/fern-expected",
+            &[],
+        )
+        .expect("registered certified golden");
+    let failures = golden_tree_failures(
+        "material-register literals",
+        "material-register/openapi.yml",
+        &ledger,
+        &root
+            .join(MODELS_REFS_LITERALS_DIR)
+            .join("material-register/fern-expected"),
+        out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// `crozier compare` over a config naming `spec`, whose reference command copies
+/// the certified Fern tree `certified` with `edit` (relative path, from, to)
+/// applied — the reference SDK a migrating user's own Fern run would write.
+/// Returns the exit status and the JSON report's one result.
+#[cfg(unix)]
+fn compare_with_certified_reference(
+    spec: &Path,
+    certified: &Path,
+    edit: Option<(&str, &str, &str)>,
+) -> (i32, serde_json::Value) {
+    let work = tempfile::tempdir().expect("compare workspace");
+    let reference = work.path().join("reference");
+    copy_dir(certified, &reference);
+    if let Some((rel, from, to)) = edit {
+        let text = std::fs::read_to_string(reference.join(rel)).expect("certified file");
+        let changed = text.replace(from, to);
+        assert_ne!(text, changed, "the reference edit must change {rel}");
+        std::fs::write(reference.join(rel), changed).unwrap();
+    }
+    let config = work.path().join("crozier.yml");
+    std::fs::write(
+        &config,
+        format!(
+            "spec: {}\npackage-name: fern\nproject-name: default_package_name\n\
+             reference:\n  command: cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            spec.display(),
+            reference.display()
+        ),
+    )
+    .unwrap();
+    let output = crozier()
+        .arg("compare")
+        .arg(&config)
+        .args(["--json", "-"])
+        .output()
+        .expect("run crozier compare");
+    let report: serde_json::Value =
+        serde_json::from_slice(&output.stdout).expect("compare's JSON report");
+    let results = report["results"].as_array().expect("report results");
+    assert_eq!(results.len(), 1, "{report:#}");
+    (
+        output.status.code().expect("exit status"),
+        results[0].clone(),
+    )
+}
+
+/// The certified tree matches through `crozier compare`, and a reference that
+/// differs from it by one ordinary annotation is a mismatch naming that file:
+/// the adjacent scalar shapes are not swept up by any departure.
+#[cfg(unix)]
+#[test]
+fn material_register_scalar_controls_reject_an_unexplained_mismatch() {
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/material-register");
+    let spec = fixture.join("openapi.yml");
+    let certified = fixture.join("fern-expected");
+    let (code, result) = compare_with_certified_reference(&spec, &certified, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
+    );
+    let rel = "src/fern/types/material.py";
+    let (code, result) = compare_with_certified_reference(
+        &spec,
+        &certified,
+        Some((
+            rel,
+            "density: typing.Optional[float]",
+            "density: typing.Optional[int]",
+        )),
+    );
+    assert_eq!(
+        code, 3,
+        "an ordinary number annotation mismatch must fail: {result:#}"
+    );
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!([rel]),
+        "{result:#}"
+    );
+}
+
+#[test]
+fn composed_model_shapes_match_the_certified_fern_trees() {
+    let root = repo_root();
+    let mut all_failures = Vec::new();
+    for name in [
+        "circuit-readings",
+        "garden-crown",
+        "artefact-catalogue",
+        "mineral-sample",
+        "nullable-store",
+        "sampling-branches",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("composed literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("composed literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn property_metadata_shapes_match_the_certified_fern_trees() {
+    let root = repo_root();
+    let mut all_failures = Vec::new();
+    for name in [
+        "blank-reading-description",
+        "compass-member-notes",
+        "gauge-public-fields",
+        "verified-seal",
+        "nullable-observer-notes",
+        "reservoir-ledger",
+        "required-marker-point",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("property metadata literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("property metadata literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn object_union_extension_keeps_nearby_refusals_and_recovers() {
+    let original =
+        include_str!("../../../docs/openapi-surface/handwritten/union-sample/openapi.yml");
+    let controls = [
+        original.replace("    Signal:\n      type: object\n", "    Signal:\n"),
+        original.replace("    Signal:\n      type: object\n      oneOf:", "    Signal:\n      type: object\n      anyOf:"),
+        original.replace("    Analog:\n      type: object\n      properties:\n        voltage:\n          type: number\n", "    Analog:\n      type: string\n"),
+    ];
+    for source in controls {
+        assert_ne!(source, original);
+        let dir = tempfile::tempdir().unwrap();
+        let spec = dir.path().join("openapi.yml");
+        let out = dir.path().join("sdk");
+        std::fs::write(&spec, source).unwrap();
+        for strict in [false, true] {
+            let mut command = probe_command(&spec, &out);
+            if strict {
+                command.arg("--fern-strict");
+            }
+            command
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains("object-extends-non-object"));
+            assert!(!out.exists());
+        }
+        std::fs::write(&spec, original).unwrap();
+        probe_command(&spec, &out).assert().success();
+        assert!(
+            std::fs::read_to_string(out.join("src/fern/types/sample.py"))
+                .unwrap()
+                .contains("voltage: typing.Optional[float]")
+        );
+    }
+}
+
+#[test]
+fn remaining_model_shapes_match_the_certified_fern_trees() {
+    let root = repo_root();
+    let mut all_failures = Vec::new();
+    for name in [
+        "measurement-phase",
+        "union-sample",
+        "woven-thread",
+        "parcel-response",
+    ] {
+        let fixture = root.join("docs/openapi-surface/handwritten").join(name);
+        let golden = format!("docs/openapi-surface/handwritten/{name}/fern-expected");
+        let failures = filtered_tree_failures(
+            name,
+            &golden,
+            &fixture.join("openapi.yml"),
+            &fixture.join("fern-expected"),
+            &[],
+        );
+        all_failures.extend(failures);
+        let out = tempfile::tempdir().expect("property metadata literals SDK");
+        probe_command(&fixture.join("openapi.yml"), out.path())
+            .args(["--enum-type", "literals"])
+            .assert()
+            .success();
+        let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/{name}/fern-expected");
+        let ledger = departure_ledger()
+            .golden(&literal_golden, &[])
+            .expect("property metadata literals golden");
+        all_failures.extend(golden_tree_failures(
+            name,
+            &fixture.join("openapi.yml").display().to_string(),
+            &ledger,
+            &root.join(&literal_golden),
+            out.path(),
+        ));
+    }
+    assert!(all_failures.is_empty(), "{}", all_failures.join("\n"));
+}
+
+#[test]
+fn property_extensions_accept_aliases_and_crozier_precedence() {
+    let reference_doc =
+        std::fs::read_to_string(repo_root().join("docs/fern-reference.md")).unwrap();
+    for (extension, placement, effect) in [
+        (
+            "ignore",
+            "operation, component schema, object property, parameter",
+            "Leaves the node out of the SDK.",
+        ),
+        (
+            "enum",
+            "string enum schema",
+            "The member name and, in Python-enums mode, description for each value.",
+        ),
+        (
+            "type",
+            "boolean schema",
+            "`literal<true>` and `literal<false>` preserve a boolean literal annotation.",
+        ),
+    ] {
+        let fern = format!("`x-fern-{extension}`");
+        let canonical = format!("`x-crozier-{extension}`");
+        let rows: Vec<_> = reference_doc
+            .lines()
+            .filter(|line| line.starts_with(&format!("| {fern} |")))
+            .map(|line| {
+                line.split('|')
+                    .skip(1)
+                    .take(4)
+                    .map(str::trim)
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        assert_eq!(rows, vec![vec![fern.as_str(), canonical.as_str(), placement, effect]],
+            "vendor-extension table drift: restore the documented {extension} contract or update its real-binary proof");
+    }
+    let root = repo_root().join("docs/openapi-surface/handwritten");
+    for (fixture, extension, conflict, module, expected) in [
+        ("verified-seal", "type", "          x-crozier-type: literal<false>\n", "seal", "verified: typing.Optional[typing.Literal[False]]"),
+        ("gauge-public-fields", "ignore", "          x-crozier-ignore: false\n", "gauge", "calibration_note: typing.Optional[str]"),
+        ("compass-member-notes", "enum", "      x-crozier-enum:\n        south:\n          description: A revised southern direction.\n", "compass", "A revised southern direction."),
+    ] {
+        let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+        for spec in [original.replace(&format!("x-fern-{extension}"), &format!("x-crozier-{extension}")), if extension == "type" {
+            let needle = "          x-fern-type: literal<true>\n";
+            assert_eq!(original.matches(needle).count(), 1);
+            original.replace(needle, &format!("{needle}{conflict}"))
+        } else { format!("{original}{conflict}") }] {
+            let dir = tempfile::tempdir().unwrap();
+            let source = dir.path().join("openapi.yml");
+            std::fs::write(&source, &spec).unwrap();
+            let out = dir.path().join("sdk");
+            probe_command(&source, &out).assert().success();
+            let model = std::fs::read_to_string(out.join(format!("src/fern/types/{module}.py"))).unwrap();
+            if spec.contains(conflict) {
+                assert!(model.contains(expected), "{fixture}: {model}");
+            } else {
+                let reference = root.join(fixture).join("fern-expected");
+                let golden = format!("docs/openapi-surface/handwritten/{fixture}/fern-expected");
+                let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+                let failures = golden_tree_failures(fixture, &source.display().to_string(), &ledger, &reference, &out);
+                assert!(failures.is_empty(), "{}", failures.join("\n"));
+            }
+        }
+    }
+    // Each table placement and literal value is exercised through the same CLI
+    // boundary as the aliases above, including names and descriptions together.
+    for spelling in ["fern", "crozier"] {
+        for fixture in [
+            "gauge-public-fields",
+            "compass-member-notes",
+            "verified-seal",
+        ] {
+            let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
+            let mut document: serde_json::Value = serde_yaml_ng::from_str(&original).unwrap();
+            let prefix = format!("x-{spelling}");
+            let (module, expected) = match fixture {
+                "gauge-public-fields" => {
+                    document["components"]["schemas"]["Gauge"]["properties"]["calibration_note"] =
+                        serde_json::json!({"type":"string", format!("{prefix}-ignore"):true});
+                    document["components"]["schemas"]["HiddenGauge"] = serde_json::json!({
+                        "type":"object", format!("{prefix}-ignore"):true,
+                        "properties":{"hidden":{"type":"string"}}
+                    });
+                    document["paths"]["/hidden-records"] = serde_json::json!({"get":{
+                        "operationId":"read_hidden_records", format!("{prefix}-ignore"):true,
+                        "responses":{"204":{"description":"Hidden"}}
+                    }});
+                    ("gauge", "display: typing.Optional[str]")
+                }
+                "compass-member-notes" => {
+                    document["components"]["schemas"]["Compass"]
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("x-fern-enum");
+                    document["components"]["schemas"]["Compass"][format!("{prefix}-enum")] = serde_json::json!({"south":{"name":"southern", "description":"Towards the southern horizon."}});
+                    ("compass", "SOUTHERN = \"south\"")
+                }
+                "verified-seal" => {
+                    document["components"]["schemas"]["Seal"]["properties"]["verified"] = serde_json::json!({"type":"boolean", format!("{prefix}-type"):"literal<false>"});
+                    ("seal", "verified: typing.Optional[typing.Literal[False]]")
+                }
+                _ => unreachable!(),
+            };
+            let dir = tempfile::tempdir().unwrap();
+            let spec = dir.path().join("openapi.yml");
+            std::fs::write(&spec, document.to_string()).unwrap();
+            let out = dir.path().join("sdk");
+            probe_command(&spec, &out).assert().success();
+            let model =
+                std::fs::read_to_string(out.join(format!("src/fern/types/{module}.py"))).unwrap();
+            assert!(model.contains(expected), "{fixture}/{spelling}: {model}");
+            match fixture {
+                "gauge-public-fields" => {
+                    assert!(!model.contains("calibration_note"));
+                    assert!(!out.join("src/fern/types/hidden_gauge.py").exists());
+                    assert!(!std::fs::read_to_string(out.join("src/fern/client.py"))
+                        .unwrap()
+                        .contains("read_hidden_records"));
+                }
+                "compass-member-notes" => {
+                    assert!(model.contains("Towards the southern horizon."));
+                    assert!(!model.contains("    SOUTH = "));
+                }
+                "verified-seal" => assert!(model.contains("ordinary: typing.Optional[bool]")),
+                _ => unreachable!(),
+            }
+        }
+    }
+    let original = std::fs::read_to_string(root.join("verified-seal/openapi.yml")).unwrap();
+    let source = original.replace(
+        "          x-fern-type: literal<true>\n",
+        "          x-fern-type: literal<true>\n          x-crozier-type: literal<unsupported>\n",
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(&spec, source).unwrap();
+    let out = dir.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let model = std::fs::read_to_string(out.join("src/fern/types/seal.py")).unwrap();
+    assert!(model.contains("verified: typing.Optional[bool]"), "{model}");
 }
 
 /// A byte-formatted text response streams in either enum mode. The complete
@@ -14217,7 +14667,7 @@ fn enums_referenced_by_retained_models_remain_root_types() {
 }
 
 #[test]
-fn nullable_body_fields_and_array_items_use_optional_annotations() {
+fn body_conversion_ignores_ref_nullable_siblings_and_preserves_nullable_inline_and_array_types() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /widgets:\n    patch:\n      operationId: patchWidget\n      tags: [widgets]\n      requestBody:\n        content:\n          application/json:\n            schema: { $ref: '#/components/schemas/UpdateWidget' }\n      responses:\n        '200':\n          description: Updated\n          content:\n            application/json:\n              schema: { $ref: '#/components/schemas/UpdateWidget' }\ncomponents:\n  schemas:\n    Language: { type: string, nullable: true }\n    WidgetMeta:\n      type: object\n      properties:\n        type: { type: string }\n    UpdateWidget:\n      type: object\n      properties:\n        languages: { type: array, items: { $ref: '#/components/schemas/Language' } }\n        metadata: { $ref: '#/components/schemas/WidgetMeta', nullable: true, readOnly: true }\n        team:\n          type: object\n          nullable: true\n          properties:\n            name: { type: string }\n",
     );
@@ -14226,7 +14676,7 @@ fn nullable_body_fields_and_array_items_use_optional_annotations() {
     let model = std::fs::read_to_string(out.join("src/acme/types/update_widget.py"))
         .expect("update widget model is generated");
     assert!(
-        raw.contains("annotation=typing.Optional[WidgetMeta], direction=\"write\"")
+        raw.contains("annotation=WidgetMeta, direction=\"write\"")
             && raw.contains("metadata: typing.Optional[WidgetMeta] = OMIT")
             && raw.contains("annotation=typing.Optional[UpdateWidgetTeam], direction=\"write\"")
             && raw.contains("team: typing.Optional[UpdateWidgetTeam] = OMIT")
@@ -14236,7 +14686,7 @@ fn nullable_body_fields_and_array_items_use_optional_annotations() {
             && model.contains(
                 "languages: typing.Optional[typing.List[typing.Optional[Language]]] = None"
             ),
-        "nullable conversion metadata and referenced array items should remain optional:\n{raw}\n{model}"
+        "nullable ref siblings are ignored; nullable array targets and inline objects remain optional:\n{raw}\n{model}"
     );
 }
 
@@ -16822,6 +17272,124 @@ fn a_remote_url_ref_is_fetched_and_generates_against_the_referenced_document() {
         widget.contains("owner: typing.Optional[Address] = None")
             && widget.contains("tags: typing.Optional[Tags] = None"),
         "the model should be typed against the fetched schemas:\n{widget}"
+    );
+}
+
+/// The same complete certified package proves both defining-document pointers
+/// and named external components at operation response use sites.
+#[test]
+fn remote_model_components_match_the_certified_fern_tree() {
+    let server = LocalDocumentServer::start(&[(
+        "/models.yml",
+        include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"),
+    )]);
+    let source = tempfile::tempdir().expect("remote source");
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    );
+    let failed_output = source.path().join("failed-sdk");
+    std::fs::write(
+        &spec,
+        text.replace("@REMOTE_URL@", &format!("{}/missing", server.base_url)),
+    )
+    .unwrap();
+    probe_command(&spec, &failed_output)
+        .assert()
+        .failure()
+        .stderr(predicate::str::contains("could not resolve remote $ref"));
+    assert!(!failed_output.exists(), "a failed fetch must write no SDK");
+    std::fs::write(&spec, text.replace("@REMOTE_URL@", &server.base_url)).unwrap();
+    let out = tempfile::tempdir().expect("remote SDK");
+    probe_command(&spec, out.path()).assert().success();
+    let catalogue = std::fs::read_to_string(out.path().join("src/fern/types/catalogue.py"))
+        .expect("the local component retains its identity");
+    assert!(
+        catalogue.contains("curator: typing.Optional[Curator] = None"),
+        "a local pointer inside an external document names that document's component:\n{catalogue}"
+    );
+    let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+    assert!(
+        client.contains("from .types.curator import Curator"),
+        "the external response keeps its component identity:\n{client}"
+    );
+    let root = repo_root();
+    let golden = format!("{MODELS_REFS_REMOTE_DIR}/library-records/fern-expected");
+    let ledger = departure_ledger()
+        .golden(&golden, &[])
+        .expect("remote golden");
+    let failures = golden_tree_failures(
+        "remote model components",
+        "library-records/openapi.yml + models.yml over loopback HTTP",
+        &ledger,
+        &root.join(&golden),
+        out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let literal_out = tempfile::tempdir().expect("remote literals SDK");
+    probe_command(&spec, literal_out.path())
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let literal_golden = format!("{MODELS_REFS_LITERALS_DIR}/library-records/fern-expected");
+    let literal_ledger = departure_ledger()
+        .golden(&literal_golden, &[])
+        .expect("remote literals golden");
+    let failures = golden_tree_failures(
+        "remote model components literals",
+        "library-records/openapi.yml + models.yml over loopback HTTP",
+        &literal_ledger,
+        &root.join(&literal_golden),
+        literal_out.path(),
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// `crozier compare` fetches the external document over loopback HTTP and
+/// matches the certified tree, while a reference whose catalogue types its
+/// external dependency as `Any` (what resolving the pointer against the root
+/// would produce) is a mismatch naming that file.
+#[cfg(unix)]
+#[test]
+fn remote_model_controls_reject_an_unexplained_dependency_mismatch() {
+    let server = LocalDocumentServer::start(&[(
+        "/models.yml",
+        include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"),
+    )]);
+    let source = tempfile::tempdir().expect("remote source");
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    );
+    std::fs::write(&spec, text.replace("@REMOTE_URL@", &server.base_url)).unwrap();
+    let certified = repo_root()
+        .join(MODELS_REFS_REMOTE_DIR)
+        .join("library-records/fern-expected");
+    let (code, result) = compare_with_certified_reference(&spec, &certified, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
+    );
+    let rel = "src/fern/types/catalogue.py";
+    let (code, result) = compare_with_certified_reference(
+        &spec,
+        &certified,
+        Some((
+            rel,
+            "typing.Optional[Curator]",
+            "typing.Optional[typing.Any]",
+        )),
+    );
+    assert_eq!(
+        code, 3,
+        "an unexplained dependency mismatch must fail: {result:#}"
+    );
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!([rel]),
+        "{result:#}"
     );
 }
 
@@ -23082,6 +23650,397 @@ fn sdk_env_body_query_collision_keeps_both_callers_values() {
             String::from_utf8_lossy(&run.stdout),
             String::from_utf8_lossy(&run.stderr)
         );
+    }
+}
+
+#[test]
+fn composed_narrowing_declines_the_example_correction_and_matches_certified_fern() {
+    // `DossierStatus` holds `maxLength: 5` in an `allOf` that load normalization
+    // drops from the string node. Fern's `draft` fails the use-site pattern, and
+    // the only replacement, `sealed`, fails that length, so crozier keeps Fern's
+    // example rather than claim a valid one.
+    let root = repo_root();
+    let fixture = root
+        .join(MODELS_REFS_COMPOSED_NARROWING_DIR)
+        .join("dossier-status");
+    let spec = fixture.join("openapi.yml");
+    let source = spec.to_str().expect("UTF-8 fixture path");
+    let composition = "      allOf:\n      - maxLength: 5\n";
+    let text = std::fs::read_to_string(&spec).unwrap();
+    assert!(text.contains(composition));
+    for (mode, golden) in [
+        (
+            None,
+            format!("{MODELS_REFS_COMPOSED_NARROWING_DIR}/dossier-status/fern-expected"),
+        ),
+        (
+            Some("literals"),
+            format!("{MODELS_REFS_LITERALS_DIR}/dossier-status/fern-expected"),
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("composed narrowing SDK");
+        let mut command = probe_command(&spec, out.path());
+        if let Some(mode) = mode {
+            command.args(["--enum-type", mode]);
+        }
+        command.assert().success();
+        let readme = std::fs::read_to_string(out.path().join("README.md")).unwrap();
+        let declined = if mode.is_some() {
+            "standing=\"draft\","
+        } else {
+            "standing=DossierStanding.DRAFT,"
+        };
+        assert!(readme.contains(declined), "{readme}");
+        let ledger = departure_ledger()
+            .golden(&golden, &[])
+            .expect("composed narrowing golden");
+        let failures = golden_tree_failures(
+            "composed narrowing",
+            source,
+            &ledger,
+            &root.join(&golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+
+    // The correction is declined only for the discarded composition: without it,
+    // or with the constraint moved where it is visible, the use-site pattern
+    // still selects `sealed` or keeps Fern's member as the constraint requires.
+    let work = tempfile::tempdir().expect("composed narrowing controls");
+    for (changed, expected) in [
+        (
+            text.replace(composition, ""),
+            "standing=DossierStanding.SEALED,",
+        ),
+        (
+            text.replace(composition, "      anyOf:\n      - maxLength: 5\n"),
+            "standing=DossierStanding.DRAFT,",
+        ),
+        (
+            text.replace(composition, "      maxLength: 5\n"),
+            "standing=DossierStanding.DRAFT,",
+        ),
+    ] {
+        assert_ne!(changed, text);
+        let control = work.path().join("openapi.yml");
+        std::fs::write(&control, &changed).unwrap();
+        let out = work.path().join("sdk");
+        let _ = std::fs::remove_dir_all(&out);
+        probe_command(&control, &out).assert().success();
+        let readme = std::fs::read_to_string(out.join("README.md")).unwrap();
+        assert!(readme.contains(expected), "{expected}\n{readme}");
+    }
+}
+
+#[test]
+fn enclosing_constraints_choose_a_fully_valid_example_and_match_certified_fern() {
+    // `TideWindow` is `slack`, `flood`, `ebb`, `neap`; both use sites exclude
+    // `slack` by pattern. `Crossing.window` adds `maxLength: 4` beside its
+    // `allOf`, which rejects `flood`, the member the pattern alone admits first,
+    // so the example is `ebb`. `Charter.window` also adds `not: {enum: [ebb,
+    // neap]}`, which leaves no member valid, so it keeps Fern's `slack`.
+    let root = repo_root();
+    let fixture = root.join(HANDWRITTEN_DIR).join("harbour-window");
+    let spec = fixture.join("openapi.yml");
+    let source = spec.to_str().expect("UTF-8 fixture path");
+    for (mode, golden, corrected, kept) in [
+        (
+            None,
+            format!("{HANDWRITTEN_DIR}/harbour-window/fern-expected"),
+            "window=CrossingWindow.EBB,",
+            "window=CharterWindow.SLACK,",
+        ),
+        (
+            Some("literals"),
+            format!("{MODELS_REFS_LITERALS_DIR}/harbour-window/fern-expected"),
+            "window=\"ebb\",",
+            "window=\"slack\",",
+        ),
+    ] {
+        let out = tempfile::tempdir().expect("enclosing constraint SDK");
+        let mut command = probe_command(&spec, out.path());
+        if let Some(mode) = mode {
+            command.args(["--enum-type", mode]);
+        }
+        command.assert().success();
+        let client = std::fs::read_to_string(out.path().join("src/fern/client.py")).unwrap();
+        let crossing = client.find("def book_crossing").expect("crossing method");
+        let charter = client.find("def book_charter").expect("charter method");
+        assert!(client[crossing..charter].contains(corrected), "{client}");
+        assert!(client[charter..].contains(kept), "{client}");
+        let ledger = departure_ledger()
+            .golden(&golden, &[])
+            .expect("enclosing constraint golden");
+        let failures = golden_tree_failures(
+            "enclosing constraint",
+            source,
+            &ledger,
+            &root.join(&golden),
+            out.path(),
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+    }
+}
+
+#[test]
+fn narrowing_evidence_command_validates_inputs_before_importing_sdk() {
+    let script =
+        repo_root().join("crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py");
+    let python = ["python3", "python"]
+        .into_iter()
+        .find(|candidate| {
+            std::process::Command::new(candidate)
+                .arg("--version")
+                .output()
+                .is_ok_and(|output| output.status.success())
+        })
+        .expect("Python 3 required for repository evidence tools");
+    let run = |args: &[&str]| {
+        std::process::Command::new(python)
+            .arg(&script)
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    assert!(run(&["--help"]).status.success());
+    let missing = run(&[]);
+    assert!(!missing.status.success());
+    assert!(String::from_utf8_lossy(&missing.stderr).contains("usage:"));
+    let absent = run(&["absent-sdk", "absent-source"]);
+    assert!(!absent.status.success());
+    assert!(String::from_utf8_lossy(&absent.stderr).contains("supply the complete SDK"));
+    assert!(run(&["--help"]).status.success());
+}
+
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers() {
+    let root = repo_root();
+    let fixture = root.join("docs/openapi-surface/handwritten/measurement-phase");
+    let script =
+        root.join("crates/crozier-e2e/tests/e2e/evidence/pattern-narrowed-enum-example.py");
+    let mut requirements = pyproject_requirements(
+        &std::fs::read_to_string(fixture.join("fern-expected/pyproject.toml")).unwrap(),
+    );
+    requirements.extend(["jsonschema==4.26.0".into(), "PyYAML==6.0.3".into()]);
+    let python = cached_python_env(
+        &python_env_root(),
+        "crozier-narrowing-evidence",
+        &requirements,
+        uv_available(),
+    )
+    .expect("certified SDK evidence environment");
+    let source_text = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
+    let source_document: serde_json::Value = serde_yaml_ng::from_str(&source_text).unwrap();
+    for golden in [
+        fixture.join("fern-expected"),
+        root.join("docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected"),
+    ] {
+        let sdk = tempfile::tempdir().unwrap();
+        copy_dir(&golden, sdk.path());
+        let source = sdk.path().join("source.yml");
+        std::fs::write(&source, &source_text).unwrap();
+        let run = || {
+            let mut command = Command::new(&python);
+            command.arg(&script).arg(sdk.path()).arg(&source);
+            command
+        };
+        run().assert().success().stdout(predicate::str::contains(
+            "8 generated phase arguments rejected",
+        ));
+        std::fs::remove_file(&source).unwrap();
+        run()
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains("source file missing"));
+        std::fs::write(&source, &source_text).unwrap();
+        run().assert().success();
+
+        let empty = tempfile::tempdir().unwrap();
+        Command::new(python_interpreter().expect("Python 3 for an isolated empty environment"))
+            .args(["-m", "venv", "--without-pip"])
+            .arg(empty.path())
+            .assert()
+            .success();
+        Command::new(venv_python(empty.path()))
+            .arg(&script)
+            .arg(sdk.path())
+            .arg(&source)
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(
+                "install the certified SDK requirements",
+            ));
+        run().assert().success();
+
+        for (case, expected) in [
+            ("structure", "invalid narrowing proof source"),
+            ("cardinality", "exactly two allOf members"),
+            ("reference", "first member must reference Phase"),
+            ("invalid-schema", "invalid narrowing proof source"),
+            (
+                "accepted-default",
+                "does not demonstrate the certified invalid default",
+            ),
+            ("replacement", "replacement recording is invalid"),
+        ] {
+            let mut document = source_document.clone();
+            let members = &mut document["components"]["schemas"]["Measurement"]["properties"]
+                ["phase"]["allOf"];
+            match case {
+                "structure" => document["components"] = serde_json::json!([]),
+                "cardinality" => {
+                    members.as_array_mut().unwrap().pop();
+                }
+                "reference" => members[0]["$ref"] = serde_json::json!("#/components/schemas/Other"),
+                "invalid-schema" => members[1]["type"] = serde_json::json!(17),
+                "accepted-default" => members[1]["pattern"] = serde_json::json!("^.*$"),
+                "replacement" => members[1]["pattern"] = serde_json::json!("^excluded$"),
+                _ => unreachable!(),
+            }
+            std::fs::write(&source, document.to_string()).unwrap();
+            run()
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains(expected));
+            std::fs::write(&source, &source_text).unwrap();
+            run().assert().success();
+        }
+
+        let entry = sdk.path().join("src/fern/__init__.py");
+        let original_entry = std::fs::read_to_string(&entry).unwrap();
+        std::fs::remove_file(&entry).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "no certified src/fern/__init__.py",
+        ));
+        std::fs::write(&entry, &original_entry).unwrap();
+        run().assert().success();
+        std::fs::write(&entry, "raise ImportError('corrupted entry point')\n").unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "certified entry point failed to import",
+        ));
+        std::fs::write(&entry, original_entry).unwrap();
+        run().assert().success();
+
+        let readme = sdk.path().join("README.md");
+        let original = std::fs::read_to_string(&readme).unwrap();
+        std::fs::remove_file(&readme).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "invalid certified example evidence",
+        ));
+        std::fs::write(&readme, &original).unwrap();
+        run().assert().success();
+        let corrupted_expression = if original.contains("phase=MeasurementPhase.PREPARATION,") {
+            original.replace("phase=MeasurementPhase.PREPARATION,", "phase=object(),")
+        } else {
+            original.replace("phase=\"preparation\",", "phase=object(),")
+        };
+        assert_ne!(corrupted_expression, original);
+        let wrong_default = original
+            .replace("Phase.PREPARATION,", "Phase.RECORDING,")
+            .replace("phase=\"preparation\",", "phase=\"recording\",");
+        assert_ne!(wrong_default, original);
+        let incomplete = original
+            .lines()
+            .filter(|line| !line.contains("phase="))
+            .collect::<Vec<_>>()
+            .join("\n");
+        for (changed, expected) in [
+            (corrupted_expression, "unsupported phase expression"),
+            (
+                wrong_default,
+                "does not demonstrate the certified invalid default",
+            ),
+            (incomplete, "expected 8 invalid phase arguments"),
+            (
+                original.replace("```python\n", "```python\n(\n"),
+                "invalid certified example evidence",
+            ),
+        ] {
+            std::fs::write(&readme, changed).unwrap();
+            run()
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains(expected));
+            std::fs::write(&readme, &original).unwrap();
+            run().assert().success();
+        }
+        let client = sdk.path().join("src/fern/client.py");
+        let original_client = std::fs::read_to_string(&client).unwrap();
+        std::fs::write(&client, format!("{original_client}\n(\n")).unwrap();
+        run().assert().failure().stderr(predicate::str::contains(
+            "invalid certified example evidence",
+        ));
+        std::fs::write(&client, original_client).unwrap();
+        run().assert().success();
+    }
+}
+
+#[test]
+fn remote_external_component_control_keeps_nested_document_inlining() {
+    let server = LocalDocumentServer::start(&[
+        (
+            "/nested-control.yml",
+            include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/nested-control.yml"),
+        ),
+        (
+            "/models.yml",
+            include_str!("../../../docs/fern-measurements/models-refs-remote/library-records/documents/models.yml"),
+        ),
+    ]);
+    let source = tempfile::tempdir().unwrap();
+    let spec = source.path().join("openapi.yml");
+    let text = include_str!(
+        "../../../docs/fern-measurements/models-refs-remote/library-records/documents/openapi.yml"
+    )
+    .replace(
+        "@REMOTE_URL@/models.yml#/components/schemas/Catalogue",
+        "@REMOTE_URL@/nested-control.yml#/components/schemas/Catalogue",
+    )
+    .replace("@REMOTE_URL@", &server.base_url);
+    std::fs::write(&spec, text).unwrap();
+    let out = source.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let catalogue = std::fs::read_to_string(out.join("src/fern/types/catalogue.py")).unwrap();
+    assert!(
+        catalogue.contains("curator: typing.Optional[CatalogueCurator]"),
+        "{catalogue}"
+    );
+    assert!(out.join("src/fern/types/catalogue_curator.py").is_file());
+    assert!(out.join("src/fern/types/curator.py").is_file());
+    assert!(unwritten_module_imports(&out).is_empty());
+}
+
+#[test]
+fn response_component_collision_keeps_the_existing_schema_identity() {
+    let original = std::fs::read_to_string(
+        repo_root().join("docs/openapi-surface/handwritten/parcel-response/openapi.yml"),
+    )
+    .unwrap();
+    let source = original.replace(
+        "  schemas:\n",
+        "  schemas:\n    Purged:\n      type: string\n",
+    );
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    std::fs::write(&spec, source).unwrap();
+    for mode in ["python-enums", "literals"] {
+        let out = dir.path().join(mode);
+        probe_command(&spec, &out)
+            .args(["--enum-type", mode])
+            .assert()
+            .success();
+        let existing = std::fs::read_to_string(out.join("src/fern/types/purged.py")).unwrap();
+        assert!(existing.contains("Purged = str"), "{existing}");
+        assert!(!existing.contains("removed_at"));
+        let response =
+            std::fs::read_to_string(out.join("src/fern/types/read_parcel_response.py")).unwrap();
+        assert!(
+            response.contains("typing.Union[Parcel, Purged]"),
+            "{response}"
+        );
+        assert!(unwritten_module_imports(&out).is_empty());
     }
 }
 

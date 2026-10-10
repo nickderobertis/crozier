@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "88e774388db9b54874af4a55fec6f0e38c7629a24b000ad84e4e84c0fd516ea4"
+
+[[covers]]
+key = "ref-into-component-response-schema-named-by-last-segment"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

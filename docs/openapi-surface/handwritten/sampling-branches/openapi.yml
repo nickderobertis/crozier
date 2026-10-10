@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reading'
+components:
+  schemas:
+    Reading:
+      allOf:
+      - type: object
+        properties:
+          index:
+            type: integer
+      - oneOf:
+        - type: object
+          properties:
+            rate:
+              type: integer
+              description: Recorded sampling rate.
+            unit:
+              not: {}
+          required:
+          - rate
+        - type: object
+          properties:
+            unit:
+              type: string
+            rate:
+              not: {}
+          required:
+          - unit
