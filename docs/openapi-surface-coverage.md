@@ -109,7 +109,7 @@ split four ways:
 same way. The 494 `golden` rows declare 945 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`c33650391` over all 244 golden tests, with the records it links splits them
+`ac0535b3a` over all 244 golden tests, with the records it links splits them
 three ways:
 
 - **854 are reached by a registered real specification.** A golden-only
