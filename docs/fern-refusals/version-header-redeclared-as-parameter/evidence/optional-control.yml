@@ -1,0 +1,52 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Calibration Atlas",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://atlas.example.net"
+    }
+  ],
+  "x-fern-version": {
+    "header": "X-Calibration-Revision",
+    "default": "stable",
+    "values": [
+      "stable",
+      "preview"
+    ]
+  },
+  "paths": {
+    "/measurements": {
+      "get": {
+        "operationId": "listMeasurements",
+        "parameters": [
+          {
+            "name": "X-Calibration-Revision",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Measurements",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

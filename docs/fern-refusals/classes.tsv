@@ -17,6 +17,7 @@ generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too 
 generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	11/11
 generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1
 head-request-body	documents	check	1	Endpoint is a HEAD, so it cannot have a request body.	1	refuse	HEAD /patina	1/1
+header-default-differs-across-operations	documents	generate	1	Expected example to be "<…>". Example is: "<…>"	0	refuse	header X-Projection	0/0
 heap-exhausted	documents	check	1	FATAL ERROR: <…> JavaScript heap out of memory	2	refuse	components/schemas/Tool/properties/composition	2/2
 list-default-not-array	documents	check	1	Default value for list type must be an array	7	refuse	Thing/properties/tags	7/7
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	13/13
@@ -36,3 +37,4 @@ undefined-component-reference	documents	check	0	<…> is undefined	3	refuse	Cart
 unresolved-reference	documents	check	0	Failed to resolve <…>	42	refuse	components/securitySchemes/BearerAuth	42/42
 unresolved-schema-reference	documents	check	0	Unexpected error: Failed to resolve schema reference: <…>	49	refuse	attributes reference #/components/schemas/custom_attributes	49/49
 unsupported-openapi-version	documents	check	1	Unsupported OpenAPI version: <…>	20	refuse	openapi 3.2.0	20/20
+version-header-redeclared-as-parameter	documents	generate	1	Unexpected header "<…>"	0	refuse	header X-Calibration-Revision	0/0

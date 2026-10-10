@@ -1,0 +1,52 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Signal Observatory",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://signals.example.net"
+    }
+  ],
+  "paths": {
+    "/stations/{station}/sensors/{sensor}": {
+      "get": {
+        "operationId": "listSignals",
+        "parameters": [
+          {
+            "name": "sensor",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          },
+          {
+            "name": "station",
+            "in": "path",
+            "schema": {
+              "type": "string"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Signals",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

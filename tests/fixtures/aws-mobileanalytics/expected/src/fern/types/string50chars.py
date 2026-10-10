@@ -1,0 +1,3 @@
+
+
+String50Chars = str

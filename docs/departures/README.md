@@ -162,7 +162,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 8 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 10 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -194,6 +194,15 @@ when the two differ.
 - **crozier writes:** Method snippets and parameter lists without it.
 - **Why:** The examples contradict the generated code: the method has no such argument, so the documented call raises `TypeError` for an unexpected keyword argument, and `reference.md` documents an argument the method does not have.
 - **Evidence:** [`docs/departures/evidence/constant-header-docs-arguments.md`](../../docs/departures/evidence/constant-header-docs-arguments.md)
+
+### `date-header-constructor-example`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A promoted optional date header in a client constructor's Python examples.
+- **Fern writes:** The constructor receives a YOUR placeholder string despite its dt.date annotation.
+- **crozier writes:** The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
+- **Why:** The placeholder is invalid for the declared date schema. The correction uses the certified generator's own date-example form and leaves string placeholders intact.
+- **Evidence:** [`docs/departures/evidence/date-header-constructor-example.md`](../../docs/departures/evidence/date-header-constructor-example.md)
 
 ### `fern-metadata-generator-config`
 
@@ -275,5 +284,14 @@ when the two differ.
 - **crozier writes:** `X-Crozier-SDK-Name` naming crozier's project name and `X-Crozier-SDK-Version` carrying crozier's fixed packaged version, `0.0.0`.
 - **Why:** crozier always writes the packaged wrapper's identity pair from its own settings; which name and version a reference was published under is release metadata outside the generated code.
 - **Evidence:** [`docs/departures/evidence/sdk-name-version-headers.md`](../../docs/departures/evidence/sdk-name-version-headers.md)
+
+### `sdk-variable-docs-examples`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A path parameter lifted into a required client field by a document SDK variable: README.md and reference.md examples and parameter documentation.
+- **Fern writes:** Constructors omit the required field; method documentation retains the lifted parameter and positional placeholder although the method has no positional argument.
+- **crozier writes:** Constructors pass the lifted field by keyword and method documentation follows the generated signature.
+- **Why:** Constructor examples fail to bind because their required field is missing; method examples pass an argument the generated method does not accept.
+- **Evidence:** [`docs/departures/evidence/sdk-variable-docs-examples.md`](../../docs/departures/evidence/sdk-variable-docs-examples.md)
 
 <!-- END GENERATED CATALOG -->

@@ -84,6 +84,7 @@
     "docs/openapi-surface/handwritten/compass-member-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/composition-index-pointer/fern-expected": {},
     "docs/openapi-surface/handwritten/contentless-created-success/fern-expected": {},
+    "docs/openapi-surface/handwritten/declared-rename-control/fern-expected": {},
     "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected": {},
     "docs/openapi-surface/handwritten/float-typed-properties/fern-expected": {},
@@ -106,6 +107,14 @@
     "docs/openapi-surface/handwritten/nullable-observer-notes/fern-expected": {},
     "docs/openapi-surface/handwritten/nullable-query-union-items/fern-expected": {},
     "docs/openapi-surface/handwritten/nullable-store/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-base-path/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-client-date/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-client-headers/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-client-variable/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-nullable-query/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-query-extensions/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-route-order/fern-expected": {},
+    "docs/openapi-surface/handwritten/observatory-unlocated-parameter/fern-expected": {},
     "docs/openapi-surface/handwritten/ore-bin-screen/fern-expected": {},
     "docs/openapi-surface/handwritten/parcel-response/fern-expected": {},
     "docs/openapi-surface/handwritten/property-sole-anyof-composed-member/fern-expected": {},
@@ -129,6 +138,7 @@
     "docs/openapi-surface/handwritten/union-sample/fern-expected": {},
     "docs/openapi-surface/handwritten/unread-date-time-examples/fern-expected": {},
     "docs/openapi-surface/handwritten/verified-seal/fern-expected": {},
+    "docs/openapi-surface/handwritten/warehouse-header-token/fern-expected": {},
     "docs/openapi-surface/handwritten/woven-thread/fern-expected": {},
     "docs/openapi-surface/handwritten/x-fern-ignore-schema/fern-expected": {},
     "docs/openapi-surface/probe-expected/annotated-ref-target-closed-object": {},
@@ -309,6 +319,12 @@
     "tests/fixtures/auth-schemes/expected": {},
     "tests/fixtures/auto-agent-protocol/expected": {},
     "tests/fixtures/aws-importexport/expected": {},
+    "tests/fixtures/aws-mobileanalytics/expected": {},
+    "tests/fixtures/aws-mobileanalytics/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/basic-auth/expected": {},
     "tests/fixtures/billie-entry/expected": {},
     "tests/fixtures/billie/expected": {},
