@@ -3888,8 +3888,9 @@ TWO_ONE_OF = {"oneOf": [{"type": "string"}, {"type": "integer"}]}
 TWO_ANY_OF = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
 MAP_OF_TWO_ONE_OF = {"type": "object", "additionalProperties": TWO_ONE_OF}
 MAP_OF_TWO_ANY_OF = {"type": "object", "additionalProperties": TWO_ANY_OF}
-# The same maps over structured members: no case 14 selector counts them, so
-# each case's overlap document is one only the closing residual counts.
+# The same maps over structured members: cases 14a and 14d use them as overlap
+# documents, which both the case's own selector and its head's closing residual
+# count.
 MAP_OF_TWO_ONE_OF_STRUCTS = {
     "type": "object",
     "additionalProperties": {"oneOf": [STRUCT, {"properties": {"name": {"type": "string"}}}]},
