@@ -867,6 +867,33 @@ pub(crate) fn validate_ir(
                     }
                 }
             }
+            // A `stream-condition` operation's two halves each take a request
+            // type Fern synthesizes: `{Ctx}Request` and `{Ctx}StreamRequest`. A
+            // component schema of either name, the body's own or any other, is
+            // "already declared in this file" to pinned Fern 5.67.1, which
+            // refuses rather than renames:
+            // docs/fern-refusals/type-name-collision/evidence/stream-split-*.
+            if op.request_body.is_some()
+                && op
+                    .streaming()
+                    .and_then(crate::openapi::Streaming::condition_property)
+                    .is_some()
+            {
+                let context = crate::ir::endpoint_pascal_context(op, method, route);
+                for name in [
+                    format!("{context}Request"),
+                    format!("{context}StreamRequest"),
+                ] {
+                    if let Some(component) = doc
+                        .components
+                        .schemas
+                        .keys()
+                        .find(|component| crate::naming::class_name(component) == name)
+                    {
+                        return Err(refusal_error(refusal(path, Class::TypeNameCollision, format!("{method} {route} stream-condition request type {name} collides with component schema {component:?}; give the schema another name, or the method another x-fern-sdk-method-name")), strict));
+                    }
+                }
+            }
             let inline_body = op.request_body.as_ref().is_some_and(|body| {
                 body.content.values().any(|media| {
                     media.schema.as_ref().is_some_and(|schema| {

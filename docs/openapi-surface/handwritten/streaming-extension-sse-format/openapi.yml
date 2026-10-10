@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Air Quality Feed
+  version: 1.0.0
+paths:
+  /sensors/{sensorId}/readings:
+    get:
+      operationId: subscribeReadings
+      x-fern-streaming:
+        format: sse
+      parameters:
+        - name: sensorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Particulate readings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reading'
+components:
+  schemas:
+    Reading:
+      type: object
+      properties:
+        pm25:
+          type: number
+        pm10:
+          type: number
