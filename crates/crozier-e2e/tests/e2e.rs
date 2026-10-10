@@ -2704,7 +2704,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
     for (extension, placement, effect) in [
         (
             "ignore",
-            "operation, component schema, object property",
+            "operation, component schema, object property, parameter",
             "Leaves the node out of the SDK.",
         ),
         (
