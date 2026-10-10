@@ -4551,22 +4551,79 @@ fn parameter_departures_reject_unexplained_complete_tree_differences() {
     }
     let root = repo_root().join("docs/openapi-surface/handwritten");
     let mut date_client = String::new();
-    for (case, id, file, from, to) in [
+    // (fixture, departure, file, edit to Fern's side, edit to crozier's side):
+    // each `(from, to)` replaces the first `from`, and the edits together leave
+    // a difference the departure must not explain.
+    type Edit = Option<(&'static str, &'static str)>;
+    let cases: [(&str, &str, &str, Edit, Edit); 8] = [
         (
             "observatory-client-date",
             "date-header-constructor-example",
             "src/fern/client.py",
-            "import typing",
-            "import typing\nUNEXPLAINED_VALUE = 17",
+            Some(("import typing", "import typing\nUNEXPLAINED_VALUE = 17")),
+            None,
+        ),
+        // crozier's corrected example must carry the exact date the
+        // correction substitutes; any other date is a regression.
+        (
+            "observatory-client-date",
+            "date-header-constructor-example",
+            "src/fern/client.py",
+            None,
+            Some((
+                "datetime.date.fromisoformat(\"2023-01-15\")",
+                "datetime.date.fromisoformat(\"2024-02-29\")",
+            )),
         ),
         (
             "observatory-client-variable",
             "sdk-variable-docs-examples",
             "reference.md",
-            "client.list_signals()",
-            "client.list_unrelated(...)",
+            Some(("client.list_signals()", "client.list_unrelated(...)")),
+            None,
         ),
-    ] {
+        // A positional placeholder on a method whose route does not read the
+        // lifted client field stays Fern's, even where crozier calls that
+        // method with no arguments.
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_unrelated</a>(...)")),
+            Some(("list_signals</a>()", "list_unrelated</a>()")),
+        ),
+        (
+            "observatory-client-variable",
+            "sdk-variable-docs-examples",
+            "reference.md",
+            Some(("#### ⚙️ Parameters", "#### ⚙️ Arguments")),
+            None,
+        ),
+        // The lifted-method placeholder fallback drops `(...)` only on a
+        // method whose route reads the lifted client field.
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_unrelated</a>(...)")),
+            Some(("list_signals</a>()", "list_unrelated</a>()")),
+        ),
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("list_signals</a>(...)", "list_signals</a>(...)\n")),
+            None,
+        ),
+        (
+            "observatory-base-path",
+            "lifted-base-path-docs-examples",
+            "reference.md",
+            Some(("#### ⚙️ Parameters", "#### ⚙️ Arguments")),
+            None,
+        ),
+    ];
+    for (case, id, file, fern_edit, crozier_edit) in cases {
         let expected = root.join(case).join("fern-expected");
         let actual = tempfile::tempdir().unwrap();
         probe_command(&root.join(case).join("openapi.yml"), actual.path())
@@ -4587,18 +4644,33 @@ fn parameter_departures_reject_unexplained_complete_tree_differences() {
             date_client =
                 std::fs::read_to_string(actual.path().join("src/fern/client.py")).unwrap();
         }
-        let edited = tempfile::tempdir().unwrap();
-        copy_tree(&expected, edited.path());
-        let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
-        assert!(text.contains(from));
-        std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+        let edit = |source: &Path, edit: Edit| {
+            let edited = tempfile::tempdir().unwrap();
+            copy_tree(source, edited.path());
+            if let Some((from, to)) = edit {
+                let text = std::fs::read_to_string(edited.path().join(file)).unwrap();
+                assert!(text.contains(from), "{case}: {file} lacks {from}");
+                std::fs::write(edited.path().join(file), text.replacen(from, to, 1)).unwrap();
+            }
+            edited
+        };
+        let (fern, crozier) = (
+            edit(&expected, fern_edit),
+            edit(actual.path(), crozier_edit),
+        );
         let negative =
-            crozier::parity::compare_trees(edited.path(), actual.path(), None, true).unwrap();
-        assert!(negative.differences.iter().any(|(path, _)| path == file));
-        assert!(!negative
-            .departures
-            .iter()
-            .any(|departure| departure.file == file && departure.id == id));
+            crozier::parity::compare_trees(fern.path(), crozier.path(), None, true).unwrap();
+        assert!(
+            negative.differences.iter().any(|(path, _)| path == file),
+            "{case}: {fern_edit:?} / {crozier_edit:?} left no difference in {file}"
+        );
+        assert!(
+            !negative
+                .departures
+                .iter()
+                .any(|departure| departure.file == file && departure.id == id),
+            "{case}: {id} explained {fern_edit:?} / {crozier_edit:?}"
+        );
     }
 
     // A temporal-looking constructor example on a string header cannot use the
