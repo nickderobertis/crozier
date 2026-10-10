@@ -260,6 +260,7 @@ compares it. Row 224 is the one so far.
 | 332 | `netgsm-sms` | github-raw | https://raw.githubusercontent.com/netgsm/netgsm-sms-js/33ca38622067e3730479aded9e56f6b1151bfeb5/openapi.json | `33ca38622067e3730479aded9e56f6b1151bfeb5` | MIT (the publisher repository's pinned `LICENSE`) | committed | NetGSM's SMS API: required query arrays beside JSON responses and JSON request-body content-type headers; source SHA-256 `9b728d109dc796d8dd166616d5be2425f4530703ef059ec0a561709421509ae3` |
 | 1200 | `offchain-metadata-tools` | github-raw | https://raw.githubusercontent.com/input-output-hk/offchain-metadata-tools/91eba72d6e5e3b17cd49f625c9546f2c82df5a65/docs/api/0.5.0.0/openapi.yaml | `91eba72d6e5e3b17cd49f625c9546f2c82df5a65` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | Input Output's Cardano token metadata server API (`tokens.cardano.org`): `GET /metadata/{subject}/properties/{properties}` answers an inline `oneOf` whose only member is `$ref Property`, which Fern returns as `Property` itself |
 | 1201 | `subsloth` | github-raw | https://raw.githubusercontent.com/knirski/subsloth/b4acb8e87ee47a4154f40c431b7c91d8d27d1b64/api/subsloth.openapi.yaml | `b4acb8e87ee47a4154f40c431b7c91d8d27d1b64` | Apache-2.0 (the publisher repository's pinned `LICENSE`; the document declares no `info.license`) | committed | The subsloth project's own media API contract: its component `SubtitlesValue` offers, as a `oneOf` member, an `object` map whose value is a `oneOf` of three non-null members |
+| 1600 | `zylon-private-gpt` | github-raw | https://raw.githubusercontent.com/zylon-ai/private-gpt/8119842ae6f1f5ecfaf42b06fa0d1ffec675def4/fern/openapi/openapi.json | `8119842ae6f1f5ecfaf42b06fa0d1ffec675def4` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The PrivateGPT API as its publisher last declared it for Fern before the 2026 revamp: two operations whose `x-fern-streaming` names a `stream-condition` and no `format`, each answering a lone `application/json` 200 and named only by a tagged FastAPI `operationId`, so this row pins JSON-lines streaming halves and their naming against Fern |
 | 1800 | `aws-mobileanalytics` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | The document info.license grants redistribution under the policy in docs/corpus-licensing.md; the aggregator preserves publisher attribution | committed | AWS Mobile Analytics, converted from the publisher model identified in info.x-origin; the only operation declares required X-Amz-Client-Context header |
 
 ## Batch 2 — byte-matched (issue #77)
@@ -1665,3 +1666,27 @@ bodies. Its whole generated tree now byte-matches the certified pair; the
 request-body content-type repair removed the differences that previously
 blocked this real witness. `netgsm_sms_matches_fern_output` compares it in the
 deterministic corpus gate, with no unmatched files.
+
+## Row 1600 — stream-condition halves of a publisher's FastAPI document
+
+The PrivateGPT API (`zylon-ai/private-gpt`, Apache-2.0) is the first registered
+document declaring `x-fern-streaming` with a `stream-condition` and no `format`.
+Its `/v1/completions` and `/v1/chat/completions` each answer a lone
+`application/json` 200 and carry a tagged FastAPI `operationId` and no
+`x-fern-sdk-method-name`. The pin is the last revision before the publisher's
+2026 revamp dropped the extension. It was found by the streaming witness search
+([record](../../docs/openapi-surface/witness-search-streaming/README.md)).
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 1600 | `zylon-private-gpt` | a `stream-condition` without `format` over a JSON-only success; the halves named from a tagged FastAPI `operationId` | ✅ byte-matched after this row's repairs |
+
+The repairs: the streaming half streams newline-delimited JSON (`iter_lines`,
+`json.loads`) rather than buffering; it is named from the whole `operationId`
+(`prompt_completion_v1completions_post_stream`) while the buffered half keeps the
+operation's own name (`prompt_completion`); no worked example passes the
+condition field; `reference.md` documents it after the required fields; a
+docstring example whose `response = ` assignment overflows width 80 is
+parenthesized as Fern's snippet formatter lays it out; and `reference.md` heads
+each stream with the iterator its method returns (the
+`stream-reference-return-type` departure).

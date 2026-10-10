@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: Palette Mixer
+  version: 1.0.0
+paths:
+  /blends:
+    post:
+      operationId: mixBlend
+      x-fern-sdk-method-name: blend
+      x-fern-streaming:
+        format: sse
+        stream-condition: $request.preview
+        response:
+          $ref: '#/components/schemas/Swatch'
+        response-stream:
+          $ref: '#/components/schemas/Swatch'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlendSpec'
+      responses:
+        '200':
+          description: The mixed swatch.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Swatch'
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Swatch'
+components:
+  schemas:
+    BlendSpec:
+      type: object
+      properties:
+        pigments:
+          type: array
+          items:
+            type: string
+        preview:
+          type: boolean
+    Swatch:
+      type: object
+      properties:
+        hex:
+          type: string

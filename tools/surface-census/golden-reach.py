@@ -385,6 +385,29 @@ def _covered(export: Path, repo_root: Path) -> tuple[dict[str, list[list[int]]],
     return universe, {f: v for f, v in hit.items() if v}
 
 
+def golden_test_cwd(repo_root: Path) -> Path:
+    """Where a golden test runs: the e2e crate's directory, as cargo runs it.
+
+    From the root, the crozier a golden spawns runs `ruff format` under the
+    tooling's own `[tool.ruff]`, whose `templates` exclude leaves a generated
+    `templates/` package unformatted and fails its golden.
+    """
+    return repo_root / "crates" / "crozier-e2e"
+
+
+def run_golden_test(
+    e2e: list[str], test: str, repo_root: Path, env: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
+    """Run one golden test alone through the e2e binary `e2e`, from [`golden_test_cwd`]."""
+    return subprocess.run(
+        [*e2e, "--exact", test, "--test-threads", "1", "--quiet"],
+        cwd=golden_test_cwd(repo_root),
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
 def uncommitted_changes(repo_root: Path) -> list[str]:
     """Tracked paths that differ from `HEAD` — what a measurement stamped with
     `HEAD` would silently include."""
@@ -484,13 +507,7 @@ def measure(args: argparse.Namespace) -> int:
     def one(test: str) -> tuple[str, str | None]:
         with tempfile.TemporaryDirectory(prefix="golden-reach-") as scratch:
             raw = Path(scratch)
-            run = subprocess.run(
-                [str(e2e), "--exact", test, "--test-threads", "1", "--quiet"],
-                cwd=repo_root,
-                capture_output=True,
-                text=True,
-                env=dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")),
-            )
+            run = run_golden_test([str(e2e)], test, repo_root, dict(env, LLVM_PROFILE_FILE=str(raw / "%p-%m.profraw")))
             if run.returncode != 0:
                 return test, (run.stdout + run.stderr)[-3000:]
             profiles = sorted(str(p) for p in raw.glob("*.profraw"))

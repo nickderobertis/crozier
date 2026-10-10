@@ -58,7 +58,9 @@ const KINDS: &[Kind] = &[
     //   only in the generator record and the absent `core/enum.py` — the one
     //   enum mode its one-member response union is proven under besides the
     //   default;
-    // - `subsloth`: inline property enums beside its map-of-`oneOf` member.
+    // - `subsloth`: inline property enums beside its map-of-`oneOf` member;
+    // - `zylon-private-gpt`: property enums of the models a `stream-condition`
+    //   operation's halves stream and return.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -72,6 +74,7 @@ const KINDS: &[Kind] = &[
             "openfigi.com",
             "offchain-metadata-tools",
             "subsloth",
+            "zylon-private-gpt",
             "aws-mobileanalytics",
         ],
     },
