@@ -22247,6 +22247,68 @@ fn global_header_constructor_name_refusals_accept_both_aliases_and_canonical_pre
     }
 }
 
+/// The idempotency-argument refusals read the canonical spelling too: under
+/// `x-crozier-idempotency-headers` each probe refuses in both modes, still when a
+/// harmless `x-fern-*` list conflicts, while a harmless canonical list beside the
+/// faulty `x-fern-*` one wins and generates.
+#[test]
+fn idempotency_argument_refusals_accept_both_aliases_and_canonical_precedence() {
+    let root = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    let harmless = serde_json::json!([{"header": "Kiln-Request"}]);
+    for (probe, element) in [
+        (
+            "idempotency-header-empty-name-probe.yml",
+            "POST /firings idempotency header \"-\" argument \"\"",
+        ),
+        (
+            "idempotency-header-shared-name-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
+    ] {
+        let original: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(root.join(probe)).unwrap()).unwrap();
+        for conflict in [false, true] {
+            let mut document = original.clone();
+            let headers = document
+                .as_object_mut()
+                .unwrap()
+                .remove("x-fern-idempotency-headers")
+                .unwrap();
+            document["x-crozier-idempotency-headers"] = headers;
+            if conflict {
+                document["x-fern-idempotency-headers"] = harmless.clone();
+            }
+            let scratch = tempfile::tempdir().unwrap();
+            let spec = scratch.path().join("openapi.json");
+            std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+            for strict in [false, true] {
+                let run = refusal_run(&crozier, &spec, strict).unwrap();
+                let failures = refused_failures("generator-lint-failure", &run, element, strict);
+                assert!(failures.is_empty(), "{probe}: {}", failures.join("\n"));
+            }
+        }
+        let mut document = original.clone();
+        document["x-crozier-idempotency-headers"] = harmless.clone();
+        let scratch = tempfile::tempdir().unwrap();
+        let spec = scratch.path().join("openapi.json");
+        std::fs::write(&spec, serde_json::to_vec(&document).unwrap()).unwrap();
+        assert_generates_in_both_modes(&spec, probe);
+        let raw_client = std::fs::read_to_string(
+            refusal_run(&crozier, &spec, false)
+                .unwrap()
+                .target
+                .join("src/fern/raw_client.py"),
+        )
+        .unwrap();
+        assert!(
+            raw_client.contains("kiln_request: typing.Optional[str] = None"),
+            "{raw_client}"
+        );
+    }
+}
+
 /// `generator-lint-failure`: each shape whose generated Python pinned Fern's own
 /// `ruff check` rejects is refused in both modes, naming the element, while
 /// every measured near-miss Fern generates from writes the same SDK in both.
@@ -22262,6 +22324,18 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         ),
         ("global-header-punctuation-name-probe.yml", "global header \"X-Ledger\" constructor name \"/\""),
         ("global-header-empty-name-probe.yml", "global header \"X-Ledger\" constructor name \"\""),
+        (
+            "idempotency-header-empty-name-probe.yml",
+            "POST /firings idempotency header \"-\" argument \"\"",
+        ),
+        (
+            "idempotency-header-parameter-collision-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
+        (
+            "idempotency-header-shared-name-probe.yml",
+            "POST /firings idempotency header \"Firing-Token\" argument \"firing_token\"",
+        ),
         ("root-collision-probe.yml", "GET /search root method and sub-client search"),
         (
             "tag-suffix-collision-probe.yml",

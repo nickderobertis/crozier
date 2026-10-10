@@ -2070,6 +2070,10 @@ pub fn check_sdk(
     for endpoint in ir.endpoints.iter().filter(|endpoint| endpoint.emittable) {
         let route = format!("{} {}", endpoint.http_method, endpoint.path);
         // F811: a root-client method and a sub-client property of one name.
+        // The empty `_` namespace is a sub-client like any other; no root
+        // method can be named `_` (method naming empties it), so it needs no
+        // exemption here.
+        // llmlint: ignore[changed_behavior_has_e2e] Dropping the `_` exemption changes no reachable behaviour: `x-fern-sdk-method-name: _` and `operationId: _` both name an empty method, never `_`, so no CLI input can drive a root method `_` beside the namespace. The empty-namespace goldens (lamp-room-log, bungie.net) and sdk_env_empty_namespace_package_imports_and_answers_its_documented_call cover the namespace generating.
         if endpoint.module.is_empty()
             && ir
                 .endpoint_modules
@@ -2116,6 +2120,9 @@ pub fn check_sdk(
                 );
             }
         }
+        if let Some(element) = idempotency_argument_fault(endpoint) {
+            return refusal(path, strict, class, &format!("{route} {element}"));
+        }
     }
     if let Some(environment) = &ir.environment {
         let template = &environment.url_template;
@@ -2155,6 +2162,58 @@ pub fn check_sdk(
         }
     }
     Ok(())
+}
+
+/// The first idempotency header whose argument the method signature cannot
+/// take: a syntax error when its Python name is empty (a header like `-`), and
+/// a duplicate argument when it repeats another argument of the method (an
+/// earlier idempotency header, or a path, query, header or body argument).
+/// Pinned Fern's `ruff check` rejects all three, so the element names the
+/// header and the argument it would have written.
+fn idempotency_argument_fault(endpoint: &crate::ir::Endpoint) -> Option<String> {
+    use crate::ir::RequestBody;
+    let body: Vec<&str> = match &endpoint.request_body {
+        None => Vec::new(),
+        Some(RequestBody::Single(_) | RequestBody::Bytes { .. }) => vec!["request"],
+        Some(RequestBody::Inline(fields)) => {
+            fields.iter().map(|field| field.py_name.as_str()).collect()
+        }
+        Some(RequestBody::Form(form)) => form
+            .fields
+            .iter()
+            .map(|field| field.py_name.as_str())
+            .collect(),
+    };
+    let mut taken: Vec<&str> = endpoint
+        .path_params
+        .iter()
+        .map(|param| param.py_name.as_str())
+        .chain(
+            endpoint
+                .query_params
+                .iter()
+                .map(|param| param.py_name.as_str()),
+        )
+        .chain(
+            endpoint
+                .header_params
+                .iter()
+                .map(|param| param.py_name.as_str()),
+        )
+        .chain(body)
+        .chain(["request_options"])
+        .collect();
+    for header in &endpoint.extensions.idempotency_headers {
+        let name = header.py_name.as_str();
+        if name.is_empty() || taken.contains(&name) {
+            return Some(format!(
+                "idempotency header {:?} argument {name:?}",
+                header.wire_name
+            ));
+        }
+        taken.push(name);
+    }
+    None
 }
 
 /// The IR for the document as pinned Fern names its operations, or `None`
