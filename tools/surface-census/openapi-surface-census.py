@@ -1494,7 +1494,7 @@ PREDICATES = {
     ),
     "schema.x-tags:component": ("one per `components.schemas` entry declaring a non-empty `x-tags` list"),
     "schema.x-fern-type-name:inline-property": (
-        "one per inline property Schema Object, not a `components.schemas` entry, declaring `x-fern-type-name` (either spelling)"
+        "one per inline property Schema Object anywhere in the document (a component's, a body's, a parameter's or a webhook's; never a `components.schemas` entry itself or a `$ref`), declaring `x-fern-type-name` (either spelling)"
     ),
     "openapi.webhooks:inline-json-body-named": (
         "one per `webhooks` Operation Object whose `application/json` request body is an inline schema and that declares an SDK group or method name"
@@ -3607,26 +3607,31 @@ def clients_extensions_sites(document: dict[Any, Any]) -> list[str]:
         if isinstance(schema.get("x-tags"), list) and schema["x-tags"]:
             found.append("schema.x-tags:component")
 
-    def inline_type_names(schema: Any, depth: int = 0) -> int:
-        if not isinstance(schema, dict) or depth > 40:
+    def inline_type_names(node: Any, depth: int = 0) -> int:
+        """Inline property schemas declaring a type name anywhere under `node`.
+
+        Every `properties` map in the document is read — under a component, a
+        request or response body, a parameter or a webhook alike — while an
+        `example` or `examples` value is data, never a schema.
+        """
+        if depth > 200:
+            return 0
+        if isinstance(node, list):
+            return sum(inline_type_names(item, depth + 1) for item in node)
+        if not isinstance(node, dict):
             return 0
         count = 0
-        properties = schema.get("properties")
+        properties = node.get("properties")
         for value in properties.values() if isinstance(properties, dict) else []:
-            if isinstance(value, dict) and "$ref" not in value:
-                if _extension(value, "type-name") not in (None, ""):
-                    count += 1
+            if isinstance(value, dict) and "$ref" not in value and _extension(value, "type-name") not in (None, ""):
+                count += 1
+            count += inline_type_names(value, depth + 1)
+        for key, value in node.items():
+            if key not in ("properties", "example", "examples"):
                 count += inline_type_names(value, depth + 1)
-        for key in ("items", "additionalProperties"):
-            count += inline_type_names(schema.get(key), depth + 1)
-        for key in ("allOf", "oneOf", "anyOf"):
-            members = schema.get(key)
-            for member in members if isinstance(members, list) else []:
-                count += inline_type_names(member, depth + 1)
         return count
 
-    for schema in schemas.values():
-        found += ["schema.x-fern-type-name:inline-property"] * inline_type_names(schema)
+    found += ["schema.x-fern-type-name:inline-property"] * inline_type_names(document)
     servers = (
         [server for server in document.get("servers") or [] if isinstance(server, dict)]
         if isinstance(document.get("servers"), list)

@@ -13983,6 +13983,79 @@ class ShapePredicateSelectorControls(unittest.TestCase):
                 )
                 self.assertGreaterEqual(rows(completed).get((selector, "positive"), 0), 1)
 
+    def test_the_clients_extensions_walk_contract_agrees_with_the_shared_keys(self) -> None:
+        """The node's walk contract restates `witness-search-keys.tsv` row for row.
+
+        `witness-search-clients-extensions/keys.tsv` is the `--contract` its
+        archived APIs.guru walk ran under, so it stays its own file; each key it
+        shares with the region keys must name the same selector and census
+        status, and no selector may sit under a different key in the two.
+        """
+        surface = REPO / "docs" / "openapi-surface"
+
+        def read(path: Path) -> dict[str, tuple[str, str]]:
+            with path.open(encoding="utf-8", newline="") as handle:
+                return {
+                    row["key"]: (row["selector"], row["census_status"])
+                    for row in csv.DictReader(handle, delimiter="\t")
+                }
+
+        shared = read(surface / "witness-search-keys.tsv")
+        walked = read(surface / "witness-search-clients-extensions" / "keys.tsv")
+        for key, fields in walked.items():
+            with self.subTest(key=key):
+                if key in shared:
+                    self.assertEqual(shared[key], fields)
+                for other, (selector, _) in shared.items():
+                    if selector == fields[0]:
+                        self.assertEqual(key, other, f"{selector} is keyed differently in the two files")
+
+    def test_inline_type_names_are_counted_wherever_a_property_schema_stands(self) -> None:
+        """A component's, a response body's and a webhook's inline property each count once.
+
+        A `$ref`'d property, a component schema's own type name and an example
+        shaped like a schema count nowhere.
+        """
+        mode = {"type": "string", "enum": ["a"], "x-crozier-type-name": "Mode"}
+        body = {"type": "object", "properties": {"mode": mode}, "example": {"properties": {"m": mode}}}
+        document = {
+            "openapi": "3.1.0",
+            "info": {"title": "t", "version": "1"},
+            "paths": {
+                "/settings": {
+                    "get": {
+                        "responses": {
+                            "200": {"description": "ok", "content": {"application/json": {"schema": body}}}
+                        }
+                    }
+                }
+            },
+            "webhooks": {
+                "w": {
+                    "post": {
+                        "requestBody": {"content": {"application/json": {"schema": body}}},
+                        "responses": {"204": {"description": "ok"}},
+                    }
+                }
+            },
+            "components": {
+                "schemas": {
+                    "P": {
+                        "type": "object",
+                        "x-fern-type-name": "Own",
+                        "properties": {"m": {"type": "string", "x-fern-type-name": "Mode"}, "r": {"$ref": "#/x"}},
+                    }
+                }
+            },
+        }
+        selector = "schema.x-fern-type-name:inline-property"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            write_fixture(root, "placed", json.dumps(document))
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector)
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        self.assertEqual({(selector, "placed"): 3}, rows(completed))
+
     def test_request_body_predicates_skip_content_that_is_no_mapping(self) -> None:
         """A list or scalar `requestBody.content` is no JSON body: counted nowhere, no crash."""
         malformed = {

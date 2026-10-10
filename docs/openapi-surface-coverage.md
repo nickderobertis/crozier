@@ -793,8 +793,10 @@ drift gate over the pair:
   declaring an SDK group name (either spelling)
 - `schema.x-tags:component` — one per `components.schemas` entry declaring a non-empty
   `x-tags` list
-- `schema.x-fern-type-name:inline-property` — one per inline property Schema Object, not
-  a `components.schemas` entry, declaring `x-fern-type-name` (either spelling)
+- `schema.x-fern-type-name:inline-property` — one per inline property Schema Object
+  anywhere in the document (a component's, a body's, a parameter's or a webhook's; never
+  a `components.schemas` entry itself or a `$ref`), declaring `x-fern-type-name` (either
+  spelling)
 - `openapi.webhooks:inline-json-body-named` — one per `webhooks` Operation Object whose
   `application/json` request body is an inline schema and that declares an SDK group or
   method name

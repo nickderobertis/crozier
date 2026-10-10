@@ -198,7 +198,22 @@ The shape: an inline property schema, not a `components.schemas` entry, declarin
 
 | key | verdict | remaining work |
 |---|---|---|
-| `schema-type-name-inline-property` | `search-incomplete` | The APIs.guru walk found 0 declarers among 1,970 OpenAPI 3 documents; the registered corpus declares it in 0 of 243 sources. The other declared sources were not asked. |
+| `schema-type-name-inline-property` | `search-incomplete` | The APIs.guru walk finds 0 declarers among 1,970 OpenAPI 3 documents under the broadened selector (below). The registered corpus declares it in 1 of 244 sources: `webflow-v2` writes it on six inline response-body `payload` objects, each beside an identical `title`. That is a partial witness: a type named by its title gets that same name, so it never shows the extension renaming anything. The missing portion is an inline property whose type name differs from any `title` (`film-shot-planner`'s untitled enum). The other declared sources were not asked. |
+
+The selector first counted only properties nested under a component schema,
+which misses this shape's own trigger, an inline response-body property; the
+archived [`apis-guru-census.tsv.gz`](apis-guru-census.tsv.gz) holds that
+narrower count. It now reads every inline property — a component's, a body's, a
+parameter's or a webhook's. The key alone was re-walked with it over the same
+tree, every one of the 4,138 documents' SHA-256 first matched against the
+acquisition manifest:
+
+```sh
+just witness-search-local-census --contract <one-row contract: schema-type-name-inline-property> \
+  --workers 12 --all-documents --documents apis-guru=<extracted tree>
+```
+
+It found 0 declarers, as before.
 
 ## Webhook-marked path operation
 
