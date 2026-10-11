@@ -203,6 +203,16 @@ real-specification match.
   ([the attribution](#golden-rows-resting-only-on-residual-goldens)).
 - **Arms no proof covers (3):** the 3 named gaps above, each `not searched`. No
   arm reads `search-incomplete`.
+- **Generator residuals the handed-off publisher witnesses still show:** every
+  hunk of their committed comparison diffs, attributed in
+  [`residuals.tsv`](fern-measurements/blocked-witnesses/residuals.tsv) to the
+  scenario shape whose construct it is, or to `unowned` where no scenario of the
+  plan covers it ([counts](#scenario-proof-index),
+  [causes](fern-measurements/blocked-witnesses/README.md)). No witness is
+  registered while any hunk remains.
+- **A `python_enums` residual of a literals-proven shape (1):**
+  `enum-header-params-stringified` sends `str(...)` where Fern sends `.value`
+  ([measurement](fern-measurements/python-enums-residuals/README.md)).
 - **Features and arms resting on hand-written fixtures only (11 features, 54
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
@@ -1702,24 +1712,77 @@ the text-response row has the differing-404-schema case in
 
 ### Handed-off real witnesses
 
-NetGSM is now registered as corpus row 332: its complete certified golden is
+NetGSM is registered as corpus row 332. Its complete certified golden is
 `tests/fixtures/netgsm-sms/expected`, compared by
-`netgsm_sms_matches_fern_output`. Waylay is already registered as row 329
-and compares with only the indexed body/query correction. The remaining eight
-witnesses do not byte-match and are **not** real-specification proof. Their
-pinned sources, exact remaining file differences and owning follow-on shapes
-are recorded in
-[the finished-tree measurement](fern-measurements/blocked-witnesses/README.md).
-In particular, `vocode-core` remains unregistered: its comparison has 14
-differing files, five Fern-only files and four crozier-only files. The follow-on
-scenario plan owns its ignored server-name extension
-(`server-name-extension-ignored`), omitted allOf-wrapped request-body operation
-and inherited property type reuse; the latter two have no confirmed scenario
-id. The linked measurement records every file difference.
-They were handed off for `inline-query-param-union-placement`,
-`required-query-param-scalar-or-array-union`, and
-`nested-discriminated-union-in-anyof`; their separate blockers are named in
-that measurement rather than hidden behind those closed categories.
+`netgsm_sms_matches_fern_output`. Waylay is registered as row 329 and compares
+with only the indexed body/query correction.
+
+The other eight handed-off publisher witnesses are vocode-core, KOMPAZ, the
+LangChain docs, Speech-AI-Forge, low-temperature-control's rice-shower, Supabase,
+dystore and rta-in-japan. Each was re-fetched at its pinned revision, checked
+against its recorded SHA-256, regenerated with the pinned Fern pair and compared
+with the finished generator. Every one still differs, so none is a corpus row
+or a real-specification proof, and none is held in an `unmatched` allowance.
+[`witnesses.tsv`](fern-measurements/blocked-witnesses/witnesses.tsv) lists them
+with their sources. Each one's complete comparison diff is committed beside it.
+[`residuals.tsv`](fern-measurements/blocked-witnesses/residuals.tsv) attributes
+every hunk of those diffs, exactly once, to an indexed scenario shape or to
+`unowned`, with the OpenAPI construct and what each side writes. An `unowned`
+hunk is a generator residual that no scenario of the plan covers. The
+[measurement](fern-measurements/blocked-witnesses/README.md) states the causes
+witness by witness.
+
+## Scenario proof index
+
+[`scenario-proof-index.tsv`](openapi-surface/scenario-proof-index.tsv) closes the
+parity scenario plan. It has one row per scenario shape, and each row names the
+proof that closes the shape:
+
+| column | what it holds |
+|---|---|
+| `shape` | the scenario's id, once, rows sorted by it |
+| `owner` | the scenario node that settled it |
+| `kind` | `real` (a registered corpus row's golden), `handwritten` (a [hand-written fixture](openapi-surface/handwritten/AGENTS.md) or a `handwritten-e2e.toml` cover), `measurement` (a `docs/fern-measurements/` tree) or `refusal` (a [refusal class](fern-refusals/README.md)) |
+| `source` | the committed document, fixture or probe the proof generates from |
+| `goldens` | the complete certified Fern trees it is byte-compared with; `—` for a refusal |
+| `settings` | each golden's generator settings, in golden order, read off its `.fern/metadata.json`; `default;fern-strict` for a refusal |
+| `tests` | the real-binary e2e tests that compare it, or that refuse it in both modes |
+| `outcome` | `match`, `departure` (equal once the row's catalogued Fern-defect corrections apply), or a refusal's `default=…;strict=…` outcomes |
+| `ids` | those corrections' [departure](departures/README.md) ids, or the refusal class |
+| `evidence` | the search record, evaluation note or evidence file the proof rests on |
+
+A hand-written or measured proof certifies a shape without counting as a
+real-specification match. Only a `real` row's golden comes from a registered
+publisher document. The five refusal rows take their mode outcomes from their
+class's registry `status` and evaluation note, which names each cited probe.
+Two `measurement` rows prove their shapes under Fern's default literals enum
+type, where those shapes are defined. Their `python_enums` re-measurement is in
+[`fern-measurements/python-enums-residuals/`](fern-measurements/python-enums-residuals/README.md),
+and neither counts toward `python_enums` parity.
+
+`tools/surface-census/scenario-proof-index.py check` re-derives each repeated
+fact from its authority and fails on any disagreement:
+
+- each golden's presence in `tests/fixtures/compared-goldens.json`;
+- its pinned Fern pair and settings, read from its metadata;
+- its departure ids, from `departures-ledger.tsv` and `assets/departures.yml`;
+- each refusal's class, status and probes;
+- each test's definition;
+- each path and anchor.
+
+`ScenarioProofIndexTests` in `tools/surface-census/tests/surface_census_test.py`
+runs it over the committed tree. The same tests remove or mismatch each kind of
+link and expect the named failure. The counts below are the output of
+`scenario-proof-index.py summary`, which a test holds this block to:
+
+```text
+shapes: 160
+by kind: handwritten 139, measurement 2, real 14, refusal 5
+by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
+by outcome: default=refuse;strict=refuse 5, departure 48, match 107
+witnesses: differs 8
+witness hunks by owner: readme-multipart-file-params-listed-first 2, readme-multipart-optional-file-params 2, text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 486
+```
 
 ## The category rules
 

@@ -23,9 +23,10 @@ committed corpus row; one that still differs names its committed comparison
 diff, and `residuals.tsv` attributes every hunk of that diff, exactly once, to a
 scenario of the index or to `unowned`. Hunks are read from the diff itself.
 
-Two subcommands: ``check`` prints every failure (nothing on success) and exits 1
-when there is one; ``hunks DIFF`` prints the hunks of one comparison diff in the
-form `residuals.tsv` cites them.
+Three subcommands: ``check`` prints every failure (nothing on success) and exits
+1 when there is one; ``summary`` prints the counts the coverage report quotes,
+read off both tables; ``hunks DIFF`` prints the hunks of one comparison diff in
+the form `residuals.tsv` cites them.
 """
 
 from __future__ import annotations
@@ -381,17 +382,43 @@ def check(root: Path) -> list[str]:
     return index_failures(root) + witness_failures(root, {row["shape"] for row in rows})
 
 
+def summary(root: Path) -> list[str]:
+    """The index's shapes by kind, owner and outcome, and the witnesses' hunks by owner."""
+    rows, _ = read_tsv(root / INDEX, INDEX_HEADER)
+    witnesses, _ = read_tsv(root / WITNESSES, WITNESS_HEADER)
+    residuals, _ = read_tsv(root / RESIDUALS, RESIDUAL_HEADER)
+    hunks: Counter[str] = Counter()
+    for row in residuals:
+        hunks[row["owner"]] += len(split(row["hunks"]))
+
+    def spelled(counts: Counter[str]) -> str:
+        return ", ".join(f"{name} {count}" for name, count in sorted(counts.items()))
+
+    return [
+        f"shapes: {len(rows)}",
+        f"by kind: {spelled(Counter(row['kind'] for row in rows))}",
+        f"by owner: {spelled(Counter(row['owner'] for row in rows))}",
+        f"by outcome: {spelled(Counter(row['outcome'] for row in rows))}",
+        f"witnesses: {spelled(Counter(row['status'] for row in witnesses))}",
+        f"witness hunks by owner: {spelled(hunks)}",
+    ]
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO)
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("check", help="reconcile the index and witnesses; print each failure")
+    sub.add_parser("summary", help="print the index's and the witnesses' counts")
     hunks = sub.add_parser("hunks", help="print a comparison diff's hunks as residuals.tsv cites them")
     hunks.add_argument("diff", type=Path)
     args = parser.parse_args(argv)
     if args.command == "hunks":
         for hunk in diff_hunks(args.diff.read_text(encoding="utf-8")):
             print(f"{hunk.file}\t{hunk.spelling}")
+        return 0
+    if args.command == "summary":
+        print("\n".join(summary(args.repo_root)))
         return 0
     failures = check(args.repo_root)
     for failure in failures:

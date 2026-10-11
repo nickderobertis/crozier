@@ -16030,6 +16030,19 @@ class ScenarioProofIndexTests(unittest.TestCase):
         diff.unlink()
         self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is missing")
 
+    def test_the_coverage_report_quotes_the_summary_verbatim(self) -> None:
+        run = subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/scenario-proof-index.py"), "summary"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        self.assertEqual(f"shapes: {self.index_script.SHAPES}", run.stdout.splitlines()[0])
+        report = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
+        quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
+        self.assertEqual(run.stdout, quoted, "re-run `scenario-proof-index.py summary` and quote it")
+
     def test_diff_hunks_count_unchanged_runs_on_both_sides(self) -> None:
         diff = textwrap.dedent(
             """\
