@@ -13,7 +13,7 @@
     "docs/openapi-surface/golden-reach-witnesses/sourcegraph/raw-github-calls.jsonl": 12381,
     "docs/openapi-surface/golden-reach-witnesses/sourcegraph/raw-github-waits.jsonl": 11796,
     "docs/openapi-surface/golden-reach-witnesses/sourcegraph/screens.jsonl": 132,
-    "docs/openapi-surface/witness-search-github-code-search/candidates.001.jsonl": 45713,
+    "docs/openapi-surface/witness-search-github-code-search/candidates.001.jsonl": 45712,
     "docs/openapi-surface/witness-search-github-code-search/candidates.002.jsonl": 43506,
     "docs/openapi-surface/witness-search-github-code-search/candidates.003.jsonl": 44122,
     "docs/openapi-surface/witness-search-github-code-search/candidates.004.jsonl": 7268,
@@ -21,8 +21,8 @@
     "docs/openapi-surface/witness-search-github-code-search/queries.001.jsonl": 1857,
     "docs/openapi-surface/witness-search-github-code-search/queries.002.jsonl": 253,
     "docs/openapi-surface/witness-search-github-code-search/queries.jsonl": 1632,
-    "docs/openapi-surface/witness-search-github-code-search/raw-github-calls.jsonl": 81690,
-    "docs/openapi-surface/witness-search-github-code-search/raw-github-waits.jsonl": 79482,
+    "docs/openapi-surface/witness-search-github-code-search/raw-github-calls.jsonl": 81689,
+    "docs/openapi-surface/witness-search-github-code-search/raw-github-waits.jsonl": 79481,
     "docs/openapi-surface/witness-search-github-code-search/screens.jsonl": 84,
     "docs/openapi-surface/witness-search-sourcegraph/candidates.001.jsonl": 23776,
     "docs/openapi-surface/witness-search-sourcegraph/candidates.jsonl": 50810,
@@ -60,7 +60,7 @@
       "4": 14,
       "5": 3
     },
-    "memberships": "9b5fa4db2b6c3a22d37008e61cca24f58816f778bca8120fffe08dd2fa8ba399"
+    "memberships": "819bba925bc3d017d13fb60922e6ef6c65089c146370ea1284e25916ea74d22b"
   },
   "locator_groups": {
     "path": {
@@ -119,7 +119,7 @@
         "100": 1,
         "110": 1
       },
-      "memberships": "fc10ffd41fe20c36367863a3ed5dcf77142894e3c2412ce1a37cb383ffcdbca0"
+      "memberships": "fe56c9843565a88824a17f455563f04afde4e339da7a4562baff193fc903ee02"
     },
     "revision": {
       "groups": 23,
@@ -146,7 +146,7 @@
         "1750": 1,
         "3353": 1
       },
-      "memberships": "c1aeb360eaaf0253773bab8e0bc015396417e334777e573bd79ccab84f0580e1"
+      "memberships": "9abf7f410618fe0040e0a4195fcdf37de8691efaacf54919928306c5feb9089a"
     },
     "blob": {
       "groups": 111,
@@ -178,7 +178,7 @@
         "42": 1,
         "43": 1
       },
-      "memberships": "9f472c687ca05ccefaf8110c165de18a9980b81aee6488033429f23f2ee933f0"
+      "memberships": "5d3d848844576741db5ae2f8cce2bf51c1c62e47093f2754c67caff865b13efe"
     },
     "digest": {
       "groups": 219,
@@ -211,7 +211,7 @@
         "53": 1,
         "108": 1
       },
-      "memberships": "91c2aa754f058b45583fc18a0f44c3f4faad078c63ed23793686ef40a0c9443c"
+      "memberships": "c916f8dea49bb5f59e1580d06833c09a17247dc4a3a2f15d5605e5dac760c50b"
     }
   },
   "blob_groups": {
@@ -225,7 +225,7 @@
       "6": 4,
       "7": 1
     },
-    "memberships": "a5f6a4a99e291ee2cd454f9d34704a38ce7a269f732c2691e7b763d19f5033bf"
+    "memberships": "298980456ef360ea49f57d6aebc1d253e2be0e2ead4b7121392c355d019a3d78"
   },
   "digest_groups": {
     "groups": 405,
@@ -248,11 +248,11 @@
       "16": 2,
       "19": 1
     },
-    "memberships": "092866ac27e831357726bb83cb3997fe2f3fc7b300698145be7e1adf371cb7f9"
+    "memberships": "e232682a6c323cca4ed92ab4ef7082c31466203bdfb5d5312d44a77313cdc5c1"
   },
   "screen_joins": {
     "pairs": 3,
-    "memberships": "80d86cb98566419ab2324c9bda217b11832a6cdf6cec8d6dd3f064e881be767f"
+    "memberships": "bfe1814dea34d823758ad375f8994542918c3240b6fc83d513c4f11c2c4bbea2"
   },
   "supersedes_joins": {
     "pairs": 0,
