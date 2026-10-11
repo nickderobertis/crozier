@@ -3837,6 +3837,28 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
     );
     assert_eq!(status, Some(2), "{output}");
     assert!(output.contains("paths is not an object"), "{output}");
+    // So is a parameter whose int64 example has no name to bind it to.
+    let mut nameless: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    nameless["paths"]["/readings"]["post"]["parameters"][0]
+        .as_object_mut()
+        .unwrap()
+        .remove("name")
+        .expect("the int64 query parameter is named");
+    let nameless_document = scratch.path().join("nameless.json");
+    std::fs::write(&nameless_document, serde_json::to_vec(&nameless).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &nameless_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("recordReading.parameters[0].name is not a non-empty string"),
+        "{output}"
+    );
     // A document that is not JSON at all is an input error too.
     let unparsable = scratch.path().join("unparsable.json");
     std::fs::write(&unparsable, "paths: {}\n").unwrap();

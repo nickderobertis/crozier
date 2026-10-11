@@ -53,6 +53,13 @@ def sequence(value: object, where: str) -> list[Any]:
     return value
 
 
+def text(value: object, where: str) -> str:
+    """`value` as a non-empty string, or a `DocumentError` naming `where`."""
+    if not isinstance(value, str) or not value:
+        raise DocumentError(f"{where} is not a non-empty string")
+    return value
+
+
 def read_document(document: Path) -> dict[str, Any]:
     """The JSON document, which must be an object."""
     try:
@@ -95,7 +102,8 @@ def declared_int64(document: Path, operation_id: str) -> dict[str, Declared]:
                 parameter = mapping(parameter, f"{operation_id}.parameters[{index}]")
                 example = int64_example(mapping(parameter.get("schema", {}), f"{operation_id}.parameters[{index}].schema"))
                 if example is not None:
-                    declared[str(parameter.get("name"))] = Declared(example, listed=False)
+                    name = text(parameter.get("name"), f"{operation_id}.parameters[{index}].name")
+                    declared[name] = Declared(example, listed=False)
             where = f"{operation_id}.requestBody"
             body = mapping(operation.get("requestBody"), where)
             media = mapping(mapping(body.get("content"), f"{where}.content").get("application/json"), f"{where} JSON media")
