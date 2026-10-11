@@ -3774,6 +3774,18 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
     );
     assert_eq!(status, Some(2), "{output}");
     assert!(output.contains("paths is not an object"), "{output}");
+    // A document that is not JSON at all is an input error too.
+    let unparsable = scratch.path().join("unparsable.json");
+    std::fs::write(&unparsable, "paths: {}\n").unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &unparsable,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("not JSON ("), "{output}");
 }
 
 /// The `docstring-literal-dollar-escape` validator, driven as its evidence note
@@ -3856,6 +3868,18 @@ fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
         output.contains("components.schemas['PromptSpec'] is not an object"),
         "{output}"
     );
+    // A document that is not JSON at all is an input error too.
+    let unparsable = scratch.path().join("unparsable.json");
+    std::fs::write(&unparsable, "components: {}\n").unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &unparsable,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("not JSON ("), "{output}");
 }
 
 #[test]
