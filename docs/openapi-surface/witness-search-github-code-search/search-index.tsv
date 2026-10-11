@@ -138782,7 +138782,6 @@ property-sole-anyof-empty-object-member	candidate	mateusz-klatt/vesta:Vesta/open
 property-sole-anyof-empty-object-member	candidate	matheus-oliveir4/SDR-Pipefacil-mrdDoctors:docs/api/openapi.json@1af70dc7c76c987ea590d9857d837738b539c733	census 0	records.tsv
 property-sole-anyof-empty-object-member	candidate	mathewkaplos/lis-platform:apps/api/openapi.json@4ebdbe6b6b7f206a195fd0ba0f38d711b871b02f	census 0	records.tsv
 property-sole-anyof-empty-object-member	candidate	mathfalcon/template-monorepo:apps/backend/src/swagger/swagger.json@8dc110231c599848c4a3083dd7ad3482f2d4e036	census 0	records.tsv
-property-sole-anyof-empty-object-member	candidate	matiasportugau-ui/Chatbot-Truth-base--Creation:deployment_bundle/openapi.json@cf104c35336536a79ce709847568ee62af8e5742	census 0	records.tsv
 property-sole-anyof-empty-object-member	candidate	matte21/k8s-basic-cxl:api/openapi-spec/v3/apis__apiextensions.k8s.io__v1_openapi.json@4701f21a1dee2de00d1646f91e626e842a0dfe31	census 0	records.tsv
 property-sole-anyof-empty-object-member	candidate	matteo-psnt/poker-solver:console/src/api/openapi.json@6f03b530ef0a975d470e2c7a2f0b0c082fa046b8	census 0	records.tsv
 property-sole-anyof-empty-object-member	candidate	matteobaccan/cheshire-cat-api-client-java:cheshire-cat-java-client/api/openapi.yaml@ba7661a14ca13a6d3ef0d05557190e7d7b8dc404	census 0	records.tsv
@@ -165482,40 +165481,40 @@ ref-pointer-undeclared-component-head	wait	core	55112 calls; 0 waits	rate-limit-
 ref-pointer-unnamed-segment	wait	core	55112 calls; 0 waits	rate-limit-calls.jsonl
 schema-name-nonidentifier-name	wait	core	55112 calls; 0 waits	rate-limit-calls.jsonl
 securityscheme-ref	wait	core	55112 calls; 0 waits	rate-limit-calls.jsonl
-annotated-ref-target-closed-object	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-annotated-ref-target-composed	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-annotated-ref-target-oneof	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-annotated-ref-target-string-const	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-anyof-array-variant-anyof-nullable-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-anyof-array-variant-closed-object-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-anyof-array-variant-empty-object-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-anyof-array-variant-oneof-nullable-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-anyof-array-variant-struct-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-array-item-inheritance-union	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-array-item-pointer-walk-anyof	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-array-item-pointer-walk-oneof	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oauth2-password	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-anyof-variant	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-annotated-ref-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-anyof-discriminated-union-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-anyof-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-anyof-nullable-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-closed-object-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-composed-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-array-variant-empty-object-item	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-bare-object-example-variant	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-oneof-closed-empty-object-variant	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-anyof-closed-object-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-anyof-composed-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-anyof-empty-object-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-anyof-struct-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-oneof-closed-object-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-oneof-composed-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-property-sole-oneof-empty-object-member	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-ref-pointer-undeclared-component-head	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-ref-pointer-unnamed-segment	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-schema-name-nonidentifier-name	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
-securityscheme-ref	wait	raw.githubusercontent.com	81690 calls; 79482 waits 130467 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+annotated-ref-target-closed-object	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+annotated-ref-target-composed	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+annotated-ref-target-oneof	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+annotated-ref-target-string-const	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+anyof-array-variant-anyof-nullable-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+anyof-array-variant-closed-object-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+anyof-array-variant-empty-object-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+anyof-array-variant-oneof-nullable-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+anyof-array-variant-struct-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+array-item-inheritance-union	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+array-item-pointer-walk-anyof	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+array-item-pointer-walk-oneof	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oauth2-password	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-anyof-variant	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-annotated-ref-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-anyof-discriminated-union-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-anyof-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-anyof-nullable-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-closed-object-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-composed-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-array-variant-empty-object-item	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-bare-object-example-variant	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+oneof-closed-empty-object-variant	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-anyof-closed-object-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-anyof-composed-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-anyof-empty-object-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-anyof-struct-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-oneof-closed-object-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-oneof-composed-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+property-sole-oneof-empty-object-member	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+ref-pointer-undeclared-component-head	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+ref-pointer-unnamed-segment	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+schema-name-nonidentifier-name	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
+securityscheme-ref	wait	raw.githubusercontent.com	81689 calls; 79481 waits 130465 s in raw-github-waits.jsonl	raw-github-calls.jsonl
 annotated-ref-target-closed-object	wait	search	11 calls; 0 waits	rate-limit-calls.jsonl
 annotated-ref-target-composed	wait	search	11 calls; 0 waits	rate-limit-calls.jsonl
 annotated-ref-target-oneof	wait	search	11 calls; 0 waits	rate-limit-calls.jsonl
