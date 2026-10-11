@@ -19,16 +19,27 @@ class RawFernApi:
         self._client_wrapper = client_wrapper
 
     def record_reading(
-        self, *, vehicle: str, metres: int, trip_count: int, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        depot: int,
+        vehicle: str,
+        metres: int,
+        trip_count: int,
+        checkpoints: typing.Sequence[int],
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
         Parameters
         ----------
+        depot : int
+
         vehicle : str
 
         metres : int
 
         trip_count : int
+
+        checkpoints : typing.Sequence[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -40,10 +51,14 @@ class RawFernApi:
         _response = self._client_wrapper.httpx_client.request(
             "readings",
             method="POST",
+            params={
+                "depot": depot,
+            },
             json={
                 "vehicle": vehicle,
                 "metres": metres,
                 "trip_count": trip_count,
+                "checkpoints": checkpoints,
             },
             headers={
                 "content-type": "application/json",
@@ -69,16 +84,27 @@ class AsyncRawFernApi:
         self._client_wrapper = client_wrapper
 
     async def record_reading(
-        self, *, vehicle: str, metres: int, trip_count: int, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        depot: int,
+        vehicle: str,
+        metres: int,
+        trip_count: int,
+        checkpoints: typing.Sequence[int],
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
         Parameters
         ----------
+        depot : int
+
         vehicle : str
 
         metres : int
 
         trip_count : int
+
+        checkpoints : typing.Sequence[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -90,10 +116,14 @@ class AsyncRawFernApi:
         _response = await self._client_wrapper.httpx_client.request(
             "readings",
             method="POST",
+            params={
+                "depot": depot,
+            },
             json={
                 "vehicle": vehicle,
                 "metres": metres,
                 "trip_count": trip_count,
+                "checkpoints": checkpoints,
             },
             headers={
                 "content-type": "application/json",

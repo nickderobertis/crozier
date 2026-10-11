@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import enum
 import importlib
 import inspect
 import json
@@ -26,11 +27,26 @@ import warnings
 from pathlib import Path
 from types import ModuleType
 
-import yaml
+
+class Expect(enum.Enum):
+    """What the docstrings are expected to pass: Fern's certified fault, or its correction."""
+
+    INVALID = "invalid"
+    VALID = "valid"
+
+
+def load_document(document: Path) -> typing.Any:
+    """The OpenAPI document, read as JSON or, failing a `.json` suffix, as YAML."""
+    text = document.read_text(encoding="utf-8")
+    if document.suffix == ".json":
+        return json.loads(text)
+    import yaml  # noqa: PLC0415 - only a YAML document needs the YAML reader
+
+    return yaml.safe_load(text)
 
 
 def declared_const(document: Path, schema_name: str, keyword: str) -> str:
-    spec = yaml.safe_load(document.read_text(encoding="utf-8"))
+    spec = load_document(document)
     const = spec["components"]["schemas"][schema_name]["properties"][keyword]["const"]
     assert isinstance(const, str)
     return const
@@ -79,7 +95,7 @@ def main() -> None:
     parser.add_argument("--literal-type", required=True, help="the generated alias typing the property")
     parser.add_argument("--method", required=True)
     parser.add_argument("--keyword", required=True)
-    parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
+    parser.add_argument("--examples", type=Expect, choices=list(Expect), required=True)
     args = parser.parse_args()
     if not (args.sdk_root / "src" / "fern" / "__init__.py").is_file():
         parser.error("sdk_root must contain src/fern")
@@ -92,12 +108,12 @@ def main() -> None:
     markdown = markdown_values(args.sdk_root, args.method, args.keyword)
     docstrings = docstring_values(sdk, args.method, args.keyword)
     assert all(value == const for value in markdown.values()), markdown
-    if args.examples == "invalid":
+    if args.examples is Expect.INVALID:
         assert all(value != const for value in docstrings.values()), docstrings
     else:
         assert all(value == const for value in docstrings.values()), docstrings
     print(json.dumps({"const": const, "literal": literals, "docstrings": docstrings,
-                      "markdown": markdown, "examples": args.examples}, sort_keys=True))
+                      "markdown": markdown, "examples": args.examples.value}, sort_keys=True))
 
 
 if __name__ == "__main__":

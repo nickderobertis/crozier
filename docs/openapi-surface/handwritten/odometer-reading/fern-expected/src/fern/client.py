@@ -97,16 +97,27 @@ class FernApi:
         return self._raw_client
 
     def record_reading(
-        self, *, vehicle: str, metres: int, trip_count: int, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        depot: int,
+        vehicle: str,
+        metres: int,
+        trip_count: int,
+        checkpoints: typing.Sequence[int],
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
+        depot : int
+
         vehicle : str
 
         metres : int
 
         trip_count : int
+
+        checkpoints : typing.Sequence[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -123,13 +134,20 @@ class FernApi:
             base_url="https://yourhost.com/path/to/api",
         )
         client.record_reading(
+            depot=9223372036854776000,
             vehicle="vehicle",
             metres=9223372036854776000,
             trip_count=9007199254740992,
+            checkpoints=[9223372036854776000],
         )
         """
         _response = self._raw_client.record_reading(
-            vehicle=vehicle, metres=metres, trip_count=trip_count, request_options=request_options
+            depot=depot,
+            vehicle=vehicle,
+            metres=metres,
+            trip_count=trip_count,
+            checkpoints=checkpoints,
+            request_options=request_options,
         )
         return _response.data
 
@@ -235,16 +253,27 @@ class AsyncFernApi:
         return self._raw_client
 
     async def record_reading(
-        self, *, vehicle: str, metres: int, trip_count: int, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        depot: int,
+        vehicle: str,
+        metres: int,
+        trip_count: int,
+        checkpoints: typing.Sequence[int],
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
         Parameters
         ----------
+        depot : int
+
         vehicle : str
 
         metres : int
 
         trip_count : int
+
+        checkpoints : typing.Sequence[int]
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -266,15 +295,22 @@ class AsyncFernApi:
 
         async def main() -> None:
             await client.record_reading(
+                depot=9223372036854776000,
                 vehicle="vehicle",
                 metres=9223372036854776000,
                 trip_count=9007199254740992,
+                checkpoints=[9223372036854776000],
             )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.record_reading(
-            vehicle=vehicle, metres=metres, trip_count=trip_count, request_options=request_options
+            depot=depot,
+            vehicle=vehicle,
+            metres=metres,
+            trip_count=trip_count,
+            checkpoints=checkpoints,
+            request_options=request_options,
         )
         return _response.data

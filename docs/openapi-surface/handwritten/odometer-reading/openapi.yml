@@ -6,13 +6,21 @@ paths:
   /readings:
     post:
       operationId: recordReading
+      parameters:
+        - name: depot
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 9223372036854775807
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required: [vehicle, metres, trip_count]
+              required: [vehicle, metres, trip_count, checkpoints]
               properties:
                 vehicle:
                   type: string
@@ -24,6 +32,12 @@ paths:
                   type: integer
                   format: int64
                   example: 9007199254740993
+                checkpoints:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    example: 9223372036854775807
       responses:
         '204':
           description: Recorded.

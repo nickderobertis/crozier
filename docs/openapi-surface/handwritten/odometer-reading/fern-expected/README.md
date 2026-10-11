@@ -41,9 +41,13 @@ client = FernApi(
 )
 
 client.record_reading(
+    depot=9223372036854776000,
     vehicle="vehicle",
     metres=9223372036854776000,
     trip_count=9007199254740992,
+    checkpoints=[
+        9223372036854776000
+    ],
 )
 ```
 
@@ -63,9 +67,13 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.record_reading(
+        depot=9223372036854776000,
         vehicle="vehicle",
         metres=9223372036854776000,
         trip_count=9007199254740992,
+        checkpoints=[
+            9223372036854776000
+        ],
     )
 
 

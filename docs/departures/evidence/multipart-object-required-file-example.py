@@ -15,6 +15,7 @@ import inspect
 import json
 import sys
 import textwrap
+from dataclasses import dataclass
 from email import policy
 from email.parser import BytesParser
 from pathlib import Path
@@ -24,8 +25,19 @@ from typing import Callable
 import httpx
 
 
-METHODS = {"alias": "store_plan", "json": "store_survey", "plain": "hang_poster"}
-REQUIRED_FILES = {"alias": "attachment", "json": "attachment", "plain": "image"}
+@dataclass(frozen=True)
+class Shape:
+    """One proven source: the method its docstring example calls and the required file it omits."""
+
+    method: str
+    required_file: str
+
+
+SHAPES = {
+    "alias": Shape("store_plan", "attachment"),
+    "json": Shape("store_survey", "attachment"),
+    "plain": Shape("hang_poster", "image"),
+}
 
 
 def examples(sdk: ModuleType, method: str, expected: str, required_file: str = "attachment") -> dict[str, str]:
@@ -183,7 +195,7 @@ def wire_plain(sdk: ModuleType) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_src", type=Path)
-    parser.add_argument("shape", choices=("alias", "json", "plain"))
+    parser.add_argument("shape", choices=tuple(SHAPES))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--json-parameter", choices=("path", "query", "header"))
@@ -191,8 +203,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.json_parameter is not None and (args.shape != "alias" or not args.wire):
         parser.error("--json-parameter requires the alias shape and --wire")
-    if args.part_content_type is not None and not args.wire:
-        parser.error("--part-content-type requires --wire")
+    if args.part_content_type is not None and (args.shape == "plain" or not args.wire):
+        parser.error("--part-content-type requires an object shape and --wire")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
@@ -201,7 +213,8 @@ def main() -> None:
         wire_plain(sdk)
     elif args.wire:
         wire(sdk, args.shape, args.json_parameter, args.part_content_type)
-    results = examples(sdk, METHODS[args.shape], args.examples, REQUIRED_FILES[args.shape])
+    shape = SHAPES[args.shape]
+    results = examples(sdk, shape.method, args.examples, shape.required_file)
     if args.shape == "json":
         results.update(examples(sdk, "store_metadata", "valid"))
     result = {"shape": args.shape, "wire": args.wire, "examples": results}

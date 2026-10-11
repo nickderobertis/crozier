@@ -2156,8 +2156,17 @@ fn int64_example_rounded_out_of_range(pair: &Pair<'_>, fern: &str, crozier: &str
     let Some((prefix, fern_digits, crozier_digits)) = differing_integer(fern, crozier) else {
         return false;
     };
-    let negative = prefix.ends_with("=-");
-    if !negative && !prefix.ends_with('=') {
+    // The value stands alone as a keyword's value or a list's element: after
+    // `=`, `[` or `, `, or on a line of its own in a Markdown list, and before
+    // `,`, `]`, `)` or the line's end.
+    let (negative, unsigned) = prefix
+        .strip_suffix('-')
+        .map_or((false, prefix), |rest| (true, rest));
+    let after = &fern[prefix.len() + fern_digits.len()..];
+    let stands_alone =
+        (unsigned.ends_with(['=', '[']) || unsigned.ends_with(", ") || unsigned.trim().is_empty())
+            && (after.is_empty() || after.starts_with([',', ']', ')']));
+    if !stands_alone {
         return false;
     }
     let signed = |digits: &str| {
@@ -2197,9 +2206,11 @@ fn int64_example_rounded_out_of_range(pair: &Pair<'_>, fern: &str, crozier: &str
         && documented_example_line(pair.rel, pair.crozier, crozier)
 }
 
-/// Apply `visit` to every schema the source document writes, wherever it sits
-/// — components, parameters, request and response bodies, and every schema
-/// nested inside one; to none without a source document.
+/// Apply `visit` to every schema the loaded source document writes, wherever
+/// it sits — component schemas, parameters (by `schema` or by `content`),
+/// request bodies and responses, operation-level or component-level, and every
+/// schema nested inside one; to none without a source document. Loading has
+/// already moved webhooks into the paths they are read from.
 fn visit_source_schemas(
     source: Option<&crate::openapi::OpenApi>,
     visit: &mut dyn FnMut(&crate::openapi::Schema),
@@ -2252,6 +2263,13 @@ fn visit_source_schemas(
         if let Some(schema) = &parameter.schema {
             walk(schema, visit);
         }
+        walk_content(&parameter.content, visit);
+    }
+    for body in source.components.request_bodies.values() {
+        walk_content(&body.content, visit);
+    }
+    for response in source.components.responses.values() {
+        walk_content(&response.content, visit);
     }
     for item in source.paths.values() {
         for (_, operation) in item.operations() {
@@ -2272,36 +2290,42 @@ fn high_level_client(rel: &str) -> bool {
 }
 
 /// `(prefix, Fern's digits, crozier's digits)` when two lines differ in exactly
-/// one run of ASCII digits and nothing else.
+/// one run of ASCII digits and nothing else. Lines differing anywhere else —
+/// inside a multi-byte character included — have no such run.
 fn differing_integer<'a>(fern: &'a str, crozier: &'a str) -> Option<(&'a str, &'a str, &'a str)> {
-    let common_prefix = fern
-        .bytes()
-        .zip(crozier.bytes())
+    let (left, right) = (fern.as_bytes(), crozier.as_bytes());
+    let common_prefix = left
+        .iter()
+        .zip(right)
         .take_while(|(left, right)| left == right)
         .count();
-    let common_suffix = fern
-        .bytes()
+    let common_suffix = left
+        .iter()
         .rev()
-        .zip(crozier.bytes().rev())
+        .zip(right.iter().rev())
         .take_while(|(left, right)| left == right)
         .count()
-        .min(fern.len().min(crozier.len()) - common_prefix);
-    let start = fern[..common_prefix]
-        .bytes()
+        .min(left.len().min(right.len()) - common_prefix);
+    let leading_digits = left[..common_prefix]
+        .iter()
         .rev()
-        .take_while(u8::is_ascii_digit)
+        .take_while(|byte| byte.is_ascii_digit())
         .count();
-    let start = common_prefix - start;
-    let end_digits = fern[fern.len() - common_suffix..]
-        .bytes()
-        .take_while(u8::is_ascii_digit)
+    let start = common_prefix - leading_digits;
+    let trailing_digits = left[left.len() - common_suffix..]
+        .iter()
+        .take_while(|byte| byte.is_ascii_digit())
         .count();
-    let suffix = common_suffix - end_digits;
-    let fern_digits = &fern[start..fern.len() - suffix];
-    let crozier_digits = &crozier[start..crozier.len() - suffix];
+    let suffix = common_suffix - trailing_digits;
+    let fern_digits = fern.get(start..fern.len() - suffix)?;
+    let crozier_digits = crozier.get(start..crozier.len() - suffix)?;
     let digits = |text: &str| !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit());
     (fern_digits != crozier_digits && digits(fern_digits) && digits(crozier_digits))
-        .then(|| (&fern[..start], fern_digits, crozier_digits))
+        .then(|| {
+            fern.get(..start)
+                .map(|prefix| (prefix, fern_digits, crozier_digits))
+        })
+        .flatten()
 }
 
 /// `docstring-literal-dollar-escape`: a client docstring example line passing a
@@ -4344,6 +4368,69 @@ mod tests {
             readme_fern[1],
             readme_crozier[1]
         ));
+    }
+
+    #[test]
+    fn the_int64_rule_reads_list_elements_and_declines_other_differences() {
+        let source: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "paths": {},
+            "components": {"schemas": {"Reading": {
+                "type": "object",
+                "properties": {"checkpoints": {"type": "array", "items": {
+                    "type": "integer", "format": "int64", "example": i64::MAX
+                }}}
+            }}}
+        }))
+        .expect("a source document");
+        let context = Context::default().with_source_document(source);
+        let holds = |left: &str, right: &str| {
+            let fern = ["```python", left, "```"];
+            let crozier = ["```python", right, "```"];
+            let pair = Pair {
+                rel: "README.md",
+                fern: &fern,
+                crozier: &crozier,
+                context: &context,
+            };
+            int64_example_rounded_out_of_range(&pair, left, right)
+        };
+        // A list element, inline or on a line of its own, is the same value.
+        for (left, right) in [
+            (
+                "    checkpoints=[9223372036854776000],",
+                "    checkpoints=[9223372036854775807],",
+            ),
+            ("        9223372036854776000", "        9223372036854775807"),
+            (
+                "    ids=[1, 9223372036854776000],",
+                "    ids=[1, 9223372036854775807],",
+            ),
+        ] {
+            assert!(holds(left, right), "{left}");
+        }
+        // Digits inside a word or before other text are no value.
+        for (left, right) in [
+            (
+                "    name=v9223372036854776000,",
+                "    name=v9223372036854775807,",
+            ),
+            (
+                "    metres=9223372036854776000x,",
+                "    metres=9223372036854775807x,",
+            ),
+        ] {
+            assert!(!holds(left, right), "{left}");
+        }
+        // Lines differing inside a multi-byte character decline, never panic.
+        assert_eq!(
+            differing_integer("            name=\"é\",", "            name=\"ê\","),
+            None
+        );
+        assert_eq!(
+            differing_integer("x=12é", "x=13é"),
+            Some(("x=", "12", "13"))
+        );
     }
 
     #[test]

@@ -52,6 +52,9 @@ With `--examples valid` it exits 1 on the certified tree. Over the tree the
 compiled crozier binary generated from the same source with
 `--enum-type literals` it exits 0 with `--examples valid`, every docstring and
 Markdown value equal to `$PS1`.
+`sdk_env_dollar_const_validator_separates_fern_from_crozier` in
+`crates/crozier-e2e/tests/e2e.rs` drives this validator over both trees, in
+both directions, and with an expectation it does not know.
 
 ## The parity rule
 

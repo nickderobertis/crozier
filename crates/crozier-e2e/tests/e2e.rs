@@ -3564,6 +3564,170 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     }
 }
 
+/// A departure validator's run over the tree at `sdk_root`: its exit code and
+/// its whole output. The OpenAPI document is handed over as JSON, so the
+/// runtime environment needs no YAML reader.
+fn run_departure_validator(
+    python: &Path,
+    script: &str,
+    sdk_root: &Path,
+    document: &Path,
+    args: &[&str],
+) -> (Option<i32>, String) {
+    // llmlint: ignore-block[e2e_not_mocked] The validator imports the actual generated package and binds its documented calls; nothing in it or in crozier is stood in.
+    let output = Command::new(python)
+        .arg(repo_root().join(script))
+        .arg(sdk_root)
+        .arg(document)
+        .args(args)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the validator");
+    // llmlint: ignore-end[e2e_not_mocked]
+    (
+        output.status.code(),
+        format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ),
+    )
+}
+
+/// `fixture`'s document rewritten as JSON into `dir`.
+fn handwritten_document_as_json(fixture: &str, dir: &Path) -> std::path::PathBuf {
+    let yaml = std::fs::read_to_string(
+        repo_root()
+            .join(HANDWRITTEN_DIR)
+            .join(fixture)
+            .join("openapi.yml"),
+    )
+    .expect("the hand-written document");
+    let value: serde_json::Value = serde_yaml_ng::from_str(&yaml).expect("a YAML document");
+    let path = dir.join("openapi.json");
+    std::fs::write(&path, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
+    path
+}
+
+/// The `int64-example-rounded-out-of-range` validator, driven as its evidence
+/// note drives it: it finds the certified tree's rounded values outside the
+/// int64 range and refuses to call them valid, accepts the tree the compiled
+/// crozier binary writes and refuses to call that one invalid, and rejects a
+/// directory holding no generated package.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/int64-example-rounded-out-of-range.py";
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("odometer-reading", scratch.path());
+    let certified = scratch.path().join("certified");
+    copy_dir(
+        &repo_root()
+            .join(HANDWRITTEN_DIR)
+            .join("odometer-reading/fern-expected"),
+        &certified,
+    );
+    let generated = scratch.path().join("crozier");
+    probe_command(&document, &generated).assert().success();
+    let operation = [
+        "--operation-id",
+        "recordReading",
+        "--method",
+        "record_reading",
+    ];
+    for (tree, examples, code) in [
+        (&certified, "invalid", Some(0)),
+        (&certified, "valid", Some(1)),
+        (&generated, "valid", Some(0)),
+        (&generated, "invalid", Some(1)),
+    ] {
+        let (status, output) = run_departure_validator(
+            &python,
+            SCRIPT,
+            tree,
+            &document,
+            &[&operation[..], &["--examples", examples]].concat(),
+        );
+        assert_eq!(
+            status,
+            code,
+            "{} --examples {examples}: {output}",
+            tree.display()
+        );
+        if code == Some(0) {
+            assert!(output.contains("\"checkpoints\""), "{output}");
+        }
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        scratch.path(),
+        &document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("sdk_root must contain src/fern"),
+        "{output}"
+    );
+}
+
+/// The `docstring-literal-dollar-escape` validator, driven as its evidence note
+/// drives it, over the certified literals tree and crozier's literals output.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/docstring-literal-dollar-escape.py";
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("prompt-variable", scratch.path());
+    let certified = literals_mode::case("prompt-variable").materialize();
+    let generated = scratch.path().join("crozier");
+    probe_command(&document, &generated)
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let target = [
+        "--schema",
+        "PromptSpec",
+        "--literal-type",
+        "PromptSpecVariable",
+        "--method",
+        "define_prompt",
+        "--keyword",
+        "variable",
+    ];
+    for (tree, examples, code) in [
+        (certified.path(), "invalid", Some(0)),
+        (certified.path(), "valid", Some(1)),
+        (generated.as_path(), "valid", Some(0)),
+        (generated.as_path(), "invalid", Some(1)),
+    ] {
+        let (status, output) = run_departure_validator(
+            &python,
+            SCRIPT,
+            tree,
+            &document,
+            &[&target[..], &["--examples", examples]].concat(),
+        );
+        assert_eq!(
+            status,
+            code,
+            "{} --examples {examples}: {output}",
+            tree.display()
+        );
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &document,
+        &[&target[..], &["--examples", "neither"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+}
+
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_multipart_json_module_survives_path_query_and_header_parameters() {

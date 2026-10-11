@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import enum
 import importlib
 import inspect
 import json
@@ -24,23 +25,58 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any
 
-import yaml
-
 INT64 = (-(2**63), 2**63 - 1)
 
 
-def declared_int64(document: Path, operation_id: str) -> dict[str, int]:
-    """The declared examples of the operation's int64 body properties, by name."""
-    spec = yaml.safe_load(document.read_text(encoding="utf-8"))
+class Expect(enum.Enum):
+    """What the examples are expected to be: Fern's certified fault, or its correction."""
+
+    INVALID = "invalid"
+    VALID = "valid"
+
+
+def load_document(document: Path) -> Any:
+    """The OpenAPI document, read as JSON or, failing a `.json` suffix, as YAML."""
+    text = document.read_text(encoding="utf-8")
+    if document.suffix == ".json":
+        return json.loads(text)
+    import yaml  # noqa: PLC0415 - only a YAML document needs the YAML reader
+
+    return yaml.safe_load(text)
+
+
+def int64_example(schema: dict[str, Any]) -> int | None:
+    """A schema's declared example when the schema is an int64 integer."""
+    example = schema.get("example")
+    if schema.get("format") == "int64" and isinstance(example, int) and not isinstance(example, bool):
+        return example
+    return None
+
+
+def declared_int64(document: Path, operation_id: str) -> dict[str, tuple[int, bool]]:
+    """The operation's int64 examples by argument: its query parameters' and its
+    body properties', each with whether the argument is a list of them (an array
+    property whose items declare the example)."""
+    spec = load_document(document)
     for item in spec["paths"].values():
         for operation in item.values():
-            if isinstance(operation, dict) and operation.get("operationId") == operation_id:
-                schema = operation["requestBody"]["content"]["application/json"]["schema"]
-                return {
-                    name: prop["example"]
-                    for name, prop in schema["properties"].items()
-                    if prop.get("format") == "int64" and isinstance(prop.get("example"), int)
-                }
+            if not isinstance(operation, dict) or operation.get("operationId") != operation_id:
+                continue
+            declared: dict[str, tuple[int, bool]] = {}
+            for parameter in operation.get("parameters", []):
+                example = int64_example(parameter.get("schema", {}))
+                if example is not None:
+                    declared[parameter["name"]] = (example, False)
+            schema = operation["requestBody"]["content"]["application/json"]["schema"]
+            for name, prop in schema["properties"].items():
+                example = int64_example(prop)
+                if example is not None:
+                    declared[name] = (example, False)
+                elif prop.get("type") == "array" and (example := int64_example(prop.get("items", {}))) is not None:
+                    declared[name] = (example, True)
+            # A proof that checks no value proves nothing.
+            assert declared, f"{operation_id} declares no int64 example to validate"
+            return declared
     raise AssertionError(f"no operation {operation_id}")
 
 
@@ -94,7 +130,7 @@ def main() -> None:
     parser.add_argument("document", type=Path, help="the OpenAPI document it was generated from")
     parser.add_argument("--operation-id", required=True)
     parser.add_argument("--method", required=True)
-    parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
+    parser.add_argument("--examples", type=Expect, choices=list(Expect), required=True)
     args = parser.parse_args()
     if not (args.sdk_root / "src" / "fern" / "__init__.py").is_file():
         parser.error("sdk_root must contain src/fern")
@@ -105,21 +141,23 @@ def main() -> None:
     verdicts: dict[str, dict[str, str]] = {}
     for where, arguments in found.items():
         verdicts[where] = {}
-        for name, example in declared.items():
-            value = arguments[name]
-            in_range = INT64[0] <= value <= INT64[1]
+        for name, (example, listed) in declared.items():
+            values = arguments[name] if listed else [arguments[name]]
+            assert values, (where, name, "no element to validate")
             rounded = js_spelling(example)
-            if INT64[0] <= rounded <= INT64[1]:
-                # A rounding that stays in range is a valid value, written by both.
-                assert value == rounded, (where, name, value, rounded)
-                verdicts[where][name] = "in range"
-            elif args.examples == "invalid":
-                assert value == rounded and not in_range, (where, name, value)
-                verdicts[where][name] = f"{value} exceeds the int64 bounds {INT64}"
-            else:
-                assert value == example and in_range, (where, name, value)
-                verdicts[where][name] = "the declared example, in range"
-    print(json.dumps({"examples": args.examples, "verdicts": verdicts}, sort_keys=True))
+            for value in values:
+                in_range = INT64[0] <= value <= INT64[1]
+                if INT64[0] <= rounded <= INT64[1]:
+                    # A rounding that stays in range is a valid value, written by both.
+                    assert value == rounded, (where, name, value, rounded)
+                    verdicts[where][name] = "in range"
+                elif args.examples is Expect.INVALID:
+                    assert value == rounded and not in_range, (where, name, value)
+                    verdicts[where][name] = f"{value} exceeds the int64 bounds {INT64}"
+                else:
+                    assert value == example and in_range, (where, name, value)
+                    verdicts[where][name] = "the declared example, in range"
+    print(json.dumps({"examples": args.examples.value, "verdicts": verdicts}, sort_keys=True))
 
 
 if __name__ == "__main__":
