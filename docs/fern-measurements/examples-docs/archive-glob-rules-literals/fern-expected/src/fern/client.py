@@ -207,6 +207,48 @@ class FernApi:
         _response = self._raw_client.drop_rule(rule_id, request_options=request_options)
         return _response.data
 
+    def upload_archive(
+        self,
+        *,
+        request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+        """
+        _response = self._raw_client.upload_archive(request=request, request_options=request_options)
+        return _response.data
+
+    def restore_archive(
+        self,
+        *,
+        request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+        """
+        _response = self._raw_client.restore_archive(request=request, request_options=request_options)
+        return _response.data
+
 
 def _make_default_async_client(
     timeout: typing.Optional[float],
@@ -439,4 +481,46 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.drop_rule(rule_id, request_options=request_options)
+        return _response.data
+
+    async def upload_archive(
+        self,
+        *,
+        request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+        """
+        _response = await self._raw_client.upload_archive(request=request, request_options=request_options)
+        return _response.data
+
+    async def restore_archive(
+        self,
+        *,
+        request: typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]],
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        request : typing.Union[bytes, typing.Iterator[bytes], typing.AsyncIterator[bytes]]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+        """
+        _response = await self._raw_client.restore_archive(request=request, request_options=request_options)
         return _response.data

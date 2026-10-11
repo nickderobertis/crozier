@@ -45,6 +45,28 @@ paths:
       responses:
         '204':
           description: Dropped.
+  /archives:
+    put:
+      operationId: uploadArchive
+      requestBody:
+        required: true
+        description: A tarball of every journal/*/segment file.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Stored.
+  /restores:
+    post:
+      operationId: restoreArchive
+      requestBody:
+        $ref: '#/components/requestBodies/ArchiveBytes'
+      responses:
+        '204':
+          description: Restored.
 components:
   parameters:
     Tier:
@@ -61,6 +83,14 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/RotationRule'
+    ArchiveBytes:
+      required: true
+      description: Raw bytes to unpack into restore/*/staging.
+      content:
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
   responses:
     RuleCreated:
       description: The rule added for cache/*/tmp.
