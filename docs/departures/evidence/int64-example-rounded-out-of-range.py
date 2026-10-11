@@ -71,7 +71,12 @@ class Declared(NamedTuple):
 def int64_example(schema: dict[str, Any]) -> int | None:
     """A schema's declared example when the schema is an int64 integer."""
     example = schema.get("example")
-    if schema.get("format") == "int64" and isinstance(example, int) and not isinstance(example, bool):
+    if (
+        schema.get("type") == "integer"
+        and schema.get("format") == "int64"
+        and isinstance(example, int)
+        and not isinstance(example, bool)
+    ):
         return example
     return None
 

@@ -2184,7 +2184,13 @@ fn int64_example_rounded_out_of_range(pair: &Pair<'_>, fern: &str, crozier: &str
     let declared = pair.context.source_int64_examples.get_or_init(|| {
         let mut examples = BTreeSet::new();
         visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
-            if schema.format.as_deref() == Some("int64") {
+            if schema.format.as_deref() == Some("int64")
+                && schema
+                    .ty
+                    .as_ref()
+                    .and_then(crate::openapi::TypeField::primary)
+                    == Some("integer")
+            {
                 examples.extend(
                     schema
                         .example
@@ -4255,7 +4261,8 @@ mod tests {
                     "properties": {
                         "metres": {"type": "integer", "format": "int64", "example": i64::MAX},
                         "trip": {"type": "integer", "format": "int64", "example": 9_007_199_254_740_993_i64},
-                        "plain": {"type": "integer", "example": 9_223_372_036_854_000_000_i64}
+                        "plain": {"type": "integer", "example": 9_223_372_036_854_000_000_i64},
+                        "label": {"type": "string", "format": "int64", "example": 9_223_372_036_854_775_805_i64}
                     }
                 }}}},
                 "responses": {}
@@ -4296,6 +4303,25 @@ mod tests {
             &undeclared_text,
             fern_line,
             undeclared
+        ));
+        // `format: int64` alone, on a schema that is no integer, declares no
+        // int64 example.
+        let untyped = "            label=9223372036854775805,";
+        let untyped_fern = "            label=9223372036854776000,";
+        let untyped_fern_text = fern.map(|line| {
+            if line == fern_line {
+                untyped_fern
+            } else {
+                line
+            }
+        });
+        let untyped_text = fern.map(|line| if line == fern_line { untyped } else { line });
+        assert!(!holds(
+            "src/fern/client.py",
+            &untyped_fern_text,
+            &untyped_text,
+            untyped_fern,
+            untyped
         ));
         // An in-range rounding is Fern's valid value, kept as Fern writes it.
         let near = (

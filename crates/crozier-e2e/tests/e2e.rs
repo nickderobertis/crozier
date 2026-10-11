@@ -3762,6 +3762,37 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
         output.contains("declares no int64 example to validate"),
         "{output}"
     );
+    // `format: int64` on a schema that is no integer declares no int64 example
+    // either, whatever example it carries.
+    fn retype_int64(node: &mut serde_json::Value) {
+        match node {
+            serde_json::Value::Object(map) => {
+                if map.get("format").and_then(serde_json::Value::as_str) == Some("int64") {
+                    map.insert("type".into(), "string".into());
+                }
+                map.values_mut().for_each(retype_int64);
+            }
+            serde_json::Value::Array(items) => items.iter_mut().for_each(retype_int64),
+            _ => {}
+        }
+    }
+    let mut untyped: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    retype_int64(&mut untyped);
+    let untyped_document = scratch.path().join("format-only.json");
+    std::fs::write(&untyped_document, serde_json::to_vec(&untyped).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &untyped_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(
+        output.contains("declares no int64 example to validate"),
+        "{output}"
+    );
     // A document without the structure the proof reads is an input error.
     let malformed = scratch.path().join("malformed.json");
     std::fs::write(&malformed, r#"{"paths": []}"#).unwrap();

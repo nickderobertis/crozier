@@ -34,7 +34,7 @@ generated package, evaluates every worked call of the operation — the sync and
 async client docstrings, both README usage blocks and the `reference.md`
 example — binds each docstring call to the actual generated method with
 `inspect.signature`, and checks each argument the source declares
-`format: int64` (a query parameter, a body property, or each element of a body
+`type: integer` with `format: int64` (a query parameter, a body property, or each element of a body
 array whose items declare it) against the signed 64-bit bounds and the
 declared example. It reads the document as JSON, fails the proof for an
 operation it cannot find or one declaring no such example, and refuses a
