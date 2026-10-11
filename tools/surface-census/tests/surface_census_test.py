@@ -15927,10 +15927,17 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assertIn(old, text)
         path.write_text(text.replace(old, new, 1), encoding="utf-8")
 
-    def row(self, kind: str, outcome: str | None = None) -> dict[str, str]:
+    def row(self, kind: str, outcome: str | None = None, sources: str = "") -> dict[str, str]:
+        """The first index row of `kind` (and `outcome`) whose every source starts with `sources`."""
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
-        return next(row for row in rows if row["kind"] == kind and outcome in (None, row["outcome"]))
+        return next(
+            row
+            for row in rows
+            if row["kind"] == kind
+            and outcome in (None, row["outcome"])
+            and all(source.startswith(sources) for source in row["source"].split(";"))
+        )
 
     def line(self, row: dict[str, str]) -> str:
         return "\t".join(row[column] for column in self.index_script.INDEX_HEADER)
@@ -16055,7 +16062,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
             with self.subTest(shape=row["shape"]):
                 root = self.mirror()
                 self.rewrite(root / module.INDEX, self.line(row), self.edited(row, tests=unrelated))
-                self.assert_fails(root, f"{row['shape']}: none of its tests compares golden")
+                self.assert_fails(root, f"{row['shape']}: none of its tests reaches golden")
 
     def test_a_proof_of_the_wrong_kind_fails(self) -> None:
         module = self.index_script
@@ -16063,7 +16070,11 @@ class ScenarioProofIndexTests(unittest.TestCase):
         cases = [
             (real, {"kind": "measurement"}, "a measurement proof's goldens are under"),
             (handwritten, {"kind": "real"}, "a real proof cites a registered corpus row's golden"),
-            (real, {"kind": "handwritten"}, "a hand-written proof's source is a hand-written fixture"),
+            (
+                self.row("real", sources="tests/fixtures/"),
+                {"kind": "handwritten"},
+                "a hand-written proof's source is a hand-written fixture",
+            ),
             (
                 measurement,
                 {"kind": "handwritten"},
@@ -16075,6 +16086,38 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 root = self.mirror()
                 self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **cells))
                 self.assert_fails(root, message)
+
+    def test_sources_are_exactly_the_goldens_documents(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        other = self.row("real")["source"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / module.INDEX, self.line(row), self.edited(row, source=other))
+        self.assert_fails(root, f"{row['shape']}: sources {other} are not its goldens' documents")
+        golden = row["goldens"].split(";")[0]
+        document = module.golden_source(root, golden)
+        self.assertIsNotNone(document)
+        (root / str(document)).unlink()
+        self.assert_fails(root, f"{row['shape']}: golden {golden} has no committed document it was generated from")
+
+    def test_an_unknown_enum_type_fails(self) -> None:
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / golden / ".fern/metadata.json", '"python_enums"', '"open_strings"')
+        self.assert_fails(root, f"golden {golden}'s enum_type 'open_strings' is none of literals, python_enums")
+
+    def test_a_refusal_test_that_does_not_reach_its_probe_fails(self) -> None:
+        module = self.index_script
+        row = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if row["kind"] == "refusal" and "fern_refusal_classes_hold" not in row["tests"]
+        )
+        root = self.mirror()
+        self.rewrite(
+            root / module.INDEX, self.line(row), self.edited(row, tests="handwritten_fixtures_match_fern_goldens")
+        )
+        self.assert_fails(root, f"{row['shape']}: none of its tests reaches the probe")
 
     def test_a_refusal_outcome_must_agree_with_its_registry_class(self) -> None:
         module = self.index_script

@@ -1743,7 +1743,7 @@ proof that closes the shape:
 | `shape` | the scenario's id, once, rows sorted by it |
 | `owner` | the scenario node that settled it |
 | `kind` | `real` (a registered corpus row's golden), `handwritten` (a [hand-written fixture](openapi-surface/handwritten/AGENTS.md) or a `handwritten-e2e.toml` cover), `measurement` (a `docs/fern-measurements/` tree) or `refusal` (a [refusal class](fern-refusals/README.md)) |
-| `source` | the committed document, fixture or probe the proof generates from |
+| `source` | the committed documents its goldens were generated from, in golden order, or a refusal's probes |
 | `goldens` | the complete certified Fern trees it is byte-compared with; `—` for a refusal |
 | `settings` | each golden's generator settings, in golden order, read off its `.fern/metadata.json`; `default;fern-strict` for a refusal |
 | `tests` | the real-binary e2e tests that compare it, or that refuse it in both modes |
@@ -1766,12 +1766,15 @@ fact from its authority and fails on any disagreement:
 - the plan's shapes and owners, from
   [`scenario-plan.tsv`](openapi-surface/scenario-plan.tsv), which the index must
   hold exactly;
-- each golden's presence in `tests/fixtures/compared-goldens.json`, and a cited
-  `#[test]` that compares it (its corpus binding, overlay or flat registration,
-  the hand-written walk, or a path its body names);
+- each golden's presence in `tests/fixtures/compared-goldens.json`, the
+  committed document it was generated from (the row's `source` cell lists
+  exactly those), and a cited `#[test]` that reaches it: its corpus binding,
+  overlay or flat registration, the hand-written walk, or a path its body
+  names;
 - its pinned Fern pair and settings, read from its metadata;
 - its departure ids, from `departures-ledger.tsv` and `assets/departures.yml`;
-- each refusal's class, status and probes;
+- each refusal's class, status and probes, and a cited test that reaches each
+  probe;
 - each test's definition as a `#[test]`;
 - each path and anchor.
 

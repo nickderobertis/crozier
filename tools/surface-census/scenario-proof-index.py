@@ -14,9 +14,12 @@ that catalog and compared, so a row cannot drift from what it cites:
   `settings` cell is read off that metadata, and its `outcome`/`ids` cells are
   the `fern-defect` entries of `assets/departures.yml` that
   `tests/fixtures/departures-ledger.tsv` applies to it;
-* each golden is compared by one of the row's tests: a `#[test]` of the e2e
-  crate whose corpus binding, overlay or flat registration, hand-written walk,
-  or body's paths reach that golden;
+* the row's sources are exactly the documents its goldens were generated from,
+  in golden order;
+* each golden, and each refusal probe, is reached by one of the row's tests: a
+  `#[test]` of the e2e crate whose corpus binding, overlay or flat registration
+  or hand-written walk covers it, or whose body (or a callee's) names a path
+  containing it;
 * a refusal names a `docs/fern-refusals/classes.tsv` class whose `status` fixes
   both mode outcomes, and whose evaluation note names every probe the row cites;
 * every source, evidence document and anchor exists.
@@ -90,6 +93,8 @@ MEASUREMENTS = "docs/fern-measurements/"
 # How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them.
 CORPUS_DRIVERS = ("assert_corpus_matches(&", "assert_committed_corpus_matches(&", "known_fern_failure(&")
 SETTING_VALUE = (str, int, float, bool)
+ENUM_TYPES = ("literals", "python_enums")
+DOCUMENTS = ("openapi.yml", "openapi.yaml", "openapi.json")
 
 ShapeId = NewType("ShapeId", str)
 WitnessName = NewType("WitnessName", str)
@@ -341,19 +346,29 @@ class E2e:
                 found |= self.paths(callee, depth - 1, seen | {name})
         return found
 
-    def compares(self, golden: str, tests: tuple[TestName, ...]) -> bool:
-        """Whether one of `tests` compares `golden`."""
-        parts = golden.split("/")
-        if golden.startswith(HANDWRITTEN):
+    def reaches(self, target: str, tests: tuple[TestName, ...]) -> bool:
+        """Whether one of `tests` reaches `target`, a golden tree or a probe.
+
+        A corpus golden is reached by the test bound to its fixture's `Corpus`
+        (`expected/`), by the flat test registered for it (`expected-flat/`), or
+        by the overlay gate (any other `expected-*/`). A hand-written golden,
+        `handwritten/<fixture>/fern-expected`, is reached by the gate that walks
+        every such tree. Anything else is reached when a test's body, or a
+        callee's, names a path that contains it.
+        """
+        parts = target.split("/")
+        if target.startswith("tests/fixtures/") and len(parts) == 4:
+            fixture = parts[2]
+            match parts[3]:
+                case "expected":
+                    return self.corpus_tests.get(fixture) in tests
+                case "expected-flat":
+                    return any(self.flat_tests.get(test) == fixture for test in tests)
+                case _:
+                    return self.overlay_test in tests
+        if target.startswith(HANDWRITTEN) and len(parts) == 5 and parts[4] == "fern-expected":
             return HANDWRITTEN_TEST in tests
-        if golden.startswith("tests/fixtures/") and len(parts) == 4:
-            fixture, tree = parts[2], parts[3]
-            if tree == "expected":
-                return self.corpus_tests.get(fixture) in tests
-            if tree == "expected-flat":
-                return any(self.flat_tests.get(test) == fixture for test in tests)
-            return self.overlay_test in tests
-        return any(path in golden for test in tests for path in self.paths(test) if len(path) > 3)
+        return any(path in target for test in tests for path in self.paths(test) if len(path) > 3)
 
 
 def read_e2e(root: Path) -> E2e:
@@ -506,7 +521,10 @@ def golden_settings(root: Path, golden: str) -> tuple[str | None, list[str]]:
     failures = []
     if (record.get("cliVersion"), record.get("generatorVersion")) != PIN:
         failures.append(f"golden {golden} is not output of Fern CLI {PIN[0]} with fern-python-sdk {PIN[1]}")
-    parts = [str(pydantic.get("enum_type", "literals"))]
+    enum_type = pydantic.get("enum_type", "literals")
+    if enum_type not in ENUM_TYPES:
+        return None, [f"golden {golden}'s enum_type {enum_type!r} is none of {', '.join(ENUM_TYPES)}"]
+    parts = [enum_type]
     if golden.endswith("-flat") or "-flat/" in golden:
         parts.append("flat")
     for key, value in sorted(config.items()):
@@ -515,6 +533,35 @@ def golden_settings(root: Path, golden: str) -> tuple[str | None, list[str]]:
         else:
             parts.append(f"{key}={value}")
     return "+".join(parts), failures
+
+
+def _document(directory: Path, root: Path) -> str | None:
+    for name in DOCUMENTS:
+        if (directory / name).is_file():
+            return (directory / name).relative_to(root).as_posix()
+    documents = directory / "documents"
+    return documents.relative_to(root).as_posix() if documents.is_dir() else None
+
+
+def golden_source(root: Path, golden: str) -> str | None:
+    """The committed document a golden was generated from.
+
+    A corpus golden's is its fixture's one committed corpus source. A
+    measurement or hand-written golden's is its case directory's document (or
+    multi-file `documents/`); a case without one is an overlay of the fixture or
+    case of the same name, less a `-literals` or `-flat` suffix.
+    """
+    parts = golden.split("/")
+    if golden.startswith("tests/fixtures/"):
+        sources = root / "tests" / "fixtures" / "corpus-sources" / parts[2]
+        files = sorted(path for path in sources.glob("*") if path.is_file()) if sources.is_dir() else []
+        return files[0].relative_to(root).as_posix() if len(files) == 1 else None
+    case = root.joinpath(*parts[:-1])
+    if found := _document(case, root):
+        return found
+    name = re.sub(r"-(?:literals|flat)$", "", case.name)
+    candidates = [root / HANDWRITTEN / name, *sorted((root / MEASUREMENTS).glob(f"*/{name}"))]
+    return next((found for candidate in candidates if (found := _document(candidate, root))), None)
 
 
 def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[str]:
@@ -548,6 +595,8 @@ def refusal_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     for probe in proof.source:
         if Path(probe).name not in text:
             failures.append(f"{where}: {name}'s evaluation note does not name the probe {probe}")
+        if not known.e2e.reaches(probe, proof.tests):
+            failures.append(f"{where}: none of its tests reaches the probe {probe}")
     return failures
 
 
@@ -559,12 +608,21 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     for golden in proof.goldens:
         if golden not in known.inventory:
             failures.append(f"{where}: golden {golden} is not in {INVENTORY}")
-        if not known.e2e.compares(golden, proof.tests):
-            failures.append(f"{where}: none of its tests compares golden {golden}")
+        if not known.e2e.reaches(golden, proof.tests):
+            failures.append(f"{where}: none of its tests reaches golden {golden}")
         setting, problems = golden_settings(root, golden)
         failures += [f"{where}: {problem}" for problem in problems]
         settings.append(setting or "?")
         defects |= known.ledger.get(golden, set()) & known.defects
+    sources: list[str] = []
+    for golden in proof.goldens:
+        source = golden_source(root, golden)
+        if source is None:
+            failures.append(f"{where}: golden {golden} has no committed document it was generated from")
+        elif source not in sources:
+            sources.append(source)
+    if list(proof.source) != sources:
+        failures.append(f"{where}: sources {';'.join(proof.source)} are not its goldens' documents {';'.join(sources)}")
     if proof.settings != ";".join(settings):
         failures.append(f"{where}: settings {proof.settings} disagree with the goldens' metadata {';'.join(settings)}")
     outcome = "departure" if defects else "match"
