@@ -1763,11 +1763,16 @@ and neither counts toward `python_enums` parity.
 `tools/surface-census/scenario-proof-index.py check` re-derives each repeated
 fact from its authority and fails on any disagreement:
 
-- each golden's presence in `tests/fixtures/compared-goldens.json`;
+- the plan's shapes and owners, from
+  [`scenario-plan.tsv`](openapi-surface/scenario-plan.tsv), which the index must
+  hold exactly;
+- each golden's presence in `tests/fixtures/compared-goldens.json`, and a cited
+  `#[test]` that compares it (its corpus binding, overlay or flat registration,
+  the hand-written walk, or a path its body names);
 - its pinned Fern pair and settings, read from its metadata;
 - its departure ids, from `departures-ledger.tsv` and `assets/departures.yml`;
 - each refusal's class, status and probes;
-- each test's definition;
+- each test's definition as a `#[test]`;
 - each path and anchor.
 
 `ScenarioProofIndexTests` in `tools/surface-census/tests/surface_census_test.py`

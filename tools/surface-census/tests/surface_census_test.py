@@ -15868,16 +15868,18 @@ class ScenarioProofIndexTests(unittest.TestCase):
     """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
 
     index_script = load_script("tools/surface-census/scenario-proof-index.py")
+    base: ClassVar[Path]
 
-    def mirror(self) -> Path:
-        """A scratch root holding every committed file the reconciliation reads, and the paths it checks."""
-        module = self.index_script
-        root = Path(tempfile.mkdtemp())
-        self.addCleanup(shutil.rmtree, root)
+    @classmethod
+    def setUpClass(cls) -> None:
+        """One scratch root holding every committed file the reconciliation reads; each test copies it."""
+        module = cls.index_script
+        cls.base = Path(tempfile.mkdtemp())
+        cls.addClassCleanup(shutil.rmtree, cls.base)
 
         def copy(relative: str) -> None:
             source = REPO / relative
-            target = root / relative
+            target = cls.base / relative
             target.parent.mkdir(parents=True, exist_ok=True)
             if source.is_dir():
                 target.mkdir(exist_ok=True)
@@ -15885,19 +15887,20 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 shutil.copyfile(source, target)
 
         for relative in [
-            str(module.INDEX),
-            str(module.WITNESSES),
-            str(module.RESIDUALS),
+            module.PLAN,
+            module.INDEX,
+            module.WITNESSES,
+            module.RESIDUALS,
+            module.INVENTORY,
+            module.LEDGER,
+            module.CATALOG,
+            module.CLASSES,
+            module.CORPUS,
             module.E2E_COVERS,
-            "tests/fixtures/compared-goldens.json",
-            "tests/fixtures/departures-ledger.tsv",
-            "tests/fixtures/CORPUS.md",
-            "assets/departures.yml",
-            "docs/fern-refusals/classes.tsv",
             "crates/crozier-e2e/tests/e2e.rs",
-            *(str(path.relative_to(REPO)) for path in (REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")),
+            *(path.relative_to(REPO) for path in (REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")),
         ]:
-            copy(relative)
+            copy(str(relative))
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         for row in rows:
             for cell in ("source", "evidence"):
@@ -15912,9 +15915,11 @@ class ScenarioProofIndexTests(unittest.TestCase):
             copy(row["evidence"].partition("#")[0])
             if row["diff"] != module.NONE:
                 copy(str(module.WITNESSES.parent / row["diff"]))
-            if row["status"] == "registered":
-                copy(f"tests/fixtures/{row['corpus'].partition(' ')[2].strip('`')}/expected")
-        self.assertEqual([], module.check(root), "the mirror is incomplete")
+
+    def mirror(self) -> Path:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        shutil.copytree(self.base, root, dirs_exist_ok=True)
         return root
 
     def rewrite(self, path: Path, old: str, new: str) -> None:
@@ -15927,17 +15932,28 @@ class ScenarioProofIndexTests(unittest.TestCase):
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         return next(row for row in rows if row["kind"] == kind and outcome in (None, row["outcome"]))
 
+    def line(self, row: dict[str, str]) -> str:
+        return "\t".join(row[column] for column in self.index_script.INDEX_HEADER)
+
+    def edited(self, row: dict[str, str], **cells: str) -> str:
+        return self.line({**row, **cells})
+
     def assert_fails(self, root: Path, message: str) -> None:
         failures = self.index_script.check(root)
         self.assertTrue(any(message in failure for failure in failures), failures)
 
-    def test_the_committed_index_and_witnesses_reconcile(self) -> None:
-        run = subprocess.run(
-            [sys.executable, str(REPO / "tools/surface-census/scenario-proof-index.py"), "check"],
+    def run_script(self, *args: str, root: Path = REPO) -> subprocess.CompletedProcess[str]:
+        script = REPO / "tools/surface-census/scenario-proof-index.py"
+        return subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(root), *args],
             capture_output=True,
             text=True,
             check=False,
         )
+
+    def test_the_committed_index_and_witnesses_reconcile(self) -> None:
+        self.assertEqual([], self.index_script.check(self.base), "the mirror is incomplete")
+        run = self.run_script("check")
         self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
 
     def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
@@ -15947,19 +15963,47 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assertEqual(module.values(module.Owner), {row["owner"] for row in rows})
         self.assertEqual(module.values(module.Kind), {row["kind"] for row in rows})
 
-    def test_a_removed_or_duplicated_shape_fails(self) -> None:
+    def test_the_index_holds_exactly_the_plan(self) -> None:
+        module = self.index_script
         root = self.mirror()
-        index = root / self.index_script.INDEX
+        index = root / module.INDEX
         lines = index.read_text(encoding="utf-8").splitlines(keepends=True)
+        last = lines[-1].split("\t")
         index.write_text("".join(lines[:-1]), encoding="utf-8")
-        self.assert_fails(root, "indexes 159 shapes, not the plan's 160")
+        self.assert_fails(root, f"{last[0]} is planned but not indexed")
         index.write_text("".join([*lines[:2], lines[1], *lines[2:]]), encoding="utf-8")
         self.assert_fails(root, f"{lines[1].split(chr(9))[0]} is indexed 2 times")
+        # A valid-looking id substituted for a planned one keeps the count but not the plan.
+        index.write_text("".join([*lines[:-1], "\t".join(["unplanned-shape", *last[1:]])]), encoding="utf-8")
+        self.assert_fails(root, "unplanned-shape is indexed but not planned")
+        self.assert_fails(root, f"{last[0]} is planned but not indexed")
+        other = next(owner for owner in module.Owner if owner != last[1])
+        index.write_text("".join([*lines[:-1], "\t".join([last[0], other, *last[2:]])]), encoding="utf-8")
+        self.assert_fails(root, f"{last[0]}: owner {other} is not the plan's {last[1]}")
+
+    def test_rows_with_unknown_vocabulary_fail(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        cases = {
+            "owner": ("unrelated-node", "owner unrelated-node is none of"),
+            "kind": ("guessed", "kind guessed is none of"),
+        }
+        for column, (value, message) in cases.items():
+            with self.subTest(column=column):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **{column: value}))
+                self.assert_fails(root, message)
+        root = self.mirror()
+        witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        line = "\t".join(witnesses[0][column] for column in module.WITNESS_HEADER)
+        self.rewrite(root / module.WITNESSES, line, line.replace("\tdiffers\t", "\tpending\t"))
+        self.assert_fails(root, "status pending is neither registered nor differs")
 
     def test_a_golden_removed_or_dropped_from_the_gate_fails(self) -> None:
+        module = self.index_script
         golden = self.row("handwritten")["goldens"].split(";")[0]
         root = self.mirror()
-        self.rewrite(root / "tests/fixtures/compared-goldens.json", f'"{golden}"', '"unrelated"')
+        self.rewrite(root / module.INVENTORY, f'"{golden}"', '"unrelated"')
         self.assert_fails(root, f"golden {golden} is not in tests/fixtures/compared-goldens.json")
         (root / golden / ".fern/metadata.json").unlink()
         self.assert_fails(root, f"golden {golden} is not a complete certified tree")
@@ -15973,33 +16017,71 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assert_fails(root, f"golden {golden} is not output of Fern CLI 5.67.1 with fern-python-sdk 5.20.0")
         self.rewrite(metadata, '"python_enums"', '"literals"')
         self.assert_fails(root, f"{row['shape']}: settings {row['settings']} disagree")
+        metadata.write_text("{", encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s metadata is not JSON")
 
     def test_an_outcome_the_ledger_does_not_support_fails(self) -> None:
+        module = self.index_script
         row = self.row("handwritten", "departure")
         root = self.mirror()
-        ledger = root / "tests/fixtures/departures-ledger.tsv"
-        kept = [line for line in ledger.read_text(encoding="utf-8").splitlines(keepends=True) if "\t" in line]
+        ledger = root / module.LEDGER
         goldens = set(row["goldens"].split(";"))
+        kept = [line for line in ledger.read_text(encoding="utf-8").splitlines(keepends=True) if "\t" in line]
         ledger.write_text("".join(line for line in kept if line.split("\t")[0] not in goldens), encoding="utf-8")
         self.assert_fails(root, f"{row['shape']}: outcome departure {row['ids']} disagrees with the ledger's match —")
 
-    def test_a_missing_test_source_or_evidence_fails(self) -> None:
+    def test_a_missing_test_source_anchor_or_evidence_fails(self) -> None:
         row = self.row("handwritten")
         test = row["tests"].split(";")[0]
         root = self.mirror()
         for path in [root / "crates/crozier-e2e/tests/e2e.rs", *(root / "crates/crozier-e2e/tests/e2e").glob("*.rs")]:
             text = path.read_text(encoding="utf-8")
             path.write_text(text.replace(f"fn {test}(", "fn unrelated_test("), encoding="utf-8")
-        self.assert_fails(root, f"{row['shape']}: no e2e test is named {test}")
+        self.assert_fails(root, f"{row['shape']}: no e2e #[test] is named {test}")
         evidence = row["evidence"].partition("#")[0]
+        self.rewrite(root / self.index_script.INDEX, self.line(row), self.edited(row, evidence=f"{evidence}#absent"))
+        self.assert_fails(root, f"{row['shape']}: {evidence} has no heading #absent")
         (root / evidence).unlink()
         self.assert_fails(root, f"{row['shape']}: {evidence} does not exist")
 
+    def test_a_test_that_does_not_compare_the_golden_fails(self) -> None:
+        module = self.index_script
+        cases = [
+            (self.row("handwritten"), "fern_refusal_classes_hold"),
+            (self.row("real"), "handwritten_fixtures_match_fern_goldens"),
+            (self.row("measurement"), "fern_refusal_classes_hold"),
+        ]
+        for row, unrelated in cases:
+            with self.subTest(shape=row["shape"]):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, tests=unrelated))
+                self.assert_fails(root, f"{row['shape']}: none of its tests compares golden")
+
+    def test_a_proof_of_the_wrong_kind_fails(self) -> None:
+        module = self.index_script
+        real, handwritten, measurement = self.row("real"), self.row("handwritten"), self.row("measurement")
+        cases = [
+            (real, {"kind": "measurement"}, "a measurement proof's goldens are under"),
+            (handwritten, {"kind": "real"}, "a real proof cites a registered corpus row's golden"),
+            (real, {"kind": "handwritten"}, "a hand-written proof's source is a hand-written fixture"),
+            (
+                measurement,
+                {"kind": "handwritten"},
+                "a multi-file hand-written source is a docs/openapi-surface/handwritten-e2e.toml cover",
+            ),
+        ]
+        for row, cells, message in cases:
+            with self.subTest(shape=row["shape"], cells=cells):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **cells))
+                self.assert_fails(root, message)
+
     def test_a_refusal_outcome_must_agree_with_its_registry_class(self) -> None:
+        module = self.index_script
         row = self.row("refusal")
         name = row["ids"]
         root = self.mirror()
-        classes = root / "docs/fern-refusals/classes.tsv"
+        classes = root / module.CLASSES
         line = next(line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{name}\t"))
         cells = line.split("\t")
         self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
@@ -16011,6 +16093,30 @@ class ScenarioProofIndexTests(unittest.TestCase):
         note = root / f"docs/fern-refusals/{name}/evaluation.md"
         note.write_text(note.read_text(encoding="utf-8").replace(probe, "unrelated.yml"), encoding="utf-8")
         self.assert_fails(root, f"{row['shape']}: {name}'s evaluation note does not name the probe")
+
+    def test_malformed_catalogs_fail_rather_than_pass_empty(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        (root / module.INVENTORY).write_text('{"other": {}}', encoding="utf-8")
+        self.assert_fails(root, f"{module.INVENTORY}: holds no `goldens` object")
+        self.rewrite(root / module.LEDGER, "golden\tfile\tline\tdeparture", "golden\tfile\tdeparture")
+        self.assert_fails(root, f"{module.LEDGER}: header must be the tab-separated golden, file, line, departure")
+        (root / module.CATALOG).write_text("- kind: fern-defect\n", encoding="utf-8")
+        self.assert_fails(root, f"{module.CATALOG}: is not a list of entries each with a string `id` and `kind`")
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        metadata = root / golden / ".fern/metadata.json"
+        metadata.write_text('{"generatorConfig": {"pydantic_config": {"enum_type": ["x"]}}}', encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s generatorConfig holds a setting that is not a scalar")
+        metadata.write_text('{"generatorConfig": []}', encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
+
+    def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
+        root = self.mirror()
+        (root / self.index_script.WITNESSES).unlink()
+        run = self.run_script("check", root=root)
+        self.assertEqual((1, ""), (run.returncode, run.stdout))
+        self.assertIn(f"{self.index_script.WITNESSES}: missing", run.stderr)
+        self.assertIn("failure(s): fix the row or the proof it cites, then re-run", run.stderr)
 
     def test_every_differing_witness_hunk_is_attributed_exactly_once(self) -> None:
         module = self.index_script
@@ -16025,42 +16131,20 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assert_fails(root, f"{witness}: {file} {first} is attributed but not in the diff (or twice)")
         residuals.write_text("".join(lines).replace(f"\t{owner}\t", "\tunrelated-shape\t", 1), encoding="utf-8")
         self.assert_fails(root, "owner unrelated-shape is no indexed shape nor unowned")
+        residuals.write_text("".join([*lines, lines[1].replace(witness, "unlisted-witness", 1)]), encoding="utf-8")
+        self.assert_fails(root, f"{module.RESIDUALS}: unlisted-witness is no differing witness")
         residuals.write_text("".join(lines), encoding="utf-8")
         diff = root / module.WITNESSES.parent / f"{witness}.diff"
+        diff.write_text(diff.read_text(encoding="utf-8").replace("+++ crozier/", "+++ elsewhere/", 1), encoding="utf-8")
+        self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is malformed")
         diff.unlink()
         self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is missing")
+        witnesses = root / module.WITNESSES
+        listed = witnesses.read_text(encoding="utf-8").splitlines(keepends=True)
+        witnesses.write_text("".join([*listed, listed[1]]), encoding="utf-8")
+        self.assert_fails(root, f"{listed[1].split(chr(9))[0]} is listed 2 times")
 
-    def run_script(self, *args: str, root: Path = REPO) -> subprocess.CompletedProcess[str]:
-        script = REPO / "tools/surface-census/scenario-proof-index.py"
-        return subprocess.run(
-            [sys.executable, str(script), "--repo-root", str(root), *args],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-
-    def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
-        root = self.mirror()
-        (root / self.index_script.WITNESSES).unlink()
-        run = self.run_script("check", root=root)
-        self.assertEqual((1, ""), (run.returncode, run.stdout))
-        self.assertIn(f"{self.index_script.WITNESSES}: missing", run.stderr)
-        self.assertIn("failure(s): fix the row or the proof it cites, then re-run", run.stderr)
-
-    def test_malformed_catalogs_fail_rather_than_pass_empty(self) -> None:
-        module = self.index_script
-        root = self.mirror()
-        (root / module.INVENTORY).write_text('{"other": {}}', encoding="utf-8")
-        self.assert_fails(root, f"{module.INVENTORY}: holds no `goldens` object")
-        self.rewrite(root / module.LEDGER, "golden\tfile\tline\tdeparture", "golden\tfile\tdeparture")
-        self.assert_fails(root, f"{module.LEDGER}: header must be the tab-separated golden, file, line, departure")
-        (root / module.CATALOG).write_text("- kind: fern-defect\n", encoding="utf-8")
-        self.assert_fails(root, f"{module.CATALOG}: is not a list of entries each with a string `id` and `kind`")
-        golden = self.row("handwritten")["goldens"].split(";")[0]
-        (root / golden / ".fern/metadata.json").write_text('{"generatorConfig": []}', encoding="utf-8")
-        self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
-
-    def test_a_registered_witness_names_a_corpus_golden_and_no_residual(self) -> None:
+    def test_a_registered_witness_names_its_corpus_row_and_no_residual(self) -> None:
         module = self.index_script
         root = self.mirror()
         witnesses = root / module.WITNESSES
@@ -16084,8 +16168,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assert_fails(root, f"{row['witness']}: registered as 332 `netgsm-sms`, which is no corpus row")
         (root / "tests/fixtures/netgsm-sms/expected").mkdir(parents=True)
         self.assertEqual([], module.check(root))
-        self.rewrite(witnesses, "332 `netgsm-sms`", "9999 `unregistered`")
-        self.assert_fails(root, "registered as 9999 `unregistered`, which is no corpus row with a golden")
+        self.rewrite(witnesses, "332 `netgsm-sms`", "331 `netgsm-sms`")
+        self.assert_fails(root, "registered as 331 `netgsm-sms`, which is no corpus row with a golden")
 
     def test_the_hunks_command_prints_what_residuals_cite(self) -> None:
         module = self.index_script
@@ -16115,13 +16199,10 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assertIn(f"{self.index_script.RESIDUALS}: missing", run.stderr)
 
     def test_the_coverage_report_quotes_the_summary_verbatim(self) -> None:
-        run = subprocess.run(
-            [sys.executable, str(REPO / "tools/surface-census/scenario-proof-index.py"), "summary"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        self.assertEqual(f"shapes: {self.index_script.SHAPES}", run.stdout.splitlines()[0])
+        run = self.run_script("summary")
+        self.assertEqual(0, run.returncode, run.stderr)
+        rows, _ = self.index_script.read_tsv(REPO / self.index_script.PLAN, self.index_script.PLAN_HEADER)
+        self.assertEqual(f"shapes: {len(rows)}", run.stdout.splitlines()[0])
         report = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
         section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
         quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
@@ -16154,6 +16235,18 @@ class ScenarioProofIndexTests(unittest.TestCase):
             ],
             [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
         )
+
+    def test_a_malformed_diff_is_refused(self) -> None:
+        module = self.index_script
+        cases = {
+            "--- reference/a.py\n  kept\n": "is not followed by its `+++` header",
+            "--- reference/a.py\n+++ crozier/a.py\n@@ -1 +1 @@\n": "is no context, change or elision line",
+            "stray text\n": "is outside any file of the diff",
+            "# crozier compare: crozier.yml python\n--- reference/a.py\n+++ crozier/a.py\n  kept\n": "no difference",
+        }
+        for text, message in cases.items():
+            with self.subTest(text=text), self.assertRaisesRegex(module.MalformedDiff, re.escape(message)):
+                module.diff_hunks(text)
 
 
 if __name__ == "__main__":

@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 """Reconcile the scenario proof index and the handed-off witnesses with the catalogs they cite.
 
-`docs/openapi-surface/scenario-proof-index.tsv` names, once per parity scenario
-shape, the committed proof that closes it: a registered corpus golden, a
-hand-written fixture, a measurement, or a refusal class. Every fact a row
-repeats from another catalog is re-derived here from that catalog and compared,
-so a row cannot drift from what it cites:
+`docs/openapi-surface/scenario-plan.tsv` is the parity plan's closure: every
+scenario shape it owns and the node that owns it. `scenario-proof-index.tsv`
+beside it names, once per planned shape, the committed proof that closes it: a
+registered corpus golden, a hand-written fixture, a measurement, or a refusal
+class. Every fact a row repeats from another catalog is re-derived here from
+that catalog and compared, so a row cannot drift from what it cites:
 
+* the index holds exactly the plan's shapes, each under the plan's owner;
 * a golden must be a complete certified tree (`.fern/metadata.json` naming the
   pinned Fern pair) that `tests/fixtures/compared-goldens.json` inventories, its
   `settings` cell is read off that metadata, and its `outcome`/`ids` cells are
   the `fern-defect` entries of `assets/departures.yml` that
   `tests/fixtures/departures-ledger.tsv` applies to it;
+* each golden is compared by one of the row's tests: a `#[test]` of the e2e
+  crate whose corpus binding, overlay or flat registration, hand-written walk,
+  or body's paths reach that golden;
 * a refusal names a `docs/fern-refusals/classes.tsv` class whose `status` fixes
   both mode outcomes, and whose evaluation note names every probe the row cites;
-* every source, evidence document and anchor exists, and every test is a
-  `#[test]` of the e2e crate.
+* every source, evidence document and anchor exists.
 
 `docs/fern-measurements/blocked-witnesses/witnesses.tsv` lists every real
 publisher specification handed off for registration. A registered one names its
-committed corpus row; one that still differs names its committed comparison
-diff, and `residuals.tsv` attributes every hunk of that diff, exactly once, to a
-scenario of the index or to `unowned`. Hunks are read from the diff itself.
+committed corpus row by number and name; one that still differs names its
+committed comparison diff, and `residuals.tsv` attributes every hunk of that
+diff, exactly once, to a scenario of the index or to `unowned`. Hunks are read
+from the diff itself, which must be well formed.
 
 Three subcommands: ``check`` prints every failure to stderr (nothing on success)
 and exits 1 when there is one; ``summary`` prints the counts the coverage report
@@ -42,11 +47,13 @@ from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from types import ModuleType
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, NewType
 
 import yaml
 
 REPO = Path(__file__).resolve().parents[2]
+PLAN = Path("docs/openapi-surface/scenario-plan.tsv")
+PLAN_HEADER = ("shape", "owner")
 INDEX = Path("docs/openapi-surface/scenario-proof-index.tsv")
 INDEX_HEADER = ("shape", "owner", "kind", "source", "goldens", "settings", "tests", "outcome", "ids", "evidence")
 WITNESSES = Path("docs/fern-measurements/blocked-witnesses/witnesses.tsv")
@@ -69,9 +76,7 @@ INVENTORY = Path("tests/fixtures/compared-goldens.json")
 LEDGER = Path("tests/fixtures/departures-ledger.tsv")
 LEDGER_HEADER = ("golden", "file", "line", "departure")
 CATALOG = Path("assets/departures.yml")
-# The plan this index closes owns exactly these many scenario shapes; a row
-# removed or added changes the count, so the closure cannot shrink silently.
-SHAPES = 160
+CORPUS = Path("tests/fixtures/CORPUS.md")
 PIN = ("5.67.1", "5.20.0")
 NONE = "—"
 UNOWNED = "unowned"
@@ -79,8 +84,18 @@ REFUSAL_SETTINGS = "default;fern-strict"
 SHAPE_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 E2E_SOURCES = ("crates/crozier-e2e/tests/e2e.rs", "crates/crozier-e2e/tests/e2e")
 HANDWRITTEN = "docs/openapi-surface/handwritten/"
+HANDWRITTEN_TEST = "handwritten_fixtures_match_fern_goldens"
 E2E_COVERS = "docs/openapi-surface/handwritten-e2e.toml"
 MEASUREMENTS = "docs/fern-measurements/"
+# How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them.
+CORPUS_DRIVERS = ("assert_corpus_matches(&", "assert_committed_corpus_matches(&", "known_fern_failure(&")
+SETTING_VALUE = (str, int, float, bool)
+
+ShapeId = NewType("ShapeId", str)
+WitnessName = NewType("WitnessName", str)
+DepartureId = NewType("DepartureId", str)
+RefusalClass = NewType("RefusalClass", str)
+TestName = NewType("TestName", str)
 
 
 class Owner(StrEnum):
@@ -135,15 +150,16 @@ def split(cell: str) -> tuple[str, ...]:
 class Proof:
     """One row of the scenario proof index."""
 
-    shape: str
+    shape: ShapeId
     owner: Owner
     kind: Kind
     source: tuple[str, ...]
     goldens: tuple[str, ...]
     settings: str
-    tests: tuple[str, ...]
+    tests: tuple[TestName, ...]
     outcome: str
-    ids: str
+    departures: tuple[DepartureId, ...]
+    refusal: RefusalClass | None
     evidence: tuple[str, ...]
 
     @property
@@ -155,7 +171,7 @@ class Proof:
 class Witness:
     """One handed-off publisher specification."""
 
-    name: str
+    name: WitnessName
     status: WitnessStatus
     corpus: str
     diff: str
@@ -166,19 +182,20 @@ class Witness:
         return f"{WITNESSES} {self.name}"
 
     @property
-    def corpus_name(self) -> str:
-        """The corpus fixture a registered witness's `corpus` cell (`<row> \\`<name>\\``) names."""
-        return self.corpus.partition(" ")[2].strip("`")
+    def corpus_row(self) -> tuple[str, str]:
+        """The corpus row number and fixture a registered witness's `corpus` cell (`<row> \\`<name>\\``) names."""
+        number, _, name = self.corpus.partition(" ")
+        return number, name.strip("`")
 
 
 @dataclass(frozen=True)
 class Residual:
-    """One `residuals.tsv` row: hunks of one witness file and the shape that owns them."""
+    """One `residuals.tsv` row: hunks of one witness file and the shape that owns them, if any."""
 
-    witness: str
+    witness: WitnessName
     file: str
     hunks: tuple[str, ...]
-    owner: str
+    owner: ShapeId | None
 
 
 class Hunk(NamedTuple):
@@ -201,9 +218,13 @@ class _Run:
         return Hunk(self.file, f"-{self.reference_start},{self.removed} +{self.crozier_start},{self.added}")
 
 
+class MalformedDiff(ValueError):
+    """A comparison diff that is not `crozier compare`'s normalized diff."""
+
+
 @functools.cache
 def _handwritten() -> ModuleType:
-    """The hand-written fixture gate, whose anchor and corpus readers this reuses."""
+    """The hand-written fixture gate, whose anchor reader this reuses."""
     path = REPO / "tools" / "surface-census" / "handwritten-fixtures.py"
     spec = importlib.util.spec_from_file_location("scenario_proof_index_handwritten", path)
     assert spec and spec.loader
@@ -230,6 +251,19 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> tuple[list[dict[str, str]],
     return rows, failures
 
 
+def read_plan(root: Path) -> tuple[dict[ShapeId, Owner], list[str]]:
+    rows, failures = read_tsv(root / PLAN, PLAN_HEADER)
+    plan: dict[ShapeId, Owner] = {}
+    for row in rows:
+        if row["owner"] not in values(Owner):
+            failures.append(f"{PLAN} {row['shape']}: owner {row['owner']} is none of {', '.join(Owner)}")
+        elif row["shape"] in plan:
+            failures.append(f"{PLAN}: {row['shape']} is planned twice")
+        else:
+            plan[ShapeId(row["shape"])] = Owner(row["owner"])
+    return plan, failures
+
+
 def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
     rows, failures = read_tsv(root / INDEX, INDEX_HEADER)
     proofs = []
@@ -241,17 +275,20 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
         if row["kind"] not in values(Kind):
             failures.append(f"{where}: kind {row['kind']} is none of {', '.join(Kind)}")
             continue
+        kind = Kind(row["kind"])
+        refusal = kind is Kind.REFUSAL
         proofs.append(
             Proof(
-                shape=row["shape"],
+                shape=ShapeId(row["shape"]),
                 owner=Owner(row["owner"]),
-                kind=Kind(row["kind"]),
+                kind=kind,
                 source=split(row["source"]),
                 goldens=split(row["goldens"]),
                 settings=row["settings"],
-                tests=split(row["tests"]),
+                tests=tuple(TestName(test) for test in split(row["tests"])),
                 outcome=row["outcome"],
-                ids=row["ids"],
+                departures=() if refusal else tuple(DepartureId(name) for name in split(row["ids"])),
+                refusal=RefusalClass(row["ids"]) if refusal else None,
                 evidence=split(row["evidence"]),
             )
         )
@@ -265,21 +302,125 @@ def read_witnesses(root: Path) -> tuple[list[Witness], list[Residual], list[str]
         if row["status"] not in values(WitnessStatus):
             failures.append(f"{WITNESSES} {row['witness']}: status {row['status']} is neither registered nor differs")
             continue
-        witnesses.append(
-            Witness(row["witness"], WitnessStatus(row["status"]), row["corpus"], row["diff"], row["evidence"])
-        )
+        status = WitnessStatus(row["status"])
+        witnesses.append(Witness(WitnessName(row["witness"]), status, row["corpus"], row["diff"], row["evidence"]))
     residual_rows, residual_failures = read_tsv(root / RESIDUALS, RESIDUAL_HEADER)
-    residuals = [Residual(row["witness"], row["file"], split(row["hunks"]), row["owner"]) for row in residual_rows]
+    residuals = [
+        Residual(
+            WitnessName(row["witness"]),
+            row["file"],
+            split(row["hunks"]),
+            None if row["owner"] == UNOWNED else ShapeId(row["owner"]),
+        )
+        for row in residual_rows
+    ]
     return witnesses, residuals, failures + residual_failures
+
+
+@dataclass(frozen=True)
+class E2e:
+    """The e2e crate's tests, and how each reaches the goldens it compares."""
+
+    tests: frozenset[TestName]
+    bodies: dict[str, str]
+    constants: dict[str, str]
+    corpus_tests: dict[str, TestName]
+    flat_tests: dict[TestName, str]
+    overlay_test: TestName | None
+
+    def paths(self, name: str, depth: int = 2, seen: frozenset[str] = frozenset()) -> set[str]:
+        """Path-like strings a function's body names, directly, through its constants, or through its callees."""
+        body = self.bodies.get(name)
+        if body is None or name in seen:
+            return set()
+        found = set(re.findall(r'"([^"\n]*[/-][^"\n]*)"', body))
+        named = re.findall(r"\b[A-Z][A-Z0-9_]+\b", body)
+        found |= {self.constants[constant] for constant in named if constant in self.constants}
+        if depth:
+            for callee in set(re.findall(r"\b([a-z_][a-z0-9_]+)\(", body)) - {name}:
+                found |= self.paths(callee, depth - 1, seen | {name})
+        return found
+
+    def compares(self, golden: str, tests: tuple[TestName, ...]) -> bool:
+        """Whether one of `tests` compares `golden`."""
+        parts = golden.split("/")
+        if golden.startswith(HANDWRITTEN):
+            return HANDWRITTEN_TEST in tests
+        if golden.startswith("tests/fixtures/") and len(parts) == 4:
+            fixture, tree = parts[2], parts[3]
+            if tree == "expected":
+                return self.corpus_tests.get(fixture) in tests
+            if tree == "expected-flat":
+                return any(self.flat_tests.get(test) == fixture for test in tests)
+            return self.overlay_test in tests
+        return any(path in golden for test in tests for path in self.paths(test) if len(path) > 3)
+
+
+def read_e2e(root: Path) -> E2e:
+    sources: list[Path] = []
+    for entry in E2E_SOURCES:
+        path = root / entry
+        sources += [path] if path.is_file() else sorted(path.glob("*.rs"))
+    tests: set[TestName] = set()
+    bodies: dict[str, str] = {}
+    constants: dict[str, str] = {}
+    corpus_constants: dict[str, str] = {}
+    flat_tests: dict[TestName, str] = {}
+    for path in sources:
+        text = path.read_text(encoding="utf-8")
+        constants |= dict(re.findall(r'(?m)^\s*(?:pub(?:\(super\))? )?const (\w+): &str = "([^"]*)";', text))
+        lines = text.splitlines()
+        attributed, pending_corpus, flat = False, None, False
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith("#[test]"):
+                attributed = True
+            elif found := re.match(r"^(\s*)(?:pub(?:\(super\))? )?fn (\w+)\(", line):
+                indent, name = found.group(1), found.group(2)
+                end = next(
+                    (later for later in range(index + 1, len(lines)) if lines[later].rstrip() == f"{indent}}}"),
+                    len(lines) - 1,
+                )
+                bodies[name] = "\n".join(lines[index : end + 1])
+                if attributed:
+                    tests.add(TestName(name))
+                attributed = False
+            elif not stripped.startswith(("#[", "//")):
+                attributed = False
+            if found := re.match(r"^const (\w+): Corpus = Corpus \{", line):
+                pending_corpus = found.group(1)
+            elif pending_corpus and (found := re.match(r'^\s*api: "([^"]+)"', line)):
+                corpus_constants[pending_corpus], pending_corpus = found.group(1), None
+            if stripped.startswith("flat_goldens! {"):
+                flat = True
+            elif flat and stripped == "}":
+                flat = False
+            elif flat and (found := re.match(r'^(\w+) => "([^"]+)"', stripped)):
+                flat_tests[TestName(found.group(1))] = found.group(2)
+    tests |= set(flat_tests)
+    corpus_tests: dict[str, TestName] = {}
+    for name, body in bodies.items():
+        for constant, fixture in corpus_constants.items():
+            if name in tests and any(f"{driver}{constant})" in body for driver in CORPUS_DRIVERS):
+                corpus_tests.setdefault(fixture, TestName(name))
+    overlay = constants.get("CORPUS_TEST")
+    return E2e(
+        frozenset(tests),
+        bodies,
+        constants,
+        corpus_tests,
+        flat_tests,
+        TestName(overlay) if overlay and overlay in tests else None,
+    )
 
 
 class Catalogs(NamedTuple):
     inventory: frozenset[str]
-    defects: frozenset[str]
+    defects: frozenset[DepartureId]
     ledger: dict[str, set[str]]
-    classes: dict[str, RefusalStatus]
-    tests: frozenset[str]
-    corpus: frozenset[str]
+    classes: dict[RefusalClass, RefusalStatus]
+    e2e: E2e
+    corpus: dict[str, frozenset[str]]
 
 
 def read_inventory(root: Path) -> tuple[frozenset[str], list[str]]:
@@ -294,7 +435,7 @@ def read_inventory(root: Path) -> tuple[frozenset[str], list[str]]:
     return frozenset(goldens), []
 
 
-def read_defects(root: Path) -> tuple[frozenset[str], list[str]]:
+def read_defects(root: Path) -> tuple[frozenset[DepartureId], list[str]]:
     """The ids of the departure catalog's `fern-defect` entries."""
     try:
         catalog = yaml.safe_load((root / CATALOG).read_text(encoding="utf-8"))
@@ -306,7 +447,7 @@ def read_defects(root: Path) -> tuple[frozenset[str], list[str]]:
         for entry in entries
     ):
         return frozenset(), [f"{CATALOG}: is not a list of entries each with a string `id` and `kind`"]
-    return frozenset(entry["id"] for entry in entries if entry["kind"] == "fern-defect"), []
+    return frozenset(DepartureId(entry["id"]) for entry in entries if entry["kind"] == "fern-defect"), []
 
 
 def read_ledger(root: Path) -> tuple[dict[str, set[str]], list[str]]:
@@ -318,28 +459,22 @@ def read_ledger(root: Path) -> tuple[dict[str, set[str]], list[str]]:
     return ledger, failures
 
 
-def read_classes(root: Path) -> tuple[dict[str, RefusalStatus], list[str]]:
+def read_classes(root: Path) -> tuple[dict[RefusalClass, RefusalStatus], list[str]]:
     """Each decided refusal class's status; an `unevaluated` class decides no outcome."""
     rows, failures = read_tsv(root / CLASSES, CLASSES_HEADER)
-    return {
-        row["class"]: RefusalStatus(row["status"]) for row in rows if row["status"] in values(RefusalStatus)
-    }, failures
+    statuses = values(RefusalStatus)
+    decided = {RefusalClass(row["class"]): RefusalStatus(row["status"]) for row in rows if row["status"] in statuses}
+    return decided, failures
 
 
-def read_tests(root: Path) -> frozenset[str]:
-    """Every e2e test name: a `fn`, or a name a `flat_goldens!`-style macro invocation expands."""
-    sources: list[Path] = []
-    for entry in E2E_SOURCES:
-        path = root / entry
-        sources += [path] if path.is_file() else sorted(path.glob("*.rs"))
-    pattern = re.compile(r"(?m)^\s*(?:pub )?fn (\w+)\(|^\s*(\w+) =>")
-    return frozenset(
-        name
-        for path in sources
-        for found in pattern.findall(path.read_text(encoding="utf-8"))
-        for name in found
-        if name
-    )
+def read_corpus(root: Path) -> dict[str, frozenset[str]]:
+    """Each numbered `CORPUS.md` row's fixture name -> the row numbers it is listed under."""
+    path = root / CORPUS
+    rows: dict[str, set[str]] = defaultdict(set)
+    if path.is_file():
+        for found in re.finditer(r"(?m)^\| (\d+) \| `([^`]+)` \|", path.read_text(encoding="utf-8")):
+            rows[found.group(2)].add(found.group(1))
+    return {name: frozenset(numbers) for name, numbers in rows.items()}
 
 
 def catalogs(root: Path) -> tuple[Catalogs, list[str]]:
@@ -348,8 +483,7 @@ def catalogs(root: Path) -> tuple[Catalogs, list[str]]:
     defects, defect_failures = read_defects(root)
     ledger, ledger_failures = read_ledger(root)
     classes, class_failures = read_classes(root)
-    corpus = frozenset(_handwritten().corpus_rows(root))
-    known = Catalogs(inventory, defects, ledger, classes, read_tests(root), corpus)
+    known = Catalogs(inventory, defects, ledger, classes, read_e2e(root), read_corpus(root))
     return known, failures + defect_failures + ledger_failures + class_failures
 
 
@@ -366,6 +500,9 @@ def golden_settings(root: Path, golden: str) -> tuple[str | None, list[str]]:
     pydantic = config.get("pydantic_config", {}) if isinstance(config, dict) else None
     if not isinstance(config, dict) or not isinstance(pydantic, dict):
         return None, [f"golden {golden}'s metadata holds no generatorConfig object"]
+    settings = {**{key: value for key, value in config.items() if key != "pydantic_config"}, **pydantic}
+    if not all(isinstance(value, SETTING_VALUE) for value in settings.values()):
+        return None, [f"golden {golden}'s generatorConfig holds a setting that is not a scalar"]
     failures = []
     if (record.get("cliVersion"), record.get("generatorVersion")) != PIN:
         failures.append(f"golden {golden} is not output of Fern CLI {PIN[0]} with fern-python-sdk {PIN[1]}")
@@ -393,10 +530,10 @@ def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[s
 
 
 def refusal_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
-    name, where = proof.ids, proof.where
-    status = known.classes.get(name)
-    if status is None:
-        return [f"{where}: {name} is no decided docs/fern-refusals/classes.tsv class"]
+    name, where = proof.refusal, proof.where
+    status = known.classes.get(name) if name else None
+    if name is None or status is None:
+        return [f"{where}: {name} is no decided {CLASSES} class"]
     failures = []
     if proof.goldens or proof.settings != REFUSAL_SETTINGS:
         failures.append(f"{where}: a refusal cites no golden and records `{REFUSAL_SETTINGS}`")
@@ -422,6 +559,8 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     for golden in proof.goldens:
         if golden not in known.inventory:
             failures.append(f"{where}: golden {golden} is not in {INVENTORY}")
+        if not known.e2e.compares(golden, proof.tests):
+            failures.append(f"{where}: none of its tests compares golden {golden}")
         setting, problems = golden_settings(root, golden)
         failures += [f"{where}: {problem}" for problem in problems]
         settings.append(setting or "?")
@@ -429,9 +568,13 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     if proof.settings != ";".join(settings):
         failures.append(f"{where}: settings {proof.settings} disagree with the goldens' metadata {';'.join(settings)}")
     outcome = "departure" if defects else "match"
-    ids = ";".join(sorted(defects)) if defects else NONE
-    if (proof.outcome, proof.ids) != (outcome, ids):
-        failures.append(f"{where}: outcome {proof.outcome} {proof.ids} disagrees with the ledger's {outcome} {ids}")
+    if (proof.outcome, set(proof.departures)) != (outcome, defects):
+        failures.append(
+            f"{where}: outcome {proof.outcome} {';'.join(proof.departures) or NONE} disagrees with the ledger's "
+            f"{outcome} {';'.join(sorted(defects)) or NONE}"
+        )
+    elif list(proof.departures) != sorted(proof.departures):
+        failures.append(f"{where}: departure ids are sorted")
     match proof.kind:
         case Kind.REAL if not any(
             golden.startswith("tests/fixtures/") and golden.split("/")[2] in known.corpus for golden in proof.goldens
@@ -439,7 +582,7 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
             failures.append(f"{where}: a real proof cites a registered corpus row's golden")
         case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, MEASUREMENTS)) for source in proof.source):
             failures.append(f"{where}: a hand-written proof's source is a hand-written fixture")
-        case Kind.HANDWRITTEN if any(source.startswith(MEASUREMENTS) for source in proof.source):
+        case Kind.HANDWRITTEN if not any(source.startswith(HANDWRITTEN) for source in proof.source):
             covers = (root / E2E_COVERS).read_text(encoding="utf-8")
             if not any(f'fixture = "{source}"' in covers for source in proof.source):
                 failures.append(f"{where}: a multi-file hand-written source is a {E2E_COVERS} cover")
@@ -448,21 +591,24 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     return failures
 
 
-def index_failures(root: Path, proofs: list[Proof], known: Catalogs) -> list[str]:
-    """Every way the scenario proof index disagrees with the catalogs it cites."""
+def index_failures(root: Path, plan: dict[ShapeId, Owner], proofs: list[Proof], known: Catalogs) -> list[str]:
+    """Every way the scenario proof index disagrees with the plan and the catalogs it cites."""
     failures = []
     counts = Counter(proof.shape for proof in proofs)
     failures += [f"{INDEX}: {shape} is indexed {count} times" for shape, count in counts.items() if count > 1]
-    if len(counts) != SHAPES:
-        failures.append(f"{INDEX}: indexes {len(counts)} shapes, not the plan's {SHAPES}")
+    failures += [f"{INDEX}: {shape} is planned but not indexed" for shape in sorted(set(plan) - set(counts))]
+    failures += [f"{INDEX}: {shape} is indexed but not planned" for shape in sorted(set(counts) - set(plan))]
     if [proof.shape for proof in proofs] != sorted(proof.shape for proof in proofs):
         failures.append(f"{INDEX}: rows are sorted by shape")
     for proof in proofs:
         if not SHAPE_NAME.match(proof.shape):
             failures.append(f"{proof.where}: a shape id is lower-kebab")
+        if proof.shape in plan and plan[proof.shape] is not proof.owner:
+            failures.append(f"{proof.where}: owner {proof.owner} is not the plan's {plan[proof.shape]}")
         failures += path_failures(root, proof.where, proof.source)
         failures += path_failures(root, proof.where, proof.evidence)
-        failures += [f"{proof.where}: no e2e test is named {test}" for test in proof.tests if test not in known.tests]
+        unknown = [test for test in proof.tests if test not in known.e2e.tests]
+        failures += [f"{proof.where}: no e2e #[test] is named {test}" for test in unknown]
         if proof.kind is Kind.REFUSAL:
             failures += refusal_failures(root, proof, known)
         else:
@@ -471,12 +617,23 @@ def index_failures(root: Path, proofs: list[Proof], known: Catalogs) -> list[str
 
 
 def diff_hunks(text: str) -> list[Hunk]:
-    """Each change of a `crozier compare` diff, as `-start,count +start,count` or a one-sided file."""
+    """Each change of a `crozier compare` diff, as `-start,count +start,count` or a one-sided file.
+
+    Raises MalformedDiff on any line that is not the normalized diff's: a file
+    header pair, a one-sided file, a context, change or elision line, a `#`
+    comment or a blank line; and on a diff with no difference at all.
+    """
     hunks: list[Hunk] = []
     current: str | None = None
     reference = crozier = 0
     run: _Run | None = None
-    for line in [*text.splitlines(), None]:
+    awaiting: str | None = None
+    for number, line in enumerate([*text.splitlines(), None], start=1):
+        if awaiting is not None:
+            if line != f"+++ crozier/{awaiting}":
+                raise MalformedDiff(f"line {number}: `--- reference/{awaiting}` is not followed by its `+++` header")
+            current, awaiting, reference, crozier = awaiting, None, 0, 0
+            continue
         changed = current is not None and line is not None and (line[:2] in ("- ", "+ ") or line in ("-", "+"))
         if run is not None and not changed:
             hunks.append(run.hunk)
@@ -491,30 +648,35 @@ def diff_hunks(text: str) -> list[Hunk]:
             else:
                 crozier, run.added = crozier + 1, run.added + 1
         elif line.startswith("--- reference/"):
-            current, reference, crozier = line.removeprefix("--- reference/"), 0, 0
-        elif line.startswith("+++ crozier/"):
-            continue
+            awaiting, current = line.removeprefix("--- reference/"), None
         elif found := re.match(r"^Only in (reference|crozier): (.+)$", line):
             current = None
             hunks.append(Hunk(found.group(2), f"only in {found.group(1)}"))
         elif current is None:
-            continue
+            if line and not line.startswith("#"):
+                raise MalformedDiff(f"line {number}: `{line[:60]}` is outside any file of the diff")
         elif found := re.match(r"^\s+⋮ \((\d+) unchanged line\(s\)\)$", line):
             reference += int(found.group(1))
             crozier += int(found.group(1))
-        else:
+        elif line == "" or line.startswith("  "):
             reference += 1
             crozier += 1
+        else:
+            raise MalformedDiff(f"line {number}: `{line[:60]}` is no context, change or elision line")
+    if not hunks:
+        raise MalformedDiff("it holds no difference")
     return hunks
 
 
-def witness_failures(root: Path, shapes: set[str], witnesses: list[Witness], residuals: list[Residual]) -> list[str]:
+def witness_failures(
+    root: Path, shapes: set[ShapeId], witnesses: list[Witness], residuals: list[Residual]
+) -> list[str]:
     """Every way the handed-off witnesses disagree with the corpus, their diffs and the index."""
     failures: list[str] = []
-    corpus = _handwritten().corpus_rows(root)
-    claimed: dict[str, Counter[Hunk]] = defaultdict(Counter)
+    corpus = read_corpus(root)
+    claimed: dict[WitnessName, Counter[Hunk]] = defaultdict(Counter)
     for residual in residuals:
-        if residual.owner != UNOWNED and residual.owner not in shapes:
+        if residual.owner is not None and residual.owner not in shapes:
             where = f"{RESIDUALS} {residual.witness} {residual.file}"
             failures.append(f"{where}: owner {residual.owner} is no indexed shape nor {UNOWNED}")
         claimed[residual.witness].update(Hunk(residual.file, spelling) for spelling in residual.hunks)
@@ -526,8 +688,9 @@ def witness_failures(root: Path, shapes: set[str], witnesses: list[Witness], res
         found = claimed.pop(witness.name, Counter())
         match witness.status:
             case WitnessStatus.REGISTERED:
-                golden = root / "tests" / "fixtures" / witness.corpus_name / "expected"
-                if witness.corpus_name not in corpus or not golden.is_dir():
+                number, fixture = witness.corpus_row
+                golden = root / "tests" / "fixtures" / fixture / "expected"
+                if number not in corpus.get(fixture, frozenset()) or not golden.is_dir():
                     failures.append(f"{where}: registered as {witness.corpus}, which is no corpus row with a golden")
                 if witness.diff != NONE or found:
                     failures.append(f"{where}: a registered witness has no comparison diff or residual")
@@ -536,7 +699,11 @@ def witness_failures(root: Path, shapes: set[str], witnesses: list[Witness], res
                 if not diff.is_file():
                     failures.append(f"{where}: comparison diff {witness.diff} is missing")
                     continue
-                expected = Counter(diff_hunks(diff.read_text(encoding="utf-8")))
+                try:
+                    expected = Counter(diff_hunks(diff.read_text(encoding="utf-8")))
+                except MalformedDiff as error:
+                    failures.append(f"{where}: comparison diff {witness.diff} is malformed: {error}")
+                    continue
                 for hunk in sorted((expected - found).elements()):
                     failures.append(f"{where}: {hunk.file} {hunk.spelling} is in the diff but attributed to no shape")
                 for hunk in sorted((found - expected).elements()):
@@ -548,11 +715,12 @@ def witness_failures(root: Path, shapes: set[str], witnesses: list[Witness], res
 
 
 def check(root: Path) -> list[str]:
-    proofs, failures = read_proofs(root)
+    plan, failures = read_plan(root)
+    proofs, proof_failures = read_proofs(root)
     witnesses, residuals, witness_read_failures = read_witnesses(root)
     known, catalog_failures = catalogs(root)
-    failures += witness_read_failures + catalog_failures
-    failures += index_failures(root, proofs, known)
+    failures += proof_failures + witness_read_failures + catalog_failures
+    failures += index_failures(root, plan, proofs, known)
     return failures + witness_failures(root, {proof.shape for proof in proofs}, witnesses, residuals)
 
 
@@ -565,7 +733,7 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
         return [], failures
     hunks: Counter[str] = Counter()
     for residual in residuals:
-        hunks[residual.owner] += len(residual.hunks)
+        hunks[residual.owner or UNOWNED] += len(residual.hunks)
 
     def spelled(counts: Counter[str]) -> str:
         return ", ".join(f"{name} {count}" for name, count in sorted(counts.items()))
@@ -592,13 +760,13 @@ def main(argv: list[str] | None = None) -> int:
     match args.command:
         case "hunks":
             try:
-                text = args.diff.read_text(encoding="utf-8")
-            except OSError as error:
+                found = diff_hunks(args.diff.read_text(encoding="utf-8"))
+            except (OSError, MalformedDiff) as error:
                 print(
                     f"scenario-proof-index: cannot read {args.diff} ({error}) — pass a committed diff", file=sys.stderr
                 )
                 return 1
-            for hunk in diff_hunks(text):
+            for hunk in found:
                 print(f"{hunk.file}\t{hunk.spelling}")
             return 0
         case "summary":
