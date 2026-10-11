@@ -13,9 +13,8 @@ every departure held to [the ledger](../../../tests/fixtures/departures-ledger.t
 
 This is no corpus fixture and no coverage probe: it is never a `CORPUS.md` row
 and settles no coverage row. The shape these cases measure has a registered
-real witness (see
-[`witness-search-examples-docs`](../../openapi-surface/witness-search-examples-docs/README.md#the-real-witnesses));
-the document here reaches the description kinds that witness does not.
+real witness; the document here reaches the description kinds that witness
+does not.
 
 ## The cases
 
