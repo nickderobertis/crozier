@@ -15944,8 +15944,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
         module = self.index_script
         rows, failures = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         self.assertEqual([], failures)
-        self.assertEqual(set(module.OWNERS), {row["owner"] for row in rows})
-        self.assertEqual(set(module.KINDS), {row["kind"] for row in rows})
+        self.assertEqual(module.values(module.Owner), {row["owner"] for row in rows})
+        self.assertEqual(module.values(module.Kind), {row["kind"] for row in rows})
 
     def test_a_removed_or_duplicated_shape_fails(self) -> None:
         root = self.mirror()
@@ -16029,6 +16029,90 @@ class ScenarioProofIndexTests(unittest.TestCase):
         diff = root / module.WITNESSES.parent / f"{witness}.diff"
         diff.unlink()
         self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is missing")
+
+    def run_script(self, *args: str, root: Path = REPO) -> subprocess.CompletedProcess[str]:
+        script = REPO / "tools/surface-census/scenario-proof-index.py"
+        return subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(root), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
+        root = self.mirror()
+        (root / self.index_script.WITNESSES).unlink()
+        run = self.run_script("check", root=root)
+        self.assertEqual((1, ""), (run.returncode, run.stdout))
+        self.assertIn(f"{self.index_script.WITNESSES}: missing", run.stderr)
+        self.assertIn("failure(s): fix the row or the proof it cites, then re-run", run.stderr)
+
+    def test_malformed_catalogs_fail_rather_than_pass_empty(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        (root / module.INVENTORY).write_text('{"other": {}}', encoding="utf-8")
+        self.assert_fails(root, f"{module.INVENTORY}: holds no `goldens` object")
+        self.rewrite(root / module.LEDGER, "golden\tfile\tline\tdeparture", "golden\tfile\tdeparture")
+        self.assert_fails(root, f"{module.LEDGER}: header must be the tab-separated golden, file, line, departure")
+        (root / module.CATALOG).write_text("- kind: fern-defect\n", encoding="utf-8")
+        self.assert_fails(root, f"{module.CATALOG}: is not a list of entries each with a string `id` and `kind`")
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        (root / golden / ".fern/metadata.json").write_text('{"generatorConfig": []}', encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
+
+    def test_a_registered_witness_names_a_corpus_golden_and_no_residual(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        witnesses = root / module.WITNESSES
+        residuals = root / module.RESIDUALS
+        rows, _ = module.read_tsv(witnesses, module.WITNESS_HEADER)
+        row = rows[0]
+        line = "\t".join(row[column] for column in module.WITNESS_HEADER)
+        registered = "\t".join(
+            {**row, "status": "registered", "corpus": "332 `netgsm-sms`", "diff": module.NONE}[column]
+            for column in module.WITNESS_HEADER
+        )
+        self.rewrite(witnesses, line, registered)
+        # Its residual rows would still claim hunks of a comparison it no longer has.
+        self.assert_fails(root, f"{row['witness']}: a registered witness has no comparison diff or residual")
+        kept = [
+            text
+            for text in residuals.read_text(encoding="utf-8").splitlines(keepends=True)
+            if not text.startswith(f"{row['witness']}\t")
+        ]
+        residuals.write_text("".join(kept), encoding="utf-8")
+        self.assert_fails(root, f"{row['witness']}: registered as 332 `netgsm-sms`, which is no corpus row")
+        (root / "tests/fixtures/netgsm-sms/expected").mkdir(parents=True)
+        self.assertEqual([], module.check(root))
+        self.rewrite(witnesses, "332 `netgsm-sms`", "9999 `unregistered`")
+        self.assert_fails(root, "registered as 9999 `unregistered`, which is no corpus row with a golden")
+
+    def test_the_hunks_command_prints_what_residuals_cite(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        diff = REPO / module.WITNESSES.parent / rows[0]["diff"]
+        run = self.run_script("hunks", str(diff))
+        self.assertEqual(0, run.returncode, run.stderr)
+        printed = [tuple(line.split("\t")) for line in run.stdout.splitlines()]
+        self.assertEqual([tuple(hunk) for hunk in module.diff_hunks(diff.read_text(encoding="utf-8"))], printed)
+        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        cited = sorted(
+            (row["file"], hunk)
+            for row in residuals
+            if row["witness"] == rows[0]["witness"]
+            for hunk in row["hunks"].split(";")
+        )
+        self.assertEqual(cited, sorted(printed))
+        missing = self.run_script("hunks", str(diff.with_name("absent.diff")))
+        self.assertEqual((1, ""), (missing.returncode, missing.stdout))
+        self.assertIn("cannot read", missing.stderr)
+
+    def test_summary_refuses_a_missing_table(self) -> None:
+        root = self.mirror()
+        (root / self.index_script.RESIDUALS).unlink()
+        run = self.run_script("summary", root=root)
+        self.assertEqual((1, ""), (run.returncode, run.stdout))
+        self.assertIn(f"{self.index_script.RESIDUALS}: missing", run.stderr)
 
     def test_the_coverage_report_quotes_the_summary_verbatim(self) -> None:
         run = subprocess.run(
