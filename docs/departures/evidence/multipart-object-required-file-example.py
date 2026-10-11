@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import ast
 import asyncio
+import enum
 import importlib
 import inspect
 import json
@@ -25,6 +26,14 @@ from typing import Callable
 import httpx
 
 
+class ShapeName(enum.Enum):
+    """The proven sources: an aliased object, an object named `json`, and a plain multipart body."""
+
+    ALIAS = "alias"
+    JSON = "json"
+    PLAIN = "plain"
+
+
 @dataclass(frozen=True)
 class Shape:
     """One proven source: the method its docstring example calls and the required file it omits."""
@@ -34,9 +43,9 @@ class Shape:
 
 
 SHAPES = {
-    "alias": Shape("store_plan", "attachment"),
-    "json": Shape("store_survey", "attachment"),
-    "plain": Shape("hang_poster", "image"),
+    ShapeName.ALIAS: Shape("store_plan", "attachment"),
+    ShapeName.JSON: Shape("store_survey", "attachment"),
+    ShapeName.PLAIN: Shape("hang_poster", "image"),
 }
 
 
@@ -71,14 +80,14 @@ def examples(sdk: ModuleType, method: str, expected: str, required_file: str = "
     return results
 
 
-def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
+def wire(sdk: ModuleType, shape: ShapeName, json_parameter: str | None = None,
          part_content_type: str | None = None) -> None:
     recorded: list[httpx.Request] = []
     payload = b"cartography payload\x00\xff"
     file = ("payload.bin", payload, "application/octet-stream")
-    method = "store_plan" if shape == "alias" else "store_survey"
-    field = "plan" if shape == "alias" else "json"
-    model = getattr(sdk, "PlanAlias" if shape == "alias" else "StoreSurveyRequestJson")
+    method = SHAPES[shape].method
+    field = "plan" if shape is ShapeName.ALIAS else "json"
+    model = getattr(sdk, "PlanAlias" if shape is ShapeName.ALIAS else "StoreSurveyRequestJson")
     parameters = {"json": "parameter-value"} if json_parameter is not None else {}
 
     def handle(request: httpx.Request) -> httpx.Response:
@@ -126,7 +135,7 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
         function = getattr(client, method)
         missing_file(function)
         assert function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
-        if shape == "json":
+        if shape is ShapeName.JSON:
             assert client.store_metadata(metadata=getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)) is None
 
     async def async_wire() -> None:
@@ -142,12 +151,12 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
                 raise AssertionError("an async required file was silently omitted")
             assert len(recorded) == before
             assert await function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
-            if shape == "json":
+            if shape is ShapeName.JSON:
                 value = getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)
                 assert await client.store_metadata(metadata=value) is None
 
     asyncio.run(async_wire())
-    assert len(recorded) == (2 if shape == "alias" else 4)
+    assert len(recorded) == (2 if shape is ShapeName.ALIAS else 4)
 
 
 def wire_plain(sdk: ModuleType) -> None:
@@ -195,29 +204,29 @@ def wire_plain(sdk: ModuleType) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_src", type=Path)
-    parser.add_argument("shape", choices=tuple(SHAPES))
+    parser.add_argument("shape", type=ShapeName, choices=list(ShapeName))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--json-parameter", choices=("path", "query", "header"))
     parser.add_argument("--part-content-type", choices=("application/json",))
     args = parser.parse_args()
-    if args.json_parameter is not None and (args.shape != "alias" or not args.wire):
+    if args.json_parameter is not None and (args.shape is not ShapeName.ALIAS or not args.wire):
         parser.error("--json-parameter requires the alias shape and --wire")
-    if args.part_content_type is not None and (args.shape == "plain" or not args.wire):
+    if args.part_content_type is not None and (args.shape is ShapeName.PLAIN or not args.wire):
         parser.error("--part-content-type requires an object shape and --wire")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
     sdk = importlib.import_module("fern")
-    if args.wire and args.shape == "plain":
+    if args.wire and args.shape is ShapeName.PLAIN:
         wire_plain(sdk)
     elif args.wire:
         wire(sdk, args.shape, args.json_parameter, args.part_content_type)
     shape = SHAPES[args.shape]
     results = examples(sdk, shape.method, args.examples, shape.required_file)
-    if args.shape == "json":
+    if args.shape is ShapeName.JSON:
         results.update(examples(sdk, "store_metadata", "valid"))
-    result = {"shape": args.shape, "wire": args.wire, "examples": results}
+    result = {"shape": args.shape.value, "wire": args.wire, "examples": results}
     if args.json_parameter is not None:
         result["json_parameter"] = args.json_parameter
     print(json.dumps(result, sort_keys=True))

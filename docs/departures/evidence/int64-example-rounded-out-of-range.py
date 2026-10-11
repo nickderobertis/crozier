@@ -96,14 +96,11 @@ def declared_int64(document: Path, operation_id: str) -> dict[str, Declared]:
             media = mapping(mapping(body.get("content"), f"{where}.content").get("application/json"), f"{where} JSON media")
             schema = mapping(media.get("schema"), f"{where} schema")
             for name, prop in mapping(schema.get("properties"), f"{where} properties").items():
-                prop = mapping(prop, f"{where} property {name!r}")
-                example = int64_example(prop)
-                if example is not None:
-                    declared[name] = Declared(example, listed=False)
-                elif prop.get("type") == "array" and (
-                    example := int64_example(mapping(prop.get("items", {}), f"{where} property {name!r} items"))
-                ) is not None:
-                    declared[name] = Declared(example, listed=True)
+                match mapping(prop, f"{where} property {name!r}"):
+                    case {"type": "array", "items": dict(items)} if (example := int64_example(items)) is not None:
+                        declared[name] = Declared(example, listed=True)
+                    case dict(scalar) if (example := int64_example(scalar)) is not None:
+                        declared[name] = Declared(example, listed=False)
             # A proof that checks no value proves nothing.
             assert declared, f"{operation_id} declares no int64 example to validate"
             return declared
