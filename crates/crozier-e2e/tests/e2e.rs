@@ -3639,7 +3639,9 @@ fn run_departure_validator(
     )
 }
 
-/// `fixture`'s document rewritten as JSON into `dir`.
+/// `fixture`'s document as JSON in `dir`: the departure validators parse their
+/// document with the standard library's `json` alone, so the YAML is converted
+/// for them here.
 fn handwritten_document_as_json(fixture: &str, dir: &Path) -> std::path::PathBuf {
     let yaml = std::fs::read_to_string(
         repo_root()

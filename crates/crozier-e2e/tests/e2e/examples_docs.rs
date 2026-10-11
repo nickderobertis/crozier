@@ -112,7 +112,8 @@ fn handwritten_copy(fixture: &str) -> (tempfile::TempDir, String, std::path::Pat
     (copy, golden_path(&expected), root.join("openapi.yml"))
 }
 
-/// Replace `from` with `to` in the tree's `rel`, which must hold `from`.
+/// Plant one unexplained byte; a `from` the golden no longer holds fails here,
+/// so a regenerated golden cannot leave a negative case silently unperturbed.
 fn perturb(tree: &Path, rel: &str, from: &str, to: &str) {
     let path = tree.join(rel);
     let text = std::fs::read_to_string(&path).expect("a committed Fern file");
