@@ -11,9 +11,10 @@ on:
   push:
     branches: [main]
   pull_request:
-    # The default types plus `ready_for_review`: a draft lifted to ready must
-    # re-report the required contexts on its head, not lean on draft-time runs.
-    types: [opened, synchronize, reopened, ready_for_review]
+    # GitHub's default types, without `ready_for_review`: a draft's runs already
+    # report the required contexts on its head commit, and marking it ready
+    # changes no commit, so a run on the lift would only repeat them.
+    types: [opened, synchronize, reopened]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
