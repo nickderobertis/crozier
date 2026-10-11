@@ -14410,6 +14410,15 @@ fn flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging() {
     }
     assert!(!flat.keys().any(|path| path.starts_with("src/")));
 
+    // This document declares no operation, so there is no call to demonstrate:
+    // the packaged tree carries an empty `README.md` and the flat tree none, as
+    // Fern's do (`googleapis-youtubeanalytics-v1`).
+    assert_eq!(packaged["README.md"], "");
+    assert!(
+        !flat.contains_key("README.md"),
+        "flat wrote an empty README.md"
+    );
+
     // Every other packaged file has a flat counterpart — modules moved from
     // `src/acme/` to the root, root files where they were — and nothing else.
     let mut expected_flat: Vec<String> = packaged
@@ -14420,6 +14429,7 @@ fn flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging() {
                 "requirements.txt",
                 "src/acme/py.typed",
                 "src/acme/version.py",
+                "README.md",
             ]
             .contains(&path.as_str())
         })
@@ -14430,7 +14440,6 @@ fn flat_layout_is_the_packaged_tree_moved_to_the_root_minus_packaging() {
     flat_paths.sort();
     assert_eq!(flat_paths, expected_flat);
     for root_file in [
-        "README.md",
         "CONTRIBUTING.md",
         "reference.md",
         ".fern/metadata.json",
