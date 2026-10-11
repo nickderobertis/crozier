@@ -40,7 +40,9 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.list_rules()
+client.add_rule(
+    include="include",
+)
 ```
 
 ## Async Client
@@ -58,7 +60,9 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.list_rules()
+    await client.add_rule(
+        include="include",
+    )
 
 
 asyncio.run(main())
@@ -73,7 +77,7 @@ will be thrown.
 from fern.core.api_error import ApiError
 
 try:
-    client.list_rules(...)
+    client.add_rule(...)
 except ApiError as e:
     print(e.status_code)
     print(e.body)
@@ -90,7 +94,7 @@ The `.with_raw_response` property returns a "raw" client that can be used to acc
 from fern import FernApi
 
 client = FernApi(...)
-response = client.with_raw_response.list_rules(...)
+response = client.with_raw_response.add_rule(...)
 print(response.headers)  # access the response headers
 print(response.status_code)  # access the response status code
 print(response.data)  # access the underlying object
@@ -121,7 +125,7 @@ Which status codes are retried depends on the `retryStatusCodes` generator confi
 Use the `max_retries` request option to configure this behavior.
 
 ```python
-client.list_rules(..., request_options={
+client.add_rule(..., request_options={
     "max_retries": 1
 })
 ```
@@ -136,7 +140,7 @@ from fern import FernApi
 client = FernApi(..., timeout=20.0)
 
 # Override timeout for a specific method
-client.list_rules(..., request_options={
+client.add_rule(..., request_options={
     "timeout": 1
 })
 ```

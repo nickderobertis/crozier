@@ -1,6 +1,6 @@
 fern_cli_version = "5.67.1"
 fern_python_sdk_version = "5.20.0"
-digest = "689fa169370d2314a8a509c70829c2f49d4e90a3bbc11b22a21af9403d3e6091"
+digest = "7b87997b3e2c58d66b4f2995d268bfb23436d5c1e1be7813548c7f4cfaa2ca91"
 
 [[covers]]
 key = "integer-example-beyond-double-precision"

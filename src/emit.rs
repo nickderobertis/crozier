@@ -2583,7 +2583,7 @@ fn select_readme_endpoint<'a>(
 /// example — the lines before and after the client constructor. The README's
 /// streaming section writes its own constructor, but imports what the call
 /// constructs (`from fern import FernApi, Sector`).
-fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<(String, String)> {
+fn readme_example_parts(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<(String, String)> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
         enum_type: ir.enum_type,
@@ -2895,7 +2895,7 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         // The call carries its worked arguments here, exactly as the usage example
         // does; an argument-free streaming endpoint renders the same empty parens
         // it always did.
-        let (imports, call) = readme_call_lines(ir, ep, pkg).unwrap_or_else(|| {
+        let (imports, call) = readme_example_parts(ir, ep, pkg).unwrap_or_else(|| {
             (
                 format!("from {pkg} import {}", ir.client_name),
                 format!("{}()", client_call_prefix(ep)),

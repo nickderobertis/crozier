@@ -21,5 +21,5 @@ the document here reaches the description kinds that witness does not.
 
 | case | document | setting | what it pins |
 |---|---|---|---|
-| `archive-glob-rules` | [`archive-glob-rules`](archive-glob-rules/openapi.yml) | the defaults (`pydantic_config.enum_type: python_enums`; crozier's `python-enums`) | every `*/` in an operation, parameter, response, schema, property and enum description written `* /` in the docstrings, raw clients, models and `reference.md`, while the `logs/*/old` operation summary and the `hosts/*/volumes` document description reach no output |
+| `archive-glob-rules` | [`archive-glob-rules`](archive-glob-rules/openapi.yml) | the defaults (`pydantic_config.enum_type: python_enums`; crozier's `python-enums`) | every `*/` in an operation, operation and path-level parameter, component parameter, response, component response, schema, property and enum description written `* /` in the docstrings, raw clients, models and `reference.md`, while the `logs/*/old` operation summary, the `hosts/*/volumes` document description and the `spool/*/queue` component request body description reach no output |
 | `archive-glob-rules-literals` | [`archive-glob-rules`](archive-glob-rules/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the same splits with the `Cadence` enum an open `Literal` alias, whose description Fern drops |

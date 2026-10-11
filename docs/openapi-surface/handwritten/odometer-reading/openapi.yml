@@ -20,7 +20,7 @@ paths:
           application/json:
             schema:
               type: object
-              required: [vehicle, metres, trip_count, checkpoints]
+              required: [vehicle, metres, trip_count, checkpoints, drift, bias]
               properties:
                 vehicle:
                   type: string
@@ -32,6 +32,14 @@ paths:
                   type: integer
                   format: int64
                   example: 9007199254740993
+                drift:
+                  type: integer
+                  format: int64
+                  example: -9223372036854775808
+                bias:
+                  type: integer
+                  format: int64
+                  example: -9007199254740993
                 checkpoints:
                   type: array
                   items:

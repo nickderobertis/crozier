@@ -23,7 +23,7 @@ import sys
 import textwrap
 from pathlib import Path
 from types import ModuleType
-from typing import Any
+from typing import Any, NamedTuple
 
 INT64 = (-(2**63), 2**63 - 1)
 
@@ -35,14 +35,11 @@ class Expect(enum.Enum):
     VALID = "valid"
 
 
-def load_document(document: Path) -> Any:
-    """The OpenAPI document, read as JSON or, failing a `.json` suffix, as YAML."""
-    text = document.read_text(encoding="utf-8")
-    if document.suffix == ".json":
-        return json.loads(text)
-    import yaml  # noqa: PLC0415 - only a YAML document needs the YAML reader
+class Declared(NamedTuple):
+    """One argument's declared int64 example, and whether the argument is a list of them."""
 
-    return yaml.safe_load(text)
+    example: int
+    listed: bool
 
 
 def int64_example(schema: dict[str, Any]) -> int | None:
@@ -53,27 +50,27 @@ def int64_example(schema: dict[str, Any]) -> int | None:
     return None
 
 
-def declared_int64(document: Path, operation_id: str) -> dict[str, tuple[int, bool]]:
+def declared_int64(document: Path, operation_id: str) -> dict[str, Declared]:
     """The operation's int64 examples by argument: its query parameters' and its
     body properties', each with whether the argument is a list of them (an array
     property whose items declare the example)."""
-    spec = load_document(document)
+    spec = json.loads(document.read_text(encoding="utf-8"))
     for item in spec["paths"].values():
         for operation in item.values():
             if not isinstance(operation, dict) or operation.get("operationId") != operation_id:
                 continue
-            declared: dict[str, tuple[int, bool]] = {}
+            declared: dict[str, Declared] = {}
             for parameter in operation.get("parameters", []):
                 example = int64_example(parameter.get("schema", {}))
                 if example is not None:
-                    declared[parameter["name"]] = (example, False)
+                    declared[parameter["name"]] = Declared(example, listed=False)
             schema = operation["requestBody"]["content"]["application/json"]["schema"]
             for name, prop in schema["properties"].items():
                 example = int64_example(prop)
                 if example is not None:
-                    declared[name] = (example, False)
+                    declared[name] = Declared(example, listed=False)
                 elif prop.get("type") == "array" and (example := int64_example(prop.get("items", {}))) is not None:
-                    declared[name] = (example, True)
+                    declared[name] = Declared(example, listed=True)
             # A proof that checks no value proves nothing.
             assert declared, f"{operation_id} declares no int64 example to validate"
             return declared
@@ -127,7 +124,7 @@ def markdown_examples(root: Path, method: str) -> dict[str, dict[str, Any]]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_root", type=Path, help="the generated tree (holds README.md and src/)")
-    parser.add_argument("document", type=Path, help="the OpenAPI document it was generated from")
+    parser.add_argument("document", type=Path, help="the OpenAPI document it was generated from, as JSON")
     parser.add_argument("--operation-id", required=True)
     parser.add_argument("--method", required=True)
     parser.add_argument("--examples", type=Expect, choices=list(Expect), required=True)

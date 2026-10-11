@@ -268,9 +268,9 @@ when the two differ.
 ### `int64-example-rounded-out-of-range`
 
 - **Kind:** `fern-defect`
-- **Trigger:** An integer example of a `format: int64` property or parameter whose nearest double lies outside the signed 64-bit range (`9223372036854775807`): the README, reference.md and client docstring examples that pass it.
-- **Fern writes:** The double's JavaScript spelling, `9223372036854776000`, above the int64 maximum.
-- **crozier writes:** The declared example exactly, `9223372036854775807`. An example whose rounding stays inside the range keeps Fern's rounded spelling.
+- **Trigger:** An integer example of a `format: int64` property, array item or parameter whose nearest double lies outside the signed 64-bit range (`9223372036854775807`, `-9223372036854775808`): the README, reference.md and client docstring examples that pass it.
+- **Fern writes:** The double's JavaScript spelling, `9223372036854776000` or `-9223372036854776000`, outside the int64 range.
+- **crozier writes:** The declared example exactly. An example whose rounding stays inside the range keeps Fern's rounded spelling.
 - **Why:** Validating the documented value against the property's declared int64 bounds rejects Fern's value; the declared example is a valid int64 and satisfies them.
 - **Evidence:** [`docs/departures/evidence/int64-example-rounded-out-of-range.md`](../../docs/departures/evidence/int64-example-rounded-out-of-range.md)
 

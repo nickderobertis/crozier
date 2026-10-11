@@ -10,8 +10,12 @@ from .core.jsonable_encoder import encode_path_param
 from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
+from .types.cadence import Cadence
 from .types.rotation_rule import RotationRule
 from pydantic import ValidationError
+
+
+OMIT = typing.cast(typing.Any, ...)
 
 
 class RawFernApi:
@@ -19,7 +23,11 @@ class RawFernApi:
         self._client_wrapper = client_wrapper
 
     def list_rules(
-        self, *, prefix: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        prefix: typing.Optional[str] = None,
+        tier: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[typing.List[RotationRule]]:
         """
         Rules apply to paths like /srv/* /data and backups/** /daily.
@@ -28,6 +36,9 @@ class RawFernApi:
         ----------
         prefix : typing.Optional[str]
             Only rules under this prefix, e.g. home/* /.cache.
+
+        tier : typing.Optional[str]
+            Storage tier such as cold/* /archive.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -42,6 +53,7 @@ class RawFernApi:
             method="GET",
             params={
                 "prefix": prefix,
+                "tier": tier,
             },
             request_options=request_options,
         )
@@ -64,11 +76,69 @@ class RawFernApi:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    def add_rule(
+        self,
+        *,
+        include: str,
+        keep_days: typing.Optional[int] = OMIT,
+        cadence: typing.Optional[Cadence] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> HttpResponse[RotationRule]:
+        """
+        Parameters
+        ----------
+        include : str
+            Paths such as archive/** /snapshots or /* /tmp.
+
+        keep_days : typing.Optional[int]
+            Days to keep; * / marks the end of a cron field.
+
+        cadence : typing.Optional[Cadence]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        HttpResponse[RotationRule]
+            The rule added for cache/* /tmp.
+        """
+        _response = self._client_wrapper.httpx_client.request(
+            "rules",
+            method="POST",
+            json={
+                "include": include,
+                "keep_days": keep_days,
+                "cadence": cadence,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    RotationRule,
+                    parse_obj_as(
+                        type_=RotationRule,
+                        object_=_response.json(),
+                    ),
+                )
+                return HttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
     def drop_rule(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> HttpResponse[None]:
         """
         Parameters
         ----------
         rule_id : str
+            The rule, as in rules/* /id.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -100,7 +170,11 @@ class AsyncRawFernApi:
         self._client_wrapper = client_wrapper
 
     async def list_rules(
-        self, *, prefix: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        prefix: typing.Optional[str] = None,
+        tier: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[typing.List[RotationRule]]:
         """
         Rules apply to paths like /srv/* /data and backups/** /daily.
@@ -109,6 +183,9 @@ class AsyncRawFernApi:
         ----------
         prefix : typing.Optional[str]
             Only rules under this prefix, e.g. home/* /.cache.
+
+        tier : typing.Optional[str]
+            Storage tier such as cold/* /archive.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -123,6 +200,7 @@ class AsyncRawFernApi:
             method="GET",
             params={
                 "prefix": prefix,
+                "tier": tier,
             },
             request_options=request_options,
         )
@@ -145,6 +223,63 @@ class AsyncRawFernApi:
             )
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
+    async def add_rule(
+        self,
+        *,
+        include: str,
+        keep_days: typing.Optional[int] = OMIT,
+        cadence: typing.Optional[Cadence] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> AsyncHttpResponse[RotationRule]:
+        """
+        Parameters
+        ----------
+        include : str
+            Paths such as archive/** /snapshots or /* /tmp.
+
+        keep_days : typing.Optional[int]
+            Days to keep; * / marks the end of a cron field.
+
+        cadence : typing.Optional[Cadence]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        AsyncHttpResponse[RotationRule]
+            The rule added for cache/* /tmp.
+        """
+        _response = await self._client_wrapper.httpx_client.request(
+            "rules",
+            method="POST",
+            json={
+                "include": include,
+                "keep_days": keep_days,
+                "cadence": cadence,
+            },
+            request_options=request_options,
+            omit=OMIT,
+        )
+        try:
+            if 200 <= _response.status_code < 300:
+                _data = typing.cast(
+                    RotationRule,
+                    parse_obj_as(
+                        type_=RotationRule,
+                        object_=_response.json(),
+                    ),
+                )
+                return AsyncHttpResponse(response=_response, data=_data)
+            _response_json = _response.json()
+        except JSONDecodeError:
+            raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
+        except ValidationError as e:
+            raise ParsingError(
+                status_code=_response.status_code, headers=dict(_response.headers), body=_response.json(), cause=e
+            )
+        raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
+
     async def drop_rule(
         self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[None]:
@@ -152,6 +287,7 @@ class AsyncRawFernApi:
         Parameters
         ----------
         rule_id : str
+            The rule, as in rules/* /id.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

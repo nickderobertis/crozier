@@ -14,6 +14,7 @@ paths:
           schema:
             type: string
           description: Only rules under this prefix, e.g. home/*/.cache.
+        - $ref: '#/components/parameters/Tier'
       responses:
         '200':
           description: Every rotation rule; globs end */ here.
@@ -23,20 +24,50 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/RotationRule'
+    post:
+      operationId: addRule
+      requestBody:
+        $ref: '#/components/requestBodies/NewRule'
+      responses:
+        '201':
+          $ref: '#/components/responses/RuleCreated'
   /rules/{ruleId}:
+    parameters:
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The rule, as in rules/*/id.
     delete:
       operationId: dropRule
       summary: Drop a rule for logs/*/old.
-      parameters:
-        - name: ruleId
-          in: path
-          required: true
-          schema:
-            type: string
       responses:
         '204':
           description: Dropped.
 components:
+  parameters:
+    Tier:
+      name: tier
+      in: query
+      schema:
+        type: string
+      description: Storage tier such as cold/*/archive.
+  requestBodies:
+    NewRule:
+      required: true
+      description: The rule to add for spool/*/queue.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RotationRule'
+  responses:
+    RuleCreated:
+      description: The rule added for cache/*/tmp.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RotationRule'
   schemas:
     RotationRule:
       type: object

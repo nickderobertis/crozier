@@ -103,6 +103,8 @@ class FernApi:
         vehicle: str,
         metres: int,
         trip_count: int,
+        drift: int,
+        bias: int,
         checkpoints: typing.Sequence[int],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
@@ -116,6 +118,10 @@ class FernApi:
         metres : int
 
         trip_count : int
+
+        drift : int
+
+        bias : int
 
         checkpoints : typing.Sequence[int]
 
@@ -138,6 +144,8 @@ class FernApi:
             vehicle="vehicle",
             metres=9223372036854776000,
             trip_count=9007199254740992,
+            drift=-9223372036854776000,
+            bias=-9007199254740992,
             checkpoints=[9223372036854776000],
         )
         """
@@ -146,6 +154,8 @@ class FernApi:
             vehicle=vehicle,
             metres=metres,
             trip_count=trip_count,
+            drift=drift,
+            bias=bias,
             checkpoints=checkpoints,
             request_options=request_options,
         )
@@ -259,6 +269,8 @@ class AsyncFernApi:
         vehicle: str,
         metres: int,
         trip_count: int,
+        drift: int,
+        bias: int,
         checkpoints: typing.Sequence[int],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
@@ -272,6 +284,10 @@ class AsyncFernApi:
         metres : int
 
         trip_count : int
+
+        drift : int
+
+        bias : int
 
         checkpoints : typing.Sequence[int]
 
@@ -299,6 +315,8 @@ class AsyncFernApi:
                 vehicle="vehicle",
                 metres=9223372036854776000,
                 trip_count=9007199254740992,
+                drift=-9223372036854776000,
+                bias=-9007199254740992,
                 checkpoints=[9223372036854776000],
             )
 
@@ -310,6 +328,8 @@ class AsyncFernApi:
             vehicle=vehicle,
             metres=metres,
             trip_count=trip_count,
+            drift=drift,
+            bias=bias,
             checkpoints=checkpoints,
             request_options=request_options,
         )

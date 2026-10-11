@@ -25,6 +25,8 @@ class RawFernApi:
         vehicle: str,
         metres: int,
         trip_count: int,
+        drift: int,
+        bias: int,
         checkpoints: typing.Sequence[int],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
@@ -38,6 +40,10 @@ class RawFernApi:
         metres : int
 
         trip_count : int
+
+        drift : int
+
+        bias : int
 
         checkpoints : typing.Sequence[int]
 
@@ -58,6 +64,8 @@ class RawFernApi:
                 "vehicle": vehicle,
                 "metres": metres,
                 "trip_count": trip_count,
+                "drift": drift,
+                "bias": bias,
                 "checkpoints": checkpoints,
             },
             headers={
@@ -90,6 +98,8 @@ class AsyncRawFernApi:
         vehicle: str,
         metres: int,
         trip_count: int,
+        drift: int,
+        bias: int,
         checkpoints: typing.Sequence[int],
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
@@ -103,6 +113,10 @@ class AsyncRawFernApi:
         metres : int
 
         trip_count : int
+
+        drift : int
+
+        bias : int
 
         checkpoints : typing.Sequence[int]
 
@@ -123,6 +137,8 @@ class AsyncRawFernApi:
                 "vehicle": vehicle,
                 "metres": metres,
                 "trip_count": trip_count,
+                "drift": drift,
+                "bias": bias,
                 "checkpoints": checkpoints,
             },
             headers={

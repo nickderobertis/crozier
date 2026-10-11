@@ -45,6 +45,8 @@ client.record_reading(
     vehicle="vehicle",
     metres=9223372036854776000,
     trip_count=9007199254740992,
+    drift=-9223372036854776000,
+    bias=-9007199254740992,
     checkpoints=[
         9223372036854776000
     ],
@@ -71,6 +73,8 @@ async def main() -> None:
         vehicle="vehicle",
         metres=9223372036854776000,
         trip_count=9007199254740992,
+        drift=-9223372036854776000,
+        bias=-9007199254740992,
         checkpoints=[
             9223372036854776000
         ],

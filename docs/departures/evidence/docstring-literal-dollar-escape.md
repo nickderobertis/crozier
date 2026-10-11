@@ -31,13 +31,14 @@ generated package, evaluates the `variable` argument of the sync and async
 client docstring examples and of every README/`reference.md` worked call
 exactly as Python evaluates their source, binds each docstring call to the
 actual generated method, and compares each value with the declared const and
-the generated `Literal`. Executed on 2026-10-10 with Python 3.14 and PyYAML
-6.0.3 from the repository environment:
+the generated `Literal`; it reads the document as JSON. Executed on 2026-10-11
+with Python 3.14 and PyYAML 6.0.3 from the repository environment:
 
 ```sh
+python -c 'import json, sys, yaml; json.dump(yaml.safe_load(open(sys.argv[1])), sys.stdout)' \
+  docs/openapi-surface/handwritten/prompt-variable/openapi.yml > /tmp/prompt-variable.json
 PYTHONDONTWRITEBYTECODE=1 python docs/departures/evidence/docstring-literal-dollar-escape.py \
-  <materialized literals tree> \
-  docs/openapi-surface/handwritten/prompt-variable/openapi.yml \
+  <materialized literals tree> /tmp/prompt-variable.json \
   --schema PromptSpec --literal-type PromptSpecVariable \
   --method define_prompt --keyword variable --examples invalid
 ```
@@ -54,7 +55,8 @@ compiled crozier binary generated from the same source with
 Markdown value equal to `$PS1`.
 `sdk_env_dollar_const_validator_separates_fern_from_crozier` in
 `crates/crozier-e2e/tests/e2e.rs` drives this validator over both trees, in
-both directions, and with an expectation it does not know.
+both directions, with an expectation it does not know, and over a directory
+holding no package.
 
 ## The parity rule
 

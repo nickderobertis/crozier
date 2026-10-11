@@ -35,18 +35,8 @@ class Expect(enum.Enum):
     VALID = "valid"
 
 
-def load_document(document: Path) -> typing.Any:
-    """The OpenAPI document, read as JSON or, failing a `.json` suffix, as YAML."""
-    text = document.read_text(encoding="utf-8")
-    if document.suffix == ".json":
-        return json.loads(text)
-    import yaml  # noqa: PLC0415 - only a YAML document needs the YAML reader
-
-    return yaml.safe_load(text)
-
-
 def declared_const(document: Path, schema_name: str, keyword: str) -> str:
-    spec = load_document(document)
+    spec = json.loads(document.read_text(encoding="utf-8"))
     const = spec["components"]["schemas"][schema_name]["properties"][keyword]["const"]
     assert isinstance(const, str)
     return const
@@ -90,7 +80,7 @@ def markdown_values(root: Path, method: str, keyword: str) -> dict[str, object]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_root", type=Path, help="the generated tree (holds README.md and src/)")
-    parser.add_argument("document", type=Path, help="the OpenAPI document it was generated from")
+    parser.add_argument("document", type=Path, help="the OpenAPI document it was generated from, as JSON")
     parser.add_argument("--schema", required=True, help="the component schema declaring the const")
     parser.add_argument("--literal-type", required=True, help="the generated alias typing the property")
     parser.add_argument("--method", required=True)

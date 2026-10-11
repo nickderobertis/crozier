@@ -7,7 +7,11 @@ from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.cadence import Cadence
 from .types.rotation_rule import RotationRule
+
+
+OMIT = typing.cast(typing.Any, ...)
 
 
 class FernApi:
@@ -95,7 +99,11 @@ class FernApi:
         return self._raw_client
 
     def list_rules(
-        self, *, prefix: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        prefix: typing.Optional[str] = None,
+        tier: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[RotationRule]:
         """
         Rules apply to paths like /srv/* /data and backups/** /daily.
@@ -104,6 +112,9 @@ class FernApi:
         ----------
         prefix : typing.Optional[str]
             Only rules under this prefix, e.g. home/* /.cache.
+
+        tier : typing.Optional[str]
+            Storage tier such as cold/* /archive.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -122,7 +133,50 @@ class FernApi:
         )
         client.list_rules()
         """
-        _response = self._raw_client.list_rules(prefix=prefix, request_options=request_options)
+        _response = self._raw_client.list_rules(prefix=prefix, tier=tier, request_options=request_options)
+        return _response.data
+
+    def add_rule(
+        self,
+        *,
+        include: str,
+        keep_days: typing.Optional[int] = OMIT,
+        cadence: typing.Optional[Cadence] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RotationRule:
+        """
+        Parameters
+        ----------
+        include : str
+            Paths such as archive/** /snapshots or /* /tmp.
+
+        keep_days : typing.Optional[int]
+            Days to keep; * / marks the end of a cron field.
+
+        cadence : typing.Optional[Cadence]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RotationRule
+            The rule added for cache/* /tmp.
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.add_rule(
+            include="include",
+        )
+        """
+        _response = self._raw_client.add_rule(
+            include=include, keep_days=keep_days, cadence=cadence, request_options=request_options
+        )
         return _response.data
 
     def drop_rule(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
@@ -130,6 +184,7 @@ class FernApi:
         Parameters
         ----------
         rule_id : str
+            The rule, as in rules/* /id.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -254,7 +309,11 @@ class AsyncFernApi:
         return self._raw_client
 
     async def list_rules(
-        self, *, prefix: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        prefix: typing.Optional[str] = None,
+        tier: typing.Optional[str] = None,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> typing.List[RotationRule]:
         """
         Rules apply to paths like /srv/* /data and backups/** /daily.
@@ -263,6 +322,9 @@ class AsyncFernApi:
         ----------
         prefix : typing.Optional[str]
             Only rules under this prefix, e.g. home/* /.cache.
+
+        tier : typing.Optional[str]
+            Storage tier such as cold/* /archive.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -289,7 +351,58 @@ class AsyncFernApi:
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_rules(prefix=prefix, request_options=request_options)
+        _response = await self._raw_client.list_rules(prefix=prefix, tier=tier, request_options=request_options)
+        return _response.data
+
+    async def add_rule(
+        self,
+        *,
+        include: str,
+        keep_days: typing.Optional[int] = OMIT,
+        cadence: typing.Optional[Cadence] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
+    ) -> RotationRule:
+        """
+        Parameters
+        ----------
+        include : str
+            Paths such as archive/** /snapshots or /* /tmp.
+
+        keep_days : typing.Optional[int]
+            Days to keep; * / marks the end of a cron field.
+
+        cadence : typing.Optional[Cadence]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        RotationRule
+            The rule added for cache/* /tmp.
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.add_rule(
+                include="include",
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.add_rule(
+            include=include, keep_days=keep_days, cadence=cadence, request_options=request_options
+        )
         return _response.data
 
     async def drop_rule(self, rule_id: str, *, request_options: typing.Optional[RequestOptions] = None) -> None:
@@ -297,6 +410,7 @@ class AsyncFernApi:
         Parameters
         ----------
         rule_id : str
+            The rule, as in rules/* /id.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

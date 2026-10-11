@@ -3562,6 +3562,50 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
             );
         }
     }
+    // The certified plain-multipart tree's docstrings omit the required file:
+    // the same script finds both calls failing to bind. An object shape's
+    // part content type means nothing for it, and is refused.
+    let certified = tempfile::tempdir().unwrap();
+    copy_dir(
+        &root.join("docs/openapi-surface/handwritten/poster-upload/fern-expected"),
+        certified.path(),
+    );
+    for (args, code) in [
+        (&["plain", "--examples", "invalid", "--wire"][..], Some(0)),
+        (
+            &[
+                "plain",
+                "--examples",
+                "invalid",
+                "--wire",
+                "--part-content-type",
+                "application/json",
+            ][..],
+            Some(2),
+        ),
+    ] {
+        // llmlint: ignore-block[e2e_not_mocked] As above: the script imports the certified package and records its requests at an httpx.MockTransport standing in for the server alone.
+        let run = std::process::Command::new(&python)
+            .arg(&script)
+            .arg(certified.path().join("src"))
+            .args(args)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        // llmlint: ignore-end[e2e_not_mocked]
+        let output = format!(
+            "{}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(run.status.code(), code, "{args:?}: {output}");
+        if code == Some(0) {
+            assert!(
+                output.contains("missing a required argument: 'image'"),
+                "{output}"
+            );
+        }
+    }
 }
 
 /// A departure validator's run over the tree at `sdk_root`: its exit code and
@@ -3671,6 +3715,53 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
         output.contains("sdk_root must contain src/fern"),
         "{output}"
     );
+    // An operation it cannot find, or one declaring no int64 example, is a
+    // failed proof, never a vacuous pass.
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &document,
+        &[
+            "--operation-id",
+            "noSuchOperation",
+            "--method",
+            "record_reading",
+            "--examples",
+            "valid",
+        ],
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(output.contains("no operation noSuchOperation"), "{output}");
+    let mut stripped: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    let operation_node = &mut stripped["paths"]["/readings"]["post"];
+    operation_node["parameters"] = serde_json::json!([]);
+    for property in operation_node["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]
+        .as_object_mut()
+        .unwrap()
+        .values_mut()
+    {
+        property.as_object_mut().unwrap().remove("example");
+        if let Some(items) = property.get_mut("items") {
+            items.as_object_mut().unwrap().remove("example");
+        }
+    }
+    let empty = scratch.path().join("no-examples.json");
+    std::fs::write(&empty, serde_json::to_vec(&stripped).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &empty,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(
+        output.contains("declares no int64 example to validate"),
+        "{output}"
+    );
 }
 
 /// The `docstring-literal-dollar-escape` validator, driven as its evidence note
@@ -3726,6 +3817,18 @@ fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
         &[&target[..], &["--examples", "neither"]].concat(),
     );
     assert_eq!(status, Some(2), "{output}");
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        scratch.path(),
+        &document,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("sdk_root must contain src/fern"),
+        "{output}"
+    );
 }
 
 #[test]

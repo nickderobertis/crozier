@@ -23,6 +23,8 @@ client.record_reading(
     vehicle="vehicle",
     metres=9223372036854776000,
     trip_count=9007199254740992,
+    drift=-9223372036854776000,
+    bias=-9007199254740992,
     checkpoints=[
         9223372036854776000
     ],
@@ -67,6 +69,22 @@ client.record_reading(
 <dd>
 
 **trip_count:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**drift:** `int` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**bias:** `int` 
     
 </dd>
 </dl>

@@ -160,5 +160,5 @@ holds each row to its source and golden, so a regenerated golden or a moved
 description that stops declaring the shape fails rather than leaving the claim
 standing. The independently authored
 [`archive-glob-rules`](../../fern-measurements/examples-docs/README.md) document
-measures the parameter, response, schema, property and enum descriptions the
-speech witness does not reach.
+measures the parameter, response, component, schema, property and enum
+descriptions the speech witness does not reach.

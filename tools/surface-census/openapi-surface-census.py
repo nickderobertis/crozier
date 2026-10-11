@@ -5069,9 +5069,9 @@ UNPROMOTED_HEADERS = frozenset({"user-agent", "content-type", "origin", "cookie"
 # default, the headers it never takes and the apiKey scheme names
 # `is_auth_managed_header` reads. Each function they read is pinned by the
 # normalized-body digest the offline tier recomputes, as `UNION_PORT_DIGESTS`
-# are: an edit there fails until the port is read again. `hoist_param_enum`
-# was re-read when its union element kept a `null` member's optionality on the
-# list's item: which parameters hoist an items union is unchanged.
+# are: an edit there fails until the port is read again. Whether a union
+# element keeps a `null` member's optionality on the list's item is no part of
+# the port: it decides the element's annotation, not which parameters hoist.
 PARAMETER_PORT_DIGESTS = {
     "hoist_param_enum": "cd66a155d41f0dfd",
     "global_headers": "811a7d2a03cc038b",
