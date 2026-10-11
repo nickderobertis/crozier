@@ -3793,6 +3793,35 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
         output.contains("declares no int64 example to validate"),
         "{output}"
     );
+    // A bool equals 0 and 1, yet it is no integer: an example of 1 passed as
+    // `True` in every worked call fails the proof.
+    let mut one: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    one["paths"]["/readings"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["trip_count"]["example"] = 1.into();
+    let one_document = scratch.path().join("trip-count-one.json");
+    std::fs::write(&one_document, serde_json::to_vec(&one).unwrap()).unwrap();
+    let boolean = scratch.path().join("boolean");
+    copy_dir(&generated, &boolean);
+    for file in ["README.md", "reference.md", "src/fern/client.py"] {
+        let path = boolean.join(file);
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("trip_count=9007199254740992,"), "{file}");
+        std::fs::write(
+            &path,
+            text.replace("trip_count=9007199254740992,", "trip_count=True,"),
+        )
+        .unwrap();
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &boolean,
+        &one_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(output.contains("'no integer'"), "{output}");
     // A document without the structure the proof reads is an input error.
     let malformed = scratch.path().join("malformed.json");
     std::fs::write(&malformed, r#"{"paths": []}"#).unwrap();

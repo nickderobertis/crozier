@@ -181,6 +181,8 @@ def main() -> None:
             assert values, (where, name, "no element to validate")
             rounded = js_spelling(example)
             for value in values:
+                # A bool compares equal to 0 and 1, so it is refused before any comparison.
+                assert isinstance(value, int) and not isinstance(value, bool), (where, name, value, "no integer")
                 in_range = INT64[0] <= value <= INT64[1]
                 if INT64[0] <= rounded <= INT64[1]:
                     # A rounding that stays in range is a valid value, written by both.
