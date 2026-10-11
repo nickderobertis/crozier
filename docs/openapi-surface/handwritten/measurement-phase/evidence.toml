@@ -1,0 +1,23 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d7e5f19f30c73ebcef73b907943a90aba667510f4610b2866a0e9b177bce2f68"
+
+[[covers]]
+key = "allof-enum-ref-narrowed-by-scalar-member"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "enum"
+arm = 'src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

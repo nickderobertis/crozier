@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9da6b59a3dbd8a9faeadd8221e6f4f704532c743482e9d69e4766f8ca1bd2c01"
+
+[[covers]]
+key = "enum-value-description-extension-dropped"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

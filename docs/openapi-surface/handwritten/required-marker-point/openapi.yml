@@ -1,0 +1,30 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Marker'
+components:
+  schemas:
+    Point:
+      type: object
+      properties:
+        x:
+          type: number
+    Marker:
+      type: object
+      properties:
+        point:
+          $ref: '#/components/schemas/Point'
+          nullable: true
+      required:
+      - point

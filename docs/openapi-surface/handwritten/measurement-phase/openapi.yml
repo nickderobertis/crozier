@@ -1,0 +1,56 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /measurements:
+    post:
+      operationId: store_measurement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Measurement'
+      responses:
+        '204':
+          description: Stored
+  /inline-measurements:
+    post:
+      operationId: store_inline_measurement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phase:
+                  allOf:
+                  - $ref: '#/components/schemas/Phase'
+                  - type: string
+                    pattern: ^(?!preparation$).*$
+                    description: The phase permitted for a stored measurement.
+              required:
+              - phase
+      responses:
+        '204':
+          description: Stored inline measurement
+components:
+  schemas:
+    Phase:
+      type: string
+      enum:
+      - preparation
+      - recording
+    Measurement:
+      type: object
+      properties:
+        phase:
+          allOf:
+          - $ref: '#/components/schemas/Phase'
+          - type: string
+            pattern: ^(?!preparation$).*$
+            description: The phase permitted for a stored measurement.
+      required:
+      - phase

@@ -368,6 +368,7 @@ impl Checker<'_> {
         let layout = resolved.args.layout;
         let crozier_root = resolved.args.output.clone();
         let started = Instant::now();
+        let source = crate::openapi::load(&resolved.args.spec).ok();
         let generated = crate::generate(resolved.args);
         let crozier_seconds = started.elapsed().as_secs_f64();
         let timing = Some(Timing::from_measurements(
@@ -396,11 +397,15 @@ impl Checker<'_> {
             &format!("{label}: crozier generation finished in {crozier_seconds:.2}s"),
         );
 
-        let compared = match parity::compare_trees(
+        // Example departures need the schema's constraints: an SDK annotation
+        // alone cannot prove an example invalid. The source-aware CLI boundary
+        // is covered by tests/e2e/compare.rs::compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes.
+        let compared = match parity::compare_trees_with_document(
             &reference_root,
             &crozier_root,
             None,
             self.diff_dir.is_some(),
+            source,
         ) {
             Ok(compared) => compared,
             Err(error) => {

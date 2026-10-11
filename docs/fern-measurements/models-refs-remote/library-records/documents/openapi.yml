@@ -1,0 +1,25 @@
+openapi: 3.0.3
+info: {title: Library Records, version: 1.0.0}
+paths:
+  /catalogue:
+    get:
+      operationId: read_catalogue
+      responses:
+        '200':
+          description: Catalogue record
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Catalogue'}
+  /curator:
+    get:
+      operationId: read_curator
+      responses:
+        '200':
+          description: Curator record
+          content:
+            application/json:
+              schema: {$ref: '@REMOTE_URL@/models.yml#/components/schemas/Curator'}
+components:
+  schemas:
+    Catalogue:
+      $ref: '@REMOTE_URL@/models.yml#/components/schemas/Catalogue'

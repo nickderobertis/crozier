@@ -1,0 +1,9 @@
+openapi: 3.0.3
+info: {title: Nested Library Control, version: 1.0.0}
+paths: {}
+components:
+  schemas:
+    Catalogue:
+      type: object
+      properties:
+        curator: {$ref: 'models.yml#/components/schemas/Curator'}

@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sample'
+components:
+  schemas:
+    Analog:
+      type: object
+      properties:
+        voltage:
+          type: number
+    Digital:
+      type: object
+      properties:
+        bits:
+          type: integer
+    Signal:
+      type: object
+      oneOf:
+      - $ref: '#/components/schemas/Analog'
+      - $ref: '#/components/schemas/Digital'
+    Sample:
+      type: object
+      properties:
+        index:
+          type: integer
+      allOf:
+      - $ref: '#/components/schemas/Signal'

@@ -739,6 +739,13 @@ fn render_type(t: &TypeRef, imports: &mut Imports) -> Doc {
             Prim::Int | Prim::Long => Doc::atom("int"),
             Prim::Float => Doc::atom("float"),
             Prim::Bool => Doc::atom("bool"),
+            Prim::LiteralBool(value) => {
+                imports.add_plain("typing");
+                Doc::atom(format!(
+                    "typing.Literal[{}]",
+                    if *value { "True" } else { "False" }
+                ))
+            }
             Prim::Any => {
                 imports.add_plain("typing");
                 Doc::atom("typing.Any")
@@ -987,6 +994,7 @@ fn decl_refs(decl: &TypeDecl) -> Vec<String> {
     match decl {
         TypeDecl::Object(o) => {
             out.extend(o.bases.iter().cloned());
+            out.extend(o.reach_refs.iter().cloned());
             for f in &o.fields {
                 collect_named_refs(&f.type_ref, &mut out);
             }
@@ -1021,6 +1029,7 @@ fn decl_annotation_refs(decl: &TypeDecl) -> Vec<String> {
     match decl {
         TypeDecl::Object(object) => {
             out.extend(object.bases.iter().cloned());
+            out.extend(object.reach_refs.iter().cloned());
             for field in &object.fields {
                 collect_named_refs(&field.type_ref, &mut out);
             }
@@ -1112,6 +1121,11 @@ fn forward_ref_map(
             !matches!(decl, TypeDecl::Alias(_) | TypeDecl::DiscriminatedUnion(_));
         let mut forward = HashSet::new();
         for r in decl_refs(decl) {
+            // A superclass must already be bound when Python executes the class
+            // statement; its own module repairs its recursive annotations.
+            if matches!(decl, TypeDecl::Object(object) if object.bases.contains(&r)) {
+                continue;
+            }
             // Render `r` as a string forward reference (deferred import) when it
             // closes a cycle back to this type, OR when `r` is itself recursive (in a
             // cycle of its own). Importing a recursive type eagerly can trip its
@@ -1476,13 +1490,17 @@ fn forward_repair_map(
             // Each wrapper resolves its own reach, minus the model it flattened —
             // a wrapper cannot be asked to resolve its own source.
             let mut all = HashSet::new();
-            for member in &union.members {
+            for (index, member) in union.members.iter().enumerate() {
                 let mut refs = Vec::new();
                 for field in &member.fields {
                     collect_named_refs(&field.type_ref, &mut refs);
                 }
                 let mut names = closure(refs.iter().map(String::as_str).collect());
-                if let Some(source) = &member.source {
+                if let Some(source) = member
+                    .source
+                    .as_ref()
+                    .or_else(|| union.variant_targets.get(index).filter(|_| !member.wrapped))
+                {
                     names.remove(source);
                 }
                 let mut ordered: Vec<String> = names.iter().cloned().collect();
@@ -4354,6 +4372,7 @@ fn render_type_decl(
             // references and skip/defer their imports (issue #84).
             imports.forward = forward.clone();
             imports.forward.extend(repair.names.iter().cloned());
+            imports.forward.retain(|name| !obj.bases.contains(name));
             imports.cur_module = obj.module.clone();
             // A model's own pydantic `class Config` holds the name `Config`, so a
             // component of that name is imported under its package path: Hasura's
@@ -4845,6 +4864,10 @@ fn raw_type_str_ctx(t: &TypeRef, imports: &mut Imports, seq: bool) -> String {
         TypeRef::Primitive(Prim::Int | Prim::Long) => "int".to_string(),
         TypeRef::Primitive(Prim::Float) => "float".to_string(),
         TypeRef::Primitive(Prim::Bool) => "bool".to_string(),
+        TypeRef::Primitive(Prim::LiteralBool(value)) => {
+            imports.add_plain("typing");
+            format!("typing.Literal[{}]", if *value { "True" } else { "False" })
+        }
         TypeRef::Primitive(Prim::Any) => {
             imports.add_plain("typing");
             "typing.Any".to_string()
@@ -8459,7 +8482,7 @@ impl<'a> ExampleCtx<'a> {
                 {
                     format!("{example}.0")
                 }
-                TypeRef::Primitive(Prim::Bool) => match example {
+                TypeRef::Primitive(Prim::Bool | Prim::LiteralBool(_)) => match example {
                     "true" => "True".to_string(),
                     "false" => "False".to_string(),
                     _ => example.to_string(),
@@ -9055,6 +9078,7 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Primitive(Prim::Int | Prim::Long) => value.as_i64().is_some(),
             TypeRef::Primitive(Prim::Float) => value.is_number(),
             TypeRef::Primitive(Prim::Bool) => value.is_boolean(),
+            TypeRef::Primitive(Prim::LiteralBool(expected)) => value.as_bool() == Some(*expected),
             TypeRef::Primitive(Prim::Any) => true,
         }
     }
@@ -9227,6 +9251,9 @@ impl<'a> ExampleCtx<'a> {
             TypeRef::Primitive(Prim::Long) => Example::Atom("1000000".to_string()),
             TypeRef::Primitive(Prim::Float) => Example::Atom("1.1".to_string()),
             TypeRef::Primitive(Prim::Bool) => Example::Atom("True".to_string()),
+            TypeRef::Primitive(Prim::LiteralBool(value)) => {
+                Example::Atom(if *value { "True" } else { "False" }.to_string())
+            }
             TypeRef::Primitive(Prim::Datetime) => {
                 self.note_datetime();
                 Example::Call(
@@ -9452,7 +9479,7 @@ impl<'a> ExampleCtx<'a> {
             // A literal enum's example is its first value as a plain string, which
             // needs no import.
             Some(TypeDecl::Enum(e)) if self.enum_type == EnumType::Literals => {
-                match e.members.first() {
+                match e.example_member() {
                     Some(m) => Example::Atom(literal_enum_value(&m.value)),
                     None => Example::Atom("None".to_string()),
                 }
@@ -9461,7 +9488,7 @@ impl<'a> ExampleCtx<'a> {
             // (`TypesWeatherReport.SUNNY`), importing the enum by name.
             Some(TypeDecl::Enum(e)) => {
                 self.record_ref(name);
-                match e.members.first() {
+                match e.example_member() {
                     Some(m) => Example::Atom(format!("{name}.{}", m.name)),
                     None => Example::Atom("None".to_string()),
                 }
@@ -9782,6 +9809,7 @@ fn path_field_render(
             | Prim::Long
             | Prim::Float
             | Prim::Bool
+            | Prim::LiteralBool(_)
             | Prim::Datetime
             | Prim::Date,
         ) => Some(PathFieldRender::Plain),
@@ -9968,7 +9996,13 @@ fn example_scalar(t: &TypeRef) -> bool {
         TypeRef::Primitive(p) => {
             matches!(
                 p,
-                Prim::Str | Prim::Bytes | Prim::Int | Prim::Long | Prim::Float | Prim::Bool
+                Prim::Str
+                    | Prim::Bytes
+                    | Prim::Int
+                    | Prim::Long
+                    | Prim::Float
+                    | Prim::Bool
+                    | Prim::LiteralBool(_)
             )
         }
         _ => false,
@@ -13610,6 +13644,7 @@ mod tests {
 
     fn object_of(name: &str, fields: Vec<(&str, TypeRef)>) -> TypeDecl {
         TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: name.to_string(),
             module: crate::naming::module_name(name),
             bases: Vec::new(),
@@ -13920,7 +13955,8 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
-                }],
+                }]
+                .into(),
                 docstring: None,
             }),
         ];
@@ -14004,6 +14040,7 @@ mod tests {
     #[test]
     fn example_context_covers_composite_examples_and_type_matching_edges() {
         let payload = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Payload".to_string(),
             module: "payload".to_string(),
             bases: Vec::new(),
@@ -14017,6 +14054,7 @@ mod tests {
         let types = vec![
             payload,
             TypeDecl::Object(ObjectType {
+                reach_refs: Vec::new(),
                 name: "Event".to_string(),
                 module: "event".to_string(),
                 bases: Vec::new(),
@@ -14059,7 +14097,8 @@ mod tests {
                     visit_param: "red".to_string(),
                     value: "red".to_string(),
                     docstring: None,
-                }],
+                }]
+                .into(),
                 docstring: None,
             }),
             TypeDecl::DiscriminatedUnion(DiscriminatedUnion {
@@ -14331,6 +14370,7 @@ mod tests {
     #[test]
     fn a_path_object_renders_measured_field_kinds_and_refuses_the_rest() {
         let inner = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Inner".to_string(),
             module: "inner".to_string(),
             bases: Vec::new(),
@@ -14346,7 +14386,8 @@ mod tests {
                 value: "alpha".to_string(),
                 visit_param: "alpha".to_string(),
                 docstring: None,
-            }],
+            }]
+            .into(),
             docstring: None,
         });
         let alias = TypeDecl::Alias(AliasType {
@@ -14357,6 +14398,7 @@ mod tests {
             docstring: None,
         });
         let base = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Base".to_string(),
             module: "base".to_string(),
             bases: Vec::new(),
@@ -14365,6 +14407,7 @@ mod tests {
             docstring: None,
         });
         let probe = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "ProbeParam".to_string(),
             module: "probe_param".to_string(),
             bases: vec!["Base".to_string()],
@@ -14408,6 +14451,7 @@ mod tests {
         // A required field that is itself a generated model is the one kind Fern
         // was measured dropping the whole example for.
         let nested = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Nested".to_string(),
             module: "nested".to_string(),
             bases: Vec::new(),
@@ -14446,6 +14490,7 @@ mod tests {
     #[test]
     fn an_endpoint_is_documented_unless_a_path_object_field_is_unrenderable() {
         let inner = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Inner".to_string(),
             module: "inner".to_string(),
             bases: Vec::new(),
@@ -14454,6 +14499,7 @@ mod tests {
             docstring: None,
         });
         let renderable = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Renderable".to_string(),
             module: "renderable".to_string(),
             bases: Vec::new(),
@@ -14462,6 +14508,7 @@ mod tests {
             docstring: None,
         });
         let unrenderable = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Unrenderable".to_string(),
             module: "unrenderable".to_string(),
             bases: Vec::new(),
@@ -14508,6 +14555,7 @@ mod tests {
     #[test]
     fn rendering_without_recording_leaves_the_import_set_untouched() {
         let probe = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "ProbeParam".to_string(),
             module: "probe_param".to_string(),
             bases: Vec::new(),
@@ -14545,6 +14593,7 @@ mod tests {
         let mut base_id = model_field("id", TypeRef::Primitive(Prim::Int), true);
         base_id.example = Some("7".to_string());
         let base = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Base".to_string(),
             module: "base".to_string(),
             bases: Vec::new(),
@@ -14563,6 +14612,7 @@ mod tests {
             true,
         );
         let child = TypeDecl::Object(ObjectType {
+            reach_refs: Vec::new(),
             name: "Child".to_string(),
             module: "child".to_string(),
             bases: vec!["Base".to_string()],
@@ -14573,7 +14623,7 @@ mod tests {
         let empty_enum = TypeDecl::Enum(EnumType {
             name: "EmptyEnum".to_string(),
             module: "empty_enum".to_string(),
-            members: Vec::new(),
+            members: Vec::new().into(),
             docstring: None,
         });
         let mut nullable_required = model_field("server_url", TypeRef::Primitive(Prim::Str), true);
@@ -15386,7 +15436,8 @@ mod tests {
                     visit_param: "ready".to_string(),
                     value: "ready\"now".to_string(),
                     docstring: Some("Ready member.".to_string()),
-                }],
+                }]
+                .into(),
                 docstring: Some("State enum.".to_string()),
             },
             &RefLoc::RootTypes,

@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Reservoir Ledger
+  version: 1.0.0
+paths:
+  /reservoir:
+    post:
+      operationId: record_reservoir
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reservoir:
+                  $ref: '#/components/schemas/Reservoir'
+      responses:
+        '204':
+          description: Recorded
+components:
+  schemas:
+    Reservoir:
+      type: object
+      properties:
+        capacity:
+          type: integer
+      nullable: true

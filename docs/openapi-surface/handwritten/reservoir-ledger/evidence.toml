@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "779ebfb9520d0551a8c688967907313ae67070f96dfe341a982a41650992623f"
+
+[[covers]]
+key = "property-ref-to-nullable-component-annotation"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#property-metadata"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

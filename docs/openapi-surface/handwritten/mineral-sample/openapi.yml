@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pebble'
+components:
+  schemas:
+    Rock:
+      type: object
+      properties:
+        grain:
+          type: integer
+    Pebble:
+      type: object
+      properties: {}
+      allOf:
+      - $ref: '#/components/schemas/Rock'

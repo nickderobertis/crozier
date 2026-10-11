@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "11a7235263e8cdfba7fdc3bcbabbd0a1d3ec8053aab80136ccf480ae194580a3"
+
+[[covers]]
+key = "forward-refs-omit-hoisted-variant-models"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#remaining-model-identities"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -1,0 +1,31 @@
+openapi: 3.0.3
+info:
+  title: Weather Archive
+  version: 1.0.0
+paths:
+  /records:
+    get:
+      operationId: read_records
+      responses:
+        '200':
+          description: Stored record
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reading'
+components:
+  schemas:
+    Circuit:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/Reading'
+    Reading:
+      type: object
+      properties:
+        voltage:
+          type: number
+      allOf:
+      - $ref: '#/components/schemas/Circuit'

@@ -7,7 +7,34 @@ use std::process::ExitCode;
 
 use crozier::cli::{execute, parse_args};
 
+/// Schema resolution and lowering recurse once per nesting level of the
+/// document, so the platform's main-thread stack (1 MiB on Windows, 8 MiB on
+/// Linux) would otherwise bound which real specs generate. Run on a thread
+/// whose stack is the same on every platform; it is reserved, not committed.
+const STACK_BYTES: usize = 64 * 1024 * 1024;
+
 fn main() -> ExitCode {
+    let spawned = std::thread::Builder::new()
+        .name("crozier".to_owned())
+        .stack_size(STACK_BYTES)
+        .spawn(run);
+    let worker = match spawned {
+        Ok(worker) => worker,
+        Err(error) => {
+            eprintln!(
+                "crozier: could not start a thread with a {} MiB stack: {error}; free memory or raise the process's virtual memory limit, then retry",
+                STACK_BYTES / (1024 * 1024)
+            );
+            return ExitCode::FAILURE;
+        }
+    };
+    match worker.join() {
+        Ok(code) => code,
+        Err(panic) => std::panic::resume_unwind(panic),
+    }
+}
+
+fn run() -> ExitCode {
     match parse_args(std::env::args_os()) {
         Ok(cli) => match execute(cli) {
             Ok(code) => ExitCode::from(code),

@@ -1,0 +1,16 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "6b5bfeb837276abb82c0953666c64be5ddafb5f0f2657e79852deb121c0b146d"
+
+[[covers]]
+key = "nullable-single-allof-ref-component-not-optional"
+search = "docs/openapi-surface/witness-search-models-refs/README.md#composition-models"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]'
+search = "docs/openapi-surface/witness-search-models-refs/README.md#model-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-models-refs/README.md"

@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: Material Register
+  version: 1.0.0
+paths:
+  /materials:
+    get:
+      operationId: list_materials
+      responses:
+        '200':
+          description: Registered materials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Material'
+components:
+  schemas:
+    Material:
+      type: object
+      properties:
+        mass:
+          type: number
+          format: uint64
+        attributes:
+          type: string
+          format: json-string
+        density:
+          type: number
+          format: double
+        label:
+          type: string
+          format: uuid

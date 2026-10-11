@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Harbour Ferries
+  version: 3.2.0
+paths:
+  /crossings:
+    post:
+      operationId: book_crossing
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Crossing'
+      responses:
+        '204':
+          description: Booked
+  /charters:
+    post:
+      operationId: book_charter
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Charter'
+      responses:
+        '204':
+          description: Chartered
+components:
+  schemas:
+    TideWindow:
+      type: string
+      description: Tidal window a sailing departs in.
+      enum:
+      - slack
+      - flood
+      - ebb
+      - neap
+    Crossing:
+      type: object
+      required:
+      - route
+      - window
+      properties:
+        route:
+          type: string
+        window:
+          maxLength: 4
+          allOf:
+          - $ref: '#/components/schemas/TideWindow'
+          - type: string
+            pattern: ^(?!slack$).*$
+            description: Scheduled crossings never leave at slack water.
+    Charter:
+      type: object
+      required:
+      - skipper
+      - window
+      properties:
+        skipper:
+          type: string
+        window:
+          maxLength: 4
+          not:
+            enum:
+            - ebb
+            - neap
+          allOf:
+          - $ref: '#/components/schemas/TideWindow'
+          - type: string
+            pattern: ^(?!slack$).*$
+            description: Charters never leave at slack water.
