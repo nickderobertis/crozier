@@ -23,10 +23,10 @@ by its `settlement` cell, and the corpus registration rules in
 
 **What it says today.** *Does crozier byte-match Fern on every OpenAPI feature
 and scenario?* **No, not yet on all of them, and here is the exact remainder.**
-The walk enumerates 693 features. By category, 497 are `golden`, 52
-`limitations`, 122 `handwritten` and 22 `gap`. Taken back from the region files,
+The walk enumerates 709 features. By category, 497 are `golden`, 52
+`limitations`, 138 `handwritten` and 22 `gap`. Taken back from the region files,
 the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
-the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 693
+the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 709
 split four ways:
 
 - **496 carry byte-match evidence against a registered real-world
@@ -38,12 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **122 rest on a hand-written fixture, a weaker proof than a real
+- **138 rest on a hand-written fixture, a weaker proof than a real
   specification.** These are the `handwritten` rows. No registered real
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. One hundred and seventeen read `search-incomplete`. Of those,
+  decided and none is registrable. One hundred and thirty-three read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -92,6 +92,13 @@ split four ways:
   [search](openapi-surface/witness-search-union-scenarios/README.md#witness-search)
   read the APIs.guru archive and the already-acquired code-search pools and
   found each `none-registrable`.
+  The sixteen examples-and-docs shapes, from `allof-body-example-id-field-order`
+  to `text-response-drops-request-example`, have not been searched at any
+  declared source either; their
+  [search](openapi-surface/witness-search-examples-docs/README.md#verdicts)
+  read the APIs.guru archive and every registered document and found each
+  `none-registrable`, while registering the real witnesses of two neighbours
+  (corpus rows 2200 and 2201).
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   496 and never count as a real-specification match.
@@ -110,23 +117,23 @@ split four ways:
   the census no longer reads such a row as a source
   ([the list](#golden-rows-with-no-golden-only-witness)).
 
-496 + 66 + 122 + 9 = 693.
+496 + 66 + 138 + 9 = 709.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 497 `golden` rows declare 992 handling sites in
+same way. The 497 `golden` rows declare 997 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`a342cfff0` over all 248 golden tests, with the records it links splits them
+`66b94281a` over all 250 golden tests, with the records it links splits them
 three ways:
 
-- **877 are reached by a registered real specification.** A golden-only
+- **878 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
-- **107 are reached only by a hand-written fixture.** An arm-level cover
+- **111 are reached only by a hand-written fixture.** An arm-level cover
   in [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
   the arm, and crozier byte-matches the tree Fern generated from it. That is the
-  same weaker proof as the `handwritten` rows, so each of the 107 is still
-  one of the 115 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 49 read `exhausted`, 57 read `search-incomplete`
+  same weaker proof as the `handwritten` rows, so each of the 111 is still
+  one of the 119 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 49 read `exhausted`, 61 read `search-incomplete`
   and 1 read `config-gated`. The bounded replacement searches preserve their
   limits. The config-gated `discriminator-mapping` arm runs only under an
   audience filter, which no search probe sets.
@@ -147,14 +154,14 @@ three ways:
   ([Unproven arms, named](#unproven-arms-named)). `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-877 + 107 + 5 + 3 = 992. Fourteen sites left the table with the two functions
+878 + 111 + 5 + 3 = 997. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 107. Corpus row 223
+`composition-index-pointer` and is one of the 111. Corpus row 223
 (`nexmo-conversation`) rested on the same aggregation-only grant and is
 withdrawn too
 ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
@@ -1682,6 +1689,8 @@ corrections the shared comparison engine applies. All other bytes must match.
 | nested-oneof-mapping-target-wrapped-as-value | Discriminator mapping target that is itself a union, held whole as the wrapper's `value`; uncompilable Markdown example corrected | Fern behaviour + Fern defect | `fix-unions` | docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected | `handwritten_fixtures_match_fern_goldens` | `union-value-wrapper-docs-example` |
 
 | allof-enum-ref-narrowed-by-scalar-member | Enum and scalar allOf alias rendering; pattern-invalid generated example corrected | Fern behaviour + Fern defect | `models-refs` | docs/openapi-surface/handwritten/measurement-phase/fern-expected; docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected | `handwritten_fixtures_match_fern_goldens; remaining_model_shapes_match_the_certified_fern_trees` | `pattern-narrowed-enum-example` |
+| integer-example-beyond-double-precision | Integer examples beyond 2^53 written as their nearest double; an int64 example rounded past the format's range corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/odometer-reading/fern-expected; docs/fern-measurements/literals-mode/odometer-reading/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::int64_example_correction_explains_only_the_out_of_range_rounding` | `int64-example-rounded-out-of-range` |
+| literal-example-dollar-escaped-in-docstring | A `$`-holding const lowered to a one-value literal; the docstring example's added backslash corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/prompt-variable/fern-expected; docs/fern-measurements/literals-mode/prompt-variable/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::dollar_docstring_correction_explains_only_the_declared_const` | `docstring-literal-dollar-escape` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -1830,10 +1839,11 @@ The six region files, read as one body of work. Two measurements feed it:
   pins, which `just check` now runs; neither is restated here, so it has one
   source. Since issue #352 the census's population is the
   registered rows whose committed Fern golden crozier byte-matches: the tree
-  acquires 263 sources (corpus rows through 332 and rows 1200, 1201, 1600 and 2400,
-  after the withdrawals of rows 224 and 223, with the `crozier-property-name`
-  feature target), and the walk reads the **248** registered sources, of which
-  **248** carry a committed golden; the 17 others carry none and are acquisition
+  acquires 265 sources (corpus rows through 332 and rows 1200, 1201, 1600, 2200,
+  2201 and 2400, after the withdrawals of rows 224 and 223, with the
+  `crozier-property-name` feature target), and the walk reads the
+  **250** registered sources, of which **250** carry a committed golden; the 17
+  others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
   the other five region files, this walk re-derived every claim a category
@@ -1871,16 +1881,16 @@ for either; each bullet below says where its number comes from.
 
 | region | features | `golden` | `limitations` | `handwritten` | `gap` | `FIXTURE` | `PROBE` | `UNREACHABLE` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| [`parameters`](openapi-surface/parameters.md) | 90 | 53 | 19 | 18 | 0 | 0 | 0 | 0 |
-| [`schemas`](openapi-surface/schemas.md) | 327 | 251 | 14 | 53 | 9 | 7 | 0 | 2 |
-| [`bodies-media`](openapi-surface/bodies-media.md) | 68 | 46 | 5 | 17 | 0 | 0 | 0 | 0 |
+| [`parameters`](openapi-surface/parameters.md) | 93 | 53 | 19 | 21 | 0 | 0 | 0 | 0 |
+| [`schemas`](openapi-surface/schemas.md) | 330 | 251 | 14 | 56 | 9 | 7 | 0 | 2 |
+| [`bodies-media`](openapi-surface/bodies-media.md) | 76 | 46 | 5 | 25 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 81 | 68 | 3 | 9 | 1 | 1 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 83 | 68 | 3 | 11 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
-| **total** | **693** | **497** | **52** | **122** | **22** | **8** | **0** | **14** |
+| **total** | **709** | **497** | **52** | **138** | **22** | **8** | **0** | **14** |
 
-The walk enumerated **693** features and landed each in exactly one category:
-**497** `golden`, **52** `limitations`, **122** `handwritten`, **22** `gap`. The `gap` column splits by
+The walk enumerated **709** features and landed each in exactly one category:
+**497** `golden`, **52** `limitations`, **138** `handwritten`, **22** `gap`. The `gap` column splits by
 settlement class into **8** `FIXTURE`, **0** `PROBE` and **14** `UNREACHABLE`.
 The 35 rows the naming and example branches of #361 added are 30 `schemas`
 rows, three `bodies-media`, one `parameters` and one `document-paths`; 27 are
@@ -2031,7 +2041,7 @@ tell how every earlier row left this count.
 
 ### Reconciliation
 
-**Each feature is classified exactly once.** The 693 rows carry 693 distinct
+**Each feature is classified exactly once.** The 709 rows carry 709 distinct
 keys, and no `spec location` string appears in two region files — the assertion
 [`document-paths.md`](openapi-surface/document-paths.md#snapshot-reconciliation)
 already runs over all six files, re-run here and passing. Eighteen spec
@@ -2276,7 +2286,7 @@ region files are the run named in the ledger's first line.
 #### The reach ranking
 
 Golden rows ranked by unreached handling sites, then unreached handling regions,
-then key. **415** golden rows reach every handling site and tie below every row
+then key. **412** golden rows reach every handling site and tie below every row
 listed here; each says so in its own cell. Unreached regions break ties and
 create no obligation of their own.
 
@@ -2322,7 +2332,7 @@ unreached by any Fern-accepted document.
 | rank | key | region | unreached sites | unreached regions | golden-only witnesses | boundary |
 |---|---|---|---|---|---|---|
 | 1 | `request-body-content` | `bodies-media` | **7** | **59** | **210** | open — real-specification witness search remains open |
-| 2 | `parameter-schema` | `parameters` | **4** | **84** | **203** | open — real-specification witness search remains open |
+| 2 | `parameter-schema` | `parameters` | **5** | **100** | **205** | open — real-specification witness search remains open |
 | 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
 | 4 | `discriminator-mapping` | `schemas` | **3** | **130** | **29** | open — real-specification witness search remains open |
 | 5 | `allof` | `schemas` | **3** | **31** | **82** | open — real-specification witness search remains open |
@@ -2334,7 +2344,7 @@ unreached by any Fern-accepted document.
 | 11 | `anyof-discriminated-union` | `schemas` | **2** | **118** | **14** | owned — first-pass search record below |
 | 12 | `fern-streaming-extension` | `oas31-extensions` | **2** | **53** | **5** | open — real-specification witness search remains open |
 | 13 | `items-oneof-element` | `schemas` | **2** | **41** | **23** | owned — first-pass search record below |
-| 14 | `parameter-in-path` | `parameters` | **2** | **28** | **171** | open — real-specification witness search remains open |
+| 14 | `parameter-in-path` | `parameters` | **2** | **28** | **172** | open — real-specification witness search remains open |
 | 15 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **28** | **13** | open — real-specification witness search remains open |
 | 16 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
 | 17 | `media-type-multipart` | `bodies-media` | **2** | **6** | **28** | open — real-specification witness search remains open |
@@ -2345,7 +2355,7 @@ unreached by any Fern-accepted document.
 | 22 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **94** | **9** | open — real-specification witness search remains open |
 | 23 | `oneof-anyof-variant` | `schemas` | **1** | **69** | **3** | open — real-specification witness search remains open |
 | 24 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **6** | owned — first-pass search record below |
-| 25 | `additional-properties-schema` | `schemas` | **1** | **47** | **138** | open — real-specification witness search remains open |
+| 25 | `additional-properties-schema` | `schemas` | **1** | **47** | **139** | open — real-specification witness search remains open |
 | 26 | `oneof-sole-non-null-member` | `schemas` | **1** | **45** | **3** | open — real-specification witness search remains open |
 | 27 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **44** | **3** | open — real-specification witness search remains open |
 | 28 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **44** | **1** | open — real-specification witness search remains open |
@@ -2357,14 +2367,14 @@ unreached by any Fern-accepted document.
 | 34 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **17** | **1** | owned — first-pass search record below |
 | 35 | `anyof-array-variant-composed-item` | `schemas` | **1** | **17** | **1** | owned — first-pass search record below |
 | 36 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **17** | **4** | open — real-specification witness search remains open |
-| 37 | `type-single` | `schemas` | **1** | **14** | **245** | open — real-specification witness search remains open |
+| 37 | `type-single` | `schemas` | **1** | **14** | **247** | open — real-specification witness search remains open |
 | 38 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **13** | **5** | open — real-specification witness search remains open |
 | 39 | `anyof-allof-variant` | `schemas` | **1** | **12** | **2** | owned — first-pass search record below |
 | 40 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
 | 41 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **12** | **1** | open — real-specification witness search remains open |
 | 42 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
 | 43 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 44 | `parameter-in-query` | `parameters` | **1** | **9** | **165** | open — real-specification witness search remains open |
+| 44 | `parameter-in-query` | `parameters` | **1** | **9** | **167** | open — real-specification witness search remains open |
 | 45 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 46 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
 | 47 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
@@ -2378,31 +2388,34 @@ unreached by any Fern-accepted document.
 | 55 | `schema-example-empty-object` | `schemas` | **1** | **5** | **3** | open — real-specification witness search remains open |
 | 56 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
 | 57 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
-| 58 | `description` | `schemas` | **1** | **3** | **191** | open — real-specification witness search remains open |
+| 58 | `description` | `schemas` | **1** | **3** | **192** | open — real-specification witness search remains open |
 | 59 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **5** | open — real-specification witness search remains open |
-| 60 | `format-uuid` | `schemas` | **1** | **3** | **42** | open — real-specification witness search remains open |
-| 61 | `enum` | `schemas` | **1** | **2** | **177** | open — real-specification witness search remains open |
-| 62 | `format-date` | `schemas` | **1** | **2** | **35** | open — real-specification witness search remains open |
-| 63 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **221** | open — real-specification witness search remains open |
-| 64 | `recursive-graph` | `schemas` | **1** | **2** | **221** | open — real-specification witness search remains open |
-| 65 | `schema-example-object-on-map` | `schemas` | **1** | **2** | **11** | open — real-specification witness search remains open |
-| 66 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
-| 67 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
-| 68 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
-| 69 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 70 | `format-email` | `schemas` | **1** | **1** | **37** | open — real-specification witness search remains open |
-| 71 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — real-specification witness search remains open |
-| 72 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 73 | `format-ipv4` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
-| 74 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 75 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 76 | `format-password` | `schemas` | **1** | **1** | **8** | open — real-specification witness search remains open |
-| 77 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 78 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 79 | `format-uri` | `schemas` | **1** | **1** | **59** | open — real-specification witness search remains open |
-| 80 | `format-uri-reference` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
-| 81 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 82 | `property-oneof-residual` | `schemas` | **1** | **1** | **31** | open — real-specification witness search remains open |
+| 60 | `format-int64` | `schemas` | **1** | **3** | **44** | open — real-specification witness search remains open |
+| 61 | `format-uuid` | `schemas` | **1** | **3** | **42** | open — real-specification witness search remains open |
+| 62 | `enum` | `schemas` | **1** | **2** | **179** | open — real-specification witness search remains open |
+| 63 | `example` | `schemas` | **1** | **2** | **109** | open — real-specification witness search remains open |
+| 64 | `format-date` | `schemas` | **1** | **2** | **35** | open — real-specification witness search remains open |
+| 65 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **222** | open — real-specification witness search remains open |
+| 66 | `recursive-graph` | `schemas` | **1** | **2** | **222** | open — real-specification witness search remains open |
+| 67 | `response-description` | `bodies-media` | **1** | **2** | **246** | open — real-specification witness search remains open |
+| 68 | `schema-example-object-on-map` | `schemas` | **1** | **2** | **11** | open — real-specification witness search remains open |
+| 69 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
+| 70 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
+| 71 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
+| 72 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 73 | `format-email` | `schemas` | **1** | **1** | **37** | open — real-specification witness search remains open |
+| 74 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — real-specification witness search remains open |
+| 75 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 76 | `format-ipv4` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
+| 77 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 78 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 79 | `format-password` | `schemas` | **1** | **1** | **8** | open — real-specification witness search remains open |
+| 80 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 81 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
+| 82 | `format-uri` | `schemas` | **1** | **1** | **59** | open — real-specification witness search remains open |
+| 83 | `format-uri-reference` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
+| 84 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
+| 85 | `property-oneof-residual` | `schemas` | **1** | **1** | **31** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
@@ -3662,12 +3675,12 @@ functions named in each verdict are counted from that union.
 | `src/settings.rs` | 1312 | all-e2e 654, non-e2e 658 | none | **Neither.** Generator settings and source precedence are held by configuration journeys, outside the OpenAPI feature census. Measured union: 678 regions. Largest function contributions: `explain` 233, `merge` 46, `resolve` 44. |
 | `src/departures.rs` | 1304 | all-e2e 567, non-e2e 737 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 743 regions. Largest function contributions: `union_value_wrapper_docs_example` 133, `nullable_items_docs` 96, `crozier_classes` 50, `from_sources` 50. |
 | `src/document_refusals/examples.rs` | 1242 | all-e2e 619, non-e2e 623 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 623 regions. Largest function contributions: `validate` 97, `fern_examples` 85, `merged_member_enum` 57. |
-| `src/ir.rs` | 1238 | all-e2e 573, non-e2e 665 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 753 regions. Largest function contributions: `hoist_union_variant` 121, `discriminated_union` 76, `resolve_schema_pointer` 49. 98 of [the 115 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | 1238 | all-e2e 573, non-e2e 665 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 753 regions. Largest function contributions: `hoist_union_variant` 121, `discriminated_union` 76, `resolve_schema_pointer` 49. 101 of [the 119 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/document_refusals.rs` | 1238 | all-e2e 603, non-e2e 635 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 637 regions. Largest function contributions: `example_without_discriminant` 66, `check_sdk` 66, `imported_reference_scheme` 55. |
 | `src/compare/mod.rs` | 1206 | all-e2e 568, non-e2e 638 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 639 regions. Largest function contributions: `check_generator` 242, `run` 100, `check_config` 53. |
-| `src/emit.rs` | 912 | all-e2e 355, non-e2e 557 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 573 regions. Largest function contributions: `build_example_inner` 83, `clean_flat_tree` 43, `path_object_value` 39. 10 of [the 115 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | 742 | all-e2e 335, non-e2e 407 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 410 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 3 of [the 115 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/name_refusals.rs` | 674 | all-e2e 347, non-e2e 327 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. 1 of [the 115 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. Measured union: 347 regions. Largest function contributions: `source_refusals` 121, `validate_ir` 46, `source_request_properties` 44. |
+| `src/emit.rs` | 912 | all-e2e 355, non-e2e 557 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 573 regions. Largest function contributions: `build_example_inner` 83, `clean_flat_tree` 43, `path_object_value` 39. 11 of [the 119 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | 742 | all-e2e 335, non-e2e 407 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 410 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 3 of [the 119 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/name_refusals.rs` | 674 | all-e2e 347, non-e2e 327 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. 1 of [the 119 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. Measured union: 347 regions. Largest function contributions: `source_refusals` 121, `validate_ir` 46, `source_request_properties` 44. |
 | `src/document_refusals/type_not_defined.rs` | 601 | all-e2e 296, non-e2e 305 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 305 regions. Largest function contributions: `api_file_reference` 125, `declares_type` 53, `body_declares_type` 39. |
 | `src/compare/report.rs` | 596 | all-e2e 260, non-e2e 336 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 336 regions. Largest function contributions: `render_result` 95, `render` 77, `nullable` 44. |
 | `src/parity.rs` | 422 | all-e2e 199, non-e2e 223 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 223 regions. Largest function contributions: `unified_diff` 83, `compare_trees` 79, `file_difference` 47. |
@@ -3678,7 +3691,7 @@ functions named in each verdict are counted from that union.
 | `src/lib.rs` | 138 | all-e2e 38, non-e2e 100 | none | **Neither.** Filesystem output and rendering failures are held by generator journeys. Measured union: 107 regions. Largest function contributions: `render_files` 64, `resolved_names` 30, `generate` 13. |
 | `src/compare/color.rs` | 110 | all-e2e 55, non-e2e 55 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 55 regions. Largest function contributions: `color_enabled` 18, `status` 11, `exit` 11. |
 | `src/schema.rs` | 66 | all-e2e 23, non-e2e 43 | none | **Neither.** The configuration JSON Schema is held by its derivation and drift tests. Measured union: 43 regions. Largest function contributions: `compare_report` 20, `build` 20, `modeline` 3. |
-| `src/naming.rs` | 42 | all-e2e 12, non-e2e 30 | 1 (`operation-id-digit-leading-method`) | **Still blind, and why: identifier token shapes.** The digit-leading operation gap points here, and some enum-name refusal arms cannot be reached by a successful golden. Measured union: 30 regions. Largest function contributions: `digit_word` 10, `enum_words` 9, `whole_value_enum_words` 7. 3 of [the 115 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/naming.rs` | 42 | all-e2e 12, non-e2e 30 | 1 (`operation-id-digit-leading-method`) | **Still blind, and why: identifier token shapes.** The digit-leading operation gap points here, and some enum-name refusal arms cannot be reached by a successful golden. Measured union: 30 regions. Largest function contributions: `digit_word` 10, `enum_words` 9, `whole_value_enum_words` 7. 3 of [the 119 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/pyfmt.rs` | 38 | all-e2e 14, non-e2e 24 | none | **Neither.** Formatter invocation and failures are held by subprocess journeys. Measured union: 24 regions. Largest function contributions: `format_source` 24. |
 | `src/config.rs` | 27 | all-e2e 11, non-e2e 16 | none | **Neither.** Generator configuration defaults are held by configuration tests. Measured union: 16 regions. Largest function contributions: `default_package_name` 10, `new` 4, `new` 2. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point is reached by subprocesses; the coverage gate holds this boundary. Measured union: 6 regions. Largest function contributions: `main` 6. |
