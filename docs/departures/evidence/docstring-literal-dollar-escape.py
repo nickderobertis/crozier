@@ -35,10 +35,41 @@ class Expect(enum.Enum):
     VALID = "valid"
 
 
+class DocumentError(ValueError):
+    """The document lacks the structure the proof reads."""
+
+
+def mapping(value: object, where: str) -> dict[str, typing.Any]:
+    """`value` as a JSON object, or a `DocumentError` naming `where`."""
+    if not isinstance(value, dict):
+        raise DocumentError(f"{where} is not an object")
+    return value
+
+
+def sequence(value: object, where: str) -> list[typing.Any]:
+    """`value` as a JSON array, or a `DocumentError` naming `where`."""
+    if not isinstance(value, list):
+        raise DocumentError(f"{where} is not an array")
+    return value
+
+
+def read_document(document: Path) -> dict[str, typing.Any]:
+    """The JSON document, which must be an object."""
+    try:
+        return mapping(json.loads(document.read_text(encoding="utf-8")), "the document")
+    except json.JSONDecodeError as error:
+        raise DocumentError(f"not JSON ({error})") from error
+
+
 def declared_const(document: Path, schema_name: str, keyword: str) -> str:
-    spec = json.loads(document.read_text(encoding="utf-8"))
-    const = spec["components"]["schemas"][schema_name]["properties"][keyword]["const"]
-    assert isinstance(const, str)
+    """The string `const` the document declares on `schema_name`'s `keyword` property."""
+    spec = read_document(document)
+    schemas = mapping(mapping(spec.get("components"), "components").get("schemas"), "components.schemas")
+    schema = mapping(schemas.get(schema_name), f"components.schemas[{schema_name!r}]")
+    properties = mapping(schema.get("properties"), f"{schema_name}.properties")
+    const = mapping(properties.get(keyword), f"{schema_name}.{keyword}").get("const")
+    if not isinstance(const, str):
+        raise DocumentError(f"{schema_name}.{keyword} declares no string const")
     return const
 
 
@@ -89,7 +120,10 @@ def main() -> None:
     args = parser.parse_args()
     if not (args.sdk_root / "src" / "fern" / "__init__.py").is_file():
         parser.error("sdk_root must contain src/fern")
-    const = declared_const(args.document, args.schema, args.keyword)
+    try:
+        const = declared_const(args.document, args.schema, args.keyword)
+    except DocumentError as error:
+        parser.error(f"{args.document}: {error}")
     sys.path.insert(0, str((args.sdk_root / "src").resolve()))
     sdk = importlib.import_module("fern")
     annotation = getattr(sdk, args.literal_type)

@@ -3762,6 +3762,18 @@ fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
         output.contains("declares no int64 example to validate"),
         "{output}"
     );
+    // A document without the structure the proof reads is an input error.
+    let malformed = scratch.path().join("malformed.json");
+    std::fs::write(&malformed, r#"{"paths": []}"#).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &malformed,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("paths is not an object"), "{output}");
 }
 
 /// The `docstring-literal-dollar-escape` validator, driven as its evidence note
@@ -3827,6 +3839,21 @@ fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
     assert_eq!(status, Some(2), "{output}");
     assert!(
         output.contains("sdk_root must contain src/fern"),
+        "{output}"
+    );
+    // A document declaring no such const is an input error.
+    let malformed = scratch.path().join("malformed.json");
+    std::fs::write(&malformed, r#"{"components": {"schemas": {}}}"#).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &malformed,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("components.schemas['PromptSpec'] is not an object"),
         "{output}"
     );
 }

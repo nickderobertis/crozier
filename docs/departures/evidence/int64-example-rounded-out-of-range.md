@@ -36,8 +36,9 @@ example — binds each docstring call to the actual generated method with
 `inspect.signature`, and checks each argument the source declares
 `format: int64` (a query parameter, a body property, or each element of a body
 array whose items declare it) against the signed 64-bit bounds and the
-declared example. It reads the document as JSON and refuses an operation it
-cannot find or one declaring no such example. Executed on 2026-10-11 with
+declared example. It reads the document as JSON, fails the proof for an
+operation it cannot find or one declaring no such example, and refuses a
+document without the structure it reads as an input error (exit 2). Executed on 2026-10-11 with
 Python 3.14 and PyYAML 6.0.3 from the repository environment:
 
 ```sh

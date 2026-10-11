@@ -31,7 +31,8 @@ generated package, evaluates the `variable` argument of the sync and async
 client docstring examples and of every README/`reference.md` worked call
 exactly as Python evaluates their source, binds each docstring call to the
 actual generated method, and compares each value with the declared const and
-the generated `Literal`; it reads the document as JSON. Executed on 2026-10-11
+the generated `Literal`; it reads the document as JSON, and refuses one
+declaring no such string const as an input error (exit 2). Executed on 2026-10-11
 with Python 3.14 and PyYAML 6.0.3 from the repository environment:
 
 ```sh

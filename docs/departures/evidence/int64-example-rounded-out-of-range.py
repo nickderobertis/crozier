@@ -35,6 +35,32 @@ class Expect(enum.Enum):
     VALID = "valid"
 
 
+class DocumentError(ValueError):
+    """The document lacks the structure the proof reads."""
+
+
+def mapping(value: object, where: str) -> dict[str, Any]:
+    """`value` as a JSON object, or a `DocumentError` naming `where`."""
+    if not isinstance(value, dict):
+        raise DocumentError(f"{where} is not an object")
+    return value
+
+
+def sequence(value: object, where: str) -> list[Any]:
+    """`value` as a JSON array, or a `DocumentError` naming `where`."""
+    if not isinstance(value, list):
+        raise DocumentError(f"{where} is not an array")
+    return value
+
+
+def read_document(document: Path) -> dict[str, Any]:
+    """The JSON document, which must be an object."""
+    try:
+        return mapping(json.loads(document.read_text(encoding="utf-8")), "the document")
+    except json.JSONDecodeError as error:
+        raise DocumentError(f"not JSON ({error})") from error
+
+
 class Declared(NamedTuple):
     """One argument's declared int64 example, and whether the argument is a list of them."""
 
@@ -54,22 +80,29 @@ def declared_int64(document: Path, operation_id: str) -> dict[str, Declared]:
     """The operation's int64 examples by argument: its query parameters' and its
     body properties', each with whether the argument is a list of them (an array
     property whose items declare the example)."""
-    spec = json.loads(document.read_text(encoding="utf-8"))
-    for item in spec["paths"].values():
-        for operation in item.values():
+    spec = read_document(document)
+    for path, item in mapping(spec.get("paths"), "paths").items():
+        for operation in mapping(item, f"paths[{path!r}]").values():
             if not isinstance(operation, dict) or operation.get("operationId") != operation_id:
                 continue
             declared: dict[str, Declared] = {}
-            for parameter in operation.get("parameters", []):
-                example = int64_example(parameter.get("schema", {}))
+            for index, parameter in enumerate(sequence(operation.get("parameters", []), f"{operation_id}.parameters")):
+                parameter = mapping(parameter, f"{operation_id}.parameters[{index}]")
+                example = int64_example(mapping(parameter.get("schema", {}), f"{operation_id}.parameters[{index}].schema"))
                 if example is not None:
-                    declared[parameter["name"]] = Declared(example, listed=False)
-            schema = operation["requestBody"]["content"]["application/json"]["schema"]
-            for name, prop in schema["properties"].items():
+                    declared[str(parameter.get("name"))] = Declared(example, listed=False)
+            where = f"{operation_id}.requestBody"
+            body = mapping(operation.get("requestBody"), where)
+            media = mapping(mapping(body.get("content"), f"{where}.content").get("application/json"), f"{where} JSON media")
+            schema = mapping(media.get("schema"), f"{where} schema")
+            for name, prop in mapping(schema.get("properties"), f"{where} properties").items():
+                prop = mapping(prop, f"{where} property {name!r}")
                 example = int64_example(prop)
                 if example is not None:
                     declared[name] = Declared(example, listed=False)
-                elif prop.get("type") == "array" and (example := int64_example(prop.get("items", {}))) is not None:
+                elif prop.get("type") == "array" and (
+                    example := int64_example(mapping(prop.get("items", {}), f"{where} property {name!r} items"))
+                ) is not None:
                     declared[name] = Declared(example, listed=True)
             # A proof that checks no value proves nothing.
             assert declared, f"{operation_id} declares no int64 example to validate"
@@ -131,7 +164,10 @@ def main() -> None:
     args = parser.parse_args()
     if not (args.sdk_root / "src" / "fern" / "__init__.py").is_file():
         parser.error("sdk_root must contain src/fern")
-    declared = declared_int64(args.document, args.operation_id)
+    try:
+        declared = declared_int64(args.document, args.operation_id)
+    except DocumentError as error:
+        parser.error(f"{args.document}: {error}")
     sys.path.insert(0, str((args.sdk_root / "src").resolve()))
     sdk = importlib.import_module("fern")
     found = docstring_examples(sdk, args.method) | markdown_examples(args.sdk_root, args.method)
