@@ -9280,6 +9280,31 @@ fn openbanking_org_uk_account_info_openapi_matches_fern_output() {
     assert_corpus_matches(&OPENBANKING_ORG_UK_ACCOUNT_INFO_OPENAPI);
 }
 
+/// Windows gives the main thread 1 MiB of stack, which this deeply nested
+/// real spec outgrew in a debug build. Shrinking the Unix main-thread stack
+/// below that proves generation no longer depends on the platform's default.
+#[cfg(unix)]
+#[test]
+fn deeply_nested_spec_generates_under_a_small_main_thread_stack() {
+    let Some(spec) = corpus_spec(OPENBANKING_ORG_UK_ACCOUNT_INFO_OPENAPI.api) else {
+        assert!(
+            std::env::var_os("CROZIER_REQUIRE_CORPUS").is_none(),
+            "CROZIER_REQUIRE_CORPUS is set but the Open Banking account info committed corpus spec is missing; run just lint-corpus-sources to diagnose the missing committed source"
+        );
+        return;
+    };
+    let out = tempfile::tempdir().unwrap();
+    Command::new("sh")
+        .arg("-c")
+        .arg(r#"ulimit -s 512 && exec "$0" generate --spec "$1" --output "$2""#)
+        .arg(crozier_bin())
+        .arg(&spec)
+        .arg(out.path())
+        .assert()
+        .success();
+    assert!(out.path().join("src").is_dir());
+}
+
 #[test]
 fn netbox_dev_matches_fern_output() {
     if corpus_spec(NETBOX_DEV.api).is_none() {
