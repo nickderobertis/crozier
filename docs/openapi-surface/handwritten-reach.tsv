@@ -2,6 +2,7 @@ fixture	key	site	regions_executed	regions
 atlas-untagged-inline-discriminator	property-oneof-residual	src/ir.rs::untagged_inline_discriminator[if untagged \{]	1	1
 base-path-client-argument	parameter-in-path	src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]	4	4
 blank-reading-description	description	src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]	1	1
+buoy-depth-response	response-description	src/emit.rs::push_return_doc[=None => \{\}]	1	1
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
@@ -77,10 +78,12 @@ observatory-client-date	parameter-in-header	src/ir.rs::header_py_type[=^\s*Heade
 observatory-client-headers	parameter-in-header	src/ir.rs::global_headers[for header in doc\.global_header_extensions]	9	12
 observatory-client-variable	parameter-in-path	src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]	7	7
 observatory-query-extensions	parameter-in-query	src/emit.rs::method_params[if let Some\(default\) = &qp\.default]	2	2
+odometer-reading	example	src/ir.rs::js_integer_literal[=let scientific = format!]	2	2
+odometer-reading	format-int64	src/ir.rs::bounded_example_literal[=^ {16}exact$]	1	1
 ore-bin-screen	parameter-style-form-query-object	src/emit.rs::append_request_call_args[\} else if qp\.convert \{]	26	30
 pharmacy-nullable-scalar-unions	nullable	src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]	1	1
 query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	2	2
-query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	17	19
+query-array-items-union	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]	22	26
 query-union-array-enum-member	parameter-schema	src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{]	21	21
 quiz-nullable-response-union	oneof	src/ir.rs::build_endpoint[Some\(if dropped_null \{]	2	2
 ref-pointer-ignored-head	ref-pointer-undeclared-component-head	src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]	1	1
@@ -98,6 +101,7 @@ ref-pointer-walk	ref-pointer-nested-properties	src/ir.rs::resolve_schema_pointer
 request-alias	request-body-content	src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]	1	1
 request-media-methods	request-body-content	src/ir.rs::request_media_variants[let mut view = op\.with_sdk_method_name]	4	4
 request-media-methods	request-body-content	src/openapi.rs::Operation::with_sdk_method_name	8	8
+sensor-batch-query	parameter-schema	src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]	2	2
 skyglass-observation-date	format-date	src/ir.rs::scalar_body[=Some\("date"\) =>]	2	2
 slashless-json-response	media-type-malformed-key	src/ir.rs::has_dispatchable_media[=^ {16}return true;$]	1	1
 sonar-packet-envelope	format-byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	3	3

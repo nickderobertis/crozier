@@ -88,6 +88,26 @@ shapes, so the detector above is what the search ran.
 | `response-without-description-blank-line` | `search-incomplete` | 0 |
 | `text-response-drops-request-example` | `search-incomplete` | 0 |
 
+## New handling arms
+
+Four handling sites the corrections above add, each listed in
+[`../golden-reach-sites.tsv`](../golden-reach-sites.tsv) under its golden
+row, that the golden-only tier's 250 golden tests execute none of (the
+measured reach is in [`../golden-reach.tsv`](../golden-reach.tsv)). Each rests
+on the hand-written fixture named, as an arm-level cover; none counts as a real
+witness. The detectors above found no registrable declarer of the shapes these
+arms serve, so no arm-specific source search was owed beyond them, and none is
+`exhausted`. The Markdown escape of a literal const's apostrophe is reached
+only under `enum-type: literals`, which neither measurement runs, so it rests
+on the `fortune-cookie-const` overlay in the literals-mode gate instead.
+
+| key | outcome | arm | fixture |
+|---|---|---|---|
+| `format-int64` | `search-incomplete` | `src/ir.rs::bounded_example_literal[=^ {16}exact$]` | `odometer-reading` |
+| `example` | `search-incomplete` | `src/ir.rs::js_integer_literal[=let scientific = format!]` | `odometer-reading` |
+| `parameter-schema` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | `sensor-batch-query` |
+| `response-description` | `search-incomplete` | `src/emit.rs::push_return_doc[=None => \{\}]` | `buoy-depth-response` |
+
 ## Renewed search
 
 What became of every declarer of a key above, and why none is a witness.
@@ -110,6 +130,10 @@ What became of every declarer of a key above, and why none is a witness.
 | `required-query-array-nullable-union-items` | `none-registrable` | no document declares it |
 | `response-without-description-blank-line` | `none-registrable` | no document declares it |
 | `text-response-drops-request-example` | `none-registrable` | no document declares it |
+| `format-int64` | `none-registrable` | no registered golden executes the arm, and no document the detectors read declares an int64 example whose nearest double leaves the range |
+| `example` | `none-registrable` | no registered golden executes the arm: none renders an integer example beyond 2^53 |
+| `parameter-schema` | `none-registrable` | no registered golden executes the arm, and the detectors find no required query array of nullable union items |
+| `response-description` | `none-registrable` | no registered golden executes the arm, and the detectors find no JSON success response without a `description` key |
 
 ## The real witnesses
 

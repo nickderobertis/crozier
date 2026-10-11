@@ -7,3 +7,17 @@ key = "integer-example-beyond-double-precision"
 search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+
+[[covers]]
+key = "format-int64"
+arm = 'src/ir.rs::bounded_example_literal[=^ {16}exact$]'
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+
+[[covers]]
+key = "example"
+arm = 'src/ir.rs::js_integer_literal[=let scientific = format!]'
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

@@ -7,3 +7,10 @@ key = "response-without-description-blank-line"
 search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+
+[[covers]]
+key = "response-description"
+arm = 'src/emit.rs::push_return_doc[=None => \{\}]'
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

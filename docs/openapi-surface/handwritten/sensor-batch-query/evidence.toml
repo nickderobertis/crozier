@@ -7,3 +7,10 @@ key = "required-query-array-nullable-union-items"
 search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
+
+[[covers]]
+key = "parameter-schema"
+arm = 'src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]'
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#new-handling-arms"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"
