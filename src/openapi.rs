@@ -2866,7 +2866,11 @@ fn media_schemas<F: FnMut(&mut Schema)>(content: &mut IndexMap<String, MediaType
 /// Break every `*/` in a description into `* /`, as Fern does before writing
 /// any description: the broken spelling is what its docstrings, raw clients,
 /// model fields and `reference.md` all show. Measured at Fern 5.20.0 on schema,
-/// property, operation, parameter and response descriptions alike.
+/// property, operation, parameter (operation, path-level and component),
+/// response (inline and component) and binary request body (inline and
+/// component) descriptions alike: each location is a `*/` in
+/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held
+/// whole to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
 fn normalize_comment_close_descriptions(doc: &mut OpenApi) {
     fn split(description: &mut Option<String>) {
         if let Some(text) = description.as_mut().filter(|text| text.contains("*/")) {
