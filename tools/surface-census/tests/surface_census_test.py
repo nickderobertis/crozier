@@ -15864,5 +15864,200 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 self.assertTrue(any(message in failure for failure in failures), failures)
 
 
+class ScenarioProofIndexTests(unittest.TestCase):
+    """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
+
+    index_script = load_script("tools/surface-census/scenario-proof-index.py")
+
+    def mirror(self) -> Path:
+        """A scratch root holding every committed file the reconciliation reads, and the paths it checks."""
+        module = self.index_script
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+
+        def copy(relative: str) -> None:
+            source = REPO / relative
+            target = root / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if source.is_dir():
+                target.mkdir(exist_ok=True)
+            else:
+                shutil.copyfile(source, target)
+
+        for relative in [
+            str(module.INDEX),
+            str(module.WITNESSES),
+            str(module.RESIDUALS),
+            module.E2E_COVERS,
+            "tests/fixtures/compared-goldens.json",
+            "tests/fixtures/departures-ledger.tsv",
+            "tests/fixtures/CORPUS.md",
+            "assets/departures.yml",
+            "docs/fern-refusals/classes.tsv",
+            "crates/crozier-e2e/tests/e2e.rs",
+            *(str(path.relative_to(REPO)) for path in (REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")),
+        ]:
+            copy(relative)
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        for row in rows:
+            for cell in ("source", "evidence"):
+                for reference in module.split(row[cell]):
+                    copy(reference.partition("#")[0])
+            for golden in module.split(row["goldens"]):
+                copy(f"{golden}/.fern/metadata.json")
+            if row["kind"] == "refusal":
+                copy(f"docs/fern-refusals/{row['ids']}/evaluation.md")
+        witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        for row in witnesses:
+            copy(row["evidence"].partition("#")[0])
+            if row["diff"] != module.NONE:
+                copy(str(module.WITNESSES.parent / row["diff"]))
+            if row["status"] == "registered":
+                copy(f"tests/fixtures/{row['corpus'].partition(' ')[2].strip('`')}/expected")
+        self.assertEqual([], module.check(root), "the mirror is incomplete")
+        return root
+
+    def rewrite(self, path: Path, old: str, new: str) -> None:
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def row(self, kind: str, outcome: str | None = None) -> dict[str, str]:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        return next(row for row in rows if row["kind"] == kind and outcome in (None, row["outcome"]))
+
+    def assert_fails(self, root: Path, message: str) -> None:
+        failures = self.index_script.check(root)
+        self.assertTrue(any(message in failure for failure in failures), failures)
+
+    def test_the_committed_index_and_witnesses_reconcile(self) -> None:
+        run = subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/scenario-proof-index.py"), "check"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
+        module = self.index_script
+        rows, failures = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        self.assertEqual([], failures)
+        self.assertEqual(set(module.OWNERS), {row["owner"] for row in rows})
+        self.assertEqual(set(module.KINDS), {row["kind"] for row in rows})
+
+    def test_a_removed_or_duplicated_shape_fails(self) -> None:
+        root = self.mirror()
+        index = root / self.index_script.INDEX
+        lines = index.read_text(encoding="utf-8").splitlines(keepends=True)
+        index.write_text("".join(lines[:-1]), encoding="utf-8")
+        self.assert_fails(root, "indexes 159 shapes, not the plan's 160")
+        index.write_text("".join([*lines[:2], lines[1], *lines[2:]]), encoding="utf-8")
+        self.assert_fails(root, f"{lines[1].split(chr(9))[0]} is indexed 2 times")
+
+    def test_a_golden_removed_or_dropped_from_the_gate_fails(self) -> None:
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / "tests/fixtures/compared-goldens.json", f'"{golden}"', '"unrelated"')
+        self.assert_fails(root, f"golden {golden} is not in tests/fixtures/compared-goldens.json")
+        (root / golden / ".fern/metadata.json").unlink()
+        self.assert_fails(root, f"golden {golden} is not a complete certified tree")
+
+    def test_a_golden_from_another_fern_pair_or_setting_fails(self) -> None:
+        row = self.row("real")
+        golden = row["goldens"].split(";")[0]
+        root = self.mirror()
+        metadata = root / golden / ".fern/metadata.json"
+        self.rewrite(metadata, '"5.20.0"', '"5.21.0"')
+        self.assert_fails(root, f"golden {golden} is not output of Fern CLI 5.67.1 with fern-python-sdk 5.20.0")
+        self.rewrite(metadata, '"python_enums"', '"literals"')
+        self.assert_fails(root, f"{row['shape']}: settings {row['settings']} disagree")
+
+    def test_an_outcome_the_ledger_does_not_support_fails(self) -> None:
+        row = self.row("handwritten", "departure")
+        root = self.mirror()
+        ledger = root / "tests/fixtures/departures-ledger.tsv"
+        kept = [line for line in ledger.read_text(encoding="utf-8").splitlines(keepends=True) if "\t" in line]
+        goldens = set(row["goldens"].split(";"))
+        ledger.write_text("".join(line for line in kept if line.split("\t")[0] not in goldens), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: outcome departure {row['ids']} disagrees with the ledger's match —")
+
+    def test_a_missing_test_source_or_evidence_fails(self) -> None:
+        row = self.row("handwritten")
+        test = row["tests"].split(";")[0]
+        root = self.mirror()
+        for path in [root / "crates/crozier-e2e/tests/e2e.rs", *(root / "crates/crozier-e2e/tests/e2e").glob("*.rs")]:
+            text = path.read_text(encoding="utf-8")
+            path.write_text(text.replace(f"fn {test}(", "fn unrelated_test("), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: no e2e test is named {test}")
+        evidence = row["evidence"].partition("#")[0]
+        (root / evidence).unlink()
+        self.assert_fails(root, f"{row['shape']}: {evidence} does not exist")
+
+    def test_a_refusal_outcome_must_agree_with_its_registry_class(self) -> None:
+        row = self.row("refusal")
+        name = row["ids"]
+        root = self.mirror()
+        classes = root / "docs/fern-refusals/classes.tsv"
+        line = next(line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{name}\t"))
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
+        # A claimed default-generation exception needs both the outcome and the wire finding.
+        self.assert_fails(root, f"{row['shape']}: outcome {row['outcome']} disagrees with {name}'s registry status")
+        self.assert_fails(root, f"{row['shape']}: {name} claims default generation without its wire evaluation")
+        self.rewrite(classes, "\t".join([*cells[:6], "generate", *cells[7:]]), line)
+        probe = Path(row["source"].split(";")[0]).name
+        note = root / f"docs/fern-refusals/{name}/evaluation.md"
+        note.write_text(note.read_text(encoding="utf-8").replace(probe, "unrelated.yml"), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: {name}'s evaluation note does not name the probe")
+
+    def test_every_differing_witness_hunk_is_attributed_exactly_once(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        residuals = root / module.RESIDUALS
+        lines = residuals.read_text(encoding="utf-8").splitlines(keepends=True)
+        witness, file, hunks, owner, _shape = lines[1].rstrip("\n").split("\t")
+        residuals.write_text("".join([lines[0], *lines[2:]]), encoding="utf-8")
+        first = hunks.split(";")[0]
+        self.assert_fails(root, f"{witness}: {file} {first} is in the diff but attributed to no shape")
+        residuals.write_text("".join([*lines, lines[1]]), encoding="utf-8")
+        self.assert_fails(root, f"{witness}: {file} {first} is attributed but not in the diff (or twice)")
+        residuals.write_text("".join(lines).replace(f"\t{owner}\t", "\tunrelated-shape\t", 1), encoding="utf-8")
+        self.assert_fails(root, "owner unrelated-shape is no indexed shape nor unowned")
+        residuals.write_text("".join(lines), encoding="utf-8")
+        diff = root / module.WITNESSES.parent / f"{witness}.diff"
+        diff.unlink()
+        self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is missing")
+
+    def test_diff_hunks_count_unchanged_runs_on_both_sides(self) -> None:
+        diff = textwrap.dedent(
+            """\
+            # crozier compare: crozier.yml python
+            --- reference/a.py
+            +++ crozier/a.py
+                  ⋮ (3 unchanged line(s))
+              kept
+            - old
+            - gone
+            + new
+              kept
+                  ⋮ (10 unchanged line(s))
+            + added
+            Only in reference: b.py
+            Only in crozier: c.py
+            """
+        )
+        self.assertEqual(
+            [
+                ("a.py", "-5,2 +5,1"),
+                ("a.py", "-18,0 +17,1"),
+                ("b.py", "only in reference"),
+                ("c.py", "only in crozier"),
+            ],
+            [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
+        )
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])

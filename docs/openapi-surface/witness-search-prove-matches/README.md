@@ -183,9 +183,10 @@ standing.
 
 ## Literals-mode only
 
-Two shapes are proven under literals alone, the mode Fern was measured in; the
-gated hand-written directory compares `python_enums`, where crozier still
-differs:
+Two shapes are proven under literals alone, the mode Fern was measured in. No
+hand-written fixture gates either one under `python_enums`; the re-measurement
+of both is in
+[`../../fern-measurements/python-enums-residuals/`](../../fern-measurements/python-enums-residuals/README.md):
 
 - `enum-header-params-stringified`: under `python_enums` Fern sends an enum
   header as `shift.value` and crozier as `str(shift)`
@@ -196,7 +197,7 @@ differs:
   default output). No search above reaches a witness for it.
 - `enum-extension-names-dropped-under-literals`: under `python_enums` Fern
   writes each `x-fern-enum` description as a member docstring
-  (`src/fern/types/relation.py`, after `BELOW` and `DIFFERS`) and crozier
-  writes none. No departure covers it, so it is a crozier `python_enums`
-  mismatch, left to a generator change. No search above reaches a witness for
-  it.
+  (`src/fern/types/relation.py`, after `BELOW` and `DIFFERS`). crozier once
+  wrote none; on the finished tree its `python_enums` output equals Fern's
+  whole tree, a measurement no committed golden gates. No search above reaches
+  a witness for it.

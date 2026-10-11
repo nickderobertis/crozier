@@ -1,3 +1,6 @@
+# crozier compare: crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
 --- reference/README.md
 +++ crozier/README.md
       ⋮ (41 unchanged line(s))
@@ -415,7 +418,15 @@
                   )
               ],
           )
-      ⋮ (459 unchanged line(s))
+      ⋮ (48 unchanged line(s))
+          client.edge_functions.v1deploy_a_function(
+              ref="abcdefghijklmnopqrst",
+              slug="hello-world",
++             file=["example_file"],
+              metadata=V1DeployAFunctionRequestMetadata(
+                  entrypoint_path="entrypoint_path",
+              ),
+      ⋮ (405 unchanged line(s))
                   ref="abcdefghijklmnopqrst",
                   request=[
                       BulkUpdateFunctionBodyItem(
@@ -433,7 +444,15 @@
                       )
                   ],
               )
-      ⋮ (308 unchanged line(s))
+      ⋮ (58 unchanged line(s))
+              await client.edge_functions.v1deploy_a_function(
+                  ref="abcdefghijklmnopqrst",
+                  slug="hello-world",
++                 file=["example_file"],
+                  metadata=V1DeployAFunctionRequestMetadata(
+                      entrypoint_path="entrypoint_path",
+                  ),
+      ⋮ (244 unchanged line(s))
 
 --- reference/src/fern/environments/client.py
 +++ crozier/src/fern/environments/client.py
