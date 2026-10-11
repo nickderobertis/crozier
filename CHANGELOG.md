@@ -6,6 +6,13 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.113](https://github.com/nickderobertis/crozier/compare/v0.0.112...v0.0.113) - 2026-10-11
+
+### Fixed
+
+- *(parity)* match models refs ([#489](https://github.com/nickderobertis/crozier/pull/489))
+- *(parity)* match unions ([#488](https://github.com/nickderobertis/crozier/pull/488))
+
 ## [0.0.112](https://github.com/nickderobertis/crozier/compare/v0.0.111...v0.0.112) - 2026-10-10
 
 ### Fixed
