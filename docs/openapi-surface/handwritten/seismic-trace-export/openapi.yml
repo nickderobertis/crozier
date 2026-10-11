@@ -1,0 +1,50 @@
+openapi: 3.0.3
+info:
+  title: Seismic Network
+  version: 0.4.0
+paths:
+  /traces/export:
+    post:
+      operationId: exportTrace
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [station]
+              properties:
+                station:
+                  type: string
+                window_seconds:
+                  type: integer
+      responses:
+        '200':
+          description: One reading per line.
+          content:
+            application/x-ndjson:
+              schema:
+                type: string
+                format: binary
+  /stations:
+    get:
+      operationId: listStations
+      responses:
+        '200':
+          description: The registered stations.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Station'
+components:
+  schemas:
+    Station:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+        elevation:
+          type: number

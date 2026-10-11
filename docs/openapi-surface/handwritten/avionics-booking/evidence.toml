@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "b0341b11bd68d5d2f70f340b76df9658b68e685d0ee1525bafbe4e2a0a6c3722"
+
+[[covers]]
+key = "example-imports-case-insensitive-order"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

@@ -37,7 +37,7 @@ Handling sites:
 
 - `src/ir.rs::hoist_form_object[=&& simple_nullable_member\(prop_schema\)\.is_some_and\(binary_scalar\)]`
 - `src/ir.rs::hoist_form_object[=\(multipart && is_file\)]`
-- `src/emit.rs::build_example_inner[=&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)]`
+- `src/emit.rs::build_example_inner[=\x7c\x7c \(\(related \x7c\x7c documentation\) && f\.is_file\)]`
 
 - `src/ir.rs::hoist_form_object[if nullable_binary]`
 

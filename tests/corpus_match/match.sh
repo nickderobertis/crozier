@@ -191,6 +191,7 @@ inventory=(
   apivideo_android_uploader_matches_fern_output
   truefoundry_trueforge_matches_fern_output
   truefoundry_trueforge_flat_matches_fern
+  googleapis_youtubeanalytics_v1_flat_matches_fern
   volview_backend_contract_matches_fern_output
   osparc_simcore_webserver_matches_fern_output
   helixdb_http_api_matches_fern_output
@@ -316,6 +317,8 @@ inventory=(
   zylon_private_gpt_matches_fern_output
   aws_mobileanalytics_matches_fern_output
   mermade_openapi_converter_matches_fern_output
+  googleapis_speech_v2beta1_matches_fern_output
+  googleapis_youtubeanalytics_v1_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

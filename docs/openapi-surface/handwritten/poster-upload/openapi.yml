@@ -1,0 +1,26 @@
+openapi: 3.0.3
+info:
+  title: Poster Wall
+  version: 1.0.0
+paths:
+  /posters:
+    post:
+      operationId: hangPoster
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [title, wall, image]
+              properties:
+                title:
+                  type: string
+                wall:
+                  type: integer
+                image:
+                  type: string
+                  format: binary
+      responses:
+        '204':
+          description: Hung.

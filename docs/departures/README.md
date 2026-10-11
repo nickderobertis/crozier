@@ -169,7 +169,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 18 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 20 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -220,6 +220,15 @@ when the two differ.
 - **Why:** The placeholder is invalid for the declared date schema. The correction uses the certified generator's own date-example form and leaves string placeholders intact.
 - **Evidence:** [`docs/departures/evidence/date-header-constructor-example.md`](../../docs/departures/evidence/date-header-constructor-example.md)
 
+### `docstring-literal-dollar-escape`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A required request property declared as a string `const` holding `$`, lowered to a one-value literal under Fern's default literals enum type: the client docstring examples that pass it.
+- **Fern writes:** The literal with an escaped backslash before every `$`, `"\\$PS1"` for the const `$PS1`, while its own README and reference.md pass `"$PS1"`.
+- **crozier writes:** The const's own value, `"$PS1"`, as Fern's README and reference.md write it. Every other docstring line, the annotation and the request are retained.
+- **Why:** Evaluating the documented example yields `\$PS1`, a value the const does not admit, and the docstring contradicts Fern's own Markdown examples. The correction passes the only value the schema admits.
+- **Evidence:** [`docs/departures/evidence/docstring-literal-dollar-escape.md`](../../docs/departures/evidence/docstring-literal-dollar-escape.md)
+
 ### `empty-namespace-package`
 
 - **Kind:** `fern-defect`
@@ -256,6 +265,15 @@ when the two differ.
 - **Why:** The block exists only for type checkers and is never executed, and the two blocks import exactly the same names: sorted with ruff's isort, they are identical. crozier emits a deterministic sorted order rather than reproducing Fern's collection order.
 - **Evidence:** [`docs/departures/evidence/init-type-checking-import-order.md`](../../docs/departures/evidence/init-type-checking-import-order.md)
 
+### `int64-example-rounded-out-of-range`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An integer example of a `format: int64` property, array item or parameter whose nearest double lies outside the signed 64-bit range (`9223372036854775807`, `-9223372036854775808`): the README, reference.md and client docstring examples that pass it.
+- **Fern writes:** The double's JavaScript spelling, `9223372036854776000` or `-9223372036854776000`, outside the int64 range.
+- **crozier writes:** The declared example exactly. An example whose rounding stays inside the range keeps Fern's rounded spelling.
+- **Why:** Validating the documented value against the property's declared int64 bounds rejects Fern's value; the declared example is a valid int64 and satisfies them.
+- **Evidence:** [`docs/departures/evidence/int64-example-rounded-out-of-range.md`](../../docs/departures/evidence/int64-example-rounded-out-of-range.md)
+
 ### `lifted-base-path-docs-examples`
 
 - **Kind:** `fern-defect`
@@ -277,9 +295,9 @@ when the two differ.
 ### `multipart-object-required-file-example`
 
 - **Kind:** `fern-defect`
-- **Trigger:** A multipart method with a required file beside a JSON-encoded object whose type is a component alias, or whose argument is named json: its client docstring example.
+- **Trigger:** A multipart method with a required file part, with or without a JSON-encoded object part beside it: its client docstring example.
 - **Fern writes:** A call omitting the required file argument, although the generated method requires it. The object encoding and json module alias remain valid.
-- **crozier writes:** The same example with that required file placeholder, preserving every other argument, the method signature, imports and request encoding.
+- **crozier writes:** The same example with that required file's placeholder in the form Fern's README uses (`image="example_image"`), preserving every other argument, the method signature, imports and request encoding.
 - **Why:** Binding the documented call to the actual generated sync or async method raises TypeError for a missing required argument. The correction makes the example bind without changing valid generated SDK behavior.
 - **Evidence:** [`docs/departures/evidence/multipart-object-required-file-example.md`](../../docs/departures/evidence/multipart-object-required-file-example.md)
 

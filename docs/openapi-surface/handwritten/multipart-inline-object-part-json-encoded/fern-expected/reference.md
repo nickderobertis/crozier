@@ -21,6 +21,7 @@ client = FernApi(
 )
 
 client.specimens.upload_specimen(
+    scan="example_scan",
     label=UploadSpecimenRequestLabel(),
 )
 
@@ -47,6 +48,14 @@ client.specimens.upload_specimen(
 <dd>
 
 **notes:** `typing.Optional[str]` 
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scan:** `typing.Optional[core.File]` 
     
 </dd>
 </dl>

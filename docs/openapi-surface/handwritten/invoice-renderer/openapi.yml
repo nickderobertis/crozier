@@ -1,0 +1,69 @@
+openapi: 3.0.3
+info:
+  title: Invoice Renderer
+  version: 1.0.0
+paths:
+  /invoices/{currency}/render:
+    post:
+      operationId: renderInvoice
+      parameters:
+        - name: currency
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customer:
+                  type: string
+                total_cents:
+                  type: integer
+            examples:
+              corner_shop:
+                value:
+                  customer: Corner Shop
+                  total_cents: 1250
+      responses:
+        '200':
+          description: The rendered invoice text.
+          content:
+            text/plain:
+              schema:
+                type: string
+  /receipts/{store}/render:
+    post:
+      operationId: renderReceipt
+      parameters:
+        - name: store
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [till]
+              properties:
+                till:
+                  type: integer
+                  example: 4
+                cashier:
+                  type: string
+                  example: Robin
+            example:
+              till: 7
+              cashier: Sam
+      responses:
+        '200':
+          description: The rendered receipt text.
+          content:
+            text/plain:
+              schema:
+                type: string

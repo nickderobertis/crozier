@@ -4,6 +4,7 @@ import json
 import typing
 from json.decoder import JSONDecodeError
 
+from .. import core
 from ..core.api_error import ApiError
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.http_response import AsyncHttpResponse, HttpResponse
@@ -26,6 +27,7 @@ class RawSpecimensClient:
         *,
         label: UploadSpecimenRequestLabel,
         notes: typing.Optional[str] = OMIT,
+        scan: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
@@ -34,6 +36,9 @@ class RawSpecimensClient:
         label : UploadSpecimenRequestLabel
 
         notes : typing.Optional[str]
+
+        scan : typing.Optional[core.File]
+            See core.File for more documentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -49,7 +54,9 @@ class RawSpecimensClient:
                 "label": json.dumps(jsonable_encoder(label)),
                 "notes": notes,
             },
-            files={},
+            files={
+                **({"scan": scan} if scan is not None else {}),
+            },
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,
@@ -76,6 +83,7 @@ class AsyncRawSpecimensClient:
         *,
         label: UploadSpecimenRequestLabel,
         notes: typing.Optional[str] = OMIT,
+        scan: typing.Optional[core.File] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
@@ -84,6 +92,9 @@ class AsyncRawSpecimensClient:
         label : UploadSpecimenRequestLabel
 
         notes : typing.Optional[str]
+
+        scan : typing.Optional[core.File]
+            See core.File for more documentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -99,7 +110,9 @@ class AsyncRawSpecimensClient:
                 "label": json.dumps(jsonable_encoder(label)),
                 "notes": notes,
             },
-            files={},
+            files={
+                **({"scan": scan} if scan is not None else {}),
+            },
             request_options=request_options,
             omit=OMIT,
             force_multipart=True,

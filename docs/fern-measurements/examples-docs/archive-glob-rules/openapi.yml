@@ -1,0 +1,118 @@
+openapi: 3.0.3
+info:
+  title: Backup Rotation
+  version: 1.0.0
+  description: Rotation for hosts/*/volumes.
+paths:
+  /rules:
+    get:
+      operationId: listRules
+      description: Rules apply to paths like /srv/*/data and backups/**/daily.
+      parameters:
+        - name: prefix
+          in: query
+          schema:
+            type: string
+          description: Only rules under this prefix, e.g. home/*/.cache.
+        - $ref: '#/components/parameters/Tier'
+      responses:
+        '200':
+          description: Every rotation rule; globs end */ here.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RotationRule'
+    post:
+      operationId: addRule
+      requestBody:
+        $ref: '#/components/requestBodies/NewRule'
+      responses:
+        '201':
+          $ref: '#/components/responses/RuleCreated'
+  /rules/{ruleId}:
+    parameters:
+      - name: ruleId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The rule, as in rules/*/id.
+    delete:
+      operationId: dropRule
+      summary: Drop a rule for logs/*/old.
+      responses:
+        '204':
+          description: Dropped.
+  /archives:
+    put:
+      operationId: uploadArchive
+      requestBody:
+        required: true
+        description: A tarball of every journal/*/segment file.
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '204':
+          description: Stored.
+  /restores:
+    post:
+      operationId: restoreArchive
+      requestBody:
+        $ref: '#/components/requestBodies/ArchiveBytes'
+      responses:
+        '204':
+          description: Restored.
+components:
+  parameters:
+    Tier:
+      name: tier
+      in: query
+      schema:
+        type: string
+      description: Storage tier such as cold/*/archive.
+  requestBodies:
+    NewRule:
+      required: true
+      description: The rule to add for spool/*/queue.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RotationRule'
+    ArchiveBytes:
+      required: true
+      description: Raw bytes to unpack into restore/*/staging.
+      content:
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
+  responses:
+    RuleCreated:
+      description: The rule added for cache/*/tmp.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/RotationRule'
+  schemas:
+    RotationRule:
+      type: object
+      description: Keeps snapshots under vault/**/weekly for a month.
+      required: [include]
+      properties:
+        include:
+          type: string
+          description: Paths such as archive/**/snapshots or /*/tmp.
+        keep_days:
+          type: integer
+          description: Days to keep; */ marks the end of a cron field.
+        cadence:
+          $ref: '#/components/schemas/Cadence'
+    Cadence:
+      type: string
+      description: How often rotation runs across tier/*/hosts.
+      enum: [daily, weekly]

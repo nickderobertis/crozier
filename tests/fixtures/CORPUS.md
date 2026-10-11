@@ -1706,3 +1706,28 @@ crozier generates the same. The witness search that found it is
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2400 | `mermade-openapi-converter` | `multipart-single-value-enum-part-kept-optional` | ✅ byte-matched with no repair of its own |
+
+## Rows 2200–2201 — documentation of descriptions and of a document with no operation
+
+Google's Cloud Speech-to-Text API v2beta1 description says its operation
+listing may be rebound to `users/*/operations`. Fern breaks that `*/` into
+`* /` wherever it writes the description — the method's sync and async
+docstrings, its raw clients and `reference.md` — and crozier writes the same.
+Google's YouTube Analytics API v1 declares no operation at all: Fern's packaged
+tree carries an empty `README.md`, and its flat module tree none, the flat
+golden this row adds. The witness search that found both is
+[`witness-search-examples-docs`](../../docs/openapi-surface/witness-search-examples-docs/README.md).
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2200 | `googleapis-speech-v2beta1` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/speech/v2beta1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | committed | Google's Cloud Speech-to-Text API v2beta1 (`info.x-origin` records the publisher-served `https://speech.googleapis.com/$discovery/rest?version=v2beta1`), whose operation listing's description names `users/*/operations` |
+| 2201 | `googleapis-youtubeanalytics-v1` | github-raw | https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/youtubeAnalytics/v1/openapi.yaml | `f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49` | Creative Commons Attribution 3.0 (the document's own `info.license`, Google's grant over its own description; the aggregating repository is CC0-1.0) | committed | Google's YouTube Analytics API v1 (`info.x-origin` records the publisher-served `https://youtubeanalytics.googleapis.com/$discovery/rest?version=v1`), a description declaring only its shared query parameters and no operation |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2200 | `googleapis-speech-v2beta1` | `description-comment-close-not-split` | ✅ byte-matched after one repair |
+| 2201 | `googleapis-youtubeanalytics-v1` | `readme-omitted-without-demonstrable-endpoint` | ✅ byte-matched after one repair (flat) |
+
+The repairs: `openapi::normalize_comment_close_descriptions` breaks every `*/`
+in a description as Fern does, and `emit::generate` writes no `README.md` in a
+flat tree whose document has no call to demonstrate.

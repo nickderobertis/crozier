@@ -2669,6 +2669,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_float_type(&mut doc);
     normalize_parameter_schema_refs(&mut doc);
     normalize_webhook_operations(&mut doc);
+    normalize_comment_close_descriptions(&mut doc);
     normalize_root_pagination(&mut doc);
     normalize_declared_type_names(&mut doc);
     normalize_component_response_schema_refs(&mut doc);
@@ -2858,6 +2859,54 @@ fn media_schemas<F: FnMut(&mut Schema)>(content: &mut IndexMap<String, MediaType
     for media in content.values_mut() {
         if let Some(schema) = &mut media.schema {
             visit(schema);
+        }
+    }
+}
+
+/// Break every `*/` in a description into `* /`, as Fern does before writing
+/// any description: the broken spelling is what its docstrings, raw clients,
+/// model fields and `reference.md` all show. Measured at Fern 5.20.0 on schema,
+/// property, operation, parameter (operation, path-level and component),
+/// response (inline and component) and binary request body (inline and
+/// component) descriptions alike: each location is a `*/` in
+/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held
+/// whole to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
+fn normalize_comment_close_descriptions(doc: &mut OpenApi) {
+    fn split(description: &mut Option<String>) {
+        if let Some(text) = description.as_mut().filter(|text| text.contains("*/")) {
+            *text = text.replace("*/", "* /");
+        }
+    }
+    fn split_parameter(parameter: &mut Parameter) {
+        split(&mut parameter.description);
+    }
+    fn split_operation(operation: &mut Operation) {
+        split(&mut operation.description);
+        operation.parameters.iter_mut().for_each(split_parameter);
+        if let Some(body) = &mut operation.request_body {
+            split(&mut body.description);
+        }
+        for response in operation.responses.values_mut() {
+            split(&mut response.description);
+        }
+    }
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| split(&mut node.description));
+    });
+    doc.components
+        .parameters
+        .values_mut()
+        .for_each(split_parameter);
+    for response in doc.components.responses.values_mut() {
+        split(&mut response.description);
+    }
+    for body in doc.components.request_bodies.values_mut() {
+        split(&mut body.description);
+    }
+    for item in doc.paths.values_mut() {
+        item.parameters.iter_mut().for_each(split_parameter);
+        for operation in item.operation_slots().into_iter().flatten() {
+            split_operation(operation);
         }
     }
 }

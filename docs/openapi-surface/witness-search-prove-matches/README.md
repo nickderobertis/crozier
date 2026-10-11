@@ -147,19 +147,18 @@ server-sent-event method `-> typing.Iterator[bytes]` while the method returns
 byte.
 
 The hand-written fixture of `multipart-inline-object-part-json-encoded`
-carries the inline object part without a file part, so it proves the JSON
-encoding but not the complete trigger, which puts a binary part beside the
-object. With a required file part, Fern's worked calls leave the file argument
-out, an example that does not bind and a Fern defect of its own. With an
-optional `scan` part (`type: string, format: binary`), the pinned pair
-generates in both enum modes. Its `README.md` sync and async examples and
-`reference.md` pass `scan="example_scan"`, which binds and is a valid
-`core.File`. crozier matches `reference.md` and the encoding itself byte for
-byte (`"label": json.dumps(jsonable_encoder(label))`, the hoisted
-`UploadSpecimenRequestLabel`), but its `README.md` leaves the `scan` line out of
-both examples (lines 45 and 67), under `python_enums` and literals alike. That
-is a generator change in the README example rendering. The manager handed it,
-and this shape's completed proof, to the examples-docs work.
+carries an optional `scan` part (`type: string, format: binary`) beside the
+inline object part, the complete trigger. With a required file part instead,
+Fern's docstring calls leave the file argument out, an example that does not
+bind; crozier passes it under the `multipart-object-required-file-example`
+departure. With the optional part, the pinned pair generates in both enum
+modes, and its `README.md` sync and async examples and `reference.md` pass
+`scan="example_scan"`, which binds and is a valid `core.File`. crozier writes
+the same bytes: the `scan` line in both README examples, `reference.md`, and
+the encoding itself (`"label": json.dumps(jsonable_encoder(label))`, the
+hoisted `UploadSpecimenRequestLabel`), under `python_enums` and literals alike.
+The examples-docs work repaired the README example rendering that once left
+the `scan` line out.
 
 ## The real witnesses
 

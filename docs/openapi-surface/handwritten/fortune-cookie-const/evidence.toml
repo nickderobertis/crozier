@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "d225e62ed9d900d09bff96d269389a8115c79a8b6c2878a33fbfbb94f7d79c64"
+
+[[covers]]
+key = "reference-literal-single-quote-escaped"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

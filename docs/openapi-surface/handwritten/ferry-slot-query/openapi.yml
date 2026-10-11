@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Ferry Slots
+  version: 1.0.0
+paths:
+  /slots:
+    get:
+      operationId: findSlots
+      parameters:
+        - name: crossing
+          in: query
+          required: true
+          schema:
+            anyOf:
+              - type: string
+                format: uuid
+              - type: string
+                enum: [next]
+            default: next
+      responses:
+        '200':
+          description: Free slots.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

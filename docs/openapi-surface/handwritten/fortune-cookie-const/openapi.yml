@@ -1,0 +1,22 @@
+openapi: 3.0.3
+info:
+  title: Fortune Cookies
+  version: 1.0.0
+paths:
+  /fortunes:
+    post:
+      operationId: bakeFortune
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [saying]
+              properties:
+                saying:
+                  type: string
+                  const: You'll find it
+      responses:
+        '204':
+          description: Baked.

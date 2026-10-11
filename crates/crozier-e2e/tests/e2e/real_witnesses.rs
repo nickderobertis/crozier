@@ -197,6 +197,57 @@ const WITNESSES: &[Witness] = &[
     },
 ];
 
+/// The witnesses `docs/openapi-surface/witness-search-examples-docs/README.md`
+/// records.
+const EXAMPLES_DOCS_WITNESSES: &[Witness] = &[
+    Witness {
+        shape: "description-comment-close-not-split",
+        corpus: "googleapis-speech-v2beta1",
+        declares: |doc| {
+            let description = at(doc, "/paths/~1v2beta1~1{name}~1operations/get/description")?;
+            expect(
+                description
+                    .as_str()
+                    .is_some_and(|text| text.contains("`users/*/operations`")),
+                "the operation listing's description names `users/*/operations`",
+            )
+        },
+        golden: &[
+            (
+                "src/fern/projects/client.py",
+                &["such as `users/* /operations`"],
+                &["`users/*/operations`"],
+            ),
+            (
+                "src/fern/projects/raw_client.py",
+                &["such as `users/* /operations`"],
+                &["`users/*/operations`"],
+            ),
+            (
+                "reference.md",
+                &["such as `users/* /operations`"],
+                &["`users/*/operations`"],
+            ),
+        ],
+    },
+    Witness {
+        shape: "readme-omitted-without-demonstrable-endpoint",
+        corpus: "googleapis-youtubeanalytics-v1",
+        declares: |doc| {
+            expect(
+                at(doc, "/paths")?
+                    .as_object()
+                    .is_some_and(serde_json::Map::is_empty),
+                "the document declares no operation",
+            )
+        },
+        golden: &[
+            ("expected/README.md", &[], &["client."]),
+            ("expected-flat/client.py", &["class FernApi:"], &[]),
+        ],
+    },
+];
+
 fn parse(path: &std::path::Path) -> serde_json::Value {
     let text =
         std::fs::read_to_string(path).unwrap_or_else(|error| panic!("{}: {error}", path.display()));
@@ -274,4 +325,25 @@ fn a_witness_that_stops_declaring_its_shape_fails() {
     };
     let failures = witness_failures(&golden);
     assert_eq!(2, failures.len(), "{failures:?}");
+}
+
+/// Every examples-and-docs witness still declares its shape and carries its
+/// output; the flat tree of a document with no operation has no `README.md`,
+/// where its packaged tree's is empty.
+#[test]
+fn examples_docs_real_witnesses_declare_their_shapes() {
+    let mut failures: Vec<String> = EXAMPLES_DOCS_WITNESSES
+        .iter()
+        .flat_map(witness_failures)
+        .collect();
+    let youtube = fixture_dir("googleapis-youtubeanalytics-v1");
+    if youtube.join("expected-flat/README.md").exists() {
+        failures.push("googleapis-youtubeanalytics-v1: its flat golden now has a README.md".into());
+    }
+    if std::fs::read_to_string(youtube.join("expected/README.md"))
+        .map_or(true, |text| !text.is_empty())
+    {
+        failures.push("googleapis-youtubeanalytics-v1: its packaged README.md is not empty".into());
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
 }

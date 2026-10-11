@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "45d17e533776c2738b8e434cdb6bd69a41c16ecba9e14fda114e12d47d01db21"
+
+[[covers]]
+key = "query-anyof-const-member-example-as-enum-member"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

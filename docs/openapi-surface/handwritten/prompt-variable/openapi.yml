@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Shell Prompts
+  version: 1.0.0
+paths:
+  /prompts:
+    post:
+      operationId: definePrompt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PromptSpec'
+      responses:
+        '204':
+          description: Defined.
+components:
+  schemas:
+    PromptSpec:
+      type: object
+      required: [variable, label]
+      properties:
+        variable:
+          type: string
+          const: $PS1
+        label:
+          type: string
+          example: Costs $5 at $HOST

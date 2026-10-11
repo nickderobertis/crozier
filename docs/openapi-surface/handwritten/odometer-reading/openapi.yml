@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Fleet Odometers
+  version: 1.0.0
+paths:
+  /readings:
+    post:
+      operationId: recordReading
+      parameters:
+        - name: depot
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+            example: 9223372036854775807
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicle, metres, trip_count, checkpoints, drift, bias]
+              properties:
+                vehicle:
+                  type: string
+                metres:
+                  type: integer
+                  format: int64
+                  example: 9223372036854775807
+                trip_count:
+                  type: integer
+                  format: int64
+                  example: 9007199254740993
+                drift:
+                  type: integer
+                  format: int64
+                  example: -9223372036854775808
+                bias:
+                  type: integer
+                  format: int64
+                  example: -9007199254740993
+                checkpoints:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                    example: 9223372036854775807
+      responses:
+        '204':
+          description: Recorded.

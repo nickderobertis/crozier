@@ -1932,13 +1932,17 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
 
     // Generated `README.md` (usage examples from the first endpoint) and the
     // per-endpoint `reference.md`.
-    // Fern writes `README.md` whether or not it has a call to demonstrate: an API
-    // whose every operation it discarded gets the file empty
-    // (`cyberark-conjur-api`), never no file at all.
-    files.push(readme_file(ir).unwrap_or_else(|| GeneratedFile {
-        path: PathBuf::from("README.md"),
-        contents: String::new(),
-    }));
+    // Fern's packaged tree has `README.md` whether or not it has a call to
+    // demonstrate: an API whose every operation it discarded gets the file empty
+    // (`cyberark-conjur-api`). Its flat module tree has no such file at all.
+    match readme_file(ir) {
+        Some(readme) => files.push(readme),
+        None if ir.layout == Layout::Packaged => files.push(GeneratedFile {
+            path: PathBuf::from("README.md"),
+            contents: String::new(),
+        }),
+        None => {}
+    }
     files.push(reference_file(&env, ir, &reference_modules(ir), &tag_map)?);
 
     // Project-root scaffolding (pyproject.toml, requirements.txt, metadata).
@@ -2538,6 +2542,7 @@ fn abbrev_call(indent: usize, prefix: &str, complex: bool) -> String {
 /// a deliberately argument-free worked example in `reference.md`.
 fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagTypeDecl]) -> bool {
     endpoint_has_worked_example(ep)
+        && !root_binary_download_undocumented(ep)
         && path_object_documented(ep, types, tag_decls)
         && !matches!(ep.request_body, Some(RequestBody::Bytes { .. }))
         && !matches!(&ep.request_body, Some(RequestBody::Form(form))
@@ -2547,42 +2552,38 @@ fn readme_endpoint_eligible(ep: &Endpoint, types: &[TypeDecl], tag_decls: &[TagT
 }
 
 /// The endpoint Fern's README and `reference.md` anchor their worked example on:
-/// the first eligible `POST`, else the first argument-free non-`GET`, else the
-/// first eligible operation in the README's own module order. A request body does
-/// **not** promote a non-`POST` operation ahead of that order — corpus row 123
-/// anchors its README on the document's first `GET` even though a later `PUT`
-/// carries a flattened JSON body.
+/// the first eligible `POST`, else the first eligible operation, each tier read
+/// in the README's own module order and over the top-level clients before any
+/// nested one. Neither a request body nor an argument-free call promotes a
+/// non-`POST` operation ahead of that order — corpus row 123 anchors its README
+/// on the document's first `GET` even though a later `PUT` carries a flattened
+/// JSON body, and an argument-free first `GET` wins over a later argument-free
+/// `DELETE`. CloudPDF's first `POST` is `doc.annotations.create`, two levels
+/// down, and its README demonstrates `shares.exchange`, the first `POST` of a
+/// top-level client; a nested `POST` still wins over a top-level `GET`.
 fn select_readme_endpoint<'a>(
     endpoints: impl Clone + Iterator<Item = &'a Endpoint>,
     types: &[TypeDecl],
     tag_decls: &[TagTypeDecl],
 ) -> Option<&'a Endpoint> {
-    endpoints
-        .clone()
-        .find(|e| {
-            e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e, types, tag_decls)
-        })
-        .or_else(|| {
-            endpoints.clone().find(|e| {
-                e.emittable
-                    && e.http_method != "GET"
-                    && e.path_params.is_empty()
-                    && e.query_params.is_empty()
-                    && e.header_params.is_empty()
-                    && e.request_body.is_none()
-            })
-        })
-        .or_else(|| {
-            endpoints
-                .clone()
-                .find(|e| e.emittable && readme_endpoint_eligible(e, types, tag_decls))
-        })
+    let tier = |accept: &dyn Fn(&Endpoint) -> bool| {
+        endpoints
+            .clone()
+            .filter(|e| module_depth(&e.module) <= 1)
+            .find(|e| accept(e))
+            .or_else(|| endpoints.clone().find(|e| accept(e)))
+    };
+    tier(&|e| {
+        e.emittable && e.http_method == "POST" && readme_endpoint_eligible(e, types, tag_decls)
+    })
+    .or_else(|| tier(&|e| e.emittable && readme_endpoint_eligible(e, types, tag_decls)))
 }
 
-/// Just the call block of an endpoint's worked documentation example — the lines
-/// after the client constructor. The README's streaming section writes its own
-/// imports and constructor, so it needs the call alone.
-fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
+/// The import block and the call block of an endpoint's worked documentation
+/// example — the lines before and after the client constructor. The README's
+/// streaming section writes its own constructor, but imports what the call
+/// constructs (`from fern import FernApi, Sector`).
+fn readme_example_parts(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<(String, String)> {
     let mut ctx = ExampleCtx {
         types: &ir.types,
         enum_type: ir.enum_type,
@@ -2617,7 +2618,11 @@ fn readme_call_lines(ir: &Ir, ep: &Endpoint, pkg: &str) -> Option<String> {
         false,
     )?;
     let start = lines.iter().position(|line| line.starts_with("client."))?;
-    Some(lines[start..].join("\n"))
+    let constructor = lines
+        .iter()
+        .position(|line| line.starts_with("client = "))?;
+    let imports = lines[..constructor].join("\n");
+    Some((imports.trim_end().to_string(), lines[start..].join("\n")))
 }
 
 /// The client modules in the order the generated package nests them: each
@@ -2716,20 +2721,8 @@ fn readme_endpoint_order(ir: &Ir) -> Vec<&Endpoint> {
 }
 
 fn readme_endpoint(ir: &Ir) -> Option<&Endpoint> {
-    // A client nested below the top level is passed over while a top-level one
-    // qualifies: CloudPDF's first `POST` is `doc.annotations.create`, two levels
-    // down, and its README demonstrates `shares.exchange`, the first `POST` of a
-    // top-level client.
     let order = readme_endpoint_order(ir);
-    select_readme_endpoint(
-        order
-            .iter()
-            .copied()
-            .filter(|ep| module_depth(&ep.module) <= 1),
-        &ir.types,
-        &ir.tag_types,
-    )
-    .or_else(|| select_readme_endpoint(order.into_iter(), &ir.types, &ir.tag_types))
+    select_readme_endpoint(order.into_iter(), &ir.types, &ir.tag_types)
 }
 
 /// The endpoint the README's streaming section demonstrates: the first emittable
@@ -2902,11 +2895,14 @@ fn readme_file(ir: &Ir) -> Option<GeneratedFile> {
         // The call carries its worked arguments here, exactly as the usage example
         // does; an argument-free streaming endpoint renders the same empty parens
         // it always did.
-        let call = readme_call_lines(ir, ep, pkg)
-            .unwrap_or_else(|| format!("{}()", client_call_prefix(ep)));
+        let (imports, call) = readme_example_parts(ir, ep, pkg).unwrap_or_else(|| {
+            (
+                format!("from {pkg} import {}", ir.client_name),
+                format!("{}()", client_call_prefix(ep)),
+            )
+        });
         format!(
-            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\nfrom {pkg} import {}\n\nclient = {client_call}\n\n{call}\n```\n\n",
-            ir.client_name,
+            "## Streaming\n\nThe SDK supports streaming responses, as well, the response will be a generator that you can loop over.\n\n```python\n{imports}\n\nclient = {client_call}\n\n{call}\n```\n\n",
         )
     });
     // The pager section, on the first paginated endpoint in client order. Fern
@@ -5548,15 +5544,17 @@ fn python_doc_line(line: &str) -> String {
 }
 
 /// Push the `Returns` description under the return type: each line of the
-/// response description indented 12 spaces, or a single blank line when the spec
-/// declares no (non-empty) description — matching Fern.
+/// response description indented 12 spaces, a single blank line when the spec
+/// declares a blank one, and nothing when the response has no `description` key
+/// at all — matching Fern.
 fn push_return_doc(lines: &mut Vec<String>, response_doc: Option<&str>) {
     match response_doc {
+        Some("") => lines.push(String::new()),
         Some(doc) => lines.extend(
             doc.split('\n')
                 .map(|line| format!("            {}", python_doc_line(line))),
         ),
-        None => lines.push(String::new()),
+        None => {}
     }
 }
 
@@ -7887,7 +7885,7 @@ fn client_binary_stream_docstring(
         untyped_arguments: BTreeSet::new(),
         sdk_first_party: cx.sdk_first_party,
     };
-    if let Some(ex_lines) = (!cx.module.is_empty() || !ep.binary_schema_response || ep.openapi_31)
+    if let Some(ex_lines) = (!root_binary_download_undocumented(ep))
         .then(|| build_example(ep, is_async, cx.module, cx.pkg, cx.client_name, &mut ctx))
         .flatten()
     {
@@ -9299,7 +9297,10 @@ impl<'a> ExampleCtx<'a> {
                         Example::List(vec![])
                     }
                 } else {
-                    let items = vec![self.value(inner, slot)];
+                    // Fern's IR fallback writes two items where its importer's
+                    // example writes one.
+                    let items =
+                        vec![self.value(inner, slot); 1 + usize::from(self.field_examples_ignored)];
                     if self.documentation {
                         Example::ReferenceList(items)
                     } else {
@@ -9477,9 +9478,13 @@ impl<'a> ExampleCtx<'a> {
                 self.value(&target, slot)
             }
             // A literal enum's example is its first value as a plain string, which
-            // needs no import.
+            // needs no import. The Markdown writers escape its `'` as they do a
+            // string example's (`"You\'ll find it"`); docstrings keep it bare.
             Some(TypeDecl::Enum(e)) if self.enum_type == EnumType::Literals => {
                 match e.example_member() {
+                    Some(m) if self.documentation => {
+                        Example::Atom(literal_enum_value(&m.value).replace('\'', "\\'"))
+                    }
                     Some(m) => Example::Atom(literal_enum_value(&m.value)),
                     None => Example::Atom("None".to_string()),
                 }
@@ -9835,32 +9840,6 @@ fn lookup_decl<'a>(
             .iter()
             .find_map(|tt| (tt.decl.name() == name).then_some(&tt.decl))
     })
-}
-
-fn is_object_alias<'a>(
-    mut ty: &'a TypeRef,
-    types: &'a [TypeDecl],
-    tag_decls: &'a [TagTypeDecl],
-) -> bool {
-    let mut seen = BTreeSet::new();
-    let mut alias_seen = false;
-    loop {
-        match ty {
-            TypeRef::Optional(inner) => ty = inner,
-            TypeRef::Named(name) if seen.insert(name) => {
-                match lookup_decl(types, tag_decls, name) {
-                    Some(TypeDecl::Alias(alias)) => {
-                        alias_seen = true;
-                        ty = &alias.target;
-                    }
-                    Some(TypeDecl::Object(_)) => return alias_seen,
-                    _ => return false,
-                }
-            }
-            TypeRef::Dict(_, _) => return alias_seen,
-            _ => return false,
-        }
-    }
 }
 
 /// The generated object a path parameter's type resolves to, through `Optional`
@@ -10553,7 +10532,13 @@ fn build_example_inner(
             // omitted). A required field with an unknown (`Any`) type is still shown,
             // so the exclusion keys on nullability — an
             // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
-            let reference_fields = body_example.and_then(serde_json::Value::as_object);
+            // Without an importer example, Fern's IR fallback reads no example the
+            // request media or its fields declare: a `text/plain` answer leaves
+            // only the required fields' placeholders.
+            let fallback = ep.importer_example_missing;
+            let reference_fields = body_example
+                .filter(|_| !fallback)
+                .and_then(serde_json::Value::as_object);
             // An example's `null` is no value: Fern's docstring leaves the field
             // out, or synthesizes it where the signature requires it; its
             // Markdown writers do the same but write a required nullable
@@ -10579,7 +10564,7 @@ fn build_example_inner(
                 f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || !f.deprecated
                         && (named_value(f).is_some()
-                            || reference_fields.is_none() && f.media_example)
+                            || reference_fields.is_none() && f.media_example && !fallback)
             };
             let composed_request_media_example = ep.body_composition.is_all_of()
                 && fields
@@ -10646,7 +10631,7 @@ fn build_example_inner(
                 let supplied_example = f
                     .example
                     .as_deref()
-                    .filter(|_| reference_fields.is_none() && !example_null(f))
+                    .filter(|_| reference_fields.is_none() && !example_null(f) && !fallback)
                     // A binary download's inline body drops its media example:
                     // MockServer's file retrieval shows Fern's `name="name"`.
                     .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))
@@ -10763,45 +10748,42 @@ fn build_example_inner(
                 .fields
                 .iter()
                 .any(|field| field.form_content_type.is_some());
-            let requires_files = form.multipart
-                && form.fields.iter().any(|field| {
-                    field.form_json
-                        && (field.py_name == "json"
-                            || is_object_alias(&field.type_ref, ctx.types, ctx.tag_decls))
-                });
             let mut example_fields: Vec<_> = form
                 .fields
                 .iter()
                 .filter(|f| {
-                    // `reference.md` shows every multipart file input, required or
-                    // not — DaniWeb's optional `csv` is the corpus's first — while
-                    // the client docstring shows an optional one only when the
-                    // media example or a per-part content type reaches it.
+                    // The Markdown writers show every multipart file input,
+                    // required or not — DaniWeb's optional `csv` is the corpus's
+                    // first in `reference.md`, and the README passes an optional
+                    // scan beside a required photo — while the client docstring
+                    // shows an optional one only when the media example or a
+                    // per-part content type reaches it.
                     (f.spec_required
                         || f.media_example
-                        || ((related || reference) && f.is_file)
-                        || (documentation
-                            && f.is_file
-                            && matches!(f.type_ref, TypeRef::Optional(_)))
+                        || ((related || documentation) && f.is_file)
                         // A part that is a LIST of files is shown wherever the
                         // example is written, required or not: SFTPGo's optional
                         // `filenames` reaches `README.md` and the client docstring
                         // as well as `reference.md`, where DaniWeb's optional
                         // scalar `csv` reaches only the reference writer.
                         || f.is_file && matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)))
+                        // Fern's docstring leaves every file out, even a
+                        // required one the call cannot bind without; crozier
+                        // passes the required ones (the
+                        // `multipart-object-required-file-example` departure).
                         && (documentation
                             || !f.is_file
-                            || requires_files && f.spec_required && !f.optional)
+                            || form.multipart && f.spec_required && !f.optional)
                 })
                 .collect();
-            // Fern's reference writer lists required multipart file inputs before
-            // the other required fields, even though executable signatures retain
-            // the schema's required-first declaration order.
-            if form.multipart && (reference || documentation && requires_files) {
+            // Fern's Markdown writers list multipart file inputs before the other
+            // fields, even though executable signatures retain the schema's
+            // required-first declaration order.
+            if form.multipart && documentation {
                 example_fields.sort_by_key(|field| !field.is_file);
             }
             for f in example_fields {
-                let v = if (documentation || requires_files) && f.is_file {
+                let v = if f.is_file && (documentation || form.multipart) {
                     if matches!(f.type_ref, TypeRef::List(_) | TypeRef::Set(_)) {
                         // A list of files is one flat placeholder list, not an
                         // exploded one: SFTPGo's `filenames` documents
@@ -11341,6 +11323,14 @@ fn compact_documentation_values(
         }
     }
     compact
+}
+
+/// Whether a binary download is one Fern documents with no worked example: a
+/// root-client method of a 3.0 document whose success schema itself declares
+/// `format: binary`. Its docstring has no `Examples`, and the README anchors on
+/// the next eligible operation instead (`binary-download-with-body-has-no-example`).
+fn root_binary_download_undocumented(ep: &Endpoint) -> bool {
+    ep.binary_response && ep.module.is_empty() && ep.binary_schema_response && !ep.openapi_31
 }
 
 fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
@@ -12747,7 +12737,7 @@ mod tests {
             response,
             response_may_be_empty: false,
             response_names_unknown: false,
-            response_doc: None,
+            response_doc: Some(String::new()),
             errors: Vec::new(),
             docstring: None,
             reference_description_suffix: String::new(),
@@ -15825,9 +15815,11 @@ mod parameter_lowering_tests {
         );
         // The scalar element reaches the URL as text.
         assert!(raw.contains("\"band\": band,"), "{raw}");
-        // A required one is exampled by its element's first member.
+        // A required one's docstring passes an empty list, as certified Fern's
+        // does for any items admitting `null`.
         let client = &files["src/api/sky/client.py"];
-        assert!(client.contains("band=[\"band\"]"), "{client}");
+        assert!(client.contains("band=[],"), "{client}");
+        assert!(!client.contains("band=[\"band\"]"), "{client}");
     }
 
     #[test]

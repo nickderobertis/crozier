@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "b8d7686c8be8a91124b249df9d5b8c8c4c5d5254cac49809f8825243dabd83e3"
+
+[[covers]]
+key = "readme-multipart-file-params-listed-first"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

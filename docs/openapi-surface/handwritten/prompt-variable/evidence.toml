@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "89c2f6465cd6b2eb4a9b155803d6d1c36442792766629b4c34ad682af71c0631"
+
+[[covers]]
+key = "literal-example-dollar-escaped-in-docstring"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

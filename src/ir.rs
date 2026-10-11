@@ -1714,7 +1714,8 @@ pub struct Endpoint {
     /// body for as it does a bare unknown.
     pub response_names_unknown: bool,
     /// The success response's description, shown in the docstring's `Returns`
-    /// section (Fern emits an indented line under the return type).
+    /// section (Fern emits an indented line under the return type): empty for a
+    /// blank line, `None` when the response declares no `description` at all.
     pub response_doc: Option<String>,
     /// Declared error (non-2xx) responses, each raising a generated exception.
     pub errors: Vec<ErrorResponse>,
@@ -3160,7 +3161,7 @@ fn endpoints(
                         Some(split) => Endpoint {
                             method_name: split.method_name.clone(),
                             stream_condition: Some((split.condition.clone(), split.streaming)),
-                            response_doc: None,
+                            response_doc: Some(String::new()),
                             // Fern's reference writer documents both halves as the
                             // flattened body they send, and shows the streaming half's
                             // worked call under each of them.
@@ -4734,7 +4735,7 @@ fn parameter_example(doc: &OpenApi, parameter: &crate::openapi::Parameter) -> Op
             }
         });
     }
-    example_literal(value)
+    bounded_example_literal(value, schema.is_some_and(declares_int64))
 }
 
 /// Whether Fern's OpenAPI importer declines to build a worked example for the
@@ -4778,9 +4779,38 @@ fn fern_imports_no_endpoint_example(doc: &OpenApi, op: &Operation) -> bool {
     unsupported_request
         || unsupported_response
         || undeclared_response
+        || requires_object_query(doc, op)
         || request_example_fails(doc, op)
         || request_declares_unlisted_required(doc, op)
         || request_requires_unexampled_unknown(doc, op)
+}
+
+/// Whether a parameter's composition admits `null`: through a `type: null`
+/// member, or a 3.0 `nullable: true` beside the members.
+fn composition_admits_null(schema: &Schema, members: &[Schema]) -> bool {
+    members
+        .iter()
+        .any(|member| member.ty.as_ref().and_then(TypeField::primary) == Some("null"))
+        || schema.nullable == Some(true)
+}
+
+/// Whether the operation requires a query parameter typed by an object, for
+/// which Fern's importer builds no example: its IR fallback writes the call, so
+/// the object's array fields take two items (`stops=["stops", "stops"]`) and the
+/// operation's required query arrays are left out.
+fn requires_object_query(doc: &OpenApi, op: &Operation) -> bool {
+    op.parameters.iter().any(|parameter| {
+        parameter.location == Some(ParameterLocation::Query)
+            && parameter.required == Some(true)
+            && parameter.schema.as_ref().is_some_and(|schema| {
+                let schema = schema
+                    .reference
+                    .as_deref()
+                    .and_then(|reference| resolve_ref(doc, reference))
+                    .unwrap_or(schema);
+                is_object_type(schema) && !schema.properties.is_empty()
+            })
+    })
 }
 
 /// Whether Fern's importer builds no request example because the body requires a
@@ -5069,11 +5099,20 @@ fn schema_example(schema: &Schema) -> Option<&serde_json::Value> {
 /// list in worked examples.
 fn schema_example_literal(schema: &Schema) -> Option<String> {
     schema_example(schema)
-        .and_then(example_literal)
+        .and_then(|value| bounded_example_literal(value, declares_int64(schema)))
         .or_else(|| {
-            let item = schema.items.as_deref().and_then(schema_example)?;
-            Some(format!("[{}]", example_literal(item)?))
+            let items = schema.items.as_deref()?;
+            let item = schema_example(items)?;
+            Some(format!(
+                "[{}]",
+                bounded_example_literal(item, declares_int64(items))?
+            ))
         })
+}
+
+/// Whether a schema bounds its integers to a signed 64-bit range.
+fn declares_int64(schema: &Schema) -> bool {
+    schema.format.as_deref() == Some("int64")
 }
 
 /// Whether a schema rejects Fern's `{"key": "value"}` placeholder while
@@ -5491,10 +5530,16 @@ fn path_param_position(path: &str, name: &str) -> Option<usize> {
     path.find(&format!("{{{name}}}"))
 }
 
-/// The success (2xx) response's description, cleaned for the `Returns` docstring.
+/// The success (2xx) response's description, cleaned for the `Returns` docstring:
+/// `None` when that response omits the `description` key altogether, which
+/// Fern's docstring follows with nothing, and `Some("")` for a blank one (or no
+/// success response), which it follows with an empty line.
 fn success_response_doc(op: &Operation) -> Option<String> {
-    let response = success_response_entry(op)?;
-    clean_doc(response.description.as_deref())
+    let Some(response) = success_response_entry(op) else {
+        return Some(String::new());
+    };
+    let description = response.description.as_deref()?;
+    Some(clean_doc(Some(description)).unwrap_or_default())
 }
 
 /// An operation's error (non-`2xx`) responses, one per status Fern reads off
@@ -7887,7 +7932,7 @@ impl InlineHoister<'_> {
         // two-member alias, while its `folder_id` path parameter is
         // `anyOf: [integer, null]` and is typed `Optional[int]`. A 3.0
         // composition says the same with a `nullable: true` beside it.
-        let nullable = non_null.len() < members.len() || schema.nullable == Some(true);
+        let nullable = composition_admits_null(schema, members);
         let wrap = |type_ref| {
             if nullable {
                 optional_type_ref(type_ref)
@@ -8071,6 +8116,14 @@ impl InlineHoister<'_> {
                         TypeRef::Optional(element) => *element,
                         element => element,
                     };
+                // The element's nullability stays on the list's item, as a
+                // nullable scalar item's does: the signature drops it, and a
+                // required one's docstring example passes an empty list.
+                let element = if composition_admits_null(item, members) {
+                    optional_type_ref(element)
+                } else {
+                    element
+                };
                 return sequence_of(schema, element);
             }
             if is_object_type(schema) && is_inline_struct(schema) {
@@ -15458,6 +15511,66 @@ fn declared_doc(desc: Option<&str>) -> Option<String> {
 /// snippet (`"SpaceX"`, `10`, `True`). Returns `None` for a value Fern does not
 /// inline as a leaf — null, or a composite object/array.
 pub(crate) fn example_literal(value: &serde_json::Value) -> Option<String> {
+    bounded_example_literal(value, false)
+}
+
+/// [`example_literal`] for a value whose schema may declare `format: int64`.
+/// Fern reads the document's numbers as JavaScript doubles, so an integer beyond
+/// 2^53 takes the nearest double's spelling ([`js_integer_literal`]). Where that
+/// rounding carries an int64 example past the format's bounds —
+/// `9223372036854775807` becomes `9223372036854776000` — crozier keeps the exact
+/// integer, the `int64-example-rounded-out-of-range` departure.
+fn bounded_example_literal(value: &serde_json::Value, int64: bool) -> Option<String> {
+    match value {
+        serde_json::Value::Number(n) if n.is_i64() || n.is_u64() => {
+            let rounded = js_integer_literal(n);
+            let in_int64 = |literal: &str| {
+                literal
+                    .parse::<i128>()
+                    .is_ok_and(|v| i128::from(i64::MIN) <= v && v <= i128::from(i64::MAX))
+            };
+            let exact = n.to_string();
+            Some(if int64 && !in_int64(&rounded) && in_int64(&exact) {
+                exact
+            } else {
+                rounded
+            })
+        }
+        _ => plain_example_literal(value),
+    }
+}
+
+/// The spelling JavaScript gives the double nearest an integer: the integer
+/// itself up to 2^53, its shortest round-trip digits padded with zeros below
+/// 10^21, and exponent notation (`1e+21`) from there.
+pub(crate) fn js_integer_literal(n: &serde_json::Number) -> String {
+    const EXACT: u64 = 1 << 53;
+    let exact = n.as_i64().map(i64::unsigned_abs).or_else(|| n.as_u64());
+    if exact.is_some_and(|magnitude| magnitude <= EXACT) {
+        return n.to_string();
+    }
+    let Some(double) = n.as_f64() else {
+        return n.to_string();
+    };
+    let scientific = format!("{double:e}");
+    let Some((mantissa, exponent)) = scientific.split_once('e') else {
+        return n.to_string();
+    };
+    let Ok(exponent) = exponent.parse::<usize>() else {
+        return n.to_string();
+    };
+    let (sign, mantissa) = mantissa
+        .strip_prefix('-')
+        .map_or(("", mantissa), |rest| ("-", rest));
+    if exponent >= 21 {
+        return format!("{sign}{mantissa}e+{exponent}");
+    }
+    let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
+    format!("{sign}{digits:0<width$}", width = exponent + 1)
+}
+
+/// [`example_literal`] for every value but an integer.
+fn plain_example_literal(value: &serde_json::Value) -> Option<String> {
     match value {
         serde_json::Value::String(s) if s.contains('"') && !s.contains('\'') => Some(format!(
             "'{}'",

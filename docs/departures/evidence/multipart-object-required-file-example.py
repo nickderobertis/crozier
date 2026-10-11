@@ -10,11 +10,13 @@ from __future__ import annotations
 import argparse
 import ast
 import asyncio
+import enum
 import importlib
 import inspect
 import json
 import sys
 import textwrap
+from dataclasses import dataclass
 from email import policy
 from email.parser import BytesParser
 from pathlib import Path
@@ -24,7 +26,30 @@ from typing import Callable
 import httpx
 
 
-def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
+class ShapeName(enum.Enum):
+    """The proven sources: an aliased object, an object named `json`, and a plain multipart body."""
+
+    ALIAS = "alias"
+    JSON = "json"
+    PLAIN = "plain"
+
+
+@dataclass(frozen=True)
+class Shape:
+    """One proven source: the method its docstring example calls and the required file it omits."""
+
+    method: str
+    required_file: str
+
+
+SHAPES = {
+    ShapeName.ALIAS: Shape("store_plan", "attachment"),
+    ShapeName.JSON: Shape("store_survey", "attachment"),
+    ShapeName.PLAIN: Shape("hang_poster", "image"),
+}
+
+
+def examples(sdk: ModuleType, method: str, expected: str, required_file: str = "attachment") -> dict[str, str]:
     results: dict[str, str] = {}
     for name in ("FernApi", "AsyncFernApi"):
         function = getattr(getattr(sdk, name), method)
@@ -47,7 +72,7 @@ def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
         try:
             inspect.signature(function).bind(None, *args, **kwargs)
         except TypeError as error:
-            assert expected == "invalid" and "attachment" in str(error), (name, method, str(error))
+            assert expected == "invalid" and required_file in str(error), (name, method, str(error))
             results[f"{name}.{method}"] = str(error)
         else:
             assert expected == "valid", (name, method, "the certified example unexpectedly binds")
@@ -55,14 +80,14 @@ def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
     return results
 
 
-def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
+def wire(sdk: ModuleType, shape: ShapeName, json_parameter: str | None = None,
          part_content_type: str | None = None) -> None:
     recorded: list[httpx.Request] = []
     payload = b"cartography payload\x00\xff"
     file = ("payload.bin", payload, "application/octet-stream")
-    method = "store_plan" if shape == "alias" else "store_survey"
-    field = "plan" if shape == "alias" else "json"
-    model = getattr(sdk, "PlanAlias" if shape == "alias" else "StoreSurveyRequestJson")
+    method = SHAPES[shape].method
+    field = "plan" if shape is ShapeName.ALIAS else "json"
+    model = getattr(sdk, "PlanAlias" if shape is ShapeName.ALIAS else "StoreSurveyRequestJson")
     parameters = {"json": "parameter-value"} if json_parameter is not None else {}
 
     def handle(request: httpx.Request) -> httpx.Response:
@@ -110,7 +135,7 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
         function = getattr(client, method)
         missing_file(function)
         assert function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
-        if shape == "json":
+        if shape is ShapeName.JSON:
             assert client.store_metadata(metadata=getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)) is None
 
     async def async_wire() -> None:
@@ -126,37 +151,82 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
                 raise AssertionError("an async required file was silently omitted")
             assert len(recorded) == before
             assert await function(**{field: model(bearing=73), "attachment": file}, **parameters) is None
-            if shape == "json":
+            if shape is ShapeName.JSON:
                 value = getattr(sdk, "StoreMetadataRequestMetadata")(bearing=82)
                 assert await client.store_metadata(metadata=value) is None
 
     asyncio.run(async_wire())
-    assert len(recorded) == (2 if shape == "alias" else 4)
+    assert len(recorded) == (2 if shape is ShapeName.ALIAS else 4)
+
+
+def wire_plain(sdk: ModuleType) -> None:
+    """A multipart body with no JSON-encoded part sends its scalars and its file."""
+    recorded: list[httpx.Request] = []
+    payload = b"poster payload\x00\xff"
+    file = ("poster.png", payload, "image/png")
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        recorded.append(request)
+        content_type = request.headers["content-type"]
+        assert content_type.startswith("multipart/form-data; boundary=")
+        message = BytesParser(policy=policy.default).parsebytes(
+            f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode() + request.read()
+        )
+        parts = {part.get_param("name", header="content-disposition"): part
+                 for part in message.iter_parts()}
+        assert set(parts) == {"title", "wall", "image"}
+        assert parts["title"].get_content() == "Harbour at dusk"
+        assert parts["wall"].get_content() == "3"
+        assert parts["image"].get_filename() == "poster.png"
+        assert parts["image"].get_payload(decode=True) == payload
+        return httpx.Response(204)
+
+    with httpx.Client(transport=httpx.MockTransport(handle)) as transport:
+        client = getattr(sdk, "FernApi")(base_url="https://wire.example.test", httpx_client=transport)
+        try:
+            client.hang_poster(title="Harbour at dusk", wall=3)
+        except TypeError as error:
+            assert "image" in str(error)
+        else:
+            raise AssertionError("a required file was silently omitted")
+        assert not recorded
+        assert client.hang_poster(title="Harbour at dusk", wall=3, image=file) is None
+
+    async def async_wire() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as transport:
+            client = getattr(sdk, "AsyncFernApi")(base_url="https://wire.example.test", httpx_client=transport)
+            assert await client.hang_poster(title="Harbour at dusk", wall=3, image=file) is None
+
+    asyncio.run(async_wire())
+    assert len(recorded) == 2
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_src", type=Path)
-    parser.add_argument("shape", choices=("alias", "json"))
+    parser.add_argument("shape", type=ShapeName, choices=list(ShapeName))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--json-parameter", choices=("path", "query", "header"))
     parser.add_argument("--part-content-type", choices=("application/json",))
     args = parser.parse_args()
-    if args.json_parameter is not None and (args.shape != "alias" or not args.wire):
+    if args.json_parameter is not None and (args.shape is not ShapeName.ALIAS or not args.wire):
         parser.error("--json-parameter requires the alias shape and --wire")
-    if args.part_content_type is not None and not args.wire:
-        parser.error("--part-content-type requires --wire")
+    if args.part_content_type is not None and (args.shape is ShapeName.PLAIN or not args.wire):
+        parser.error("--part-content-type requires an object shape and --wire")
     if not (args.sdk_src / "fern" / "__init__.py").is_file():
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
     sdk = importlib.import_module("fern")
-    if args.wire:
+    if args.wire and args.shape is ShapeName.PLAIN:
+        wire_plain(sdk)
+    elif args.wire:
         wire(sdk, args.shape, args.json_parameter, args.part_content_type)
-    results = examples(sdk, "store_plan" if args.shape == "alias" else "store_survey", args.examples)
-    if args.shape == "json":
+    shape = SHAPES[args.shape]
+    results = examples(sdk, shape.method, args.examples, shape.required_file)
+    if args.shape is ShapeName.JSON:
         results.update(examples(sdk, "store_metadata", "valid"))
-    result = {"shape": args.shape, "wire": args.wire, "examples": results}
+    result = {"shape": args.shape.value, "wire": args.wire, "examples": results}
     if args.json_parameter is not None:
         result["json_parameter"] = args.json_parameter
     print(json.dumps(result, sort_keys=True))

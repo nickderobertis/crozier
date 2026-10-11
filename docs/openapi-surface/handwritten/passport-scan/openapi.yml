@@ -1,0 +1,27 @@
+openapi: 3.0.3
+info:
+  title: Passport Desk
+  version: 1.0.0
+paths:
+  /applications:
+    post:
+      operationId: submitApplication
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                signature:
+                  type: string
+                  format: binary
+                remarks:
+                  type: string
+      responses:
+        '204':
+          description: Submitted.

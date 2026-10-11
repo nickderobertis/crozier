@@ -24,7 +24,7 @@ encoding-style	mediaType.encoding.style	none
 response-status-literal	operation.responses	src/ir.rs::success_response_entry,src/ir.rs::resolve_errors,src/ir.rs::error_class_name	`success_response_key` is the stream-condition split's helper, not a status-code read
 range-2XX	fixture=openlinksw-osdb,fixture=sigstore-rekor	src/ir.rs::uses_codegen_request_body_name,src/ir.rs::has_bodyless_success	
 response-default	operation.responses.default	src/ir.rs::success_response_entry[=code\.as_str\(\) == "default"]	`success_response_key` is the stream-condition split's helper; this row's arm is `success_response_entry`'s `default` fallback
-response-description	response.description	src/ir.rs::success_response_doc	
+response-description	response.description	src/ir.rs::success_response_doc,src/emit.rs::push_return_doc[=None => \{\}]	A response with no description key adds no Returns line.
 response-headers	response.headers	none	
 response-content	response.content	src/ir.rs::response_schema,src/ir.rs::success_response_schema,src/ir.rs::error_body_type,src/openapi.rs::response_schemas	
 response-links	response.links	none	
@@ -71,7 +71,7 @@ head-operation	pathItem.head	src/openapi.rs::PathItem::operations,src/openapi.rs
 patch-operation	pathItem.patch	src/openapi.rs::PathItem::operations,src/openapi.rs::PathItem::operation_slots	
 operation-tags	operation.tags	src/ir.rs::first_tag,src/ir.rs::group_prefix_is_tag,src/ir.rs::first_segment_is_tag,src/ir.rs::title_from_tag,src/ir.rs::endpoint_module[^    if let Some\(tag\) = first_tag\(op\) \{]	
 operation-summary	operation.summary	src/ir.rs::endpoint_method_name[\} else if id.is_empty\(\) \{],src/naming.rs::summary_identifier	
-operation-description	operation.description	src/ir.rs::operation_doc,src/emit.rs::raw_docstring[if let Some\(summary\) = &ep.docstring \{]	
+operation-description	operation.description	src/ir.rs::operation_doc,src/emit.rs::raw_docstring[if let Some\(summary\) = &ep.docstring \{],src/openapi.rs::normalize_comment_close_descriptions	Descriptions break `*/` as Fern does.
 operation-external-docs	operation.externalDocs	none	
 operation-id	operation.operationId	src/ir.rs::endpoint_method_name,src/ir.rs::endpoint_module,src/ir.rs::endpoint_pascal_context,src/openapi.rs::reject_unemittable_operation_ids	
 operation-parameters	operation.parameters	src/openapi.rs::normalize_parameters,src/openapi.rs::resolve_parameter,src/openapi.rs::reject_unemittable_parameters	
@@ -143,7 +143,7 @@ parameter-allow-empty-value	parameter.allowEmptyValue	none
 parameter-style	parameter.style	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
 parameter-explode	parameter.explode	src/ir.rs::build_endpoint[^\s*&& schema\.is_some_and\(\x7cschema\x7c \{],src/emit.rs::append_request_call_args[if qp\.comma_separated \{]	
 parameter-allow-reserved	parameter.allowReserved	none	
-parameter-schema	parameter.schema	src/ir.rs::InlineHoister::hoist_param_enum,src/ir.rs::build_endpoint[let type_ref = schema\.map_or],src/ir.rs::one_or_many_query_schema,src/openapi.rs::parameter_schemas,src/openapi.rs::reject_unemittable_parameters,src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{],src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema],src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,],src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]	
+parameter-schema	parameter.schema	src/ir.rs::InlineHoister::hoist_param_enum,src/ir.rs::build_endpoint[let type_ref = schema\.map_or],src/ir.rs::one_or_many_query_schema,src/openapi.rs::parameter_schemas,src/openapi.rs::reject_unemittable_parameters,src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{],src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema],src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,],src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,],src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]	A nullable union element stays optional on the list's item.
 parameter-example	parameter.example	src/ir.rs::parameter_example_value,src/ir.rs::parameter_example,src/ir.rs::query_parameter_example	
 parameter-examples	parameter.examples	src/ir.rs::parameter_example_value,src/ir.rs::component_example_value	
 parameter-content	parameter.content	src/openapi.rs::parameter_schemas	
@@ -220,7 +220,7 @@ read-only	schema.readOnly	src/ir.rs::schema_property_is_read_only,src/ir.rs::Bui
 write-only	schema.writeOnly	none	
 xml	schema.xml	none	
 externaldocs	schema.externalDocs	none	
-example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_literal,src/ir.rs::parameter_example_value,src/ir.rs::array_item_example,src/ir.rs::Builder::add_object[if let Some\(example\) = schema_example\(schema\)]	
+example	schema.example	src/ir.rs::schema_example,src/ir.rs::schema_example_literal,src/ir.rs::parameter_example_value,src/ir.rs::array_item_example,src/ir.rs::Builder::add_object[if let Some\(example\) = schema_example\(schema\)],src/ir.rs::js_integer_literal[=let scientific = format!]	Integer examples beyond 2^53 take their nearest double's spelling.
 deprecated	schema.deprecated	none	
 dollar-schema	schema.$schema	none	
 dollar-id	schema.$id	none	
@@ -253,12 +253,12 @@ format-uri-template	schema.format=uri-template	src/ir.rs::base_type_ref[=^ {12}_
 format-json-pointer	schema.format=json-pointer	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-regex	schema.format=regex	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)]	
 format-int32	schema.format=int32	src/ir.rs::number_prim[=Some\("int32" \x7c "int64" \x7c "uint64"\)],src/ir.rs::int_prim	The integer-number arm also accepts uint64.
-format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64" \x7c "uint64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>]	The integer-number arm also accepts uint64.
+format-int64	schema.format=int64	src/ir.rs::int_prim,src/ir.rs::number_prim[=Some\("int32" \x7c "int64" \x7c "uint64"\)],src/emit.rs::ExampleCtx::value[=TypeRef::Primitive\(Prim::Long\) =>],src/ir.rs::bounded_example_literal[=^ {16}exact$]	The integer-number arm also accepts uint64. An example rounded past the int64 range keeps its declared value.
 format-float	schema.format=float	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-double	schema.format=double	src/ir.rs::number_prim[=_ => Prim::Float]	
 format-password	schema.format=password	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]	
 format-byte	schema.format=byte	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)],src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primitive\(Prim::Str\)],src/ir.rs::has_byte_text_response[=^ {16}return true;$]	
-format-binary	schema.format=binary	src/ir.rs::base_type_ref[=Some\("binary"\)],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response,src/ir.rs::has_wildcard_binary_response,src/ir.rs::resolve_request_body[let binary_media = \x7cmedia_type],src/ir.rs::hoist_form_object[let binary_scalar = \x7cschema: &Schema\x7c \{],src/ir.rs::Builder::variant_ref[match base_type_ref\(variant\) \{],src/ir.rs::scalar_body[=Some\("binary"\)],src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)],src/ir.rs::hoist_form_object[=&& simple_nullable_member\(prop_schema\)\.is_some_and\(binary_scalar\)],src/emit.rs::build_example_inner[=&& matches!\(f\.type_ref, TypeRef::Optional\(_\)\)],src/ir.rs::hoist_form_object[if nullable_binary]	
+format-binary	schema.format=binary	src/ir.rs::base_type_ref[=Some\("binary"\)],src/ir.rs::is_binary_response,src/ir.rs::has_binary_schema_response,src/ir.rs::has_wildcard_binary_response,src/ir.rs::resolve_request_body[let binary_media = \x7cmedia_type],src/ir.rs::hoist_form_object[let binary_scalar = \x7cschema: &Schema\x7c \{],src/ir.rs::Builder::variant_ref[match base_type_ref\(variant\) \{],src/ir.rs::scalar_body[=Some\("binary"\)],src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)],src/ir.rs::hoist_form_object[=&& simple_nullable_member\(prop_schema\)\.is_some_and\(binary_scalar\)],src/emit.rs::build_example_inner[=\x7c\x7c \(\(related \x7c\x7c documentation\) && f\.is_file\)],src/ir.rs::hoist_form_object[if nullable_binary]	
 content-encoding	schema.contentEncoding	none	
 content-media-type	schema.contentMediaType	none	
 content-schema	schema.contentSchema	none	

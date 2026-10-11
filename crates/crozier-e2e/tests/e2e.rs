@@ -54,6 +54,11 @@ mod unions;
 #[path = "e2e/literals_mode.rs"]
 mod literals_mode;
 
+/// The examples-and-docs measurement cases and the scope of the defect
+/// corrections that work catalogues.
+#[path = "e2e/examples_docs.rs"]
+mod examples_docs;
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
@@ -840,6 +845,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
+        (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -3506,6 +3512,7 @@ fn multipart_object_encoding_matches_certified_output_in_both_enum_modes() {
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg on every pull request, so an unrelated e2e edit cannot newly trigger them; they sit in this file beside the 26 other `sdk_env_*` journeys because crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
@@ -3515,6 +3522,7 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     for (shape, argument) in [
         ("multipart-alias-object", "alias"),
         ("multipart-json-module", "json"),
+        ("poster-upload", "plain"),
     ] {
         for mode in ["python-enums", "literals"] {
             let out = tempfile::tempdir().unwrap();
@@ -3555,7 +3563,410 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
             );
         }
     }
+    // The certified plain-multipart tree's docstrings omit the required file:
+    // the same script finds both calls failing to bind. An object shape's
+    // part content type means nothing for it, and is refused.
+    let certified = tempfile::tempdir().unwrap();
+    copy_dir(
+        &root.join("docs/openapi-surface/handwritten/poster-upload/fern-expected"),
+        certified.path(),
+    );
+    for (args, code) in [
+        (&["plain", "--examples", "invalid", "--wire"][..], Some(0)),
+        (
+            &[
+                "plain",
+                "--examples",
+                "invalid",
+                "--wire",
+                "--part-content-type",
+                "application/json",
+            ][..],
+            Some(2),
+        ),
+    ] {
+        // llmlint: ignore-block[e2e_not_mocked] As above: the script imports the certified package and records its requests at an httpx.MockTransport standing in for the server alone.
+        let run = std::process::Command::new(&python)
+            .arg(&script)
+            .arg(certified.path().join("src"))
+            .args(args)
+            .env("PYTHONDONTWRITEBYTECODE", "1")
+            .output()
+            .unwrap();
+        // llmlint: ignore-end[e2e_not_mocked]
+        let output = format!(
+            "{}{}",
+            String::from_utf8_lossy(&run.stdout),
+            String::from_utf8_lossy(&run.stderr)
+        );
+        assert_eq!(run.status.code(), code, "{args:?}: {output}");
+        if code == Some(0) {
+            assert!(
+                output.contains("missing a required argument: 'image'"),
+                "{output}"
+            );
+        }
+    }
 }
+
+/// A departure validator's run over the tree at `sdk_root`: its exit code and
+/// its whole output. The OpenAPI document is handed over as JSON, so the
+/// runtime environment needs no YAML reader.
+fn run_departure_validator(
+    python: &Path,
+    script: &str,
+    sdk_root: &Path,
+    document: &Path,
+    args: &[&str],
+) -> (Option<i32>, String) {
+    // llmlint: ignore-block[e2e_not_mocked] The validator imports the actual generated package and binds its documented calls; nothing in it or in crozier is stood in.
+    let output = Command::new(python)
+        .arg(repo_root().join(script))
+        .arg(sdk_root)
+        .arg(document)
+        .args(args)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the validator");
+    // llmlint: ignore-end[e2e_not_mocked]
+    (
+        output.status.code(),
+        format!(
+            "{}{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        ),
+    )
+}
+
+/// `fixture`'s document as JSON in `dir`: the departure validators parse their
+/// document with the standard library's `json` alone, so the YAML is converted
+/// for them here.
+fn handwritten_document_as_json(fixture: &str, dir: &Path) -> std::path::PathBuf {
+    let yaml = std::fs::read_to_string(
+        repo_root()
+            .join(HANDWRITTEN_DIR)
+            .join(fixture)
+            .join("openapi.yml"),
+    )
+    .expect("the hand-written document");
+    let value: serde_json::Value = serde_yaml_ng::from_str(&yaml).expect("a YAML document");
+    let path = dir.join("openapi.json");
+    std::fs::write(&path, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
+    path
+}
+
+/// The `int64-example-rounded-out-of-range` validator, driven as its evidence
+/// note drives it: it finds the certified tree's rounded values outside the
+/// int64 range and refuses to call them valid, accepts the tree the compiled
+/// crozier binary writes and refuses to call that one invalid, and rejects a
+/// directory holding no generated package.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_int64_example_validator_separates_fern_from_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/int64-example-rounded-out-of-range.py";
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("odometer-reading", scratch.path());
+    let certified = scratch.path().join("certified");
+    copy_dir(
+        &repo_root()
+            .join(HANDWRITTEN_DIR)
+            .join("odometer-reading/fern-expected"),
+        &certified,
+    );
+    let generated = scratch.path().join("crozier");
+    probe_command(&document, &generated).assert().success();
+    let operation = [
+        "--operation-id",
+        "recordReading",
+        "--method",
+        "record_reading",
+    ];
+    for (tree, examples, code) in [
+        (&certified, "invalid", Some(0)),
+        (&certified, "valid", Some(1)),
+        (&generated, "valid", Some(0)),
+        (&generated, "invalid", Some(1)),
+    ] {
+        let (status, output) = run_departure_validator(
+            &python,
+            SCRIPT,
+            tree,
+            &document,
+            &[&operation[..], &["--examples", examples]].concat(),
+        );
+        assert_eq!(
+            status,
+            code,
+            "{} --examples {examples}: {output}",
+            tree.display()
+        );
+        if code == Some(0) {
+            assert!(output.contains("\"checkpoints\""), "{output}");
+        }
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        scratch.path(),
+        &document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("sdk_root must contain src/fern"),
+        "{output}"
+    );
+    // An operation it cannot find, or one declaring no int64 example, is a
+    // failed proof, never a vacuous pass.
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &document,
+        &[
+            "--operation-id",
+            "noSuchOperation",
+            "--method",
+            "record_reading",
+            "--examples",
+            "valid",
+        ],
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(output.contains("no operation noSuchOperation"), "{output}");
+    let mut stripped: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    let operation_node = &mut stripped["paths"]["/readings"]["post"];
+    operation_node["parameters"] = serde_json::json!([]);
+    for property in operation_node["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]
+        .as_object_mut()
+        .unwrap()
+        .values_mut()
+    {
+        property.as_object_mut().unwrap().remove("example");
+        if let Some(items) = property.get_mut("items") {
+            items.as_object_mut().unwrap().remove("example");
+        }
+    }
+    let empty = scratch.path().join("no-examples.json");
+    std::fs::write(&empty, serde_json::to_vec(&stripped).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &empty,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(
+        output.contains("declares no int64 example to validate"),
+        "{output}"
+    );
+    // `format: int64` on a schema that is no integer declares no int64 example
+    // either, whatever example it carries.
+    fn retype_int64(node: &mut serde_json::Value) {
+        match node {
+            serde_json::Value::Object(map) => {
+                if map.get("format").and_then(serde_json::Value::as_str) == Some("int64") {
+                    map.insert("type".into(), "string".into());
+                }
+                map.values_mut().for_each(retype_int64);
+            }
+            serde_json::Value::Array(items) => items.iter_mut().for_each(retype_int64),
+            _ => {}
+        }
+    }
+    let mut untyped: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    retype_int64(&mut untyped);
+    let untyped_document = scratch.path().join("format-only.json");
+    std::fs::write(&untyped_document, serde_json::to_vec(&untyped).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &untyped_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(
+        output.contains("declares no int64 example to validate"),
+        "{output}"
+    );
+    // A bool equals 0 and 1, yet it is no integer: an example of 1 passed as
+    // `True` in every worked call fails the proof.
+    let mut one: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    one["paths"]["/readings"]["post"]["requestBody"]["content"]["application/json"]["schema"]
+        ["properties"]["trip_count"]["example"] = 1.into();
+    let one_document = scratch.path().join("trip-count-one.json");
+    std::fs::write(&one_document, serde_json::to_vec(&one).unwrap()).unwrap();
+    let boolean = scratch.path().join("boolean");
+    copy_dir(&generated, &boolean);
+    for file in ["README.md", "reference.md", "src/fern/client.py"] {
+        let path = boolean.join(file);
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(text.contains("trip_count=9007199254740992,"), "{file}");
+        std::fs::write(
+            &path,
+            text.replace("trip_count=9007199254740992,", "trip_count=True,"),
+        )
+        .unwrap();
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &boolean,
+        &one_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(1), "{output}");
+    assert!(output.contains("'no integer'"), "{output}");
+    // A document without the structure the proof reads is an input error.
+    let malformed = scratch.path().join("malformed.json");
+    std::fs::write(&malformed, r#"{"paths": []}"#).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &malformed,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("paths is not an object"), "{output}");
+    // So is a parameter whose int64 example has no name to bind it to.
+    let mut nameless: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&document).unwrap()).unwrap();
+    nameless["paths"]["/readings"]["post"]["parameters"][0]
+        .as_object_mut()
+        .unwrap()
+        .remove("name")
+        .expect("the int64 query parameter is named");
+    let nameless_document = scratch.path().join("nameless.json");
+    std::fs::write(&nameless_document, serde_json::to_vec(&nameless).unwrap()).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &nameless_document,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("recordReading.parameters[0].name is not a non-empty string"),
+        "{output}"
+    );
+    // A document that is not JSON at all is an input error too.
+    let unparsable = scratch.path().join("unparsable.json");
+    std::fs::write(&unparsable, "paths: {}\n").unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        &generated,
+        &unparsable,
+        &[&operation[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("not JSON ("), "{output}");
+}
+
+/// The `docstring-literal-dollar-escape` validator, driven as its evidence note
+/// drives it, over the certified literals tree and crozier's literals output.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
+    const SCRIPT: &str = "docs/departures/evidence/docstring-literal-dollar-escape.py";
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let scratch = tempfile::tempdir().unwrap();
+    let document = handwritten_document_as_json("prompt-variable", scratch.path());
+    let certified = literals_mode::case("prompt-variable").materialize();
+    let generated = scratch.path().join("crozier");
+    probe_command(&document, &generated)
+        .args(["--enum-type", "literals"])
+        .assert()
+        .success();
+    let target = [
+        "--schema",
+        "PromptSpec",
+        "--literal-type",
+        "PromptSpecVariable",
+        "--method",
+        "define_prompt",
+        "--keyword",
+        "variable",
+    ];
+    for (tree, examples, code) in [
+        (certified.path(), "invalid", Some(0)),
+        (certified.path(), "valid", Some(1)),
+        (generated.as_path(), "valid", Some(0)),
+        (generated.as_path(), "invalid", Some(1)),
+    ] {
+        let (status, output) = run_departure_validator(
+            &python,
+            SCRIPT,
+            tree,
+            &document,
+            &[&target[..], &["--examples", examples]].concat(),
+        );
+        assert_eq!(
+            status,
+            code,
+            "{} --examples {examples}: {output}",
+            tree.display()
+        );
+    }
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &document,
+        &[&target[..], &["--examples", "neither"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        scratch.path(),
+        &document,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("sdk_root must contain src/fern"),
+        "{output}"
+    );
+    // A document declaring no such const is an input error.
+    let malformed = scratch.path().join("malformed.json");
+    std::fs::write(&malformed, r#"{"components": {"schemas": {}}}"#).unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &malformed,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(
+        output.contains("components.schemas['PromptSpec'] is not an object"),
+        "{output}"
+    );
+    // A document that is not JSON at all is an input error too.
+    let unparsable = scratch.path().join("unparsable.json");
+    std::fs::write(&unparsable, "components: {}\n").unwrap();
+    let (status, output) = run_departure_validator(
+        &python,
+        SCRIPT,
+        generated.as_path(),
+        &unparsable,
+        &[&target[..], &["--examples", "valid"]].concat(),
+    );
+    assert_eq!(status, Some(2), "{output}");
+    assert!(output.contains("not JSON ("), "{output}");
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
@@ -8670,6 +9081,8 @@ const CORPORA: &[&Corpus] = &[
     &NETGSM_SMS,
     &ZYLON_PRIVATE_GPT,
     &MERMADE_OPENAPI_CONVERTER,
+    &GOOGLEAPIS_SPEECH_V2BETA1,
+    &GOOGLEAPIS_YOUTUBEANALYTICS_V1,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11725,6 +12138,34 @@ const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `googleapis-speech-v2beta1`: corpus row 2200, Google's Cloud Speech-to-Text
+/// API v2beta1, whose operation listing's description names `users/*/operations`
+/// and is documented `users/* /operations`.
+const GOOGLEAPIS_SPEECH_V2BETA1: Corpus = Corpus {
+    api: "googleapis-speech-v2beta1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `googleapis-youtubeanalytics-v1`: corpus row 2201, Google's YouTube Analytics
+/// API v1, a document with no operation: an empty `README.md` in the packaged
+/// tree and none in the flat one.
+const GOOGLEAPIS_YOUTUBEANALYTICS_V1: Corpus = Corpus {
+    api: "googleapis-youtubeanalytics-v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `mermade-openapi-converter`: corpus row 2400, the Swagger2OpenAPI converter,
 /// whose multipart bodies carry an optional one-value string enum part.
 const MERMADE_OPENAPI_CONVERTER: Corpus = Corpus {
@@ -12517,6 +12958,18 @@ fn mermade_openapi_converter_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); these generate a two-operation and a zero-operation document in about a second each, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for these rows.
+#[test]
+fn googleapis_speech_v2beta1_matches_fern_output() {
+    assert_committed_corpus_matches(&GOOGLEAPIS_SPEECH_V2BETA1);
+}
+
+#[test]
+fn googleapis_youtubeanalytics_v1_matches_fern_output() {
+    assert_committed_corpus_matches(&GOOGLEAPIS_YOUTUBEANALYTICS_V1);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 #[test]
 fn zylon_private_gpt_matches_fern_output() {
     assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
@@ -12771,6 +13224,12 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
         fixture: "truefoundry-trueforge",
         corpus: None,
     },
+    // A registered real document with no operation: Fern's flat tree has no
+    // `README.md`, where its packaged tree has an empty one.
+    FlatGolden {
+        fixture: "googleapis-youtubeanalytics-v1",
+        corpus: None,
+    },
 ];
 
 /// The spec and settings a flat golden drives crozier with.
@@ -12903,6 +13362,7 @@ flat_goldens! {
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
     truefoundry_trueforge_flat_matches_fern => "truefoundry-trueforge",
+    googleapis_youtubeanalytics_v1_flat_matches_fern => "googleapis-youtubeanalytics-v1",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec

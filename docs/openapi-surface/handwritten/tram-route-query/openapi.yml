@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Tram Timetable
+  version: 3.0.0
+paths:
+  /departures:
+    get:
+      operationId: listDepartures
+      parameters:
+        - name: route
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/RouteFilter'
+      responses:
+        '200':
+          description: Upcoming departures.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+components:
+  schemas:
+    RouteFilter:
+      type: object
+      required: [platforms]
+      properties:
+        platforms:
+          type: array
+          items:
+            type: string
+        accessible_only:
+          type: boolean

@@ -1,4 +1,4 @@
-# Multipart object examples omit a required file
+# Multipart examples omit a required file
 
 Two independently authored sources retain the exact combinations:
 [an aliased object](../../openapi-surface/handwritten/multipart-alias-object/openapi.yml)
@@ -48,3 +48,39 @@ actual wire values and recovery from a missing-file call. The parity rule
 requires a matching generated multipart method and the exact file placeholder,
 preserves nested object constructor arguments, and rejects adjacent unexplained
 changes. The line ledger is recorded from `src/parity.rs`, never hand-edited.
+
+## A multipart body with no JSON-encoded part
+
+The fault does not depend on the object part. The independently authored
+[`poster-upload`](../../openapi-surface/handwritten/poster-upload/openapi.yml)
+source posts a plain multipart body requiring `title`, `wall` and the binary
+`image`; its complete unedited certified tree uses the same pair, layout,
+names and `python_enums`, with the literals overlay under
+`docs/fern-measurements/literals-mode/poster-upload`. Its `hang_poster`
+signature requires `image: core.File`, its README and `reference.md` pass
+`image="example_image"`, and both client docstrings call
+`client.hang_poster(title="title", wall=1)`. The
+[`passport-scan`](../../openapi-surface/handwritten/passport-scan/openapi.yml)
+source's docstrings likewise call `client.submit_application()` for a method
+requiring `photo`.
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python docs/departures/evidence/multipart-object-required-file-example.py \
+  docs/openapi-surface/handwritten/poster-upload/fern-expected/src \
+  plain --examples invalid --wire
+```
+
+Executed on 2026-10-10 with Python 3.14 and the repository environment's
+HTTPX/Pydantic, it exited 0, reporting `missing a required argument: 'image'`
+for the sync and async docstring calls, after its local HTTP transport verified
+the actual multipart parts `title`, `wall` and `image` and that the call without
+the file sends nothing. With `plain --examples valid --wire` over a tree the
+compiled crozier binary generated from the same source, both examples bind.
+
+So the correction is one rule for one root cause: every multipart method's
+docstring example passes each required file part, as
+`image="example_image"` — the placeholder Fern's own README and `reference.md`
+write — with or without a JSON-encoded object beside it. The parity rule reads
+the required `core.File` parameters off the generated signature and their wire
+names off the raw client's request, and accepts exactly those placeholders
+added to an otherwise identical call.

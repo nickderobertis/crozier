@@ -42,6 +42,7 @@ client = FernApi(
 )
 
 client.specimens.upload_specimen(
+    scan="example_scan",
     label=UploadSpecimenRequestLabel(),
 )
 ```
@@ -63,6 +64,7 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.specimens.upload_specimen(
+        scan="example_scan",
         label=UploadSpecimenRequestLabel(),
     )
 
