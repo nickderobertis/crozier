@@ -1742,7 +1742,7 @@ proof that closes the shape:
 |---|---|
 | `shape` | the scenario's id, once, rows sorted by it |
 | `owner` | the scenario node that settled it |
-| `kind` | `real` (a registered corpus row's golden), `handwritten` (a [hand-written fixture](openapi-surface/handwritten/AGENTS.md) or a `handwritten-e2e.toml` cover), `measurement` (a `docs/fern-measurements/` tree) or `refusal` (a [refusal class](fern-refusals/README.md)) |
+| `kind` | `real` (a registered corpus row's golden), `handwritten` (a hand-written fixture or a `handwritten-e2e.toml` cover), `measurement` (a `docs/fern-measurements/` tree) or `refusal` (a [refusal class](fern-refusals/README.md)) |
 | `source` | the committed documents its goldens were generated from, in golden order, or a refusal's probes |
 | `goldens` | the complete certified Fern trees it is byte-compared with; `—` for a refusal |
 | `settings` | each golden's generator settings, in golden order, read off its `.fern/metadata.json`; `default;fern-strict` for a refusal |
@@ -1751,8 +1751,8 @@ proof that closes the shape:
 | `ids` | those corrections' [departure](departures/README.md) ids, or the refusal class |
 | `evidence` | the search record, evaluation note or evidence file the proof rests on |
 
-A hand-written or measured proof certifies a shape without counting as a
-real-specification match. Only a `real` row's golden comes from a registered
+A [hand-written](openapi-surface/handwritten/AGENTS.md) or measured proof
+certifies a shape without counting as a real-specification match. Only a `real` row's golden comes from a registered
 publisher document. The five refusal rows take their mode outcomes from their
 class's registry `status` and evaluation note, which names each cited probe.
 Two `measurement` rows prove their shapes under Fern's default literals enum
