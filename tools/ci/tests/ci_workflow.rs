@@ -1,14 +1,14 @@
-//! `ci.yml` reports the required contexts on every pull request. A draft that is
-//! lifted to ready for review must re-run them on its head: the default
-//! `pull_request` types omit `ready_for_review`, so without it the lift reports
-//! nothing new and the merge path is left reading draft-time runs.
+//! `ci.yml` reports the required contexts on every pull request. A draft's runs
+//! report on its head commit, and marking it ready changes no commit, so the
+//! draft-time runs are the ones the merge path reads: triggering on
+//! `ready_for_review` would only run the whole of CI a second time.
 
 use serde_yaml_ng::Value;
 
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
-fn pull_requests_rerun_when_a_draft_is_marked_ready() {
+fn marking_a_draft_ready_does_not_rerun_ci() {
     let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let types: Vec<&str> = workflow
         .get("on")
@@ -21,8 +21,8 @@ fn pull_requests_rerun_when_a_draft_is_marked_ready() {
         .collect();
     assert_eq!(
         types,
-        ["opened", "synchronize", "reopened", "ready_for_review"],
-        "ci.yml keeps the default pull_request types and adds ready_for_review"
+        ["opened", "synchronize", "reopened"],
+        "ci.yml keeps the default pull_request types and does not add ready_for_review"
     );
 }
 
