@@ -15743,11 +15743,13 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                     e2e.write_text("", encoding="utf-8")
                 case "loopback":
                     e2e.write_text(
-                        e2e.read_text().replace("LocalDocumentServer::start", "unrelated_server"), encoding="utf-8"
+                        e2e.read_text(encoding="utf-8").replace("LocalDocumentServer::start", "unrelated_server"),
+                        encoding="utf-8",
                     )
                 case "comparison":
                     e2e.write_text(
-                        e2e.read_text().replace("golden_tree_failures", "unrelated_comparison"), encoding="utf-8"
+                        e2e.read_text(encoding="utf-8").replace("golden_tree_failures", "unrelated_comparison"),
+                        encoding="utf-8",
                     )
                 case "evidence":
                     (root / paths[3]).unlink()
@@ -15756,10 +15758,12 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 case "golden":
                     (root / paths[4]).unlink()
                 case "version":
-                    registry.write_text(registry.read_text().replace("version = 1", "version = 2"), encoding="utf-8")
+                    registry.write_text(
+                        registry.read_text(encoding="utf-8").replace("version = 1", "version = 2"), encoding="utf-8"
+                    )
                 case "fields":
                     registry.write_text(
-                        registry.read_text().replace(
+                        registry.read_text(encoding="utf-8").replace(
                             'fixture = "docs/fern-measurements/models-refs-remote/library-records/documents"',
                             'fixture = ""',
                         ),
@@ -15767,10 +15771,12 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                     )
                 case "row":
                     target = root / paths[1]
-                    target.write_text(target.read_text().replace("handwritten-e2e:", "unexplained:"), encoding="utf-8")
+                    target.write_text(
+                        target.read_text(encoding="utf-8").replace("handwritten-e2e:", "unexplained:"), encoding="utf-8"
+                    )
                 case "golden-binding":
                     e2e.write_text(
-                        e2e.read_text().replace(
+                        e2e.read_text(encoding="utf-8").replace(
                             'format!("{MODELS_REFS_REMOTE_DIR}', 'format!("{UNRELATED_CERTIFIED_DIR}'
                         ),
                         encoding="utf-8",
@@ -15779,11 +15785,12 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                     registry.write_text("[[", encoding="utf-8")
                 case "kind":
                     registry.write_text(
-                        registry.read_text().replace('kind = "handwritten-e2e"', 'kind = "unknown"'), encoding="utf-8"
+                        registry.read_text(encoding="utf-8").replace('kind = "handwritten-e2e"', 'kind = "unknown"'),
+                        encoding="utf-8",
                     )
                 case "duplicate":
                     registry.write_text(
-                        registry.read_text().replace(
+                        registry.read_text(encoding="utf-8").replace(
                             'key = "remote-ref-at-use-site-inlined"',
                             'key = "remote-document-local-pointer-resolved-against-root"',
                         ),
@@ -15791,7 +15798,9 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                     )
                 case "verdict":
                     registry.write_text(
-                        registry.read_text().replace('verdict = "search-incomplete"', 'verdict = "unknown"'),
+                        registry.read_text(encoding="utf-8").replace(
+                            'verdict = "search-incomplete"', 'verdict = "unknown"'
+                        ),
                         encoding="utf-8",
                     )
             rows = gate.region_rows(root)
