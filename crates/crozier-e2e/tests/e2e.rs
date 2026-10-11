@@ -3512,6 +3512,7 @@ fn multipart_object_encoding_matches_certified_output_in_both_enum_modes() {
     }
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] These `sdk_env_*` journeys run only in the `sdk-env` project (tests/sdk_env/project.json: `tier:promoted`, `cache: false`), which AGENTS.md promotes out of the affected tier into its own required CI leg on every pull request, so an unrelated e2e edit cannot newly trigger them; they sit in this file beside the 26 other `sdk_env_*` journeys because crates/crozier-e2e/AGENTS.md makes `#[ignore]` the one mechanism that routes a journey to that project.
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
 fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
@@ -3941,6 +3942,7 @@ fn sdk_env_dollar_const_validator_separates_fern_from_crozier() {
     assert_eq!(status, Some(2), "{output}");
     assert!(output.contains("not JSON ("), "{output}");
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 #[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
