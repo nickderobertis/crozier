@@ -27,7 +27,7 @@ pub(super) const MANIFEST: &str = ".crozier-overlay.json";
 
 /// One case: the document crozier reads, the Fern tree it is held to, and
 /// where that tree's unchanged files come from.
-struct Case {
+pub(super) struct Case {
     name: String,
     spec: PathBuf,
     /// The hand-written fixture's `fern-expected/` an overlay sits on; `None`
@@ -48,7 +48,7 @@ impl Case {
 
     /// Fern's literals tree: `base` minus `removed`, with the case's own files
     /// laid over it.
-    fn materialize(&self) -> tempfile::TempDir {
+    pub(super) fn materialize(&self) -> tempfile::TempDir {
         let tree = tempfile::tempdir().expect("literals tree tempdir");
         let copy = |from: &Path, rel: &str| {
             let to = tree.path().join(rel);
@@ -213,7 +213,7 @@ fn cases_in(repo: &Path) -> Result<Vec<Case>, Vec<String>> {
 
 /// Every way crozier's literals output over `case` differs from Fern's tree
 /// `expected`.
-fn case_failures(case: &Case, expected: &Path, enum_type: &str) -> Vec<String> {
+pub(super) fn case_failures(case: &Case, expected: &Path, enum_type: &str) -> Vec<String> {
     let out = tempfile::tempdir().expect("crozier output tempdir");
     let result = crozier()
         .args(["generate", "python", "--spec"])
@@ -251,7 +251,7 @@ fn case_failures(case: &Case, expected: &Path, enum_type: &str) -> Vec<String> {
     )
 }
 
-fn case(name: &str) -> Case {
+pub(super) fn case(name: &str) -> Case {
     cases()
         .unwrap_or_else(|failures| panic!("{}", failures.join("\n")))
         .into_iter()

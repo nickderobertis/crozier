@@ -1,0 +1,42 @@
+openapi: 3.0.3
+info:
+  title: Weather Radar
+  version: 1.0.0
+paths:
+  /sweeps:
+    post:
+      operationId: streamSweep
+      x-fern-streaming:
+        format: sse
+        response-stream:
+          $ref: '#/components/schemas/Echo'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sector]
+              properties:
+                sector:
+                  $ref: '#/components/schemas/Sector'
+      responses:
+        '200':
+          description: Radar echoes.
+          content:
+            text/event-stream:
+              schema:
+                $ref: '#/components/schemas/Echo'
+components:
+  schemas:
+    Sector:
+      type: object
+      required: [bearing]
+      properties:
+        bearing:
+          type: integer
+    Echo:
+      type: object
+      properties:
+        dbz:
+          type: number

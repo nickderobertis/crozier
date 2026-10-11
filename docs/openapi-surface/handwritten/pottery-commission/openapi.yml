@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Pottery Studio
+  version: 2.1.0
+paths:
+  /commissions:
+    post:
+      operationId: placeCommission
+      summary: Place a commission with the studio.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Commission'
+      responses:
+        '201':
+          description: The commission was placed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Commission'
+components:
+  schemas:
+    Ticketed:
+      type: object
+      required: [ticket]
+      properties:
+        ticket:
+          type: string
+          description: The studio ticket number.
+    Commission:
+      allOf:
+        - $ref: '#/components/schemas/Ticketed'
+        - type: object
+          required: [glaze]
+          properties:
+            glaze:
+              type: string
+            kiln_notes:
+              type: string

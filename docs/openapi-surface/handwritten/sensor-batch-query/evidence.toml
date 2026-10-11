@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "dce5f5b7c86caf8fe760ba93558b199c8fbafd7052d9da58d255584f9ebdbcc6"
+
+[[covers]]
+key = "required-query-array-nullable-union-items"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

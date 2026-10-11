@@ -1,0 +1,39 @@
+openapi: 3.0.3
+info:
+  title: Greenhouse Vents
+  version: 1.0.0
+paths:
+  /vents:
+    get:
+      operationId: listVents
+      responses:
+        '200':
+          description: Vent states.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /vents/{ventId}:
+    get:
+      operationId: getVent
+      parameters:
+        - name: ventId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: One vent.
+          content:
+            application/json:
+              schema:
+                type: string
+  /vents/all:
+    put:
+      operationId: closeAllVents
+      responses:
+        '204':
+          description: Every vent closed.

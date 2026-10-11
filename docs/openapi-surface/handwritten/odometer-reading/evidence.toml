@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "68479239b52d75993771f80105d7552a0d5e191c2964ee2b83b92b08dc13c35f"
+
+[[covers]]
+key = "integer-example-beyond-double-precision"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

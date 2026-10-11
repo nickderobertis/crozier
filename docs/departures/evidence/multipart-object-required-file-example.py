@@ -24,7 +24,11 @@ from typing import Callable
 import httpx
 
 
-def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
+METHODS = {"alias": "store_plan", "json": "store_survey", "plain": "hang_poster"}
+REQUIRED_FILES = {"alias": "attachment", "json": "attachment", "plain": "image"}
+
+
+def examples(sdk: ModuleType, method: str, expected: str, required_file: str = "attachment") -> dict[str, str]:
     results: dict[str, str] = {}
     for name in ("FernApi", "AsyncFernApi"):
         function = getattr(getattr(sdk, name), method)
@@ -47,7 +51,7 @@ def examples(sdk: ModuleType, method: str, expected: str) -> dict[str, str]:
         try:
             inspect.signature(function).bind(None, *args, **kwargs)
         except TypeError as error:
-            assert expected == "invalid" and "attachment" in str(error), (name, method, str(error))
+            assert expected == "invalid" and required_file in str(error), (name, method, str(error))
             results[f"{name}.{method}"] = str(error)
         else:
             assert expected == "valid", (name, method, "the certified example unexpectedly binds")
@@ -134,10 +138,52 @@ def wire(sdk: ModuleType, shape: str, json_parameter: str | None = None,
     assert len(recorded) == (2 if shape == "alias" else 4)
 
 
+def wire_plain(sdk: ModuleType) -> None:
+    """A multipart body with no JSON-encoded part sends its scalars and its file."""
+    recorded: list[httpx.Request] = []
+    payload = b"poster payload\x00\xff"
+    file = ("poster.png", payload, "image/png")
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        recorded.append(request)
+        content_type = request.headers["content-type"]
+        assert content_type.startswith("multipart/form-data; boundary=")
+        message = BytesParser(policy=policy.default).parsebytes(
+            f"Content-Type: {content_type}\r\nMIME-Version: 1.0\r\n\r\n".encode() + request.read()
+        )
+        parts = {part.get_param("name", header="content-disposition"): part
+                 for part in message.iter_parts()}
+        assert set(parts) == {"title", "wall", "image"}
+        assert parts["title"].get_content() == "Harbour at dusk"
+        assert parts["wall"].get_content() == "3"
+        assert parts["image"].get_filename() == "poster.png"
+        assert parts["image"].get_payload(decode=True) == payload
+        return httpx.Response(204)
+
+    with httpx.Client(transport=httpx.MockTransport(handle)) as transport:
+        client = getattr(sdk, "FernApi")(base_url="https://wire.example.test", httpx_client=transport)
+        try:
+            client.hang_poster(title="Harbour at dusk", wall=3)
+        except TypeError as error:
+            assert "image" in str(error)
+        else:
+            raise AssertionError("a required file was silently omitted")
+        assert not recorded
+        assert client.hang_poster(title="Harbour at dusk", wall=3, image=file) is None
+
+    async def async_wire() -> None:
+        async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as transport:
+            client = getattr(sdk, "AsyncFernApi")(base_url="https://wire.example.test", httpx_client=transport)
+            assert await client.hang_poster(title="Harbour at dusk", wall=3, image=file) is None
+
+    asyncio.run(async_wire())
+    assert len(recorded) == 2
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("sdk_src", type=Path)
-    parser.add_argument("shape", choices=("alias", "json"))
+    parser.add_argument("shape", choices=("alias", "json", "plain"))
     parser.add_argument("--examples", choices=("invalid", "valid"), required=True)
     parser.add_argument("--wire", action="store_true")
     parser.add_argument("--json-parameter", choices=("path", "query", "header"))
@@ -151,9 +197,11 @@ def main() -> None:
         parser.error("sdk_src must contain the generated fern package")
     sys.path.insert(0, str(args.sdk_src.resolve()))
     sdk = importlib.import_module("fern")
-    if args.wire:
+    if args.wire and args.shape == "plain":
+        wire_plain(sdk)
+    elif args.wire:
         wire(sdk, args.shape, args.json_parameter, args.part_content_type)
-    results = examples(sdk, "store_plan" if args.shape == "alias" else "store_survey", args.examples)
+    results = examples(sdk, METHODS[args.shape], args.examples, REQUIRED_FILES[args.shape])
     if args.shape == "json":
         results.update(examples(sdk, "store_metadata", "valid"))
     result = {"shape": args.shape, "wire": args.wire, "examples": results}

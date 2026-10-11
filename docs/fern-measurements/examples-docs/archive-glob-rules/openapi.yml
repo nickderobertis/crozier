@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Backup Rotation
+  version: 1.0.0
+  description: Rotation for hosts/*/volumes.
+paths:
+  /rules:
+    get:
+      operationId: listRules
+      description: Rules apply to paths like /srv/*/data and backups/**/daily.
+      parameters:
+        - name: prefix
+          in: query
+          schema:
+            type: string
+          description: Only rules under this prefix, e.g. home/*/.cache.
+      responses:
+        '200':
+          description: Every rotation rule; globs end */ here.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RotationRule'
+  /rules/{ruleId}:
+    delete:
+      operationId: dropRule
+      summary: Drop a rule for logs/*/old.
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Dropped.
+components:
+  schemas:
+    RotationRule:
+      type: object
+      description: Keeps snapshots under vault/**/weekly for a month.
+      required: [include]
+      properties:
+        include:
+          type: string
+          description: Paths such as archive/**/snapshots or /*/tmp.
+        keep_days:
+          type: integer
+          description: Days to keep; */ marks the end of a cron field.
+        cadence:
+          $ref: '#/components/schemas/Cadence'
+    Cadence:
+      type: string
+      description: How often rotation runs across tier/*/hosts.
+      enum: [daily, weekly]

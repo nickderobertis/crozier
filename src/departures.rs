@@ -282,6 +282,8 @@ pub fn render_reference(entries: &[Departure]) -> String {
 pub struct Context {
     source_document: Option<crate::openapi::OpenApi>,
     source_enum_examples: OnceLock<Vec<SourceEnumExample>>,
+    source_int64_examples: OnceLock<BTreeSet<i64>>,
+    source_string_consts: OnceLock<BTreeSet<String>>,
     roots: Option<(std::path::PathBuf, std::path::PathBuf)>,
     reference_classes: OnceLock<BTreeSet<String>>,
     crozier_classes: OnceLock<BTreeSet<String>>,
@@ -322,6 +324,8 @@ impl Context {
         Context {
             source_document: None,
             source_enum_examples: OnceLock::new(),
+            source_int64_examples: OnceLock::new(),
+            source_string_consts: OnceLock::new(),
             roots: None,
             reference_classes: OnceLock::from(classes(reference.iter().copied())),
             crozier_classes: OnceLock::from(classes(crozier.iter().copied())),
@@ -358,6 +362,8 @@ impl Context {
     pub fn with_source_document(mut self, source: crate::openapi::OpenApi) -> Self {
         self.source_document = Some(source);
         self.source_enum_examples = OnceLock::new();
+        self.source_int64_examples = OnceLock::new();
+        self.source_string_consts = OnceLock::new();
         self
     }
 
@@ -614,8 +620,6 @@ struct RequestExampleContext {
         std::collections::BTreeMap<String, GeneratedParameter>,
     >,
     json_object_methods: BTreeSet<MethodKey>,
-    object_aliases: BTreeSet<String>,
-    encoded_fields: std::collections::BTreeMap<MethodKey, BTreeSet<String>>,
     wire_fields: std::collections::BTreeMap<MethodKey, std::collections::BTreeMap<String, String>>,
 }
 
@@ -735,21 +739,10 @@ fn python_method_name(line: &str) -> Option<&str> {
         .filter(|name| python_identifier(name))
 }
 
-fn strip_optional(mut annotation: &str) -> &str {
-    while let Some(inner) = annotation
-        .strip_prefix("typing.Optional[")
-        .and_then(|s| s.strip_suffix(']'))
-    {
-        annotation = inner;
-    }
-    annotation
-}
-
 fn request_example_context<'a>(
     sources: impl IntoIterator<Item = (&'a str, &'a str)>,
 ) -> RequestExampleContext {
     let sources: Vec<_> = sources.into_iter().collect();
-    let model_names = classes(sources.iter().copied());
     let aliases: std::collections::BTreeMap<_, _> = sources
         .iter()
         .filter(|(rel, _)| rel.ends_with(".py"))
@@ -758,21 +751,6 @@ fn request_example_context<'a>(
         .filter(|(name, _)| python_identifier(name))
         .collect();
     let mut out = RequestExampleContext::default();
-    for (name, target) in &aliases {
-        let mut current = *target;
-        let mut seen = BTreeSet::new();
-        while seen.insert(current) {
-            current = strip_optional(current);
-            if model_names.contains(current) || current.starts_with("typing.Dict[") {
-                out.object_aliases.insert((*name).to_string());
-                break;
-            }
-            let Some(next) = aliases.get(current) else {
-                break;
-            };
-            current = next;
-        }
-    }
     let mut model_fields: std::collections::BTreeMap<String, BTreeSet<String>> =
         std::collections::BTreeMap::new();
     for (_, text) in &sources {
@@ -863,16 +841,6 @@ fn request_example_context<'a>(
             }
             if line.trim() == "\"content-type\": \"application/json\"," {
                 json_headers.insert(key.clone());
-            }
-            if let Some(field) = line
-                .split_once(".dumps(jsonable_encoder(")
-                .and_then(|(_, after)| after.split_once("))").map(|(field, _)| field))
-                .filter(|field| python_identifier(field))
-            {
-                out.encoded_fields
-                    .entry(key.clone())
-                    .or_default()
-                    .insert(field.to_string());
             }
             let Some((wire, value)) = line
                 .trim()
@@ -988,32 +956,20 @@ fn multipart_example_lines<'a>(
                     raw_client_path: raw_rel.to_string(),
                     method_name: method.to_string(),
                 };
-                if let (Some(encoded), Some(wires)) = (
-                    context.encoded_fields.get(&key),
-                    context.wire_fields.get(&key),
-                ) {
-                    let eligible = fields.iter().any(|(name, annotation)| {
-                        encoded.contains(*name)
-                            && (*name == "json"
-                                || context.object_aliases.contains(strip_optional(
-                                    annotation.split('=').next().unwrap_or(annotation),
-                                )))
-                    });
-                    if eligible {
-                        for (name, annotation) in &fields {
-                            if annotation.contains('=') || !annotation.contains("core.File") {
-                                continue;
-                            }
-                            let Some(wire) = wires.get(*name) else {
-                                continue;
-                            };
-                            let value = if annotation.contains("Sequence[") {
-                                format!("[\"example_{wire}\"]")
-                            } else {
-                                format!("\"example_{wire}\"")
-                            };
-                            allowed.insert(format!("{name}={value}"));
+                if let Some(wires) = context.wire_fields.get(&key) {
+                    for (name, annotation) in &fields {
+                        if annotation.contains('=') || !annotation.contains("core.File") {
+                            continue;
                         }
+                        let Some(wire) = wires.get(*name) else {
+                            continue;
+                        };
+                        let value = if annotation.contains("Sequence[") {
+                            format!("[\"example_{wire}\"]")
+                        } else {
+                            format!("\"example_{wire}\"")
+                        };
+                        allowed.insert(format!("{name}={value}"));
                     }
                 }
             }
@@ -1778,16 +1734,18 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 22] = [
+pub const RULE_IDS: [&str; 24] = [
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
     "constant-header-docs-arguments",
     "date-header-constructor-example",
+    "docstring-literal-dollar-escape",
     "empty-namespace-package",
     "fern-metadata-generator-config",
     "flat-pagination-pager-docs",
     "init-type-checking-import-order",
+    "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
     "lifted-base-path-positional-example",
     "multipart-object-required-file-example",
@@ -1823,6 +1781,14 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "date-header-constructor-example" => Rule {
             region: Some(date_header_constructor_example),
+            ..none
+        },
+        "docstring-literal-dollar-escape" => Rule {
+            line: Some(docstring_literal_dollar_escape),
+            ..none
+        },
+        "int64-example-rounded-out-of-range" => Rule {
+            line: Some(int64_example_rounded_out_of_range),
             ..none
         },
         "empty-namespace-package" => Rule {
@@ -2176,6 +2142,199 @@ fn documented_example_line(rel: &str, lines: &[&str], candidate: &str) -> bool {
         }
     }
     found
+}
+
+/// `int64-example-rounded-out-of-range`: an example line of `README.md`,
+/// `reference.md` or a client docstring equal on both sides but for one integer
+/// keyword value, where Fern's is the spelling JavaScript gives the double
+/// nearest crozier's, crozier's lies inside the signed 64-bit range and Fern's
+/// does not.
+fn int64_example_rounded_out_of_range(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if pair.rel != "README.md" && pair.rel != "reference.md" && !high_level_client(pair.rel) {
+        return false;
+    }
+    let Some((prefix, fern_digits, crozier_digits)) = differing_integer(fern, crozier) else {
+        return false;
+    };
+    let negative = prefix.ends_with("=-");
+    if !negative && !prefix.ends_with('=') {
+        return false;
+    }
+    let signed = |digits: &str| {
+        let magnitude = digits.parse::<i128>().ok()?;
+        Some(if negative { -magnitude } else { magnitude })
+    };
+    let in_int64 = |value: i128| i128::from(i64::MIN) <= value && value <= i128::from(i64::MAX);
+    let (Some(fern_value), Some(crozier_value)) = (signed(fern_digits), signed(crozier_digits))
+    else {
+        return false;
+    };
+    let Ok(exact) = i64::try_from(crozier_value) else {
+        return false;
+    };
+    let declared = pair.context.source_int64_examples.get_or_init(|| {
+        let mut examples = BTreeSet::new();
+        visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
+            if schema.format.as_deref() == Some("int64") {
+                examples.extend(
+                    schema
+                        .example
+                        .iter()
+                        .chain(&schema.examples)
+                        .filter_map(serde_json::Value::as_i64),
+                );
+            }
+        });
+        examples
+    });
+    if !declared.contains(&exact) {
+        return false;
+    }
+    let rounded = crate::ir::js_integer_literal(&serde_json::Number::from(exact));
+    rounded.trim_start_matches('-') == fern_digits
+        && !in_int64(fern_value)
+        && documented_example_line(pair.rel, pair.fern, fern)
+        && documented_example_line(pair.rel, pair.crozier, crozier)
+}
+
+/// Apply `visit` to every schema the source document writes, wherever it sits
+/// — components, parameters, request and response bodies, and every schema
+/// nested inside one; to none without a source document.
+fn visit_source_schemas(
+    source: Option<&crate::openapi::OpenApi>,
+    visit: &mut dyn FnMut(&crate::openapi::Schema),
+) {
+    fn walk(schema: &crate::openapi::Schema, visit: &mut dyn FnMut(&crate::openapi::Schema)) {
+        visit(schema);
+        for property in schema.properties.values() {
+            walk(property, visit);
+        }
+        if let Some(items) = &schema.items {
+            walk(items, visit);
+        }
+        if let Some(crate::openapi::AdditionalProperties::Schema(value)) =
+            &schema.additional_properties
+        {
+            walk(value, visit);
+        }
+        for members in [&schema.one_of, &schema.any_of, &schema.all_of] {
+            for member in members.iter().flatten() {
+                walk(member, visit);
+            }
+        }
+    }
+    fn walk_content(
+        content: &indexmap::IndexMap<String, crate::openapi::MediaType>,
+        visit: &mut dyn FnMut(&crate::openapi::Schema),
+    ) {
+        for schema in content.values().filter_map(|media| media.schema.as_ref()) {
+            walk(schema, visit);
+        }
+    }
+    let Some(source) = source else {
+        return;
+    };
+    for schema in source.components.schemas.values() {
+        walk(schema, visit);
+    }
+    let parameters = source
+        .components
+        .parameters
+        .values()
+        .chain(source.paths.values().flat_map(|item| {
+            item.parameters.iter().chain(
+                item.operations()
+                    .into_iter()
+                    .flat_map(|(_, op)| &op.parameters),
+            )
+        }));
+    for parameter in parameters {
+        if let Some(schema) = &parameter.schema {
+            walk(schema, visit);
+        }
+    }
+    for item in source.paths.values() {
+        for (_, operation) in item.operations() {
+            if let Some(body) = &operation.request_body {
+                walk_content(&body.content, visit);
+            }
+            for response in operation.responses.values() {
+                walk_content(&response.content, visit);
+            }
+        }
+    }
+}
+
+/// Whether `rel` is a generated high-level `client.py`, whose docstrings carry
+/// the worked examples, rather than its `raw_client.py`.
+fn high_level_client(rel: &str) -> bool {
+    rel.rsplit('/').next() == Some("client.py")
+}
+
+/// `(prefix, Fern's digits, crozier's digits)` when two lines differ in exactly
+/// one run of ASCII digits and nothing else.
+fn differing_integer<'a>(fern: &'a str, crozier: &'a str) -> Option<(&'a str, &'a str, &'a str)> {
+    let common_prefix = fern
+        .bytes()
+        .zip(crozier.bytes())
+        .take_while(|(left, right)| left == right)
+        .count();
+    let common_suffix = fern
+        .bytes()
+        .rev()
+        .zip(crozier.bytes().rev())
+        .take_while(|(left, right)| left == right)
+        .count()
+        .min(fern.len().min(crozier.len()) - common_prefix);
+    let start = fern[..common_prefix]
+        .bytes()
+        .rev()
+        .take_while(u8::is_ascii_digit)
+        .count();
+    let start = common_prefix - start;
+    let end_digits = fern[fern.len() - common_suffix..]
+        .bytes()
+        .take_while(u8::is_ascii_digit)
+        .count();
+    let suffix = common_suffix - end_digits;
+    let fern_digits = &fern[start..fern.len() - suffix];
+    let crozier_digits = &crozier[start..crozier.len() - suffix];
+    let digits = |text: &str| !text.is_empty() && text.bytes().all(|byte| byte.is_ascii_digit());
+    (fern_digits != crozier_digits && digits(fern_digits) && digits(crozier_digits))
+        .then(|| (&fern[..start], fern_digits, crozier_digits))
+}
+
+/// `docstring-literal-dollar-escape`: a client docstring example line passing a
+/// keyword a string `const` the parsed source document declares, where Fern's
+/// literal is crozier's with every `$` preceded by an escaped backslash
+/// (`"\\$PS1"` for `"$PS1"`).
+fn docstring_literal_dollar_escape(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !high_level_client(pair.rel) || !crozier.contains('$') {
+        return false;
+    }
+    let consts = pair.context.source_string_consts.get_or_init(|| {
+        let mut consts = BTreeSet::new();
+        visit_source_schemas(pair.context.source_document.as_ref(), &mut |schema| {
+            if let Some(serde_json::Value::String(value)) = &schema.const_value {
+                consts.insert(value.clone());
+            }
+        });
+        consts
+    });
+    let keyword_const = crozier
+        .trim_start()
+        .split_once('=')
+        .is_some_and(|(name, value)| {
+            python_identifier(name)
+                && value
+                    .strip_suffix(',')
+                    .and_then(|literal| serde_json::from_str::<String>(literal).ok())
+                    .is_some_and(|literal| consts.contains(&literal))
+        });
+    keyword_const
+        && fern == crozier.replace('$', "\\\\$")
+        && documented_example_line(pair.rel, pair.fern, fern)
+        && documented_example_line(pair.rel, pair.crozier, crozier)
 }
 
 /// Correct only a generated default rejected by a scalar use-site pattern.
@@ -4042,6 +4201,259 @@ mod tests {
     }
 
     #[test]
+    fn the_int64_rule_takes_only_a_rounding_that_leaves_the_range() {
+        let fern_line = "            metres=9223372036854776000,";
+        let crozier_line = "            metres=9223372036854775807,";
+        let fern = [
+            "        \"\"\"",
+            "        Examples",
+            "        --------",
+            "        client.record_reading(",
+            fern_line,
+            "        )",
+            "        \"\"\"",
+        ];
+        let crozier = fern.map(|line| {
+            if line == fern_line {
+                crozier_line
+            } else {
+                line
+            }
+        });
+        let source: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "paths": {"/readings": {"post": {
+                "parameters": [{"name": "low", "in": "query", "schema": {
+                    "type": "integer", "format": "int64", "example": i64::MIN
+                }}],
+                "requestBody": {"content": {"application/json": {"schema": {
+                    "type": "object",
+                    "properties": {
+                        "metres": {"type": "integer", "format": "int64", "example": i64::MAX},
+                        "trip": {"type": "integer", "format": "int64", "example": 9_007_199_254_740_993_i64},
+                        "plain": {"type": "integer", "example": 9_223_372_036_854_000_000_i64}
+                    }
+                }}}},
+                "responses": {}
+            }}}
+        }))
+        .expect("a source document");
+        let context = Context::default().with_source_document(source);
+        let holds =
+            |rel: &str, fern_text: &[&str], crozier_text: &[&str], left: &str, right: &str| {
+                let pair = Pair {
+                    rel,
+                    fern: fern_text,
+                    crozier: crozier_text,
+                    context: &context,
+                };
+                int64_example_rounded_out_of_range(&pair, left, right)
+            };
+        assert!(holds(
+            "src/fern/client.py",
+            &fern,
+            &crozier,
+            fern_line,
+            crozier_line
+        ));
+        // Without the source document's declared example the rule abstains.
+        assert!(!int64_example_rounded_out_of_range(
+            &pair("src/fern/client.py", &fern, &crozier),
+            fern_line,
+            crozier_line
+        ));
+        // A value the document does not declare is no correction, even one that
+        // rounds to Fern's spelling.
+        let undeclared = "            metres=9223372036854775806,";
+        let undeclared_text = fern.map(|line| if line == fern_line { undeclared } else { line });
+        assert!(!holds(
+            "src/fern/client.py",
+            &fern,
+            &undeclared_text,
+            fern_line,
+            undeclared
+        ));
+        // An in-range rounding is Fern's valid value, kept as Fern writes it.
+        let near = (
+            "            trip=9007199254740992,",
+            "            trip=9007199254740993,",
+        );
+        let near_fern = fern.map(|line| if line == fern_line { near.0 } else { line });
+        let near_crozier = fern.map(|line| if line == fern_line { near.1 } else { line });
+        assert!(!holds(
+            "src/fern/client.py",
+            &near_fern,
+            &near_crozier,
+            near.0,
+            near.1
+        ));
+        // The minimum rounds to -2^63, whose spelling also leaves the range.
+        let low = (
+            "            metres=-9223372036854776000,",
+            "            metres=-9223372036854775808,",
+        );
+        let low_fern = fern.map(|line| if line == fern_line { low.0 } else { line });
+        let low_crozier = fern.map(|line| if line == fern_line { low.1 } else { line });
+        assert!(holds(
+            "src/fern/client.py",
+            &low_fern,
+            &low_crozier,
+            low.0,
+            low.1
+        ));
+        for (left, right) in [
+            ("            metres=9223372036854776001,", crozier_line),
+            (fern_line, "            metres=9223372036854000000,"),
+            (fern_line, "            other=9223372036854775807,"),
+            (
+                "            metres=\"9223372036854776000\",",
+                "            metres=\"9223372036854775807\",",
+            ),
+            (fern_line, fern_line),
+        ] {
+            let left_text = fern.map(|line| if line == fern_line { left } else { line });
+            let right_text = fern.map(|line| if line == fern_line { right } else { line });
+            assert!(
+                !holds("src/fern/client.py", &left_text, &right_text, left, right),
+                "{left} {right}"
+            );
+        }
+        assert!(!holds(
+            "src/fern/raw_client.py",
+            &fern,
+            &crozier,
+            fern_line,
+            crozier_line
+        ));
+        // Outside an example the same value is no documented call.
+        let bare_fern = [fern_line];
+        let bare_crozier = [crozier_line];
+        assert!(!holds(
+            "src/fern/client.py",
+            &bare_fern,
+            &bare_crozier,
+            fern_line,
+            crozier_line
+        ));
+        let readme_fern = ["```python", "    metres=9223372036854776000,", "```"];
+        let readme_crozier = ["```python", "    metres=9223372036854775807,", "```"];
+        assert!(holds(
+            "README.md",
+            &readme_fern,
+            &readme_crozier,
+            readme_fern[1],
+            readme_crozier[1]
+        ));
+    }
+
+    #[test]
+    fn the_dollar_rule_takes_only_an_escaped_docstring_literal() {
+        let fern_line = "            variable=\"\\\\$PS1\",";
+        let crozier_line = "            variable=\"$PS1\",";
+        let fern = [
+            "        \"\"\"",
+            "        Examples",
+            "        --------",
+            "        client.define_prompt(",
+            fern_line,
+            "        )",
+            "        \"\"\"",
+        ];
+        let crozier = fern.map(|line| {
+            if line == fern_line {
+                crozier_line
+            } else {
+                line
+            }
+        });
+        let source: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "paths": {},
+            "components": {"schemas": {"PromptSpec": {
+                "type": "object",
+                "properties": {
+                    "variable": {"type": "string", "const": "$PS1"},
+                    "label": {"type": "string", "example": "$5"}
+                }
+            }}}
+        }))
+        .expect("a source document");
+        let context = Context::default().with_source_document(source);
+        let holds =
+            |rel: &str, fern_text: &[&str], crozier_text: &[&str], left: &str, right: &str| {
+                let pair = Pair {
+                    rel,
+                    fern: fern_text,
+                    crozier: crozier_text,
+                    context: &context,
+                };
+                docstring_literal_dollar_escape(&pair, left, right)
+            };
+        assert!(holds(
+            "src/fern/client.py",
+            &fern,
+            &crozier,
+            fern_line,
+            crozier_line
+        ));
+        // Without the source document's const the rule abstains, and a string
+        // the document declares no const for takes no correction.
+        assert!(!docstring_literal_dollar_escape(
+            &pair("src/fern/client.py", &fern, &crozier),
+            fern_line,
+            crozier_line
+        ));
+        let label = ("            label=\"\\\\$5\",", "            label=\"$5\",");
+        let label_fern = fern.map(|line| if line == fern_line { label.0 } else { line });
+        let label_crozier = fern.map(|line| if line == fern_line { label.1 } else { line });
+        assert!(!holds(
+            "src/fern/client.py",
+            &label_fern,
+            &label_crozier,
+            label.0,
+            label.1
+        ));
+        for (left, right) in [
+            ("            variable=\"\\\\$PS2\",", crozier_line),
+            ("            variable=\"\\$PS1\",", crozier_line),
+            ("            other=\"\\\\$PS1\",", crozier_line),
+            (
+                "            variable=\"PS1\",",
+                "            variable=\"PS1\",",
+            ),
+            (
+                "            variable=\\\\$PS1,",
+                "            variable=$PS1,",
+            ),
+        ] {
+            let left_text = fern.map(|line| if line == fern_line { left } else { line });
+            let right_text = fern.map(|line| if line == fern_line { right } else { line });
+            assert!(
+                !holds("src/fern/client.py", &left_text, &right_text, left, right),
+                "{left} {right}"
+            );
+        }
+        let readme_fern = ["```python", "    variable=\"\\\\$PS1\",", "```"];
+        let readme_crozier = ["```python", "    variable=\"$PS1\",", "```"];
+        assert!(!holds(
+            "README.md",
+            &readme_fern,
+            &readme_crozier,
+            readme_fern[1],
+            readme_crozier[1]
+        ));
+        let bare_fern = [fern_line];
+        let bare_crozier = [crozier_line];
+        assert!(!holds(
+            "src/fern/client.py",
+            &bare_fern,
+            &bare_crozier,
+            fern_line,
+            crozier_line
+        ));
+    }
+
+    #[test]
     fn the_positional_rule_takes_only_the_lifted_keyword_with_the_same_value() {
         let context = lifted_context();
         let lines: [&str; 0] = [];
@@ -4284,15 +4696,24 @@ mod tests {
                 &Context::default()
             )
             .is_none());
+            // A plain multipart body, with no JSON-encoded part, takes the same
+            // correction; a file the raw client never sends takes none.
             let not_encoded = raw.replace("json.dumps(jsonable_encoder", "convert");
-            let context = Context::from_sources(
-                [],
-                [
-                    ("src/acme/raw_client.py", not_encoded.as_str()),
-                    ("src/acme/types/plan.py", declaration),
-                ],
-            );
-            assert!(region_of(rule, "src/acme/client.py", &fern, &corrected, &context).is_none());
+            let unsent = raw.replace("            \"attachment\": attachment,\n", "");
+            for (raw, accepted) in [(not_encoded, true), (unsent, false)] {
+                let context = Context::from_sources(
+                    [],
+                    [
+                        ("src/acme/raw_client.py", raw.as_str()),
+                        ("src/acme/types/plan.py", declaration),
+                    ],
+                );
+                assert_eq!(
+                    region_of(rule, "src/acme/client.py", &fern, &corrected, &context).is_some(),
+                    accepted,
+                    "{raw}"
+                );
+            }
         }
         assert!(example_call_arguments(
             "client.upload(value=[\"a,b\", {\"x\": (1, 2)}], attachment=\"example_attachment\")"
@@ -4301,14 +4722,6 @@ mod tests {
         for invalid in ["no_call", "call(", "call(\"unterminated)", "call(x))"] {
             assert!(example_call_arguments(invalid).is_none(), "{invalid}");
         }
-        let context = request_example_context([(
-            "types.py",
-            "class Plan(Model):\n    pass\nA = B\nB = typing.Optional[Plan]\nC = C\nD = str\n",
-        )]);
-        assert_eq!(
-            context.object_aliases,
-            BTreeSet::from(["A".to_string(), "B".to_string()])
-        );
     }
 
     #[test]

@@ -54,6 +54,11 @@ mod unions;
 #[path = "e2e/literals_mode.rs"]
 mod literals_mode;
 
+/// The examples-and-docs measurement cases and the scope of the defect
+/// corrections that work catalogues.
+#[path = "e2e/examples_docs.rs"]
+mod examples_docs;
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
@@ -840,6 +845,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
+        (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -3515,6 +3521,7 @@ fn sdk_env_multipart_objects_encode_and_required_file_examples_bind() {
     for (shape, argument) in [
         ("multipart-alias-object", "alias"),
         ("multipart-json-module", "json"),
+        ("poster-upload", "plain"),
     ] {
         for mode in ["python-enums", "literals"] {
             let out = tempfile::tempdir().unwrap();
@@ -8670,6 +8677,8 @@ const CORPORA: &[&Corpus] = &[
     &NETGSM_SMS,
     &ZYLON_PRIVATE_GPT,
     &MERMADE_OPENAPI_CONVERTER,
+    &GOOGLEAPIS_SPEECH_V2BETA1,
+    &GOOGLEAPIS_YOUTUBEANALYTICS_V1,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -11725,6 +11734,34 @@ const CONFLUENT_KAFKA_CONNECT: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `googleapis-speech-v2beta1`: corpus row 2200, Google's Cloud Speech-to-Text
+/// API v2beta1, whose operation listing's description names `users/*/operations`
+/// and is documented `users/* /operations`.
+const GOOGLEAPIS_SPEECH_V2BETA1: Corpus = Corpus {
+    api: "googleapis-speech-v2beta1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `googleapis-youtubeanalytics-v1`: corpus row 2201, Google's YouTube Analytics
+/// API v1, a document with no operation: an empty `README.md` in the packaged
+/// tree and none in the flat one.
+const GOOGLEAPIS_YOUTUBEANALYTICS_V1: Corpus = Corpus {
+    api: "googleapis-youtubeanalytics-v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `mermade-openapi-converter`: corpus row 2400, the Swagger2OpenAPI converter,
 /// whose multipart bodies carry an optional one-value string enum part.
 const MERMADE_OPENAPI_CONVERTER: Corpus = Corpus {
@@ -12517,6 +12554,18 @@ fn mermade_openapi_converter_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); these generate a two-operation and a zero-operation document in about a second each, and moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for these rows.
+#[test]
+fn googleapis_speech_v2beta1_matches_fern_output() {
+    assert_committed_corpus_matches(&GOOGLEAPIS_SPEECH_V2BETA1);
+}
+
+#[test]
+fn googleapis_youtubeanalytics_v1_matches_fern_output() {
+    assert_committed_corpus_matches(&GOOGLEAPIS_YOUTUBEANALYTICS_V1);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
 #[test]
 fn zylon_private_gpt_matches_fern_output() {
     assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
@@ -12771,6 +12820,12 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
         fixture: "truefoundry-trueforge",
         corpus: None,
     },
+    // A registered real document with no operation: Fern's flat tree has no
+    // `README.md`, where its packaged tree has an empty one.
+    FlatGolden {
+        fixture: "googleapis-youtubeanalytics-v1",
+        corpus: None,
+    },
 ];
 
 /// The spec and settings a flat golden drives crozier with.
@@ -12903,6 +12958,7 @@ flat_goldens! {
     eos_extra_fields_forbid_flat_matches_fern => "eos.local-extra-fields-forbid",
     swagger_petstore_organization_flat_matches_fern => "swagger-petstore-organization",
     truefoundry_trueforge_flat_matches_fern => "truefoundry-trueforge",
+    googleapis_youtubeanalytics_v1_flat_matches_fern => "googleapis-youtubeanalytics-v1",
 }
 
 /// `tests/fixtures/flat-goldens.txt` as `(fixture, spec fixture)` rows, the spec

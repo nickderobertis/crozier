@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Pump Station
+  version: 1.0.0
+paths:
+  /pumps/{pumpId}/flush:
+    post:
+      operationId: flushPump
+      x-fern-sdk-group-name: [pumps, servicing]
+      x-fern-sdk-method-name: flush
+      parameters:
+        - name: pumpId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Flushed.
+  /logs:
+    get:
+      operationId: exportLogs
+      x-fern-sdk-group-name: logs
+      x-fern-sdk-method-name: export
+      responses:
+        '200':
+          description: The station log.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+  /pumps/{pumpId}:
+    get:
+      operationId: readGauge
+      x-fern-sdk-group-name: [gauges]
+      x-fern-sdk-method-name: read
+      parameters:
+        - name: pumpId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The gauge reading.
+          content:
+            application/json:
+              schema:
+                type: number

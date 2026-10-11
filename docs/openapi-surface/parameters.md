@@ -149,6 +149,9 @@ Schema keyword is [schemas](schemas.md)'s, wherever it appears.
 | literal-prefixed-integer-path-segment | both | Parameter Object.schema (`integer` path parameter after literal text in its segment) | handwritten | handwritten: literal-prefixed-integer-path-segment; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 | query-param-ref-to-enum-or-array-union-converted | both | Parameter Object.schema (optional query `$ref` to a one-or-many string enum union) | handwritten | handwritten: query-param-ref-to-enum-or-array-union-converted; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
 | required-param-and-body-defaults-ignored | both | Schema Object.default (on a required query parameter and a required body property) | handwritten | handwritten: required-param-and-body-defaults-ignored; search: search-incomplete ([record](witness-search-prove-matches/README.md#verdicts)) |  |  |  |
+| example-nested-array-two-items | both | Parameter Object.schema (a required query parameter `$ref` to an object requiring an array of strings) | handwritten | handwritten: tram-route-query; search: search-incomplete ([record](witness-search-examples-docs/README.md#verdicts)) |  |  |  |
+| query-anyof-const-member-example-as-enum-member | both | Parameter Object.schema (a required query `anyOf` of a string and a one-value string enum, defaulting to that value) | handwritten | handwritten: ferry-slot-query; search: search-incomplete ([record](witness-search-examples-docs/README.md#verdicts)) |  |  |  |
+| required-query-array-nullable-union-items | both | Parameter Object.schema (a required query array whose items are an `anyOf` of two scalars and `type: null`) | handwritten | handwritten: sensor-batch-query; search: search-incomplete ([record](witness-search-examples-docs/README.md#verdicts)) |  |  |  |
 
 ## Method notes
 

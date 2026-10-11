@@ -60,7 +60,12 @@ const KINDS: &[Kind] = &[
     //   default;
     // - `subsloth`: inline property enums beside its map-of-`oneOf` member;
     // - `zylon-private-gpt`: property enums of the models a `stream-condition`
-    //   operation's halves stream and return.
+    //   operation's halves stream and return;
+    // - `googleapis-speech-v2beta1`: inline query-parameter enums beside the
+    //   `* /` its operation listing's description is documented with;
+    // - `googleapis-youtubeanalytics-v1`: a document with no operation, so no
+    //   enum reaches its tree and its literals tree differs only in the
+    //   generator record and the absent `core/enum.py`, its `README.md` empty.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -76,6 +81,8 @@ const KINDS: &[Kind] = &[
             "subsloth",
             "zylon-private-gpt",
             "aws-mobileanalytics",
+            "googleapis-speech-v2beta1",
+            "googleapis-youtubeanalytics-v1",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

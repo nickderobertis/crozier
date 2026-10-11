@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "057090ce71d05a57ec65696b4cbf695664c43d82801c550a968370ced9e6ecd5"
+
+[[covers]]
+key = "readme-nested-group-post-preferred"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

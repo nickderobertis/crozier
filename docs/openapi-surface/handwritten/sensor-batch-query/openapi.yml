@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Sensor Batches
+  version: 1.0.0
+paths:
+  /batches:
+    get:
+      operationId: listBatches
+      parameters:
+        - name: probes
+          in: query
+          required: true
+          schema:
+            type: array
+            items:
+              anyOf:
+                - type: string
+                - type: integer
+                - type: 'null'
+      responses:
+        '200':
+          description: Matching batches.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string

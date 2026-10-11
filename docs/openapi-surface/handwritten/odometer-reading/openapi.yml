@@ -1,0 +1,29 @@
+openapi: 3.0.3
+info:
+  title: Fleet Odometers
+  version: 1.0.0
+paths:
+  /readings:
+    post:
+      operationId: recordReading
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vehicle, metres, trip_count]
+              properties:
+                vehicle:
+                  type: string
+                metres:
+                  type: integer
+                  format: int64
+                  example: 9223372036854775807
+                trip_count:
+                  type: integer
+                  format: int64
+                  example: 9007199254740993
+      responses:
+        '204':
+          description: Recorded.

@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "bff472da7ba13e020e1afa34f506081832dd66eb1f5fdb3f5a99df44f220ea5e"
+
+[[covers]]
+key = "readme-streaming-snippet-omits-type-import"
+search = "docs/openapi-surface/witness-search-examples-docs/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-examples-docs/README.md"

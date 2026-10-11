@@ -1,0 +1,37 @@
+openapi: 3.0.3
+info:
+  title: Avionics Bench
+  version: 1.3.0
+paths:
+  /bookings:
+    post:
+      operationId: bookBench
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [rig, slot]
+              properties:
+                rig:
+                  $ref: '#/components/schemas/AWing'
+                slot:
+                  $ref: '#/components/schemas/BenchSlot'
+      responses:
+        '204':
+          description: Booked.
+components:
+  schemas:
+    AWing:
+      type: object
+      required: [serial]
+      properties:
+        serial:
+          type: string
+    BenchSlot:
+      type: object
+      required: [hour]
+      properties:
+        hour:
+          type: integer

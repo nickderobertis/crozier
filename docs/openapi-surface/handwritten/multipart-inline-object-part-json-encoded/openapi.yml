@@ -24,6 +24,9 @@ paths:
                       type: string
                 notes:
                   type: string
+                scan:
+                  type: string
+                  format: binary
       responses:
         "204":
           description: The specimen was filed.

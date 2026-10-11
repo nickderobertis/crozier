@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  title: Buoy Depths
+  version: 1.0.0
+paths:
+  /depths/{buoy}:
+    get:
+      operationId: readDepth
+      parameters:
+        - name: buoy
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metres:
+                    type: number
+    delete:
+      operationId: retireBuoy
+      parameters:
+        - name: buoy
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204': {}

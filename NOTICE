@@ -561,3 +561,19 @@ Additional multipart request specification:
     aggregation's CC0-1.0 LICENSE; corpus row 2400 records the immutable
     reference. The unmodified source and Fern-generated output are vendored,
     with Python comments stripped as above.
+
+Additional examples and documentation specifications:
+
+  * Cloud Speech-to-Text API v2beta1: the APIs.guru OpenAPI Directory's copy at
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/speech/v2beta1/openapi.yaml.
+    Copyright Google LLC. The document's info.license grants Creative Commons
+    Attribution 3.0 redistribution, inside the aggregation's CC0-1.0 LICENSE;
+    corpus row 2200 records the immutable reference. The unmodified source and
+    Fern-generated output are vendored, with Python comments stripped as above.
+
+  * YouTube Analytics API v1: the APIs.guru OpenAPI Directory's copy at
+    https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/googleapis.com/youtubeAnalytics/v1/openapi.yaml.
+    Copyright Google LLC. The document's info.license grants Creative Commons
+    Attribution 3.0 redistribution, inside the aggregation's CC0-1.0 LICENSE;
+    corpus row 2201 records the immutable reference. The unmodified source and
+    Fern-generated output are vendored, with Python comments stripped as above.
