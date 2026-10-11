@@ -14,11 +14,20 @@ use crozier::cli::{execute, parse_args};
 const STACK_BYTES: usize = 64 * 1024 * 1024;
 
 fn main() -> ExitCode {
-    let worker = std::thread::Builder::new()
+    let spawned = std::thread::Builder::new()
         .name("crozier".to_owned())
         .stack_size(STACK_BYTES)
-        .spawn(run)
-        .expect("spawning the crozier worker thread");
+        .spawn(run);
+    let worker = match spawned {
+        Ok(worker) => worker,
+        Err(error) => {
+            eprintln!(
+                "crozier: could not start a thread with a {} MiB stack: {error}; free memory or raise the process's virtual memory limit, then retry",
+                STACK_BYTES / (1024 * 1024)
+            );
+            return ExitCode::FAILURE;
+        }
+    };
     match worker.join() {
         Ok(code) => code,
         Err(panic) => std::panic::resume_unwind(panic),

@@ -38,7 +38,7 @@ import sys
 import tempfile
 import tomllib
 from pathlib import Path
-from typing import Any, Final, Literal, NamedTuple, NewType
+from typing import Any, Final, Literal, NamedTuple, NewType, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 REGIONS = Path("docs") / "openapi-surface"
@@ -57,7 +57,7 @@ TOP_LEVEL = ("covers", "digest", "fern_cli_version", "fern_python_sdk_version")
 OPTIONAL_TOP_LEVEL = ("audiences",)
 COVER_FIELDS = ("arm", "key", "renewed", "search", "verdict")
 SearchVerdict = Literal["exhausted", "search-incomplete", "config-gated"]
-VERDICTS: tuple[SearchVerdict, ...] = ("exhausted", "search-incomplete", "config-gated")
+VERDICTS: tuple[SearchVerdict, ...] = get_args(SearchVerdict)
 # A verdict only an arm-search record states, beside the settlement rule's
 # outcomes: the arm runs only under a generation setting no search probe sets.
 ARM_VERDICTS = ("config-gated",)
