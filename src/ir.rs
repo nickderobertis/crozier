@@ -3772,10 +3772,17 @@ fn build_endpoint(
                 required: p.required == Some(true),
                 docstring: declared_doc(p.description.as_deref()),
                 example: parameter_example(doc, p),
-                enum_value: p
-                    .schema
-                    .as_ref()
-                    .is_some_and(|schema| string_enum_values(schema).is_some()),
+                // A `$ref` to a string-enum component serializes by `.value` as
+                // an inline enum does (the measured `enum-header-params-stringified`
+                // document's `X-Shift`).
+                enum_value: p.schema.as_ref().is_some_and(|schema| {
+                    string_enum_values(schema).is_some()
+                        || schema
+                            .reference
+                            .as_deref()
+                            .and_then(|reference| resolve_ref(doc, reference))
+                            .is_some_and(|target| string_enum_values(target).is_some())
+                }),
             }
         })
         .collect();
@@ -6273,10 +6280,14 @@ fn resolve_request_body(
         if is_map(target) && target.all_of.is_none() {
             return Some(single(TypeRef::Named(class), required, false, true));
         }
+        // A titled array component carries the JSON content-type header, as a
+        // titled inline array body does: LangChain's agent server posts
+        // `RunBatchCreate` (`title: RunBatchCreate`) to `/runs/batch` with it,
+        // where an untitled array component is sent without one.
         if target.ty.as_ref().and_then(|t| t.primary()) == Some("array") {
             let type_ref = TypeRef::Named(class);
             let convert = type_needs_convert(&type_ref, types);
-            let mut body = single(type_ref, required, convert, false);
+            let mut body = single(type_ref, required, convert, target.title.is_some());
             if let RequestBody::Single(single) = &mut body {
                 single.example = media_example(doc, media).and_then(example_literal);
             }
@@ -8221,6 +8232,42 @@ fn union_has_temporal_member<'a>(
     }
 }
 
+/// A multipart part declared as one scalar member beside `null`, where the
+/// member may be a string enum or a `$ref` to a scalar or string-enum component.
+/// Fern sends such a part as a plain form field rather than JSON-encoding it:
+/// Speech-AI-Forge's `format`, `anyOf: [$ref STTOutputFormat, {type: null}]`, is
+/// `"format": format`. An object member stays JSON-encoded.
+fn nullable_scalar_part(schema: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> bool {
+    let Some(members) = schema.any_of.as_ref().or(schema.one_of.as_ref()) else {
+        return false;
+    };
+    let non_null: Vec<&Schema> = members
+        .iter()
+        .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
+        .collect();
+    let [mut member] = non_null[..] else {
+        return false;
+    };
+    if members.len() == 1 {
+        return false;
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    while let Some(reference) = member.reference.as_deref() {
+        let next = schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference));
+        match next {
+            Some(next) if seen.insert(reference) => member = next,
+            _ => return false,
+        }
+    }
+    member.one_of.is_none()
+        && member.any_of.is_none()
+        && member.all_of.is_none()
+        && matches!(
+            member.ty.as_ref().and_then(TypeField::primary),
+            Some("string" | "integer" | "number" | "boolean")
+        )
+}
+
 /// Resolve an object alias's encoding shape while retaining its declared type
 /// at the form-field call site.
 fn resolve_form_object_alias<'a>(
@@ -8310,6 +8357,7 @@ fn hoist_form_object(
             let form_json = multipart
                 && !is_file
                 && simple_nullable_primitive_member(resolved).is_none()
+                && !nullable_scalar_part(resolved, hoister.schemas)
                 && (is_unknown(resolved)
                     || matches!(
                         resolved.ty.as_ref().and_then(|ty| ty.primary()),
@@ -9258,6 +9306,8 @@ fn endpoint_method_name(op: &Operation, http_method: &str, url: &str) -> String 
                 || synthesized_method_name(http_method, url),
                 naming::summary_identifier,
             )
+    } else if let Some(method) = dotted_tag_group_method(op, id) {
+        naming::sanitize_identifier(&method.to_ascii_lowercase())
     } else if id.contains('.') && dotted_id_names_a_group(id) {
         let group = id.split_once('.').map_or(id, |(group, _)| group);
         if group.starts_with(|c: char| c.is_ascii_lowercase())
@@ -9368,6 +9418,24 @@ fn method_from_grouped_id(id: &str) -> String {
 fn dotted_id_names_a_group(id: &str) -> bool {
     let group = id.split_once('.').map_or(id, |(group, _)| group);
     group.chars().all(|c| c.is_ascii_alphanumeric())
+}
+
+/// The method of a `group.method` operationId whose group is its first tag's
+/// one word, as Fern's `getEndpointLocation` splits both
+/// ([`fern_location_tokens`]): the dotted id at its punctuation, a tag that is not
+/// camelCase at its punctuation too. Kompaz's `organizationLogo.show` under the
+/// tag `OrganizationLogo` is `show` in the `organizationlogo` group, titled
+/// `Organizationlogo`; letta's `scheduledMessages.listScheduledMessages` under the
+/// camelCase tag `scheduledMessages` (two words) is not this case, and keeps its
+/// whole id. `None` for any other shape.
+fn dotted_tag_group_method<'a>(op: &Operation, id: &'a str) -> Option<&'a str> {
+    let (group, method) = id.split_once('.')?;
+    let alphanumeric =
+        |part: &str| !part.is_empty() && part.chars().all(|c| c.is_ascii_alphanumeric());
+    (alphanumeric(group)
+        && alphanumeric(method)
+        && fern_location_tokens(first_tag(op)?) == [group.to_ascii_lowercase()])
+    .then_some(method)
 }
 
 /// The method name for a dotted operationId (`Group.Method`). Fern treats
@@ -9666,7 +9734,14 @@ fn module_title(doc: &OpenApi, op: &Operation, url: &str) -> String {
         // grouping: svix declares `Message Attempt` in `tags` and its golden's
         // heading keeps the space, where letta declares no `tags` at all and its
         // `agents` group is titled `Agents`.
+        // An undeclared tag that is the id's group is titled by that group's one
+        // lowercase word: `organizationLogo.show` under `OrganizationLogo` is
+        // `Organizationlogo`.
         if let Some(tag) = first_tag(op) {
+            if dotted_tag_group_method(op, id).is_some() && !doc.tags.iter().any(|t| t.name == tag)
+            {
+                return naming::to_pascal_case(&tag.to_ascii_lowercase());
+            }
             return title_from_tag(doc, tag);
         }
     }
@@ -9741,7 +9816,16 @@ pub(crate) fn endpoint_module(op: &Operation, url: &str) -> String {
                 return "_".to_string();
             }
         }
+        // A dotted id whose group is not its tag's one word is grouped by the tag
+        // as any other tagged operation is: `fooBar.show` under `SiteCover` is
+        // `site_cover`, where `siteCover.show` would be `sitecover`.
         if let Some(tag) = first_tag(op) {
+            if dotted_tag_group_method(op, id).is_none()
+                && tag.chars().all(|c| c.is_ascii_alphanumeric())
+                && tag.starts_with(|c: char| c.is_ascii_uppercase())
+            {
+                return snake_module(tag);
+            }
             return compact_module(tag);
         }
         // Untagged, the dotted namespace names no sub-client: Fern hangs the
@@ -16683,6 +16767,82 @@ mod tests {
         );
     }
 
+    #[test]
+    fn string_enum_component_headers_serialize_by_value() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Trams", "version": "1" },
+            "paths": { "/trams": { "get": {
+                "operationId": "listTrams",
+                "parameters": [
+                    { "name": "X-Shift", "in": "header", "required": true,
+                      "schema": { "$ref": "#/components/schemas/Shift" } },
+                    { "name": "X-Depot", "in": "header", "required": false,
+                      "schema": { "$ref": "#/components/schemas/Depot" } },
+                    { "name": "X-Line", "in": "header", "required": false,
+                      "schema": { "type": "string", "enum": ["one", "two"] } }
+                ],
+                "responses": { "204": { "description": "ok" } }
+            } } },
+            "components": { "schemas": {
+                "Shift": { "type": "string", "enum": ["early", "late"] },
+                "Depot": { "type": "string" }
+            } }
+        }))
+        .expect("document deserializes");
+        let operation = doc.paths["/trams"].get.as_ref().expect("GET operation");
+        let endpoint = build_endpoint(
+            &doc,
+            &[],
+            "/trams",
+            "GET",
+            operation,
+            &mut Vec::new(),
+            &std::collections::HashSet::new(),
+        );
+        let by_value: Vec<(&str, bool)> = endpoint
+            .header_params
+            .iter()
+            .map(|header| (header.wire_name.as_str(), header.enum_value))
+            .collect();
+        assert_eq!(
+            by_value,
+            [("X-Shift", true), ("X-Depot", false), ("X-Line", true)]
+        );
+    }
+
+    #[test]
+    fn a_titled_array_component_body_carries_the_content_type_header() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0",
+            "components": { "schemas": {
+                "Batch": { "type": "array", "title": "Batch", "items": { "type": "integer" } },
+                "Ids": { "type": "array", "items": { "type": "string" } }
+            } }
+        }))
+        .expect("components deserialize");
+        let header = |name: &str| {
+            let body: crate::openapi::RequestBody = serde_json::from_value(serde_json::json!({
+                "required": true,
+                "content": { "application/json": { "schema": {
+                    "$ref": format!("#/components/schemas/{name}")
+                } } }
+            }))
+            .expect("request body deserializes");
+            let mut hoister = InlineHoister {
+                copying_refs: Vec::new(),
+                root_types: &[],
+                schemas: Some(&doc.components.schemas),
+                out: Vec::new(),
+            };
+            super::resolve_request_body(&doc, &[], &body, &mut hoister, "SendRequest", false)
+                .expect("an array body resolves")
+                .content_type_header()
+        };
+        assert!(header("Batch"));
+        assert!(!header("Ids"));
+    }
+
     /// The one `GET /beds` operation of a document whose other operation keeps
     /// every header a method argument, built with `parameters`.
     fn beds_endpoint(parameters: serde_json::Value) -> crate::ir::Endpoint {
@@ -17217,6 +17377,49 @@ mod tests {
         assert_eq!(
             endpoint_method_name(&o, "GET", "/GetAvailableLocales/"),
             "getavailablelocales"
+        );
+    }
+
+    #[test]
+    fn a_dotted_group_that_is_its_tags_one_word_is_stripped() {
+        use super::{endpoint_method_name, endpoint_module, module_title};
+        let undeclared: OpenApi =
+            serde_json::from_value(serde_json::json!({})).expect("empty document deserializes");
+        // Kompaz: the PascalCase tag is one word to Fern, the dotted group's.
+        let o = op("organizationLogo.show", "OrganizationLogo");
+        assert_eq!(endpoint_module(&o, "/x"), "organizationlogo");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "show");
+        assert_eq!(module_title(&undeclared, &o, "/x"), "Organizationlogo");
+        let o = op("organizationLogo.destroyAll", "organizationlogo");
+        assert_eq!(endpoint_method_name(&o, "DELETE", "/x"), "destroyall");
+        // A declared tag keeps its spelling as the title.
+        let declared: OpenApi = serde_json::from_value(serde_json::json!({
+            "tags": [{"name": "ProjectIcon"}],
+        }))
+        .expect("document with tags deserializes");
+        let o = op("projectIcon.show", "ProjectIcon");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "show");
+        assert_eq!(module_title(&declared, &o, "/x"), "ProjectIcon");
+        // A camelCase tag is two words, so letta's group keeps its whole id.
+        let o = op(
+            "scheduledMessages.listScheduledMessages",
+            "scheduledMessages",
+        );
+        assert_eq!(endpoint_module(&o, "/x"), "scheduled_messages");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "scheduled_messages_list_scheduled_messages"
+        );
+        // A group that is not the tag leaves the PascalCase tag snake-cased.
+        let o = op("fooBar.show", "SiteCover");
+        assert_eq!(endpoint_module(&o, "/x"), "site_cover");
+        assert_eq!(endpoint_method_name(&o, "GET", "/x"), "foo_bar_show");
+        assert_eq!(module_title(&undeclared, &o, "/x"), "SiteCover");
+        let o = op("organizationLogo.show", "Organization");
+        assert_eq!(endpoint_module(&o, "/x"), "organization");
+        assert_eq!(
+            endpoint_method_name(&o, "GET", "/x"),
+            "organization_logo_show"
         );
     }
 
@@ -19545,6 +19748,65 @@ mod tests {
                 .reference
                 .is_none()
         );
+    }
+
+    #[test]
+    fn multipart_nullable_enum_and_scalar_refs_are_plain_parts() {
+        let schemas: indexmap::IndexMap<String, Schema> = [
+            ("Format", serde_json::json!({ "type": "string", "enum": ["txt", "vtt"] })),
+            ("Speed", serde_json::json!({ "type": "integer" })),
+            ("Margins", serde_json::json!({ "type": "object", "properties": { "left": { "type": "integer" } } })),
+            ("Loop", serde_json::json!({ "$ref": "#/components/schemas/Loop" })),
+        ]
+        .into_iter()
+        .map(|(name, value)| (name.to_string(), schema(value)))
+        .collect();
+        let nullable = |member: serde_json::Value| {
+            schema(serde_json::json!({ "anyOf": [member, { "type": "null" }] }))
+        };
+        let reference =
+            |name: &str| serde_json::json!({ "$ref": format!("#/components/schemas/{name}") });
+        assert!(super::nullable_scalar_part(
+            &nullable(reference("Format")),
+            Some(&schemas)
+        ));
+        assert!(super::nullable_scalar_part(
+            &nullable(reference("Speed")),
+            Some(&schemas)
+        ));
+        assert!(super::nullable_scalar_part(
+            &nullable(serde_json::json!({ "type": "string", "enum": ["a", "b"] })),
+            Some(&schemas)
+        ));
+        assert!(!super::nullable_scalar_part(
+            &nullable(reference("Margins")),
+            Some(&schemas)
+        ));
+        assert!(!super::nullable_scalar_part(
+            &nullable(reference("Loop")),
+            Some(&schemas)
+        ));
+        assert!(!super::nullable_scalar_part(
+            &nullable(reference("Missing")),
+            Some(&schemas)
+        ));
+        assert!(!super::nullable_scalar_part(
+            &nullable(reference("Format")),
+            None
+        ));
+        assert!(!super::nullable_scalar_part(
+            &reference_schema("Format"),
+            Some(&schemas)
+        ));
+        let pair =
+            schema(serde_json::json!({ "anyOf": [reference("Format"), reference("Speed")] }));
+        assert!(!super::nullable_scalar_part(&pair, Some(&schemas)));
+        let alone = schema(serde_json::json!({ "anyOf": [reference("Format")] }));
+        assert!(!super::nullable_scalar_part(&alone, Some(&schemas)));
+    }
+
+    fn reference_schema(name: &str) -> Schema {
+        schema(serde_json::json!({ "$ref": format!("#/components/schemas/{name}") }))
     }
 
     #[test]
