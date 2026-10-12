@@ -1763,7 +1763,8 @@ certifies a shape without counting as a real-specification match. A shape is
 fully closed only when its `open` cell is `—`. A shape whose certified fixture
 matches but a real witness, or the other enum mode, still differs on its own
 trigger is closed on its fixture only. Such a shape is named in the summary
-below, kept out of the fully closed count, and tracked by its own follow-up. Only a `real` row's golden comes from a registered
+below and kept out of the fully closed count; its residual hunks stay in
+`residuals.tsv` until they match. Only a `real` row's golden comes from a registered
 publisher document. The five refusal rows take their mode outcomes from their
 class's registry `status` and evaluation note, which names each cited probe.
 Two `measurement` rows prove their shapes under Fern's default literals enum
