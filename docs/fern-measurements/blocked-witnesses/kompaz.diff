@@ -1,3 +1,6 @@
+# crozier compare: crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
 --- reference/reference.md
 +++ crozier/reference.md
       ⋮ (531 unchanged line(s))
@@ -158,6 +161,7 @@
 -         client.organizationlogo.update(
 +         client.organizationlogo.organization_logo_update(
               organization="organization",
++             logo="example_logo",
           )
           """
 -         _response = self._raw_client.update(organization, logo=logo, request_options=request_options)
@@ -224,6 +228,7 @@
 -             await client.organizationlogo.update(
 +             await client.organizationlogo.organization_logo_update(
                   organization="organization",
++                 logo="example_logo",
               )
   
   

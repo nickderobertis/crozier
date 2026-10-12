@@ -1,3 +1,6 @@
+# crozier compare: crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
 --- reference/reference.md
 +++ crozier/reference.md
       ⋮ (34 unchanged line(s))

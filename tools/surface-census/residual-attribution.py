@@ -162,7 +162,7 @@ def _generate(document: Any, out: Path) -> dict[str, bytes]:
 def main() -> int:
     if not CROZIER.is_file():
         sys.exit(
-            f"residual-attribution: no {CROZIER.relative_to(REPO)}; run `just residual-attribution`, which builds it"
+            f"residual-attribution: no {CROZIER.relative_to(REPO).as_posix()}; run `just residual-attribution`, which builds it"
         )
     if shutil.which("ruff") is None:
         sys.exit("residual-attribution: `ruff` is not on PATH; install it with `just bootstrap`")

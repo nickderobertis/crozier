@@ -2933,6 +2933,101 @@ fn compare_with_certified_reference(
     )
 }
 
+/// `tools/surface-census/scenario-proof-index.py` attributes every hunk of the
+/// committed witness diffs, reading them in the format `crozier compare
+/// --diff-dir` writes. This drives the real producer and the real reader
+/// together. It perturbs a certified tree three known ways: one changed line,
+/// one file only in the reference, and one file only in crozier's output. The
+/// reader must report exactly those hunks, so a change to the diff format in
+/// `src/parity.rs` fails here instead of leaving the committed diffs unreadable.
+#[cfg(unix)]
+#[test]
+fn scenario_proof_index_reads_the_diff_crozier_compare_writes() {
+    let python =
+        python_interpreter().expect("python3 or python on PATH to run scenario-proof-index.py");
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/material-register");
+    let work = tempfile::tempdir().expect("compare workspace");
+    let reference = work.path().join("reference");
+    copy_dir(&fixture.join("fern-expected"), &reference);
+    let reference_md = reference.join("reference.md");
+    let text = std::fs::read_to_string(&reference_md).expect("certified reference.md");
+    let mut lines: Vec<&str> = text.lines().collect();
+    let changed = lines
+        .iter()
+        .rposition(|line| line.contains("client."))
+        .expect("reference.md documents a client call");
+    // The last call sits behind elided unchanged lines, so its line number
+    // holds the reader to the elision markers as well as the change prefixes.
+    assert!(
+        changed > 10,
+        "reference.md's last client call is at line {changed}"
+    );
+    lines[changed] = "a line only the reference writes";
+    std::fs::write(&reference_md, format!("{}\n", lines.join("\n"))).unwrap();
+    std::fs::remove_file(reference.join("README.md")).expect("certified README.md");
+    std::fs::write(
+        reference.join("extra.md"),
+        "only the reference has this file\n",
+    )
+    .unwrap();
+    let config = work.path().join("crozier.yml");
+    std::fs::write(
+        &config,
+        format!(
+            "spec: {}\npackage-name: fern\nproject-name: default_package_name\n\
+             reference:\n  command: cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            fixture.join("openapi.yml").display(),
+            reference.display()
+        ),
+    )
+    .unwrap();
+    let diffs = work.path().join("diff");
+    let output = crozier()
+        .arg("compare")
+        .arg(&config)
+        .arg("--diff-dir")
+        .arg(&diffs)
+        .output()
+        .expect("run crozier compare");
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let written: Vec<PathBuf> = std::fs::read_dir(&diffs)
+        .expect("compare wrote its diff directory")
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    assert_eq!(written.len(), 1, "{written:?}");
+    let read = std::process::Command::new(python)
+        .arg(repo_root().join("tools/surface-census/scenario-proof-index.py"))
+        .arg("hunks")
+        .arg(&written[0])
+        .output()
+        .expect("run scenario-proof-index.py hunks");
+    assert!(
+        read.status.success(),
+        "{}",
+        String::from_utf8_lossy(&read.stderr)
+    );
+    let mut hunks: Vec<String> = String::from_utf8(read.stdout)
+        .unwrap()
+        .lines()
+        .map(str::to_string)
+        .collect();
+    hunks.sort();
+    let line = changed + 1;
+    assert_eq!(
+        hunks,
+        [
+            "README.md\tonly in crozier".to_string(),
+            "extra.md\tonly in reference".to_string(),
+            format!("reference.md\t-{line},1 +{line},1"),
+        ]
+    );
+}
+
 /// The certified tree matches through `crozier compare`, and a reference that
 /// differs from it by one ordinary annotation is a mismatch naming that file:
 /// the adjacent scalar shapes are not swept up by any departure.
@@ -6342,6 +6437,95 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
             assert!(!run.files.is_empty());
         }
     }
+}
+
+/// The executable wire evidence a default-generation exception for
+/// `header-default-differs-across-operations` must name: each operation's
+/// generated method, called without the header, sends that operation's own
+/// declared default. The equal-default control generates and passes; the same
+/// SDK checked against the probe, whose PUT declares another default, fails.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_operation_header_defaults_reach_the_wire() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("crates/crozier-e2e/tests/e2e/declared_header_default_wire.py");
+    let probe = root.join("docs/fern-refusals/header-default-differs-across-operations/probe.yml");
+    Command::new(&python)
+        .arg(&script)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("required: sdk_src, spec"));
+    let mut control: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&probe).unwrap()).unwrap();
+    control["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
+        serde_json::json!("radial");
+    let out = tempfile::tempdir().unwrap();
+    let spec = out.path().join("control.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&control).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path().join("sdk"))
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let src = out.path().join("sdk/src");
+    Command::new(&python)
+        .arg(&script)
+        .arg(out.path().join("missing-sdk"))
+        .arg(&spec)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "must contain the generated fern package",
+        ));
+    let malformed = out.path().join("malformed.json");
+    std::fs::write(&malformed, "null").unwrap();
+    Command::new(&python)
+        .arg(&script)
+        .arg(&src)
+        .arg(&malformed)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "the document has no `paths` object",
+        ));
+    // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records the requests the emitted SDK sends; crozier and the client run unmodified. Real-network coverage belongs to the live Prism tier.
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&src)
+        .arg(&spec)
+        .assert()
+        .success()
+        // Python's text streams write CRLF on Windows; compare the line, not
+        // the platform's line ending.
+        .stdout(
+            predicate::str::diff("2 operation(s) sent their declared header defaults\n")
+                .normalize(),
+        );
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&src)
+        .arg(&probe)
+        .assert()
+        .code(1)
+        .stderr(
+            predicate::str::diff(
+                "PUT /measurements: replace_measurements() sent X-Projection: 'radial', \
+                 but the operation declares 'linear'\n",
+            )
+            .normalize(),
+        );
+    // llmlint: ignore-end[e2e_not_mocked]
 }
 
 #[test]

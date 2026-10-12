@@ -73,9 +73,11 @@ under the corpus gate's normalization, every departure held to
 | `water-pump-station` | the README demonstrates a nested group's `POST` over top-level groups' `GET`s | [hand-written fixture](../../openapi-surface/handwritten/water-pump-station/) | overlay |
 | `weather-radar-stream` | the README's streaming section imports the model its call constructs | [hand-written fixture](../../openapi-surface/handwritten/weather-radar-stream/) | overlay |
 
-Two cases carry their own document because crozier's `python_enums` output
-over it still differs from Fern's, so no hand-written fixture gates it:
-`enum-header-params-stringified` (Fern sends `.value`, crozier `str(...)`) and
-`enum-extension-names-dropped-under-literals` (Fern writes each
-`x-fern-enum` description as a member docstring). Seven more carry theirs
-because a real specification's golden proves the shape under `python_enums`.
+Two cases carry their own document because no hand-written fixture gates
+their `python_enums` output. Under `python_enums`,
+`enum-header-params-stringified` still differs: Fern sends `.value` and crozier
+sends `str(...)`. `enum-extension-names-dropped-under-literals` now matches
+Fern's whole tree. Both are measured in
+[`../python-enums-residuals/`](../python-enums-residuals/README.md). Seven more
+cases carry their own document because a real specification's golden proves the
+shape under `python_enums`.
