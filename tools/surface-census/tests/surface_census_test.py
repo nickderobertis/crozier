@@ -16403,6 +16403,44 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 lambda directory: (directory / "wire_test.py").unlink(),
                 [" has no wire_test.py asserting the generated SDK's wire behaviour"],
             ),
+            # The defaults stated only in comments, a docstring or a constant-only
+            # comparison assert nothing about the request the SDK sends.
+            "bare assert with defaults in comments": (
+                lambda directory: (directory / "wire_test.py").write_text(
+                    "def test_defaults(sent):\n"
+                    "    # GET sends X-Projection: radial; PUT sends X-Projection: linear\n"
+                    "    assert True\n",
+                    encoding="utf-8",
+                ),
+                [
+                    " has no wire_test.py asserting the generated SDK's wire behaviour",
+                    " has a wire_test.py that never asserts the declared default 'radial'",
+                    " has a wire_test.py that never asserts the declared default 'linear'",
+                ],
+            ),
+            "defaults in a docstring and a constant-only assert": (
+                lambda directory: (directory / "wire_test.py").write_text(
+                    'def test_defaults(sent):\n    """Sends radial and linear."""\n'
+                    '    assert ("GET", "radial") != ("PUT", "linear")\n',
+                    encoding="utf-8",
+                ),
+                [
+                    " has no wire_test.py asserting the generated SDK's wire behaviour",
+                    " has a wire_test.py that never asserts the declared default 'radial'",
+                ],
+            ),
+            "assertion outside a test function": (
+                lambda directory: (directory / "wire_test.py").write_text(
+                    'def helper(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n\n\n'
+                    "def test_defaults(sent):\n    helper(sent)\n",
+                    encoding="utf-8",
+                ),
+                [" has no wire_test.py asserting the generated SDK's wire behaviour"],
+            ),
+            "unparsable wire test": (
+                replace("wire_test.py", "def test_defaults(sent):", "def test_defaults(sent)"),
+                [" has a wire_test.py that is not valid Python (line 1: "],
+            ),
             "undeclared default": (
                 replace("wire_test.py", '("PUT", "linear")', '("PUT", "radial")'),
                 [" has a wire_test.py that never asserts the declared default 'linear'"],

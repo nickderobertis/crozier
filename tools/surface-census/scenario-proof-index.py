@@ -44,6 +44,7 @@ diff in the form `residuals.tsv` cites them.
 from __future__ import annotations
 
 import argparse
+import ast
 import functools
 import importlib.util
 import json
@@ -640,6 +641,37 @@ def _declared_defaults(document: Any) -> tuple[list[str], str | None]:
     return found, None
 
 
+def _wire_assertions(source: str) -> tuple[list[set[str]], str | None]:
+    """The literal values each wire assertion compares a sent request against, or why it cannot be parsed.
+
+    Only an `assert` inside a pytest `test_*` function counts, and only when its
+    expression reads a runtime value (a name, attribute, call or subscript) rather
+    than constants alone: `assert True`, or a default named only in a comment, a
+    docstring or a constant-only comparison, asserts nothing about the request.
+    """
+    try:
+        module = ast.parse(source)
+    except SyntaxError as error:
+        return [], f"line {error.lineno}: {error.msg}"
+    asserted = []
+    for function in ast.walk(module):
+        if not isinstance(function, ast.FunctionDef | ast.AsyncFunctionDef) or not function.name.startswith("test"):
+            continue
+        for statement in ast.walk(function):
+            if not isinstance(statement, ast.Assert):
+                continue
+            nodes = list(ast.walk(statement.test))
+            if any(isinstance(node, ast.Name | ast.Attribute | ast.Call | ast.Subscript) for node in nodes):
+                asserted.append(
+                    {
+                        str(node.value)
+                        for node in nodes
+                        if isinstance(node, ast.Constant) and isinstance(node.value, SETTING_VALUE)
+                    }
+                )
+    return asserted, None
+
+
 # How the registry's evaluation notes state a class's decision: a heading
 # ending in it, "is `refuse`", "`refuse` in both" / "`refuse` status", or
 # "Decision: **refuse**".
@@ -665,8 +697,9 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     `note_decisions`): a log it links shows the probe is valid OpenAPI, which with Fern's recorded
     refusal (`fern-refusal.txt`) makes the refusal a Fern limitation; a linked
     `mypy` log shows the SDK imports and type-checks clean; a linked wire log
-    shows the wire evaluation passing; and `wire_test.py` asserts on the wire,
-    naming every default the probe's operations declare.
+    shows the wire evaluation passing; and `wire_test.py` holds, in executable
+    test assertions over the request the SDK sends, every default the probe's
+    operations declare (see `_wire_assertions`).
     """
     problems = []
     logs = {}
@@ -690,8 +723,10 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     ):
         problems.append("links no passing wire-evaluation log")
     wire = directory / "wire_test.py"
-    test = wire.read_text(encoding="utf-8") if wire.is_file() else ""
-    if not re.search(r"(?m)^\s*assert\b", test):
+    asserted, unparsable = _wire_assertions(wire.read_text(encoding="utf-8") if wire.is_file() else "")
+    if unparsable:
+        problems.append(f"has a wire_test.py that is not valid Python ({unparsable})")
+    if not asserted:
         problems.append("has no wire_test.py asserting the generated SDK's wire behaviour")
     yaml = _yaml()
     try:
@@ -702,7 +737,7 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     if malformed:
         problems.append(f"has a probe.yml whose operations cannot be read: it {malformed}")
     for default in defaults:
-        if default not in test:
+        if not any(default in values for values in asserted):
             problems.append(f"has a wire_test.py that never asserts the declared default {default!r}")
     return problems
 
