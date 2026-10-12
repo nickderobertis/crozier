@@ -325,8 +325,9 @@
     "docs/fern-measurements/schema-shapes-literals/kiln-form-mode/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-nested-reason/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-nullable-member/fern-expected": {},
-    "docs/fern-measurements/schema-shapes-literals/kiln-problem-response/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-variant-trigger/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -491,7 +492,6 @@
     "docs/openapi-surface/handwritten/kiln-form-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-nullable-member/fern-expected": {},
-    "docs/openapi-surface/handwritten/kiln-problem-response/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-variant-trigger/fern-expected": {},
     "docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected": {},
     "docs/openapi-surface/handwritten/lamp-room-log/fern-expected": {},

@@ -26,12 +26,41 @@ arm evidence only; they do not become corpus rows or change the scenario plan.
 
 | key | arm | trigger and measured public declarer | verdict | renewed result |
 |---|---|---|---|---|
-| `allof` | `src/openapi.rs::collapse_sole_composition_member[=None => match sole_ref\(\) \{]` | JSON body allOf of one component ref with sibling title, description or default; speech-ai and vocode | `search-incomplete` | `none-registrable` |
-| `allof` | `src/ir.rs::InlineHoister::prop_type_ref[if let Some\(reference\) = annotated_sole_all_of_ref\(prop_schema\)]` | defaulted one-member allOf ref property in a flattened discriminated union variant; vocode | `search-incomplete` | `none-registrable` |
-| `allof` | `src/ir.rs::append_member_fields[=\} else if is_inline_struct\(prop_schema\) && annotated_sole_all_of_ref]` | defaulted one-member allOf ref property in a flattened discriminated union variant; vocode | `search-incomplete` | `none-registrable` |
+| `allof` | `src/openapi.rs::collapse_sole_composition_member[=Some\(member\) => \(member\x2c true\)]` | JSON body allOf of one component ref with sibling title, description or default; speech-ai and vocode | `search-incomplete` | `none-registrable` |
+| `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | defaulted one-member allOf ref property in a flattened discriminated union variant; vocode | `search-incomplete` | `none-registrable` |
+| `allof` | `src/ir.rs::append_member_fields[=^ {12}base_type_ref\(prop_schema\)$]` | defaulted one-member allOf ref property in a flattened discriminated union variant; vocode | `search-incomplete` | `none-registrable` |
 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | const anyOf inside a nullable inline property anyOf; rice-shower | `search-incomplete` | `none-registrable` |
-| `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && string_enum_values\(item\).is_some\(\)]` | array of inline enum beside another non-null member of a property union; langchain | `search-incomplete` | `none-registrable` |
-| `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=\.then\(\x7c\x7c string_enum_values\(items\)\)]` | array of inline enum beside another non-null member of a property union; langchain | `search-incomplete` | `none-registrable` |
-| `nullable` | `src/ir.rs::Builder::variant_ref[=return if variant.nullable == Some\(true\) \{]` | nullable anyOf member hoisted within an outer union; supabase | `search-incomplete` | `none-registrable` |
+| `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[=^ {24}return list;]` | array of inline enum beside another non-null member of a property union; langchain | `search-incomplete` | `none-registrable` |
+| `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | array of inline enum beside another non-null member of a property union; langchain | `search-incomplete` | `none-registrable` |
+| `nullable` | `src/ir.rs::Builder::variant_ref[=optional_type_ref\(composed\)]` | nullable anyOf member hoisted within an outer union; supabase | `search-incomplete` | `none-registrable` |
 | `media-type-form-urlencoded` | `src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]` | referenced urlencoded component with an inline enum property; supabase | `search-incomplete` | `none-registrable` |
-| `response-content` | `src/ir.rs::hoist_error_body_types[=\.find\(\x7c\(media_type\x2c _\)\x7c is_json_like_media_type\(media_type\)\)]` | referenced component response whose inline object uses application/problem+json; kompaz | `search-incomplete` | `none-registrable` |
+| `response-content` | `src/ir.rs::hoist_error_body_types[=\.map\(\x7c\(_\x2c media\)\x7c media\)]` | referenced component response whose inline object uses application/problem+json; kompaz | `search-incomplete` | `none-registrable` |
+
+## Success-counter anchors
+
+The fresh measurement at `eb26d1616731` supersedes condition-only anchors.
+The one-member body anchor now selects the successful `Some(member)` match arm;
+the variant property anchor selects its referenced-type return; the flattened
+field anchor selects its fallback conversion; the inline array anchor selects
+its enum-list return; and nullable nested composition selects its optional
+wrapper. The Builder array anchor starts at the tuple body `(items, values)`
+after an enum lookup succeeds, excluding the method-call counter that executes
+even when the lookup returns no values.
+
+| handling path | source counter starts (line:column) |
+|---|---|
+| `collapse_sole_composition_member`: successful allOf member | `4187:18`, `4187:29` |
+| `InlineHoister::prop_type_ref`: annotated reference return | `7703:20` |
+| `append_member_fields`: fallback type conversion | `10776:13`, `10776:27` |
+| `InlineHoister::hoist_union_variant`: hoisted enum list return | `7337:32` |
+| `Builder::field_type_ref`: successful enum lookup tuple | `13354:60`, `13354:67` |
+| `Builder::variant_ref`: optional composed member | `13682:21`, `13682:39` |
+| `hoist_error_body_types`: JSON-suffix media map | `5759:30` |
+
+The last map has no separate successful-result counter. Registered goldens
+reach its media-selection call and the flattened field fallback, superseding
+those covers. Suffix reach does not establish the exact problem-media object
+shape: its complete two-mode regression remains at
+[`schema-shapes/kiln-problem-response`](../../fern-measurements/schema-shapes/kiln-problem-response/).
+The other fixtures retain only covers for successful arms no registered golden
+reaches; these coordinates describe the measured source, not stable line IDs.

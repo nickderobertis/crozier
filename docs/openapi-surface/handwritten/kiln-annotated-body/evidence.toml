@@ -4,7 +4,7 @@ digest = "9287e4a0b519d6edee08430a90d920b3c262f8e37553d8856d93fe57ea9a2aa6"
 
 [[covers]]
 key = "allof"
-arm = 'src/openapi.rs::collapse_sole_composition_member[=None => match sole_ref\(\) \{]'
+arm = 'src/openapi.rs::collapse_sole_composition_member[=Some\(member\) => \(member\x2c true\)]'
 search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"

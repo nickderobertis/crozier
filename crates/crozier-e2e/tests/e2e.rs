@@ -842,6 +842,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (HANDWRITTEN_DIR, "fern-expected"),
         (MODELS_REFS_LITERALS_DIR, "fern-expected"),
         (SCHEMA_SHAPES_LITERALS_DIR, "fern-expected"),
+        (SCHEMA_SHAPES_DIR, "fern-expected"),
         (MODELS_REFS_REMOTE_DIR, "fern-expected"),
         (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
@@ -2813,6 +2814,7 @@ fn unwritten_module_imports_names_a_missing_module() {
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+const SCHEMA_SHAPES_DIR: &str = "docs/fern-measurements/schema-shapes";
 const SCHEMA_SHAPES_LITERALS_DIR: &str = "docs/fern-measurements/schema-shapes-literals";
 const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
 const MODELS_REFS_REMOTE_DIR: &str = "docs/fern-measurements/models-refs-remote";
@@ -2889,7 +2891,12 @@ fn schema_shape_arms_match_complete_certified_trees() {
         ),
     ] {
         for mode in ["python-enums", "literals"] {
-            let fixture = repo_root().join(HANDWRITTEN_DIR).join(shape);
+            let fixture_dir = if shape == "kiln-problem-response" {
+                SCHEMA_SHAPES_DIR
+            } else {
+                HANDWRITTEN_DIR
+            };
+            let fixture = repo_root().join(fixture_dir).join(shape);
             let source = tempfile::tempdir().expect("source recovery directory");
             let spec = source.path().join("openapi.yml");
             let out = source.path().join("sdk");
@@ -2904,11 +2911,27 @@ fn schema_shape_arms_match_complete_certified_trees() {
                 .assert()
                 .success();
             let golden = if mode == "python-enums" {
-                format!("{HANDWRITTEN_DIR}/{shape}/fern-expected")
+                format!("{fixture_dir}/{shape}/fern-expected")
+            } else if shape == "kiln-problem-response" {
+                format!("{SCHEMA_SHAPES_DIR}/{shape}-literals/fern-expected")
             } else {
                 format!("{SCHEMA_SHAPES_LITERALS_DIR}/{shape}/fern-expected")
             };
             let expected = repo_root().join(&golden);
+            if shape == "kiln-problem-response" && mode == "python-enums" {
+                let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
+                for field in [
+                    "fern_cli_version = \"5.67.1\"".to_owned(),
+                    "fern_python_sdk_version = \"5.20.0\"".to_owned(),
+                    format!("digest = \"{}\"", probe_artifact_digest(&expected).unwrap()),
+                    format!(
+                        "source_digest = \"{}\"",
+                        sha256_hex(&std::fs::read(&spec).unwrap())
+                    ),
+                ] {
+                    assert!(evidence.contains(&field), "{shape}: missing {field}");
+                }
+            }
             if mode == "literals" {
                 let evidence =
                     std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
