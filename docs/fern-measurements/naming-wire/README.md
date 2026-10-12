@@ -19,12 +19,6 @@ or removes a member docstring in a temporary reference tree and requires the
 comparison to fail. The literals-mode gate continues to compare the same
 documents with `--enum-type literals`.
 
-To regenerate, use the workspace and environment described in
-[the probe procedure](../../openapi-surface/probes/AGENTS.md#re-running-one),
-copying the corresponding literals-mode `openapi.yml`. Preserve the complete
-output, apply `crozier internal-strip`, and retain the generator metadata.
-Do not edit the generated Python to match crozier.
-
 The retained `ledger-batch-upload` control and its `ledger-batch-upload-literals`
 overlay were moved here after the registered `tamoss` document was found to
 declare the titled OpenAPI 3.1 array-body shape. Their certified bytes are
