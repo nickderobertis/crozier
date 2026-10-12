@@ -797,24 +797,48 @@ class Capture:
     slots: dict[int | None, Field]
 
 
-def _capture(handler: ast.FunctionDef | ast.Lambda) -> Capture | None:
-    """What a transport handler records of each request it receives: `<list>.append(<request fields>)`."""
+def _capture(handler: ast.FunctionDef) -> Capture | None:
+    """What a transport handler records of each request it receives: one `<list>.append(<request fields>)`.
+
+    The append must be a statement the handler always reaches (none follows a
+    `return`, sits under a branch, or lives in a function nested in it), it must
+    be the handler's only mention of the list, and the handler must not rebind
+    the request it was given, so each entry is exactly one received request.
+    """
     arguments = handler.args.posonlyargs + handler.args.args
-    if not arguments:
+    statements = _reachable(handler.body)
+    if not arguments or statements is None:
         return None
     request = arguments[0].arg
-    for node in ast.walk(handler):
-        match node:
-            case ast.Call(func=ast.Attribute(value=ast.Name(id=container), attr="append"), args=[entry]):
-                elements = entry.elts if isinstance(entry, ast.Tuple) else [entry]
-                slots: dict[int | None, Field] = {
-                    (index if isinstance(entry, ast.Tuple) else None): field
-                    for index, element in enumerate(elements)
-                    if (field := _request_field(element, request))
-                }
-                if slots:
-                    return Capture(container, slots)
-    return None
+    appends = [
+        (container, entry)
+        for statement in statements
+        if isinstance(statement, ast.Expr)
+        for container, entry in [_append(statement.value)]
+        if container
+    ]
+    if len(appends) != 1:
+        return None
+    (container, entry), names = appends[0], [node for node in ast.walk(handler) if isinstance(node, ast.Name)]
+    if [node.id for node in names].count(container) != 1 or any(
+        node.id == request and isinstance(node.ctx, ast.Store) for node in names
+    ):
+        return None
+    elements = entry.elts if isinstance(entry, ast.Tuple) else [entry]
+    slots: dict[int | None, Field] = {
+        (index if isinstance(entry, ast.Tuple) else None): field
+        for index, element in enumerate(elements)
+        if (field := _request_field(element, request))
+    }
+    return Capture(container, slots) if slots else None
+
+
+def _append(node: ast.expr) -> tuple[str | None, ast.expr]:
+    """The list `<list>.append(<entry>)` appends to, and its entry; (None, node) for anything else."""
+    match node:
+        case ast.Call(func=ast.Attribute(value=ast.Name(id=container), attr="append"), args=[entry], keywords=[]):
+            return container, entry
+    return None, node
 
 
 def _called(call: ast.Call) -> str | None:
@@ -825,32 +849,54 @@ def _called(call: ast.Call) -> str | None:
     return None
 
 
+@dataclass(frozen=True)
+class Wiring:
+    """How a test's generated-SDK client reaches its capture, and the statements that build it."""
+
+    client: str
+    capture: Capture
+    handler: ast.FunctionDef
+    # Each name the client's `httpx_client` argument resolves through, and the statement binding it.
+    chain: dict[str, int]
+    statement: int
+
+
 def _client_capture(
-    value: ast.expr, sdk: set[str], handlers: dict[str, ast.FunctionDef], bound: dict[str, ast.expr]
-) -> Capture | None:
-    """The capture a generated-SDK client is built with: `<SdkClass>(..., httpx_client=...MockTransport(h)...)`."""
+    value: ast.expr, sdk: set[str], handlers: dict[str, ast.FunctionDef], bound: dict[str, tuple[int, ast.expr]]
+) -> tuple[Capture, ast.FunctionDef, dict[str, int]] | str | None:
+    """The capture a generated-SDK client is built with: `<SdkClass>(..., httpx_client=...MockTransport(h)...)`.
+
+    `h` is a function the test itself defines; `bound` resolves the names the
+    `httpx_client` argument reads to the statements that bind them. A handler
+    `_capture` cannot credit is returned as the reason the client captures nothing.
+    """
     match value:
         case ast.Call(func=ast.Name(id=name)) if name in sdk:
             pending = [keyword.value for keyword in value.keywords if keyword.arg == "httpx_client"]
         case _:
             return None
-    seen: set[str] = set()
+    chain: dict[str, int] = {}
     while pending:
         node = pending.pop()
         for inner in ast.walk(node):
             match inner:
-                case ast.Name(id=name) if name in bound and name not in seen:
-                    seen.add(name)
-                    pending.append(bound[name])
+                case ast.Name(id=name) if name in bound and name not in chain:
+                    chain[name] = bound[name][0]
+                    pending.append(bound[name][1])
                     continue
                 case ast.Call(args=arguments, keywords=keywords) if _called(inner) == "MockTransport":
                     given = [*arguments[:1], *(keyword.value for keyword in keywords if keyword.arg == "handler")]
                 case _:
                     continue
             for handler in given:
-                function = handlers.get(handler.id) if isinstance(handler, ast.Name) else handler
-                if isinstance(function, ast.FunctionDef | ast.Lambda) and (capture := _capture(function)):
-                    return capture
+                function = handlers.get(handler.id) if isinstance(handler, ast.Name) else None
+                if function and (capture := _capture(function)):
+                    return capture, function, chain
+                if function:
+                    return (
+                        f"has a transport handler `{function.name}` that does not append each request it "
+                        "receives to one list, exactly once, on a path it always reaches"
+                    )
     return None
 
 
@@ -1013,59 +1059,197 @@ def _observations(test: ast.expr, capture: Capture, calls: list[SentCall]) -> li
     return []
 
 
-def _wire_assertions(source: str) -> tuple[list[Fact], str | None]:
-    """What a wire test asserts about the requests its generated-SDK calls actually sent, or why it is unparsable.
+def _own_nodes(statement: ast.stmt) -> list[ast.AST]:
+    """A statement's nodes, leaving a `with` block's body to the statements `_reachable` lists after it."""
+    roots: list[ast.AST] = list(statement.items) if isinstance(statement, ast.With | ast.AsyncWith) else [statement]
+    return [node for root in roots for node in ast.walk(root)]
+
+
+def _capture_read(node: ast.Name, parents: dict[ast.AST, ast.AST], statement: ast.Assert) -> bool:
+    """Whether a mention of the capture list only reads it, as an operand of the assertion's comparison."""
+    current: ast.AST = node
+    while True:
+        parent = parents.get(current)
+        match parent:
+            case ast.Subscript(value=value) if value is current:
+                current = parent
+            case ast.Attribute(value=value, attr="headers" | "url" | "params" | "method") if value is current:
+                current = parent
+            case ast.Attribute(value=value, attr="get") if value is current and (
+                isinstance(call := parents.get(parent), ast.Call) and call.func is parent
+            ):
+                current = call
+            case ast.Compare() if parent is statement.test:
+                return current is parent.left or any(current is operand for operand in parent.comparators)
+            case _:
+                return False
+
+
+def _client_call(node: ast.Name, parents: dict[ast.AST, ast.AST]) -> bool:
+    """Whether a mention of the client is the root of a method call `<client>.<...>.<method>(...)`."""
+    current: ast.AST = node
+    while isinstance(parent := parents.get(current), ast.Attribute) and parent.value is current:
+        current = parent
+    call = parents.get(current)
+    return current is not node and isinstance(call, ast.Call) and call.func is current
+
+
+def _unsealed(statements: list[ast.stmt], wiring: Wiring) -> str | None:
+    """Whether nothing but the wiring's capture can have put an entry in the list the test asserts on.
+
+    The list is bound once, to `[]`, before the client; after that only the
+    handler appends to it and assertions read it. The handler is named only by
+    the transport that calls it, each name the transport reaches the client
+    through only where the chain binds and reads it, and the client only as the
+    root of its method calls after it is built. Any other mention — a rebinding,
+    a mutation, an alias, a call of the handler, or a request sent past the
+    SDK — leaves the asserted entries unexplained by captured requests, and is
+    returned as the reason.
+    """
+    container, handler = wiring.capture.container, wiring.handler
+    bindings = [
+        index
+        for index, statement in enumerate(statements)
+        if isinstance(statement, ast.Assign)
+        and [target for target in statement.targets if isinstance(target, ast.Name) and target.id == container]
+    ]
+    unbound = f"binds its capture list `{container}` other than once, to `[]`, before building its client"
+    if len(bindings) != 1 or bindings[0] > wiring.statement:
+        return unbound
+    match statements[bindings[0]]:
+        case ast.Assign(targets=[ast.Name()], value=ast.List(elts=[])):
+            pass
+        case _:
+            return unbound
+    building = {*wiring.chain.values(), wiring.statement}
+    sealed = {container, handler.name, wiring.client, *wiring.chain}
+    parents = {
+        child: node
+        for statement in statements
+        for node in _own_nodes(statement)
+        for child in ast.iter_child_nodes(node)
+    }
+    for index, statement in enumerate(statements):
+        if index == bindings[0] or statement is handler:
+            continue
+        for node in _own_nodes(statement):
+            if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef) and node.name in sealed:
+                return f"redefines `{node.name}` at line {node.lineno}"
+            if isinstance(node, ast.alias) and (name := node.asname or node.name) in sealed:
+                return f"rebinds `{name}` by import at line {statement.lineno}"
+            if not isinstance(node, ast.Name) or node.id not in sealed:
+                continue
+            load = isinstance(node.ctx, ast.Load)
+            where = f"at line {node.lineno}"
+            if node.id == container:
+                misuse = f"touches its capture list `{container}` {where} other than to read it in an assertion"
+                allowed = (
+                    index > wiring.statement
+                    and load
+                    and isinstance(statement, ast.Assert)
+                    and _capture_read(node, parents, statement)
+                )
+            elif node.id == handler.name:
+                misuse = f"names its transport handler `{handler.name}` {where} other than as the transport's handler"
+                transport = parents.get(node)
+                allowed = (
+                    index in building and isinstance(transport, ast.Call) and _called(transport) == "MockTransport"
+                )
+            elif node.id == wiring.client:
+                misuse = f"uses its SDK client `{wiring.client}` {where} other than to call its methods"
+                allowed = (index == wiring.statement and not load) or (
+                    index > wiring.statement and load and _client_call(node, parents)
+                )
+            else:
+                misuse = f"rebinds or reuses `{node.id}`, which wires its client's transport, {where}"
+                allowed = index in building and (load or wiring.chain[node.id] == index)
+            if not allowed:
+                return misuse
+    return None
+
+
+def _function_facts(statements: list[ast.stmt], sdk: set[str]) -> tuple[list[Fact], str | None]:
+    """The facts one test function's assertions establish about the requests its client sent.
+
+    The second value is why the function establishes none although it builds
+    a client on a transport, so the wire test's author reads what broke it.
+    """
+    handlers: dict[str, ast.FunctionDef] = {}
+    bound: dict[str, tuple[int, ast.expr]] = {}
+    wiring = None
+    for index, statement in enumerate(statements):
+        match statement:
+            case ast.FunctionDef(name=name):
+                handlers[name] = statement
+            case ast.Assign(targets=[ast.Name(id=name)], value=value):
+                bound[name] = (index, value)
+                found = None if wiring else _client_capture(value, sdk, handlers, bound)
+                if isinstance(found, str):
+                    return [], found
+                if found:
+                    wiring = Wiring(name, *found, statement=index)
+    if wiring is None:
+        return [], None
+    if reason := _unsealed(statements, wiring):
+        return [], reason
+    calls: list[SentCall] = []
+    facts: list[Fact] = []
+    for statement in statements[wiring.statement + 1 :]:
+        sent = _client_calls(statement, {wiring.client})
+        if sent is None:
+            return [], (
+                f"calls its SDK client at line {statement.lineno} where the call may not run exactly once "
+                "(a lambda, comprehension, short-circuit, conditional expression or assertion message)"
+            )
+        calls += sent
+        if isinstance(statement, ast.Assert):
+            facts += _observations(statement.test, wiring.capture, list(calls))
+    return facts, None
+
+
+def _wire_assertions(source: str) -> tuple[list[Fact], list[str]]:
+    """What a wire test asserts about the requests its generated-SDK calls actually sent, and what discredits it.
 
     A fact counts only when its whole path is visible in the test's text: a
-    module-level pytest `test_*` function builds a client from a class the
-    generated `fern` package exports, passing an `httpx.MockTransport` whose
-    handler appends each request (or a tuple of its fields) to a list; it then
-    calls that client's methods, and an `assert` it reaches afterwards compares
-    that list, an entry of it, or a field of an entry with `==` against a
-    literal. Each captured entry is paired with the client call that sent it,
-    in call order, so a value checked on another operation's request does not
-    count. Literals compared with each other, values that never passed through
-    a transport, and assertions under a branch, after a `return`, or in a
-    function nothing calls assert nothing about a sent request.
+    module-level pytest `test_*` function binds a list to `[]`, defines a
+    handler that appends each request it receives (or a tuple of its fields)
+    to it, and builds a client from a class the generated `fern` package
+    exports, passing an `httpx.MockTransport` of that handler (`_capture`,
+    `_client_capture`). It then calls that client's methods, and an `assert` it
+    reaches afterwards compares that list, an entry of it, or a field of an
+    entry with `==` against a literal. Each captured entry is paired with the
+    client call that sent it, in call order, so a value checked on another
+    operation's request does not count. Nothing else may touch the list, the
+    handler, the transport or the client (`_sealed`), so the entries asserted
+    on are the captured requests and no others. Literals compared with each
+    other, values that never passed through a transport, and assertions under a
+    branch, after a `return`, or in a function nothing calls assert nothing
+    about a sent request.
     """
     try:
         module = ast.parse(source)
     except SyntaxError as error:
-        return [], f"line {error.lineno}: {error.msg}"
+        return [], [f"that is not valid Python (line {error.lineno}: {error.msg})"]
     sdk = {
         alias.asname or alias.name
         for node in ast.walk(module)
         if isinstance(node, ast.ImportFrom) and (node.module or "").split(".")[0] == SDK_PACKAGE
         for alias in node.names
     }
-    handlers = {node.name: node for node in ast.walk(module) if isinstance(node, ast.FunctionDef)}
     facts: list[Fact] = []
+    problems: list[str] = []
     for function in module.body:
         if not isinstance(function, ast.FunctionDef) or not function.name.startswith("test"):
             continue
         statements = _reachable(function.body)
         if statements is None:
+            problems.append(f"whose {function.name} hides which requests it sends under a branch, loop or `try`")
             continue
-        clients: dict[str, Capture] = {}
-        bound: dict[str, ast.expr] = {}
-        calls: list[SentCall] = []
-        observed: list[Fact] = []
-        for statement in statements:
-            sent = _client_calls(statement, set(clients))
-            if sent is None:
-                observed = []
-                break
-            calls += sent
-            match statement:
-                case ast.Assign(targets=[ast.Name(id=name)], value=value):
-                    bound[name] = value
-                    if capture := _client_capture(value, sdk, handlers, bound):
-                        clients[name] = capture
-                case ast.Assert(test=test):
-                    for capture in {capture.container: capture for capture in clients.values()}.values():
-                        observed += _observations(test, capture, list(calls))
-        facts += observed
-    return facts, None
+        found, reason = _function_facts(statements, sdk)
+        facts += found
+        if reason:
+            problems.append(f"whose {function.name} {reason}")
+    return facts, problems
 
 
 # How the registry's evaluation notes state a class's decision: a heading
@@ -1120,9 +1304,8 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     ):
         problems.append("links no passing wire-evaluation log")
     wire = directory / "wire_test.py"
-    asserted, unparsable = _wire_assertions(wire.read_text(encoding="utf-8") if wire.is_file() else "")
-    if unparsable:
-        problems.append(f"has a wire_test.py that is not valid Python ({unparsable})")
+    asserted, discredited = _wire_assertions(wire.read_text(encoding="utf-8") if wire.is_file() else "")
+    problems += [f"has a wire_test.py {problem}" for problem in discredited]
     if not asserted:
         problems.append("has no wire_test.py asserting a request captured from a generated SDK call")
     yaml = _yaml()

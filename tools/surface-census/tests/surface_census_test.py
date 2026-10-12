@@ -16469,6 +16469,19 @@ def test_each_operation_sends_its_declared_header_default():
         def body(statements: str) -> str:
             return f"def test_defaults():\n{statements}"
 
+        def why(reason: str) -> str:
+            return f" has a wire_test.py whose test_each_operation_sends_its_declared_header_default {reason}"
+
+        never = [NO_CAPTURE, NEVER_GET, NEVER_PUT]
+        fabricated = '[("GET", "radial"), ("PUT", "linear")]'
+        touched = "touches its capture list `sent` at line 24 other than to read it in an assertion"
+        no_append = (
+            "has a transport handler `answer` that does not append each request it receives to one list, "
+            "exactly once, on a path it always reaches"
+        )
+        append = '        sent.append((request.method, request.headers["X-Projection"]))\n'
+        respond = '        return httpx.Response(200, json=["measurement"])\n'
+
         cases: dict[str, tuple[str, list[str]]] = {
             "empty": ("", [NO_CAPTURE, NEVER_GET, NEVER_PUT]),
             "unparsable": (
@@ -16531,6 +16544,82 @@ def test_each_operation_sends_its_declared_header_default():
             "the default overridden by the call": (
                 wire.replace("client.replace_measurements()", 'client.replace_measurements(x_projection="linear")'),
                 [NEVER_PUT],
+            ),
+            # The captured entries replaced or added to by the test itself.
+            "list rebound before the assertion": (
+                wire.replace(self.CAPTURED, f"    sent = {fabricated}\n{self.CAPTURED}"),
+                [why("binds its capture list `sent` other than once, to `[]`, before building its client"), *never],
+            ),
+            "list prefilled": (
+                wire.replace("    sent = []\n", f"    sent = {fabricated}\n"),
+                [why("binds its capture list `sent` other than once, to `[]`, before building its client"), *never],
+            ),
+            "entries overwritten by slice": (
+                wire.replace(self.CAPTURED, f"    sent[:] = {fabricated}\n{self.CAPTURED}"),
+                [why(touched), *never],
+            ),
+            "one entry overwritten": (
+                wire.replace(self.CAPTURED, f'    sent[1] = ("PUT", "linear")\n{self.CAPTURED}'),
+                [why(touched), *never],
+            ),
+            "entries populated by hand": (
+                wire.replace(self.CAPTURED, f"    sent.clear()\n    sent.extend({fabricated})\n{self.CAPTURED}"),
+                [why(touched), *never],
+            ),
+            "entries changed through an alias": (
+                wire.replace(self.CAPTURED, f'    other = sent\n    other[1] = ("PUT", "linear")\n{self.CAPTURED}'),
+                [why(touched), *never],
+            ),
+            "entry appended inside the assertion": (
+                wire.replace(self.CAPTURED, f'    assert sent.append(("PUT", "linear")) is None\n{self.CAPTURED}'),
+                [why(touched), *never],
+            ),
+            "handler fed a hand-built request": (
+                wire.replace(
+                    self.CAPTURED,
+                    '    answer(httpx.Request("PUT", "https://x", headers={"X-Projection": "linear"}))\n'
+                    + self.CAPTURED,
+                ),
+                [why("names its transport handler `answer` at line 24 other than as the transport's handler"), *never],
+            ),
+            "handler redefined": (
+                wire.replace(self.CAPTURED, f"    def answer(request):\n        return None\n{self.CAPTURED}"),
+                [why("redefines `answer` at line 24"), *never],
+            ),
+            "client rebound without the transport": (
+                wire.replace(
+                    "    assert client.replace_measurements()",
+                    '    client = FernApi(base_url="https://x")\n    assert client.replace_measurements()',
+                ),
+                [why("uses its SDK client `client` at line 23 other than to call its methods"), *never],
+            ),
+            "client aliased": (
+                wire.replace(
+                    "    assert client.replace_measurements()",
+                    "    other = client\n    assert other.replace_measurements()",
+                ),
+                [why("uses its SDK client `client` at line 23 other than to call its methods"), *never],
+            ),
+            # An append the handler may skip, or one only a function nothing calls makes.
+            "handler appends after its return": (
+                wire.replace(append + respond, respond + append),
+                [why(no_append), *never],
+            ),
+            "handler appends only under a branch": (
+                wire.replace(append, '        if request.method == "GET":\n    ' + append),
+                [why(no_append), *never],
+            ),
+            "handler appends only in an uncalled nested function": (
+                wire.replace(append, "        def later():\n    " + append),
+                [why(no_append), *never],
+            ),
+            "handler rebinds its request": (
+                wire.replace(
+                    append,
+                    '        request = httpx.Request("PUT", "https://x", headers={"X-Projection": "linear"})\n'
+                    + append,
+                ),
+                [why(no_append), *never],
             ),
             "a call only under a short-circuit": (
                 wire.replace("assert client.replace_measurements()", "assert sent or client.replace_measurements()"),
