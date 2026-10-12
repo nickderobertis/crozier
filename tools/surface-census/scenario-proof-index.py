@@ -98,9 +98,9 @@ LEDGER = Path("tests/fixtures/departures-ledger.tsv")
 LEDGER_HEADER = ("golden", "file", "line", "departure")
 CATALOG = Path("assets/departures.yml")
 CORPUS = Path("tests/fixtures/CORPUS.md")
-PIN = ("5.67.1", "5.20.0")
 NONE = "—"
 UNOWNED = "unowned"
+UNEVALUATED = "unevaluated"
 REFUSAL_SETTINGS = "default;fern-strict"
 SHAPE_NAME = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 E2E_SOURCES = ("crates/crozier-e2e/tests/e2e.rs", "crates/crozier-e2e/tests/e2e")
@@ -111,7 +111,6 @@ MEASUREMENTS = "docs/fern-measurements/"
 # How corpus tests bind their fixtures, as `every_registered_corpus_is_wired_into_the_gate` reads them.
 CORPUS_DRIVERS = ("assert_corpus_matches(&", "assert_committed_corpus_matches(&", "known_fern_failure(&")
 SETTING_VALUE = (str, int, float, bool)
-ENUM_TYPES = ("literals", "python_enums")
 DOCUMENTS = ("openapi.yml", "openapi.yaml", "openapi.json")
 
 ShapeId = NewType("ShapeId", str)
@@ -119,6 +118,32 @@ WitnessName = NewType("WitnessName", str)
 DepartureId = NewType("DepartureId", str)
 RefusalClass = NewType("RefusalClass", str)
 TestName = NewType("TestName", str)
+
+
+class FernPair(NamedTuple):
+    """The certified Fern CLI and fern-python-sdk versions every golden is output of."""
+
+    cli: str
+    generator: str
+
+
+PIN = FernPair(cli="5.67.1", generator="5.20.0")
+
+
+class EnumType(StrEnum):
+    """The fern-python-sdk `enum_type` settings a golden may be generated under."""
+
+    LITERALS = "literals"
+    PYTHON_ENUMS = "python_enums"
+
+
+class Outcome(StrEnum):
+    """What a proof shows: a byte match, a catalogued departure, or each mode's refusal outcome."""
+
+    MATCH = "match"
+    DEPARTURE = "departure"
+    REFUSED = "default=refuse;strict=refuse"
+    GENERATED = "default=generate;strict=refuse"
 
 
 class Owner(StrEnum):
@@ -150,9 +175,8 @@ class RefusalStatus(StrEnum):
     GENERATE = "generate"
 
     @property
-    def outcome(self) -> str:
-        default = "refuse" if self is RefusalStatus.REFUSE else "generate"
-        return f"default={default};strict=refuse"
+    def outcome(self) -> Outcome:
+        return Outcome.REFUSED if self is RefusalStatus.REFUSE else Outcome.GENERATED
 
 
 class WitnessStatus(StrEnum):
@@ -166,7 +190,16 @@ def values(kind: type[StrEnum]) -> frozenset[str]:
 
 
 def split(cell: str) -> tuple[str, ...]:
+    """A `;`-separated cell's members; `—` is the empty list, and a blank member is kept for `blank_members`."""
     return () if cell == NONE else tuple(part.strip() for part in cell.split(";"))
+
+
+LIST_COLUMNS = ("source", "goldens", "tests", "ids", "evidence", "open")
+
+
+def blank_members(row: dict[str, str], columns: tuple[str, ...]) -> list[str]:
+    """The list columns of `row` holding an empty member, which would name the repository root as a path."""
+    return [column for column in columns if "" in split(row[column])]
 
 
 @dataclass(frozen=True)
@@ -180,7 +213,7 @@ class Proof:
     goldens: tuple[str, ...]
     settings: str
     tests: tuple[TestName, ...]
-    outcome: str
+    outcome: Outcome
     departures: tuple[DepartureId, ...]
     refusal: RefusalClass | None
     evidence: tuple[str, ...]
@@ -194,6 +227,13 @@ class Proof:
     def fully_closed(self) -> bool:
         """Closed by its proof with no residual left open on its own trigger."""
         return not self.open
+
+
+class CorpusRef(NamedTuple):
+    """A numbered `CORPUS.md` row and the fixture it registers."""
+
+    number: str
+    fixture: str
 
 
 @dataclass(frozen=True)
@@ -211,10 +251,10 @@ class Witness:
         return f"{WITNESSES} {self.name}"
 
     @property
-    def corpus_row(self) -> tuple[str, str]:
-        """The corpus row number and fixture a registered witness's `corpus` cell (`<row> \\`<name>\\``) names."""
+    def corpus_row(self) -> CorpusRef:
+        """The corpus row a registered witness's `corpus` cell (`<row> \\`<name>\\``) names."""
         number, _, name = self.corpus.partition(" ")
-        return number, name.strip("`")
+        return CorpusRef(number=number, fixture=name.strip("`"))
 
 
 @dataclass(frozen=True)
@@ -310,6 +350,12 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
         if row["kind"] not in values(Kind):
             failures.append(f"{where}: kind {row['kind']} is none of {', '.join(Kind)}")
             continue
+        if row["outcome"] not in values(Outcome):
+            failures.append(f"{where}: outcome {row['outcome']} is none of {', '.join(Outcome)}")
+            continue
+        if blank := blank_members(row, LIST_COLUMNS):
+            failures.append(f"{where}: {', '.join(blank)} hold an empty `;`-separated member")
+            continue
         kind = Kind(row["kind"])
         refusal = kind is Kind.REFUSAL
         proofs.append(
@@ -321,7 +367,7 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
                 goldens=split(row["goldens"]),
                 settings=row["settings"],
                 tests=tuple(TestName(test) for test in split(row["tests"])),
-                outcome=row["outcome"],
+                outcome=Outcome(row["outcome"]),
                 departures=() if refusal else tuple(DepartureId(name) for name in split(row["ids"])),
                 refusal=RefusalClass(row["ids"]) if refusal else None,
                 evidence=split(row["evidence"]),
@@ -341,6 +387,9 @@ def read_witnesses(root: Path) -> tuple[list[Witness], list[Residual], list[str]
         status = WitnessStatus(row["status"])
         witnesses.append(Witness(WitnessName(row["witness"]), status, row["corpus"], row["diff"], row["evidence"]))
     residual_rows, residual_failures = read_tsv(root / RESIDUALS, RESIDUAL_HEADER)
+    for row in residual_rows:
+        if blank_members(row, ("hunks",)):
+            residual_failures.append(f"{RESIDUALS} {row['witness']} {row['file']}: hunks hold an empty member")
     residuals = [
         Residual(
             WitnessName(row["witness"]),
@@ -516,7 +565,14 @@ def read_classes(root: Path) -> tuple[dict[RefusalClass, RefusalStatus], list[st
     """Each decided refusal class's status; an `unevaluated` class decides no outcome."""
     rows, failures = read_tsv(root / CLASSES, CLASSES_HEADER)
     statuses = values(RefusalStatus)
-    decided = {RefusalClass(row["class"]): RefusalStatus(row["status"]) for row in rows if row["status"] in statuses}
+    decided = {}
+    for row in rows:
+        if row["status"] in statuses:
+            decided[RefusalClass(row["class"])] = RefusalStatus(row["status"])
+        elif row["status"] != UNEVALUATED:
+            failures.append(
+                f"{CLASSES} {row['class']}: status {row['status']} is none of {', '.join(statuses)}, {UNEVALUATED}"
+            )
     return decided, failures
 
 
@@ -558,10 +614,10 @@ def golden_settings(root: Path, golden: str) -> tuple[str | None, list[str]]:
         return None, [f"golden {golden}'s generatorConfig holds a setting that is not a scalar"]
     failures = []
     if (record.get("cliVersion"), record.get("generatorVersion")) != PIN:
-        failures.append(f"golden {golden} is not output of Fern CLI {PIN[0]} with fern-python-sdk {PIN[1]}")
-    enum_type = pydantic.get("enum_type", "literals")
-    if enum_type not in ENUM_TYPES:
-        return None, [f"golden {golden}'s enum_type {enum_type!r} is none of {', '.join(ENUM_TYPES)}"]
+        failures.append(f"golden {golden} is not output of Fern CLI {PIN.cli} with fern-python-sdk {PIN.generator}")
+    enum_type = pydantic.get("enum_type", EnumType.LITERALS)
+    if enum_type not in values(EnumType):
+        return None, [f"golden {golden}'s enum_type {enum_type!r} is none of {', '.join(EnumType)}"]
     parts = [enum_type]
     if golden.endswith("-flat") or "-flat/" in golden:
         parts.append("flat")
@@ -711,7 +767,7 @@ def exception_failures(directory: Path, note: str) -> list[str]:
         problems.append("links no log establishing that its probe is valid OpenAPI")
     refusal = directory / "fern-refusal.txt"
     record = refusal.read_text(encoding="utf-8") if refusal.is_file() else ""
-    if not re.search(r"(?m)^generate_exit: [1-9]", record) or f"fern_cli_version: {PIN[0]}" not in record:
+    if not re.search(r"(?m)^generate_exit: [1-9]", record) or f"fern_cli_version: {PIN.cli}" not in record:
         problems.append("has no pinned Fern refusal record, so no Fern limitation is established")
     if not any("Success: no issues found" in text for text in logs.values()):
         problems.append("links no mypy log showing its SDK imports and type-checks clean")
@@ -802,7 +858,7 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
         failures.append(f"{where}: sources {';'.join(proof.source)} are not its goldens' documents {';'.join(sources)}")
     if proof.settings != ";".join(settings):
         failures.append(f"{where}: settings {proof.settings} disagree with the goldens' metadata {';'.join(settings)}")
-    outcome = "departure" if defects else "match"
+    outcome = Outcome.DEPARTURE if defects else Outcome.MATCH
     if (proof.outcome, set(proof.departures)) != (outcome, defects):
         failures.append(
             f"{where}: outcome {proof.outcome} {';'.join(proof.departures) or NONE} disagrees with the ledger's "

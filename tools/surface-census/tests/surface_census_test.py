@@ -16270,6 +16270,42 @@ class ScenarioProofIndexTests(unittest.TestCase):
         metadata.write_text('{"generatorConfig": []}', encoding="utf-8")
         self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
 
+    def test_a_cell_outside_its_vocabulary_or_with_a_blank_member_fails(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        refusal = self.row("refusal")
+        cases: dict[str, tuple[Callable[[Path], None], str]] = {
+            # A blank evidence member would otherwise resolve to the repository root and exist.
+            "blank evidence member": (
+                lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, evidence=";")),
+                f"{module.INDEX} {row['shape']}: evidence hold an empty `;`-separated member",
+            ),
+            "blank test member": (
+                lambda root: self.rewrite(
+                    root / module.INDEX, self.line(row), self.edited(row, tests=f"{row['tests']};")
+                ),
+                f"{module.INDEX} {row['shape']}: tests hold an empty `;`-separated member",
+            ),
+            "unknown outcome": (
+                lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, outcome="matched")),
+                f"{module.INDEX} {row['shape']}: outcome matched is none of match, departure",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+        root = self.mirror()
+        classes = root / module.CLASSES
+        line = next(
+            line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{refusal['ids']}\t")
+        )
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "refused", *cells[7:]]))
+        self.assert_fails(root, f"{module.CLASSES} {refusal['ids']}: status refused is none of")
+        self.assert_fails(root, f"{refusal['ids']} is no decided {module.CLASSES} class")
+
     def test_unreadable_or_unparsable_catalogs_fail(self) -> None:
         module = self.index_script
         cases = {
