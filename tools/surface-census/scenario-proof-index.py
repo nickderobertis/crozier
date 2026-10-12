@@ -1497,6 +1497,8 @@ def diff_hunks(text: str) -> list[Hunk]:
     reference = crozier = 0
     run: _Run | None = None
     awaiting: str | None = None
+    # The trailing `None` is end of input: it closes an open run, and a header still
+    # awaiting its `+++` partner at that point is refused like any other line.
     for number, line in enumerate([*text.splitlines(), None], start=1):
         if awaiting is not None:
             if line != f"+++ crozier/{awaiting}":

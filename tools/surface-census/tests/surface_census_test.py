@@ -16952,6 +16952,9 @@ def test_each_operation_sends_its_declared_header_default():
         module = self.index_script
         cases = {
             "--- reference/a.py\n  kept\n": "is not followed by its `+++` header",
+            "--- reference/a.py\n+++ crozier/a.py\n- x\n+ y\n--- reference/b.py\n": (
+                "line 6: `--- reference/b.py` is not followed by its `+++` header"
+            ),
             "--- reference/a.py\n+++ crozier/a.py\n@@ -1 +1 @@\n": "is no context, change or elision line",
             "stray text\n": "is outside any file of the diff",
             "# crozier compare: crozier.yml python\n--- reference/a.py\n+++ crozier/a.py\n  kept\n": "no difference",

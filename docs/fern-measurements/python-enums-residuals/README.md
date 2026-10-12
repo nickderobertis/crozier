@@ -14,8 +14,7 @@ Neither result counts toward `python_enums` parity.
 
 ## `enum-header-params-stringified`: differs
 
-Document: [`../literals-mode/enum-header-params-stringified/openapi.yml`](../literals-mode/enum-header-params-stringified/openapi.yml)
-(SHA-256 `bd192269d033d684c347c5dc44cfcf7da738fa705182313c58d8f3829a3efa47`).
+Document: [`../literals-mode/enum-header-params-stringified/openapi.yml`](../literals-mode/enum-header-params-stringified/openapi.yml).
 
 Of 41 files compared, one differs: `src/fern/trams/raw_client.py`. Fern sends
 each `$ref` string-enum header as `shift.value` and `traction.value`. crozier
@@ -29,8 +28,7 @@ normalized comparison is
 
 ## `enum-extension-names-dropped-under-literals`: matches
 
-Document: [`../literals-mode/enum-extension-names-dropped-under-literals/openapi.yml`](../literals-mode/enum-extension-names-dropped-under-literals/openapi.yml)
-(SHA-256 `2fe49e544dff9d6b1c0aab7f961764cd625699861637279a0f6f27c73c7c182a`).
+Document: [`../literals-mode/enum-extension-names-dropped-under-literals/openapi.yml`](../literals-mode/enum-extension-names-dropped-under-literals/openapi.yml).
 
 All 40 files compared are equal, with only the catalogued
 `sdk-identity-header-prefix` branding departure applied. The earlier `python_enums`
