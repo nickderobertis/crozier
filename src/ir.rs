@@ -8406,8 +8406,8 @@ fn hoist_component_form_object(
                 TypeRef::List(Box::new(TypeRef::Primitive(Prim::Bytes)))
             } else if is_file {
                 base_type_ref(prop_schema)
-            } else if let Some(field) = model
-                .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
+            } else if let Some(field) =
+                model.and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
             {
                 field.type_ref.clone()
             } else {
@@ -10778,7 +10778,8 @@ fn append_member_fields(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
             )
-        } else if is_inline_struct(prop_schema) && annotated_sole_all_of_ref(prop_schema).is_none() {
+        } else if is_inline_struct(prop_schema) && annotated_sole_all_of_ref(prop_schema).is_none()
+        {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
@@ -21847,7 +21848,9 @@ mod tests {
         assert_eq!(trigger_type(0), Some(named("Trigger")));
         // The nullable wrapper keeps the variant-scoped name it always had.
         assert_eq!(trigger_type(1), Some(named("WeftTrigger")));
-        assert!(!labels(&ir).iter().any(|label| label.contains("WarpTrigger")));
+        assert!(!labels(&ir)
+            .iter()
+            .any(|label| label.contains("WarpTrigger")));
     }
 
     /// A property union's array member of an inline string enum declares that
@@ -21871,9 +21874,15 @@ mod tests {
             "Enum(MakeThingRequestFeedZeroItem)",
             "Enum(MakeThingRequestFeedOne)",
         ] {
-            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+            assert!(
+                declared.iter().any(|label| label == name),
+                "{name}: {declared:?}"
+            );
         }
-        assert!(!declared.iter().any(|label| label.contains("TwoItem")), "{declared:?}");
+        assert!(
+            !declared.iter().any(|label| label.contains("TwoItem")),
+            "{declared:?}"
+        );
         let alias = |name: &str| {
             ir.types
                 .iter()
@@ -21932,7 +21941,10 @@ mod tests {
             "Enum(MakeThingRequestHaltCauseZero)",
             "Enum(MakeThingRequestHaltCauseOne)",
         ] {
-            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+            assert!(
+                declared.iter().any(|label| label == name),
+                "{name}: {declared:?}"
+            );
         }
         let target = |name: &str| {
             ir.types
@@ -22017,7 +22029,9 @@ mod tests {
         assert_eq!(grant_type("exchange"), named("TokenRequestGrantType"));
         assert_eq!(grant_type("inline"), named("InlineRequestGrantType"));
         assert_eq!(grant_type("upload"), named("UploadRequestGrantType"));
-        assert!(!labels(&ir).iter().any(|label| label == "Enum(ExchangeRequestGrantType)"));
+        assert!(!labels(&ir)
+            .iter()
+            .any(|label| label == "Enum(ExchangeRequestGrantType)"));
     }
 
     /// An error response declared only under a JSON-like media type other than
@@ -22043,9 +22057,14 @@ mod tests {
         }));
         let declared = labels(&ir);
         for name in ["Object(BadRequestErrorBody)", "Object(NotFoundErrorBody)"] {
-            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+            assert!(
+                declared.iter().any(|label| label == name),
+                "{name}: {declared:?}"
+            );
         }
-        assert!(!declared.iter().any(|label| label.contains("ConflictErrorBody")));
+        assert!(!declared
+            .iter()
+            .any(|label| label.contains("ConflictErrorBody")));
     }
 
     #[test]
