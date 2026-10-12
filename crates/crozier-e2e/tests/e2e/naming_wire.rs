@@ -125,7 +125,9 @@ fn perturb(tree: &Path, rel: &str, from: &str, to: &str) {
 #[test]
 fn naming_wire_shapes_fail_on_an_unexplained_byte() {
     type Copy = fn(&str) -> (tempfile::TempDir, String, PathBuf);
-    let cases: [(&str, Copy, &[(&str, &str, &str)]); 6] = [
+    type Perturbation<'a> = (&'a str, &'a str, &'a str);
+    type Case<'a> = (&'a str, Copy, &'a [Perturbation<'a>]);
+    let cases: [Case<'_>; 6] = [
         (
             "gallery-plaque-groups",
             handwritten_copy,
