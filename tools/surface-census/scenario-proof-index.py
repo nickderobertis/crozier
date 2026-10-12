@@ -605,12 +605,15 @@ def read_classes(root: Path) -> tuple[dict[RefusalClass, RefusalStatus], list[st
     statuses = values(RefusalStatus)
     decided = {}
     for row in rows:
-        if row["status"] in statuses:
-            decided[RefusalClass(row["class"])] = RefusalStatus(row["status"])
-        elif row["status"] != UNEVALUATED:
-            failures.append(
-                f"{CLASSES} {row['class']}: status {row['status']} is none of {', '.join(statuses)}, {UNEVALUATED}"
-            )
+        match row["status"]:
+            case status if status in statuses:
+                decided[RefusalClass(row["class"])] = RefusalStatus(status)
+            case status if status == UNEVALUATED:
+                pass
+            case status:
+                failures.append(
+                    f"{CLASSES} {row['class']}: status {status} is none of {', '.join(statuses)}, {UNEVALUATED}"
+                )
     return decided, failures
 
 
