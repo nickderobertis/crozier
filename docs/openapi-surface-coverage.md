@@ -210,6 +210,12 @@ real-specification match.
   plan covers it ([counts](#scenario-proof-index),
   [causes](fern-measurements/blocked-witnesses/README.md)). No witness is
   registered while any hunk remains.
+- **Scenarios closed on their fixture with a real-witness residual on their
+  own trigger (2):** `text-response-drops-request-example` (Supabase's
+  text-only diff operation keeps optional query examples) and
+  `union-member-nullability-dropped` (Supabase's nested hoisted nullable member
+  loses `Optional`). Neither counts as fully closed
+  ([index](#scenario-proof-index)).
 - **A `python_enums` residual of a literals-proven shape (1):**
   `enum-header-params-stringified` sends `str(...)` where Fern sends `.value`
   ([measurement](fern-measurements/python-enums-residuals/README.md)).
@@ -1750,9 +1756,14 @@ proof that closes the shape:
 | `outcome` | `match`, `departure` (equal once the row's catalogued Fern-defect corrections apply), or a refusal's `default=…;strict=…` outcomes |
 | `ids` | those corrections' [departure](departures/README.md) ids, or the refusal class |
 | `evidence` | the search record, evaluation note or evidence file the proof rests on |
+| `open` | the residuals still open on the shape's own trigger: each handed-off witness whose diff hunks the shape owns in `residuals.tsv`, and `python_enums` where a `python_enums` residual diff is committed; `—` when none |
 
 A [hand-written](openapi-surface/handwritten/AGENTS.md) or measured proof
-certifies a shape without counting as a real-specification match. Only a `real` row's golden comes from a registered
+certifies a shape without counting as a real-specification match. A shape is
+fully closed only when its `open` cell is `—`. A shape whose certified fixture
+matches but a real witness, or the other enum mode, still differs on its own
+trigger is closed on its fixture only. Such a shape is named in the summary
+below, kept out of the fully closed count, and tracked by its own follow-up. Only a `real` row's golden comes from a registered
 publisher document. The five refusal rows take their mode outcomes from their
 class's registry `status` and evaluation note, which names each cited probe.
 Two `measurement` rows prove their shapes under Fern's default literals enum
@@ -1776,7 +1787,9 @@ fact from its authority and fails on any disagreement:
 - each refusal's class, status and probes, and a cited test that reaches each
   probe;
 - each test's definition as a `#[test]`;
-- each path and anchor.
+- each path and anchor;
+- each `open` cell, against the residual hunks and `python_enums` diffs
+  committed for the shape.
 
 `ScenarioProofIndexTests` in `tools/surface-census/tests/surface_census_test.py`
 runs it over the committed tree. The same tests remove or mismatch each kind of
@@ -1788,8 +1801,10 @@ shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
+closed with no open residual: 157
+closed on their proof with a residual open: enum-header-params-stringified (python_enums), text-response-drops-request-example (supabase), union-member-nullability-dropped (supabase)
 witnesses: differs 8
-witness hunks by owner: readme-multipart-file-params-listed-first 2, readme-multipart-optional-file-params 2, text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 486
+witness hunks by owner: text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 490
 ```
 
 ## The category rules

@@ -24,9 +24,10 @@ leave this table behind. `scenario-proof-index.py hunks <diff>` prints a diff's
 hunks in the table's spelling.
 
 An `unowned` hunk is a generator residual that no scenario of the plan covers. A
-hunk that names a scenario is that scenario's construct, where the committed
-proof matches its own fixture but this real document still differs. Neither kind
-counts as matched.
+hunk that names a scenario comes from that scenario's own trigger: the committed
+proof matches its fixture, but this real document still differs. That scenario
+counts as closed on its fixture only, with this residual open in the index's
+`open` cell. Neither kind counts as matched.
 
 ## Reproduction
 
@@ -54,7 +55,7 @@ claims it, so it remains `unowned`.
 
 ## kompaz
 
-Five causes. Three are `unowned`:
+Four causes, all `unowned`:
 
 - The camel-case tag `OrganizationLogo` with `organizationLogo.*` operation ids.
   Fern folds it to the heading `Organizationlogo` and strips the tag prefix to
@@ -64,10 +65,13 @@ Five causes. Three are `unowned`:
   unused `*ErrorBody` models, and crozier emits none of them.
 - The order of the root `__init__.py` re-exports.
 
-The fourth cause is two docstring-example lines of the catalogued
-`multipart-object-required-file-example` correction, owned by
-`readme-multipart-optional-file-params`. The engine cannot apply that departure
-while the same `client.py` still differs on the method names.
+Two more hunks are docstring-example lines of the catalogued
+`multipart-object-required-file-example` correction. The engine applies that
+departure only when every other line of the file equals Fern's
+(`multipart_object_required_file_example` in `src/departures.rs`). The
+tag-prefix difference in the same `organizationlogo/client.py` blocks it, so
+those lines belong to that cause. They are not a README multipart scenario's,
+whose triggers are README argument order and optional file parts.
 
 ## langchain
 
@@ -112,15 +116,18 @@ Eight causes are `unowned`:
 - missing commas in a map-of-objects example;
 - the order of the root `__init__.py` re-exports.
 
-Three more causes fall under scenarios whose proofs match their own fixtures:
+The `file=["example_file"]` docstring lines in `edge_functions/client.py` are
+the catalogued multipart file-example correction. The engine cannot apply it
+while the `BulkUpdateFunctionBody` component-example difference sits in the same
+file, so they belong to that cause.
+
+Two causes fall on scenarios' own triggers. Their proofs match their fixtures,
+and each is open in the index:
 
 - `text-response-drops-request-example`: optional query examples on a
   text-only response.
 - `union-member-nullability-dropped`: a nested hoisted nullable member that loses
   `Optional`.
-- `readme-multipart-file-params-listed-first`: the multipart file-example
-  correction, which the engine cannot apply beside other differences in the
-  same file.
 
 ## twitter
 

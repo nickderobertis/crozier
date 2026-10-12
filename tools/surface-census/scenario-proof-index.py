@@ -22,7 +22,11 @@ that catalog and compared, so a row cannot drift from what it cites:
   containing it;
 * a refusal names a `docs/fern-refusals/classes.tsv` class whose `status` fixes
   both mode outcomes, and whose evaluation note names every probe the row cites;
-* every source, evidence document and anchor exists.
+* every source, evidence document and anchor exists;
+* the `open` cell names exactly the residuals still open on the shape's own
+  trigger: each handed-off witness whose `residuals.tsv` hunks the shape owns,
+  and `python_enums` when a `python_enums` residual diff of the shape is
+  committed. A shape is closed with no residual only when that cell is empty.
 
 `docs/fern-measurements/blocked-witnesses/witnesses.tsv` lists every real
 publisher specification handed off for registration. A registered one names its
@@ -58,7 +62,22 @@ REPO = Path(__file__).resolve().parents[2]
 PLAN = Path("docs/openapi-surface/scenario-plan.tsv")
 PLAN_HEADER = ("shape", "owner")
 INDEX = Path("docs/openapi-surface/scenario-proof-index.tsv")
-INDEX_HEADER = ("shape", "owner", "kind", "source", "goldens", "settings", "tests", "outcome", "ids", "evidence")
+INDEX_HEADER = (
+    "shape",
+    "owner",
+    "kind",
+    "source",
+    "goldens",
+    "settings",
+    "tests",
+    "outcome",
+    "ids",
+    "evidence",
+    "open",
+)
+# A literals-proven shape whose `python_enums` output still differs keeps that diff here, by shape.
+PYTHON_ENUMS_RESIDUALS = Path("docs/fern-measurements/python-enums-residuals")
+PYTHON_ENUMS = "python_enums"
 WITNESSES = Path("docs/fern-measurements/blocked-witnesses/witnesses.tsv")
 WITNESS_HEADER = ("witness", "source", "revision", "sha256", "status", "corpus", "diff", "evidence")
 RESIDUALS = Path("docs/fern-measurements/blocked-witnesses/residuals.tsv")
@@ -166,10 +185,16 @@ class Proof:
     departures: tuple[DepartureId, ...]
     refusal: RefusalClass | None
     evidence: tuple[str, ...]
+    open: tuple[str, ...]
 
     @property
     def where(self) -> str:
         return f"{INDEX} {self.shape}"
+
+    @property
+    def fully_closed(self) -> bool:
+        """Closed by its proof with no residual left open on its own trigger."""
+        return not self.open
 
 
 @dataclass(frozen=True)
@@ -301,6 +326,7 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
                 departures=() if refusal else tuple(DepartureId(name) for name in split(row["ids"])),
                 refusal=RefusalClass(row["ids"]) if refusal else None,
                 evidence=split(row["evidence"]),
+                open=split(row["open"]),
             )
         )
     return proofs, failures
@@ -737,6 +763,30 @@ def diff_hunks(text: str) -> list[Hunk]:
     return hunks
 
 
+def open_failures(root: Path, proofs: list[Proof], residuals: list[Residual]) -> list[str]:
+    """Every shape whose `open` cell disagrees with the residuals committed against it."""
+    owned: dict[ShapeId, set[str]] = defaultdict(set)
+    for residual in residuals:
+        if residual.owner is not None:
+            owned[residual.owner].add(residual.witness)
+    failures = []
+    for proof in proofs:
+        expected = sorted(owned.get(proof.shape, set()))
+        diff = root / PYTHON_ENUMS_RESIDUALS / f"{proof.shape}.diff"
+        if diff.is_file():
+            try:
+                diff_hunks(diff.read_text(encoding="utf-8"))
+            except MalformedDiff as error:
+                failures.append(f"{proof.where}: its python_enums residual diff is malformed: {error}")
+            expected.append(PYTHON_ENUMS)
+        if list(proof.open) != expected:
+            failures.append(
+                f"{proof.where}: open {';'.join(proof.open) or NONE} disagrees with its committed residuals "
+                f"{';'.join(expected) or NONE}"
+            )
+    return failures
+
+
 def witness_failures(
     root: Path, shapes: set[ShapeId], witnesses: list[Witness], residuals: list[Residual]
 ) -> list[str]:
@@ -790,6 +840,7 @@ def check(root: Path) -> list[str]:
     known, catalog_failures = catalogs(root)
     failures += proof_failures + witness_read_failures + catalog_failures
     failures += index_failures(root, plan, proofs, known)
+    failures += open_failures(root, proofs, residuals)
     return failures + witness_failures(root, {proof.shape for proof in proofs}, witnesses, residuals)
 
 
@@ -812,6 +863,9 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
         f"by kind: {spelled(Counter(str(proof.kind) for proof in proofs))}",
         f"by owner: {spelled(Counter(str(proof.owner) for proof in proofs))}",
         f"by outcome: {spelled(Counter(proof.outcome for proof in proofs))}",
+        f"closed with no open residual: {sum(proof.fully_closed for proof in proofs)}",
+        "closed on their proof with a residual open: "
+        + (", ".join(f"{proof.shape} ({';'.join(proof.open)})" for proof in proofs if not proof.fully_closed) or NONE),
         f"witnesses: {spelled(Counter(str(witness.status) for witness in witnesses))}",
         f"witness hunks by owner: {spelled(hunks)}",
     ], []

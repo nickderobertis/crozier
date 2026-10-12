@@ -15897,6 +15897,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
             module.CLASSES,
             module.CORPUS,
             module.E2E_COVERS,
+            *(path.relative_to(REPO) for path in (REPO / module.PYTHON_ENUMS_RESIDUALS).glob("*.diff")),
             "crates/crozier-e2e/tests/e2e.rs",
             *(path.relative_to(REPO) for path in (REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")),
         ]:
@@ -16175,7 +16176,10 @@ class ScenarioProofIndexTests(unittest.TestCase):
         flat_test = next(test for test in flat["tests"].split(";") if test in module.read_e2e(REPO).flat_tests)
         ids = departures["ids"].split(";")
         cases: dict[str, tuple[Callable[[Path], None], str]] = {
-            "short row": (edit_row(handwritten, evidence=""), f"{module.INDEX}:{shape_line}: needs 10 non-empty cells"),
+            "short row": (
+                edit_row(handwritten, evidence=""),
+                f"{module.INDEX}:{shape_line}: needs {len(module.INDEX_HEADER)} non-empty cells",
+            ),
             "plan owner": (
                 plan_edit(first_planned, first_planned.split("\t")[0] + "\tnobody"),
                 "owner nobody is none of",
@@ -16292,6 +16296,49 @@ class ScenarioProofIndexTests(unittest.TestCase):
         listed = witnesses.read_text(encoding="utf-8").splitlines(keepends=True)
         witnesses.write_text("".join([*listed, listed[1]]), encoding="utf-8")
         self.assert_fails(root, f"{listed[1].split(chr(9))[0]} is listed 2 times")
+
+    def test_the_open_cell_is_exactly_the_shapes_committed_residuals(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        closed = next(row for row in rows if row["open"] == module.NONE and row["kind"] == "handwritten")
+        cases = {
+            # A residual reattributed away leaves the shape claiming one it no longer has.
+            "witness residual removed": (
+                lambda root: (root / module.RESIDUALS).write_text(
+                    (root / module.RESIDUALS)
+                    .read_text(encoding="utf-8")
+                    .replace(f"\t{witnessed['shape']}\t", "\tunowned\t"),
+                    encoding="utf-8",
+                ),
+                f"{witnessed['shape']}: open {witnessed['open']} disagrees with its committed residuals —",
+            ),
+            # A residual attributed to a fully closed shape must reopen it.
+            "witness residual added": (
+                lambda root: self.rewrite(root / module.RESIDUALS, "\tunowned\t", f"\t{closed['shape']}\t"),
+                f"{closed['shape']}: open — disagrees with its committed residuals",
+            ),
+            "python_enums diff removed": (
+                lambda root: (root / module.PYTHON_ENUMS_RESIDUALS / f"{python_enums['shape']}.diff").unlink(),
+                f"{python_enums['shape']}: open python_enums disagrees with its committed residuals —",
+            ),
+            "python_enums diff malformed": (
+                lambda root: (root / module.PYTHON_ENUMS_RESIDUALS / f"{python_enums['shape']}.diff").write_text(
+                    "stray\n", encoding="utf-8"
+                ),
+                f"{python_enums['shape']}: its python_enums residual diff is malformed",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+        lines, failures = module.summary(REPO)
+        self.assertEqual([], failures)
+        fully = sum(row["open"] == module.NONE for row in rows)
+        self.assertIn(f"closed with no open residual: {fully}", lines)
 
     def test_a_registered_witness_names_its_corpus_row_and_no_residual(self) -> None:
         module = self.index_script
