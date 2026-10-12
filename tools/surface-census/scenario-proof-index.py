@@ -45,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import functools
 import importlib.util
 import json
@@ -675,57 +676,386 @@ def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[s
     return failures
 
 
-def _declared_defaults(document: Any) -> tuple[list[str], str | None]:
-    """Every scalar `default` a probe's operation (or path) parameters declare, or why it cannot be read."""
+HTTP_METHODS = ("get", "put", "post", "delete", "options", "head", "patch", "trace")
+# The package the gate generates a `generate` class's SDK under (`--package-name fern`).
+SDK_PACKAGE = "fern"
+# The name a captured entry's request is read under once `<list>[i]` is substituted for it.
+CAPTURED = "__captured_request__"
+
+
+def snake(name: str) -> str:
+    """How the generated SDK spells an operationId as a method, or a parameter as a keyword."""
+    return re.sub(r"(?<=[a-z0-9])(?=[A-Z])", "_", name).replace("-", "_").lower()
+
+
+Field = tuple[str, str]
+
+
+@dataclass(frozen=True)
+class DeclaredDefault:
+    """A scalar `default` one operation's effective parameter declares."""
+
+    operation: str
+    method: str
+    route: str
+    location: str
+    name: str
+    value: str
+
+    @property
+    def field(self) -> Field:
+        """The captured-request field the default is sent in, as `_request_field` spells it."""
+        return (self.location, self.name.lower() if self.location == "header" else self.name)
+
+    def __str__(self) -> str:
+        return f"{self.method.upper()} {self.route} ({self.operation}) {self.location} {self.name} {self.value!r}"
+
+
+def _parameters(owner: dict[str, Any]) -> list[dict[str, Any]] | None:
+    parameters = owner.get("parameters", [])
+    if not isinstance(parameters, list) or not all(isinstance(parameter, dict) for parameter in parameters):
+        return None
+    return parameters
+
+
+def _declared_defaults(document: Any) -> tuple[list[DeclaredDefault], str | None]:
+    """Every scalar `default` each operation's effective parameters declare, or why they cannot be read.
+
+    An operation's parameter overrides the path item's of the same name and
+    location, as the OpenAPI Operation Object specifies.
+    """
     paths = document.get("paths") if isinstance(document, dict) else None
     if not isinstance(paths, dict) or not paths:
         return [], "declares no `paths` object"
-    found: list[str] = []
+    found: list[DeclaredDefault] = []
     for route, item in paths.items():
         if not isinstance(item, dict):
             return [], f"path {route} is not an object"
-        operations = [("", item), *((key, value) for key, value in item.items() if isinstance(value, dict))]
-        for method, operation in operations:
-            parameters = operation.get("parameters", [])
-            if not isinstance(parameters, list) or not all(isinstance(parameter, dict) for parameter in parameters):
-                return [], f"{route} {method} parameters are not a list of objects".replace("  ", " ")
-            for parameter in parameters:
+        inherited = _parameters(item)
+        if inherited is None:
+            return [], f"{route} parameters are not a list of objects"
+        for method in HTTP_METHODS:
+            operation = item.get(method)
+            if not isinstance(operation, dict):
+                continue
+            own = _parameters(operation)
+            if own is None:
+                return [], f"{route} {method} parameters are not a list of objects"
+            effective = {(parameter.get("in"), parameter.get("name")): parameter for parameter in [*inherited, *own]}
+            for (location, name), parameter in effective.items():
                 schema = parameter.get("schema")
                 default = schema.get("default") if isinstance(schema, dict) else None
-                if isinstance(default, SETTING_VALUE) and str(default) not in found:
-                    found.append(str(default))
+                if not isinstance(default, SETTING_VALUE):
+                    continue
+                operation_id = operation.get("operationId")
+                if location not in ("header", "query") or not isinstance(name, str):
+                    return [], f"{route} {method} declares a default on a {location} parameter no capture reads"
+                if not isinstance(operation_id, str):
+                    return [], f"{route} {method} declares a default but no operationId naming its SDK method"
+                found.append(DeclaredDefault(operation_id, method, route, location, name, str(default)))
     return found, None
 
 
-def _wire_assertions(source: str) -> tuple[list[set[str]], str | None]:
-    """The literal values each wire assertion compares a sent request against, or why it cannot be parsed.
+def _request_field(node: ast.expr, request: str) -> Field | None:
+    """Which part of the request bound to `request` an expression reads, if it reads one."""
 
-    Only an `assert` inside a pytest `test_*` function counts, and only when its
-    expression reads a runtime value (a name, attribute, call or subscript) rather
-    than constants alone: `assert True`, or a default named only in a comment, a
-    docstring or a constant-only comparison, asserts nothing about the request.
+    def location(value: ast.expr) -> str | None:
+        match value:
+            case ast.Attribute(value=ast.Name(id=name), attr="headers") if name == request:
+                return "header"
+            case ast.Attribute(value=ast.Attribute(value=ast.Name(id=name), attr="url"), attr="params"):
+                return "query" if name == request else None
+        return None
+
+    match node:
+        case ast.Name(id=name) if name == request:
+            return ("request", "")
+        case ast.Attribute(value=ast.Name(id=name), attr="method") if name == request:
+            return ("method", "")
+        case (
+            ast.Subscript(value=value, slice=ast.Constant(value=str() as key))
+            | ast.Call(func=ast.Attribute(value=value, attr="get"), args=[ast.Constant(value=str() as key), *_])
+        ):
+            where = location(value)
+            return None if where is None else (where, key.lower() if where == "header" else key)
+    return None
+
+
+@dataclass(frozen=True)
+class Capture:
+    """A `MockTransport` handler's record: the list it appends to, and what each slot of an entry reads.
+
+    Slot `None` is an entry that is one field (or the request itself) rather than a tuple of them.
+    """
+
+    container: str
+    slots: dict[int | None, Field]
+
+
+def _capture(handler: ast.FunctionDef | ast.Lambda) -> Capture | None:
+    """What a transport handler records of each request it receives: `<list>.append(<request fields>)`."""
+    arguments = handler.args.posonlyargs + handler.args.args
+    if not arguments:
+        return None
+    request = arguments[0].arg
+    for node in ast.walk(handler):
+        match node:
+            case ast.Call(func=ast.Attribute(value=ast.Name(id=container), attr="append"), args=[entry]):
+                elements = entry.elts if isinstance(entry, ast.Tuple) else [entry]
+                slots: dict[int | None, Field] = {
+                    (index if isinstance(entry, ast.Tuple) else None): field
+                    for index, element in enumerate(elements)
+                    if (field := _request_field(element, request))
+                }
+                if slots:
+                    return Capture(container, slots)
+    return None
+
+
+def _called(call: ast.Call) -> str | None:
+    """The bare name a call invokes: `f(...)` or `<anything>.f(...)`."""
+    match call.func:
+        case ast.Name(id=name) | ast.Attribute(attr=name):
+            return name
+    return None
+
+
+def _client_capture(
+    value: ast.expr, sdk: set[str], handlers: dict[str, ast.FunctionDef], bound: dict[str, ast.expr]
+) -> Capture | None:
+    """The capture a generated-SDK client is built with: `<SdkClass>(..., httpx_client=...MockTransport(h)...)`."""
+    match value:
+        case ast.Call(func=ast.Name(id=name)) if name in sdk:
+            pending = [keyword.value for keyword in value.keywords if keyword.arg == "httpx_client"]
+        case _:
+            return None
+    seen: set[str] = set()
+    while pending:
+        node = pending.pop()
+        for inner in ast.walk(node):
+            if isinstance(inner, ast.Name) and inner.id in bound and inner.id not in seen:
+                seen.add(inner.id)
+                pending.append(bound[inner.id])
+            if not isinstance(inner, ast.Call) or _called(inner) != "MockTransport":
+                continue
+            for handler in [
+                *inner.args[:1],
+                *(keyword.value for keyword in inner.keywords if keyword.arg == "handler"),
+            ]:
+                function = handlers.get(handler.id) if isinstance(handler, ast.Name) else handler
+                if isinstance(function, ast.FunctionDef | ast.Lambda) and (capture := _capture(function)):
+                    return capture
+    return None
+
+
+@dataclass(frozen=True)
+class SentCall:
+    """One generated-SDK method call a test makes, in the order its requests are captured."""
+
+    method: str
+    keywords: frozenset[str]
+
+
+Fact = tuple[SentCall, Field, str]
+
+
+def _reachable(body: list[ast.stmt]) -> list[ast.stmt] | None:
+    """The statements a test runs unconditionally, in order, or None when a branch, loop or handler hides some.
+
+    `with` blocks run their bodies; a `return` or `raise` ends the test, so
+    nothing after it runs. Code under `if`, a loop, `try` or `match` may not
+    run, so a test holding any is not read: whether its requests were sent and
+    its assertions reached is not decidable from its text.
+    """
+    statements: list[ast.stmt] = []
+    for statement in body:
+        match statement:
+            case ast.With() | ast.AsyncWith():
+                inner = _reachable(statement.body)
+                if inner is None:
+                    return None
+                statements += [statement, *inner]
+            case ast.If() | ast.For() | ast.AsyncFor() | ast.While() | ast.Try() | ast.Match():
+                return None
+            case ast.Return() | ast.Raise():
+                return [*statements, statement]
+            case _:
+                statements.append(statement)
+    return statements
+
+
+# Expressions whose operands may run zero or several times, or not now.
+DEFERRED = (ast.Lambda, ast.BoolOp, ast.IfExp, ast.ListComp, ast.SetComp, ast.DictComp, ast.GeneratorExp)
+NESTED = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.With, ast.AsyncWith)
+
+
+def _client_calls(statement: ast.stmt, clients: set[str]) -> list[SentCall] | None:
+    """The client calls one statement makes, in source order, or None when one may not run exactly once."""
+    found: list[tuple[tuple[int, int], SentCall]] = []
+
+    def visit(node: ast.AST, deferred: bool) -> bool:
+        if isinstance(node, NESTED) and node is not statement:
+            return True
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            root = node.func.value
+            while isinstance(root, ast.Attribute):
+                root = root.value
+            if isinstance(root, ast.Name) and root.id in clients:
+                if deferred:
+                    return False
+                keywords = frozenset(keyword.arg for keyword in node.keywords if keyword.arg)
+                found.append(((node.lineno, node.col_offset), SentCall(node.func.attr, keywords)))
+        if isinstance(node, ast.Assert):
+            # An assertion's message is evaluated only when it fails.
+            return visit(node.test, deferred) and (node.msg is None or visit(node.msg, True))
+        inner = deferred or isinstance(node, DEFERRED)
+        return all(visit(child, inner) for child in ast.iter_child_nodes(node))
+
+    if isinstance(statement, ast.With | ast.AsyncWith):
+        nodes: list[ast.AST] = list(statement.items)
+    else:
+        nodes = [statement]
+    if not all(visit(node, False) for node in nodes):
+        return None
+    return [call for _, call in sorted(found, key=lambda pair: pair[0])]
+
+
+_NOT_LITERAL = object()
+
+
+def _literal(node: ast.expr) -> object:
+    try:
+        return ast.literal_eval(node)
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        return _NOT_LITERAL
+
+
+def _index(node: ast.expr, container: str, calls: list[SentCall]) -> SentCall | None:
+    """The call whose captured entry `node` reads, when it is `<container>[<int>]` (`-1` included)."""
+    match node:
+        case ast.Subscript(value=ast.Name(id=name), slice=index) if name == container:
+            position = _literal(index)
+            if isinstance(position, int) and not isinstance(position, bool) and -len(calls) <= position < len(calls):
+                return calls[position]
+    return None
+
+
+def _entry_facts(capture: Capture, entry: object) -> list[tuple[Field, str]] | None:
+    """The request fields one captured entry's expected literal states, or None when it fits no entry."""
+    if None in capture.slots:
+        pairs = [(capture.slots[None], entry)]
+    elif isinstance(entry, tuple) and all(isinstance(slot, int) and slot < len(entry) for slot in capture.slots):
+        pairs = [(field, entry[slot]) for slot, field in capture.slots.items() if isinstance(slot, int)]
+    else:
+        return None
+    return [
+        (field, str(value))
+        for field, value in pairs
+        if field[0] in ("header", "query") and isinstance(value, SETTING_VALUE)
+    ]
+
+
+class _Substitute(ast.NodeTransformer):
+    """Rewrite the one `<container>[<int>]` in an expression to `CAPTURED`, noting its call."""
+
+    def __init__(self, container: str, calls: list[SentCall]) -> None:
+        self.container, self.calls, self.call = container, calls, None
+
+    def visit_Subscript(self, node: ast.Subscript) -> ast.AST:
+        if self.call is None and (call := _index(node, self.container, self.calls)):
+            self.call = call
+            return ast.copy_location(ast.Name(id=CAPTURED, ctx=ast.Load()), node)
+        return self.generic_visit(node)
+
+
+def _observations(test: ast.expr, capture: Capture, calls: list[SentCall]) -> list[Fact]:
+    """The (call, request field, value) facts an `==` assertion checks against the requests captured so far."""
+    if not isinstance(test, ast.Compare) or len(test.ops) != 1 or not isinstance(test.ops[0], ast.Eq):
+        return []
+    for reference, literal in ((test.left, test.comparators[0]), (test.comparators[0], test.left)):
+        value = _literal(literal)
+        if value is _NOT_LITERAL:
+            continue
+        if isinstance(reference, ast.Name) and reference.id == capture.container:
+            if not isinstance(value, list | tuple) or len(value) != len(calls):
+                return []
+            facts: list[Fact] = []
+            for call, entry in zip(calls, value, strict=True):
+                stated = _entry_facts(capture, entry)
+                if stated is None:
+                    return []
+                facts += [(call, field, scalar) for field, scalar in stated]
+            return facts
+        if call := _index(reference, capture.container, calls):
+            return [(call, field, scalar) for field, scalar in _entry_facts(capture, value) or []]
+        match reference:
+            case ast.Subscript(value=entry, slice=ast.Constant(value=int() as slot)) if (
+                call := _index(entry, capture.container, calls)
+            ) and isinstance(value, SETTING_VALUE):
+                field = capture.slots.get(slot)
+                return [(call, field, str(value))] if field and field[0] in ("header", "query") else []
+        if capture.slots.get(None) == ("request", "") and isinstance(value, SETTING_VALUE):
+            substitute = _Substitute(capture.container, calls)
+            rewritten = substitute.visit(copy.deepcopy(reference))
+            field = _request_field(rewritten, CAPTURED) if substitute.call else None
+            if substitute.call and field and field[0] in ("header", "query"):
+                return [(substitute.call, field, str(value))]
+    return []
+
+
+def _wire_assertions(source: str) -> tuple[list[Fact], str | None]:
+    """What a wire test asserts about the requests its generated-SDK calls actually sent, or why it is unparsable.
+
+    A fact counts only when its whole path is visible in the test's text: a
+    module-level pytest `test_*` function builds a client from a class the
+    generated `fern` package exports, passing an `httpx.MockTransport` whose
+    handler appends each request (or a tuple of its fields) to a list; it then
+    calls that client's methods, and an `assert` it reaches afterwards compares
+    that list, an entry of it, or a field of an entry with `==` against a
+    literal. Each captured entry is paired with the client call that sent it,
+    in call order, so a value checked on another operation's request does not
+    count. Literals compared with each other, values that never passed through
+    a transport, and assertions under a branch, after a `return`, or in a
+    function nothing calls assert nothing about a sent request.
     """
     try:
         module = ast.parse(source)
     except SyntaxError as error:
         return [], f"line {error.lineno}: {error.msg}"
-    asserted = []
-    for function in ast.walk(module):
-        if not isinstance(function, ast.FunctionDef | ast.AsyncFunctionDef) or not function.name.startswith("test"):
+    sdk = {
+        alias.asname or alias.name
+        for node in ast.walk(module)
+        if isinstance(node, ast.ImportFrom) and (node.module or "").split(".")[0] == SDK_PACKAGE
+        for alias in node.names
+    }
+    handlers = {node.name: node for node in ast.walk(module) if isinstance(node, ast.FunctionDef)}
+    facts: list[Fact] = []
+    for function in module.body:
+        if not isinstance(function, ast.FunctionDef) or not function.name.startswith("test"):
             continue
-        for statement in ast.walk(function):
-            if not isinstance(statement, ast.Assert):
-                continue
-            nodes = list(ast.walk(statement.test))
-            if any(isinstance(node, ast.Name | ast.Attribute | ast.Call | ast.Subscript) for node in nodes):
-                asserted.append(
-                    {
-                        str(node.value)
-                        for node in nodes
-                        if isinstance(node, ast.Constant) and isinstance(node.value, SETTING_VALUE)
-                    }
-                )
-    return asserted, None
+        statements = _reachable(function.body)
+        if statements is None:
+            continue
+        clients: dict[str, Capture] = {}
+        bound: dict[str, ast.expr] = {}
+        calls: list[SentCall] = []
+        observed: list[Fact] = []
+        for statement in statements:
+            sent = _client_calls(statement, set(clients))
+            if sent is None:
+                observed = []
+                break
+            calls += sent
+            match statement:
+                case ast.Assign(targets=[ast.Name(id=name)], value=value):
+                    bound[name] = value
+                    if capture := _client_capture(value, sdk, handlers, bound):
+                        clients[name] = capture
+                case ast.Assert(test=test):
+                    for capture in {capture.container: capture for capture in clients.values()}.values():
+                        observed += _observations(test, capture, list(calls))
+        facts += observed
+    return facts, None
 
 
 # How the registry's evaluation notes state a class's decision: a heading
@@ -753,9 +1083,10 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     `note_decisions`): a log it links shows the probe is valid OpenAPI, which with Fern's recorded
     refusal (`fern-refusal.txt`) makes the refusal a Fern limitation; a linked
     `mypy` log shows the SDK imports and type-checks clean; a linked wire log
-    shows the wire evaluation passing; and `wire_test.py` holds, in executable
-    test assertions over the request the SDK sends, every default the probe's
-    operations declare (see `_wire_assertions`).
+    shows the wire evaluation passing; and `wire_test.py` asserts, on the
+    request captured from the generated SDK method of each operation called
+    without that parameter, every default the operation declares (see
+    `_wire_assertions`).
     """
     problems = []
     logs = {}
@@ -783,7 +1114,7 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     if unparsable:
         problems.append(f"has a wire_test.py that is not valid Python ({unparsable})")
     if not asserted:
-        problems.append("has no wire_test.py asserting the generated SDK's wire behaviour")
+        problems.append("has no wire_test.py asserting a request captured from a generated SDK call")
     yaml = _yaml()
     try:
         probe = yaml.safe_load((directory / "probe.yml").read_text(encoding="utf-8"))
@@ -793,8 +1124,13 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     if malformed:
         problems.append(f"has a probe.yml whose operations cannot be read: it {malformed}")
     for default in defaults:
-        if not any(default in values for values in asserted):
-            problems.append(f"has a wire_test.py that never asserts the declared default {default!r}")
+        if not any(
+            call.method == snake(default.operation)
+            and snake(default.name) not in call.keywords
+            and (field, value) == (default.field, default.value)
+            for call, field, value in asserted
+        ):
+            problems.append(f"has a wire_test.py that never asserts {default} on the request its SDK call sent")
     return problems
 
 

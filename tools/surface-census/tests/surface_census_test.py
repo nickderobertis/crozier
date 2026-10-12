@@ -15864,6 +15864,17 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 self.assertTrue(any(message in failure for failure in failures), failures)
 
 
+NO_CAPTURE = " has no wire_test.py asserting a request captured from a generated SDK call"
+NEVER_GET = (
+    " has a wire_test.py that never asserts GET /measurements (listMeasurements) header X-Projection 'radial'"
+    " on the request its SDK call sent"
+)
+NEVER_PUT = (
+    " has a wire_test.py that never asserts PUT /measurements (replaceMeasurements) header X-Projection 'linear'"
+    " on the request its SDK call sent"
+)
+
+
 class ScenarioProofIndexTests(unittest.TestCase):
     """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
 
@@ -16327,6 +16338,36 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 self.assert_fails(root, message)
 
     EXCEPTION = "header-default-differs-across-operations"
+    # The wire test a `generate` exception for the class would carry: the generated
+    # SDK's two methods called through a capturing transport, each operation's own
+    # declared X-Projection default asserted on the request that call sent. Its
+    # shape passes against a real crozier SDK of the equal-default control.
+    WIRE_TEST = """import os
+import sys
+
+import httpx
+
+sys.path.insert(0, os.environ["CROZIER_SDK_SRC"])
+
+from fern import FernApi  # noqa: E402
+
+
+def test_each_operation_sends_its_declared_header_default():
+    sent = []
+
+    def answer(request):
+        sent.append((request.method, request.headers["X-Projection"]))
+        return httpx.Response(200, json=["measurement"])
+
+    client = FernApi(
+        base_url="https://atlas.example.net",
+        httpx_client=httpx.Client(transport=httpx.MockTransport(answer)),
+    )
+    assert client.list_measurements() == ["measurement"]
+    assert client.replace_measurements() == ["measurement"]
+    assert sent == [("GET", "radial"), ("PUT", "linear")]
+"""
+    CAPTURED = '    assert sent == [("GET", "radial"), ("PUT", "linear")]\n'
 
     def claim_generate(self, root: Path) -> Path:
         """Mark the header-default class `generate` and its scenario's outcome to match; return the class dir."""
@@ -16354,9 +16395,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
             "asserts both declared defaults, so this class is `generate`.\n",
             encoding="utf-8",
         )
-        (directory / "wire_test.py").write_text(
-            'def test_defaults(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n', encoding="utf-8"
-        )
+        (directory / "wire_test.py").write_text(self.WIRE_TEST, encoding="utf-8")
 
     # Every spelling the registry's notes use for a decision, refuse -> generate.
     FLIPPED_DECISIONS = (
@@ -16410,6 +16449,110 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.establish(self.claim_generate(root))
         self.assertEqual([], self.index_script.check(root))
 
+    def test_a_generate_class_asserting_each_default_on_its_whole_captured_request_reconciles(self) -> None:
+        root = self.mirror()
+        directory = self.claim_generate(root)
+        self.establish(directory)
+        test = self.WIRE_TEST.replace(
+            'sent.append((request.method, request.headers["X-Projection"]))', "sent.append(request)"
+        ).replace(
+            self.CAPTURED,
+            '    assert sent[0].headers["x-projection"] == "radial"\n'
+            '    assert sent[-1].headers.get("X-Projection") == "linear"\n',
+        )
+        (directory / "wire_test.py").write_text(test, encoding="utf-8")
+        self.assertEqual([], self.index_script.check(root))
+
+    def test_a_wire_test_that_observes_no_sent_request_is_refused_through_the_cli(self) -> None:
+        wire = self.WIRE_TEST
+
+        def body(statements: str) -> str:
+            return f"def test_defaults():\n{statements}"
+
+        cases: dict[str, tuple[str, list[str]]] = {
+            "empty": ("", [NO_CAPTURE, NEVER_GET, NEVER_PUT]),
+            "unparsable": (
+                wire.replace("def test_each_operation_sends_its_declared_header_default():", "def test_x()"),
+                [" has a wire_test.py that is not valid Python (line 11: ", NO_CAPTURE, NEVER_GET],
+            ),
+            # The defaults written only in comments or a docstring beside a bare assertion.
+            "bare assert with defaults in comments": (
+                body('    """Sends radial and linear."""\n    # GET radial; PUT linear\n    assert True\n'),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            # A runtime value and the default literals, but no request was ever captured.
+            "unrelated list": (
+                body('    unrelated = ["radial", "linear"]\n    assert unrelated == ["radial", "linear"]\n'),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "literals passed through a call": (
+                body('    assert str("radial") == "radial"\n    assert str("linear") == "linear"\n'),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            # The capture list filled by hand, never by a transport the SDK client sends through.
+            "list never wired to a transport": (
+                wire.replace("httpx_client=httpx.Client(transport=httpx.MockTransport(answer)),\n", "").replace(
+                    "    assert client.list_measurements()",
+                    '    sent.extend([("GET", "radial"), ("PUT", "linear")])\n    assert client.list_measurements()',
+                ),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "requests sent without the SDK": (
+                wire.replace(
+                    "client = FernApi(", "client = httpx.Client(transport=httpx.MockTransport(answer))\n    _ = dict("
+                )
+                .replace("assert client.list_measurements()", 'assert client.get("https://x/measurements")')
+                .replace("assert client.replace_measurements()", 'assert client.put("https://x/measurements")'),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "assertion after a return": (
+                wire.replace(self.CAPTURED, "    return\n" + self.CAPTURED),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "assertion under a branch": (
+                wire.replace(self.CAPTURED, "    if not sent:\n    " + self.CAPTURED),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "assertion in an uncalled nested function": (
+                wire.replace(self.CAPTURED, "    def check():\n    " + self.CAPTURED),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            "assertion in a helper the test does not define": (
+                wire.replace(self.CAPTURED, "    check(sent)\n")
+                + '\n\ndef check(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n',
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+            # Each value asserted on the other operation's request.
+            "swapped operation defaults": (
+                wire.replace('("GET", "radial"), ("PUT", "linear")', '("GET", "linear"), ("PUT", "radial")'),
+                [NEVER_GET, NEVER_PUT],
+            ),
+            "one request asserted twice": (
+                wire.replace(self.CAPTURED, '    assert sent[0][1] == "radial"\n    assert sent[0][1] == "linear"\n'),
+                [NEVER_PUT],
+            ),
+            "the default overridden by the call": (
+                wire.replace("client.replace_measurements()", 'client.replace_measurements(x_projection="linear")'),
+                [NEVER_PUT],
+            ),
+            "a call only under a short-circuit": (
+                wire.replace("assert client.replace_measurements()", "assert sent or client.replace_measurements()"),
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            ),
+        }
+        for name, (test, messages) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                directory = self.claim_generate(root)
+                self.establish(directory)
+                (directory / "wire_test.py").write_text(test, encoding="utf-8")
+                run = self.run_script("check", root=root)
+                self.assertEqual((1, ""), (run.returncode, run.stdout))
+                for message in messages:
+                    self.assertIn(f"{self.EXCEPTION}{message}", run.stderr)
+                if NO_CAPTURE not in messages:
+                    self.assertNotIn(NO_CAPTURE, run.stderr)
+
     def test_a_generate_class_must_agree_with_its_evaluation_evidence(self) -> None:
         def contradicting_note(directory: Path) -> None:
             note = (REPO / "docs/fern-refusals" / self.EXCEPTION / "evaluation.md").read_text(encoding="utf-8")
@@ -16428,58 +16571,9 @@ class ScenarioProofIndexTests(unittest.TestCase):
                     " links no passing wire-evaluation log",
                 ],
             ),
-            "empty wire test": (
-                lambda directory: (directory / "wire_test.py").write_text("", encoding="utf-8"),
-                [
-                    " has no wire_test.py asserting the generated SDK's wire behaviour",
-                    " has a wire_test.py that never asserts the declared default 'radial'",
-                ],
-            ),
             "missing wire test": (
                 lambda directory: (directory / "wire_test.py").unlink(),
-                [" has no wire_test.py asserting the generated SDK's wire behaviour"],
-            ),
-            # The defaults stated only in comments, a docstring or a constant-only
-            # comparison assert nothing about the request the SDK sends.
-            "bare assert with defaults in comments": (
-                lambda directory: (directory / "wire_test.py").write_text(
-                    "def test_defaults(sent):\n"
-                    "    # GET sends X-Projection: radial; PUT sends X-Projection: linear\n"
-                    "    assert True\n",
-                    encoding="utf-8",
-                ),
-                [
-                    " has no wire_test.py asserting the generated SDK's wire behaviour",
-                    " has a wire_test.py that never asserts the declared default 'radial'",
-                    " has a wire_test.py that never asserts the declared default 'linear'",
-                ],
-            ),
-            "defaults in a docstring and a constant-only assert": (
-                lambda directory: (directory / "wire_test.py").write_text(
-                    'def test_defaults(sent):\n    """Sends radial and linear."""\n'
-                    '    assert ("GET", "radial") != ("PUT", "linear")\n',
-                    encoding="utf-8",
-                ),
-                [
-                    " has no wire_test.py asserting the generated SDK's wire behaviour",
-                    " has a wire_test.py that never asserts the declared default 'radial'",
-                ],
-            ),
-            "assertion outside a test function": (
-                lambda directory: (directory / "wire_test.py").write_text(
-                    'def helper(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n\n\n'
-                    "def test_defaults(sent):\n    helper(sent)\n",
-                    encoding="utf-8",
-                ),
-                [" has no wire_test.py asserting the generated SDK's wire behaviour"],
-            ),
-            "unparsable wire test": (
-                replace("wire_test.py", "def test_defaults(sent):", "def test_defaults(sent)"),
-                [" has a wire_test.py that is not valid Python (line 1: "],
-            ),
-            "undeclared default": (
-                replace("wire_test.py", '("PUT", "linear")', '("PUT", "radial")'),
-                [" has a wire_test.py that never asserts the declared default 'linear'"],
+                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
             ),
             "no validation evidence": (
                 replace("evaluation.md", "([validation log](evidence/spec-validation.log))", ""),
