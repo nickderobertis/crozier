@@ -16349,7 +16349,7 @@ import httpx
 
 sys.path.insert(0, os.environ["CROZIER_SDK_SRC"])
 
-from fern import FernApi  # noqa: E402
+from fern import FernApi  # noqa: E402  (the generated SDK is importable only once its src/ is on the path)
 
 
 def test_each_operation_sends_its_declared_header_default():
@@ -16463,7 +16463,7 @@ def test_each_operation_sends_its_declared_header_default():
         (directory / "wire_test.py").write_text(test, encoding="utf-8")
         self.assertEqual([], self.index_script.check(root))
 
-    def test_a_wire_test_that_observes_no_sent_request_is_refused_through_the_cli(self) -> None:
+    def test_a_wire_test_not_asserting_each_default_on_its_own_sent_request_is_refused_through_the_cli(self) -> None:
         wire = self.WIRE_TEST
 
         def body(statements: str) -> str:
@@ -16475,12 +16475,10 @@ def test_each_operation_sends_its_declared_header_default():
                 wire.replace("def test_each_operation_sends_its_declared_header_default():", "def test_x()"),
                 [" has a wire_test.py that is not valid Python (line 11: ", NO_CAPTURE, NEVER_GET],
             ),
-            # The defaults written only in comments or a docstring beside a bare assertion.
             "bare assert with defaults in comments": (
                 body('    """Sends radial and linear."""\n    # GET radial; PUT linear\n    assert True\n'),
                 [NO_CAPTURE, NEVER_GET, NEVER_PUT],
             ),
-            # A runtime value and the default literals, but no request was ever captured.
             "unrelated list": (
                 body('    unrelated = ["radial", "linear"]\n    assert unrelated == ["radial", "linear"]\n'),
                 [NO_CAPTURE, NEVER_GET, NEVER_PUT],
@@ -16522,7 +16520,6 @@ def test_each_operation_sends_its_declared_header_default():
                 + '\n\ndef check(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n',
                 [NO_CAPTURE, NEVER_GET, NEVER_PUT],
             ),
-            # Each value asserted on the other operation's request.
             "swapped operation defaults": (
                 wire.replace('("GET", "radial"), ("PUT", "linear")', '("GET", "linear"), ("PUT", "radial")'),
                 [NEVER_GET, NEVER_PUT],
@@ -16604,6 +16601,16 @@ def test_each_operation_sends_its_declared_header_default():
                     '{"paths": {"/x": {"get": {"parameters": 7}}}}\n', encoding="utf-8"
                 ),
                 [" has a probe.yml whose operations cannot be read: it /x get parameters are not a list of objects"],
+            ),
+            "parameter name not a string": (
+                lambda directory: (directory / "probe.yml").write_text(
+                    '{"paths": {"/x": {"get": {"parameters": [{"in": "header", "name": ["X"]}]}}}}\n',
+                    encoding="utf-8",
+                ),
+                [
+                    " has a probe.yml whose operations cannot be read: it /x get has a parameter whose `in` or"
+                    " `name` is not a string"
+                ],
             ),
             "probe without paths": (
                 lambda directory: (directory / "probe.yml").write_text("openapi: 3.0.3\n", encoding="utf-8"),

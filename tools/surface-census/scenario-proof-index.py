@@ -741,14 +741,19 @@ def _declared_defaults(document: Any) -> tuple[list[DeclaredDefault], str | None
             own = _parameters(operation)
             if own is None:
                 return [], f"{route} {method} parameters are not a list of objects"
-            effective = {(parameter.get("in"), parameter.get("name")): parameter for parameter in [*inherited, *own]}
+            if not all(
+                isinstance(parameter.get("in"), str) and isinstance(parameter.get("name"), str)
+                for parameter in [*inherited, *own]
+            ):
+                return [], f"{route} {method} has a parameter whose `in` or `name` is not a string"
+            effective = {(parameter["in"], parameter["name"]): parameter for parameter in [*inherited, *own]}
             for (location, name), parameter in effective.items():
                 schema = parameter.get("schema")
                 default = schema.get("default") if isinstance(schema, dict) else None
                 if not isinstance(default, SETTING_VALUE):
                     continue
                 operation_id = operation.get("operationId")
-                if location not in ("header", "query") or not isinstance(name, str):
+                if location not in ("header", "query"):
                     return [], f"{route} {method} declares a default on a {location} parameter no capture reads"
                 if not isinstance(operation_id, str):
                     return [], f"{route} {method} declares a default but no operationId naming its SDK method"
@@ -833,15 +838,16 @@ def _client_capture(
     while pending:
         node = pending.pop()
         for inner in ast.walk(node):
-            if isinstance(inner, ast.Name) and inner.id in bound and inner.id not in seen:
-                seen.add(inner.id)
-                pending.append(bound[inner.id])
-            if not isinstance(inner, ast.Call) or _called(inner) != "MockTransport":
-                continue
-            for handler in [
-                *inner.args[:1],
-                *(keyword.value for keyword in inner.keywords if keyword.arg == "handler"),
-            ]:
+            match inner:
+                case ast.Name(id=name) if name in bound and name not in seen:
+                    seen.add(name)
+                    pending.append(bound[name])
+                    continue
+                case ast.Call(args=arguments, keywords=keywords) if _called(inner) == "MockTransport":
+                    given = [*arguments[:1], *(keyword.value for keyword in keywords if keyword.arg == "handler")]
+                case _:
+                    continue
+            for handler in given:
                 function = handlers.get(handler.id) if isinstance(handler, ast.Name) else handler
                 if isinstance(function, ast.FunctionDef | ast.Lambda) and (capture := _capture(function)):
                     return capture
@@ -889,25 +895,29 @@ DEFERRED = (ast.Lambda, ast.BoolOp, ast.IfExp, ast.ListComp, ast.SetComp, ast.Di
 NESTED = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.With, ast.AsyncWith)
 
 
+def _root(node: ast.expr) -> str | None:
+    """The variable an attribute chain `<name>.<a>.<b>` starts from."""
+    while isinstance(node, ast.Attribute):
+        node = node.value
+    return node.id if isinstance(node, ast.Name) else None
+
+
 def _client_calls(statement: ast.stmt, clients: set[str]) -> list[SentCall] | None:
     """The client calls one statement makes, in source order, or None when one may not run exactly once."""
     found: list[tuple[tuple[int, int], SentCall]] = []
 
     def visit(node: ast.AST, deferred: bool) -> bool:
-        if isinstance(node, NESTED) and node is not statement:
-            return True
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
-            root = node.func.value
-            while isinstance(root, ast.Attribute):
-                root = root.value
-            if isinstance(root, ast.Name) and root.id in clients:
+        match node:
+            case _ if isinstance(node, NESTED) and node is not statement:
+                return True
+            case ast.Assert(test=test, msg=message):
+                # An assertion's message is evaluated only when it fails.
+                return visit(test, deferred) and (message is None or visit(message, True))
+            case ast.Call(func=ast.Attribute(attr=method) as called, keywords=keywords) if _root(called) in clients:
                 if deferred:
                     return False
-                keywords = frozenset(keyword.arg for keyword in node.keywords if keyword.arg)
-                found.append(((node.lineno, node.col_offset), SentCall(node.func.attr, keywords)))
-        if isinstance(node, ast.Assert):
-            # An assertion's message is evaluated only when it fails.
-            return visit(node.test, deferred) and (node.msg is None or visit(node.msg, True))
+                named = frozenset(keyword.arg for keyword in keywords if keyword.arg)
+                found.append(((node.lineno, node.col_offset), SentCall(method, named)))
         inner = deferred or isinstance(node, DEFERRED)
         return all(visit(child, inner) for child in ast.iter_child_nodes(node))
 
@@ -976,19 +986,19 @@ def _observations(test: ast.expr, capture: Capture, calls: list[SentCall]) -> li
         value = _literal(literal)
         if value is _NOT_LITERAL:
             continue
-        if isinstance(reference, ast.Name) and reference.id == capture.container:
-            if not isinstance(value, list | tuple) or len(value) != len(calls):
-                return []
-            facts: list[Fact] = []
-            for call, entry in zip(calls, value, strict=True):
-                stated = _entry_facts(capture, entry)
-                if stated is None:
-                    return []
-                facts += [(call, field, scalar) for field, scalar in stated]
-            return facts
-        if call := _index(reference, capture.container, calls):
-            return [(call, field, scalar) for field, scalar in _entry_facts(capture, value) or []]
         match reference:
+            case ast.Name(id=name) if name == capture.container:
+                if not isinstance(value, list | tuple) or len(value) != len(calls):
+                    return []
+                facts: list[Fact] = []
+                for call, entry in zip(calls, value, strict=True):
+                    stated = _entry_facts(capture, entry)
+                    if stated is None:
+                        return []
+                    facts += [(call, field, scalar) for field, scalar in stated]
+                return facts
+            case ast.Subscript() if call := _index(reference, capture.container, calls):
+                return [(call, field, scalar) for field, scalar in _entry_facts(capture, value) or []]
             case ast.Subscript(value=entry, slice=ast.Constant(value=int() as slot)) if (
                 call := _index(entry, capture.container, calls)
             ) and isinstance(value, SETTING_VALUE):
