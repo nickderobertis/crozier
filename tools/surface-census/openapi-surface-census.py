@@ -1897,6 +1897,11 @@ CONJUNCTIONS = {
     "schema.items>schema.oneOf": "one per Schema Object whose `items` value declares `oneOf`",
     "schema.oneOf>schema.$ref": "one per Schema Object one of whose `oneOf` members is a Reference Object",
     "schema.oneOf>schema.allOf": "one per Schema Object one of whose `oneOf` members declares `allOf`",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": "one per Schema Object whose oneOf has an array member with an inline string-valued enum item, hoisted as the variant item enum",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": "one per Schema Object whose anyOf has an array member with an inline string-valued enum item, hoisted as the variant item enum",
+    "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": "one per Schema Object whose oneOf has an array member with an inline string-valued const item, hoisted as the variant item enum",
+    "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": "one per Schema Object whose anyOf has an array member with an inline string-valued const item, hoisted as the variant item enum",
+    "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref": "one per Schema Object whose property is a sole allOf reference with no sibling type declaration and no explicit nullability; annotations and defaults do not coin a model",
     "schema.oneOf>schema.enum:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `enum`",
     "schema.anyOf>schema.enum:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `enum`",
     "schema.oneOf>schema.const:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `const`",
@@ -2147,6 +2152,26 @@ CASES: dict[str, tuple[Case, ...]] = {
             selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
         ),
         Case(
+            "3e",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+        ),
+        Case(
+            "3f",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+        ),
+        Case(
+            "3g",
+            block="hoist_union_variant/oneOf",
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+        ),
+        Case(
+            "3h",
+            block="hoist_union_variant/anyOf",
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+        ),
+        Case(
             "4a",
             block="hoist_union_variant/oneOf",
             selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union",
@@ -2366,6 +2391,11 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
         Case("7a", block="prop_type_ref", selector="schema.properties>schema.enum:string-valued"),
         Case("7b", block="prop_type_ref", selector="schema.properties>schema.const:string-valued"),
+        Case(
+            "18",
+            block="prop_type_ref",
+            selector="schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref",
+        ),
         Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
         Case("8b", block="prop_type_ref", selector="schema.properties>!schema.type:primary-scalar&schema.allOf"),
         Case(
@@ -2489,8 +2519,8 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "1389956b0480011c",
-    "prop_type_ref": "b571e8eae03e290b",
+    "hoist_union_variant": "66aacc37a6f8f5a7",
+    "prop_type_ref": "6deb59aa47072ec0",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }

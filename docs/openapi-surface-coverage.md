@@ -4369,6 +4369,10 @@ composition, so the gate below fires — which is the chain overlap
 | 3b | the same, the item's `oneOf` spelling; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` |
 | 3c | 3a's item, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member` |
 | 3d | 3b's item, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member` |
+| 3e | inline string `enum` array item hoisted as `{Variant}Item`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued` |
+| 3f | inline string `enum` array item hoisted as `{Variant}Item`; `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued` |
+| 3g | inline string `const` array item hoisted as `{Variant}Item`; `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued` |
+| 3h | inline string `const` array item hoisted as `{Variant}Item`; `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued` |
 | 4a | an array variant whose item composes, `hoist_discriminated_union(&item_name, item, …)` returning `Some`; the item's `oneOf` spelling, `oneOf` head. The arm's gate already requires the item to declare a composition, so `discriminated_union`'s inheritance delegation is unreachable from here and the head splits two ways rather than three | `schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union` |
 | 4b | the item's `anyOf` spelling, `oneOf` head | `schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:discriminated-union` |
 | 4c | the item's `oneOf` spelling, `anyOf` head | `schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:discriminated-union` |
@@ -4421,6 +4425,10 @@ Case 17 precedes the annotated-reference gate. It hoists a string enum reference
 narrowed by the second `allOf` member's pattern. Cases 11a and 11b retain the
 nullable member's description for an enum, and use the enclosing description
 before the member's description for an inline object; their selectors do not change.
+Within the same nullable-member gate, a member that is itself a `oneOf` or
+`anyOf` and has no reference or `allOf` now hoists as the property's named union,
+retaining the outer description. The existing 11a/11b selectors still name
+that gate; no independent top-level case or region row is added.
 
 **Cases 8d, 12c and 12d require a written `properties` field.** A closed
 object without it takes the free-form path, returning `Dict[str, Any]` before
@@ -4457,6 +4465,7 @@ both count it and the earlier arm runs — the chain overlap
 | 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member` and the nine sibling-absence tests are the nine negated members, eight at the property and one at the member the descent reaches. Without them the arity alone counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref` |
 | 7a | `string_enum_values(prop_schema)` → a hoisted enum, over a written `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.enum:string-valued` |
 | 7b | the same over a `const`, the spelling the helper falls back to when no `enum` is written | `schema.properties>schema.const:string-valued` |
+| 18 | a one-member `allOf` property reference with annotations or default, kept as its referenced type; no sibling type declaration or explicit nullability | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref` |
 | 8a | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object`, on a property whose `properties` are non-empty | `schema.properties>schema.properties:non-empty` |
 | 8b | the same arm on a property declaring `allOf`, which `is_inline_struct` takes only for a property declaring no scalar `type` | `schema.properties>!schema.type:primary-scalar&schema.allOf` |
 | 8c | the same arm on a property writing an explicitly empty `properties: {}` beside no `additionalProperties` | `schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
