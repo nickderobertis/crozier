@@ -6505,7 +6505,12 @@ fn sdk_env_operation_header_defaults_reach_the_wire() {
         .arg(&spec)
         .assert()
         .success()
-        .stdout("2 operation(s) sent their declared header defaults\n");
+        // Python's text streams write CRLF on Windows; compare the line, not
+        // the platform's line ending.
+        .stdout(
+            predicate::str::diff("2 operation(s) sent their declared header defaults\n")
+                .normalize(),
+        );
     Command::new(&python)
         .env("PYTHONDONTWRITEBYTECODE", "1")
         .arg(&script)
@@ -6514,8 +6519,11 @@ fn sdk_env_operation_header_defaults_reach_the_wire() {
         .assert()
         .code(1)
         .stderr(
-            "PUT /measurements: replace_measurements() sent X-Projection: 'radial', \
-             but the operation declares 'linear'\n",
+            predicate::str::diff(
+                "PUT /measurements: replace_measurements() sent X-Projection: 'radial', \
+                 but the operation declares 'linear'\n",
+            )
+            .normalize(),
         );
     // llmlint: ignore-end[e2e_not_mocked]
 }
