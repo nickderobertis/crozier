@@ -1197,7 +1197,7 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
-    "operation.operationId:camel-case-tag-prefix": "one per tagged operation whose dotted operationId starts with the same multiword camel-case tag, ignoring case",
+    "operation.operationId:camel-case-tag-prefix": "one per operation with an upper-camel multiword tag and lower-camel dotted operationId starting with that tag, ignoring case",
     "operation.requestBody:optional-nullable-enum-multipart-part": "one per operation with an optional, defaulted multipart part whose anyOf is a string-enum component reference beside null",
     "operation.requestBody:titled-array-component-oas-three-one": "one per OpenAPI 3.1 operation whose JSON body references a titled, described array component",
     "schema.enum:kwargs-member": "one per string enum containing kwargs, whose visitor callback is named kwargs_",
@@ -5626,7 +5626,9 @@ class Census:
                 isinstance(tag, str)
                 and isinstance(operation_id, str)
                 and re.fullmatch(r"[A-Za-z0-9]+\.[A-Za-z0-9]+", operation_id)
-                and len(split_words(tag)) > 1
+                and tag[:1].isupper()
+                and operation_id[:1].islower()
+                and len([word for word in split_words(tag) if not word.isdigit()]) > 1
                 and operation_id.split(".", 1)[0].lower() == tag.lower()
             ):
                 found.append("operation.operationId:camel-case-tag-prefix")

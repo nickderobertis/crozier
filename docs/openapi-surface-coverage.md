@@ -495,8 +495,8 @@ deliberately excludes as names. The predicates are themselves a closed list of
 157, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
-- `operation.operationId:camel-case-tag-prefix` — one per tagged operation whose dotted
-  operationId starts with the same multiword camel-case tag, ignoring case
+- `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
+  multiword tag and lower-camel dotted operationId starting with that tag, ignoring case
 - `operation.requestBody:optional-nullable-enum-multipart-part` — one per operation with
   an optional, defaulted multipart part whose anyOf is a string-enum component reference
   beside null
@@ -1818,13 +1818,12 @@ shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
-closed with no open residual: 157
-closed on their proof with a residual open: 3
-  enum-header-params-stringified: docs/fern-measurements/python-enums-residuals/enum-header-params-stringified.diff -> parity-naming-wire:python-enums-header-value
+closed with no open residual: 158
+closed on their proof with a residual open: 2
   text-response-drops-request-example: supabase reference.md -647,0 +647,2; supabase src/fern/environments/client.py -396,0 +396,2, -1257,0 +1259,2 -> parity-examples-docs:text-response-optional-query-examples
   union-member-nullability-dropped: supabase src/fern/types/json_value_output.py -9,3 +9,1 -> parity-schema-shapes:nullable-nested-anyof-union-member
 witnesses: differs 8
-witness hunks by owner: text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 490
+witness hunks by owner: text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 441
 ```
 
 ## The category rules

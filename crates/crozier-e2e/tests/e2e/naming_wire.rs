@@ -111,6 +111,14 @@ fn measurement_copy(case: &str) -> (tempfile::TempDir, String, PathBuf) {
     fern_copy(&tree, case_spec(case))
 }
 
+fn tamoss_copy(_: &str) -> (tempfile::TempDir, String, PathBuf) {
+    let root = repo_root();
+    fern_copy(
+        &root.join("tests/fixtures/tamoss/expected"),
+        root.join("tests/fixtures/corpus-sources/tamoss/openapi.yaml"),
+    )
+}
+
 /// Plant one unexplained byte; a `from` the golden no longer holds fails here,
 /// so a regenerated golden cannot leave a negative case silently unperturbed.
 fn perturb(tree: &Path, rel: &str, from: &str, to: &str) {
@@ -129,7 +137,7 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
     type Copy = fn(&str) -> (tempfile::TempDir, String, PathBuf);
     type Perturbation<'a> = (&'a str, &'a str, &'a str);
     type Case<'a> = (&'a str, Copy, &'a [Perturbation<'a>]);
-    let cases: [Case<'_>; 6] = [
+    let cases: [Case<'_>; 7] = [
         (
             "gallery-plaque-groups",
             handwritten_copy,
@@ -170,6 +178,15 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
                 "src/fern/entries/raw_client.py",
                 "            headers={\n                \"content-type\": \"application/json\",\n            },\n",
                 "",
+            )],
+        ),
+        (
+            "tamoss",
+            tamoss_copy,
+            &[(
+                "src/fern/flows/raw_client.py",
+                "            json=convert_and_respect_annotation_metadata(object_=request, annotation=FlowCollection, direction=\"write\"),\n            headers={\n                \"content-type\": \"application/json\",\n            },\n",
+                "            json=convert_and_respect_annotation_metadata(object_=request, annotation=FlowCollection, direction=\"write\"),\n",
             )],
         ),
         (

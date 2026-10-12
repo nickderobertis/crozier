@@ -16812,6 +16812,22 @@ class NamingWireCensusTests(unittest.TestCase):
                     0,
                 )
 
+    def test_camel_tag_shape_excludes_upper_prefix_and_lower_tag(self) -> None:
+        census = load_census()
+        source = REPO / "docs/openapi-surface/handwritten/gallery-plaque-groups/openapi.yml"
+        for variant in ("upper-prefix", "lower-tag"):
+            with self.subTest(variant=variant):
+                document = census.load_document(source)
+                for operation in document["paths"]["/galleries/{gallery}/plaque"].values():
+                    match variant:
+                        case "upper-prefix":
+                            operation["operationId"] = "GalleryPlaque.show"
+                        case "lower-tag":
+                            operation["tags"] = ["galleryPlaque"]
+                self.assertEqual(
+                    census.census_document(document).get("operation.operationId:camel-case-tag-prefix", 0), 0
+                )
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
