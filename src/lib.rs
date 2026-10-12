@@ -35,6 +35,7 @@ pub mod pyfmt;
 pub mod refs;
 pub mod schema;
 pub mod settings;
+pub mod spike_yaml;
 pub mod wrap;
 
 pub use emit::GeneratedFile;

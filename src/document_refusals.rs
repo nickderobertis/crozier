@@ -109,7 +109,7 @@ pub fn check_version_file(path: &Path, strict: bool) -> Result<()> {
     let version = if extension.as_deref() == Some("json") {
         serde_json::from_str::<Version>(&text).ok()
     } else {
-        serde_yaml_ng::from_str::<Version>(&text).ok()
+        crate::spike_yaml::from_str::<Version>(&text).ok()
     };
     if let Some(version) = version {
         check_version(&version.openapi, path, strict)?;
@@ -130,7 +130,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     let Ok(text) = std::fs::read_to_string(path) else {
         return Ok(());
     };
-    let Ok(root) = serde_yaml_ng::from_str::<ReferenceDocument>(&text).map(|document| document.0)
+    let Ok(root) = crate::spike_yaml::value_from_str::<ReferenceDocument>(&text).map(|document| document.0)
     else {
         return Ok(());
     };
@@ -1914,7 +1914,7 @@ fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
         };
         let Some(root) = std::fs::read_to_string(&target)
             .ok()
-            .and_then(|text| serde_yaml_ng::from_str::<ReferenceDocument>(&text).ok())
+            .and_then(|text| crate::spike_yaml::value_from_str::<ReferenceDocument>(&text).ok())
         else {
             return false;
         };

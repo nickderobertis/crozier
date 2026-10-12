@@ -525,7 +525,7 @@ fn source_document(path: &Path) -> Result<serde_yaml_ng::Value> {
             });
         }
     }
-    serde_yaml_ng::from_str(&text).map_err(|error| Error::ParseSpec {
+    crate::spike_yaml::value_from_str(&text).map_err(|error| Error::ParseSpec {
         path: path.to_owned(),
         message: error.to_string(),
     })

@@ -2592,7 +2592,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     let is_yaml = matches!(ext.as_deref(), Some("yml" | "yaml"));
     let mut doc: OpenApi = match ext.as_deref() {
-        Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
+        Some("yml" | "yaml") => crate::spike_yaml::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
             message: e.to_string(),
         })?,
@@ -2605,7 +2605,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         Some("json") => serde_json::from_str(&text)
             .or_else(|error| {
                 if error.to_string().starts_with("number out of range") {
-                    serde_yaml_ng::from_str(&text).map_err(|_| error)
+                    crate::spike_yaml::from_str(&text).map_err(|_| error)
                 } else {
                     Err(error)
                 }

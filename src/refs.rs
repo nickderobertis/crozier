@@ -727,7 +727,7 @@ impl Resolver<'_> {
                     })?
                 }
             };
-            let value = serde_yaml_ng::from_str(&text)
+            let value = crate::spike_yaml::value_from_str(&text)
                 .map_err(|error| self.error(reference, &format!("could not parse it: {error}")))?;
             self.documents.insert(key.clone(), value);
         }

@@ -354,7 +354,7 @@ pub struct LoadedConfig {
 /// Parse one config file's text into a [`FileConfig`]. Pure: the caller attaches
 /// the path to any error. Rejects unknown fields and unknown generator types.
 pub fn parse(text: &str) -> std::result::Result<FileConfig, String> {
-    let config: FileConfig = serde_yaml_ng::from_str(text).map_err(|e| e.to_string())?;
+    let config: FileConfig = crate::spike_yaml::from_str(text).map_err(|e| e.to_string())?;
     validate(&config)?;
     Ok(config)
 }
