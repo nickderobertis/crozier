@@ -27,11 +27,11 @@ if [ "${1:-}" = "--no-e2e" ]; then
   e2e=0
   shift
 fi
-modes=${SAPHYR_DIFF_MODES:-tree=json;tree=saphyr;tree=json,strict_booleans,budget=none,nonfinite=string;tree=saphyr,strict_booleans,budget=none,nonfinite=string}
+modes=${SAPHYR_DIFF_MODES:-tree=json;tree=saphyr;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=saphyr,strict_booleans,budget=none,nonfinite=string,merge=ordinary}
 export SAPHYR_DIFF_MODES=$modes
 # The e2e suite is slow (every golden runs `ruff format`), so it runs the raw
 # default-Options reader once and the two candidate configurations.
-e2e_modes=${SAPHYR_DIFF_E2E_MODES:-tree=json;tree=json,strict_booleans,budget=none,nonfinite=string;tree=saphyr,strict_booleans,budget=none,nonfinite=string;tree=json,strict_booleans,budget=none,nonfinite=string,wording=today}
+e2e_modes=${SAPHYR_DIFF_E2E_MODES:-tree=json;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=saphyr,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary,wording=today}
 
 cargo build --locked --quiet --profile spike -p saphyr-diff
 cargo build --locked --quiet --profile spike -p crozier --features spike-saphyr --bin crozier

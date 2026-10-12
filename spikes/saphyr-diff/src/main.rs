@@ -350,7 +350,7 @@ fn on_big_stack<R: Send>(f: impl FnOnce() -> R + Send) -> R {
 // ---------------------------------------------------------------- kinds
 
 /// The serde-saphyr Options that reproduce today's reads on every real document.
-const CANDIDATE: [&str; 3] = ["strict_booleans", "budget=none", "nonfinite=string"];
+const CANDIDATE: [&str; 4] = ["strict_booleans", "budget=none", "nonfinite=string", "merge=ordinary"];
 
 const TREES: [&str; 3] = ["serde-saphyr→serde_yaml_ng::Value", "serde-saphyr→serde_json::Value", "saphyr::Yaml"];
 
@@ -667,12 +667,13 @@ fn compare_errors(report: &mut Report, scratch: &Path, mode: &str) {
         std::fs::write(&spec, &text).unwrap();
         for strict in [false, true] {
             let label = format!("{name}{}", if strict { " [strict]" } else { "" });
-            let (before, after) = on_big_stack(|| {
-                let b = render(&spec, strict, "off").map(|f| format!("{} files", f.len()));
-                let a = render(&spec, strict, mode).map(|f| format!("{} files", f.len()));
-                (b, a)
-            });
-            record_outcome(report, &section, &label, before, after, |a, b| format!("{a} → {b}"));
+            let (before, after) = on_big_stack(|| (render(&spec, strict, "off"), render(&spec, strict, mode)));
+            // Both generate: compare the SDKs byte for byte, not just their file counts.
+            let (before, after) = match (before, after) {
+                (Ok(b), Ok(a)) if b != a => (Ok(String::new()), Ok(files_diff(&b, &a))),
+                (b, a) => (b.map(|_| String::new()), a.map(|_| String::new())),
+            };
+            record_outcome(report, &section, &label, before, after, |_, b| format!("SDK bytes differ: {b}"));
         }
     }
 }
