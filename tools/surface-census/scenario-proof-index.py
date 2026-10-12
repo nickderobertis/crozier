@@ -27,6 +27,8 @@ that catalog and compared, so a row cannot drift from what it cites:
   trigger: each handed-off witness whose `residuals.tsv` hunks the shape owns,
   and `python_enums` when a `python_enums` residual diff of the shape is
   committed. A shape is closed with no residual only when that cell is empty.
+  Its `closer` cell names, member for member, the parity node and the
+  difference id that node owns which closes each open residual.
 
 `docs/fern-measurements/blocked-witnesses/witnesses.tsv` lists every real
 publisher specification handed off for registration. A registered one names its
@@ -72,6 +74,7 @@ INDEX_HEADER = (
     "ids",
     "evidence",
     "open",
+    "closer",
 )
 # A literals-proven shape whose `python_enums` output still differs keeps that diff here, by shape.
 PYTHON_ENUMS_RESIDUALS = Path("docs/fern-measurements/python-enums-residuals")
@@ -167,6 +170,24 @@ class Kind(StrEnum):
     REFUSAL = "refusal"
 
 
+class ParityNode(StrEnum):
+    """A later parity node that owns closing a residual a scenario's own trigger still shows."""
+
+    SCHEMA_SHAPES = "parity-schema-shapes"
+    NAMING_WIRE = "parity-naming-wire"
+    EXAMPLES_DOCS = "parity-examples-docs"
+
+
+class Closer(NamedTuple):
+    """The parity node and the difference id it owns that closes one open residual."""
+
+    node: ParityNode
+    difference: str
+
+    def __str__(self) -> str:
+        return f"{self.node}:{self.difference}"
+
+
 class RefusalStatus(StrEnum):
     """A refusal class's registry decision, which fixes crozier's outcome in each mode."""
 
@@ -193,7 +214,7 @@ def split(cell: str) -> tuple[str, ...]:
     return () if cell == NONE else tuple(part.strip() for part in cell.split(";"))
 
 
-LIST_COLUMNS = ("source", "goldens", "tests", "ids", "evidence", "open")
+LIST_COLUMNS = ("source", "goldens", "tests", "ids", "evidence", "open", "closer")
 
 
 def blank_members(row: dict[str, str], columns: tuple[str, ...]) -> list[str]:
@@ -217,6 +238,7 @@ class Proof:
     refusal: RefusalClass | None
     evidence: tuple[str, ...]
     open: tuple[str, ...]
+    closer: tuple[Closer, ...]
 
     @property
     def where(self) -> str:
@@ -355,6 +377,21 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
         if blank := blank_members(row, LIST_COLUMNS):
             failures.append(f"{where}: {', '.join(blank)} hold an empty `;`-separated member")
             continue
+        closers = []
+        for member in split(row["closer"]):
+            node, _, difference = member.partition(":")
+            if node not in values(ParityNode) or not SHAPE_NAME.match(difference):
+                failures.append(f"{where}: closer {member} is no `<node>:<difference>` of {', '.join(ParityNode)}")
+            else:
+                closers.append(Closer(ParityNode(node), difference))
+        if len(closers) != len(split(row["closer"])):
+            continue
+        if len(closers) != len(split(row["open"])):
+            failures.append(
+                f"{where}: closer names {len(closers)} closing difference(s) "
+                f"for {len(split(row['open']))} open residual(s)"
+            )
+            continue
         kind = Kind(row["kind"])
         refusal = kind is Kind.REFUSAL
         proofs.append(
@@ -371,6 +408,7 @@ def read_proofs(root: Path) -> tuple[list[Proof], list[str]]:
                 refusal=RefusalClass(row["ids"]) if refusal else None,
                 evidence=split(row["evidence"]),
                 open=split(row["open"]),
+                closer=tuple(closers),
             )
         )
     return proofs, failures
@@ -985,14 +1023,31 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
     def spelled(counts: Counter[str]) -> str:
         return ", ".join(f"{name} {count}" for name, count in sorted(counts.items()))
 
+    def rows(proof: Proof, residual: str) -> str:
+        """The committed rows behind one open residual: its `residuals.tsv` hunks, or its python_enums diff."""
+        if residual == PYTHON_ENUMS:
+            return f"{PYTHON_ENUMS_RESIDUALS}/{proof.shape}.diff"
+        return "; ".join(
+            f"{row.witness} {row.file} {', '.join(row.hunks)}"
+            for row in residuals
+            if row.owner == proof.shape and row.witness == residual
+        )
+
+    still_open = [
+        f"  {proof.shape}: {rows(proof, residual)} -> {closer}"
+        for proof in proofs
+        if not proof.fully_closed
+        for residual, closer in zip(proof.open, proof.closer, strict=True)
+    ]
+
     return [
         f"shapes: {len(proofs)}",
         f"by kind: {spelled(Counter(str(proof.kind) for proof in proofs))}",
         f"by owner: {spelled(Counter(str(proof.owner) for proof in proofs))}",
         f"by outcome: {spelled(Counter(proof.outcome for proof in proofs))}",
         f"closed with no open residual: {sum(proof.fully_closed for proof in proofs)}",
-        "closed on their proof with a residual open: "
-        + (", ".join(f"{proof.shape} ({';'.join(proof.open)})" for proof in proofs if not proof.fully_closed) or NONE),
+        f"closed on their proof with a residual open: {sum(not proof.fully_closed for proof in proofs)}",
+        *still_open,
         f"witnesses: {spelled(Counter(str(witness.status) for witness in witnesses))}",
         f"witness hunks by owner: {spelled(hunks)}",
     ], []

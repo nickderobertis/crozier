@@ -16546,6 +16546,52 @@ class ScenarioProofIndexTests(unittest.TestCase):
         fully = sum(row["open"] == module.NONE for row in rows)
         self.assertIn(f"closed with no open residual: {fully}", lines)
 
+    def test_each_open_residual_names_the_parity_node_closing_it(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        closed = next(row for row in rows if row["open"] == module.NONE)
+        cases = {
+            "closer dropped": (
+                self.edited(witnessed, closer=module.NONE),
+                f"{witnessed['shape']}: closer names 0 closing difference(s) for 1 open residual(s)",
+            ),
+            "closer on a fully closed shape": (
+                self.edited(closed, closer=witnessed["closer"]),
+                f"{closed['shape']}: closer names 1 closing difference(s) for 0 open residual(s)",
+            ),
+            "closer of no parity node": (
+                self.edited(witnessed, closer=f"unions:{witnessed['shape']}"),
+                f"{witnessed['shape']}: closer unions:{witnessed['shape']} is no `<node>:<difference>` of",
+            ),
+            "closer without its difference": (
+                self.edited(witnessed, closer=witnessed["closer"].partition(":")[0]),
+                f"{witnessed['shape']}: closer {witnessed['closer'].partition(':')[0]} is no",
+            ),
+        }
+        original = {"closer dropped": witnessed, "closer on a fully closed shape": closed}
+        for name, (line, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(original.get(name, witnessed)), line)
+                self.assert_fails(root, message)
+        # The summary names, per open residual, its committed rows and the node closing it.
+        lines, failures = module.summary(REPO)
+        self.assertEqual([], failures)
+        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        cited = "; ".join(
+            f"{row['witness']} {row['file']} {', '.join(row['hunks'].split(';'))}"
+            for row in residuals
+            if row["owner"] == witnessed["shape"]
+        )
+        self.assertIn(f"  {witnessed['shape']}: {cited} -> {witnessed['closer']}", lines)
+        self.assertIn(
+            f"  {python_enums['shape']}: {module.PYTHON_ENUMS_RESIDUALS}/{python_enums['shape']}.diff"
+            f" -> {python_enums['closer']}",
+            lines,
+        )
+
     def test_a_registered_witness_names_its_corpus_row_and_no_residual(self) -> None:
         module = self.index_script
         root = self.mirror()

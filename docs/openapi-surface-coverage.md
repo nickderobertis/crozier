@@ -212,13 +212,17 @@ real-specification match.
   registered while any hunk remains.
 - **Scenarios closed on their fixture with a real-witness residual on their
   own trigger (2):** `text-response-drops-request-example` (Supabase's
-  text-only diff operation keeps optional query examples) and
+  text-only diff operation keeps optional query examples; owned by
+  `parity-examples-docs` as `text-response-optional-query-examples`) and
   `union-member-nullability-dropped` (Supabase's nested hoisted nullable member
-  loses `Optional`). Neither counts as fully closed
-  ([index](#scenario-proof-index)).
+  loses `Optional`; owned by `parity-schema-shapes` as
+  `nullable-nested-anyof-union-member`). Neither counts as fully closed; the
+  [index summary](#scenario-proof-index) names their `residuals.tsv` rows.
 - **A `python_enums` residual of a literals-proven shape (1):**
   `enum-header-params-stringified` sends `str(...)` where Fern sends `.value`
-  ([measurement](fern-measurements/python-enums-residuals/README.md)).
+  ([measurement](fern-measurements/python-enums-residuals/README.md)); owned by
+  `parity-naming-wire` as `python-enums-header-value`, and not counted as fully
+  closed.
 - **Features and arms resting on hand-written fixtures only (11 features, 54
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
@@ -1757,13 +1761,15 @@ proof that closes the shape:
 | `ids` | those corrections' [departure](departures/README.md) ids, or the refusal class |
 | `evidence` | the search record, evaluation note or evidence file the proof rests on |
 | `open` | the residuals still open on the shape's own trigger: each handed-off witness whose diff hunks the shape owns in `residuals.tsv`, and `python_enums` where a `python_enums` residual diff is committed; `—` when none |
+| `closer` | for each `open` member in turn, the later parity node that owns closing it and the id of the difference it owns there (`<node>:<difference>`); `—` when `open` is |
 
 A [hand-written](openapi-surface/handwritten/AGENTS.md) or measured proof
 certifies a shape without counting as a real-specification match. A shape is
 fully closed only when its `open` cell is `—`. A shape whose certified fixture
 matches but a real witness, or the other enum mode, still differs on its own
 trigger is closed on its fixture only. Such a shape is named in the summary
-below and kept out of the fully closed count; its residual hunks stay in
+below and kept out of the fully closed count, with the committed rows still
+open and the parity node that owns closing them; its residual hunks stay in
 `residuals.tsv` until they match. Only a `real` row's golden comes from a registered
 publisher document. The five refusal rows take their mode outcomes from their
 class's registry `status` and evaluation note, which names each cited probe.
@@ -1790,7 +1796,8 @@ fact from its authority and fails on any disagreement:
 - each test's definition as a `#[test]`;
 - each path and anchor;
 - each `open` cell, against the residual hunks and `python_enums` diffs
-  committed for the shape.
+  committed for the shape, and its `closer` cell, which must name one parity
+  node's difference per open residual.
 
 `ScenarioProofIndexTests` in `tools/surface-census/tests/surface_census_test.py`
 runs it over the committed tree. The same tests remove or mismatch each kind of
@@ -1803,7 +1810,10 @@ by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
 closed with no open residual: 157
-closed on their proof with a residual open: enum-header-params-stringified (python_enums), text-response-drops-request-example (supabase), union-member-nullability-dropped (supabase)
+closed on their proof with a residual open: 3
+  enum-header-params-stringified: docs/fern-measurements/python-enums-residuals/enum-header-params-stringified.diff -> parity-naming-wire:python-enums-header-value
+  text-response-drops-request-example: supabase reference.md -647,0 +647,2; supabase src/fern/environments/client.py -396,0 +396,2, -1257,0 +1259,2 -> parity-examples-docs:text-response-optional-query-examples
+  union-member-nullability-dropped: supabase src/fern/types/json_value_output.py -9,3 +9,1 -> parity-schema-shapes:nullable-nested-anyof-union-member
 witnesses: differs 8
 witness hunks by owner: text-response-drops-request-example 3, union-member-nullability-dropped 1, unowned 490
 ```
