@@ -2,8 +2,10 @@
 
 [advisories]
 version = 2
-# No ignored advisories. Add one only with a tracked rationale inline.
-ignore = []
+# Add an ignore only with a tracked rationale inline.
+ignore = [
+    { id = "RUSTSEC-2024-0449", reason = "unsafe-libyaml is unmaintained (an unmaintained notice, not a known vulnerability); it arrives via crozier -> serde_yaml_ng -> unsafe-libyaml. Remove this entry once crozier's YAML parsing moves to serde_norway." },
+]
 
 [licenses]
 version = 2
