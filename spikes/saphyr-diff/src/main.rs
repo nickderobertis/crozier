@@ -833,11 +833,14 @@ fn timings(report: &mut Report, root: &Path, rel: &str, rounds: usize) {
     report.section(section).documents = 1;
     report.note(section, format!("{} bytes; build profile `{}`", text.len(), if cfg!(debug_assertions) { "dev (debug — rerun with --profile spike)" } else { "spike (release, no LTO)" }));
     let candidate = options_from_flags(&CANDIDATE);
+    let depth128 = options_from_flags(&["strict_booleans", "nonfinite=string", "merge=ordinary", "depth=128"]);
     let runs: Vec<(&str, Box<dyn Fn() -> Result<(), String>>)> = vec![
         ("serde_yaml_ng → serde_yaml_ng::Value (today, schema-less)", Box::new(|| serde_yaml_ng::from_str::<Ng>(&text).map(drop).map_err(|e| e.to_string()))),
         ("serde_yaml_ng → OpenApi (today, typed)", Box::new(|| serde_yaml_ng::from_str::<crozier::openapi::OpenApi>(&text).map(drop).map_err(|e| e.to_string()))),
         ("serde-saphyr (default Options) → OpenApi", Box::new(|| serde_saphyr::from_str::<crozier::openapi::OpenApi>(&text).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("serde-saphyr (candidate Options) → OpenApi", Box::new(|| serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(&text, candidate.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
+        ("serde-saphyr (candidate Options, Budget max_depth 128 with nodes/events unlimited) → OpenApi", Box::new(|| serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(&text, depth128.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
+        ("serde-saphyr (candidate Options, Budget max_depth 128 with nodes/events unlimited) → serde_json::Value", Box::new(|| serde_saphyr::from_str_with_options::<serde_json::Value>(&text, depth128.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("serde-saphyr (candidate Options) → serde_json::Value", Box::new(|| serde_saphyr::from_str_with_options::<serde_json::Value>(&text, candidate.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("serde-saphyr (default Options) → serde_json::Value", Box::new(|| serde_saphyr::from_str::<serde_json::Value>(&text).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("saphyr 0.2 → saphyr::Yaml node tree", Box::new(|| {
@@ -960,6 +963,132 @@ fn compare_error_wording(report: &mut Report) {
     }
 }
 
+// ---------------------------------------------------------------- compatibility fixes
+
+/// The candidate Options as `CROZIER_SPIKE_YAML` flags, without a budget flag.
+const BASE: &str = "tree=json,strict_booleans,nonfinite=string,merge=ordinary";
+
+/// Read `text` into `T` through crozier's shim under `mode`, on a big stack.
+fn typed<T: serde::de::DeserializeOwned + Send>(text: &str, mode: &str) -> Result<T, String> {
+    on_big_stack(|| {
+        set_thread_mode(Some(mode));
+        let r = crozier::spike_yaml::from_str::<T>(text).map_err(|e| e.to_string());
+        set_thread_mode(None);
+        r
+    })
+}
+
+/// Today's outcome, plain serde-saphyr's, and the fix's, per case; the fix
+/// reproduces today when it reads the same value or refuses where today does.
+fn compare_fix(report: &mut Report, section: &str, fix: &str, rows: Vec<(String, Result<String, String>, Result<String, String>, Result<String, String>)>) {
+    report.section(section).documents = rows.len();
+    let show = |r: &Result<String, String>| match r {
+        Ok(v) => format!("reads {v}"),
+        Err(e) => format!("refused: {}", one_line(e)),
+    };
+    let same = |a: &Result<String, String>, b: &Result<String, String>| match (a, b) {
+        (Ok(x), Ok(y)) => x == y,
+        (Err(_), Err(_)) => true,
+        _ => false,
+    };
+    for (name, today, plain, fixed) in rows {
+        let line = format!("{name}: today {} | serde-saphyr {} | with {fix}: {}", show(&today), show(&plain), show(&fixed));
+        let signature = match (same(&today, &plain), same(&today, &fixed)) {
+            (true, true) => "same as today without and with the fix",
+            (false, true) => "serde-saphyr differs; the fix reproduces today",
+            (true, false) => "serde-saphyr matches; the fix BREAKS it",
+            (false, false) => "serde-saphyr differs; the fix does NOT reproduce today",
+        };
+        report.diff(section, signature, line);
+    }
+}
+
+/// A Budget with `max_depth` N and node/event caps lifted, against today's
+/// recursion limit, on flow- and block-nested documents around both limits.
+fn compare_depth(report: &mut Report, scratch: &Path) {
+    let base = "openapi: 3.0.3\ninfo: {title: probe, version: '1'}\npaths: {}\n";
+    let mut cases: Vec<(String, String)> = Vec::new();
+    for n in [63usize, 64, 65, 70, 126, 127, 128, 129, 130] {
+        cases.push((format!("flow, {n} levels"), format!("{base}x-deep: {}{}\n", "[".repeat(n), "]".repeat(n))));
+        let mut block = String::from("x-deep:\n");
+        for level in 1..n {
+            block.push_str(&"  ".repeat(level));
+            block.push_str(if level + 1 == n { "a: 1\n" } else { "a:\n" });
+        }
+        cases.push((format!("block, {n} levels"), format!("{base}{block}")));
+    }
+    for depth in [127, 128, 129] {
+        let section = format!("compat · nesting depth: Budget max_depth {depth}, nodes/events unlimited (render_files)");
+        let mode = format!("{BASE},depth={depth}");
+        let rows = cases
+            .iter()
+            .map(|(name, text)| {
+                let spec = scratch.join(format!("depth-{}.yml", name.replace(|c: char| !c.is_ascii_alphanumeric(), "_")));
+                std::fs::write(&spec, text).unwrap();
+                let run = |m: &str| on_big_stack(|| render(&spec, false, m)).map(|f| format!("{} files", f.len()));
+                (name.clone(), run("off"), run(&format!("{BASE},budget=none")), run(&mode))
+            })
+            .collect();
+        compare_fix(report, &section, &format!("depth={depth}"), rows);
+    }
+}
+
+/// The strict `bool` visitor (`code=bool`) on crozier's real `Option<bool>`
+/// fields: `crozier.yml`'s `fern-strict`, a schema's `nullable`, a
+/// parameter's `required`.
+fn compare_bool_fix(report: &mut Report) {
+    let values = ["true", "false", "True", "TRUE", "\"true\"", "'true'", "\"false\"", "yes", "on", "No", "1", "0", "~", "", "!!bool true", "!!bool \"true\"", "!!str true", "maybe"];
+    let fixed = format!("{BASE},budget=none,code=bool");
+    let plain = format!("{BASE},budget=none");
+    let mut rows = Vec::new();
+    for v in values {
+        let text = format!("fern-strict: {v}\n");
+        let read = |m: &str| typed::<crozier::settings::FileConfig>(&text, m).map(|c| format!("{:?}", c.fern_strict));
+        rows.push((format!("crozier.yml `fern-strict: {v}`"), read("off"), read(&plain), read(&fixed)));
+        let text = format!("openapi: 3.0.3\ninfo: {{title: p, version: '1'}}\npaths: {{}}\ncomponents:\n  schemas:\n    M:\n      type: string\n      nullable: {v}\n  parameters:\n    P: {{name: p, in: query, schema: {{type: string}}}}\n");
+        let read = |m: &str| typed::<crozier::openapi::OpenApi>(&text, m).map(|d| format!("{:?}", d.components.schemas["M"].nullable));
+        rows.push((format!("schema `nullable: {v}`"), read("off"), read(&plain), read(&fixed)));
+        let text = format!("openapi: 3.0.3\ninfo: {{title: p, version: '1'}}\npaths: {{}}\ncomponents:\n  parameters:\n    P:\n      name: p\n      in: query\n      required: {v}\n      schema: {{type: string}}\n");
+        let read = |m: &str| typed::<crozier::openapi::OpenApi>(&text, m).map(|d| format!("{:?}", d.components.parameters["P"].required));
+        rows.push((format!("parameter `required: {v}`"), read("off"), read(&plain), read(&fixed)));
+    }
+    compare_fix(report, "compat · strict bool visitor (code=bool) on Option<bool> fields", "code=bool", rows);
+}
+
+/// The `String` reader (`code=string`) on crozier's real `String` fields:
+/// `info.title` and a departure's `reason`.
+fn compare_string_fix(report: &mut Report, root: &Path) {
+    let values = ["~", "null", "Null", "NULL", "", "\"\"", "'~'", "!!null ~", "!!int \"7\"", "!!str 7", "!custom x", "1.10", "1e3", "0x1F", "true", "yes", "2024-01-01", "plain text"];
+    let fixed = format!("{BASE},budget=none,code=string");
+    let plain = format!("{BASE},budget=none");
+    let catalog = std::fs::read_to_string(root.join("assets/departures.yml")).unwrap();
+    let first: String = catalog.lines().skip_while(|l| !l.starts_with("- ")).take_while({
+        let mut seen = false;
+        move |l| {
+            let start = l.starts_with("- ");
+            let keep = !(start && seen);
+            seen |= start;
+            keep
+        }
+    }).map(|l| format!("{l}\n")).collect();
+    let reason_line = first.lines().find(|l| l.trim_start().starts_with("reason:")).map(str::to_owned);
+    let mut rows = Vec::new();
+    for v in values {
+        let text = format!("openapi: 3.0.3\ninfo:\n  title: {v}\n  version: '1'\npaths: {{}}\n");
+        let read = |m: &str| typed::<crozier::openapi::OpenApi>(&text, m).map(|d| format!("{:?}", d.info.title));
+        rows.push((format!("OpenAPI `info.title: {v}`"), read("off"), read(&plain), read(&fixed)));
+        if let Some(line) = &reason_line {
+            // Only a one-line `reason:` can be swapped for the probe value.
+            if !line.trim_end().ends_with('>') && !line.trim_end().ends_with('|') {
+                let text = first.replacen(line.as_str(), &format!("  reason: {v}"), 1);
+                let read = |m: &str| typed::<Vec<crozier::departures::Departure>>(&text, m).map(|d| format!("{:?}", d[0].reason));
+                rows.push((format!("departure `reason: {v}`"), read("off"), read(&plain), read(&fixed)));
+            }
+        }
+    }
+    compare_fix(report, "compat · String reader (code=string) on String fields", "code=string", rows);
+}
+
 // ---------------------------------------------------------------- main
 
 fn main() {
@@ -1062,6 +1191,11 @@ fn main() {
     }
     if want("probes") {
         scalar_probes(&mut report);
+    }
+    if want("compat") {
+        compare_depth(&mut report, &scratch);
+        compare_bool_fix(&mut report);
+        compare_string_fix(&mut report, &root);
     }
     if want("timing") {
         timings(&mut report, &root, "tests/fixtures/corpus-sources/webflow-v2/openapi.yml", ROUNDS);

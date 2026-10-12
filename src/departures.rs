@@ -89,18 +89,24 @@ impl Kind {
 #[serde(deny_unknown_fields)]
 pub struct Departure {
     /// A unique lower-kebab slug naming the shape in crozier's own terms.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub id: String,
     /// What sort of departure it is.
     pub kind: Kind,
     /// The input and file that produce it.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub trigger: String,
     /// What Fern writes there.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub fern: String,
     /// What crozier writes instead.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub crozier: String,
     /// Why it is intended; for a `fern-defect`, why Fern's output is wrong.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub reason: String,
     /// The repository-relative path of the committed evidence note.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub evidence: String,
 }
 

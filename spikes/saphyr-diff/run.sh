@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPIKE (serde-yaml-replacement): the one command for the differential harness.
 #
-#   spikes/saphyr-diff/run.sh [--no-e2e] [trees|writes|load|generate|errors|settings|workflows|timing ...]
+#   spikes/saphyr-diff/run.sh [--no-e2e] [trees|writes|load|generate|errors|settings|workflows|wording|probes|compat|timing ...]
 #
 # 1. Builds the harness and a `spike-saphyr` crozier binary (profile `spike`).
 # 2. Runs the harness: every difference per document kind between

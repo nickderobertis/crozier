@@ -47,6 +47,7 @@ pub struct OpenApi {
     pub yaml_unquoted_timestamps: Option<std::collections::BTreeSet<String>>,
     /// The `openapi` version string (e.g. `3.0.1`).
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub openapi: String,
     /// `x-crozier-pagination` / `x-fern-pagination` at the document root: the
     /// contract an operation's `x-fern-pagination: true` takes.
@@ -109,8 +110,10 @@ pub struct OpenApi {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GlobalHeaderExtension {
     /// The header name sent on the wire.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
     /// The client constructor argument name.
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
 
@@ -284,6 +287,7 @@ impl OpenApi {
 pub struct ApiTag {
     /// The tag name used by operations.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub name: String,
 }
 
@@ -294,6 +298,7 @@ pub struct Server {
     /// The server base URL (the environment member's value). May contain `{var}`
     /// placeholders resolved from `variables`.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub url: String,
     /// A human description; uppercased, it names the environment member.
     #[serde(default)]
@@ -354,6 +359,7 @@ impl Server {
 #[derive(Debug, Clone, Deserialize)]
 pub struct ServerVariable {
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub default: String,
 }
 
@@ -1269,16 +1275,19 @@ pub struct Parameter {
     pub component_ref: bool,
     /// Parameter name (the wire name; also the path placeholder for `in: path`).
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub name: String,
     /// Location (`in`). `None` when absent (e.g. a `$ref` parameter).
     #[serde(rename = "in", default)]
     pub location: Option<ParameterLocation>,
     /// Whether the parameter is required.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub required: Option<bool>,
     /// Whether an array parameter is exploded into repeated values. Fern treats
     /// explicit `false` on a `form` query array as a comma-separated value.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub explode: Option<bool>,
     /// OpenAPI parameter serialization style (`form`, `spaceDelimited`, …).
     /// Query parameters default to `form` when omitted.
@@ -1306,9 +1315,11 @@ pub struct Parameter {
     pub examples: IndexMap<String, ParameterExample>,
     /// Whether this parameter leaves the generated SDK. (crozier spelling).
     #[serde(rename = "x-crozier-ignore", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub ignore_crozier: Option<bool>,
     /// Whether this parameter leaves the generated SDK. (fern spelling).
     #[serde(rename = "x-fern-ignore", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub ignore_fern: Option<bool>,
     /// The SDK argument name; the wire name remains unchanged. (crozier spelling).
     #[serde(rename = "x-crozier-parameter-name", default)]
@@ -1404,6 +1415,7 @@ pub struct RequestBody {
     pub component_ref: bool,
     /// Whether the body is required.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub required: Option<bool>,
     /// A human description of the body. Its mere *presence* (even empty) changes
     /// Fern's output: an undocumented JSON body emits an explicit `content-type`
@@ -1516,9 +1528,11 @@ pub struct Encoding {
 pub struct Info {
     /// API title — the default basis for the generated package name.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub title: String,
     /// API version string (unused by generation today).
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub version: String,
 }
 
@@ -1617,6 +1631,7 @@ pub struct Schema {
     /// `uniqueItems` is accepted at the boundary; Fern's OpenAPI importer still
     /// emits a list, so generation does not change collection type for this flag.
     #[serde(rename = "uniqueItems", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub unique_items: Option<bool>,
     /// Schema default.
     #[serde(default)]
@@ -1682,9 +1697,11 @@ pub struct Schema {
     /// Legacy Square beta marker. Its importer uses constrained placeholder
     /// values in worked request examples for these schemas.
     #[serde(rename = "x-is-beta", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub is_beta: Option<bool>,
     /// OpenAPI 3.0 nullability.
     #[serde(default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub nullable: Option<bool>,
     /// Nullability inherited from the reference target, distinct from ignored siblings.
     #[serde(skip)]
@@ -1697,6 +1714,7 @@ pub struct Schema {
     /// `readOnly`: a server-populated property. Fern renders it as an optional
     /// field even when listed in `required`.
     #[serde(rename = "readOnly", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub read_only: Option<bool>,
     /// A `oneOf`/`anyOf` discriminator: the property that selects the variant and
     /// (optionally) an explicit value → `$ref` mapping.
@@ -1707,10 +1725,12 @@ pub struct Schema {
     /// applies the precedence — which also honours the `x-fern-ignore` variant per
     /// the [dual-header policy](self#fern-compatible-extensions).
     #[serde(rename = "x-crozier-ignore", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub ignore_crozier: Option<bool>,
     /// `x-fern-ignore`: the Fern spelling of the ignore flag on a schema. Superseded
     /// by `x-crozier-ignore` when both appear (see [`Schema::ignored`]).
     #[serde(rename = "x-fern-ignore", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::opt_bool"))]
     pub ignore_fern: Option<bool>,
     /// `x-crozier-type-name`: the SDK type name a component schema declares
     /// (canonical spelling). Read via [`Schema::declared_type_name`], which also
@@ -2460,6 +2480,7 @@ fn malformed_schema() -> Schema {
 pub struct Discriminator {
     /// The property whose value selects the union variant.
     #[serde(rename = "propertyName", default)]
+    #[cfg_attr(feature = "spike-saphyr", serde(deserialize_with = "crate::spike_yaml::string"))]
     pub property_name: String,
     /// Explicit value → `$ref` mapping, in document order. When absent, the value
     /// is inferred from each variant's own discriminator-property enum.

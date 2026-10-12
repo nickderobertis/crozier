@@ -13,7 +13,11 @@
 //!   `saphyr` 0.2's node tree first;
 //! - serde-saphyr `Options`: `budget=none`, `strict_booleans`, `dup=first|last`,
 //!   `merge=ordinary|error`, `legacy_octal`, `nonfinite=string`;
-//! - `wording=today` — typed reads render errors through [`today_wording`].
+//! - `wording=today` — typed reads render errors through [`today_wording`];
+//! - `depth=N` — a serde-saphyr `Budget` with `max_depth` N and the node and
+//!   event caps lifted (every other cap at its default);
+//! - `code=bool` — crozier's `Option<bool>` fields read through [`opt_bool`]'s
+//!   strict visitor; `code=string` — its `String` fields through [`string`].
 
 use serde::de::DeserializeOwned;
 
@@ -35,6 +39,9 @@ pub fn from_str<T: DeserializeOwned>(text: &str) -> Result<T, YamlError> {
     {
         let mode = Mode::from_env();
         if !mode.off {
+            if mode.flags.iter().any(|f| f == "code=string") {
+                SOURCE.with(|cell| *cell.borrow_mut() = Some(text.to_owned()));
+            }
             if mode.flags.iter().any(|f| f == "wording=today") {
                 return today_wording::read_with(text, mode.options()).map_err(YamlError);
             }
@@ -73,6 +80,70 @@ pub fn value_from_str<T: DeserializeOwned>(text: &str) -> Result<T, YamlError> {
 #[cfg(feature = "spike-saphyr")]
 thread_local! {
     static OVERRIDE: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+    /// The text the current typed read is reading, for [`string`]'s spans.
+    static SOURCE: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+}
+
+/// Whether the current serde-saphyr read has code flag `name` on.
+#[cfg(feature = "spike-saphyr")]
+fn code_flag(name: &str) -> bool {
+    let mode = Mode::from_env();
+    !mode.off && mode.flags.iter().any(|f| f == name)
+}
+
+/// `Option<bool>` field reader. Plain `Option<bool>` unless `code=bool`, which
+/// accepts only a scalar the reader itself resolved to a boolean, so a quoted
+/// `"true"` is refused as today.
+pub fn opt_bool<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Option<bool>, D::Error> {
+    #[cfg(feature = "spike-saphyr")]
+    if code_flag("code=bool") {
+        return <Option<StrictBool> as serde::Deserialize>::deserialize(deserializer).map(|b| b.map(|b| b.0));
+    }
+    <Option<bool> as serde::Deserialize>::deserialize(deserializer)
+}
+
+#[cfg(feature = "spike-saphyr")]
+struct StrictBool(bool);
+
+#[cfg(feature = "spike-saphyr")]
+impl<'de> serde::Deserialize<'de> for StrictBool {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Visitor;
+        impl serde::de::Visitor<'_> for Visitor {
+            type Value = StrictBool;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("a boolean")
+            }
+            fn visit_bool<E: serde::de::Error>(self, value: bool) -> Result<StrictBool, E> {
+                Ok(StrictBool(value))
+            }
+        }
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
+/// `String` field reader. Plain `String` unless `code=string`, which reads a
+/// null scalar (`~`, `null`, an empty value) as its source spelling, as
+/// serde_yaml_ng does, from serde-saphyr's `Spanned` location.
+pub fn string<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
+    #[cfg(feature = "spike-saphyr")]
+    if code_flag("code=string") {
+        let spanned = <serde_saphyr::Spanned<Option<String>> as serde::Deserialize>::deserialize(deserializer)?;
+        return Ok(spanned.value.unwrap_or_else(|| {
+            let span = spanned.referenced.span();
+            let (Some(offset), Some(len)) = (span.byte_offset(), span.byte_len()) else {
+                return String::new();
+            };
+            SOURCE.with(|cell| {
+                cell.borrow()
+                    .as_deref()
+                    .and_then(|text| text.get(offset as usize..(offset + len) as usize))
+                    .unwrap_or_default()
+                    .to_owned()
+            })
+        }));
+    }
+    <String as serde::Deserialize>::deserialize(deserializer)
 }
 
 /// Override `CROZIER_SPIKE_YAML` for reads on this thread (the harness's switch).
@@ -143,6 +214,14 @@ pub fn options_from_flags(flags: &[&str]) -> serde_saphyr::Options {
             "legacy_octal" => options.legacy_octal_numbers = true,
             "nonfinite=string" => options.reject_non_finite_typeless_float = false,
             "no_snippet" => options.with_snippet = false,
+            flag if flag.starts_with("depth=") => {
+                let depth = flag["depth=".len()..].parse().expect("depth=N takes a number");
+                let mut budget = serde_saphyr::Budget::default();
+                budget.max_depth = depth;
+                budget.max_nodes = usize::MAX;
+                budget.max_events = usize::MAX;
+                options.budget = Some(budget);
+            }
             _ => {}
         }
     }
