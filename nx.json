@@ -82,6 +82,7 @@
       "{workspaceRoot}/tools/surface-census/fixtures-coverage.sh",
       "{workspaceRoot}/tools/surface-census/fixtures-coverage-report.py",
       "{workspaceRoot}/tools/surface-census/handwritten-fixtures.py",
+      "{workspaceRoot}/tools/surface-census/scenario-proof-index.py",
       "{workspaceRoot}/tools/surface-census/probe-differential-isolation.py",
       "{workspaceRoot}/tools/surface-census/witness-search-region-keys.py",
       "{workspaceRoot}/tools/github-action/*.sh"
