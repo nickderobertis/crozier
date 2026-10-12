@@ -108,6 +108,54 @@ pub fn opt_bool<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<Opt
     <Option<bool> as serde::Deserialize>::deserialize(deserializer)
 }
 
+/// A scalar as `deserialize_any` reports it: a string, or what else it was.
+#[cfg(feature = "spike-saphyr")]
+enum Scalar {
+    Str(String),
+    Other(String),
+}
+
+#[cfg(feature = "spike-saphyr")]
+impl<'de> serde::Deserialize<'de> for Scalar {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        struct Visitor;
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = Scalar;
+            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.write_str("a string")
+            }
+            fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Scalar, E> {
+                Ok(Scalar::Str(v.to_owned()))
+            }
+            fn visit_string<E: serde::de::Error>(self, v: String) -> Result<Scalar, E> {
+                Ok(Scalar::Str(v))
+            }
+            fn visit_unit<E: serde::de::Error>(self) -> Result<Scalar, E> {
+                Ok(Scalar::Other("unit value".to_owned()))
+            }
+            fn visit_none<E: serde::de::Error>(self) -> Result<Scalar, E> {
+                Ok(Scalar::Other("unit value".to_owned()))
+            }
+            fn visit_some<D: serde::Deserializer<'de>>(self, d: D) -> Result<Scalar, D::Error> {
+                <Scalar as serde::Deserialize>::deserialize(d)
+            }
+            fn visit_bool<E: serde::de::Error>(self, v: bool) -> Result<Scalar, E> {
+                Ok(Scalar::Other(format!("boolean `{v}`")))
+            }
+            fn visit_i64<E: serde::de::Error>(self, v: i64) -> Result<Scalar, E> {
+                Ok(Scalar::Other(format!("integer `{v}`")))
+            }
+            fn visit_u64<E: serde::de::Error>(self, v: u64) -> Result<Scalar, E> {
+                Ok(Scalar::Other(format!("integer `{v}`")))
+            }
+            fn visit_f64<E: serde::de::Error>(self, v: f64) -> Result<Scalar, E> {
+                Ok(Scalar::Other(format!("floating point `{v}`")))
+            }
+        }
+        deserializer.deserialize_any(Visitor)
+    }
+}
+
 #[cfg(feature = "spike-saphyr")]
 struct StrictBool(bool);
 
@@ -135,20 +183,26 @@ impl<'de> serde::Deserialize<'de> for StrictBool {
 pub fn string<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     #[cfg(feature = "spike-saphyr")]
     if code_flag("code=string") && IN_SAPHYR.with(std::cell::Cell::get) {
-        let spanned = <serde_saphyr::Spanned<Option<String>> as serde::Deserialize>::deserialize(deserializer)?;
-        return Ok(spanned.value.unwrap_or_else(|| {
-            let span = spanned.referenced.span();
-            let (Some(offset), Some(len)) = (span.byte_offset(), span.byte_len()) else {
-                return String::new();
-            };
-            SOURCE.with(|cell| {
-                cell.borrow()
-                    .as_deref()
-                    .and_then(|text| text.get(offset as usize..(offset + len) as usize))
-                    .unwrap_or_default()
-                    .to_owned()
-            })
-        }));
+        let spanned = <serde_saphyr::Spanned<Scalar> as serde::Deserialize>::deserialize(deserializer)?;
+        return match spanned.value {
+            Scalar::Str(value) => Ok(value),
+            // A direct read knows where the scalar is: its source spelling, as today.
+            Scalar::Other(_) if spanned.referenced != serde_saphyr::Location::UNKNOWN => {
+                let span = spanned.referenced.span();
+                let (Some(offset), Some(len)) = (span.byte_offset(), span.byte_len()) else {
+                    return Ok(String::new());
+                };
+                Ok(SOURCE.with(|cell| {
+                    cell.borrow()
+                        .as_deref()
+                        .and_then(|text| text.get(offset as usize..(offset + len) as usize))
+                        .unwrap_or_default()
+                        .to_owned()
+                }))
+            }
+            // Buffered content (an untagged enum): refuse as a plain `String` does.
+            Scalar::Other(found) => Err(serde::de::Error::custom(format!("invalid type: {found}, expected a string"))),
+        };
     }
     <String as serde::Deserialize>::deserialize(deserializer)
 }
@@ -364,4 +418,10 @@ pub mod today_wording {
             }
         })
     }
+}
+
+/// Keep the spike's `serde(default)` out of the JSON Schema, so the spike
+/// binary's `crozier schema` stays byte-identical to the committed one.
+pub fn no_default(schema: &mut schemars::Schema) {
+    schema.remove("default");
 }

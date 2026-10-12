@@ -224,12 +224,12 @@ pub struct GeneratorSettings {
     /// `x-crozier-audiences` filter; empty generates the whole API.
     pub audiences: Option<Vec<String>>,
     /// Strict audience subsetting (exclude un-annotated operations).
-    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"))]
+    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"), schemars(with = "Option<bool>", transform = crate::spike_yaml::no_default))]
     pub audience_strict: Option<bool>,
     /// Strict Fern compatibility: refuse to generate from a document Fern
     /// refuses, even where crozier's own output would be valid. Never changes a
     /// byte of an SDK that is written.
-    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"))]
+    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"), schemars(with = "Option<bool>", transform = crate::spike_yaml::no_default))]
     pub fern_strict: Option<bool>,
     /// How generated pydantic models treat unknown fields (Fern's
     /// `pydantic_config.extra_fields`). Python-generator-specific, so it lives
@@ -275,10 +275,10 @@ pub struct FileConfig {
     /// Shared default audience filter.
     pub audiences: Option<Vec<String>>,
     /// Shared default strict-audience flag.
-    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"))]
+    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"), schemars(with = "Option<bool>", transform = crate::spike_yaml::no_default))]
     pub audience_strict: Option<bool>,
     /// Shared default strict-Fern-compatibility flag.
-    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"))]
+    #[cfg_attr(feature = "spike-saphyr", serde(default, deserialize_with = "crate::spike_yaml::opt_bool"), schemars(with = "Option<bool>", transform = crate::spike_yaml::no_default))]
     pub fern_strict: Option<bool>,
     /// Shared default output layout (`packaged` or `flat`).
     pub layout: Option<Layout>,
