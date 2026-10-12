@@ -1,0 +1,86 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiln Controller",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/schedule": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Schedule"
+                  }
+                ],
+                "title": "Params",
+                "description": "Firing schedule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        },
+        "operationId": "createSchedule"
+      }
+    },
+    "/default": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Schedule"
+                  }
+                ],
+                "default": {
+                  "peak": 1200
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        },
+        "operationId": "defaultSchedule"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Schedule": {
+        "type": "object",
+        "properties": {
+          "peak": {
+            "type": "integer"
+          },
+          "cooling": {
+            "type": "string",
+            "enum": [
+              "slow",
+              "fast"
+            ]
+          }
+        },
+        "required": [
+          "peak"
+        ],
+        "title": "Schedule"
+      }
+    },
+    "responses": {}
+  }
+}

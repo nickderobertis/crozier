@@ -1,0 +1,104 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiln Controller",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/actions": {
+      "get": {
+        "responses": {
+          "200": {
+            "description": "Result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/Heat"
+                      },
+                      {
+                        "$ref": "#/components/schemas/Cool"
+                      }
+                    ],
+                    "discriminator": {
+                      "propertyName": "kind",
+                      "mapping": {
+                        "heat": "#/components/schemas/Heat",
+                        "cool": "#/components/schemas/Cool"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "operationId": "listActions"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Trigger": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string"
+          }
+        }
+      },
+      "Heat": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "heat"
+            ]
+          },
+          "trigger": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Trigger"
+              }
+            ],
+            "default": {
+              "mode": "auto"
+            }
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "Cool": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "cool"
+            ]
+          },
+          "trigger": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Trigger"
+              }
+            ],
+            "default": {
+              "mode": "auto"
+            }
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      }
+    },
+    "responses": {}
+  }
+}

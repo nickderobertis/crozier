@@ -3257,6 +3257,10 @@ fn reference_entry(
         let description = if is_body {
             match &ep.request_body {
                 Some(RequestBody::Single(_)) => ep.request_body_schema_doc.as_deref(),
+                Some(RequestBody::Inline(_)) => ep
+                    .request_body_schema_doc
+                    .as_deref()
+                    .or(dp.description.as_deref()),
                 Some(RequestBody::Bytes { .. }) => ep.request_body_doc.as_deref(),
                 Some(RequestBody::Form(form)) => form
                     .fields

@@ -1,0 +1,17 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "28453cfc87d57471392cb4d0ffd3520f676bd1b29de3f832a2f47cf2355826f3"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[if let Some\(reference\) = annotated_sole_all_of_ref\(prop_schema\)]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+
+[[covers]]
+key = "allof"
+arm = 'src/ir.rs::append_member_fields[=\} else if is_inline_struct\(prop_schema\) && annotated_sole_all_of_ref]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"

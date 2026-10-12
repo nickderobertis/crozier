@@ -4181,7 +4181,7 @@ fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
                 && schema.nullable != Some(true)
         })
     };
-    let (member, all_of) = match sole(&schema.one_of).or_else(|| sole(&schema.any_of)) {
+    let (mut member, all_of) = match sole(&schema.one_of).or_else(|| sole(&schema.any_of)) {
         Some(member) => (member, false),
         None => match sole_ref() {
             Some(member) => (member, true),
@@ -4199,6 +4199,10 @@ fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
         || schema.discriminator.is_some()
     {
         return;
+    }
+    if all_of {
+        member.title.clone_from(&schema.title);
+        member.description.clone_from(&schema.description);
     }
     *schema = member;
 }
@@ -4644,6 +4648,9 @@ mod tests {
             );
             assert!(schema.all_of.is_none(), "{path}");
         }
+        let titled = body("/titled");
+        assert_eq!(titled.title.as_deref(), Some("Params"));
+        assert_eq!(titled.description.as_deref(), Some("The schedule"));
         for path in ["/nullable", "/typed", "/form", "/pair"] {
             let schema = body(path);
             assert!(schema.reference.is_none(), "{path}");

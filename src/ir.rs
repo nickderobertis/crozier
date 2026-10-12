@@ -4288,7 +4288,6 @@ fn build_endpoint(
             .as_ref()
             .and_then(selected_json_request_media)
             .and_then(|(_, media)| media.schema.as_ref())
-            .filter(|schema| schema.reference.is_none())
             .and_then(|schema| declared_doc(schema.description.as_deref())),
         body_codegen_named: uses_codegen_request_body_name(op),
         body_description_missing: op
@@ -6071,7 +6070,7 @@ fn resolve_request_body(
                 .and_then(|r| resolve_ref(doc, r))
                 .unwrap_or(schema);
             return Some(RequestBody::Form(FormBody {
-                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx, true),
+                fields: hoist_form_object(obj, &media.encoding, hoister, request_ctx, true, None),
                 multipart: true,
             }));
         }
@@ -6147,7 +6146,7 @@ fn resolve_request_body(
                 .as_deref()
                 .filter(|_| !multipart)
                 .map(ref_to_class);
-            let mut fields = hoist_component_form_object(
+            let mut fields = hoist_form_object(
                 obj,
                 &media.encoding,
                 hoister,
@@ -8312,26 +8311,10 @@ fn resolve_form_object_alias<'a>(
 /// fields as file uploads. A file part never carries the convert wrapper, but a
 /// field whose schema is a named model does, exactly as a JSON body's would:
 /// `mosip-esignet`'s urlencoded `claims` is a `$ref` to `Claim` and serializes
-/// through `convert_and_respect_annotation_metadata`.
+/// through `convert_and_respect_annotation_metadata`. A referenced urlencoded
+/// component reuses its inline string enum types, so flattening the body does
+/// not declare operation-scoped copies of those enums.
 fn hoist_form_object(
-    schema: &Schema,
-    encoding: &IndexMap<String, crate::openapi::Encoding>,
-    hoister: &mut InlineHoister,
-    request_ctx: &str,
-    multipart: bool,
-) -> Vec<BodyField> {
-    hoist_component_form_object(schema, encoding, hoister, request_ctx, multipart, None)
-}
-
-/// [`hoist_form_object`] over the body schema `component` names when it is one,
-/// each field typed as that component's own model types it. A urlencoded body
-/// keeps its component in the type layer (see [`urlencoded_body_source_names`]),
-/// so Fern types the flattened arguments with the component's own types rather
-/// than hoisting operation-scoped copies: supabase's `v1-exchange-oauth-token`
-/// posts `$ref OAuthTokenBody`, whose inline `grant_type` enum is
-/// `OAuthTokenBodyGrantType` in the method signature too, and Fern declares no
-/// `V1ExchangeOauthTokenRequestGrantType`.
-fn hoist_component_form_object(
     schema: &Schema,
     encoding: &IndexMap<String, crate::openapi::Encoding>,
     hoister: &mut InlineHoister,
@@ -8406,8 +8389,11 @@ fn hoist_component_form_object(
                 TypeRef::List(Box::new(TypeRef::Primitive(Prim::Bytes)))
             } else if is_file {
                 base_type_ref(prop_schema)
-            } else if let Some(field) =
-                model.and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
+            } else if let Some(field) = model
+                .filter(|_| {
+                    prop_schema.reference.is_none() && string_enum_values(prop_schema).is_some()
+                })
+                .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
             {
                 field.type_ref.clone()
             } else {
@@ -19583,6 +19569,7 @@ mod tests {
             &mut hoister,
             "PreserveReelRequest",
             true,
+            None,
         );
         assert!(fields[0].is_file);
         assert_eq!(fields[0].docstring.as_deref(), Some("Frame images."));
@@ -19594,6 +19581,7 @@ mod tests {
             &mut hoister,
             "PreserveReelRequest",
             false,
+            None,
         );
         assert!(!fields[1].is_file);
         assert!(fields[0].docstring.is_none());
@@ -19709,6 +19697,7 @@ mod tests {
             &mut hoister,
             "UploadRequest",
             true,
+            None,
         );
         assert!(!fields[0].form_json);
         assert!(fields[1].form_json);
@@ -19719,6 +19708,7 @@ mod tests {
             &mut hoister,
             "UploadRequest",
             false,
+            None,
         );
         assert!(urlencoded.iter().all(|field| !field.form_json));
     }
@@ -23279,7 +23269,7 @@ mod tests {
         // about the arm's own condition; one that does reach it and takes a later
         // arm says everything. Each negative therefore carries its own witness of
         // entry — another declared arm of the same function, or a declaration only
-        // that function's later arm coins — and the fifty-two that carry none say
+        // that function's later arm coins — and the fifty-three that carry none say
         // in their own record why. Forty-seven of them enter no declared arm
         // because nothing reaches one. Seventeen are the deliberate caller-gate
         // negative each of the earlier selectors carries: eight annotated
@@ -23292,9 +23282,9 @@ mod tests {
         // caller's `starts_with` guard, and two per arm do reach
         // `resolve_schema_pointer` and take one of the early `None`s that stop
         // it before its segment loop — an undeclared head, and the bare
-        // component pointer with no segment after it. The other five reach
-        // their function and coin nothing at all to be a witness — one
-        // annotated `allOf`, and the four variants whose `type` list names
+        // component pointer with no segment after it. The other six reach
+        // their function and coin nothing at all to be a witness — two
+        // annotated `allOf`s, and the four variants whose `type` list names
         // `string` first, which enter `hoist_union_variant` and fall to its
         // closing `base_type_ref`.
         let payload = resolving_arm_inputs();
@@ -23344,6 +23334,7 @@ mod tests {
                 "enum-not-a-property",
                 "gate-no-all-of",
                 "gate-not-a-property",
+                "gate-one-member",
                 "one-of-not-a-property",
                 "props-not-a-property",
                 "pw-allof-bare-component-pointer",
@@ -23383,7 +23374,7 @@ mod tests {
             without_witness,
             "the documents carrying no witness of entry are the caller-gate \
              negatives, the pointers `resolve_schema_pointer` answers `None` for \
-             before its loop, and the five that coin nothing at all"
+             before its loop, and the six that coin nothing at all"
         );
     }
 

@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "1f1e77f120f7e98238fb344c2f45eabf0754518e57af7b60e96f0175a32cd1ca"
+
+[[covers]]
+key = "allof"
+arm = 'src/openapi.rs::collapse_sole_composition_member[=None => match sole_ref\(\) \{]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"

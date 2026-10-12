@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "7266bd999d2935cc09e2c98efd87135e4f56ea4eb7cec56853b7fdfc1f30994d"
+
+[[covers]]
+key = "media-type-form-urlencoded"
+arm = 'src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
