@@ -59,6 +59,11 @@ mod literals_mode;
 #[path = "e2e/examples_docs.rs"]
 mod examples_docs;
 
+/// The client naming, request encoding and enum-mode measurement cases, and the
+/// unexplained bytes beside each of those shapes that still fail.
+#[path = "e2e/naming_wire.rs"]
+mod naming_wire;
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
@@ -846,6 +851,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
+        (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),

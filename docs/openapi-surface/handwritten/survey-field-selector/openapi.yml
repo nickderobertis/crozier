@@ -1,0 +1,20 @@
+openapi: 3.0.3
+info:
+  title: Survey Responses
+  version: 1.0.0
+paths:
+  /responses:
+    get:
+      operationId: listResponses
+      tags: [responses]
+      parameters:
+        - name: select
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [answers, kwargs, json, self]
+      responses:
+        "204":
+          description: The responses were listed.
