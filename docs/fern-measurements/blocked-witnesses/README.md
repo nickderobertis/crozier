@@ -6,9 +6,10 @@ every one, with its immutable revision and source SHA-256. Each was fetched at
 that revision, and its bytes were checked against the recorded digest. Fern CLI
 **5.67.1** with `fernapi/fern-python-sdk` **5.20.0** then generated it afresh,
 and crozier compared its output from the finished generator, through the shared
-departure engine. Fern generated every one. Every comparison still exits **3**,
-so each witness is blocked, not a corpus match. None is registered, and none
-enters an `unmatched` allowance.
+departure engine. Fern generated every one. The table retains only witnesses whose fresh
+comparison exits **3**. Vocode now compares with exit **0**, so its closed row
+and empty diff are retired; its exact source provenance is retained below.
+None enters an `unmatched` allowance.
 
 Each `<witness>.diff` is that witness's complete normalized comparison: `-` for
 Fern, `+` for crozier, with every remaining file and changed line.
@@ -55,79 +56,55 @@ claims it, so it remains `unowned`.
 
 ## kompaz
 
-Four causes, all `unowned`:
-
-- The camel-case tag `OrganizationLogo` with `organizationLogo.*` operation ids.
-  Fern folds it to the heading `Organizationlogo` and strips the tag prefix to
-  `show`/`update`/`destroy`. crozier keeps `OrganizationLogo` and
-  `organization_logo_*`.
-- Three `application/problem+json` component responses. Fern hoists them as
-  unused `*ErrorBody` models, and crozier emits none of them.
-- The order of the root `__init__.py` re-exports.
-
-Two more hunks are docstring-example lines of the catalogued
-`multipart-object-required-file-example` correction. The engine applies that
-departure only when every other line of the file equals Fern's
-(`multipart_object_required_file_example` in `src/departures.rs`). The
-tag-prefix difference in the same `organizationlogo/client.py` blocks it, so
-those lines belong to that cause. They are not a README multipart scenario's,
-whose triggers are README argument order and optional file parts.
+Two residual causes remain: `OrganizationLogo` tag/prefix folding and the
+multipart example hunks that cause prevents the existing departure from
+admitting. The three problem+json error-body models and their exports now match.
+The root import-order row also closes: with identical imported name sets, the
+existing `init-type-checking-import-order` rule admits it.
 
 ## langchain
 
-Six causes, all `unowned`:
-
-- the inline `stream_mode` item enum, which Fern hoists as `*StreamModeZeroItem`;
-- the description of `assistant_id`, a collapsed two-string `anyOf`, which Fern
-  omits;
-- the variant constructors in the `post_a2a` example's union items;
-- the order of the root `__init__.py` re-exports;
-- the `content-type` header on the titled, described array body of `runs/batch`;
-- the `kwargs_` name of an enum visitor callback.
+The `stream_mode` array-item enum modules, aliases and exports now match.
+The remaining causes are the collapsed `assistant_id` description, variant
+constructors in the `post_a2a` example, the `runs/batch` content-type header and
+the `kwargs_` enum visitor callback. The root import-order row also closes under
+`init-type-checking-import-order` once the imported name sets agree.
 
 ## rice-shower
 
-Three causes, all `unowned`:
-
-- The const-only `stopReason` `anyOf` nested in a nullable `anyOf`. Fern hoists
-  it to a union alias over four one-value enums, written as 30 Fern-only
-  modules; crozier inlines it.
-- The `channels` query array examples.
-- The request-field description of `createSystem`'s nullable `location`.
+The nested const-only `stopReason` aliases, enum modules and exports now match.
+The `channels` query-array examples and `createSystem` nullable `location`
+description remain residuals.
 
 ## speech-ai
 
-Two causes, both `unowned`:
-
-- One-member `allOf` request bodies on `POST /v1/ssml` and
-  `POST /v1/audio/speech`. Fern keeps both operations and flattens the
-  referenced object. crozier drops them, together with the `open_ai_api` and
-  `ssml` clients, and writes the components as standalone types.
-- Nullable enum-`$ref` multipart parts, which crozier JSON-encodes.
+Every certified public client method is exposed (112 sync/async methods and
+resource accessors), including the SSML, OpenAI speech and transcription
+operations. The one-member allOf bodies now match. Only the STT multipart
+`format` field serialization remains, owned by parity-naming-wire's
+`multipart-optional-enum-part-plain-field` difference.
 
 ## supabase
 
-Eight causes are `unowned`:
+The nullable `JsonValue_Output` union member now keeps its `Optional`, and the
+urlencoded `grant_type` parameter reuses `OAuthTokenBodyGrantType`; the extra
+operation enum, its module and its exports are gone. The root import-order row
+also closes under `init-type-checking-import-order` once the imported name sets
+agree. The remaining example and naming differences retain their individual
+attributions in `residuals.tsv`.
 
-- the example of the `branch_id_or_ref` `anyOf` path parameter;
-- component `example`s on array, object and form request bodies;
-- `OAuthTokenBody`'s operation-level enum hoisting;
-- `reference.md`'s parameter list for JSON-beside-binary function bodies;
-- missing commas in a map-of-objects example;
-- the order of the root `__init__.py` re-exports.
+## Import boundary
 
-The `file=["example_file"]` docstring lines in `edge_functions/client.py` are
-the catalogued multipart file-example correction. The engine cannot apply it
-while the `BulkUpdateFunctionBody` component-example difference sits in the same
-file, so they belong to that cause.
+The six generated SDKs were installed as real packages under Python 3.14.7 and
+Pydantic 2.14.0. Every relative import resolves to a module the package contains.
+Vocode, speech-ai, langchain, kompaz and rice-shower import every module cleanly.
 
-Two causes fall on scenarios' own triggers. Their proofs match their fixtures,
-and each is open in the index:
-
-- `text-response-drops-request-example`: optional query examples on a
-  text-only response.
-- `union-member-nullability-dropped`: a nested hoisted nullable member that loses
-  `Optional`.
+Supabase's root package and standalone `JsonValueOutput` alias import cleanly,
+but eleven modules constructing models over the implicit recursive JSON alias
+graph raise `RecursionError`. The same eleven imports fail in the SDK generated
+from merge base `19c121ed7` and in freshly generated certified output. This is a
+preexisting runtime incompatibility, not a departure used to admit the owned
+nullable union-member difference. All other Supabase module imports pass.
 
 ## twitter
 
@@ -137,14 +114,15 @@ while crozier writes `[]`.
 
 ## vocode
 
-Two causes, both `unowned`:
+The complete fresh comparison matches: **exit 0**, 354 files compared. All
+128 certified public client methods and resource accessors are exposed,
+including `buy_number`. Its flattened request types and exports, and the
+flattened variants' `action_trigger` references, match without an allowance.
 
-- The one-member `allOf` request body of `POST /v1/numbers/buy`. Fern keeps the
-  operation and flattens the component. crozier drops it, together with the
-  numbers client, and relocates the body's types.
-- The one-member `allOf` property `action_trigger` inside flattened
-  discriminated-union variants. Fern types it as the referenced component;
-  crozier names variant-specific types that it never writes.
-
-The environment difference that `server-name-extension-ignored` owned no longer
-reproduces.
+Source: `vocodedev/vocode-core:docs/openapi.json` at revision `e054c33a72787b6a4920f91eb8598ad0bafb4240`.
+Source SHA-256: `ffca17c004e206072f4b71307c83bdcf9fe3f8ba3cf56f16825136ccbaf801f6`.
+Fern CLI 5.67.1 with fernapi/fern-python-sdk 5.20.0 generated the reference;
+the packaged scaffold in the reproduction section above applies unchanged.
+This source is a registration candidate, not a registered corpus golden. Its row is retired
+from the blocked set rather than given a false `differs` status or a new table
+status. Corpus admission can proceed separately.

@@ -2927,6 +2927,12 @@ fn schema_shape_arms_match_complete_certified_trees() {
                 golden_tree_failures(shape, spec.to_str().unwrap(), &ledger, &expected, &out);
             assert!(failures.is_empty(), "{}", failures.join("\n"));
 
+            if shape == "kiln-annotated-body" {
+                assert!(!out.join("src/fern/types/flat_schedule.py").exists());
+                let reference = std::fs::read_to_string(out.join("reference.md")).unwrap();
+                assert!(!reference.contains("— Flattened schedule"));
+            }
+
             let path = out.join(file);
             let text = std::fs::read_to_string(&path).unwrap();
             assert!(text.contains(matched), "{shape}: {file} contains {matched}");

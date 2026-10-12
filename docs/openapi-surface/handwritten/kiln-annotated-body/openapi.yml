@@ -57,6 +57,32 @@
         },
         "operationId": "defaultSchedule"
       }
+    },
+    "/flattened": {
+      "post": {
+        "operationId": "createFlatSchedule",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/FlatSchedule"
+                  }
+                ],
+                "title": "Params",
+                "description": "Flattened schedule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -79,6 +105,20 @@
           "peak"
         ],
         "title": "Schedule"
+      },
+      "FlatSchedule": {
+        "type": "object",
+        "properties": {
+          "peak": {
+            "type": "integer"
+          },
+          "hold": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "peak"
+        ]
       }
     },
     "responses": {}

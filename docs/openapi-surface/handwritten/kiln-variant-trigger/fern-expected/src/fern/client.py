@@ -8,6 +8,10 @@ from .core.logging import LogConfig, Logger
 from .core.request_options import RequestOptions
 from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.list_actions_response_item import ListActionsResponseItem
+from .types.trigger import Trigger
+
+
+OMIT = typing.cast(typing.Any, ...)
 
 
 class FernApi:
@@ -118,6 +122,33 @@ class FernApi:
         client.list_actions()
         """
         _response = self._raw_client.list_actions(request_options=request_options)
+        return _response.data
+
+    def create_action(
+        self, *, trigger: typing.Optional[Trigger] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        trigger : typing.Optional[Trigger]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.create_action()
+        """
+        _response = self._raw_client.create_action(trigger=trigger, request_options=request_options)
         return _response.data
 
 
@@ -253,4 +284,39 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.list_actions(request_options=request_options)
+        return _response.data
+
+    async def create_action(
+        self, *, trigger: typing.Optional[Trigger] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        trigger : typing.Optional[Trigger]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.create_action()
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_action(trigger=trigger, request_options=request_options)
         return _response.data

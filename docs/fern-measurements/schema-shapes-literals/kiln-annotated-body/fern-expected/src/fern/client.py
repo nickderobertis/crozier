@@ -167,6 +167,37 @@ class FernApi:
         _response = self._raw_client.default_schedule(peak=peak, cooling=cooling, request_options=request_options)
         return _response.data
 
+    def create_flat_schedule(
+        self, *, peak: int, hold: typing.Optional[int] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        peak : int
+
+        hold : typing.Optional[int]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+        client.create_flat_schedule(
+            peak=1,
+        )
+        """
+        _response = self._raw_client.create_flat_schedule(peak=peak, hold=hold, request_options=request_options)
+        return _response.data
+
 
 def _make_default_async_client(
     timeout: typing.Optional[float],
@@ -352,4 +383,43 @@ class AsyncFernApi:
         asyncio.run(main())
         """
         _response = await self._raw_client.default_schedule(peak=peak, cooling=cooling, request_options=request_options)
+        return _response.data
+
+    async def create_flat_schedule(
+        self, *, peak: int, hold: typing.Optional[int] = OMIT, request_options: typing.Optional[RequestOptions] = None
+    ) -> None:
+        """
+        Parameters
+        ----------
+        peak : int
+
+        hold : typing.Optional[int]
+
+        request_options : typing.Optional[RequestOptions]
+            Request-specific configuration.
+
+        Returns
+        -------
+        None
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            base_url="https://yourhost.com/path/to/api",
+        )
+
+
+        async def main() -> None:
+            await client.create_flat_schedule(
+                peak=1,
+            )
+
+
+        asyncio.run(main())
+        """
+        _response = await self._raw_client.create_flat_schedule(peak=peak, hold=hold, request_options=request_options)
         return _response.data

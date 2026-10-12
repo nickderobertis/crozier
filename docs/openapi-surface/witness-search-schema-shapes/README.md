@@ -5,7 +5,8 @@
 The committed vendored source inventory in
 `tests/fixtures/corpus-sources.tsv` was parsed as OpenAPI objects and searched
 for each exact trigger below. The six pinned public documents in
-`docs/fern-measurements/blocked-witnesses/witnesses.tsv` were also measured with
+`docs/fern-measurements/blocked-witnesses/witnesses.tsv` and its README's retired
+Vocode source were also measured with
 Fern CLI 5.67.1 and Python SDK 5.20.0. No new acquisition was made.
 This is a bounded search, so its verdict is search-incomplete.
 

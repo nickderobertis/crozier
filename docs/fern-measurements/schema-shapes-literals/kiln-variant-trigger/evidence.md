@@ -5,4 +5,4 @@ produced this complete comment-stripped tree from
 `docs/openapi-surface/handwritten/kiln-variant-trigger/openapi.yml`.
 No publishing was requested.
 
-Canonical tree SHA-256: `1681d802255bcd69abfc2ff4626b791f69db17bc29d2e500ef7c3ae01e670cef`
+Canonical tree SHA-256: `c0b50be28dcd6671dd016775dabcdc4603bb4804541144d18c447daabdde2e3c`

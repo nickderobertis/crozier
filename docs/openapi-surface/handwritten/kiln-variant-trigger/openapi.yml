@@ -37,6 +37,36 @@
           }
         },
         "operationId": "listActions"
+      },
+      "post": {
+        "operationId": "createAction",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trigger": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/Trigger"
+                      }
+                    ],
+                    "default": {
+                      "mode": "auto"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        }
       }
     }
   },

@@ -5,4 +5,4 @@ produced this complete comment-stripped tree from
 `docs/openapi-surface/handwritten/kiln-annotated-body/openapi.yml`.
 No publishing was requested.
 
-Canonical tree SHA-256: `0cbc1200e4d9d5f8d027ff349f52ba7060caf8aef9ba8c30a3bdfa9e3dacecab`
+Canonical tree SHA-256: `51f56d51720e1a60e42e4e72ddc910f61c5328d492afbb82b6216971d9ce5d92`

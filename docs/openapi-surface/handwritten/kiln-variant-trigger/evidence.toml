@@ -1,6 +1,6 @@
 fern_cli_version = "5.67.1"
 fern_python_sdk_version = "5.20.0"
-digest = "28453cfc87d57471392cb4d0ffd3520f676bd1b29de3f832a2f47cf2355826f3"
+digest = "ec0bd9e9e27e0b6c0305fa69f9e6be139c02c73f3c4e726d88d5d29cdef65280"
 
 [[covers]]
 key = "allof"
