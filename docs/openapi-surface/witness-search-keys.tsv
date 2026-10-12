@@ -65,7 +65,6 @@ oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&s
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported
 oneof-duplicate-members-collapsed	schema.oneOf	schemas.md	supported
 oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	schemas.md	supported
-openapi31-titled-array-body-content-type	operation.requestBody:titled-array-component-oas-three-one	bodies-media.md	supported
 operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported

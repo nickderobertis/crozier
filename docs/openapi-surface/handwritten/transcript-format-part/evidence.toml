@@ -7,3 +7,10 @@ key = "multipart-optional-enum-part-plain-field"
 search = "docs/openapi-surface/witness-search-naming-wire/README.md#bounded-public-witnesses"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"
+
+[[covers]]
+key = "media-type-multipart"
+arm = 'src/ir.rs::nullable_enum_part[    member$]'
+search = "docs/openapi-surface/witness-search-naming-wire/README.md#nullable-enum-reference-arm"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"

@@ -348,7 +348,6 @@ docs/fern-measurements/literals-mode/gallery-plaque-groups/fern-expected	.fern/m
 docs/fern-measurements/literals-mode/greenhouse-vents/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/group-path-ending-in-api-nested-package/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/invoice-renderer/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
-docs/fern-measurements/literals-mode/ledger-batch-upload/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/literal-enum-description-omitted/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
 docs/fern-measurements/literals-mode/literal-enum-description-omitted/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/fern-measurements/literals-mode/literal-enum-description-omitted/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
@@ -574,6 +573,12 @@ docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected	
 docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+docs/fern-measurements/naming-wire/ledger-batch-upload-literals/fern-expected	.fern/metadata.json	5	fern-metadata-generator-config
+docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
+docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
+docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	README.md	40	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	reference.md	20	lifted-base-path-docs-examples
 docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
@@ -1232,11 +1237,6 @@ docs/openapi-surface/handwritten/lamp-room-log/fern-expected	src/fern/core/clien
 docs/openapi-surface/handwritten/lamp-room-log/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/lamp-room-log/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/lamp-room-log/fern-expected	src/fern/raw_client.py	0	empty-namespace-package
-docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ledger-records-offset/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ledger-records-offset/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/ledger-records-offset/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix

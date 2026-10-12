@@ -863,9 +863,23 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         };
         for entry in entries.filter_map(Result::ok) {
             if entry.path().join(tree).is_dir() {
+                let compared = if dir == naming_wire::NAMING_WIRE_DIR
+                    && entry
+                        .path()
+                        .join(tree)
+                        .join(literals_mode::MANIFEST)
+                        .is_file()
+                {
+                    departures_ledger::ComparedGolden {
+                        excluded: vec![literals_mode::MANIFEST.to_string()],
+                        carve_outs: Default::default(),
+                    }
+                } else {
+                    departures_ledger::ComparedGolden::default()
+                };
                 add(
                     format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
-                    departures_ledger::ComparedGolden::default(),
+                    compared,
                 );
             }
         }

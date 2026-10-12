@@ -13,7 +13,7 @@ witness diffs. This bounded search makes no claim about other public documents.
 |---|---|---|
 | `camel-case-tag-group-and-prefix` | `search-incomplete` | `kompaz`: problem-response model emission still differs. |
 | `multipart-optional-enum-part-plain-field` | `search-incomplete` | `speech-ai`: one-member allOf request bodies still differ. |
-| `openapi31-titled-array-body-content-type` | `search-incomplete` | `langchain`: stream-mode enum hoisting, collapsed-union descriptions and union examples still differ. |
+| `openapi31-titled-array-body-content-type` | `registered` | `tamoss`: its complete certified golden and missing-header negative regression prove the shape; the declaring `langchain` witness retains independent residuals. |
 | `enum-visit-kwargs-parameter` | `search-incomplete` | `langchain`: the same independent residuals prevent complete registration. |
 
 ## Renewed search
@@ -26,5 +26,22 @@ the real-binary golden gates. They do not establish public-specification parity.
 |---|---|---|
 | `camel-case-tag-group-and-prefix` | `none-registrable` | The declaring `kompaz` document still differs outside the owned naming shape. |
 | `multipart-optional-enum-part-plain-field` | `none-registrable` | The declaring `speech-ai` document still differs outside the owned multipart shape. |
-| `openapi31-titled-array-body-content-type` | `none-registrable` | The declaring OpenAPI 3.1 `langchain` document still differs outside the owned body shape. |
+| `openapi31-titled-array-body-content-type` | `registered` | `tamoss` supersedes the authored feature cover. The unchanged array control is retained as a naming-wire measurement. |
 | `enum-visit-kwargs-parameter` | `none-registrable` | The declaring `langchain` document still differs outside the owned enum visitor shape. |
+
+## Nullable enum-reference arm
+
+The new `src/ir.rs::nullable_enum_part[    member$]` reading of
+`media-type-multipart` has no executed regions in the freshly measured
+registered golden tier. The public `speech-ai` document declares the enum
+reference beside null, but remains blocked by its independent request-body
+residuals. The authored transcript fixture reaches this arm; its object part
+remains JSON-encoded.
+
+| key | verdict | declaring public witness |
+|---|---|---|
+| `media-type-multipart` | `search-incomplete` | `speech-ai`: independent one-member allOf body residuals prevent registration. |
+
+| key | outcome | reason |
+|---|---|---|
+| `media-type-multipart` | `none-registrable` | The declaring `speech-ai` document still differs outside this arm. |

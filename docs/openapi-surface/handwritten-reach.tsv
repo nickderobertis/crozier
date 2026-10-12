@@ -112,6 +112,7 @@ survey-map-value-union	anyof-map-variant-anyof-value	src/ir.rs::InlineHoister::h
 survey-map-value-union	anyof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
 survey-map-value-union	oneof-map-variant-oneof-value	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	44	44
 thermostat-nullable-member	nullable	src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]	2	2
+transcript-format-part	media-type-multipart	src/ir.rs::nullable_enum_part[    member$]	6	6
 union-sample	allof	src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]	18	19
 verified-seal	type-single	src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]	1	1
 x-fern-ignore-schema	x-fern-or-crozier-ignore	src/openapi.rs::filter_ignored[for key in &ignored_schemas \{]	2	2

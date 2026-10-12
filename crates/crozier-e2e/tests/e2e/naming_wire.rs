@@ -4,11 +4,12 @@
 //! unexplained byte beside the matched one still fails the comparison.
 //!
 //! The hand-written fixtures of these shapes (`gallery-plaque-groups`,
-//! `transcript-format-part`, `ledger-batch-upload`, `survey-field-selector`) are
+//! `transcript-format-part`, `survey-field-selector`) are
 //! held whole, in both enum modes, by `handwritten_fixtures_match_fern_goldens`
 //! and `literals_mode_measurements_match_fern`; the reordered root imports are
 //! held by every registered corpus golden that re-exports a tag subpackage's
-//! types. This module adds only what those gates do not already say.
+//! types. The retained `ledger-batch-upload` control is a measurement beside the
+//! registered tamoss feature proof, held in both modes by this module.
 
 use std::path::{Path, PathBuf};
 
@@ -18,7 +19,7 @@ use crozier::parity;
 use super::literals_mode::LITERALS_MODE_DIR;
 use super::{
     copy_dir, corpus_command, departure_ledger, golden_path, golden_tree_failures, probe_command,
-    repo_root, ALMA_FRANCE, HANDWRITTEN_DIR,
+    repo_root, GoldenLedger, ALMA_FRANCE, HANDWRITTEN_DIR,
 };
 
 /// Where the `python_enums` measurement cases live; see its README.
@@ -31,8 +32,32 @@ const TREE: &str = "fern-expected";
 /// Crozier's output over `spec`, compared whole with the Fern tree `expected`,
 /// every departure held to `golden`'s ledger rows.
 fn tree_failures(key: &str, spec: &Path, golden: &str, expected: &Path) -> Vec<String> {
+    mode_tree_failures(key, spec, golden, expected, "python-enums")
+}
+
+fn mode_tree_failures(
+    key: &str,
+    spec: &Path,
+    golden: &str,
+    expected: &Path,
+    enum_type: &str,
+) -> Vec<String> {
+    match departure_ledger().golden(golden, &[]) {
+        Ok(ledger) => ledger_tree_failures(key, spec, &ledger, expected, enum_type),
+        Err(failures) => failures,
+    }
+}
+
+fn ledger_tree_failures(
+    key: &str,
+    spec: &Path,
+    ledger: &GoldenLedger,
+    expected: &Path,
+    enum_type: &str,
+) -> Vec<String> {
     let out = tempfile::tempdir().expect("crozier output tempdir");
     let result = probe_command(spec, out.path())
+        .args(["--enum-type", enum_type])
         .output()
         .expect("run crozier");
     if !result.status.success() {
@@ -42,16 +67,13 @@ fn tree_failures(key: &str, spec: &Path, golden: &str, expected: &Path) -> Vec<S
             String::from_utf8_lossy(&result.stderr)
         )];
     }
-    match departure_ledger().golden(golden, &[]) {
-        Ok(ledger) => golden_tree_failures(
-            key,
-            &spec.display().to_string(),
-            &ledger,
-            expected,
-            out.path(),
-        ),
-        Err(failures) => failures,
-    }
+    golden_tree_failures(
+        key,
+        &spec.display().to_string(),
+        ledger,
+        expected,
+        out.path(),
+    )
 }
 
 /// A case's document: the literals-mode case of the same name's.
@@ -77,12 +99,15 @@ fn naming_wire_measurements_match_fern_under_python_enums() {
         cases,
         [
             "enum-extension-names-dropped-under-literals",
-            "enum-header-params-stringified"
+            "enum-header-params-stringified",
+            "ledger-batch-upload",
+            "ledger-batch-upload-literals"
         ],
-        "{NAMING_WIRE_DIR}: every case is a literals-mode document's python_enums tree"
+        "{NAMING_WIRE_DIR}: enum measurements and the retained array control are registered"
     );
     let failures: Vec<String> = cases
         .iter()
+        .filter(|case| case.starts_with("enum-"))
         .flat_map(|case| {
             let spec = case_spec(case);
             assert!(spec.is_file(), "{case}: no literals-mode document");
@@ -109,6 +134,86 @@ fn handwritten_copy(fixture: &str) -> (tempfile::TempDir, String, PathBuf) {
 fn measurement_copy(case: &str) -> (tempfile::TempDir, String, PathBuf) {
     let tree = repo_root().join(NAMING_WIRE_DIR).join(case).join(TREE);
     fern_copy(&tree, case_spec(case))
+}
+
+fn array_control_copy(_: &str) -> (tempfile::TempDir, String, PathBuf) {
+    let case = repo_root()
+        .join(NAMING_WIRE_DIR)
+        .join("ledger-batch-upload");
+    fern_copy(&case.join(TREE), case.join("openapi.yml"))
+}
+
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This retained authored control shares the certified-tree comparison and ledger gate with the registered tamoss proof; it is part of the existing real-binary golden tier.
+#[test]
+fn naming_wire_array_control_matches_fern_in_both_modes() {
+    let root = repo_root().join(NAMING_WIRE_DIR);
+    let case = root.join("ledger-batch-upload");
+    let base = case.join(TREE);
+    let layer = root.join("ledger-batch-upload-literals").join(TREE);
+    let literal_tree = tempfile::tempdir().expect("materialized literals tree");
+    copy_dir(&base, literal_tree.path());
+    let manifest: serde_json::Value = serde_json::from_str(
+        &std::fs::read_to_string(layer.join(super::literals_mode::MANIFEST))
+            .expect("committed overlay manifest"),
+    )
+    .expect("overlay JSON");
+    let (cli, sdk) = super::probe_fern_pins();
+    assert_eq!(manifest["fern_cli_version"], cli);
+    assert_eq!(manifest["fern_python_sdk_version"], sdk);
+    assert_eq!(manifest["enum_type"], "literals");
+    assert_eq!(manifest["base"], "expected");
+    let removed: Vec<String> = manifest["removed"]
+        .as_array()
+        .expect("removed file list")
+        .iter()
+        .map(|path| path.as_str().expect("relative file path").to_string())
+        .collect();
+    for rel in &removed {
+        assert!(
+            !rel.starts_with('/')
+                && Path::new(rel)
+                    .components()
+                    .all(|part| matches!(part, std::path::Component::Normal(_)))
+                && rel.split('/').all(|part| !matches!(part, "" | "." | "..")),
+            "invalid overlay path: {rel}"
+        );
+        std::fs::remove_file(literal_tree.path().join(rel)).expect("overlay removes a base file");
+    }
+    for rel in super::walk_files(&layer) {
+        if rel != super::literals_mode::MANIFEST {
+            let target = literal_tree.path().join(&rel);
+            std::fs::create_dir_all(target.parent().expect("file parent"))
+                .expect("overlay directory");
+            std::fs::copy(layer.join(rel), target).expect("overlay file");
+        }
+    }
+    let own = departure_ledger()
+        .golden(&golden_path(&layer), &[])
+        .expect("overlay ledger");
+    let inherited = departure_ledger()
+        .golden(&golden_path(&base), &[])
+        .expect("base ledger");
+    let files = super::walk_files(&layer)
+        .into_iter()
+        .filter(|rel| rel != super::literals_mode::MANIFEST)
+        .collect();
+    let literal_ledger = own.inherit(inherited, files, &removed);
+    let python_ledger = departure_ledger()
+        .golden(&golden_path(&base), &[])
+        .expect("base ledger");
+    for (enum_type, ledger, expected) in [
+        ("python-enums", python_ledger, base.as_path()),
+        ("literals", literal_ledger, literal_tree.path()),
+    ] {
+        let failures = ledger_tree_failures(
+            "ledger-batch-upload",
+            &case.join("openapi.yml"),
+            &ledger,
+            expected,
+            enum_type,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n\n"));
+    }
 }
 
 fn tamoss_copy(_: &str) -> (tempfile::TempDir, String, PathBuf) {
@@ -173,7 +278,7 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
         ),
         (
             "ledger-batch-upload",
-            handwritten_copy,
+            array_control_copy,
             &[(
                 "src/fern/entries/raw_client.py",
                 "            headers={\n                \"content-type\": \"application/json\",\n            },\n",

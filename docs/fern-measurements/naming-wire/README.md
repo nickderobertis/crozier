@@ -24,3 +24,11 @@ To regenerate, use the workspace and environment described in
 copying the corresponding literals-mode `openapi.yml`. Preserve the complete
 output, apply `crozier internal-strip`, and retain the generator metadata.
 Do not edit the generated Python to match crozier.
+
+The retained `ledger-batch-upload` control and its `ledger-batch-upload-literals`
+overlay were moved here after the registered `tamoss` document was found to
+declare the titled OpenAPI 3.1 array-body shape. Their certified bytes are
+unchanged. `naming_wire_array_control_matches_fern_in_both_modes` compares
+the complete Python enum tree and the reconstructed literals tree; the
+registered tamoss golden and missing-header negative comparison provide the
+feature proof. The control no longer counts as a hand-written feature cover.

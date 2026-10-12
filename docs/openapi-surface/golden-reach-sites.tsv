@@ -392,7 +392,7 @@ enum-leading-zero-member	schema.enum:leading-zero-member	src/naming.rs::numeric_
 enum-normalized-collision	schema.enum:normalized-collision	src/ir.rs::dedupe	
 enum-numeric-member	schema.enum:numeric-member	src/ir.rs::string_enum_values[if !is_string_type\(schema\) \{],src/ir.rs::string_enum_values[if strings.is_empty\(\) \{],src/ir.rs::is_int_enum	
 enum-numeric-prefix-member	schema.enum:numeric-prefix-member	src/naming.rs::numeric_enum_identifier,src/naming.rs::enum_words[if digits > 0 \{]	
-enum-reserved-member	schema.enum:reserved-member	src/naming.rs::finalize_enum_ident[if is_reserved\(&name\) \{],src/naming.rs::enum_visit_param[if name == "self" \{]	
+enum-reserved-member	schema.enum:reserved-member	src/naming.rs::finalize_enum_ident[if is_reserved\(&name\) \{],src/naming.rs::enum_visit_param[if name == "self" \x7c\x7c name == "kwargs" \{]	The visitor escapes both self and kwargs.
 enum-uuid-member	schema.enum:uuid-member	src/naming.rs::is_uuid,src/naming.rs::enum_identifier[if is_uuid\(value\) \{],src/naming.rs::uuid_enum_identifier	
 enum-wildcard-member	schema.enum:wildcard-member	src/naming.rs::enum_words[if let Some\(words\) = whole_value_enum_words\(value\) \{],src/naming.rs::whole_value_enum_words	
 schema-example-array	schema.example=array	src/ir.rs::schema_example,src/ir.rs::example_literal,src/openapi.rs::de_schema_examples,src/emit.rs::ExampleCtx::value_from_example[if let TypeRef::List\(inner\) \x7c TypeRef::Set\(inner\) = t \{]	
@@ -496,3 +496,4 @@ anyof-map-variant-oneof-value	schema.anyOf>!schema.properties:non-empty&schema.t
 anyof-map-variant-anyof-value	schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	
 oneof-map-variant-oneof-value	schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]	
 single-operation-required-header	parameter.schema:single-required-header	src/ir.rs::global_headers	Required constructor header from the sole operation.
+openapi31-titled-array-body-content-type	operation.requestBody:titled-array-component-oas-three-one	src/ir.rs::resolve_request_body[let mut body = single\(type_ref, required, convert, target\.title\.is_some\(\)\);]	The registered tamoss body declares the titled OpenAPI 3.1 array shape.

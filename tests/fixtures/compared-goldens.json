@@ -129,11 +129,6 @@
         ".crozier-overlay.json"
       ]
     },
-    "docs/fern-measurements/literals-mode/ledger-batch-upload/fern-expected": {
-      "excluded": [
-        ".crozier-overlay.json"
-      ]
-    },
     "docs/fern-measurements/literals-mode/literal-enum-description-omitted/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -324,6 +319,12 @@
     "docs/fern-measurements/models-refs-remote/library-records/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected": {},
     "docs/fern-measurements/naming-wire/enum-header-params-stringified/fern-expected": {},
+    "docs/fern-measurements/naming-wire/ledger-batch-upload-literals/fern-expected": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "docs/fern-measurements/naming-wire/ledger-batch-upload/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-bare/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-default/fern-expected": {},
     "docs/fern-measurements/parameter-lowering/base-path-lifted-list/fern-expected": {},
@@ -504,7 +505,6 @@
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
     "docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected": {},
     "docs/openapi-surface/handwritten/lamp-room-log/fern-expected": {},
-    "docs/openapi-surface/handwritten/ledger-batch-upload/fern-expected": {},
     "docs/openapi-surface/handwritten/ledger-records-offset/fern-expected": {},
     "docs/openapi-surface/handwritten/library-union-shared-fields/fern-expected": {},
     "docs/openapi-surface/handwritten/literal-enum-value-quote-escaping/fern-expected": {},

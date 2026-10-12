@@ -16776,7 +16776,12 @@ class NamingWireCensusTests(unittest.TestCase):
         )
         for fixture, selector in cases:
             with self.subTest(fixture=fixture):
-                document = census.load_document(REPO / "docs/openapi-surface/handwritten" / fixture / "openapi.yml")
+                area = (
+                    "docs/fern-measurements/naming-wire"
+                    if fixture == "ledger-batch-upload"
+                    else "docs/openapi-surface/handwritten"
+                )
+                document = census.load_document(REPO / area / fixture / "openapi.yml")
                 self.assertGreater(census.census_document(document).get(selector, 0), 0)
                 control = json.loads(json.dumps(document))
                 match fixture:
