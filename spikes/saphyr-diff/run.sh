@@ -82,8 +82,8 @@ for mode in "${all[@]:1}"; do
   echo "-- mode \`$mode\` vs \`off\`: $(printf '%s' "$newly" | grep -c . || true) newly failing, $(printf '%s' "$fixed" | grep -c . || true) newly passing"
   for t in $newly; do
     echo "   newly failing: $t"
-    # The first assertion line of that test's output, for the before/after text.
-    awk -v t="$t" '$0 ~ "--- STDERR: .*"t"( |$)" {on=1; n=0; next} on && /panicked at|assertion|left:|right:|error|refus/ {print "      " substr($0,1,300); if (++n>=4) on=0}' "$log" | head -4
+    # The test's panic and its first assertion lines: the before/after text.
+    grep -A3 "thread '$t' .* panicked at" "$log" | tail -n +2 | cut -c1-400 | sed 's/^ */      /' || true
   done
   for t in $fixed; do echo "   newly passing: $t"; done
 done
