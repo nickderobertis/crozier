@@ -16263,6 +16263,40 @@ class ScenarioProofIndexTests(unittest.TestCase):
         metadata.write_text('{"generatorConfig": []}', encoding="utf-8")
         self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
 
+    def test_unreadable_or_unparsable_catalogs_fail(self) -> None:
+        module = self.index_script
+        cases = {
+            "inventory missing": (lambda root: (root / module.INVENTORY).unlink(), f"{module.INVENTORY}: unreadable"),
+            "inventory not JSON": (
+                lambda root: (root / module.INVENTORY).write_text("{", encoding="utf-8"),
+                f"{module.INVENTORY}: unreadable",
+            ),
+            "catalog missing": (lambda root: (root / module.CATALOG).unlink(), f"{module.CATALOG}: unreadable"),
+            "catalog not YAML": (
+                lambda root: (root / module.CATALOG).write_text("- [unclosed\n", encoding="utf-8"),
+                f"{module.CATALOG}: unreadable",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+
+    def test_a_generate_class_with_its_wire_evaluation_reconciles(self) -> None:
+        module = self.index_script
+        row = self.row("refusal")
+        root = self.mirror()
+        classes = root / module.CLASSES
+        line = next(
+            line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{row['ids']}\t")
+        )
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
+        self.rewrite(root / module.INDEX, self.line(row), self.edited(row, outcome="default=generate;strict=refuse"))
+        (root / f"docs/fern-refusals/{row['ids']}/wire_test.py").write_text("", encoding="utf-8")
+        self.assertEqual([], module.check(root))
+
     def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
         root = self.mirror()
         (root / self.index_script.WITNESSES).unlink()
