@@ -299,8 +299,8 @@ just upgrade     # cargo update, then re-run the gate
 Bootstrap enables the repository hooks (the `.githooks/pre-push` visual-regression
 guard). The tracked `.cargo/config.toml` is the build contract: every `cargo`
 invocation inside a clone builds into that clone's own `target/` (two worktrees
-never share one), and dev/test builds keep line tables only (`debug = 1`) so full
-debuginfo stays off the disk. Nothing in the tree configures `sccache`; to share
+never share one), and dev/test builds carry no debuginfo (`debug = 0`), which
+keeps it off the disk. Nothing in the tree configures `sccache`; to share
 compiler results across worktrees, set `[build] rustc-wrapper = "sccache"` in
 your user-level `~/.cargo/config.toml`, which Cargo merges with the repository's.
 
