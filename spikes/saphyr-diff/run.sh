@@ -58,7 +58,8 @@ echo
 echo "== end to end: crates/crozier-e2e --test e2e against target/spike/crozier, per reader mode =="
 failing() {
   # nextest's final summary names every failing test once per line.
-  grep -E '^\s+(FAIL|SIGSEGV|SIGABRT|TIMEOUT|LEAK-FAIL)\b' "$1" | awk '{print $NF}' | sort -u
+  # No failures is a grep miss, not an error.
+  { grep -E '^\s+(FAIL|SIGSEGV|SIGABRT|TIMEOUT|LEAK-FAIL)\b' "$1" || true; } | awk '{print $NF}' | sort -u
 }
 IFS=';' read -r -a all <<<"off;$e2e_modes"
 for mode in "${all[@]}"; do
