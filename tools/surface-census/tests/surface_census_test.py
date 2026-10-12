@@ -16373,6 +16373,26 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 ),
                 ["links no passing wire-evaluation log"],
             ),
+            "empty wire log": (
+                lambda directory: (directory / "evidence/passing-wire.log").write_text("", encoding="utf-8"),
+                ["links no passing wire-evaluation log"],
+            ),
+            "wire log without a pass summary": (
+                lambda directory: (directory / "evidence/passing-wire.log").write_text(
+                    "checked the headers by hand\n", encoding="utf-8"
+                ),
+                ["links no passing wire-evaluation log"],
+            ),
+            "malformed probe": (
+                lambda directory: (directory / "probe.yml").write_text(
+                    '{"paths": {"/x": {"get": {"parameters": 7}}}}\n', encoding="utf-8"
+                ),
+                ["has a probe.yml whose operations cannot be read: it /x get parameters are not a list of objects"],
+            ),
+            "probe without paths": (
+                lambda directory: (directory / "probe.yml").write_text("openapi: 3.0.3\n", encoding="utf-8"),
+                ["has a probe.yml whose operations cannot be read: it declares no `paths` object"],
+            ),
             "no Fern limitation": (
                 replace("fern-refusal.txt", "generate_exit: 1", "generate_exit: 0"),
                 ["has no pinned Fern refusal record, so no Fern limitation is established"],

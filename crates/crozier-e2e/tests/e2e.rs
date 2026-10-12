@@ -2933,6 +2933,101 @@ fn compare_with_certified_reference(
     )
 }
 
+/// `tools/surface-census/scenario-proof-index.py` attributes every hunk of the
+/// committed witness diffs, reading them in the format `crozier compare
+/// --diff-dir` writes. This drives the real producer and the real reader
+/// together. It perturbs a certified tree three known ways: one changed line,
+/// one file only in the reference, and one file only in crozier's output. The
+/// reader must report exactly those hunks, so a change to the diff format in
+/// `src/parity.rs` fails here instead of leaving the committed diffs unreadable.
+#[cfg(unix)]
+#[test]
+fn scenario_proof_index_reads_the_diff_crozier_compare_writes() {
+    let python =
+        python_interpreter().expect("python3 or python on PATH to run scenario-proof-index.py");
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/material-register");
+    let work = tempfile::tempdir().expect("compare workspace");
+    let reference = work.path().join("reference");
+    copy_dir(&fixture.join("fern-expected"), &reference);
+    let reference_md = reference.join("reference.md");
+    let text = std::fs::read_to_string(&reference_md).expect("certified reference.md");
+    let mut lines: Vec<&str> = text.lines().collect();
+    let changed = lines
+        .iter()
+        .rposition(|line| line.contains("client."))
+        .expect("reference.md documents a client call");
+    // The last call sits behind elided unchanged lines, so its line number
+    // holds the reader to the elision markers as well as the change prefixes.
+    assert!(
+        changed > 10,
+        "reference.md's last client call is at line {changed}"
+    );
+    lines[changed] = "a line only the reference writes";
+    std::fs::write(&reference_md, format!("{}\n", lines.join("\n"))).unwrap();
+    std::fs::remove_file(reference.join("README.md")).expect("certified README.md");
+    std::fs::write(
+        reference.join("extra.md"),
+        "only the reference has this file\n",
+    )
+    .unwrap();
+    let config = work.path().join("crozier.yml");
+    std::fs::write(
+        &config,
+        format!(
+            "spec: {}\npackage-name: fern\nproject-name: default_package_name\n\
+             reference:\n  command: cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n",
+            fixture.join("openapi.yml").display(),
+            reference.display()
+        ),
+    )
+    .unwrap();
+    let diffs = work.path().join("diff");
+    let output = crozier()
+        .arg("compare")
+        .arg(&config)
+        .arg("--diff-dir")
+        .arg(&diffs)
+        .output()
+        .expect("run crozier compare");
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let written: Vec<PathBuf> = std::fs::read_dir(&diffs)
+        .expect("compare wrote its diff directory")
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    assert_eq!(written.len(), 1, "{written:?}");
+    let read = std::process::Command::new(python)
+        .arg(repo_root().join("tools/surface-census/scenario-proof-index.py"))
+        .arg("hunks")
+        .arg(&written[0])
+        .output()
+        .expect("run scenario-proof-index.py hunks");
+    assert!(
+        read.status.success(),
+        "{}",
+        String::from_utf8_lossy(&read.stderr)
+    );
+    let mut hunks: Vec<String> = String::from_utf8(read.stdout)
+        .unwrap()
+        .lines()
+        .map(str::to_string)
+        .collect();
+    hunks.sort();
+    let line = changed + 1;
+    assert_eq!(
+        hunks,
+        [
+            "README.md\tonly in crozier".to_string(),
+            "extra.md\tonly in reference".to_string(),
+            format!("reference.md\t-{line},1 +{line},1"),
+        ]
+    );
+}
+
 /// The certified tree matches through `crozier compare`, and a reference that
 /// differs from it by one ordinary annotation is a mismatch naming that file:
 /// the adjacent scalar shapes are not swept up by any departure.

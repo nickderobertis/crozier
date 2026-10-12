@@ -56,8 +56,6 @@ from pathlib import Path
 from types import ModuleType
 from typing import Any, NamedTuple, NewType
 
-import yaml
-
 REPO = Path(__file__).resolve().parents[2]
 PLAN = Path("docs/openapi-surface/scenario-plan.tsv")
 PLAN_HEADER = ("shape", "owner")
@@ -481,8 +479,16 @@ def read_inventory(root: Path) -> tuple[frozenset[str], list[str]]:
     return frozenset(goldens), []
 
 
+def _yaml() -> ModuleType:
+    """PyYAML, imported only where a YAML document is read, so `hunks` runs on a bare interpreter."""
+    import yaml
+
+    return yaml
+
+
 def read_defects(root: Path) -> tuple[frozenset[DepartureId], list[str]]:
     """The ids of the departure catalog's `fern-defect` entries."""
+    yaml = _yaml()
     try:
         catalog = yaml.safe_load((root / CATALOG).read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as error:
@@ -612,21 +618,26 @@ def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[s
     return failures
 
 
-def _declared_defaults(document: Any) -> list[str]:
-    """Every scalar `default` an operation's (or its path's) parameters declare in a probe."""
+def _declared_defaults(document: Any) -> tuple[list[str], str | None]:
+    """Every scalar `default` a probe's operation (or path) parameters declare, or why it cannot be read."""
     paths = document.get("paths") if isinstance(document, dict) else None
+    if not isinstance(paths, dict) or not paths:
+        return [], "declares no `paths` object"
     found: list[str] = []
-    for item in paths.values() if isinstance(paths, dict) else []:
+    for route, item in paths.items():
         if not isinstance(item, dict):
-            continue
-        operations = [item, *(value for value in item.values() if isinstance(value, dict))]
-        for operation in operations:
-            for parameter in operation.get("parameters") or []:
-                schema = parameter.get("schema") if isinstance(parameter, dict) else None
+            return [], f"path {route} is not an object"
+        operations = [("", item), *((key, value) for key, value in item.items() if isinstance(value, dict))]
+        for method, operation in operations:
+            parameters = operation.get("parameters", [])
+            if not isinstance(parameters, list) or not all(isinstance(parameter, dict) for parameter in parameters):
+                return [], f"{route} {method} parameters are not a list of objects".replace("  ", " ")
+            for parameter in parameters:
+                schema = parameter.get("schema")
                 default = schema.get("default") if isinstance(schema, dict) else None
                 if isinstance(default, SETTING_VALUE) and str(default) not in found:
                     found.append(str(default))
-    return found
+    return found, None
 
 
 def exception_failures(directory: Path, note: str) -> list[str]:
@@ -661,17 +672,25 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     if not any("Success: no issues found" in text for text in logs.values()):
         problems.append("links no mypy log showing its SDK imports and type-checks clean")
     wire_logs = [text for target, text in logs.items() if "wire" in Path(target).name]
-    if not wire_logs or any(re.search(r"Traceback|AssertionError|\bfailed\b", text) for text in wire_logs):
+    # A pytest run's own summary is the positive evidence; anything failing beside it disqualifies the log.
+    passing = [text for text in wire_logs if re.search(r"\b[1-9]\d* passed\b", text)]
+    if not passing or any(
+        re.search(r"Traceback|AssertionError|\b\d+ (?:failed|errors?)\b", text) for text in wire_logs
+    ):
         problems.append("links no passing wire-evaluation log")
     wire = directory / "wire_test.py"
     test = wire.read_text(encoding="utf-8") if wire.is_file() else ""
     if not re.search(r"(?m)^\s*assert\b", test):
         problems.append("has no wire_test.py asserting the generated SDK's wire behaviour")
+    yaml = _yaml()
     try:
         probe = yaml.safe_load((directory / "probe.yml").read_text(encoding="utf-8"))
     except (OSError, yaml.YAMLError) as error:
         return [*problems, f"has no readable probe.yml ({error})"]
-    for default in _declared_defaults(probe):
+    defaults, malformed = _declared_defaults(probe)
+    if malformed:
+        problems.append(f"has a probe.yml whose operations cannot be read: it {malformed}")
+    for default in defaults:
         if default not in test:
             problems.append(f"has a wire_test.py that never asserts the declared default {default!r}")
     return problems
