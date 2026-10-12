@@ -216,8 +216,9 @@ fn saphyr_node(text: &str) -> Result<Ng, String> {
 
 fn one_line(s: &str) -> String {
     let s = s.replace('\n', "⏎");
-    if s.chars().count() > 240 {
-        format!("{}…", s.chars().take(240).collect::<String>())
+    let width = std::env::var("SAPHYR_DIFF_WIDTH").ok().and_then(|w| w.parse().ok()).unwrap_or(240);
+    if s.chars().count() > width {
+        format!("{}…", s.chars().take(width).collect::<String>())
     } else {
         s
     }
@@ -348,6 +349,9 @@ fn on_big_stack<R: Send>(f: impl FnOnce() -> R + Send) -> R {
 
 // ---------------------------------------------------------------- kinds
 
+/// The serde-saphyr Options that reproduce today's reads on every real document.
+const CANDIDATE: [&str; 3] = ["strict_booleans", "budget=none", "nonfinite=string"];
+
 const TREES: [&str; 3] = ["serde-saphyr→serde_yaml_ng::Value", "serde-saphyr→serde_json::Value", "saphyr::Yaml"];
 
 /// The schema-less trees: today's `serde_yaml_ng::Value` against each candidate.
@@ -387,9 +391,7 @@ fn compare_trees(report: &mut Report, kind: &str, root: &Path, docs: &[&Doc], fl
 }
 
 /// `crozier::openapi::load` — the typed read into crozier's own `OpenApi`.
-fn compare_load(report: &mut Report, root: &Path, docs: &[&Doc], mode: &str) {
-    let section = format!("openapi::load (typed OpenApi) · mode `{mode}`");
-    report.section(&section).documents = docs.len();
+fn compare_load(report: &mut Report, root: &Path, docs: &[&Doc], modes: &[String]) {
     let results = par_map(docs, |doc| {
         let run = |m: &str| {
             set_thread_mode(Some(m));
@@ -397,10 +399,18 @@ fn compare_load(report: &mut Report, root: &Path, docs: &[&Doc], mode: &str) {
             set_thread_mode(None);
             r
         };
-        (rel(root, &doc.path), run("off"), run(mode))
+        let before = run("off");
+        let afters: Vec<_> = modes.iter().map(|m| (m.clone(), run(m))).collect();
+        (rel(root, &doc.path), before, afters)
     });
-    for (name, before, after) in results {
-        record_outcome(report, &section, &name, before, after, |a, b| first_line_diff(a, b));
+    for mode in modes {
+        report.section(&format!("openapi::load (typed OpenApi) · mode `{mode}`")).documents = docs.len();
+    }
+    for (name, before, afters) in results {
+        for (mode, after) in afters {
+            let section = format!("openapi::load (typed OpenApi) · mode `{mode}`");
+            record_outcome(report, &section, &name, before.clone(), after, first_line_diff);
+        }
     }
 }
 
@@ -507,19 +517,31 @@ fn files_diff(a: &BTreeMap<PathBuf, String>, b: &BTreeMap<PathBuf, String>) -> S
 }
 
 /// End to end: `crozier::render_files` (every refusal, the `$ref` resolver,
-/// the IR and emitter; `ruff format` runs only on its output) per entry point.
-fn compare_generate(report: &mut Report, root: &Path, entries: &[(String, PathBuf)], mode: &str) {
-    let section = format!("generate (render_files, plain + --fern-strict) · mode `{mode}`");
-    report.section(&section).documents = entries.len();
+/// the IR, the emitter and its `ruff format`) per entry point, plain and
+/// `--fern-strict`; the `off` baseline renders once and every mode compares
+/// against it.
+fn compare_generate(report: &mut Report, entries: &[(String, PathBuf)], modes: &[String]) {
+    for mode in modes {
+        report.section(&format!("generate (render_files, plain + --fern-strict) · mode `{mode}`")).documents = entries.len();
+    }
+    let done = std::sync::atomic::AtomicUsize::new(0);
     let results = par_map(entries, |(name, spec)| {
-        [false, true].map(|strict| {
+        let mut out = Vec::new();
+        for strict in [false, true] {
+            let label = format!("{name}{}", if strict { " [strict]" } else { "" });
             let before = render(spec, strict, "off");
-            let after = render(spec, strict, mode);
-            (format!("{name}{}", if strict { " [strict]" } else { "" }), before, after)
-        })
+            for mode in modes {
+                out.push((mode.clone(), label.clone(), before.clone(), render(spec, strict, mode)));
+            }
+        }
+        let n = done.fetch_add(1, std::sync::atomic::Ordering::Relaxed) + 1;
+        if n % 25 == 0 || n == entries.len() {
+            eprintln!("saphyr-diff: generate {n}/{}", entries.len());
+        }
+        out
     });
-    let _ = root;
-    for (name, before, after) in results.into_iter().flatten() {
+    for (mode, name, before, after) in results.into_iter().flatten() {
+        let section = format!("generate (render_files, plain + --fern-strict) · mode `{mode}`");
         match (before, after) {
             (Ok(a), Ok(b)) if a == b => {}
             (Ok(a), Ok(b)) => report.diff(&section, "SDK bytes differ", format!("{name}: {}", files_diff(&a, &b))),
@@ -540,19 +562,22 @@ fn compare_settings(report: &mut Report, root: &Path, mode: &str) {
         cases.push((p.to_owned(), std::fs::read_to_string(root.join(p)).unwrap()));
     }
     let synthetic: &[(&str, &str)] = &[
-        ("every field, block style", "spec: ./api.yml\nfern-strict: true\npackage-name: acme\nproject-name: acme-sdk\nclient-class-name: AcmeClient\naudiences: [public, beta]\naudience-strict: false\nextra-fields: forbid\nenum-type: literals\ndefault-max-retries: 3\nlayout: flat\ngenerators:\n  python:\n    output: ./out\n    package-name: acme\n  extra:\n    type: python\n    output: ./extra\n"),
+        ("every field, block style", "spec: ./api.yml\nfern-strict: true\npackage-name: acme\nproject-name: acme-sdk\nclient-class-name: AcmeClient\naudiences: [public, beta]\naudience-strict: false\nlayout: flat\ngenerators:\n  python:\n    output: ./out\n    package-name: acme\n    extra-fields: forbid\n    enum-type: literals\n    default-max-retries: 3\n  extra:\n    type: python\n    output: ./extra\n"),
         ("YAML 1.1 boolean `yes`", "fern-strict: yes\n"),
         ("YAML 1.1 boolean `on`", "audience-strict: on\n"),
         ("boolean `True`", "fern-strict: True\n"),
         ("quoted boolean", "fern-strict: \"true\"\n"),
         ("number as package-name", "package-name: 123\n"),
-        ("float retries", "default-max-retries: 3.0\n"),
-        ("octal-looking retries", "default-max-retries: 010\n"),
-        ("hex retries", "default-max-retries: 0x3\n"),
+        ("float as project-name", "project-name: 1.10\n"),
+        ("YAML 1.1 bool as package-name", "package-name: no\n"),
+        ("enum spelled as bool-ish", "generators:\n  python:\n    extra-fields: allow\n    enum-type: on\n"),
+        ("float retries", "generators:\n  python:\n    default-max-retries: 3.0\n"),
+        ("octal-looking retries", "generators:\n  python:\n    default-max-retries: 010\n"),
+        ("hex retries", "generators:\n  python:\n    default-max-retries: 0x3\n"),
         ("null spec", "spec: ~\n"),
         ("empty document", ""),
         ("comment only", "# nothing\n"),
-        ("anchors and aliases", "x-common: &c\n  output: ./o\ngenerators:\n  python: *c\n"),
+        ("anchors and aliases", "generators:\n  a: &c\n    output: ./o\n  python: *c\n"),
         ("merge key", "generators:\n  python:\n    <<: {output: ./o}\n    package-name: p\n"),
         ("duplicate key", "spec: a.yml\nspec: b.yml\n"),
         ("tagged scalar", "spec: !!str 123\n"),
@@ -563,7 +588,7 @@ fn compare_settings(report: &mut Report, root: &Path, mode: &str) {
         ("bad nested enum (e2e)", "generators:\n  python:\n    layout: nested\n"),
         ("expected a boolean", "fern-strict: maybe\n"),
         ("wrong type: list for string", "spec: [a, b]\n"),
-        ("negative retries", "default-max-retries: -1\n"),
+        ("negative retries", "generators:\n  python:\n    default-max-retries: -1\n"),
         ("tab indentation", "generators:\n\tpython: {}\n"),
         ("unterminated quote", "spec: \"abc\n"),
         ("root is a list", "- spec: a\n"),
@@ -664,20 +689,32 @@ fn compare_workflows(report: &mut Report, root: &Path) {
         .map(|p| Doc { text: std::fs::read_to_string(&p).unwrap(), path: p, group: "workflows" })
         .collect();
     let refs: Vec<&Doc> = docs.iter().collect();
-    compare_trees(report, "workflow/action YAML", root, &refs, &[]);
-    let kind = "workflow/action YAML · the `on` key";
-    report.section(kind).documents = docs.len();
+    compare_trees(report, "workflow/action YAML [Options: default]", root, &refs, &[]);
+    compare_trees(report, &format!("workflow/action YAML [Options: {}]", CANDIDATE.join(",")), root, &refs, &CANDIDATE);
+    let section = "workflow/action YAML · the `on` key";
+    report.section(section).documents = docs.len();
     for doc in &docs {
         let name = rel(root, &doc.path);
-        let today = ng_tree(&doc.text).ok().and_then(|v| v.get("on").map(short));
-        let direct = saphyr_direct(&doc.text, &[]).ok().map(|v| {
-            v.as_mapping().map(|m| m.keys().map(|k| format!("{}:{}", kind_of(k), short(k))).filter(|k| k.contains("on") || k.starts_with("bool")).collect::<Vec<_>>())
-        });
-        let json = saphyr_json(&doc.text, &[]).ok().map(|v| v.get("on").is_some());
-        let strict = saphyr_direct(&doc.text, &["strict_booleans"]).ok().map(|v| v.get("on").is_some());
-        if today.is_some() {
-            report.note(kind, format!("{name}: today `on` → {today:?}; serde-saphyr→Value top keys matching on/bool: {direct:?}; serde-saphyr→serde_json has \"on\": {json:?}; with strict_booleans has \"on\": {strict:?}"));
-        }
+        // The key at the position today's tree holds `on`, as each reader keys it.
+        let Some(position) = ng_tree(&doc.text).ok().and_then(|v| v.as_mapping().and_then(|m| m.keys().position(|k| k.as_str() == Some("on")))) else {
+            continue;
+        };
+        let key_at = |r: Result<Ng, String>| {
+            r.ok()
+                .and_then(|v| v.as_mapping().and_then(|m| m.keys().nth(position).cloned()))
+                .map_or("<unread>".to_owned(), |k| format!("{} {}", kind(&k), short(&k)))
+        };
+        let json_has_on = |flags: &[&str]| saphyr_json(&doc.text, flags).ok().is_some_and(|v| v.get("on").is_some());
+        report.note(
+            section,
+            format!(
+                "{name}: top-level key `on` — today str \"on\"; serde-saphyr→Value {}; serde-saphyr→Value strict_booleans {}; saphyr::Yaml {}; serde-saphyr→serde_json has \"on\": {}",
+                key_at(saphyr_direct(&doc.text, &[])),
+                key_at(saphyr_direct(&doc.text, &["strict_booleans"])),
+                key_at(saphyr_node(&doc.text)),
+                json_has_on(&[]),
+            ),
+        );
     }
 }
 
@@ -730,10 +767,6 @@ fn scalar_probes(report: &mut Report) {
             let _ = cells;
         }
     }
-}
-
-fn kind_of(v: &Ng) -> &'static str {
-    kind(v)
 }
 
 /// The one write: `name_label`'s rendering of a non-string mapping key.
@@ -830,24 +863,111 @@ fn timings(report: &mut Report, root: &Path) {
     }
 }
 
+
+// ---------------------------------------------------------------- error wording
+
+/// Today's error text against serde-saphyr's (candidate Options) as it renders
+/// by default, and as the `today_wording` code change renders it.
+fn compare_error_wording(report: &mut Report) {
+    let plain = "error wording · serde-saphyr default rendering (candidate Options)";
+    let reworded = "error wording · with the today_wording code change (candidate Options)";
+    let base = "openapi: 3.0.3\ninfo: {title: probe, version: '1'}\n";
+    let ok_tail = "paths:\n  /p:\n    get:\n      operationId: p\n      responses:\n        '200': {description: ok}\n";
+    let openapi: Vec<(&str, String)> = vec![
+        ("e2e pagination: x-crozier-pagination: 7", "openapi: 3.0.3\ninfo: {title: Beacons, version: '1'}\npaths:\n  /beacons:\n    get:\n      operationId: listBeacons\n      x-crozier-pagination: 7\n      responses: {'204': {description: ok}}\n".into()),
+        ("e2e named media: x-fern-sdk-method-name: [invalid]", format!("{base}paths:\n  /p:\n    post:\n      operationId: p\n      requestBody:\n        content:\n          application/json:\n            x-fern-sdk-method-name: [invalid]\n            schema: {{type: object}}\n      responses:\n        '200': {{description: ok}}\n")),
+        ("broken flow sequence", format!("{base}paths: [unclosed\n")),
+        ("tab indentation", format!("{base}paths:\n\t/p: {{}}\n")),
+        ("duplicate key", format!("{base}{ok_tail}info: {{title: again, version: '2'}}\n")),
+        ("paths is a number", format!("{base}paths: 5\n")),
+        ("root is a sequence", "- openapi: 3.0.3\n".into()),
+        ("unterminated quote", format!("{base}paths:\n  \"/p: {{}}\n")),
+        ("nullable: 1 (expected a boolean)", format!("{base}{ok_tail}components:\n  schemas:\n    M: {{type: string, nullable: 1}}\n")),
+        ("nullable: yes", format!("{base}{ok_tail}components:\n  schemas:\n    M: {{type: string, nullable: yes}}\n")),
+        ("unknown alias", format!("{base}paths: *nope\n")),
+        ("multi-document", format!("{base}{ok_tail}---\nopenapi: 3.1.0\n")),
+    ];
+    let settings: Vec<(&str, &str)> = vec![
+        ("e2e crozier.yml: layout: nested", "layout: nested\n"),
+        ("e2e crozier.yml: nested layout", "generators:\n  python:\n    layout: nested\n"),
+        ("e2e crozier.yml: broken YAML", "generators:\n  python:\n   - not: a map\n"),
+        ("e2e crozier.yml: unknown field", "spec: ./api.yml\ngenerators:\n  python:\n    output: ./out\n    packge-name: oops\n"),
+        ("crozier.yml: expected a boolean", "fern-strict: maybe\n"),
+        ("crozier.yml: duplicate key", "spec: a.yml\nspec: b.yml\n"),
+        ("crozier.yml: list for string", "spec: [a, b]\n"),
+        ("crozier.yml: root is a list", "- spec: a\n"),
+    ];
+    let departures: Vec<(&str, &str)> = vec![
+        ("departures: missing field", "- id: x\n  kind: branding\n  trigger: t\n  crozier: c\n  reason: r\n  evidence: e\n"),
+        ("departures: unknown field", "- id: x\n  kind: branding\n  trigger: t\n  fern: f\n  crozier: c\n  reason: r\n  evidence: e\n  extra: x\n"),
+        ("departures: not a list", "id: x\n"),
+    ];
+    let mut cases: Vec<(String, Result<(), String>, Result<(), String>, Result<(), String>)> = Vec::new();
+    let flags = &CANDIDATE;
+    for (name, text) in &openapi {
+        cases.push((
+            (*name).to_owned(),
+            serde_yaml_ng::from_str::<crozier::openapi::OpenApi>(text).map(drop).map_err(|e| e.to_string()),
+            serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
+            crozier::spike_yaml::today_wording::read::<crozier::openapi::OpenApi>(text, flags).map(drop),
+        ));
+    }
+    for (name, text) in &settings {
+        cases.push((
+            (*name).to_owned(),
+            serde_yaml_ng::from_str::<crozier::settings::FileConfig>(text).map(drop).map_err(|e| e.to_string()),
+            serde_saphyr::from_str_with_options::<crozier::settings::FileConfig>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
+            crozier::spike_yaml::today_wording::read::<crozier::settings::FileConfig>(text, flags).map(drop),
+        ));
+    }
+    for (name, text) in &departures {
+        cases.push((
+            (*name).to_owned(),
+            serde_yaml_ng::from_str::<Vec<crozier::departures::Departure>>(text).map(drop).map_err(|e| e.to_string()),
+            serde_saphyr::from_str_with_options::<Vec<crozier::departures::Departure>>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
+            crozier::spike_yaml::today_wording::read::<Vec<crozier::departures::Departure>>(text, flags).map(drop),
+        ));
+    }
+    report.section(plain).documents = cases.len();
+    report.section(reworded).documents = cases.len();
+    for (name, today, after, fixed) in cases {
+        let show = |r: &Result<(), String>| match r {
+            Ok(()) => "<accepted>".to_owned(),
+            Err(e) => one_line(e),
+        };
+        if after != today {
+            report.diff(plain, "differs from today", format!("{name}: today: {} | after: {}", show(&today), show(&after)));
+        }
+        if fixed == today {
+            report.diff(reworded, "reproduces today's text exactly", format!("{name}: {}", show(&today)));
+        } else {
+            report.diff(reworded, "still differs", format!("{name}: today: {} | after: {}", show(&today), show(&fixed)));
+        }
+    }
+}
+
 // ---------------------------------------------------------------- main
 
 fn main() {
     let only: Vec<String> = std::env::args().skip(1).filter(|a| !a.starts_with("--")).collect();
     let want = |k: &str| only.is_empty() || only.iter().any(|o| o == k);
     let modes: Vec<String> = std::env::var("SAPHYR_DIFF_MODES")
-        .unwrap_or_else(|_| "tree=direct;tree=json;tree=saphyr".to_owned())
+        .unwrap_or_else(|_| "tree=json;tree=saphyr;tree=json,strict_booleans,budget=none,nonfinite=string;tree=saphyr,strict_booleans,budget=none,nonfinite=string".to_owned())
         .split(';')
         .map(str::to_owned)
         .collect();
-    let tree_flags_raw = std::env::var("SAPHYR_DIFF_TREE_FLAGS").unwrap_or_default();
-    let tree_flags: Vec<&str> = tree_flags_raw.split(',').filter(|s| !s.is_empty()).collect();
+    // Schema-less trees are compared under serde-saphyr's default Options and
+    // under the candidate set that reproduces today's reads.
+    let tree_flag_sets: Vec<Vec<&str>> = vec![Vec::new(), CANDIDATE.to_vec()];
     let root = repo_root();
     let scratch = PathBuf::from(std::env::var("SAPHYR_DIFF_SCRATCH").unwrap_or_else(|_| root.join("target/saphyr-diff").display().to_string()));
     std::fs::create_dir_all(&scratch).unwrap();
     let mut report = Report::default();
 
-    let (docs, unreadable) = inventory(&root);
+    let (mut docs, unreadable) = inventory(&root);
+    // SAPHYR_DIFF_FILTER: keep only documents (and corpus rows) whose path holds it.
+    let filter = std::env::var("SAPHYR_DIFF_FILTER").unwrap_or_default();
+    docs.retain(|d| d.path.display().to_string().contains(&filter));
     let openapi: Vec<&Doc> = docs.iter().filter(|d| looks_openapi(&d.text, &d.path)).collect();
     let others: Vec<&Doc> = docs.iter().filter(|d| !looks_openapi(&d.text, &d.path)).collect();
     let count = |g: &str, yaml: bool| openapi.iter().filter(|d| d.group == g && is_yaml(&d.path) == yaml).count();
@@ -856,14 +976,17 @@ fn main() {
         "inventory: {} OpenAPI documents — corpus-sources {} YAML + {} JSON, tests/fixtures {} YAML + {} JSON, fern-refusals {} YAML + {} JSON; {} other YAML/JSON files (non-OpenAPI: referenced fragments, examples); {} unreadable",
         openapi.len(), count("corpus-sources", true), count("corpus-sources", false), count("tests/fixtures", true), count("tests/fixtures", false), count("fern-refusals", true), count("fern-refusals", false), others.len(), unreadable
     );
-    println!("modes (end-to-end + typed): {modes:?}; schema-less tree Options flags: {tree_flags:?}");
+    println!("modes (end-to-end + typed): {modes:?}; schema-less trees under default Options and [{}]", CANDIDATE.join(","));
 
     if want("trees") {
         let yaml: Vec<&Doc> = openapi.iter().copied().filter(|d| is_yaml(&d.path)).collect();
         let json: Vec<&Doc> = openapi.iter().copied().filter(|d| !is_yaml(&d.path)).collect();
-        compare_trees(&mut report, "OpenAPI YAML documents", &root, &yaml, &tree_flags);
-        compare_trees(&mut report, "OpenAPI JSON documents read by the YAML reader", &root, &json, &tree_flags);
-        compare_trees(&mut report, "non-OpenAPI YAML/JSON fragments ($ref targets, examples)", &root, &others, &tree_flags);
+        for flags in &tree_flag_sets {
+            let label = |kind: &str| format!("{kind} [Options: {}]", if flags.is_empty() { "default".to_owned() } else { flags.join(",") });
+            compare_trees(&mut report, &label("OpenAPI YAML documents"), &root, &yaml, flags);
+            compare_trees(&mut report, &label("OpenAPI JSON documents read by the YAML reader"), &root, &json, flags);
+            compare_trees(&mut report, &label("non-OpenAPI YAML/JSON fragments ($ref targets, examples)"), &root, &others, flags);
+        }
     }
     if want("writes") {
         let mut keys = BTreeMap::new();
@@ -875,9 +998,7 @@ fn main() {
         compare_writes(&mut report, &keys);
     }
     if want("load") {
-        for mode in &modes {
-            compare_load(&mut report, &root, &openapi, mode);
-        }
+        compare_load(&mut report, &root, &openapi, &modes);
     }
     if want("generate") {
         let mut entries: Vec<(String, PathBuf)> = Vec::new();
@@ -886,6 +1007,7 @@ fn main() {
             .flatten()
             .filter(|e| e.path().is_dir())
             .map(|e| e.file_name().to_string_lossy().into_owned())
+            .filter(|n| filter.is_empty() || n.contains(&filter) || filter.contains(n.as_str()))
             .collect();
         names.sort();
         let staged = par_map(&names, |n| (n.clone(), stage_corpus(&root, n, &scratch.join("staged"))));
@@ -905,9 +1027,7 @@ fn main() {
         }
         report.section("generate inventory").documents = entries.len();
         report.note("generate inventory", format!("{corpus} staged corpus entry points ({unstaged} not staged), {} feature/refusal fixture documents", entries.len() - corpus));
-        for mode in &modes {
-            compare_generate(&mut report, &root, &entries, mode);
-        }
+        compare_generate(&mut report, &entries, &modes);
     }
     if want("errors") {
         for mode in &modes {
@@ -922,6 +1042,9 @@ fn main() {
     }
     if want("workflows") {
         compare_workflows(&mut report, &root);
+    }
+    if want("wording") {
+        compare_error_wording(&mut report);
     }
     if want("probes") {
         scalar_probes(&mut report);

@@ -12,7 +12,8 @@
 //!   `serde_json::Value` (`preserve_order`) first; `tree=saphyr` — through
 //!   `saphyr` 0.2's node tree first;
 //! - serde-saphyr `Options`: `budget=none`, `strict_booleans`, `dup=first|last`,
-//!   `merge=ordinary|error`, `legacy_octal`, `nonfinite=string`.
+//!   `merge=ordinary|error`, `legacy_octal`, `nonfinite=string`;
+//! - `wording=today` — typed reads render errors through [`today_wording`].
 
 use serde::de::DeserializeOwned;
 
@@ -34,6 +35,9 @@ pub fn from_str<T: DeserializeOwned>(text: &str) -> Result<T, YamlError> {
     {
         let mode = Mode::from_env();
         if !mode.off {
+            if mode.flags.iter().any(|f| f == "wording=today") {
+                return today_wording::read_with(text, mode.options()).map_err(YamlError);
+            }
             return serde_saphyr::from_str_with_options(text, mode.options())
                 .map_err(|e| YamlError(e.to_string()));
         }
@@ -194,5 +198,84 @@ pub mod saphyr_tree {
             Scalar::FloatingPoint(f) => Value::Number(Number::from(f.into_inner())),
             Scalar::String(s) => Value::String(s.to_string()),
         }
+    }
+}
+
+/// A code change measured for the error differences: serde-saphyr's public
+/// `MessageFormatter` and `Localizer` restating serde's own wording and
+/// serde_yaml_ng's ` at line L column C` suffix, `serde_path_to_error` for the
+/// `a.b[0].c: ` prefix serde_yaml_ng gives, and snippets off.
+#[cfg(feature = "spike-saphyr")]
+pub mod today_wording {
+    use std::borrow::Cow;
+    use std::cell::RefCell;
+
+    use serde::de::DeserializeOwned;
+    use serde_saphyr::{DefaultMessageFormatter, Error, Localizer, Location, MessageFormatter, RenderOptions, SnippetMode};
+
+    struct Suffix;
+    impl Localizer for Suffix {
+        fn attach_location<'a>(&self, base: Cow<'a, str>, loc: Location) -> Cow<'a, str> {
+            if loc == Location::UNKNOWN {
+                base
+            } else {
+                Cow::Owned(format!("{base} at line {} column {}", loc.line(), loc.column()))
+            }
+        }
+    }
+
+    fn one_of(names: &[&str], what: &str) -> String {
+        match names {
+            [] => format!("there are no {what}"),
+            [a] => format!("expected `{a}`"),
+            [a, b] => format!("expected `{a}` or `{b}`"),
+            _ => format!("expected one of {}", names.iter().map(|n| format!("`{n}`")).collect::<Vec<_>>().join(", ")),
+        }
+    }
+
+    struct Serde;
+    impl MessageFormatter for Serde {
+        fn localizer(&self) -> &dyn Localizer {
+            &Suffix
+        }
+        fn format_message<'a>(&self, err: &'a Error) -> Cow<'a, str> {
+            match err {
+                Error::SerdeUnknownVariant { variant, expected, .. } => {
+                    Cow::Owned(format!("unknown variant `{variant}`, {}", one_of(expected, "variants")))
+                }
+                Error::SerdeUnknownField { field, expected, .. } => {
+                    Cow::Owned(format!("unknown field `{field}`, {}", one_of(expected, "fields")))
+                }
+                _ => DefaultMessageFormatter.format_message(err),
+            }
+        }
+    }
+
+    /// Read `text` with serde-saphyr under `flags`, rendering a failure in today's wording.
+    pub fn read<T: DeserializeOwned>(text: &str, flags: &[&str]) -> Result<T, String> {
+        read_with(text, super::options_from_flags(flags))
+    }
+
+    /// [`read`] with prepared `Options`.
+    pub fn read_with<T: DeserializeOwned>(text: &str, mut options: serde_saphyr::Options) -> Result<T, String> {
+        let path = RefCell::new(String::new());
+        options.with_snippet = false;
+        serde_saphyr::with_deserializer_from_str_with_options(text, options, |de| {
+            serde_path_to_error::deserialize(de).map_err(|e| {
+                *path.borrow_mut() = e.path().to_string();
+                e.into_inner()
+            })
+        })
+        .map_err(|e| {
+            let mut render = RenderOptions::new(&Serde);
+            render.snippets = SnippetMode::Off;
+            let message = e.render_with_options(render);
+            let path = path.borrow();
+            match path.as_str() {
+                "" | "." | "?" => message,
+                p if p.starts_with('[') => format!(".{p}: {message}"),
+                p => format!("{p}: {message}"),
+            }
+        })
     }
 }

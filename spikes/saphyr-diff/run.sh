@@ -13,8 +13,9 @@
 #    journey) against the spike binary once per reader mode, and prints the
 #    tests whose outcome differs from the `off` (serde_yaml_ng) baseline.
 #
-# SAPHYR_DIFF_MODES (`;`-separated CROZIER_SPIKE_YAML values) picks the modes;
-# see src/spike_yaml.rs for the flags.
+# SAPHYR_DIFF_MODES / SAPHYR_DIFF_E2E_MODES (`;`-separated CROZIER_SPIKE_YAML
+# values) pick the harness's and the e2e suite's modes; SAPHYR_DIFF_FILTER keeps
+# only documents whose path holds it. Flags: src/spike_yaml.rs.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
@@ -26,12 +27,28 @@ if [ "${1:-}" = "--no-e2e" ]; then
   e2e=0
   shift
 fi
-modes=${SAPHYR_DIFF_MODES:-tree=direct;tree=json;tree=saphyr}
+modes=${SAPHYR_DIFF_MODES:-tree=json;tree=saphyr;tree=json,strict_booleans,budget=none,nonfinite=string;tree=saphyr,strict_booleans,budget=none,nonfinite=string}
 export SAPHYR_DIFF_MODES=$modes
+# The e2e suite is slow (every golden runs `ruff format`), so it runs the raw
+# default-Options reader once and the two candidate configurations.
+e2e_modes=${SAPHYR_DIFF_E2E_MODES:-tree=json;tree=json,strict_booleans,budget=none,nonfinite=string;tree=saphyr,strict_booleans,budget=none,nonfinite=string;tree=json,strict_booleans,budget=none,nonfinite=string,wording=today}
 
 cargo build --locked --quiet --profile spike -p saphyr-diff
 cargo build --locked --quiet --profile spike -p crozier --features spike-saphyr --bin crozier
 target/spike/saphyr-diff "$@" | tee "$OUT/report.txt"
+
+echo
+echo "== supply chain: what serde-saphyr 1.3.0 and saphyr 0.2.1 bring in, against deny.toml =="
+banned='^(serde_yaml|serde_yaml_ng|serde_norway|serde_yml|unsafe-libyaml|unsafe-libyaml-norway|libyml) '
+for crate in serde-saphyr@1.3.0 saphyr@0.2.1; do
+  deps=$(cargo tree --locked -p "$crate" -e normal,build --prefix none | sort -u)
+  hits=$(printf '%s\n' "$deps" | grep -E "$banned" || true)
+  echo "$crate: $(printf '%s\n' "$deps" | grep -c .) crates in its tree; YAML crates to replace in it: ${hits:-none}"
+done
+echo "cargo deny (licenses bans sources, whole workspace with the spike feature):"
+cargo deny --all-features check licenses bans sources 2>&1 \
+  | grep -E '^(error|warning)\[|rejected|license = |^[a-z-]+ v[0-9]|└──|├──|(bans|licenses|sources) (ok|FAILED)' \
+  | grep -v 'license-not-encountered' | head -30 || true
 
 [ "$e2e" = 1 ] || exit 0
 
@@ -41,7 +58,7 @@ failing() {
   # nextest's final summary names every failing test once per line.
   grep -E '^\s+(FAIL|SIGSEGV|SIGABRT|TIMEOUT|LEAK-FAIL)\b' "$1" | awk '{print $NF}' | sort -u
 }
-IFS=';' read -r -a all <<<"off;$modes"
+IFS=';' read -r -a all <<<"off;$e2e_modes"
 for mode in "${all[@]}"; do
   log="$OUT/e2e-${mode//[^a-z0-9]/_}.log"
   set +e
