@@ -172,16 +172,23 @@
   kind: ordering
   trigger: >-
     A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports
-    from several sources.
+    from several sources, including a root package whose tag subpackages
+    re-export their hoisted types.
   fern: >-
-    The block's imports in the order Fern's generator collected them.
+    The block's imports in the order Fern's generator collected them, the root
+    client's and environment's statements sorted by module among the tag
+    subpackages'.
   crozier: >-
-    The same import statements, in crozier's sorted order.
+    The same import statements, in crozier's sorted order, the root client's
+    and environment's statements ahead of every tag subpackage's.
   reason: >-
-    The block exists only for type checkers and is never executed, and the two
-    blocks import exactly the same names: sorted with ruff's isort, they are
-    identical. crozier emits a deterministic sorted order rather than
-    reproducing Fern's collection order.
+    The block exists only for type checkers and is never executed, and the
+    reordered statements import exactly the same names: sorted with ruff's
+    isort, the two blocks are identical, or, where they differ in another way,
+    the window of statements that moves is one permutation of identical
+    statements and every other difference in the block remains a difference.
+    crozier emits a deterministic sorted order rather than reproducing Fern's
+    collection order.
   evidence: docs/departures/evidence/init-type-checking-import-order.md
 
 - id: int64-example-rounded-out-of-range
