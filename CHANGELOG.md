@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.115](https://github.com/nickderobertis/crozier/compare/v0.0.114...v0.0.115) - 2026-10-12
+
+### Other
+
+- *(build)* drop dev and test debuginfo; ignore RUSTSEC-2024-0449 until the YAML crate is replaced ([#508](https://github.com/nickderobertis/crozier/pull/508))
+
 ## [0.0.114](https://github.com/nickderobertis/crozier/compare/v0.0.113...v0.0.114) - 2026-10-11
 
 ### Fixed
