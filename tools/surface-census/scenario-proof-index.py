@@ -223,6 +223,12 @@ class _Run:
         return Hunk(self.file, f"-{self.reference_start},{self.removed} +{self.crozier_start},{self.added}")
 
 
+def corpus_fixture(golden: str) -> str | None:
+    """The corpus fixture of a `tests/fixtures/<fixture>/<tree>` golden, or None for any other path."""
+    parts = golden.split("/")
+    return parts[2] if len(parts) == 4 and parts[:2] == ["tests", "fixtures"] and all(parts[2:]) else None
+
+
 class MalformedDiff(ValueError):
     """A comparison diff that is not `crozier compare`'s normalized diff."""
 
@@ -357,8 +363,7 @@ class E2e:
         callee's, names a path that contains it.
         """
         parts = target.split("/")
-        if target.startswith("tests/fixtures/") and len(parts) == 4:
-            fixture = parts[2]
+        if fixture := corpus_fixture(target):
             match parts[3]:
                 case "expected":
                     return self.corpus_tests.get(fixture) in tests
@@ -553,7 +558,10 @@ def golden_source(root: Path, golden: str) -> str | None:
     """
     parts = golden.split("/")
     if golden.startswith("tests/fixtures/"):
-        sources = root / "tests" / "fixtures" / "corpus-sources" / parts[2]
+        fixture = corpus_fixture(golden)
+        if fixture is None:
+            return None
+        sources = root / "tests" / "fixtures" / "corpus-sources" / fixture
         files = sorted(path for path in sources.glob("*") if path.is_file()) if sources.is_dir() else []
         return files[0].relative_to(root).as_posix() if len(files) == 1 else None
     case = root.joinpath(*parts[:-1])
@@ -571,6 +579,8 @@ def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[s
         path = root / relative
         if not path.exists():
             failures.append(f"{where}: {relative} does not exist")
+        elif anchor and not path.is_file():
+            failures.append(f"{where}: {relative} is no document to hold heading #{anchor}")
         elif anchor and anchor not in _handwritten().heading_anchors(path.read_text(encoding="utf-8")):
             failures.append(f"{where}: {relative} has no heading #{anchor}")
     return failures
@@ -634,9 +644,7 @@ def generated_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     elif list(proof.departures) != sorted(proof.departures):
         failures.append(f"{where}: departure ids are sorted")
     match proof.kind:
-        case Kind.REAL if not any(
-            golden.startswith("tests/fixtures/") and golden.split("/")[2] in known.corpus for golden in proof.goldens
-        ):
+        case Kind.REAL if not any(corpus_fixture(golden) in known.corpus for golden in proof.goldens):
             failures.append(f"{where}: a real proof cites a registered corpus row's golden")
         case Kind.HANDWRITTEN if not any(source.startswith((HANDWRITTEN, MEASUREMENTS)) for source in proof.source):
             failures.append(f"{where}: a hand-written proof's source is a hand-written fixture")

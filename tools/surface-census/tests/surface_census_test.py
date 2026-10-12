@@ -16048,8 +16048,22 @@ class ScenarioProofIndexTests(unittest.TestCase):
         evidence = row["evidence"].partition("#")[0]
         self.rewrite(root / self.index_script.INDEX, self.line(row), self.edited(row, evidence=f"{evidence}#absent"))
         self.assert_fails(root, f"{row['shape']}: {evidence} has no heading #absent")
+        directory = str(Path(evidence).parent)
+        self.rewrite(
+            root / self.index_script.INDEX,
+            self.edited(row, evidence=f"{evidence}#absent"),
+            self.edited(row, evidence=f"{directory}#absent"),
+        )
+        self.assert_fails(root, f"{row['shape']}: {directory} is no document to hold heading #absent")
+        self.rewrite(root / self.index_script.INDEX, self.edited(row, evidence=f"{directory}#absent"), self.line(row))
         (root / evidence).unlink()
         self.assert_fails(root, f"{row['shape']}: {evidence} does not exist")
+        self.rewrite(
+            root / self.index_script.INDEX, self.line(row), self.edited(row, goldens="tests/fixtures/", kind="real")
+        )
+        self.assert_fails(
+            root, f"{row['shape']}: golden tests/fixtures/ has no committed document it was generated from"
+        )
 
     def test_a_test_that_does_not_compare_the_golden_fails(self) -> None:
         module = self.index_script
