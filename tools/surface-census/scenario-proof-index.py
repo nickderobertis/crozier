@@ -640,24 +640,35 @@ def _declared_defaults(document: Any) -> tuple[list[str], str | None]:
     return found, None
 
 
+# How the registry's evaluation notes state a class's decision: a heading
+# ending in it, "is `refuse`", "`refuse` in both" / "`refuse` status", or
+# "Decision: **refuse**".
+DECISION_PATTERNS = (
+    re.compile(r"(?m)^# .*:\s*(refuse|generate)\s*$"),
+    re.compile(r"\bis `(refuse|generate)`"),
+    re.compile(r"`(refuse|generate)` (?:in both|status)"),
+    re.compile(r"Decision: \*\*(refuse|generate)\*\*"),
+)
+
+
+def note_decisions(note: str) -> set[RefusalStatus]:
+    """Every decision an evaluation note states for its class."""
+    return {RefusalStatus(found) for pattern in DECISION_PATTERNS for found in pattern.findall(note)}
+
+
 def exception_failures(directory: Path, note: str) -> list[str]:
     """Why a `generate` class's committed evaluation does not establish default generation.
 
     The registry contract (`docs/fern-refusals/README.md`) has default
     generation rest on the class's own evidence, so each finding is read from
-    it: the evaluation note decides `generate` and states no `refuse` decision;
-    a log it links shows the probe is valid OpenAPI, which with Fern's recorded
+    it (the note's own `generate` decision is reconciled for every class by
+    `note_decisions`): a log it links shows the probe is valid OpenAPI, which with Fern's recorded
     refusal (`fern-refusal.txt`) makes the refusal a Fern limitation; a linked
     `mypy` log shows the SDK imports and type-checks clean; a linked wire log
     shows the wire evaluation passing; and `wire_test.py` asserts on the wire,
     naming every default the probe's operations declare.
     """
     problems = []
-    heading = next((line for line in note.splitlines() if line.startswith("# ")), "")
-    if heading.rstrip().endswith(": refuse") or re.search(r"is `refuse`|`refuse` in both|`refuse` status", note):
-        problems.append("claims default generation, but its evaluation note decides `refuse`")
-    if not (heading.rstrip().endswith(": generate") or "is `generate`" in note):
-        problems.append("claims default generation, but its evaluation note does not decide `generate`")
     logs = {}
     for target in re.findall(r"\]\(([^)\s#]+)\)", note):
         path = directory / target
@@ -710,6 +721,17 @@ def refusal_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     if not note.is_file():
         return [*failures, f"{where}: {name} has no evaluation note"]
     text = note.read_text(encoding="utf-8")
+    decisions = note_decisions(text)
+    if not decisions:
+        failures.append(f"{where}: {name}'s evaluation note states no `refuse` or `generate` decision")
+    elif decisions != {status}:
+        stated = ", ".join(f"`{decision}`" for decision in sorted(decisions))
+        failures.append(f"{where}: {name}'s evaluation note decides {stated}, not its registry status `{status}`")
+    for decision in sorted(decisions):
+        if proof.outcome != decision.outcome:
+            failures.append(
+                f"{where}: outcome {proof.outcome} disagrees with its evaluation note's `{decision}` decision"
+            )
     if status is RefusalStatus.GENERATE:
         failures += [f"{where}: {name} {problem}" for problem in exception_failures(note.parent, text)]
     for probe in proof.source:

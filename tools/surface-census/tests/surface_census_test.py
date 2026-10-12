@@ -16246,7 +16246,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.assert_fails(root, f"{row['shape']}: outcome {row['outcome']} disagrees with {name}'s registry status")
         self.assert_fails(
             root,
-            f"{row['shape']}: {name} claims default generation, but its evaluation note does not decide `generate`",
+            f"{row['shape']}: {name}'s evaluation note decides `refuse`, not its registry status `generate`",
         )
         self.rewrite(classes, "\t".join([*cells[:6], "generate", *cells[7:]]), line)
         probe = Path(row["source"].split(";")[0]).name
@@ -16321,6 +16321,53 @@ class ScenarioProofIndexTests(unittest.TestCase):
             'def test_defaults(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n', encoding="utf-8"
         )
 
+    # Every spelling the registry's notes use for a decision, refuse -> generate.
+    FLIPPED_DECISIONS = (
+        (re.compile(r"(?m)^(# .*:\s*)refuse(\s*)$"), r"\1generate\2"),
+        (re.compile(r"\bis `refuse`"), "is `generate`"),
+        (re.compile(r"`refuse` (in both|status)"), r"`generate` \1"),
+        (re.compile(r"Decision: \*\*refuse\*\*"), "Decision: **generate**"),
+    )
+
+    def test_a_refuse_class_whose_note_decides_otherwise_is_refused_through_the_cli(self) -> None:
+        module = self.index_script
+        rows = [row for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0] if row["kind"] == "refusal"]
+        self.assertEqual(5, len(rows))
+        for row in rows:
+            note_path = Path("docs/fern-refusals") / row["ids"] / "evaluation.md"
+            note = (REPO / note_path).read_text(encoding="utf-8")
+            self.assertEqual({module.RefusalStatus.REFUSE}, module.note_decisions(note), row["ids"])
+            self.assertEqual("default=refuse;strict=refuse", row["outcome"])
+            flipped = note
+            for pattern, replacement in self.FLIPPED_DECISIONS:
+                flipped = pattern.sub(replacement, flipped)
+            cases = {
+                # The registry and the index still say refuse; only the note now decides generate.
+                "decides generate": (
+                    flipped,
+                    [
+                        f"{row['ids']}'s evaluation note decides `generate`, not its registry status `refuse`",
+                        "outcome default=refuse;strict=refuse disagrees with its evaluation note's `generate` decision",
+                    ],
+                ),
+                "decides both": (
+                    f"{note}\nThis class is `generate`.\n",
+                    [f"{row['ids']}'s evaluation note decides `generate`, `refuse`, not its registry status `refuse`"],
+                ),
+                "decides nothing": (
+                    "# Scratch\n" + "\n".join(Path(probe).name for probe in row["source"].split(";")) + "\n",
+                    [f"{row['ids']}'s evaluation note states no `refuse` or `generate` decision"],
+                ),
+            }
+            for name, (text, messages) in cases.items():
+                with self.subTest(refusal=row["ids"], case=name):
+                    root = self.mirror()
+                    (root / note_path).write_text(text, encoding="utf-8")
+                    run = self.run_script("check", root=root)
+                    self.assertEqual((1, ""), (run.returncode, run.stdout))
+                    for message in messages:
+                        self.assertIn(f"{module.INDEX} {row['shape']}: {message}", run.stderr)
+
     def test_a_generate_class_with_its_established_evaluation_reconciles(self) -> None:
         root = self.mirror()
         self.establish(self.claim_generate(root))
@@ -16339,63 +16386,63 @@ class ScenarioProofIndexTests(unittest.TestCase):
             "contradicting note": (
                 contradicting_note,
                 [
-                    "claims default generation, but its evaluation note decides `refuse`",
-                    "claims default generation, but its evaluation note does not decide `generate`",
-                    "links no passing wire-evaluation log",
+                    "'s evaluation note decides `refuse`, not its registry status `generate`",
+                    ": outcome default=generate;strict=refuse disagrees with its evaluation note's `refuse` decision",
+                    " links no passing wire-evaluation log",
                 ],
             ),
             "empty wire test": (
                 lambda directory: (directory / "wire_test.py").write_text("", encoding="utf-8"),
                 [
-                    "has no wire_test.py asserting the generated SDK's wire behaviour",
-                    "has a wire_test.py that never asserts the declared default 'radial'",
+                    " has no wire_test.py asserting the generated SDK's wire behaviour",
+                    " has a wire_test.py that never asserts the declared default 'radial'",
                 ],
             ),
             "missing wire test": (
                 lambda directory: (directory / "wire_test.py").unlink(),
-                ["has no wire_test.py asserting the generated SDK's wire behaviour"],
+                [" has no wire_test.py asserting the generated SDK's wire behaviour"],
             ),
             "undeclared default": (
                 replace("wire_test.py", '("PUT", "linear")', '("PUT", "radial")'),
-                ["has a wire_test.py that never asserts the declared default 'linear'"],
+                [" has a wire_test.py that never asserts the declared default 'linear'"],
             ),
             "no validation evidence": (
                 replace("evaluation.md", "([validation log](evidence/spec-validation.log))", ""),
-                ["links no log establishing that its probe is valid OpenAPI"],
+                [" links no log establishing that its probe is valid OpenAPI"],
             ),
             "no type-check evidence": (
                 replace("evaluation.md", "([mypy](evidence/baseline-mypy.log))", ""),
-                ["links no mypy log showing its SDK imports and type-checks clean"],
+                [" links no mypy log showing its SDK imports and type-checks clean"],
             ),
             "failing wire log": (
                 lambda directory: (directory / "evidence/passing-wire.log").write_text(
                     "1 failed, 1 passed\n", encoding="utf-8"
                 ),
-                ["links no passing wire-evaluation log"],
+                [" links no passing wire-evaluation log"],
             ),
             "empty wire log": (
                 lambda directory: (directory / "evidence/passing-wire.log").write_text("", encoding="utf-8"),
-                ["links no passing wire-evaluation log"],
+                [" links no passing wire-evaluation log"],
             ),
             "wire log without a pass summary": (
                 lambda directory: (directory / "evidence/passing-wire.log").write_text(
                     "checked the headers by hand\n", encoding="utf-8"
                 ),
-                ["links no passing wire-evaluation log"],
+                [" links no passing wire-evaluation log"],
             ),
             "malformed probe": (
                 lambda directory: (directory / "probe.yml").write_text(
                     '{"paths": {"/x": {"get": {"parameters": 7}}}}\n', encoding="utf-8"
                 ),
-                ["has a probe.yml whose operations cannot be read: it /x get parameters are not a list of objects"],
+                [" has a probe.yml whose operations cannot be read: it /x get parameters are not a list of objects"],
             ),
             "probe without paths": (
                 lambda directory: (directory / "probe.yml").write_text("openapi: 3.0.3\n", encoding="utf-8"),
-                ["has a probe.yml whose operations cannot be read: it declares no `paths` object"],
+                [" has a probe.yml whose operations cannot be read: it declares no `paths` object"],
             ),
             "no Fern limitation": (
                 replace("fern-refusal.txt", "generate_exit: 1", "generate_exit: 0"),
-                ["has no pinned Fern refusal record, so no Fern limitation is established"],
+                [" has no pinned Fern refusal record, so no Fern limitation is established"],
             ),
         }
         for name, (mutate, messages) in cases.items():
@@ -16405,7 +16452,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 self.establish(directory)
                 mutate(directory)
                 for message in messages:
-                    self.assert_fails(root, f"{self.EXCEPTION} {message}")
+                    self.assert_fails(root, f"{self.EXCEPTION}{message}")
 
     def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
         root = self.mirror()
