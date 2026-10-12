@@ -473,7 +473,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         data = tomllib.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
         return keys, [
-            f"{E2E_COVERS}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"
+            f"{E2E_COVERS.as_posix()}: cannot read cover records: {error} — restore the registry or repair its TOML syntax"
         ]
     if (
         set(data) != {"version", "covers"}
@@ -482,7 +482,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
         or not isinstance(data.get("covers"), list)
     ):
         return keys, [
-            f"{E2E_COVERS}: invalid registry fields {sorted(data)}, version {data.get('version')!r} or covers type {type(data.get('covers')).__name__} — expected version = 1 and covers tables; repair the registry to contain only those fields"
+            f"{E2E_COVERS.as_posix()}: invalid registry fields {sorted(data)}, version {data.get('version')!r} or covers type {type(data.get('covers')).__name__} — expected version = 1 and covers tables; repair the registry to contain only those fields"
         ]
 
     def committed_path(value: str) -> Path | None:
@@ -499,7 +499,7 @@ def e2e_cover_failures(root: Path, rows: dict[str, tuple[str, list[str]]]) -> tu
             or not all(isinstance(v, str) and v for v in table.values())
         ):
             failures.append(
-                f"{E2E_COVERS}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each"
+                f"{E2E_COVERS.as_posix()}: a cover must have exactly {sorted(E2E_FIELDS)}, all nonempty strings — repair this cover table to contain those fields and supply a nonempty string for each"
             )
             continue
         where = f"handwritten-e2e `{table['key']}`"

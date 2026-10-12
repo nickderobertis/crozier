@@ -1,118 +1,150 @@
-# Handed-off witness comparisons on the reconciled generator
+# Handed-off witness comparisons on the finished tree
 
 These are public publisher specifications that earlier fixes screened but could
-not register while other shapes differed. They were generated afresh with
-Fern CLI **5.67.1** and `fernapi/fern-python-sdk` **5.20.0**, then compared with
-crozier **0.0.106** using the shared departure engine. No generator source has
-changed during reconciliation. All eight comparisons exit **3**; they are
-blocked witnesses, not corpus matches. The attached normalized diffs enumerate
-every remaining file and changed line, with `-` for Fern and `+` for crozier.
+not register while other shapes differed. [`witnesses.tsv`](witnesses.tsv) lists
+every one, with its immutable revision and source SHA-256. Each was fetched at
+that revision, and its bytes were checked against the recorded digest. Fern CLI
+**5.67.1** with `fernapi/fern-python-sdk` **5.20.0** then generated it afresh,
+and crozier compared its output from the finished generator, through the shared
+departure engine. Fern generated every one. Every comparison still exits **3**,
+so each witness is blocked, not a corpus match. None is registered, and none
+enters an `unmatched` allowance.
 
-The owners below are shapes in the separate follow-on scenario plan. They are
-not additional rows or proof claims in the repair index. A shape with a scenario
-id is named by that id; an additional combination is described directly.
+Each `<witness>.diff` is that witness's complete normalized comparison: `-` for
+Fern, `+` for crozier, with every remaining file and changed line.
+[`residuals.tsv`](residuals.tsv) attributes **every hunk** of every diff exactly
+once. It names the file, the hunk (`-start,count +start,count` on the Fern and
+crozier files, or a one-sided file), the owning scenario shape of the
+[scenario proof index](../../openapi-surface/scenario-proof-index.tsv) or
+`unowned`, and the OpenAPI construct with what each side writes.
+`tools/surface-census/scenario-proof-index.py check` reads the hunks from the
+diffs themselves. It fails when a hunk is unattributed, attributed twice, or
+attributed to a shape the index does not hold, so a re-measured diff cannot
+leave this table behind. `scenario-proof-index.py hunks <diff>` prints a diff's
+hunks in the table's spelling.
+
+An `unowned` hunk is a generator residual that no scenario of the plan covers. A
+hunk that names a scenario comes from that scenario's own trigger: the committed
+proof matches its fixture, but this real document still differs. That scenario
+counts as closed on its fixture only, with this residual open in the index's
+`open` cell. Neither kind counts as matched.
 
 ## Reproduction
 
-Fetch each immutable publisher document below, then use the workspace scaffold
-of `tools/fern-goldens/generate-fern-fixture.sh` (Route A): organization `fern`, package
-`fern`, project `default_package_name`, generator setting
-`pydantic_config.enum_type: python_enums`. Run:
+Use the workspace scaffold of `tools/fern-goldens/generate-fern-fixture.sh`
+(Route A): organization `fern`, package `fern`, project `default_package_name`,
+and generator setting `pydantic_config.enum_type: python_enums`. Place the
+workspace outside a Git checkout, or set `GIT_CEILING_DIRECTORIES` to its
+parent, so that Fern records no origin commit. Then run:
 
 ```sh
 fern generate --group python-sdk --local --preview --output ../preview --force
 crozier compare crozier.yml --json report.json --diff-dir diff
 ```
 
-`crozier.yml` supplies the authored workspace document as `spec`, the names
-above, and reference command `cp -R preview/fern-python-sdk/. "$CROZIER_REFERENCE_OUTPUT"`.
-The workspace is outside a Git checkout (or its parent is
-`GIT_CEILING_DIRECTORIES`), so local Git metadata cannot create a spurious
-comparison difference. These runs generated successfully before comparison.
-NetGSM generated and compared with exit 0 and is now corpus row 332; Waylay
-already has row 329 and its catalogued body/query correction.
-
-## kompaz
-
-Publisher revision: `Stichting-KOMPAZ-1/KOMPAZ-web-frontend:openapi.json@a847053e46b98324c57183af2b2c09abe01f8ecf`. Source SHA-256: `0437ad48ef2e96fae47e804e86333cbf76ad6a280918373a9f479f9646240511`.
-
-Remaining differences: Operation-name tag-prefix normalization; mixed-case group headings; range-status-only error model retention.
-
-Owner: Follow-on scenario plan: tag-prefix normalization, mixed-case group heading, range-status error components.
-
-Exact comparison: [kompaz.diff](kompaz.diff), **74** files compared, **5** differing, **3** Fern-only, **0** crozier-only.
-
-## langchain
-
-Publisher revision: `langchain-ai/docs:src/langsmith/agent-server-openapi.json@264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e`. Source SHA-256: `25903f3bc462fdf43558e46ba3c72118aaff32cc30a2730336e53382bf43667e`.
-
-Remaining differences: Nested array-item union aliases and model exports; raw versus tagged-model example values; nullable member descriptions; streaming request content-type; root import ordering; callable-field kwargs spelling; stream example parentheses.
-
-Owner: Follow-on scenario plan: nested array-item union hoisting, nullable-anyof-member-description-dropped, stream-condition-ref-body-json-header-dropped, example-imports-case-insensitive-order, callable-field naming and stream snippet layout.
-
-Exact comparison: [langchain.diff](langchain.diff), **241** files compared, **20** differing, **5** Fern-only, **0** crozier-only.
-
-## speech-ai
-
-Publisher revision: `lenML/Speech-AI-Forge:docs/openapi.json@a41b70abba866ecded6e1e90beea6cc68e3fd0ae`. Source SHA-256: `1ae1ec5faa3031d10996730f4dfda9726b828ef3a9bd8554d77adcd4ba1b32f6`.
-
-Remaining differences: One-member composed JSON bodies lose whole groups; optional binary multipart values are sent as form data rather than files; JSON multipart parts lack annotation conversion.
-
-Owner: Follow-on scenario plan: request-body-ref-to-alias-component-drops-operation, multipart-nullable-binary-anyof-not-a-file, multipart-inline-object-part-json-encoded.
-
-Exact comparison: [speech-ai.diff](speech-ai.diff), **110** files compared, **7** differing, **4** Fern-only, **2** crozier-only.
-
-## rice-shower
-
-Publisher revision: `Q2TM/low-temperature-control:apps/rice-shower/docs/openapi.yaml@b100b3633a68a41ba63181379455e98b4814da19`. Source SHA-256: `0a43b3181f2fd75a20a15bae6169a1c09f495916fdc697cd4584198cb0355741`.
-
-Remaining differences: Nested untagged object union aliases/models are absent (six stop-reason families); optional query arrays appear in examples; nullable property descriptions differ; systems request-field descriptions differ.
-
-Owner: Follow-on scenario plan: nested untagged object-union hoisting, optional query-array examples, nullable-anyof-member-description-dropped, nullable request-field descriptions.
-
-Exact comparison: [rice-shower.diff](rice-shower.diff), **157** files compared, **13** differing, **30** Fern-only, **0** crozier-only.
-
-## vocode
-
-Publisher revision: `vocodedev/vocode-core:docs/openapi.json@e054c33a72787b6a4920f91eb8598ad0bafb4240`. Source SHA-256: `ffca17c004e206072f4b71307c83bdcf9fe3f8ba3cf56f16825136ccbaf801f6`.
-
-Remaining differences: One-member composed request body drops numbers operations and relocates body types; environment ignores the server-name extension; inherited action-trigger properties reuse one component type in Fern but use variant-specific types in crozier.
-
-Owner: Follow-on scenario plan: `server-name-extension-ignored` owns the environment difference; the allOf-wrapped request-body operation omission and inherited property type reuse are separate shapes owned by that plan, without confirmed scenario ids.
-
-Exact comparison: [vocode.diff](vocode.diff), **358** files compared, **14** differing, **5** Fern-only, **4** crozier-only.
-
-## supabase
-
-Publisher revision: `supabase/supabase:apps/docs/spec/api_v1_openapi.json@36371de15127206280d2d40786e8578dfe1b681a`. Source SHA-256: `0a1a19774d3749e84d2e2c2896006c58e4b67779d8cc2806f3135488fc7fb1dc`.
-
-Remaining differences: Example selection differs for path parameters, optional queries, media-level body examples, arrays and nested objects (including trailing comma layout); OAuth body enum is hoisted under the operation instead of retaining the component enum; a nullable recursive union loses Optional; root import placement differs.
-
-Owner: Follow-on scenario plan: media-level example retention, example-nested-array-two-items, parameter example selection, request-type placement, union-member-nullability-dropped, example-imports-case-insensitive-order.
-
-Exact comparison: [supabase.diff](supabase.diff), **613** files compared, **13** differing, **0** Fern-only, **1** crozier-only.
+`crozier.yml` names the workspace document as `spec`, the names above, and the
+reference command `cp -R preview/fern-python-sdk/. "$CROZIER_REFERENCE_OUTPUT"`.
 
 ## dystore
 
-Publisher revision: `dystcz/dystore-api:openapi.yaml@ffd4d907e6909b0e2b137a490765e144e8d537e7`. Source SHA-256: `11f419fb0094197b3262ffe844583bb561b34b32bb51aad4a5b8c61dda691c23`.
+One cause. The tag `⚠️ Not supported yet` is spelled with its raw emoji in
+Fern's `reference.md` calls, links and imports, although Fern's own Python uses
+the identifier-safe `not_supported_yet`. crozier writes the identifier-safe
+spelling everywhere. This is a candidate Fern defect, but no departure entry
+claims it, so it remains `unowned`.
 
-Remaining differences: reference.md uses an emoji-bearing tag spelling in Python expressions and links although emitted Python uses the identifier-safe spelling.
+## kompaz
 
-Owner: Follow-on scenario plan: non-identifier tag documentation (candidate Fern defect; no departure entry claims it yet).
+Four causes, all `unowned`:
 
-Exact comparison: [dystore.diff](dystore.diff), **144** files compared, **1** differing, **0** Fern-only, **0** crozier-only.
+- The camel-case tag `OrganizationLogo` with `organizationLogo.*` operation ids.
+  Fern folds it to the heading `Organizationlogo` and strips the tag prefix to
+  `show`/`update`/`destroy`. crozier keeps `OrganizationLogo` and
+  `organization_logo_*`.
+- Three `application/problem+json` component responses. Fern hoists them as
+  unused `*ErrorBody` models, and crozier emits none of them.
+- The order of the root `__init__.py` re-exports.
+
+Two more hunks are docstring-example lines of the catalogued
+`multipart-object-required-file-example` correction. The engine applies that
+departure only when every other line of the file equals Fern's
+(`multipart_object_required_file_example` in `src/departures.rs`). The
+tag-prefix difference in the same `organizationlogo/client.py` blocks it, so
+those lines belong to that cause. They are not a README multipart scenario's,
+whose triggers are README argument order and optional file parts.
+
+## langchain
+
+Six causes, all `unowned`:
+
+- the inline `stream_mode` item enum, which Fern hoists as `*StreamModeZeroItem`;
+- the description of `assistant_id`, a collapsed two-string `anyOf`, which Fern
+  omits;
+- the variant constructors in the `post_a2a` example's union items;
+- the order of the root `__init__.py` re-exports;
+- the `content-type` header on the titled, described array body of `runs/batch`;
+- the `kwargs_` name of an enum visitor callback.
+
+## rice-shower
+
+Three causes, all `unowned`:
+
+- The const-only `stopReason` `anyOf` nested in a nullable `anyOf`. Fern hoists
+  it to a union alias over four one-value enums, written as 30 Fern-only
+  modules; crozier inlines it.
+- The `channels` query array examples.
+- The request-field description of `createSystem`'s nullable `location`.
+
+## speech-ai
+
+Two causes, both `unowned`:
+
+- One-member `allOf` request bodies on `POST /v1/ssml` and
+  `POST /v1/audio/speech`. Fern keeps both operations and flattens the
+  referenced object. crozier drops them, together with the `open_ai_api` and
+  `ssml` clients, and writes the components as standalone types.
+- Nullable enum-`$ref` multipart parts, which crozier JSON-encodes.
+
+## supabase
+
+Eight causes are `unowned`:
+
+- the example of the `branch_id_or_ref` `anyOf` path parameter;
+- component `example`s on array, object and form request bodies;
+- `OAuthTokenBody`'s operation-level enum hoisting;
+- `reference.md`'s parameter list for JSON-beside-binary function bodies;
+- missing commas in a map-of-objects example;
+- the order of the root `__init__.py` re-exports.
+
+The `file=["example_file"]` docstring lines in `edge_functions/client.py` are
+the catalogued multipart file-example correction. The engine cannot apply it
+while the `BulkUpdateFunctionBody` component-example difference sits in the same
+file, so they belong to that cause.
+
+Two causes fall on scenarios' own triggers. Their proofs match their fixtures,
+and each is open in the index:
+
+- `text-response-drops-request-example`: optional query examples on a
+  text-only response.
+- `union-member-nullability-dropped`: a nested hoisted nullable member that loses
+  `Optional`.
 
 ## twitter
 
-Publisher revision: `RTAinJapan/rta-in-japan-twitter-api-docs:openapi.yaml@b5b30318e41647d44795f85dbfc428da8e93739a`. Source SHA-256: `e8b4ac8ed7b18fe20157faaf19144df91b39621fafdbaa44e34b94790f7c5607`.
+One cause, `unowned`. The first named media example of `statuses/update` is an
+empty `media_ids` array. Fern treats it as absent and uses the schema example,
+while crozier writes `[]`.
 
-Remaining differences: An empty first named media example wins in crozier; Fern selects the later nonempty media_ids example in README.md, reference.md and statuses/client.py.
+## vocode
 
-Owner: Follow-on scenario plan: empty named media-example selection.
+Two causes, both `unowned`:
 
-Exact comparison: [twitter.diff](twitter.diff), **58** files compared, **3** differing, **0** Fern-only, **0** crozier-only.
+- The one-member `allOf` request body of `POST /v1/numbers/buy`. Fern keeps the
+  operation and flattens the component. crozier drops it, together with the
+  numbers client, and relocates the body's types.
+- The one-member `allOf` property `action_trigger` inside flattened
+  discriminated-union variants. Fern types it as the referenced component;
+  crozier names variant-specific types that it never writes.
 
-The diffs include secondary import/export and documentation changes caused by
-the listed shapes; none is normalized away. Registration stays blocked until
-the complete comparison is equal, with any intended defect correction first
-certified through the public departure catalog.
+The environment difference that `server-name-extension-ignored` owned no longer
+reproduces.

@@ -22,7 +22,12 @@ errors across 30 source files.
 The [wire assertion](evidence/declared-default-wire.py), driven through the
 real generated methods and an HTTP transport, [fails on the baseline](evidence/baseline-wire.log):
 it records GET `radial` and PUT `radial`, whereas the specification declares
-PUT `linear`. Thus the valid-specification finding holds, but the generated-SDK
+PUT `linear`. Its executable form over crozier,
+`sdk_env_operation_header_defaults_reach_the_wire`, sends each operation's
+request through the generated SDK to a capturing transport and asserts the
+operation's own declared default on it: crozier's SDK for the equal-default
+control passes, and the same SDK checked against this probe fails naming PUT
+`linear`. Thus the valid-specification finding holds, but the generated-SDK
 wire finding does not. The conjunction required for default generation fails;
 this class is `refuse` in both default and fern-strict modes. The finished
 binary rejects before writing output. An equal-default control still generates

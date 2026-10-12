@@ -1,3 +1,6 @@
+# crozier compare: crozier.yml python
+# normalized diff: `-` reference, `+` crozier
+
 --- reference/reference.md
 +++ crozier/reference.md
       ⋮ (3556 unchanged line(s))
@@ -675,22 +678,7 @@ Only in reference: src/fern/crons/types/thread_cron_create_stream_mode_zero_item
   
           on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
               The disconnect mode to use. Must be one of 'cancel' or 'continue'.
-      ⋮ (264 unchanged line(s))
-          client = FernApi(
-              base_url="https://yourhost.com/path/to/api",
-          )
--         response = (
--             client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
--                 thread_id="thread_id",
--                 run_id="run_id",
--             )
-+         response = client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
-+             thread_id="thread_id",
-+             run_id="run_id",
-          )
-          for chunk in response:
-              yield chunk
-      ⋮ (207 unchanged line(s))
+      ⋮ (482 unchanged line(s))
               The ID of the thread.
   
           assistant_id : str

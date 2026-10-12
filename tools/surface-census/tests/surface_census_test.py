@@ -29,6 +29,7 @@ import io
 import itertools
 import json
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -41,9 +42,10 @@ import unicodedata
 import unittest
 from collections import Counter
 from collections.abc import Callable
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from types import ModuleType
 from typing import Any, ClassVar
+from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -15862,6 +15864,888 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
             with self.subTest(missing=missing):
                 failures = self.check(missing)
                 self.assertTrue(any(message in failure for failure in failures), failures)
+
+
+class ScenarioProofIndexTests(unittest.TestCase):
+    """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
+
+    index_script = load_script("tools/surface-census/scenario-proof-index.py")
+    base: ClassVar[Path]
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        """One scratch root holding every committed file the reconciliation reads; each test copies it."""
+        module = cls.index_script
+        cls.base = Path(tempfile.mkdtemp())
+        cls.addClassCleanup(shutil.rmtree, cls.base)
+
+        def copy(relative: str) -> None:
+            source = REPO / relative
+            target = cls.base / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if source.is_dir():
+                target.mkdir(exist_ok=True)
+            else:
+                shutil.copyfile(source, target)
+
+        for relative in [
+            module.PLAN,
+            module.INDEX,
+            module.WITNESSES,
+            module.RESIDUALS,
+            module.INVENTORY,
+            module.LEDGER,
+            module.CATALOG,
+            module.CLASSES,
+            module.CORPUS,
+            module.E2E_COVERS,
+            *(path.relative_to(REPO) for path in (REPO / module.PYTHON_ENUMS_RESIDUALS).glob("*.diff")),
+            "crates/crozier-e2e/tests/e2e.rs",
+            *(path.relative_to(REPO) for path in (REPO / "crates/crozier-e2e/tests/e2e").glob("*.rs")),
+        ]:
+            copy(str(relative))
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        for row in rows:
+            for cell in ("source", "evidence"):
+                for reference in module.split(row[cell]):
+                    copy(reference.partition("#")[0])
+            for golden in module.split(row["goldens"]):
+                copy(f"{golden}/.fern/metadata.json")
+            if row["kind"] == "refusal":
+                shutil.copytree(
+                    REPO / "docs/fern-refusals" / row["ids"],
+                    cls.base / "docs/fern-refusals" / row["ids"],
+                    dirs_exist_ok=True,
+                )
+        witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        for row in witnesses:
+            copy(row["evidence"].partition("#")[0])
+            if row["diff"] != module.NONE:
+                copy(str(module.WITNESSES.parent / row["diff"]))
+
+    def mirror(self) -> Path:
+        root = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, root)
+        shutil.copytree(self.base, root, dirs_exist_ok=True)
+        return root
+
+    def rewrite(self, path: Path, old: str, new: str) -> None:
+        text = path.read_text(encoding="utf-8")
+        self.assertIn(old, text)
+        path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+    def row(self, kind: str, outcome: str | None = None, sources: str = "") -> dict[str, str]:
+        """The first index row of `kind` (and `outcome`) whose every source starts with `sources`."""
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        return next(
+            row
+            for row in rows
+            if row["kind"] == kind
+            and outcome in (None, row["outcome"])
+            and all(source.startswith(sources) for source in row["source"].split(";"))
+        )
+
+    def line(self, row: dict[str, str]) -> str:
+        return "\t".join(row[column] for column in self.index_script.INDEX_HEADER)
+
+    def edited(self, row: dict[str, str], **cells: str) -> str:
+        return self.line({**row, **cells})
+
+    def assert_fails(self, root: Path, message: str) -> None:
+        failures = self.index_script.check(root)
+        self.assertTrue(any(message in failure for failure in failures), failures)
+
+    def run_script(self, *args: str, root: Path = REPO) -> subprocess.CompletedProcess[str]:
+        script = REPO / "tools/surface-census/scenario-proof-index.py"
+        return subprocess.run(
+            [sys.executable, str(script), "--repo-root", str(root), *args],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_the_committed_index_and_witnesses_reconcile(self) -> None:
+        self.assertEqual([], self.index_script.check(self.base), "the mirror is incomplete")
+        run = self.run_script("check")
+        self.assertEqual((0, "", ""), (run.returncode, run.stdout, run.stderr))
+
+    def test_every_owner_has_shapes_and_every_kind_is_read(self) -> None:
+        module = self.index_script
+        rows, failures = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        self.assertEqual([], failures)
+        self.assertEqual(module.values(module.Owner), {row["owner"] for row in rows})
+        self.assertEqual(module.values(module.Kind), {row["kind"] for row in rows})
+
+    def test_the_index_holds_exactly_the_plan(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        index = root / module.INDEX
+        lines = index.read_text(encoding="utf-8").splitlines(keepends=True)
+        last = lines[-1].split("\t")
+        index.write_text("".join(lines[:-1]), encoding="utf-8")
+        self.assert_fails(root, f"{last[0]} is planned but not indexed")
+        index.write_text("".join([*lines[:2], lines[1], *lines[2:]]), encoding="utf-8")
+        self.assert_fails(root, f"{lines[1].split(chr(9))[0]} is indexed 2 times")
+        # A valid-looking id substituted for a planned one keeps the count but not the plan.
+        index.write_text("".join([*lines[:-1], "\t".join(["unplanned-shape", *last[1:]])]), encoding="utf-8")
+        self.assert_fails(root, "unplanned-shape is indexed but not planned")
+        self.assert_fails(root, f"{last[0]} is planned but not indexed")
+        other = next(owner for owner in module.Owner if owner != last[1])
+        index.write_text("".join([*lines[:-1], "\t".join([last[0], other, *last[2:]])]), encoding="utf-8")
+        self.assert_fails(root, f"{last[0]}: owner {other} is not the plan's {last[1]}")
+
+    def test_rows_with_unknown_vocabulary_fail(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        cases = {
+            "owner": ("unrelated-node", "owner unrelated-node is none of"),
+            "kind": ("guessed", "kind guessed is none of"),
+        }
+        for column, (value, message) in cases.items():
+            with self.subTest(column=column):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **{column: value}))
+                self.assert_fails(root, message)
+        root = self.mirror()
+        witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        line = "\t".join(witnesses[0][column] for column in module.WITNESS_HEADER)
+        self.rewrite(root / module.WITNESSES, line, line.replace("\tdiffers\t", "\tpending\t"))
+        self.assert_fails(root, "status pending is neither registered nor differs")
+
+    def test_a_golden_removed_or_dropped_from_the_gate_fails(self) -> None:
+        module = self.index_script
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / module.INVENTORY, f'"{golden}"', '"unrelated"')
+        self.assert_fails(root, f"golden {golden} is not in tests/fixtures/compared-goldens.json")
+        (root / golden / ".fern/metadata.json").unlink()
+        self.assert_fails(root, f"golden {golden} is not a complete certified tree")
+
+    def test_a_golden_from_another_fern_pair_or_setting_fails(self) -> None:
+        row = self.row("real")
+        golden = row["goldens"].split(";")[0]
+        root = self.mirror()
+        metadata = root / golden / ".fern/metadata.json"
+        self.rewrite(metadata, '"5.20.0"', '"5.21.0"')
+        self.assert_fails(root, f"golden {golden} is not output of Fern CLI 5.67.1 with fern-python-sdk 5.20.0")
+        self.rewrite(metadata, '"python_enums"', '"literals"')
+        self.assert_fails(root, f"{row['shape']}: settings {row['settings']} disagree")
+        metadata.write_text("{", encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s metadata is not JSON")
+
+    def test_an_outcome_the_ledger_does_not_support_fails(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten", "departure")
+        root = self.mirror()
+        ledger = root / module.LEDGER
+        goldens = set(row["goldens"].split(";"))
+        kept = [line for line in ledger.read_text(encoding="utf-8").splitlines(keepends=True) if "\t" in line]
+        ledger.write_text("".join(line for line in kept if line.split("\t")[0] not in goldens), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: outcome departure {row['ids']} disagrees with the ledger's match —")
+
+    def test_a_missing_test_source_anchor_or_evidence_fails(self) -> None:
+        row = self.row("handwritten")
+        test = row["tests"].split(";")[0]
+        root = self.mirror()
+        for path in [root / "crates/crozier-e2e/tests/e2e.rs", *(root / "crates/crozier-e2e/tests/e2e").glob("*.rs")]:
+            text = path.read_text(encoding="utf-8")
+            path.write_text(text.replace(f"fn {test}(", "fn unrelated_test("), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: no e2e #[test] is named {test}")
+        evidence = row["evidence"].partition("#")[0]
+        self.rewrite(root / self.index_script.INDEX, self.line(row), self.edited(row, evidence=f"{evidence}#absent"))
+        self.assert_fails(root, f"{row['shape']}: {evidence} has no heading #absent")
+        directory = str(Path(evidence).parent)
+        self.rewrite(
+            root / self.index_script.INDEX,
+            self.edited(row, evidence=f"{evidence}#absent"),
+            self.edited(row, evidence=f"{directory}#absent"),
+        )
+        self.assert_fails(root, f"{row['shape']}: {directory} is no document to hold heading #absent")
+        self.rewrite(root / self.index_script.INDEX, self.edited(row, evidence=f"{directory}#absent"), self.line(row))
+        (root / evidence).unlink()
+        self.assert_fails(root, f"{row['shape']}: {evidence} does not exist")
+        self.rewrite(
+            root / self.index_script.INDEX, self.line(row), self.edited(row, goldens="tests/fixtures/", kind="real")
+        )
+        self.assert_fails(
+            root, f"{row['shape']}: golden tests/fixtures/ has no committed document it was generated from"
+        )
+
+    def test_a_test_that_does_not_compare_the_golden_fails(self) -> None:
+        module = self.index_script
+        cases = [
+            (self.row("handwritten"), "fern_refusal_classes_hold"),
+            (self.row("real"), "handwritten_fixtures_match_fern_goldens"),
+            (self.row("measurement"), "fern_refusal_classes_hold"),
+        ]
+        for row, unrelated in cases:
+            with self.subTest(shape=row["shape"]):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, tests=unrelated))
+                self.assert_fails(root, f"{row['shape']}: none of its tests reaches golden")
+
+    def test_a_proof_of_the_wrong_kind_fails(self) -> None:
+        module = self.index_script
+        real, handwritten, measurement = self.row("real"), self.row("handwritten"), self.row("measurement")
+        cases = [
+            (real, {"kind": "measurement"}, "a measurement proof's goldens are under"),
+            (handwritten, {"kind": "real"}, "a real proof cites a registered corpus row's golden"),
+            (
+                self.row("real", sources="tests/fixtures/"),
+                {"kind": "handwritten"},
+                "a hand-written proof's source is a hand-written fixture",
+            ),
+            (
+                measurement,
+                {"kind": "handwritten"},
+                "a multi-file hand-written source is a docs/openapi-surface/handwritten-e2e.toml cover",
+            ),
+        ]
+        for row, cells, message in cases:
+            with self.subTest(shape=row["shape"], cells=cells):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **cells))
+                self.assert_fails(root, message)
+
+    def test_sources_are_exactly_the_goldens_documents(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        other = self.row("real")["source"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / module.INDEX, self.line(row), self.edited(row, source=other))
+        self.assert_fails(root, f"{row['shape']}: sources {other} are not its goldens' documents")
+        golden = row["goldens"].split(";")[0]
+        document = module.golden_source(root, golden)
+        self.assertIsNotNone(document)
+        (root / str(document)).unlink()
+        self.assert_fails(root, f"{row['shape']}: golden {golden} has no committed document it was generated from")
+
+    def test_an_unknown_enum_type_fails(self) -> None:
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = self.mirror()
+        self.rewrite(root / golden / ".fern/metadata.json", '"python_enums"', '"open_strings"')
+        self.assert_fails(root, f"golden {golden}'s enum_type 'open_strings' is none of literals, python_enums")
+
+    def test_a_refusal_test_that_does_not_reach_its_probe_fails(self) -> None:
+        module = self.index_script
+        row = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if row["kind"] == "refusal" and "fern_refusal_classes_hold" not in row["tests"]
+        )
+        root = self.mirror()
+        self.rewrite(
+            root / module.INDEX, self.line(row), self.edited(row, tests="handwritten_fixtures_match_fern_goldens")
+        )
+        self.assert_fails(root, f"{row['shape']}: none of its tests reaches the probe")
+
+    def test_every_malformed_record_is_rejected(self) -> None:
+        module = self.index_script
+        handwritten = self.row("handwritten")
+        refusal = self.row("refusal")
+        departures = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if row["outcome"] == "departure" and ";" in row["ids"]
+        )
+        flat = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if any(golden.endswith("/expected-flat") for golden in row["goldens"].split(";"))
+        )
+        overlay = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if any(golden.endswith("/expected-literals") for golden in row["goldens"].split(";"))
+        )
+
+        def edit_row(row: dict[str, str], **cells: str) -> Callable[[Path], None]:
+            return lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **cells))
+
+        def without_test(row: dict[str, str], test: str) -> Callable[[Path], None]:
+            tests = ";".join(name for name in row["tests"].split(";") if name != test)
+            return edit_row(row, tests=tests)
+
+        def plan_edit(old: str, new: str) -> Callable[[Path], None]:
+            return lambda root: self.rewrite(root / module.PLAN, old, new)
+
+        def misspelled(root: Path) -> None:
+            spelled = handwritten["shape"].replace("-", "_", 1)
+            self.rewrite(root / module.PLAN, f"{handwritten['shape']}\t", f"{spelled}\t")
+            edit_row(handwritten, shape=spelled)(root)
+
+        index_lines = (REPO / module.INDEX).read_text(encoding="utf-8").splitlines()
+        shape_line = index_lines.index(self.line(handwritten)) + 1
+        first_planned = (REPO / module.PLAN).read_text(encoding="utf-8").splitlines()[1]
+        overlay_test = module.read_e2e(REPO).overlay_test
+        flat_test = next(test for test in flat["tests"].split(";") if test in module.read_e2e(REPO).flat_tests)
+        ids = departures["ids"].split(";")
+        cases: dict[str, tuple[Callable[[Path], None], str]] = {
+            "short row": (
+                edit_row(handwritten, evidence=""),
+                f"{module.INDEX}:{shape_line}: needs {len(module.INDEX_HEADER)} non-empty cells",
+            ),
+            "plan owner": (
+                plan_edit(first_planned, first_planned.split("\t")[0] + "\tnobody"),
+                "owner nobody is none of",
+            ),
+            "plan duplicate": (
+                plan_edit(first_planned, f"{first_planned}\n{first_planned}"),
+                f"{first_planned.split(chr(9))[0]} is planned twice",
+            ),
+            "flat binding": (without_test(flat, flat_test), f"{flat['shape']}: none of its tests reaches golden"),
+            "overlay binding": (
+                without_test(overlay, str(overlay_test)),
+                f"{overlay['shape']}: none of its tests reaches golden",
+            ),
+            "unknown class": (edit_row(refusal, ids="unknown-class"), "unknown-class is no decided"),
+            "refusal golden": (
+                edit_row(refusal, goldens=handwritten["goldens"]),
+                f"{refusal['shape']}: a refusal cites no golden and records `default;fern-strict`",
+            ),
+            "refusal settings": (edit_row(refusal, settings="python_enums"), "a refusal cites no golden and records"),
+            "evaluation note": (
+                lambda root: (root / f"docs/fern-refusals/{refusal['ids']}/evaluation.md").unlink(),
+                f"{refusal['ids']} has no evaluation note",
+            ),
+            "no golden": (edit_row(handwritten, goldens=module.NONE), "a handwritten proof cites at least one golden"),
+            "departure order": (
+                edit_row(departures, ids=";".join(reversed(ids))),
+                f"{departures['shape']}: departure ids are sorted",
+            ),
+            "row order": (
+                lambda root: self.rewrite(
+                    root / module.INDEX,
+                    self.line(handwritten),
+                    self.line(handwritten)
+                    + "\n"
+                    + self.line(handwritten).replace(handwritten["shape"], "aaa-first", 1),
+                ),
+                "rows are sorted by shape",
+            ),
+            "shape syntax": (misspelled, "a shape id is lower-kebab"),
+            "no evidence": (edit_row(handwritten, evidence=module.NONE), "its evidence cell cites nothing"),
+            "no probe": (edit_row(refusal, source=module.NONE), "its source cell cites nothing"),
+            "no test": (edit_row(handwritten, tests=module.NONE), "its tests cell cites nothing"),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+
+    def test_a_refusal_outcome_must_agree_with_its_registry_class(self) -> None:
+        module = self.index_script
+        row = self.row("refusal")
+        name = row["ids"]
+        root = self.mirror()
+        classes = root / module.CLASSES
+        line = next(line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{name}\t"))
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
+        # A claimed default-generation exception needs both the outcome and the wire finding.
+        self.assert_fails(root, f"{row['shape']}: outcome {row['outcome']} disagrees with {name}'s registry status")
+        self.assert_fails(
+            root,
+            f"{row['shape']}: {name}'s evaluation note decides `refuse`, not its registry status `generate`",
+        )
+        self.rewrite(classes, "\t".join([*cells[:6], "generate", *cells[7:]]), line)
+        probe = Path(row["source"].split(";")[0]).name
+        note = root / f"docs/fern-refusals/{name}/evaluation.md"
+        note.write_text(note.read_text(encoding="utf-8").replace(probe, "unrelated.yml"), encoding="utf-8")
+        self.assert_fails(root, f"{row['shape']}: {name}'s evaluation note does not name the probe")
+
+    def test_malformed_catalogs_fail_rather_than_pass_empty(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        (root / module.INVENTORY).write_text('{"other": {}}', encoding="utf-8")
+        self.assert_fails(root, f"{module.INVENTORY}: holds no `goldens` object")
+        self.rewrite(root / module.LEDGER, "golden\tfile\tline\tdeparture", "golden\tfile\tdeparture")
+        self.assert_fails(root, f"{module.LEDGER}: header must be the tab-separated golden, file, line, departure")
+        (root / module.CATALOG).write_text("- kind: fern-defect\n", encoding="utf-8")
+        self.assert_fails(root, f"{module.CATALOG}: is not a list of entries each with a string `id` and `kind`")
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        metadata = root / golden / ".fern/metadata.json"
+        metadata.write_text('{"generatorConfig": {"pydantic_config": {"enum_type": ["x"]}}}', encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s generatorConfig holds a setting that is not a scalar")
+        metadata.write_text('{"generatorConfig": []}', encoding="utf-8")
+        self.assert_fails(root, f"golden {golden}'s metadata holds no generatorConfig object")
+
+    def test_a_cell_outside_its_vocabulary_or_with_a_blank_member_fails(self) -> None:
+        module = self.index_script
+        row = self.row("handwritten")
+        refusal = self.row("refusal")
+        cases: dict[str, tuple[Callable[[Path], None], str]] = {
+            # A blank evidence member would otherwise resolve to the repository root and exist.
+            "blank evidence member": (
+                lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, evidence=";")),
+                f"{module.INDEX} {row['shape']}: evidence hold an empty `;`-separated member",
+            ),
+            "blank test member": (
+                lambda root: self.rewrite(
+                    root / module.INDEX, self.line(row), self.edited(row, tests=f"{row['tests']};")
+                ),
+                f"{module.INDEX} {row['shape']}: tests hold an empty `;`-separated member",
+            ),
+            "unknown outcome": (
+                lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, outcome="matched")),
+                f"{module.INDEX} {row['shape']}: outcome matched is none of match, departure",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+        root = self.mirror()
+        classes = root / module.CLASSES
+        line = next(
+            line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{refusal['ids']}\t")
+        )
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "refused", *cells[7:]]))
+        self.assert_fails(root, f"{module.CLASSES} {refusal['ids']}: status refused is none of")
+        self.assert_fails(root, f"{refusal['ids']} is no decided {module.CLASSES} class")
+
+    def test_unreadable_or_unparsable_catalogs_fail(self) -> None:
+        module = self.index_script
+        cases = {
+            "inventory missing": (lambda root: (root / module.INVENTORY).unlink(), f"{module.INVENTORY}: unreadable"),
+            "inventory not JSON": (
+                lambda root: (root / module.INVENTORY).write_text("{", encoding="utf-8"),
+                f"{module.INVENTORY}: unreadable",
+            ),
+            "catalog missing": (lambda root: (root / module.CATALOG).unlink(), f"{module.CATALOG}: unreadable"),
+            "catalog not YAML": (
+                lambda root: (root / module.CATALOG).write_text("- [unclosed\n", encoding="utf-8"),
+                f"{module.CATALOG}: unreadable",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+
+    EXCEPTION = "header-default-differs-across-operations"
+    # The executable wire test a `generate` exception for the class names: it sends each
+    # operation's request through the generated SDK to a capturing transport and asserts
+    # that operation's declared X-Projection default on it, failing when they differ.
+    WIRE_TEST = "sdk_env_operation_header_defaults_reach_the_wire"
+
+    def claim_generate(self, root: Path) -> Path:
+        """Mark the header-default class `generate` and its scenario's outcome to match; return the class dir."""
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        row = next(row for row in rows if row["ids"] == self.EXCEPTION)
+        classes = root / module.CLASSES
+        line = next(
+            line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{row['ids']}\t")
+        )
+        cells = line.split("\t")
+        self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
+        self.rewrite(root / module.INDEX, self.line(row), self.edited(row, outcome="default=generate;strict=refuse"))
+        return root / "docs/fern-refusals" / self.EXCEPTION
+
+    def establish(self, directory: Path) -> None:
+        """Write a scratch exception's `generate` note over the class's committed validation and mypy logs,
+        naming the real e2e wire test that reaches its probe."""
+        (directory / "evaluation.md").write_text(
+            "# Header defaults overridden by an operation: generate\n\n"
+            "The [probe](probe.yml) is valid OpenAPI ([validation log](evidence/spec-validation.log)); "
+            "Fern's refusal is recorded in fern-refusal.txt. The SDK imports and type-checks "
+            f"([mypy](evidence/baseline-mypy.log)) and `{self.WIRE_TEST}` asserts each operation's "
+            "declared default on the request it sends, so this class is `generate`.\n",
+            encoding="utf-8",
+        )
+
+    # Every spelling the registry's notes use for a decision, refuse -> generate.
+    FLIPPED_DECISIONS = (
+        (re.compile(r"(?m)^(# .*:\s*)refuse(\s*)$"), r"\1generate\2"),
+        (re.compile(r"\bis `refuse`"), "is `generate`"),
+        (re.compile(r"`refuse` (in both|status)"), r"`generate` \1"),
+        (re.compile(r"Decision: \*\*refuse\*\*"), "Decision: **generate**"),
+    )
+
+    def test_a_refuse_class_whose_note_decides_otherwise_is_refused_through_the_cli(self) -> None:
+        module = self.index_script
+        rows = [row for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0] if row["kind"] == "refusal"]
+        self.assertEqual(5, len(rows))
+        for row in rows:
+            note_path = Path("docs/fern-refusals") / row["ids"] / "evaluation.md"
+            note = (REPO / note_path).read_text(encoding="utf-8")
+            self.assertEqual({module.RefusalStatus.REFUSE}, module.note_decisions(note), row["ids"])
+            self.assertEqual("default=refuse;strict=refuse", row["outcome"])
+            flipped = note
+            for pattern, replacement in self.FLIPPED_DECISIONS:
+                flipped = pattern.sub(replacement, flipped)
+            cases = {
+                # The registry and the index still say refuse; only the note now decides generate.
+                "decides generate": (
+                    flipped,
+                    [
+                        f"{row['ids']}'s evaluation note decides `generate`, not its registry status `refuse`",
+                        "outcome default=refuse;strict=refuse disagrees with its evaluation note's `generate` decision",
+                    ],
+                ),
+                "decides both": (
+                    f"{note}\nThis class is `generate`.\n",
+                    [f"{row['ids']}'s evaluation note decides `generate`, `refuse`, not its registry status `refuse`"],
+                ),
+                "decides nothing": (
+                    "# Scratch\n" + "\n".join(Path(probe).name for probe in row["source"].split(";")) + "\n",
+                    [f"{row['ids']}'s evaluation note states no `refuse` or `generate` decision"],
+                ),
+            }
+            for name, (text, messages) in cases.items():
+                with self.subTest(refusal=row["ids"], case=name):
+                    root = self.mirror()
+                    (root / note_path).write_text(text, encoding="utf-8")
+                    run = self.run_script("check", root=root)
+                    self.assertEqual((1, ""), (run.returncode, run.stdout))
+                    for message in messages:
+                        self.assertIn(f"{module.INDEX} {row['shape']}: {message}", run.stderr)
+
+    def test_a_generate_class_with_its_established_evaluation_reconciles(self) -> None:
+        root = self.mirror()
+        self.establish(self.claim_generate(root))
+        self.assertEqual([], self.index_script.check(root))
+
+    def test_a_generate_class_must_agree_with_its_evaluation_evidence(self) -> None:
+        def contradicting_note(directory: Path) -> None:
+            note = (REPO / "docs/fern-refusals" / self.EXCEPTION / "evaluation.md").read_text(encoding="utf-8")
+            (directory / "evaluation.md").write_text(note, encoding="utf-8")
+
+        def replace(name: str, old: str, new: str) -> Callable[[Path], None]:
+            return lambda directory: self.rewrite(directory / name, old, new)
+
+        cases: dict[str, tuple[Callable[[Path], object], list[str]]] = {
+            # The registry's own note still decides refuse on a failed wire assertion.
+            "contradicting note": (
+                contradicting_note,
+                [
+                    "'s evaluation note decides `refuse`, not its registry status `generate`",
+                    ": outcome default=generate;strict=refuse disagrees with its evaluation note's `refuse` decision",
+                ],
+            ),
+            "no wire test named": (
+                replace("evaluation.md", f"`{self.WIRE_TEST}`", "the wire test"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "a wire test that does not exist": (
+                replace("evaluation.md", self.WIRE_TEST, "sdk_env_operation_header_defaults_were_checked"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "the named wire test removed from the tree": (
+                lambda directory: self.rewrite(
+                    directory.parents[2] / "crates/crozier-e2e/tests/e2e.rs",
+                    f"fn {self.WIRE_TEST}()",
+                    "fn sdk_env_renamed_away()",
+                ),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "an existing test that never reaches the probe": (
+                replace("evaluation.md", self.WIRE_TEST, "handwritten_fixtures_match_fern_goldens"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "no validation evidence": (
+                replace("evaluation.md", "([validation log](evidence/spec-validation.log))", ""),
+                [" links no log establishing that its probe is valid OpenAPI"],
+            ),
+            "no type-check evidence": (
+                replace("evaluation.md", "([mypy](evidence/baseline-mypy.log))", ""),
+                [" links no mypy log showing its SDK imports and type-checks clean"],
+            ),
+            "no Fern limitation": (
+                replace("fern-refusal.txt", "generate_exit: 1", "generate_exit: 0"),
+                [" has no pinned Fern refusal record, so no Fern limitation is established"],
+            ),
+        }
+        for name, (mutate, messages) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                directory = self.claim_generate(root)
+                self.establish(directory)
+                mutate(directory)
+                for message in messages:
+                    self.assert_fails(root, f"{self.EXCEPTION}{message}")
+
+    def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
+        root = self.mirror()
+        (root / self.index_script.WITNESSES).unlink()
+        run = self.run_script("check", root=root)
+        self.assertEqual((1, ""), (run.returncode, run.stdout))
+        self.assertIn(f"{self.index_script.WITNESSES}: missing", run.stderr)
+        self.assertIn("failure(s): fix the row or the proof it cites, then re-run", run.stderr)
+
+    def test_every_differing_witness_hunk_is_attributed_exactly_once(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        residuals = root / module.RESIDUALS
+        lines = residuals.read_text(encoding="utf-8").splitlines(keepends=True)
+        witness, file, hunks, owner, _shape = lines[1].rstrip("\n").split("\t")
+        residuals.write_text("".join([lines[0], *lines[2:]]), encoding="utf-8")
+        first = hunks.split(";")[0]
+        self.assert_fails(root, f"{witness}: {file} {first} is in the diff but attributed to no shape")
+        residuals.write_text("".join([*lines, lines[1]]), encoding="utf-8")
+        self.assert_fails(root, f"{witness}: {file} {first} is attributed but not in the diff (or twice)")
+        residuals.write_text("".join(lines).replace(f"\t{owner}\t", "\tunrelated-shape\t", 1), encoding="utf-8")
+        self.assert_fails(root, "owner unrelated-shape is no indexed shape nor unowned")
+        residuals.write_text("".join([*lines, lines[1].replace(witness, "unlisted-witness", 1)]), encoding="utf-8")
+        self.assert_fails(root, f"{module.RESIDUALS}: unlisted-witness is no differing witness")
+        residuals.write_text("".join(lines), encoding="utf-8")
+        diff = root / module.WITNESSES.parent / f"{witness}.diff"
+        diff.write_text(diff.read_text(encoding="utf-8").replace("+++ crozier/", "+++ elsewhere/", 1), encoding="utf-8")
+        self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is malformed")
+        diff.unlink()
+        self.assert_fails(root, f"{witness}: comparison diff {witness}.diff is missing")
+        witnesses = root / module.WITNESSES
+        listed = witnesses.read_text(encoding="utf-8").splitlines(keepends=True)
+        witnesses.write_text("".join([*listed, listed[1]]), encoding="utf-8")
+        self.assert_fails(root, f"{listed[1].split(chr(9))[0]} is listed 2 times")
+
+    def test_the_open_cell_is_exactly_the_shapes_committed_residuals(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        closed = next(row for row in rows if row["open"] == module.NONE and row["kind"] == "handwritten")
+        cases = {
+            # A residual reattributed away leaves the shape claiming one it no longer has.
+            "witness residual removed": (
+                lambda root: (root / module.RESIDUALS).write_text(
+                    (root / module.RESIDUALS)
+                    .read_text(encoding="utf-8")
+                    .replace(f"\t{witnessed['shape']}\t", "\tunowned\t"),
+                    encoding="utf-8",
+                ),
+                f"{witnessed['shape']}: open {witnessed['open']} disagrees with its committed residuals —",
+            ),
+            # A residual attributed to a fully closed shape must reopen it.
+            "witness residual added": (
+                lambda root: self.rewrite(root / module.RESIDUALS, "\tunowned\t", f"\t{closed['shape']}\t"),
+                f"{closed['shape']}: open — disagrees with its committed residuals",
+            ),
+            "python_enums diff removed": (
+                lambda root: (root / module.PYTHON_ENUMS_RESIDUALS / f"{python_enums['shape']}.diff").unlink(),
+                f"{python_enums['shape']}: open python_enums disagrees with its committed residuals —",
+            ),
+            "python_enums diff malformed": (
+                lambda root: (root / module.PYTHON_ENUMS_RESIDUALS / f"{python_enums['shape']}.diff").write_text(
+                    "stray\n", encoding="utf-8"
+                ),
+                f"{python_enums['shape']}: its python_enums residual diff is malformed",
+            ),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+        lines, failures = module.summary(REPO)
+        self.assertEqual([], failures)
+        fully = sum(row["open"] == module.NONE for row in rows)
+        self.assertIn(f"closed with no open residual: {fully}", lines)
+
+    def test_each_open_residual_names_the_parity_node_closing_it(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        closed = next(row for row in rows if row["open"] == module.NONE)
+        cases = {
+            "closer dropped": (
+                self.edited(witnessed, closer=module.NONE),
+                f"{witnessed['shape']}: closer names 0 closing difference(s) for 1 open residual(s)",
+            ),
+            "closer on a fully closed shape": (
+                self.edited(closed, closer=witnessed["closer"]),
+                f"{closed['shape']}: closer names 1 closing difference(s) for 0 open residual(s)",
+            ),
+            "closer of no parity node": (
+                self.edited(witnessed, closer=f"unions:{witnessed['shape']}"),
+                f"{witnessed['shape']}: closer unions:{witnessed['shape']} is no `<node>:<difference>` of",
+            ),
+            "closer without its difference": (
+                self.edited(witnessed, closer=witnessed["closer"].partition(":")[0]),
+                f"{witnessed['shape']}: closer {witnessed['closer'].partition(':')[0]} is no",
+            ),
+        }
+        original = {"closer dropped": witnessed, "closer on a fully closed shape": closed}
+        for name, (line, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                self.rewrite(root / module.INDEX, self.line(original.get(name, witnessed)), line)
+                self.assert_fails(root, message)
+        lines, failures = module.summary(REPO)
+        self.assertEqual([], failures)
+        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        cited = "; ".join(
+            f"{row['witness']} {row['file']} {', '.join(row['hunks'].split(';'))}"
+            for row in residuals
+            if row["owner"] == witnessed["shape"]
+        )
+        self.assertIn(f"  {witnessed['shape']}: {cited} -> {witnessed['closer']}", lines)
+        self.assertIn(
+            f"  {python_enums['shape']}: {module.PYTHON_ENUMS_RESIDUALS}/{python_enums['shape']}.diff"
+            f" -> {python_enums['closer']}",
+            lines,
+        )
+
+    def test_a_registered_witness_names_its_corpus_row_and_no_residual(self) -> None:
+        module = self.index_script
+        root = self.mirror()
+        witnesses = root / module.WITNESSES
+        residuals = root / module.RESIDUALS
+        rows, _ = module.read_tsv(witnesses, module.WITNESS_HEADER)
+        row = rows[0]
+        line = "\t".join(row[column] for column in module.WITNESS_HEADER)
+        registered = "\t".join(
+            {**row, "status": "registered", "corpus": "332 `netgsm-sms`", "diff": module.NONE}[column]
+            for column in module.WITNESS_HEADER
+        )
+        self.rewrite(witnesses, line, registered)
+        # Its residual rows would still claim hunks of a comparison it no longer has.
+        self.assert_fails(root, f"{row['witness']}: a registered witness has no comparison diff or residual")
+        kept = [
+            text
+            for text in residuals.read_text(encoding="utf-8").splitlines(keepends=True)
+            if not text.startswith(f"{row['witness']}\t")
+        ]
+        residuals.write_text("".join(kept), encoding="utf-8")
+        self.assert_fails(root, f"{row['witness']}: registered as 332 `netgsm-sms`, which is no corpus row")
+        (root / "tests/fixtures/netgsm-sms/expected").mkdir(parents=True)
+        self.assertEqual([], module.check(root))
+        self.rewrite(witnesses, "332 `netgsm-sms`", "331 `netgsm-sms`")
+        self.assert_fails(root, "registered as 331 `netgsm-sms`, which is no corpus row with a golden")
+
+    def test_the_hunks_command_prints_what_residuals_cite(self) -> None:
+        module = self.index_script
+        rows, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
+        diff = REPO / module.WITNESSES.parent / rows[0]["diff"]
+        run = self.run_script("hunks", str(diff))
+        self.assertEqual(0, run.returncode, run.stderr)
+        printed = [tuple(line.split("\t")) for line in run.stdout.splitlines()]
+        self.assertEqual([tuple(hunk) for hunk in module.diff_hunks(diff.read_text(encoding="utf-8"))], printed)
+        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        cited = sorted(
+            (row["file"], hunk)
+            for row in residuals
+            if row["witness"] == rows[0]["witness"]
+            for hunk in row["hunks"].split(";")
+        )
+        self.assertEqual(cited, sorted(printed))
+        missing = self.run_script("hunks", str(diff.with_name("absent.diff")))
+        self.assertEqual((1, ""), (missing.returncode, missing.stdout))
+        self.assertIn("cannot read", missing.stderr)
+
+    def test_summary_refuses_a_missing_table(self) -> None:
+        root = self.mirror()
+        (root / self.index_script.RESIDUALS).unlink()
+        run = self.run_script("summary", root=root)
+        self.assertEqual((1, ""), (run.returncode, run.stdout))
+        self.assertIn(f"{self.index_script.RESIDUALS}: missing", run.stderr)
+
+    def test_the_coverage_report_quotes_the_summary_verbatim(self) -> None:
+        run = self.run_script("summary")
+        self.assertEqual(0, run.returncode, run.stderr)
+        rows, _ = self.index_script.read_tsv(REPO / self.index_script.PLAN, self.index_script.PLAN_HEADER)
+        self.assertEqual(f"shapes: {len(rows)}", run.stdout.splitlines()[0])
+        report = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
+        quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
+        self.assertEqual(run.stdout, quoted, "re-run `scenario-proof-index.py summary` and quote it")
+
+    def test_repository_paths_are_spelled_with_slashes_under_windows_path_semantics(self) -> None:
+        """On Windows `str()` of a `Path` uses backslashes; every path the tooling renders still uses `/`."""
+
+        class WindowsSpelledPath(Path):
+            """The host's own path, rendered as `str()` renders a Windows one; the filesystem sees it unchanged."""
+
+            def __str__(self) -> str:
+                return str(PureWindowsPath(super().__str__()))
+
+            def __fspath__(self) -> str:
+                return super().__str__()
+
+            def as_posix(self) -> str:
+                return PureWindowsPath(super().__str__()).as_posix()
+
+        script = REPO / "tools/surface-census/scenario-proof-index.py"
+        spec = importlib.util.spec_from_file_location("census_test_scenario_proof_index_windows", script)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        self.addCleanup(sys.modules.pop, spec.name)
+        # The script imports `Path` from a `pathlib` whose `Path` is the Windows-spelled one; pathlib itself is untouched.
+        windows_pathlib = ModuleType("pathlib")
+        windows_pathlib.__dict__.update({**vars(pathlib), "Path": WindowsSpelledPath})
+        with mock.patch.dict(sys.modules, {"pathlib": windows_pathlib}):
+            spec.loader.exec_module(module)
+        self.assertIn("\\", str(module.REPO / "docs/openapi-surface"), "the Windows spelling is in effect")
+
+        lines, failures = module.summary(WindowsSpelledPath(REPO))
+        self.assertEqual([], failures)
+        report = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
+        self.assertEqual(section.split("```text\n", 1)[1].split("```", 1)[0], "\n".join(lines) + "\n")
+
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = WindowsSpelledPath(self.mirror())
+        self.rewrite(root / module.INVENTORY, f'"{golden}"', '"unrelated"')
+        (root / module.RESIDUALS).unlink()
+        (root / module.LEDGER).write_text("golden\tfile\n", encoding="utf-8")
+        failures = module.check(root)
+        self.assertIn(f"{root.as_posix()}/tests/fixtures/departures-ledger.tsv: header must", "\n".join(failures))
+        self.assertIn(f"{root.as_posix()}/docs/fern-measurements/blocked-witnesses/residuals.tsv: missing", failures)
+        self.assertTrue(
+            any(f"golden {golden} is not in tests/fixtures/compared-goldens.json" in failure for failure in failures)
+        )
+        self.assertEqual([], [failure for failure in failures if "\\" in failure])
+
+    def test_diff_hunks_count_unchanged_runs_on_both_sides(self) -> None:
+        diff = textwrap.dedent(
+            """\
+            # crozier compare: crozier.yml python
+            --- reference/a.py
+            +++ crozier/a.py
+                  ⋮ (3 unchanged line(s))
+              kept
+            - old
+            - gone
+            + new
+              kept
+                  ⋮ (10 unchanged line(s))
+            + added
+            Only in reference: b.py
+            Only in crozier: c.py
+            """
+        )
+        self.assertEqual(
+            [
+                ("a.py", "-5,2 +5,1"),
+                ("a.py", "-18,0 +17,1"),
+                ("b.py", "only in reference"),
+                ("c.py", "only in crozier"),
+            ],
+            [tuple(hunk) for hunk in self.index_script.diff_hunks(diff)],
+        )
+
+    def test_a_malformed_diff_is_refused(self) -> None:
+        module = self.index_script
+        cases = {
+            "--- reference/a.py\n  kept\n": "is not followed by its `+++` header",
+            "--- reference/a.py\n+++ crozier/a.py\n- x\n+ y\n--- reference/b.py\n": (
+                "line 6: `--- reference/b.py` is not followed by its `+++` header"
+            ),
+            "--- reference/a.py\n+++ crozier/a.py\n@@ -1 +1 @@\n": "is no context, change or elision line",
+            "stray text\n": "is outside any file of the diff",
+            "# crozier compare: crozier.yml python\n--- reference/a.py\n+++ crozier/a.py\n  kept\n": "no difference",
+        }
+        for text, message in cases.items():
+            with self.subTest(text=text), self.assertRaisesRegex(module.MalformedDiff, re.escape(message)):
+                module.diff_hunks(text)
 
 
 if __name__ == "__main__":
