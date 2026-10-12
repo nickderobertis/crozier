@@ -1129,42 +1129,54 @@ def _unsealed(statements: list[ast.stmt], wiring: Wiring) -> str | None:
         for node in _own_nodes(statement)
         for child in ast.iter_child_nodes(node)
     }
+
+    def misuse(node: ast.AST, index: int, statement: ast.stmt) -> str | None:
+        """Why one node of a statement discredits the capture, or None when it is a use the wiring allows."""
+        where = f"at line {getattr(node, 'lineno', statement.lineno)}"
+        after = index > wiring.statement
+        match node:
+            case ast.FunctionDef(name=name) | ast.AsyncFunctionDef(name=name) | ast.ClassDef(name=name) if (
+                name in sealed
+            ):
+                return f"redefines `{name}` {where}"
+            case ast.alias(name=imported, asname=alias) if (alias or imported) in sealed:
+                return f"rebinds `{alias or imported}` by import {where}"
+            case ast.Name(id=name, ctx=ast.Load()) if (
+                name == container and after and isinstance(statement, ast.Assert)
+            ) and _capture_read(node, parents, statement):
+                return None
+            case ast.Name(id=name) if name == container:
+                return f"touches its capture list `{container}` {where} other than to read it in an assertion"
+            case ast.Name(id=name, ctx=ast.Load()) if (
+                name == handler.name
+                and index in building
+                and (isinstance(transport := parents.get(node), ast.Call) and _called(transport) == "MockTransport")
+            ):
+                return None
+            case ast.Name(id=name) if name == handler.name:
+                return f"names its transport handler `{name}` {where} other than as the transport's handler"
+            case ast.Name(id=name, ctx=ast.Store()) if name == wiring.client and index == wiring.statement:
+                return None
+            case ast.Name(id=name, ctx=ast.Load()) if name == wiring.client and after and _client_call(node, parents):
+                return None
+            case ast.Name(id=name) if name == wiring.client:
+                return f"uses its SDK client `{name}` {where} other than to call its methods"
+            case ast.Name(id=name, ctx=context) if (
+                name in wiring.chain
+                and index in building
+                and (isinstance(context, ast.Load) or wiring.chain[name] == index)
+            ):
+                return None
+            case ast.Name(id=name) if name in wiring.chain:
+                return f"rebinds or reuses `{name}`, which wires its client's transport, {where}"
+        return None
+
     for index, statement in enumerate(statements):
         if index == bindings[0] or statement is handler:
             continue
         for node in _own_nodes(statement):
-            if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef) and node.name in sealed:
-                return f"redefines `{node.name}` at line {node.lineno}"
-            if isinstance(node, ast.alias) and (name := node.asname or node.name) in sealed:
-                return f"rebinds `{name}` by import at line {statement.lineno}"
-            if not isinstance(node, ast.Name) or node.id not in sealed:
-                continue
-            load = isinstance(node.ctx, ast.Load)
-            where = f"at line {node.lineno}"
-            if node.id == container:
-                misuse = f"touches its capture list `{container}` {where} other than to read it in an assertion"
-                allowed = (
-                    index > wiring.statement
-                    and load
-                    and isinstance(statement, ast.Assert)
-                    and _capture_read(node, parents, statement)
-                )
-            elif node.id == handler.name:
-                misuse = f"names its transport handler `{handler.name}` {where} other than as the transport's handler"
-                transport = parents.get(node)
-                allowed = (
-                    index in building and isinstance(transport, ast.Call) and _called(transport) == "MockTransport"
-                )
-            elif node.id == wiring.client:
-                misuse = f"uses its SDK client `{wiring.client}` {where} other than to call its methods"
-                allowed = (index == wiring.statement and not load) or (
-                    index > wiring.statement and load and _client_call(node, parents)
-                )
-            else:
-                misuse = f"rebinds or reuses `{node.id}`, which wires its client's transport, {where}"
-                allowed = index in building and (load or wiring.chain[node.id] == index)
-            if not allowed:
-                return misuse
+            if reason := misuse(node, index, statement):
+                return reason
     return None
 
 

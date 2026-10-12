@@ -16545,7 +16545,6 @@ def test_each_operation_sends_its_declared_header_default():
                 wire.replace("client.replace_measurements()", 'client.replace_measurements(x_projection="linear")'),
                 [NEVER_PUT],
             ),
-            # The captured entries replaced or added to by the test itself.
             "list rebound before the assertion": (
                 wire.replace(self.CAPTURED, f"    sent = {fabricated}\n{self.CAPTURED}"),
                 [why("binds its capture list `sent` other than once, to `[]`, before building its client"), *never],
@@ -16600,7 +16599,6 @@ def test_each_operation_sends_its_declared_header_default():
                 ),
                 [why("uses its SDK client `client` at line 23 other than to call its methods"), *never],
             ),
-            # An append the handler may skip, or one only a function nothing calls makes.
             "handler appends after its return": (
                 wire.replace(append + respond, respond + append),
                 [why(no_append), *never],
