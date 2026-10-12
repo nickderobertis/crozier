@@ -16307,7 +16307,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
         return root / "docs/fern-refusals" / self.EXCEPTION
 
     def establish(self, directory: Path) -> None:
-        """Commit the evidence a default-generation exception rests on, from the class's own logs where they pass."""
+        """Build a scratch exception's evidence: the class's committed validation and mypy logs, plus a
+        synthetic passing wire log, wire test and `generate` note written for the reconciliation to accept."""
         (directory / "evidence/passing-wire.log").write_text("2 passed in 0.41s\n", encoding="utf-8")
         (directory / "evaluation.md").write_text(
             "# Header defaults overridden by an operation: generate\n\n"
