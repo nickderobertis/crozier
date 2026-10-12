@@ -7,7 +7,8 @@
 # 2. Runs the harness: every difference per document kind between
 #    serde_yaml_ng 0.10 (today) and serde-saphyr 1.3 / saphyr 0.2, in what is
 #    read, written and what errors say. Report: $OUT/report.txt; every
-#    occurrence: $OUT/details.txt.
+#    occurrence: $RESULTS/details.txt; every differing generated file and
+#    every differing line: $RESULTS/diffs/*.diff (whole `diff -ruN`).
 # 3. Unless --no-e2e: runs the whole binary e2e suite (crates/crozier-e2e,
 #    `--test e2e`: every committed Fern golden byte-compare and every refusal
 #    journey) against the spike binary once per reader mode, and prints the
@@ -22,6 +23,14 @@ cd "$(dirname "$0")/../.."
 OUT=${SAPHYR_DIFF_SCRATCH:-$PWD/target/saphyr-diff}
 export SAPHYR_DIFF_SCRATCH=$OUT
 mkdir -p "$OUT"
+# What the run found, committed: this run's whole output (run.txt), every
+# occurrence (details.txt) and every full diff (diffs/), plus each newly
+# failing e2e test's whole panic (e2e-newly-failing-*.txt).
+RESULTS=${SAPHYR_DIFF_RESULTS:-spikes/saphyr-diff/results}
+export SAPHYR_DIFF_RESULTS=$RESULTS
+mkdir -p "$RESULTS"
+rm -f "$RESULTS"/e2e-newly-failing-*.txt
+exec > >(tee "$RESULTS/run.txt")
 e2e=1
 if [ "${1:-}" = "--no-e2e" ]; then
   e2e=0
@@ -83,10 +92,21 @@ for mode in "${all[@]:1}"; do
   fixed=$(comm -23 "$base" "$log.failing")
   echo
   echo "-- mode \`$mode\` vs \`off\`: $(printf '%s' "$newly" | grep -c . || true) newly failing, $(printf '%s' "$fixed" | grep -c . || true) newly passing"
+  panics="$RESULTS/e2e-newly-failing-${mode//[^a-z0-9]/_}.txt"
   for t in $newly; do
     echo "   newly failing: $t"
-    # The test's panic and its first assertion lines: the before/after text.
-    grep -A3 "thread '$t' .* panicked at" "$log" | tail -n +2 | cut -c1-400 | sed 's/^ */      /' || true
+    { echo "== $t"; awk -v t="$t" '
+      index($0, "thread \x27" t "\x27") && /panicked at/ { on = 1 }
+      on && /^note: run with `RUST_BACKTRACE/ { exit }
+      on { print }
+    ' "$log"; } >>"$panics"
+    # The test's whole panic message (the before/after text), up to Rust's
+    # backtrace note; nothing is cut.
+    awk -v t="$t" '
+      index($0, "thread \x27" t "\x27") && /panicked at/ { on = 1; next }
+      on && /^note: run with `RUST_BACKTRACE/ { exit }
+      on { print "      " $0 }
+    ' "$log"
   done
   for t in $fixed; do echo "   newly passing: $t"; done
 done

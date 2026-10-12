@@ -105,11 +105,7 @@ fn short(v: &Ng) -> String {
         Ng::Mapping(map) => format!("{{{} entries}}", map.len()),
         Ng::Tagged(t) => format!("{} {}", t.tag, short(&t.value)),
     };
-    if s.chars().count() > 70 {
-        format!("{}…", s.chars().take(70).collect::<String>())
-    } else {
-        s
-    }
+    s
 }
 
 fn path_join(path: &str, key: &Ng) -> String {
@@ -184,7 +180,7 @@ fn string_diff(x: &str, y: &str) -> String {
     let i = cx.iter().zip(cy.iter()).take_while(|(p, q)| p == q).count();
     let window = |c: &[char]| c[i.saturating_sub(12)..(i + 12).min(c.len())].iter().collect::<String>();
     format!(
-        "strings part at char {i} of {}/{}: {:?} → {:?}",
+        "strings part at char {i} of {}/{}: {:?} → {:?} (whole: {x:?} → {y:?})",
         cx.len(),
         cy.len(),
         window(&cx),
@@ -216,7 +212,8 @@ fn saphyr_node(text: &str) -> Result<Ng, String> {
 
 fn one_line(s: &str) -> String {
     let s = s.replace('\n', "⏎");
-    let width = std::env::var("SAPHYR_DIFF_WIDTH").ok().and_then(|w| w.parse().ok()).unwrap_or(240);
+    // Whole text by default: an error must keep what failed and where.
+    let width = std::env::var("SAPHYR_DIFF_WIDTH").ok().and_then(|w| w.parse().ok()).unwrap_or(usize::MAX);
     if s.chars().count() > width {
         format!("{}…", s.chars().take(width).collect::<String>())
     } else {
@@ -409,30 +406,86 @@ fn compare_load(report: &mut Report, root: &Path, docs: &[&Doc], modes: &[String
     for (name, before, afters) in results {
         for (mode, after) in afters {
             let section = format!("openapi::load (typed OpenApi) · mode `{mode}`");
-            record_outcome(report, &section, &name, before.clone(), after, first_line_diff);
+            record_outcome(report, &section, &name, before.clone(), after, text_diff);
         }
     }
 }
 
-fn first_line_diff(a: &str, b: &str) -> String {
-    let (la, lb): (Vec<&str>, Vec<&str>) = (a.lines().collect(), b.lines().collect());
-    let mut shown = Vec::new();
-    for i in 0..la.len().max(lb.len()) {
-        let (x, y) = (la.get(i).copied().unwrap_or(""), lb.get(i).copied().unwrap_or(""));
-        if x != y {
-            let context = la[..i.min(la.len())]
-                .iter()
-                .rev()
-                .find(|l| l.trim_end().ends_with('{') && l.contains(':'))
-                .map(|l| l.trim())
-                .unwrap_or("");
-            shown.push(format!("line {} (in `{context}`): {:?} → {:?}", i + 1, x.trim(), y.trim()));
-            if shown.len() >= 3 {
-                break;
-            }
+// ---------------------------------------------------------------- full diffs
+
+/// Where every full diff goes: `<results>/diffs`, set once in `main`.
+static DIFF_DIR: std::sync::OnceLock<PathBuf> = std::sync::OnceLock::new();
+
+/// A file name for one (section, case) pair: readable, and unique by its hash.
+fn diff_file(key: &str) -> PathBuf {
+    use std::hash::{Hash, Hasher};
+    let mut h = std::collections::hash_map::DefaultHasher::new();
+    key.hash(&mut h);
+    let mut slug: String = key.chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '_' }).collect();
+    while slug.contains("__") {
+        slug = slug.replace("__", "_");
+    }
+    let slug: String = slug.trim_matches('_').chars().take(140).collect();
+    DIFF_DIR.get().expect("diff dir set").join(format!("{slug}-{:016x}.diff", h.finish()))
+}
+
+/// `diff -ruN before after` over two trees of files, written whole to
+/// `diff_file(key)`; returns the diff file and its (removed, added) line counts
+/// per file path.
+fn write_diff(key: &str, a: &BTreeMap<PathBuf, String>, b: &BTreeMap<PathBuf, String>) -> (PathBuf, BTreeMap<String, (usize, usize)>) {
+    let out = diff_file(key);
+    let tmp = out.with_extension("tmp");
+    let _ = std::fs::remove_dir_all(&tmp);
+    for (side, files) in [("before", a), ("after", b)] {
+        std::fs::create_dir_all(tmp.join(side)).unwrap();
+        for (path, text) in files {
+            let p = tmp.join(side).join(path);
+            std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+            std::fs::write(p, text).unwrap();
         }
     }
-    shown.join("; ")
+    let o = std::process::Command::new("diff")
+        .args(["-ruN", "before", "after"])
+        .current_dir(&tmp)
+        .output()
+        .expect("run diff");
+    let text = String::from_utf8_lossy(&o.stdout).into_owned();
+    std::fs::write(&out, format!("# {key}\n{text}")).unwrap();
+    let _ = std::fs::remove_dir_all(&tmp);
+    let mut counts: BTreeMap<String, (usize, usize)> = BTreeMap::new();
+    let mut current = String::new();
+    for line in text.lines() {
+        if let Some(rest) = line.strip_prefix("+++ after/") {
+            current = rest.split('\t').next().unwrap_or(rest).to_owned();
+            counts.entry(current.clone()).or_default();
+        } else if line.starts_with("--- before/") || line.starts_with("diff ") {
+        } else if line.starts_with('-') {
+            counts.entry(current.clone()).or_default().0 += 1;
+        } else if line.starts_with('+') {
+            counts.entry(current.clone()).or_default().1 += 1;
+        }
+    }
+    (out, counts)
+}
+
+fn shown_path(p: &Path) -> String {
+    let root = repo_root();
+    p.strip_prefix(&root).unwrap_or(p).display().to_string()
+}
+
+/// Every differing line of two texts (crozier's `{:#?}` of a typed read): the
+/// counts and first differing line inline, the whole unified diff in a file.
+fn text_diff(key: &str, a: &str, b: &str) -> String {
+    let one = |t: &str| BTreeMap::from([(PathBuf::from("read.txt"), t.to_owned())]);
+    let (file, counts) = write_diff(key, &one(a), &one(b));
+    let (removed, added) = counts.values().fold((0, 0), |(r, s), (x, y)| (r + x, s + y));
+    let first = a
+        .lines()
+        .zip(b.lines())
+        .position(|(x, y)| x != y)
+        .map(|i| format!("first at line {}: {:?} → {:?}", i + 1, a.lines().nth(i).unwrap().trim(), b.lines().nth(i).unwrap().trim()))
+        .unwrap_or_else(|| "one is a prefix of the other".to_owned());
+    format!("-{removed} +{added} lines; {first}; every line: {}", shown_path(&file))
 }
 
 fn record_outcome(
@@ -441,11 +494,11 @@ fn record_outcome(
     name: &str,
     before: Result<String, String>,
     after: Result<String, String>,
-    show: impl Fn(&str, &str) -> String,
+    show: impl Fn(&str, &str, &str) -> String,
 ) {
     match (before, after) {
         (Ok(a), Ok(b)) if a == b => {}
-        (Ok(a), Ok(b)) => report.diff(section, "read differently", format!("{name}: {}", show(&a, &b))),
+        (Ok(a), Ok(b)) => report.diff(section, "read differently", format!("{name}: {}", show(&format!("{section} :: {name}"), &a, &b))),
         (Ok(_), Err(e)) => report.diff(section, "read today, refused after", format!("{name}: after: {}", one_line(&e))),
         (Err(e), Ok(_)) => report.diff(section, "refused today, read after", format!("{name}: before: {}", one_line(&e))),
         (Err(a), Err(b)) if a == b => {}
@@ -497,7 +550,10 @@ fn render(spec: &Path, strict: bool, mode: &str) -> Result<BTreeMap<PathBuf, Str
     r
 }
 
-fn files_diff(a: &BTreeMap<PathBuf, String>, b: &BTreeMap<PathBuf, String>) -> String {
+/// Every differing SDK file, each with its removed/added line counts, and the
+/// whole `diff -ruN` (every differing line) in a file under `diffs/`.
+fn files_diff(key: &str, a: &BTreeMap<PathBuf, String>, b: &BTreeMap<PathBuf, String>) -> String {
+    let (file, counts) = write_diff(key, a, b);
     let mut parts = Vec::new();
     for path in a.keys().filter(|k| !b.contains_key(*k)) {
         parts.push(format!("only before: {}", path.display()));
@@ -506,14 +562,12 @@ fn files_diff(a: &BTreeMap<PathBuf, String>, b: &BTreeMap<PathBuf, String>) -> S
         parts.push(format!("only after: {}", path.display()));
     }
     for (path, x) in a {
-        if let Some(y) = b.get(path) {
-            if x != y {
-                parts.push(format!("{}: {}", path.display(), first_line_diff(x, y)));
-            }
+        if b.get(path).is_some_and(|y| x != y) {
+            let (r, s) = counts.get(&path.display().to_string()).copied().unwrap_or_default();
+            parts.push(format!("{} (-{r} +{s})", path.display()));
         }
     }
-    parts.truncate(4);
-    parts.join(" || ")
+    format!("{} files differ: {}; every line: {}", parts.len(), parts.join(", "), shown_path(&file))
 }
 
 /// End to end: `crozier::render_files` (every refusal, the `$ref` resolver,
@@ -544,7 +598,7 @@ fn compare_generate(report: &mut Report, entries: &[(String, PathBuf)], modes: &
         let section = format!("generate (render_files, plain + --fern-strict) · mode `{mode}`");
         match (before, after) {
             (Ok(a), Ok(b)) if a == b => {}
-            (Ok(a), Ok(b)) => report.diff(&section, "SDK bytes differ", format!("{name}: {}", files_diff(&a, &b))),
+            (Ok(a), Ok(b)) => report.diff(&section, "SDK bytes differ", format!("{name}: {}", files_diff(&format!("{section} :: {name}"), &a, &b))),
             (Ok(a), Err(e)) => report.diff(&section, "generated today, refused/failed after", format!("{name}: today {} files; after: {}", a.len(), one_line(&e))),
             (Err(e), Ok(b)) => report.diff(&section, "refused/failed today, generated after", format!("{name}: after {} files; today: {}", b.len(), one_line(&e))),
             (Err(a), Err(b)) if a == b => {}
@@ -606,7 +660,7 @@ fn compare_settings(report: &mut Report, root: &Path, mode: &str) {
             r
         };
         let (before, after) = (run("off"), run(mode));
-        record_outcome(report, &section, &name, before, after, first_line_diff);
+        record_outcome(report, &section, &name, before, after, text_diff);
     }
 }
 
@@ -628,7 +682,7 @@ fn compare_departures(report: &mut Report, root: &Path, mode: &str) {
             r
         };
         let (before, after) = (run("off"), run(mode));
-        record_outcome(report, &section, &name, before, after, first_line_diff);
+        record_outcome(report, &section, &name, before, after, text_diff);
     }
 }
 
@@ -670,10 +724,10 @@ fn compare_errors(report: &mut Report, scratch: &Path, mode: &str) {
             let (before, after) = on_big_stack(|| (render(&spec, strict, "off"), render(&spec, strict, mode)));
             // Both generate: compare the SDKs byte for byte, not just their file counts.
             let (before, after) = match (before, after) {
-                (Ok(b), Ok(a)) if b != a => (Ok(String::new()), Ok(files_diff(&b, &a))),
+                (Ok(b), Ok(a)) if b != a => (Ok(String::new()), Ok(files_diff(&format!("{section} :: {label}"), &b, &a))),
                 (b, a) => (b.map(|_| String::new()), a.map(|_| String::new())),
             };
-            record_outcome(report, &section, &label, before, after, |_, b| format!("SDK bytes differ: {b}"));
+            record_outcome(report, &section, &label, before, after, |_, _, b| format!("SDK bytes differ: {b}"));
         }
     }
 }
@@ -743,7 +797,7 @@ fn scalar_probes(report: &mut Report) {
     let typed_after = |t: &str| serde_saphyr::from_str::<BTreeMap<String, String>>(t).map(|m| format!("{m:?}")).map_err(|e| one_line(&e.to_string()));
     let show = |r: &Result<Ng, String>, pick: &dyn Fn(&Ng) -> Option<Ng>| match r {
         Ok(v) => pick(v).map_or("<absent>".to_owned(), |x| format!("{} {}", kind(&x), short(&x))),
-        Err(e) => format!("<error: {}>", one_line(e).chars().take(90).collect::<String>()),
+        Err(e) => format!("<error: {}>", one_line(e)),
     };
     for probe in probes {
         for (place, text, pick) in [
@@ -1105,6 +1159,13 @@ fn main() {
     let root = repo_root();
     let scratch = PathBuf::from(std::env::var("SAPHYR_DIFF_SCRATCH").unwrap_or_else(|_| root.join("target/saphyr-diff").display().to_string()));
     std::fs::create_dir_all(&scratch).unwrap();
+    // SAPHYR_DIFF_RESULTS: where the details file and every full diff go
+    // (run.sh: the committed `spikes/saphyr-diff/results/`).
+    let results = std::env::var_os("SAPHYR_DIFF_RESULTS").map_or_else(|| scratch.clone(), PathBuf::from);
+    let diffs = results.join("diffs");
+    let _ = std::fs::remove_dir_all(&diffs);
+    std::fs::create_dir_all(&diffs).unwrap();
+    DIFF_DIR.set(diffs).unwrap();
     let mut report = Report::default();
 
     let (mut docs, unreadable) = inventory(&root);
@@ -1201,5 +1262,5 @@ fn main() {
         timings(&mut report, &root, "tests/fixtures/corpus-sources/webflow-v2/openapi.yml", ROUNDS);
         on_big_stack(|| timings(&mut report, &root, "tests/fixtures/corpus-sources/github.com/openapi.json", 7));
     }
-    report.print(&scratch.join("details.txt"));
+    report.print(&results.join("details.txt"));
 }
