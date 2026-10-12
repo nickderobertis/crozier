@@ -1783,3 +1783,5 @@ now `golden` on.
 | forward-refs-omit-hoisted-variant-models | both | Object property or response schema metadata | handwritten | handwritten: woven-thread; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |
 
 | ref-into-component-response-schema-named-by-last-segment | both | Object property or response schema metadata | handwritten | handwritten: parcel-response; search: search-incomplete ([record](witness-search-models-refs/README.md#remaining-model-identities)) |  |  |  |
+
+| enum-visit-kwargs-parameter | both | schema.enum:kwargs-member | handwritten | handwritten: survey-field-selector; search: search-incomplete ([record](witness-search-naming-wire/README.md#bounded-public-witnesses)) |  |  | |

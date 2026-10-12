@@ -2364,6 +2364,8 @@ class RecipeWiringTests(unittest.TestCase):
 # document's version, a local Response `$ref`), so none is node-local.
 BODY_AND_RESPONSE_PREDICATES = frozenset(
     {
+        "operation.requestBody:optional-nullable-enum-multipart-part",
+        "operation.requestBody:titled-array-component-oas-three-one",
         "operation.requestBody:body-prefixed-single-use",
         "operation.requestBody:get-union-member",
         "operation.requestBody:titled-inline-container-oas-three-zero",
@@ -16746,6 +16748,69 @@ class ScenarioProofIndexTests(unittest.TestCase):
         for text, message in cases.items():
             with self.subTest(text=text), self.assertRaisesRegex(module.MalformedDiff, re.escape(message)):
                 module.diff_hunks(text)
+
+
+class NamingWireCensusTests(unittest.TestCase):
+    """Count the authored shapes through the census's public document boundary."""
+
+    def test_measurement_name_ending_in_literals_keeps_its_exact_source(self) -> None:
+        index = load_script("tools/surface-census/scenario-proof-index.py")
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            source = "docs/fern-measurements/literals-mode/enum-extension-names-dropped-under-literals/openapi.yml"
+            path = root / source
+            path.parent.mkdir(parents=True)
+            path.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            golden = "docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected"
+            self.assertEqual(index.golden_source(root, golden), source)
+            path.unlink()
+            self.assertIsNone(index.golden_source(root, golden))
+
+    def test_owned_shapes_and_adjacent_controls(self) -> None:
+        census = load_census()
+        cases = (
+            ("gallery-plaque-groups", "operation.operationId:camel-case-tag-prefix"),
+            ("transcript-format-part", "operation.requestBody:optional-nullable-enum-multipart-part"),
+            ("ledger-batch-upload", "operation.requestBody:titled-array-component-oas-three-one"),
+            ("survey-field-selector", "schema.enum:kwargs-member"),
+        )
+        for fixture, selector in cases:
+            with self.subTest(fixture=fixture):
+                document = census.load_document(REPO / "docs/openapi-surface/handwritten" / fixture / "openapi.yml")
+                self.assertGreater(census.census_document(document).get(selector, 0), 0)
+                control = json.loads(json.dumps(document))
+                match fixture:
+                    case "gallery-plaque-groups":
+                        for item in control["paths"].values():
+                            for operation in item.values():
+                                operation["tags"] = ["OtherGroup"]
+                    case "transcript-format-part":
+                        control["components"]["schemas"]["CaptionFormat"] = {"type": "object"}
+                    case "ledger-batch-upload":
+                        control["openapi"] = "3.0.3"
+                    case "survey-field-selector":
+                        control["paths"]["/responses"]["get"]["parameters"][0]["schema"]["items"]["enum"].remove(
+                            "kwargs"
+                        )
+                self.assertEqual(census.census_document(control).get(selector, 0), 0)
+                self.assertIsNone(census.selector_error(selector))
+
+    def test_malformed_multipart_required_is_not_an_optional_part(self) -> None:
+        census = load_census()
+        source = REPO / "docs/openapi-surface/handwritten/transcript-format-part/openapi.yml"
+        for required in (True, 23, "format", ["format"], [False]):
+            with self.subTest(required=required):
+                document = census.load_document(source)
+                form = document["paths"]["/transcripts"]["post"]["requestBody"]["content"]["multipart/form-data"][
+                    "schema"
+                ]
+                form["required"] = required
+                self.assertEqual(
+                    census.census_document(document).get(
+                        "operation.requestBody:optional-nullable-enum-multipart-part", 0
+                    ),
+                    0,
+                )
 
 
 if __name__ == "__main__":

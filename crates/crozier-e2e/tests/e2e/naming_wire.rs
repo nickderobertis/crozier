@@ -62,6 +62,7 @@ fn case_spec(case: &str) -> PathBuf {
         .join("openapi.yml")
 }
 
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] Complete certified-tree comparisons join the existing crozier-e2e golden gate and its departure ledger; a separate target for only these measurements would split the repository's shared parity gate, whose deliberate tooling edges are recorded in crates/crozier-e2e/AGENTS.md.
 #[test]
 fn naming_wire_measurements_match_fern_under_python_enums() {
     let root = repo_root();
@@ -122,6 +123,7 @@ fn perturb(tree: &Path, rel: &str, from: &str, to: &str) {
 /// Each shape's tree matches as committed, and each perturbation — crozier's
 /// former spelling of the shape, or a byte beside it — fails in the file it
 /// lands in.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] These negative cases exercise the same real-binary golden gate and ledger as their positive cases; keeping both in the existing crozier-e2e target holds unexplained mismatches to that shared boundary.
 #[test]
 fn naming_wire_shapes_fail_on_an_unexplained_byte() {
     type Copy = fn(&str) -> (tempfile::TempDir, String, PathBuf);
@@ -227,6 +229,7 @@ fn naming_wire_shapes_fail_on_an_unexplained_byte() {
 /// first. A name only Fern's `.types` statement imports leaves the moved window
 /// a departure and the name a difference; a tag subpackage's statement moving,
 /// or a moved statement importing another name, is no departure at all.
+// llmlint: ignore[expensive_tests_stay_behind_their_own_edge] This registered-corpus comparison belongs to the existing crozier-e2e golden gate, where the positive departure and its negative name-set cases run against the same binary and catalog.
 #[test]
 fn reordered_root_imports_are_a_departure_only_beside_identical_statements() {
     let rel = "src/fern/__init__.py";

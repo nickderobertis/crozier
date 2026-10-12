@@ -30,8 +30,7 @@ two blocks sort to the same text.
 A root package whose tag subpackages re-export their hoisted types orders the
 root client's and environment's statements differently. Fern sorts them by
 module among the tag subpackages'; crozier writes them ahead of every one. The
-handed-off [`kompaz` witness](../../fern-measurements/blocked-witnesses/README.md#kompaz),
-compared the way that README's reproduction prescribes, shows it:
+handed-off `kompaz` witness shows it:
 
 ```text
 $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' preview/fern-python-sdk/src/fern/__init__.py) \

@@ -14,6 +14,7 @@ array-item-pointer-walk-oneof	schema.properties>schema.type:primary=array&schema
 base-path-extension	openapi.x-fern-base-path	oas31-extensions.md	supported
 bigint-format-string-typed-str	schema.format=bigint	schemas.md	supported
 binary-download-with-body-has-no-example	operation.requestBody	bodies-media.md	supported
+camel-case-tag-group-and-prefix	operation.operationId:camel-case-tag-prefix	document-paths.md	supported
 client-header-date-format	parameter.schema:promoted-date-header	parameters.md	supported
 component-same-primitive-union	components.schemas:same-primitive-union	schemas.md	supported
 cycle-into-cycle	components.schemas:cycle-into-cycle	schemas.md	supported
@@ -25,6 +26,7 @@ empty-description-inline-response-docstring	schema.description	schemas.md	suppor
 empty-path-segment-double-slash-kept	openapi.paths:several-template-expressions	document-paths.md	supported
 enum-union-body-example-first-member-value	schema.enum:string-valued	bodies-media.md	supported
 enum-value-description-extension-dropped	schema.enum	schemas.md	supported
+enum-visit-kwargs-parameter	schema.enum:kwargs-member	schemas.md	supported
 example-imports-case-insensitive-order	schema.$ref	bodies-media.md	supported
 example-nested-array-two-items	parameter.schema	parameters.md	supported
 fern-streaming-boolean	operation.x-fern-streaming	oas31-extensions.md	supported
@@ -50,6 +52,7 @@ media-type-event-stream-event-dispatch	operation.responses:event-stream-event-di
 media-type-event-stream-inline-const-union	operation.responses:event-stream-inline-const-union	bodies-media.md	supported
 media-type-event-stream-item-schema	operation.responses:event-stream-item-schema-ref	bodies-media.md	supported
 multipart-inline-object-part-json-encoded	requestBody.content	bodies-media.md	supported
+multipart-optional-enum-part-plain-field	operation.requestBody:optional-nullable-enum-multipart-part	bodies-media.md	supported
 multipart-part-encoding-charset-tuple	mediaType.encoding.contentType	bodies-media.md	supported
 nullable-anyof-member-description-dropped	schema.anyOf	schemas.md	supported
 nullable-array-query-explode-false	parameter.schema:nullable-array-explode-false	parameters.md	supported
@@ -62,6 +65,7 @@ oneof-array-variant-anyof-nullable-item	schema.oneOf>schema.type:primary=array&s
 oneof-bare-object-example-variant	schema.oneOf>!schema.$ref&!schema.additionalProperties&!schema.allOf&!schema.example:schema-shaped&!schema.properties:non-empty&schema.example=object&schema.type:primary=object	schemas.md	supported
 oneof-duplicate-members-collapsed	schema.oneOf	schemas.md	supported
 oneof-map-variant-anyof-value	schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members	schemas.md	supported
+openapi31-titled-array-body-content-type	operation.requestBody:titled-array-component-oas-three-one	bodies-media.md	supported
 operation-empty-tag	operation.tags:empty-string	document-paths.md	supported
 operation-group-types-beside-child-group	operation.x-fern-sdk-group-name:types-beside-child-group	oas31-extensions.md	supported
 operation-id-all-caps-tag-split-prefix	operation.operationId:all-caps-tag-split-prefix	document-paths.md	supported

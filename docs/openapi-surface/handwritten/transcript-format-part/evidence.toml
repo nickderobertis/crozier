@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "2a50a8af886d586fa5b08cb105e96b9d96aedf5f068853faf5d5712dc58a6075"
+
+[[covers]]
+key = "multipart-optional-enum-part-plain-field"
+search = "docs/openapi-surface/witness-search-naming-wire/README.md#bounded-public-witnesses"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"

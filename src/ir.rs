@@ -8232,40 +8232,30 @@ fn union_has_temporal_member<'a>(
     }
 }
 
-/// A multipart part declared as one scalar member beside `null`, where the
-/// member may be a string enum or a `$ref` to a scalar or string-enum component.
-/// Fern sends such a part as a plain form field rather than JSON-encoding it:
-/// Speech-AI-Forge's `format`, `anyOf: [$ref STTOutputFormat, {type: null}]`, is
-/// `"format": format`. An object member stays JSON-encoded.
-fn nullable_scalar_part(schema: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> bool {
-    let Some(members) = schema.any_of.as_ref().or(schema.one_of.as_ref()) else {
+/// A multipart `anyOf` of a string-enum component reference and `null` is
+/// a plain form field. Keep this reading to the certified enum-reference shape;
+/// object references and other compositions retain their existing encoding.
+fn nullable_enum_part(schema: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> bool {
+    let Some(members) = schema.any_of.as_ref() else {
         return false;
     };
-    let non_null: Vec<&Schema> = members
-        .iter()
-        .filter(|member| member.ty.as_ref().and_then(TypeField::primary) != Some("null"))
-        .collect();
-    let [mut member] = non_null[..] else {
+    if members.len() != 2 {
+        return false;
+    }
+    let member = if members[0].ty.as_ref().and_then(TypeField::primary) == Some("null") {
+        &members[1]
+    } else if members[1].ty.as_ref().and_then(TypeField::primary) == Some("null") {
+        &members[0]
+    } else {
         return false;
     };
-    if members.len() == 1 {
-        return false;
-    }
-    let mut seen = std::collections::BTreeSet::new();
-    while let Some(reference) = member.reference.as_deref() {
-        let next = schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference));
-        match next {
-            Some(next) if seen.insert(reference) => member = next,
-            _ => return false,
-        }
-    }
-    member.one_of.is_none()
-        && member.any_of.is_none()
-        && member.all_of.is_none()
-        && matches!(
-            member.ty.as_ref().and_then(TypeField::primary),
-            Some("string" | "integer" | "number" | "boolean")
-        )
+    member
+        .reference
+        .as_deref()
+        .and_then(|reference| {
+            schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+        })
+        .is_some_and(|target| string_enum_values(target).is_some())
 }
 
 /// Resolve an object alias's encoding shape while retaining its declared type
@@ -8357,7 +8347,7 @@ fn hoist_form_object(
             let form_json = multipart
                 && !is_file
                 && simple_nullable_primitive_member(resolved).is_none()
-                && !nullable_scalar_part(resolved, hoister.schemas)
+                && !nullable_enum_part(resolved, hoister.schemas)
                 && (is_unknown(resolved)
                     || matches!(
                         resolved.ty.as_ref().and_then(|ty| ty.primary()),
@@ -19751,7 +19741,7 @@ mod tests {
     }
 
     #[test]
-    fn multipart_nullable_enum_and_scalar_refs_are_plain_parts() {
+    fn multipart_nullable_enum_refs_are_plain_parts() {
         let schemas: indexmap::IndexMap<String, Schema> = [
             ("Format", serde_json::json!({ "type": "string", "enum": ["txt", "vtt"] })),
             ("Speed", serde_json::json!({ "type": "integer" })),
@@ -19766,43 +19756,43 @@ mod tests {
         };
         let reference =
             |name: &str| serde_json::json!({ "$ref": format!("#/components/schemas/{name}") });
-        assert!(super::nullable_scalar_part(
+        assert!(super::nullable_enum_part(
             &nullable(reference("Format")),
             Some(&schemas)
         ));
-        assert!(super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(reference("Speed")),
             Some(&schemas)
         ));
-        assert!(super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(serde_json::json!({ "type": "string", "enum": ["a", "b"] })),
             Some(&schemas)
         ));
-        assert!(!super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(reference("Margins")),
             Some(&schemas)
         ));
-        assert!(!super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(reference("Loop")),
             Some(&schemas)
         ));
-        assert!(!super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(reference("Missing")),
             Some(&schemas)
         ));
-        assert!(!super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &nullable(reference("Format")),
             None
         ));
-        assert!(!super::nullable_scalar_part(
+        assert!(!super::nullable_enum_part(
             &reference_schema("Format"),
             Some(&schemas)
         ));
         let pair =
             schema(serde_json::json!({ "anyOf": [reference("Format"), reference("Speed")] }));
-        assert!(!super::nullable_scalar_part(&pair, Some(&schemas)));
+        assert!(!super::nullable_enum_part(&pair, Some(&schemas)));
         let alone = schema(serde_json::json!({ "anyOf": [reference("Format")] }));
-        assert!(!super::nullable_scalar_part(&alone, Some(&schemas)));
+        assert!(!super::nullable_enum_part(&alone, Some(&schemas)));
     }
 
     fn reference_schema(name: &str) -> Schema {
