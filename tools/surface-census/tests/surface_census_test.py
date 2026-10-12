@@ -16800,7 +16800,7 @@ class NamingWireCensusTests(unittest.TestCase):
                 self.assertEqual(census.census_document(control).get(selector, 0), 0)
                 self.assertIsNone(census.selector_error(selector))
 
-    def test_malformed_multipart_required_is_not_an_optional_part(self) -> None:
+    def test_multipart_required_and_malformed_required_lists_are_not_optional(self) -> None:
         census = load_census()
         source = REPO / "docs/openapi-surface/handwritten/transcript-format-part/openapi.yml"
         for required in (True, 23, "format", ["format"], [False]):
