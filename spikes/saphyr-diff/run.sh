@@ -47,8 +47,10 @@ for crate in serde-saphyr@1.3.0 saphyr@0.2.1; do
 done
 echo "cargo deny (licenses bans sources, whole workspace with the spike feature):"
 cargo deny --all-features check licenses bans sources 2>&1 \
-  | grep -E '^(error|warning)\[|rejected|license = |^[a-z-]+ v[0-9]|└──|├──|(bans|licenses|sources) (ok|FAILED)' \
+  | grep -E '^(error|warning)\[|rejected|license = |├ [a-z0-9_-]+ v[0-9]|└──|├──|(bans|licenses|sources) (ok|FAILED)' \
   | grep -v 'license-not-encountered' | head -30 || true
+echo "which feature pulls a refused crate in:"
+cargo tree --locked --all-features -i foldhash@0.2.0 -e features 2>/dev/null | grep -A3 'default-hasher' | head -4 || true
 
 [ "$e2e" = 1 ] || exit 0
 

@@ -820,45 +820,45 @@ fn collect_keys(v: &Ng, origin: &str, out: &mut BTreeMap<String, Ng>) {
     }
 }
 
-fn time<R>(n: usize, mut f: impl FnMut() -> R) -> Duration {
-    let mut samples = Vec::new();
-    for _ in 0..n {
-        let t = Instant::now();
-        std::hint::black_box(f());
-        samples.push(t.elapsed());
-    }
-    samples.sort();
-    samples[samples.len() / 2]
-}
+const ROUNDS: usize = 15;
 
 fn timings(report: &mut Report, root: &Path) {
-    let section = "parse time · tests/fixtures/corpus-sources/webflow-v2/openapi.yml (median of 7)";
+    let section = "parse time · tests/fixtures/corpus-sources/webflow-v2/openapi.yml (interleaved, 15 rounds)";
     let text = std::fs::read_to_string(root.join("tests/fixtures/corpus-sources/webflow-v2/openapi.yml")).unwrap();
     report.section(section).documents = 1;
     report.note(section, format!("{} bytes; build profile `{}`", text.len(), if cfg!(debug_assertions) { "dev (debug — rerun with --profile spike)" } else { "spike (release, no LTO)" }));
-    let budget_none = options_from_flags(&["budget=none"]);
+    let candidate = options_from_flags(&CANDIDATE);
     let runs: Vec<(&str, Box<dyn Fn() -> Result<(), String>>)> = vec![
         ("serde_yaml_ng → serde_yaml_ng::Value (today, schema-less)", Box::new(|| serde_yaml_ng::from_str::<Ng>(&text).map(drop).map_err(|e| e.to_string()))),
         ("serde_yaml_ng → OpenApi (today, typed)", Box::new(|| serde_yaml_ng::from_str::<crozier::openapi::OpenApi>(&text).map(drop).map_err(|e| e.to_string()))),
         ("serde-saphyr (default Options) → OpenApi", Box::new(|| serde_saphyr::from_str::<crozier::openapi::OpenApi>(&text).map(drop).map_err(|e| one_line(&e.to_string())))),
-        ("serde-saphyr (budget: None) → OpenApi", Box::new(|| serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(&text, budget_none.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
-        ("serde-saphyr (budget: None) → serde_json::Value", Box::new(|| serde_saphyr::from_str_with_options::<serde_json::Value>(&text, budget_none.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
+        ("serde-saphyr (candidate Options) → OpenApi", Box::new(|| serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(&text, candidate.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
+        ("serde-saphyr (candidate Options) → serde_json::Value", Box::new(|| serde_saphyr::from_str_with_options::<serde_json::Value>(&text, candidate.clone()).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("serde-saphyr (default Options) → serde_json::Value", Box::new(|| serde_saphyr::from_str::<serde_json::Value>(&text).map(drop).map_err(|e| one_line(&e.to_string())))),
         ("saphyr 0.2 → saphyr::Yaml node tree", Box::new(|| {
             use saphyr::LoadableYamlNode;
             saphyr::Yaml::load_from_str(&text).map(drop).map_err(|e| e.to_string())
         })),
-        ("serde_json::from_str → serde_json::Value (reference: no YAML)", Box::new(|| {
-            // Not JSON; measured to show a non-YAML floor is unavailable here.
-            serde_json::from_str::<serde_json::Value>(&text).map(drop).map_err(|_| "not JSON".to_owned())
-        })),
+        ("saphyr 0.2 → node tree → serde_yaml_ng::Value (the shim's tree=saphyr conversion)", Box::new(|| saphyr_node(&text).map(drop))),
     ];
-    for (name, run) in runs {
-        let outcome = run();
-        let median = time(7, &run);
+    // Interleaved rounds, so load from other work on the host spreads across
+    // every reader rather than landing on one; min and median per reader.
+    let outcomes: Vec<Result<(), String>> = runs.iter().map(|(_, run)| run()).collect();
+    let mut samples: Vec<Vec<Duration>> = vec![Vec::new(); runs.len()];
+    for _ in 0..ROUNDS {
+        for (i, (_, run)) in runs.iter().enumerate() {
+            let t = Instant::now();
+            let _ = std::hint::black_box(run());
+            samples[i].push(t.elapsed());
+        }
+    }
+    for (((name, _), outcome), mut times) in runs.iter().zip(outcomes).zip(samples) {
+        times.sort();
+        let ms = |d: Duration| d.as_secs_f64() * 1000.0;
+        let (min, median) = (ms(times[0]), ms(times[times.len() / 2]));
         match outcome {
-            Ok(()) => report.note(section, format!("{name}: {:.1} ms", median.as_secs_f64() * 1000.0)),
-            Err(e) => report.note(section, format!("{name}: FAILS ({:.1} ms to fail): {e}", median.as_secs_f64() * 1000.0)),
+            Ok(()) => report.note(section, format!("{name}: min {min:.1} ms, median {median:.1} ms")),
+            Err(e) => report.note(section, format!("{name}: FAILS (min {min:.1} ms to fail): {e}")),
         }
     }
 }
