@@ -42,11 +42,15 @@ pub fn from_str<T: DeserializeOwned>(text: &str) -> Result<T, YamlError> {
             if mode.flags.iter().any(|f| f == "code=string") {
                 SOURCE.with(|cell| *cell.borrow_mut() = Some(text.to_owned()));
             }
-            if mode.flags.iter().any(|f| f == "wording=today") {
-                return today_wording::read_with(text, mode.options()).map_err(YamlError);
-            }
-            return serde_saphyr::from_str_with_options(text, mode.options())
-                .map_err(|e| YamlError(e.to_string()));
+            // `string`'s `Spanned` exists only under serde-saphyr's deserializer.
+            IN_SAPHYR.with(|cell| cell.set(true));
+            let result = if mode.flags.iter().any(|f| f == "wording=today") {
+                today_wording::read_with(text, mode.options()).map_err(YamlError)
+            } else {
+                serde_saphyr::from_str_with_options(text, mode.options()).map_err(|e| YamlError(e.to_string()))
+            };
+            IN_SAPHYR.with(|cell| cell.set(false));
+            return result;
         }
     }
     serde_yaml_ng::from_str(text).map_err(|e| YamlError(e.to_string()))
@@ -82,6 +86,8 @@ thread_local! {
     static OVERRIDE: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
     /// The text the current typed read is reading, for [`string`]'s spans.
     static SOURCE: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
+    /// Set while [`from_str`] runs serde-saphyr.
+    static IN_SAPHYR: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 /// Whether the current serde-saphyr read has code flag `name` on.
@@ -122,12 +128,13 @@ impl<'de> serde::Deserialize<'de> for StrictBool {
     }
 }
 
-/// `String` field reader. Plain `String` unless `code=string`, which reads a
+/// `String` field reader. Plain `String` unless `code=string` inside a
+/// serde-saphyr read (JSON documents and `$ref` nodes use other deserializers), which reads a
 /// null scalar (`~`, `null`, an empty value) as its source spelling, as
 /// serde_yaml_ng does, from serde-saphyr's `Spanned` location.
 pub fn string<'de, D: serde::Deserializer<'de>>(deserializer: D) -> Result<String, D::Error> {
     #[cfg(feature = "spike-saphyr")]
-    if code_flag("code=string") {
+    if code_flag("code=string") && IN_SAPHYR.with(std::cell::Cell::get) {
         let spanned = <serde_saphyr::Spanned<Option<String>> as serde::Deserialize>::deserialize(deserializer)?;
         return Ok(spanned.value.unwrap_or_else(|| {
             let span = spanned.referenced.span();
