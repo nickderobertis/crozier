@@ -4136,9 +4136,12 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
             let Some(op) = slot else { continue };
             if let Some(request_body) = &mut op.request_body {
                 *request_body = resolve_request_body(request_body, &defs);
-                for media in request_body.content.values_mut() {
+                for (media_type, media) in &mut request_body.content {
                     if let Some(schema) = &mut media.schema {
-                        collapse_sole_composition_member(schema);
+                        collapse_sole_composition_member(
+                            schema,
+                            crate::ir::is_json_like_media_type(media_type),
+                        );
                     }
                 }
             }
@@ -4155,18 +4158,38 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
 /// `create_config` body is the `CreateConfigRequestBody` alias in the same
 /// golden), and a wrapper carrying any other schema field is left alone because
 /// collapsing it would drop that field.
-fn collapse_sole_composition_member(schema: &mut Schema) {
+///
+/// A one-member `allOf` naming a component is that component the same way:
+/// FastAPI writes `{allOf: [$ref: SSMLParams], title: Params, description: …}`
+/// for an annotated body parameter, and Fern 5.20.0 flattens `SSMLParams`'s
+/// properties into the method's arguments, exactly as for `$ref: SSMLParams`,
+/// whatever `title`, `description` or `default` sits beside it. A nullable
+/// wrapper is left to the request-body resolver, which reads the nullability,
+/// and a form body's wrapper is left alone: no measurement reaches it.
+fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
     let sole = |members: &Option<Vec<Schema>>| {
         members
             .as_ref()
             .filter(|members| members.len() == 1)
             .map(|members| members[0].clone())
     };
-    let Some(member) = sole(&schema.one_of).or_else(|| sole(&schema.any_of)) else {
-        return;
+    let sole_ref = || {
+        sole(&schema.all_of).filter(|member| {
+            json && member.reference.is_some()
+                && schema.one_of.is_none()
+                && schema.any_of.is_none()
+                && schema.nullable != Some(true)
+        })
+    };
+    let (member, all_of) = match sole(&schema.one_of).or_else(|| sole(&schema.any_of)) {
+        Some(member) => (member, false),
+        None => match sole_ref() {
+            Some(member) => (member, true),
+            None => return,
+        },
     };
     if schema.reference.is_some()
-        || schema.all_of.is_some()
+        || (schema.all_of.is_some() && !all_of)
         || schema.ty.is_some()
         || schema.properties.declared()
         || schema.additional_properties.is_some()
@@ -4552,6 +4575,80 @@ mod tests {
             .expect_err("a string is no pagination")
             .to_string()
             .contains("a pagination contract, or a boolean"));
+    }
+
+    /// A JSON request body that only annotates one component through a lone
+    /// `allOf` is that component once loaded, whatever annotations sit beside
+    /// it; a nullable wrapper, a typed one, a two-member one and a form body's
+    /// are left as written.
+    #[test]
+    fn a_lone_all_of_ref_json_body_is_its_component() {
+        let wrapper = |extra: serde_json::Value| {
+            let mut schema = serde_json::json!({
+                "allOf": [{ "$ref": "#/components/schemas/Schedule" }]
+            });
+            schema
+                .as_object_mut()
+                .expect("an object")
+                .extend(extra.as_object().expect("an object").clone());
+            schema
+        };
+        let operation = |media: &str, schema: serde_json::Value| {
+            serde_json::json!({ "post": {
+                "requestBody": { "content": { media: { "schema": schema } } },
+                "responses": { "200": { "description": "ok" } }
+            } })
+        };
+        let mut doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.1.0", "info": { "title": "Kiln", "version": "1" },
+            "paths": {
+                "/titled": operation("application/json", wrapper(serde_json::json!({
+                    "title": "Params", "description": "The schedule"
+                }))),
+                "/defaulted": operation("application/vnd.kiln+json", wrapper(serde_json::json!({
+                    "default": { "peak": 1200 }
+                }))),
+                "/nullable": operation("application/json", wrapper(serde_json::json!({
+                    "nullable": true
+                }))),
+                "/typed": operation("application/json", wrapper(serde_json::json!({
+                    "type": "object"
+                }))),
+                "/form": operation("application/x-www-form-urlencoded", wrapper(serde_json::json!({}))),
+                "/pair": operation("application/json", serde_json::json!({ "allOf": [
+                    { "$ref": "#/components/schemas/Schedule" },
+                    { "$ref": "#/components/schemas/Schedule" }
+                ] }))
+            },
+            "components": { "schemas": { "Schedule": {
+                "type": "object", "properties": { "peak": { "type": "integer" } }
+            } } }
+        }))
+        .expect("a document");
+        normalize_request_bodies(&mut doc);
+        let body = |path: &str| {
+            let op = doc.paths[path].post.as_ref().expect("a post");
+            let media = op.request_body.as_ref().expect("a body").content.values();
+            media
+                .into_iter()
+                .next()
+                .and_then(|media| media.schema.clone())
+                .expect("a schema")
+        };
+        for path in ["/titled", "/defaulted"] {
+            let schema = body(path);
+            assert_eq!(
+                schema.reference.as_deref(),
+                Some("#/components/schemas/Schedule"),
+                "{path}"
+            );
+            assert!(schema.all_of.is_none(), "{path}");
+        }
+        for path in ["/nullable", "/typed", "/form", "/pair"] {
+            let schema = body(path);
+            assert!(schema.reference.is_none(), "{path}");
+            assert!(schema.all_of.is_some(), "{path}");
+        }
     }
 
     #[test]

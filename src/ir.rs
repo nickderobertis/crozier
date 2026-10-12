@@ -5745,9 +5745,20 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                 let Some(class) = error_class_name(status) else {
                     continue;
                 };
+                // Any JSON representation declares the body, `application/json`
+                // first: kompaz's shared `400`, `401` and `404` component
+                // responses answer `application/problem+json` objects, and Fern
+                // declares `BadRequestErrorBody`, `UnauthorizedErrorBody` and
+                // `NotFoundErrorBody` for them.
                 let Some(schema) = resp
                     .content
                     .get("application/json")
+                    .or_else(|| {
+                        resp.content
+                            .iter()
+                            .find(|(media_type, _)| is_json_like_media_type(media_type))
+                            .map(|(_, media)| media)
+                    })
                     .and_then(|c| c.schema.as_ref())
                 else {
                     continue;
@@ -6131,8 +6142,19 @@ fn resolve_request_body(
             // carries, optional ones included
             // (`openbankingproject-ch-kundenbeziehung`'s `/token`, whose
             // `authorization_code` example supplies four of the eight fields).
-            let mut fields =
-                hoist_form_object(obj, &media.encoding, hoister, request_ctx, multipart);
+            let component = schema
+                .reference
+                .as_deref()
+                .filter(|_| !multipart)
+                .map(ref_to_class);
+            let mut fields = hoist_component_form_object(
+                obj,
+                &media.encoding,
+                hoister,
+                request_ctx,
+                multipart,
+                component.as_deref(),
+            );
             apply_body_example(&mut fields, media_example(doc, media), true);
             return Some(RequestBody::Form(FormBody { fields, multipart }));
         }
@@ -7308,6 +7330,14 @@ impl InlineHoister<'_> {
                     };
                     return TypeRef::List(Box::new(optional_type_ref(element)));
                 }
+                // An inline string enum element is the enum `{Variant}Item`, as
+                // a component union's is (`Builder::field_type_ref`).
+                if item.reference.is_none() && string_enum_values(item).is_some() {
+                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    if let Some(list) = self.hoist_array_item_enum(&variant_name, variant) {
+                        return list;
+                    }
+                }
                 if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
                     let variant_name = variant_class_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
@@ -7664,6 +7694,15 @@ impl InlineHoister<'_> {
                 return TypeRef::Named(name);
             }
         }
+        // A lone `allOf` `$ref` that adds no shape of its own is the referenced
+        // type, as a component model's property is: vocode's `DTMFAction`
+        // declares `action_trigger: {allOf: [$ref FunctionCallActionTrigger],
+        // default: …}`, and Fern types the field `FunctionCallActionTrigger`
+        // where the action is flattened into a discriminated union's variant,
+        // not a `DtmfActionActionTrigger` model of its own.
+        if let Some(reference) = annotated_sole_all_of_ref(prop_schema) {
+            return TypeRef::Named(ref_to_class(reference));
+        }
         if prop_schema.reference.is_none() && is_inline_struct(prop_schema) {
             let nested = self.declared_or(naming::child_class_name(parent, prop), prop_schema);
             self.hoist_object(&nested, prop_schema);
@@ -7697,6 +7736,22 @@ impl InlineHoister<'_> {
                     }
                     if is_map(member) {
                         return nullable_map_value_type_ref(member);
+                    }
+                    // A composition beside `null` is the property's own union:
+                    // rice-shower's `stopReason` is `anyOf: [anyOf: [four string
+                    // consts], null]` on inline response objects, and Fern
+                    // declares `{Parent}StopReason` over `…StopReasonZero` to
+                    // `…StopReasonThree`, as it does on a component's property.
+                    if member.reference.is_none()
+                        && member.all_of.is_none()
+                        && (member.one_of.is_some() || member.any_of.is_some())
+                    {
+                        let mut union = member.clone();
+                        union.description = prop_schema
+                            .description
+                            .clone()
+                            .or_else(|| member.description.clone());
+                        return self.prop_type_ref(parent, prop, &union);
                     }
                     if is_inline_struct(member) {
                         self.hoist_object_with_doc(
@@ -8265,6 +8320,31 @@ fn hoist_form_object(
     request_ctx: &str,
     multipart: bool,
 ) -> Vec<BodyField> {
+    hoist_component_form_object(schema, encoding, hoister, request_ctx, multipart, None)
+}
+
+/// [`hoist_form_object`] over the body schema `component` names when it is one,
+/// each field typed as that component's own model types it. A urlencoded body
+/// keeps its component in the type layer (see [`urlencoded_body_source_names`]),
+/// so Fern types the flattened arguments with the component's own types rather
+/// than hoisting operation-scoped copies: supabase's `v1-exchange-oauth-token`
+/// posts `$ref OAuthTokenBody`, whose inline `grant_type` enum is
+/// `OAuthTokenBodyGrantType` in the method signature too, and Fern declares no
+/// `V1ExchangeOauthTokenRequestGrantType`.
+fn hoist_component_form_object(
+    schema: &Schema,
+    encoding: &IndexMap<String, crate::openapi::Encoding>,
+    hoister: &mut InlineHoister,
+    request_ctx: &str,
+    multipart: bool,
+    component: Option<&str>,
+) -> Vec<BodyField> {
+    let model = component.and_then(|class| {
+        hoister.root_types.iter().find_map(|decl| match decl {
+            TypeDecl::Object(object) if object.name == class => Some(object),
+            _ => None,
+        })
+    });
     let required: Vec<&str> = schema.required.iter().map(String::as_str).collect();
     schema
         .properties
@@ -8326,6 +8406,10 @@ fn hoist_form_object(
                 TypeRef::List(Box::new(TypeRef::Primitive(Prim::Bytes)))
             } else if is_file {
                 base_type_ref(prop_schema)
+            } else if let Some(field) = model
+                .and_then(|model| model.fields.iter().find(|field| field.wire_name == *prop))
+            {
+                field.type_ref.clone()
             } else {
                 hoister.copied_prop_type_ref(request_ctx, prop, prop_schema)
             };
@@ -10694,12 +10778,14 @@ fn append_member_fields(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
             )
-        } else if is_inline_struct(prop_schema) {
+        } else if is_inline_struct(prop_schema) && annotated_sole_all_of_ref(prop_schema).is_none() {
             enum_owner.map_or_else(
                 || base_type_ref(prop_schema),
                 |owner| TypeRef::Named(format!("{owner}{}", naming::class_name(prop))),
             )
         } else {
+            // A lone annotated `allOf` `$ref` is the referenced component here as
+            // on the model itself: vocode's `DTMFAction.action_trigger`.
             base_type_ref(prop_schema)
         };
         fields.push(Field {
@@ -13267,6 +13353,33 @@ impl Builder<'_> {
                                     self.variant_ref(&name, index, m, members),
                                 );
                             }
+                            // …and so is an array of an inline string enum, its
+                            // element the enum `{Owner}{Prop}{Ordinal}Item`:
+                            // langchain's `RunCreateStateful.stream_mode` offers a
+                            // list of modes or one mode, and Fern declares
+                            // `List[RunCreateStatefulStreamModeZeroItem]`.
+                            if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
+                                if let Some((items, values)) =
+                                    m.items.as_deref().and_then(|items| {
+                                        (items.reference.is_none())
+                                            .then(|| string_enum_values(items))
+                                            .flatten()
+                                            .map(|values| (items, values))
+                                    })
+                                {
+                                    let item_name = format!("{name}{}Item", ordinal_word(index));
+                                    self.types.push(TypeDecl::Enum(build_enum(
+                                        items,
+                                        &item_name,
+                                        values,
+                                        clean_doc(items.description.as_deref()),
+                                    )));
+                                    return nullable_member(
+                                        m,
+                                        TypeRef::List(Box::new(TypeRef::Named(item_name))),
+                                    );
+                                }
+                            }
                             if m.ty.as_ref().and_then(|ty| ty.primary()) == Some("array") {
                                 if let Some(item_members) = m.items.as_deref().and_then(|items| {
                                     items.any_of.as_ref().or(items.one_of.as_ref())
@@ -13571,9 +13684,18 @@ impl Builder<'_> {
         // `oneOf` of five `intent`-const objects, and Fern generates the
         // discriminated union `ResultIntentZero` for it, which the enclosing
         // `ResultIntent` alias then references by name.
+        // Its own 3.0 `nullable: true` stays on it, as a scalar member's does
+        // below: supabase's `JsonValue_Output` offers, first, a nullable `anyOf`
+        // of string, number and boolean, and Fern's alias opens
+        // `typing.Optional[JsonValueOutputZero]`.
         if variant.reference.is_none() {
             if let Some(members) = variant.one_of.as_ref().or(variant.any_of.as_ref()) {
-                return self.composed_variant(parent, index, variant, siblings, members);
+                let composed = self.composed_variant(parent, index, variant, siblings, members);
+                return if variant.nullable == Some(true) {
+                    optional_type_ref(composed)
+                } else {
+                    composed
+                };
             }
         }
         // `format: binary` is a file body, not a union alternative: in a union
@@ -14538,6 +14660,24 @@ fn sole_inline_all_of(schema: &Schema) -> Option<&Schema> {
         && schema.additional_properties.is_none()
         && schema.enum_values.is_none())
     .then_some(member)
+}
+
+/// The component a one-member `allOf` names when the schema around it adds only
+/// annotations (`title`, `description`, `default`, …): no type, properties,
+/// map, items, alternatives or nullability of its own.
+fn annotated_sole_all_of_ref(schema: &Schema) -> Option<&str> {
+    (schema.reference.is_none()
+        && schema.ty.is_none()
+        && !schema.properties.declared()
+        && schema.additional_properties.is_none()
+        && schema.items.is_none()
+        && schema.one_of.is_none()
+        && schema.any_of.is_none()
+        && schema.enum_values.is_none()
+        && schema.const_value.is_none()
+        && schema.nullable != Some(true))
+    .then(|| sole_all_of_ref(schema))
+    .flatten()
 }
 
 fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
@@ -21624,6 +21764,288 @@ mod tests {
         )
         .expect("the config is well formed");
         super::build(&doc, &config)
+    }
+
+    fn labels(ir: &super::Ir) -> Vec<String> {
+        ir.types
+            .iter()
+            .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+            .map(decl_label)
+            .collect()
+    }
+
+    fn named(name: &str) -> TypeRef {
+        TypeRef::Named(name.to_string())
+    }
+
+    /// A property that only annotates one `$ref` through a lone `allOf` is that
+    /// component wherever it is lowered — a discriminated variant's flattened
+    /// field, an inline request body and an inline response — and coins no
+    /// `{Owner}{Prop}` model; a nullable wrapper is not that shape.
+    #[test]
+    fn an_annotated_lone_all_of_ref_property_is_its_component_everywhere() {
+        let trigger = serde_json::json!({
+            "allOf": [{ "$ref": "#/components/schemas/Trigger" }],
+            "default": { "mode": "auto" }
+        });
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.1.0", "info": { "title": "Loom", "version": "1" },
+            "paths": { "/steps": { "post": { "operationId": "makeStep",
+                "requestBody": { "content": { "application/json": { "schema": {
+                    "type": "object", "properties": { "trigger": trigger }
+                } } } },
+                "responses": { "200": { "description": "ok", "content": {
+                    "application/json": { "schema": {
+                        "type": "array",
+                        "items": {
+                            "oneOf": [
+                                { "$ref": "#/components/schemas/Warp" },
+                                { "$ref": "#/components/schemas/Weft" }
+                            ],
+                            "discriminator": { "propertyName": "kind", "mapping": {
+                                "warp": "#/components/schemas/Warp",
+                                "weft": "#/components/schemas/Weft"
+                            } }
+                        }
+                    } }
+                } } }
+            } } },
+            "components": { "schemas": {
+                "Trigger": { "type": "object", "required": ["mode"],
+                    "properties": { "mode": { "type": "string" } } },
+                "Warp": { "type": "object", "required": ["kind"], "properties": {
+                    "kind": { "type": "string", "const": "warp" }, "trigger": trigger } },
+                "Weft": { "type": "object", "required": ["kind"], "properties": {
+                    "kind": { "type": "string", "const": "weft" },
+                    "trigger": {
+                        "allOf": [{ "$ref": "#/components/schemas/Trigger" }],
+                        "nullable": true
+                    } } }
+            } }
+        }));
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("an inline object body: {:?}", ir.endpoints[0].request_body);
+        };
+        assert_eq!(fields[0].type_ref, named("Trigger"));
+        let union = ir
+            .tag_types
+            .iter()
+            .map(|tag| &tag.decl)
+            .chain(&ir.types)
+            .find_map(|decl| match decl {
+                TypeDecl::DiscriminatedUnion(union) => Some(union),
+                _ => None,
+            })
+            .expect("the response item is a discriminated union");
+        let trigger_type = |member: usize| {
+            union.members[member]
+                .fields
+                .iter()
+                .find(|field| field.wire_name == "trigger")
+                .map(|field| field.type_ref.clone())
+        };
+        assert_eq!(trigger_type(0), Some(named("Trigger")));
+        // The nullable wrapper keeps the variant-scoped name it always had.
+        assert_eq!(trigger_type(1), Some(named("WeftTrigger")));
+        assert!(!labels(&ir).iter().any(|label| label.contains("WarpTrigger")));
+    }
+
+    /// A property union's array member of an inline string enum declares that
+    /// enum as `{Owner}{Prop}{Ordinal}Item`, on a component and on an inline
+    /// body alike; an array of plain strings names nothing.
+    #[test]
+    fn an_array_member_of_an_inline_enum_names_its_item() {
+        let feed = serde_json::json!({ "anyOf": [
+            { "type": "array", "items": { "type": "string", "enum": ["glaze", "bisque"] } },
+            { "type": "string", "enum": ["glaze", "bisque"] },
+            { "type": "array", "items": { "type": "string" } }
+        ] });
+        let ir = build_document(observed_document(
+            serde_json::json!({ "Run": { "type": "object", "properties": { "feed": feed } } }),
+            serde_json::json!({ "feed": feed }),
+        ));
+        let declared = labels(&ir);
+        for name in [
+            "Enum(RunFeedZeroItem)",
+            "Enum(RunFeedOne)",
+            "Enum(MakeThingRequestFeedZeroItem)",
+            "Enum(MakeThingRequestFeedOne)",
+        ] {
+            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+        }
+        assert!(!declared.iter().any(|label| label.contains("TwoItem")), "{declared:?}");
+        let alias = |name: &str| {
+            ir.types
+                .iter()
+                .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+                .find_map(|decl| match decl {
+                    TypeDecl::Alias(alias) if alias.name == name => Some(alias.target.clone()),
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("{name} is declared"))
+        };
+        assert_eq!(
+            alias("RunFeed"),
+            TypeRef::Union(vec![
+                TypeRef::List(Box::new(named("RunFeedZeroItem"))),
+                named("RunFeedOne"),
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            ])
+        );
+        assert_eq!(
+            alias("MakeThingRequestFeed"),
+            TypeRef::Union(vec![
+                TypeRef::List(Box::new(named("MakeThingRequestFeedZeroItem"))),
+                named("MakeThingRequestFeedOne"),
+                TypeRef::List(Box::new(TypeRef::Primitive(Prim::Str))),
+            ])
+        );
+    }
+
+    /// An inline property that is a composition beside `null` is the property's
+    /// own named union, one enum per string `const`, as on a component; and a
+    /// union member that is itself a nullable composition keeps its `Optional`.
+    #[test]
+    fn a_nullable_nested_composition_is_named_and_stays_optional() {
+        let halt = serde_json::json!({
+            "nullable": true,
+            "description": "Why the run stopped",
+            "anyOf": [
+                { "anyOf": [
+                    { "type": "string", "const": "manual" },
+                    { "type": "string", "const": "overheat" }
+                ] },
+                { "type": "null" }
+            ]
+        });
+        let ir = build_document(observed_document(
+            serde_json::json!({ "Value": { "anyOf": [
+                { "anyOf": [{ "type": "string" }, { "type": "number" }], "nullable": true },
+                { "anyOf": [{ "type": "string" }, { "type": "boolean" }] },
+                { "type": "array", "items": { "$ref": "#/components/schemas/Value" } }
+            ] } }),
+            serde_json::json!({ "haltCause": halt }),
+        ));
+        let declared = labels(&ir);
+        for name in [
+            "Alias(MakeThingRequestHaltCause)",
+            "Enum(MakeThingRequestHaltCauseZero)",
+            "Enum(MakeThingRequestHaltCauseOne)",
+        ] {
+            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+        }
+        let target = |name: &str| {
+            ir.types
+                .iter()
+                .chain(ir.tag_types.iter().map(|tag| &tag.decl))
+                .find_map(|decl| match decl {
+                    TypeDecl::Alias(alias) if alias.name == name => {
+                        Some((alias.target.clone(), alias.docstring.clone()))
+                    }
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("{name} is declared"))
+        };
+        let (halt_cause, docstring) = target("MakeThingRequestHaltCause");
+        assert_eq!(
+            halt_cause,
+            TypeRef::Union(vec![
+                named("MakeThingRequestHaltCauseZero"),
+                named("MakeThingRequestHaltCauseOne")
+            ])
+        );
+        assert_eq!(docstring.as_deref(), Some("Why the run stopped"));
+        let Some(RequestBody::Inline(fields)) = &ir.endpoints[0].request_body else {
+            panic!("an inline object body");
+        };
+        assert_eq!(fields[0].type_ref, named("MakeThingRequestHaltCause"));
+        let TypeRef::Union(members) = target("Value").0 else {
+            panic!("Value is a union alias");
+        };
+        assert_eq!(
+            members[..2],
+            [
+                TypeRef::Optional(Box::new(named("ValueZero"))),
+                named("ValueOne")
+            ]
+        );
+    }
+
+    /// A urlencoded body's component stays a model, so its flattened arguments
+    /// are typed by that model's own types; an inline urlencoded body, and a
+    /// multipart one, still hoist operation-scoped types.
+    #[test]
+    fn a_urlencoded_component_body_reuses_the_components_types() {
+        let token = serde_json::json!({ "type": "object", "properties": {
+            "grant_type": { "type": "string", "enum": ["code", "refresh"] },
+            "code": { "type": "string" }
+        } });
+        let operation = |id: &str, media: &str, schema: serde_json::Value| {
+            serde_json::json!({ "post": { "operationId": id,
+                "requestBody": { "required": true, "content": { media: { "schema": schema } } },
+                "responses": { "200": { "description": "ok" } }
+            } })
+        };
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": { "title": "Locker", "version": "1" },
+            "paths": {
+                "/tokens": operation(
+                    "exchange",
+                    "application/x-www-form-urlencoded",
+                    serde_json::json!({ "$ref": "#/components/schemas/TokenRequest" }),
+                ),
+                "/inline": operation("inline", "application/x-www-form-urlencoded", token.clone()),
+                "/upload": operation(
+                    "upload",
+                    "multipart/form-data",
+                    serde_json::json!({ "$ref": "#/components/schemas/UploadRequest" }),
+                )
+            },
+            "components": { "schemas": { "TokenRequest": token.clone(), "UploadRequest": token } }
+        }));
+        let grant_type = |method: &str| {
+            let endpoint = ir
+                .endpoints
+                .iter()
+                .find(|endpoint| endpoint.method_name == method)
+                .unwrap_or_else(|| panic!("{method} is generated"));
+            let Some(RequestBody::Form(form)) = &endpoint.request_body else {
+                panic!("{method} posts a form");
+            };
+            form.fields[0].type_ref.clone()
+        };
+        assert_eq!(grant_type("exchange"), named("TokenRequestGrantType"));
+        assert_eq!(grant_type("inline"), named("InlineRequestGrantType"));
+        assert_eq!(grant_type("upload"), named("UploadRequestGrantType"));
+        assert!(!labels(&ir).iter().any(|label| label == "Enum(ExchangeRequestGrantType)"));
+    }
+
+    /// An error response declared only under a JSON-like media type other than
+    /// `application/json` hoists its inline object as `{Class}Body`; a non-JSON
+    /// one does not.
+    #[test]
+    fn a_problem_json_error_body_is_hoisted() {
+        let problem = |media: &str| {
+            serde_json::json!({ "description": "problem", "content": { media: { "schema": {
+                "type": "object", "properties": { "title": { "type": "string" } }
+            } } } })
+        };
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": { "title": "Ledger", "version": "1" },
+            "paths": { "/entries": { "get": { "operationId": "listEntries",
+                "responses": {
+                    "200": { "description": "ok" },
+                    "400": problem("application/problem+json"),
+                    "404": problem("application/vnd.ledger+json; charset=utf-8"),
+                    "409": problem("application/xml")
+                }
+            } } }
+        }));
+        let declared = labels(&ir);
+        for name in ["Object(BadRequestErrorBody)", "Object(NotFoundErrorBody)"] {
+            assert!(declared.iter().any(|label| label == name), "{name}: {declared:?}");
+        }
+        assert!(!declared.iter().any(|label| label.contains("ConflictErrorBody")));
     }
 
     #[test]
