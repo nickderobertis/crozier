@@ -6486,6 +6486,17 @@ fn sdk_env_operation_header_defaults_reach_the_wire() {
         .stderr(predicate::str::contains(
             "must contain the generated fern package",
         ));
+    let malformed = out.path().join("malformed.json");
+    std::fs::write(&malformed, "null").unwrap();
+    Command::new(&python)
+        .arg(&script)
+        .arg(&src)
+        .arg(&malformed)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "the document has no `paths` object",
+        ));
     // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records the requests the emitted SDK sends; crozier and the client run unmodified. Real-network coverage belongs to the live Prism tier.
     Command::new(&python)
         .env("PYTHONDONTWRITEBYTECODE", "1")
