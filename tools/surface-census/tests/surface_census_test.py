@@ -29,6 +29,7 @@ import io
 import itertools
 import json
 import os
+import pathlib
 import re
 import shutil
 import subprocess
@@ -41,9 +42,10 @@ import unicodedata
 import unittest
 from collections import Counter
 from collections.abc import Callable
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from types import ModuleType
 from typing import Any, ClassVar
+from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
 # child writes UTF-8 too, whatever the platform locale (cp1252 on Windows).
@@ -16655,6 +16657,53 @@ class ScenarioProofIndexTests(unittest.TestCase):
         section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
         quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
         self.assertEqual(run.stdout, quoted, "re-run `scenario-proof-index.py summary` and quote it")
+
+    def test_repository_paths_are_spelled_with_slashes_under_windows_path_semantics(self) -> None:
+        """On Windows `str()` of a `Path` uses backslashes; every path the tooling renders still uses `/`."""
+
+        class WindowsSpelledPath(Path):
+            """The host's own path, rendered as `str()` renders a Windows one; the filesystem sees it unchanged."""
+
+            def __str__(self) -> str:
+                return str(PureWindowsPath(super().__str__()))
+
+            def __fspath__(self) -> str:
+                return super().__str__()
+
+            def as_posix(self) -> str:
+                return PureWindowsPath(super().__str__()).as_posix()
+
+        script = REPO / "tools/surface-census/scenario-proof-index.py"
+        spec = importlib.util.spec_from_file_location("census_test_scenario_proof_index_windows", script)
+        assert spec and spec.loader
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        self.addCleanup(sys.modules.pop, spec.name)
+        # The script imports `Path` from a `pathlib` whose `Path` is the Windows-spelled one; pathlib itself is untouched.
+        windows_pathlib = ModuleType("pathlib")
+        windows_pathlib.__dict__.update({**vars(pathlib), "Path": WindowsSpelledPath})
+        with mock.patch.dict(sys.modules, {"pathlib": windows_pathlib}):
+            spec.loader.exec_module(module)
+        self.assertIn("\\", str(module.REPO / "docs/openapi-surface"), "the Windows spelling is in effect")
+
+        lines, failures = module.summary(WindowsSpelledPath(REPO))
+        self.assertEqual([], failures)
+        report = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
+        self.assertEqual(section.split("```text\n", 1)[1].split("```", 1)[0], "\n".join(lines) + "\n")
+
+        golden = self.row("handwritten")["goldens"].split(";")[0]
+        root = WindowsSpelledPath(self.mirror())
+        self.rewrite(root / module.INVENTORY, f'"{golden}"', '"unrelated"')
+        (root / module.RESIDUALS).unlink()
+        (root / module.LEDGER).write_text("golden\tfile\n", encoding="utf-8")
+        failures = module.check(root)
+        self.assertIn(f"{root.as_posix()}/tests/fixtures/departures-ledger.tsv: header must", "\n".join(failures))
+        self.assertIn(f"{root.as_posix()}/docs/fern-measurements/blocked-witnesses/residuals.tsv: missing", failures)
+        self.assertTrue(
+            any(f"golden {golden} is not in tests/fixtures/compared-goldens.json" in failure for failure in failures)
+        )
+        self.assertEqual([], [failure for failure in failures if "\\" in failure])
 
     def test_diff_hunks_count_unchanged_runs_on_both_sides(self) -> None:
         diff = textwrap.dedent(

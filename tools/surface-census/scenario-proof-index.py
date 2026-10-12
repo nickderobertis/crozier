@@ -54,14 +54,15 @@ import sys
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from enum import StrEnum
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from types import ModuleType
 from typing import Any, NamedTuple, NewType
 
 REPO = Path(__file__).resolve().parents[2]
-PLAN = Path("docs/openapi-surface/scenario-plan.tsv")
+# Repository paths are spelled with `/` on every platform, in messages as in the committed report.
+PLAN = PurePosixPath("docs/openapi-surface/scenario-plan.tsv")
 PLAN_HEADER = ("shape", "owner")
-INDEX = Path("docs/openapi-surface/scenario-proof-index.tsv")
+INDEX = PurePosixPath("docs/openapi-surface/scenario-proof-index.tsv")
 INDEX_HEADER = (
     "shape",
     "owner",
@@ -77,13 +78,13 @@ INDEX_HEADER = (
     "closer",
 )
 # A literals-proven shape whose `python_enums` output still differs keeps that diff here, by shape.
-PYTHON_ENUMS_RESIDUALS = Path("docs/fern-measurements/python-enums-residuals")
+PYTHON_ENUMS_RESIDUALS = PurePosixPath("docs/fern-measurements/python-enums-residuals")
 PYTHON_ENUMS = "python_enums"
-WITNESSES = Path("docs/fern-measurements/blocked-witnesses/witnesses.tsv")
+WITNESSES = PurePosixPath("docs/fern-measurements/blocked-witnesses/witnesses.tsv")
 WITNESS_HEADER = ("witness", "source", "revision", "sha256", "status", "corpus", "diff", "evidence")
-RESIDUALS = Path("docs/fern-measurements/blocked-witnesses/residuals.tsv")
+RESIDUALS = PurePosixPath("docs/fern-measurements/blocked-witnesses/residuals.tsv")
 RESIDUAL_HEADER = ("witness", "file", "hunks", "owner", "shape")
-CLASSES = Path("docs/fern-refusals/classes.tsv")
+CLASSES = PurePosixPath("docs/fern-refusals/classes.tsv")
 CLASSES_HEADER = (
     "class",
     "family",
@@ -95,11 +96,11 @@ CLASSES_HEADER = (
     "crozier_diagnostic",
     "population_strict",
 )
-INVENTORY = Path("tests/fixtures/compared-goldens.json")
-LEDGER = Path("tests/fixtures/departures-ledger.tsv")
+INVENTORY = PurePosixPath("tests/fixtures/compared-goldens.json")
+LEDGER = PurePosixPath("tests/fixtures/departures-ledger.tsv")
 LEDGER_HEADER = ("golden", "file", "line", "departure")
-CATALOG = Path("assets/departures.yml")
-CORPUS = Path("tests/fixtures/CORPUS.md")
+CATALOG = PurePosixPath("assets/departures.yml")
+CORPUS = PurePosixPath("tests/fixtures/CORPUS.md")
 NONE = "—"
 UNOWNED = "unowned"
 UNEVALUATED = "unevaluated"
@@ -333,15 +334,15 @@ def _handwritten() -> ModuleType:
 def read_tsv(path: Path, header: tuple[str, ...]) -> tuple[list[dict[str, str]], list[str]]:
     """Rows of a tab-separated file whose first line must be `header`, each cell non-empty."""
     if not path.is_file():
-        return [], [f"{path}: missing"]
+        return [], [f"{path.as_posix()}: missing"]
     lines = path.read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != header:
-        return [], [f"{path}: header must be the tab-separated {', '.join(header)}"]
+        return [], [f"{path.as_posix()}: header must be the tab-separated {', '.join(header)}"]
     rows, failures = [], []
     for number, line in enumerate(lines[1:], start=2):
         cells = line.split("\t")
         if len(cells) != len(header) or any(not cell.strip() for cell in cells):
-            failures.append(f"{path}:{number}: needs {len(header)} non-empty cells")
+            failures.append(f"{path.as_posix()}:{number}: needs {len(header)} non-empty cells")
             continue
         rows.append(dict(zip(header, cells, strict=True)))
     return rows, failures
@@ -1068,7 +1069,8 @@ def main(argv: list[str] | None = None) -> int:
                 found = diff_hunks(args.diff.read_text(encoding="utf-8"))
             except (OSError, MalformedDiff) as error:
                 print(
-                    f"scenario-proof-index: cannot read {args.diff} ({error}) — pass a committed diff", file=sys.stderr
+                    f"scenario-proof-index: cannot read {args.diff.as_posix()} ({error}) — pass a committed diff",
+                    file=sys.stderr,
                 )
                 return 1
             for hunk in found:
