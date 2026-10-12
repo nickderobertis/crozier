@@ -16480,6 +16480,15 @@ def test_each_operation_sends_its_declared_header_default():
             "exactly once, on a path it always reaches"
         )
         append = '        sent.append((request.method, request.headers["X-Projection"]))\n'
+        by_method = '{"GET": "radial", "PUT": "linear"}[request.method]'
+        rewrites = "which can change a request before it is captured"
+
+        def handler_touches(line: int) -> str:
+            return (
+                f"has a transport handler `answer` that touches the request it receives at line {line} other than "
+                "to read its fields into the captured entry"
+            )
+
         respond = '        return httpx.Response(200, json=["measurement"])\n'
 
         cases: dict[str, tuple[str, list[str]]] = {
@@ -16617,7 +16626,60 @@ def test_each_operation_sends_its_declared_header_default():
                     '        request = httpx.Request("PUT", "https://x", headers={"X-Projection": "linear"})\n'
                     + append,
                 ),
-                [why(no_append), *never],
+                [why(handler_touches(15)), *never],
+            ),
+            "handler overwrites the captured header": (
+                wire.replace(append, f'        request.headers["X-Projection"] = {by_method}\n' + append),
+                [why(handler_touches(15)), *never],
+            ),
+            "handler writes the header through an alias": (
+                wire.replace(
+                    append,
+                    f'        headers = request.headers\n        headers["X-Projection"] = {by_method}\n' + append,
+                ),
+                [why(handler_touches(15)), *never],
+            ),
+            "handler hands the request to a mutation helper": (
+                wire.replace(append, "        rewrite(request)\n" + append)
+                + '\n\ndef rewrite(request):\n    request.headers["X-Projection"] = "linear"\n',
+                [why(handler_touches(15)), *never],
+            ),
+            "handler hands the headers to a mutation helper": (
+                wire.replace(append, "        rewrite(request.headers)\n" + append),
+                [why(handler_touches(15)), *never],
+            ),
+            "handler updates the headers in place": (
+                wire.replace(append, f'        request.headers.update({{"X-Projection": {by_method}}})\n' + append),
+                [why(handler_touches(15)), *never],
+            ),
+            "handler writes the header in the entry": (
+                wire.replace(
+                    append,
+                    '        sent.append((request.method, request.headers.setdefault("X-Projection", "linear")))\n',
+                ),
+                [why(handler_touches(15)), *never],
+            ),
+            "handler writes the header after capturing it": (
+                wire.replace(append, append + '        request.headers["X-Projection"] = "linear"\n'),
+                [why(handler_touches(16)), *never],
+            ),
+            "client given headers": (
+                wire.replace(
+                    '        base_url="https://atlas.example.net",\n',
+                    '        base_url="https://atlas.example.net",\n        headers={"X-Projection": "linear"},\n',
+                ),
+                [why(f"builds its client with `headers=` at line 18, {rewrites}"), *never],
+            ),
+            "transport client given an event hook": (
+                wire.replace("httpx.Client(transport=", 'httpx.Client(event_hooks={"request": []}, transport='),
+                [why(f"builds its client's transport with `event_hooks=` at line 20, {rewrites}"), *never],
+            ),
+            "call given request options": (
+                wire.replace(
+                    "client.replace_measurements()",
+                    'client.replace_measurements(request_options={"additional_headers": {"X-Projection": "linear"}})',
+                ),
+                [NEVER_PUT],
             ),
             "a call only under a short-circuit": (
                 wire.replace("assert client.replace_measurements()", "assert sent or client.replace_measurements()"),

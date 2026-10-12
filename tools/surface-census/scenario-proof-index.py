@@ -797,18 +797,24 @@ class Capture:
     slots: dict[int | None, Field]
 
 
-def _capture(handler: ast.FunctionDef) -> Capture | None:
+UNCAPTURED = "does not append each request it receives to one list, exactly once, on a path it always reaches"
+
+
+def _capture(handler: ast.FunctionDef) -> Capture | str:
     """What a transport handler records of each request it receives: one `<list>.append(<request fields>)`.
 
     The append must be a statement the handler always reaches (none follows a
-    `return`, sits under a branch, or lives in a function nested in it), it must
-    be the handler's only mention of the list, and the handler must not rebind
-    the request it was given, so each entry is exactly one received request.
+    `return`, sits under a branch, or lives in a function nested in it), and it
+    must be the handler's only mention of the list. The request may be named
+    only inside that append, each mention a plain read of one of its fields (or
+    the request itself), so the handler cannot rewrite, alias or hand the request
+    to anything that could change what is recorded: each entry is exactly what
+    one received request carried. Otherwise the reason is returned.
     """
     arguments = handler.args.posonlyargs + handler.args.args
     statements = _reachable(handler.body)
     if not arguments or statements is None:
-        return None
+        return UNCAPTURED
     request = arguments[0].arg
     appends = [
         (container, entry)
@@ -818,19 +824,29 @@ def _capture(handler: ast.FunctionDef) -> Capture | None:
         if container
     ]
     if len(appends) != 1:
-        return None
+        return UNCAPTURED
     (container, entry), names = appends[0], [node for node in ast.walk(handler) if isinstance(node, ast.Name)]
-    if [node.id for node in names].count(container) != 1 or any(
-        node.id == request and isinstance(node.ctx, ast.Store) for node in names
-    ):
-        return None
+    if [node.id for node in names].count(container) != 1:
+        return UNCAPTURED
     elements = entry.elts if isinstance(entry, ast.Tuple) else [entry]
+    reads = {
+        id(name)
+        for element in elements
+        if _request_field(element, request)
+        for name in ast.walk(element)
+        if isinstance(name, ast.Name)
+    }
+    if touched := next((node for node in names if node.id == request and id(node) not in reads), None):
+        return (
+            f"touches the request it receives at line {touched.lineno} other than to read its fields into the "
+            "captured entry"
+        )
     slots: dict[int | None, Field] = {
         (index if isinstance(entry, ast.Tuple) else None): field
         for index, element in enumerate(elements)
         if (field := _request_field(element, request))
     }
-    return Capture(container, slots) if slots else None
+    return Capture(container, slots) if slots else UNCAPTURED
 
 
 def _append(node: ast.expr) -> tuple[str | None, ast.expr]:
@@ -871,8 +887,10 @@ def _client_capture(
     `_capture` cannot credit is returned as the reason the client captures nothing.
     """
     match value:
-        case ast.Call(func=ast.Name(id=name)) if name in sdk:
-            pending = [keyword.value for keyword in value.keywords if keyword.arg == "httpx_client"]
+        case ast.Call(func=ast.Name(id=name), keywords=keywords) if name in sdk:
+            pending = [keyword.value for keyword in keywords if keyword.arg == "httpx_client"]
+            if rewriting := next((keyword for keyword in keywords if keyword.arg in SDK_REWRITING), None):
+                return f"builds its client with {_spelled(rewriting)} at line {value.lineno}, {REWRITES}"
         case _:
             return None
     chain: dict[str, int] = {}
@@ -880,6 +898,12 @@ def _client_capture(
         node = pending.pop()
         for inner in ast.walk(node):
             match inner:
+                case ast.Call(keywords=keywords) if _called(inner) != "MockTransport" and (
+                    rewriting := next((keyword for keyword in keywords if keyword.arg in HTTPX_REWRITING), None)
+                ):
+                    return (
+                        f"builds its client's transport with {_spelled(rewriting)} at line {inner.lineno}, {REWRITES}"
+                    )
                 case ast.Name(id=name) if name in bound and name not in chain:
                     chain[name] = bound[name][0]
                     pending.append(bound[name][1])
@@ -890,14 +914,25 @@ def _client_capture(
                     continue
             for handler in given:
                 function = handlers.get(handler.id) if isinstance(handler, ast.Name) else None
-                if function and (capture := _capture(function)):
-                    return capture, function, chain
-                if function:
-                    return (
-                        f"has a transport handler `{function.name}` that does not append each request it "
-                        "receives to one list, exactly once, on a path it always reaches"
-                    )
+                if function is None:
+                    continue
+                capture = _capture(function)
+                if isinstance(capture, str):
+                    return f"has a transport handler `{function.name}` that {capture}"
+                return capture, function, chain
     return None
+
+
+# Constructor arguments that change a request before its transport captures it: the
+# client's own extra headers, and httpx's hooks, defaults and credentials. `None` is a
+# `**` expansion, which could carry any of them.
+SDK_REWRITING = frozenset({"headers", None})
+HTTPX_REWRITING = frozenset({"event_hooks", "headers", "params", "auth", "cookies", "mounts", None})
+REWRITES = "which can change a request before it is captured"
+
+
+def _spelled(keyword: ast.keyword) -> str:
+    return f"`{keyword.arg}=`" if keyword.arg else "a `**` expansion"
 
 
 @dataclass(frozen=True)
@@ -962,7 +997,8 @@ def _client_calls(statement: ast.stmt, clients: set[str]) -> list[SentCall] | No
             case ast.Call(func=ast.Attribute(attr=method) as called, keywords=keywords) if _root(called) in clients:
                 if deferred:
                     return False
-                named = frozenset(keyword.arg for keyword in keywords if keyword.arg)
+                # `*`/`**` mark positional arguments or an expansion, either of which could pass the parameter.
+                named = frozenset(keyword.arg or "**" for keyword in keywords) | ({"*"} if node.args else set())
                 found.append(((node.lineno, node.col_offset), SentCall(method, named)))
         inner = deferred or isinstance(node, DEFERRED)
         return all(visit(child, inner) for child in ast.iter_child_nodes(node))
@@ -1331,7 +1367,7 @@ def exception_failures(directory: Path, note: str) -> list[str]:
     for default in defaults:
         if not any(
             call.method == snake(default.operation)
-            and snake(default.name) not in call.keywords
+            and not call.keywords & {snake(default.name), "request_options", "*", "**"}
             and (field, value) == (default.field, default.value)
             for call, field, value in asserted
         ):
