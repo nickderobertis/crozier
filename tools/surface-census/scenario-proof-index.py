@@ -671,6 +671,9 @@ def index_failures(root: Path, plan: dict[ShapeId, Owner], proofs: list[Proof], 
             failures.append(f"{proof.where}: a shape id is lower-kebab")
         if proof.shape in plan and plan[proof.shape] is not proof.owner:
             failures.append(f"{proof.where}: owner {proof.owner} is not the plan's {plan[proof.shape]}")
+        for cell, cited in (("source", proof.source), ("tests", proof.tests), ("evidence", proof.evidence)):
+            if not cited:
+                failures.append(f"{proof.where}: its {cell} cell cites nothing")
         failures += path_failures(root, proof.where, proof.source)
         failures += path_failures(root, proof.where, proof.evidence)
         unknown = [test for test in proof.tests if test not in known.e2e.tests]

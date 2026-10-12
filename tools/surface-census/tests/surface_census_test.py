@@ -16133,6 +16133,98 @@ class ScenarioProofIndexTests(unittest.TestCase):
         )
         self.assert_fails(root, f"{row['shape']}: none of its tests reaches the probe")
 
+    def test_every_malformed_record_is_rejected(self) -> None:
+        module = self.index_script
+        handwritten = self.row("handwritten")
+        refusal = self.row("refusal")
+        departures = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if row["outcome"] == "departure" and ";" in row["ids"]
+        )
+        flat = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if any(golden.endswith("/expected-flat") for golden in row["goldens"].split(";"))
+        )
+        overlay = next(
+            row
+            for row in module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)[0]
+            if any(golden.endswith("/expected-literals") for golden in row["goldens"].split(";"))
+        )
+
+        def edit_row(row: dict[str, str], **cells: str) -> Callable[[Path], None]:
+            return lambda root: self.rewrite(root / module.INDEX, self.line(row), self.edited(row, **cells))
+
+        def without_test(row: dict[str, str], test: str) -> Callable[[Path], None]:
+            tests = ";".join(name for name in row["tests"].split(";") if name != test)
+            return edit_row(row, tests=tests)
+
+        def plan_edit(old: str, new: str) -> Callable[[Path], None]:
+            return lambda root: self.rewrite(root / module.PLAN, old, new)
+
+        def misspelled(root: Path) -> None:
+            spelled = handwritten["shape"].replace("-", "_", 1)
+            self.rewrite(root / module.PLAN, f"{handwritten['shape']}\t", f"{spelled}\t")
+            edit_row(handwritten, shape=spelled)(root)
+
+        index_lines = (REPO / module.INDEX).read_text(encoding="utf-8").splitlines()
+        shape_line = index_lines.index(self.line(handwritten)) + 1
+        first_planned = (REPO / module.PLAN).read_text(encoding="utf-8").splitlines()[1]
+        overlay_test = module.read_e2e(REPO).overlay_test
+        flat_test = next(test for test in flat["tests"].split(";") if test in module.read_e2e(REPO).flat_tests)
+        ids = departures["ids"].split(";")
+        cases: dict[str, tuple[Callable[[Path], None], str]] = {
+            "short row": (edit_row(handwritten, evidence=""), f"{module.INDEX}:{shape_line}: needs 10 non-empty cells"),
+            "plan owner": (
+                plan_edit(first_planned, first_planned.split("\t")[0] + "\tnobody"),
+                "owner nobody is none of",
+            ),
+            "plan duplicate": (
+                plan_edit(first_planned, f"{first_planned}\n{first_planned}"),
+                f"{first_planned.split(chr(9))[0]} is planned twice",
+            ),
+            "flat binding": (without_test(flat, flat_test), f"{flat['shape']}: none of its tests reaches golden"),
+            "overlay binding": (
+                without_test(overlay, str(overlay_test)),
+                f"{overlay['shape']}: none of its tests reaches golden",
+            ),
+            "unknown class": (edit_row(refusal, ids="unknown-class"), "unknown-class is no decided"),
+            "refusal golden": (
+                edit_row(refusal, goldens=handwritten["goldens"]),
+                f"{refusal['shape']}: a refusal cites no golden and records `default;fern-strict`",
+            ),
+            "refusal settings": (edit_row(refusal, settings="python_enums"), "a refusal cites no golden and records"),
+            "evaluation note": (
+                lambda root: (root / f"docs/fern-refusals/{refusal['ids']}/evaluation.md").unlink(),
+                f"{refusal['ids']} has no evaluation note",
+            ),
+            "no golden": (edit_row(handwritten, goldens=module.NONE), "a handwritten proof cites at least one golden"),
+            "departure order": (
+                edit_row(departures, ids=";".join(reversed(ids))),
+                f"{departures['shape']}: departure ids are sorted",
+            ),
+            "row order": (
+                lambda root: self.rewrite(
+                    root / module.INDEX,
+                    self.line(handwritten),
+                    self.line(handwritten)
+                    + "\n"
+                    + self.line(handwritten).replace(handwritten["shape"], "aaa-first", 1),
+                ),
+                "rows are sorted by shape",
+            ),
+            "shape syntax": (misspelled, "a shape id is lower-kebab"),
+            "no evidence": (edit_row(handwritten, evidence=module.NONE), "its evidence cell cites nothing"),
+            "no probe": (edit_row(refusal, source=module.NONE), "its source cell cites nothing"),
+            "no test": (edit_row(handwritten, tests=module.NONE), "its tests cell cites nothing"),
+        }
+        for name, (mutate, message) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                mutate(root)
+                self.assert_fails(root, message)
+
     def test_a_refusal_outcome_must_agree_with_its_registry_class(self) -> None:
         module = self.index_script
         row = self.row("refusal")
