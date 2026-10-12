@@ -15910,7 +15910,11 @@ class ScenarioProofIndexTests(unittest.TestCase):
             for golden in module.split(row["goldens"]):
                 copy(f"{golden}/.fern/metadata.json")
             if row["kind"] == "refusal":
-                copy(f"docs/fern-refusals/{row['ids']}/evaluation.md")
+                shutil.copytree(
+                    REPO / "docs/fern-refusals" / row["ids"],
+                    cls.base / "docs/fern-refusals" / row["ids"],
+                    dirs_exist_ok=True,
+                )
         witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
         for row in witnesses:
             copy(row["evidence"].partition("#")[0])
@@ -16240,7 +16244,10 @@ class ScenarioProofIndexTests(unittest.TestCase):
         self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
         # A claimed default-generation exception needs both the outcome and the wire finding.
         self.assert_fails(root, f"{row['shape']}: outcome {row['outcome']} disagrees with {name}'s registry status")
-        self.assert_fails(root, f"{row['shape']}: {name} claims default generation without its wire evaluation")
+        self.assert_fails(
+            root,
+            f"{row['shape']}: {name} claims default generation, but its evaluation note does not decide `generate`",
+        )
         self.rewrite(classes, "\t".join([*cells[:6], "generate", *cells[7:]]), line)
         probe = Path(row["source"].split(";")[0]).name
         note = root / f"docs/fern-refusals/{name}/evaluation.md"
@@ -16283,10 +16290,13 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 mutate(root)
                 self.assert_fails(root, message)
 
-    def test_a_generate_class_with_its_wire_evaluation_reconciles(self) -> None:
+    EXCEPTION = "header-default-differs-across-operations"
+
+    def claim_generate(self, root: Path) -> Path:
+        """Mark the header-default class `generate` and its scenario's outcome to match; return the class dir."""
         module = self.index_script
-        row = self.row("refusal")
-        root = self.mirror()
+        rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
+        row = next(row for row in rows if row["ids"] == self.EXCEPTION)
         classes = root / module.CLASSES
         line = next(
             line for line in classes.read_text(encoding="utf-8").splitlines() if line.startswith(f"{row['ids']}\t")
@@ -16294,8 +16304,88 @@ class ScenarioProofIndexTests(unittest.TestCase):
         cells = line.split("\t")
         self.rewrite(classes, line, "\t".join([*cells[:6], "generate", *cells[7:]]))
         self.rewrite(root / module.INDEX, self.line(row), self.edited(row, outcome="default=generate;strict=refuse"))
-        (root / f"docs/fern-refusals/{row['ids']}/wire_test.py").write_text("", encoding="utf-8")
-        self.assertEqual([], module.check(root))
+        return root / "docs/fern-refusals" / self.EXCEPTION
+
+    def establish(self, directory: Path) -> None:
+        """Commit the evidence a default-generation exception rests on, from the class's own logs where they pass."""
+        (directory / "evidence/passing-wire.log").write_text("2 passed in 0.41s\n", encoding="utf-8")
+        (directory / "evaluation.md").write_text(
+            "# Header defaults overridden by an operation: generate\n\n"
+            "The [probe](probe.yml) is valid OpenAPI ([validation log](evidence/spec-validation.log)); "
+            "Fern's refusal is recorded in fern-refusal.txt. The SDK imports and type-checks "
+            "([mypy](evidence/baseline-mypy.log)) and the [wire evaluation](evidence/passing-wire.log) "
+            "asserts both declared defaults, so this class is `generate`.\n",
+            encoding="utf-8",
+        )
+        (directory / "wire_test.py").write_text(
+            'def test_defaults(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n', encoding="utf-8"
+        )
+
+    def test_a_generate_class_with_its_established_evaluation_reconciles(self) -> None:
+        root = self.mirror()
+        self.establish(self.claim_generate(root))
+        self.assertEqual([], self.index_script.check(root))
+
+    def test_a_generate_class_must_agree_with_its_evaluation_evidence(self) -> None:
+        def contradicting_note(directory: Path) -> None:
+            note = (REPO / "docs/fern-refusals" / self.EXCEPTION / "evaluation.md").read_text(encoding="utf-8")
+            (directory / "evaluation.md").write_text(note, encoding="utf-8")
+
+        def replace(name: str, old: str, new: str) -> Callable[[Path], None]:
+            return lambda directory: self.rewrite(directory / name, old, new)
+
+        cases: dict[str, tuple[Callable[[Path], object], list[str]]] = {
+            # The registry's own note still decides refuse on a failed wire assertion.
+            "contradicting note": (
+                contradicting_note,
+                [
+                    "claims default generation, but its evaluation note decides `refuse`",
+                    "claims default generation, but its evaluation note does not decide `generate`",
+                    "links no passing wire-evaluation log",
+                ],
+            ),
+            "empty wire test": (
+                lambda directory: (directory / "wire_test.py").write_text("", encoding="utf-8"),
+                [
+                    "has no wire_test.py asserting the generated SDK's wire behaviour",
+                    "has a wire_test.py that never asserts the declared default 'radial'",
+                ],
+            ),
+            "missing wire test": (
+                lambda directory: (directory / "wire_test.py").unlink(),
+                ["has no wire_test.py asserting the generated SDK's wire behaviour"],
+            ),
+            "undeclared default": (
+                replace("wire_test.py", '("PUT", "linear")', '("PUT", "radial")'),
+                ["has a wire_test.py that never asserts the declared default 'linear'"],
+            ),
+            "no validation evidence": (
+                replace("evaluation.md", "([validation log](evidence/spec-validation.log))", ""),
+                ["links no log establishing that its probe is valid OpenAPI"],
+            ),
+            "no type-check evidence": (
+                replace("evaluation.md", "([mypy](evidence/baseline-mypy.log))", ""),
+                ["links no mypy log showing its SDK imports and type-checks clean"],
+            ),
+            "failing wire log": (
+                lambda directory: (directory / "evidence/passing-wire.log").write_text(
+                    "1 failed, 1 passed\n", encoding="utf-8"
+                ),
+                ["links no passing wire-evaluation log"],
+            ),
+            "no Fern limitation": (
+                replace("fern-refusal.txt", "generate_exit: 1", "generate_exit: 0"),
+                ["has no pinned Fern refusal record, so no Fern limitation is established"],
+            ),
+        }
+        for name, (mutate, messages) in cases.items():
+            with self.subTest(case=name):
+                root = self.mirror()
+                directory = self.claim_generate(root)
+                self.establish(directory)
+                mutate(directory)
+                for message in messages:
+                    self.assert_fails(root, f"{self.EXCEPTION} {message}")
 
     def test_a_failing_check_reports_on_stderr_and_exits_one(self) -> None:
         root = self.mirror()

@@ -612,6 +612,71 @@ def path_failures(root: Path, where: str, references: tuple[str, ...]) -> list[s
     return failures
 
 
+def _declared_defaults(document: Any) -> list[str]:
+    """Every scalar `default` an operation's (or its path's) parameters declare in a probe."""
+    paths = document.get("paths") if isinstance(document, dict) else None
+    found: list[str] = []
+    for item in paths.values() if isinstance(paths, dict) else []:
+        if not isinstance(item, dict):
+            continue
+        operations = [item, *(value for value in item.values() if isinstance(value, dict))]
+        for operation in operations:
+            for parameter in operation.get("parameters") or []:
+                schema = parameter.get("schema") if isinstance(parameter, dict) else None
+                default = schema.get("default") if isinstance(schema, dict) else None
+                if isinstance(default, SETTING_VALUE) and str(default) not in found:
+                    found.append(str(default))
+    return found
+
+
+def exception_failures(directory: Path, note: str) -> list[str]:
+    """Why a `generate` class's committed evaluation does not establish default generation.
+
+    The registry contract (`docs/fern-refusals/README.md`) has default
+    generation rest on the class's own evidence, so each finding is read from
+    it: the evaluation note decides `generate` and states no `refuse` decision;
+    a log it links shows the probe is valid OpenAPI, which with Fern's recorded
+    refusal (`fern-refusal.txt`) makes the refusal a Fern limitation; a linked
+    `mypy` log shows the SDK imports and type-checks clean; a linked wire log
+    shows the wire evaluation passing; and `wire_test.py` asserts on the wire,
+    naming every default the probe's operations declare.
+    """
+    problems = []
+    heading = next((line for line in note.splitlines() if line.startswith("# ")), "")
+    if heading.rstrip().endswith(": refuse") or re.search(r"is `refuse`|`refuse` in both|`refuse` status", note):
+        problems.append("claims default generation, but its evaluation note decides `refuse`")
+    if not (heading.rstrip().endswith(": generate") or "is `generate`" in note):
+        problems.append("claims default generation, but its evaluation note does not decide `generate`")
+    logs = {}
+    for target in re.findall(r"\]\(([^)\s#]+)\)", note):
+        path = directory / target
+        if path.is_file() and path.suffix == ".log":
+            logs[target] = path.read_text(encoding="utf-8", errors="replace")
+    if not any(re.search(r"validation: passed", text) for text in logs.values()):
+        problems.append("links no log establishing that its probe is valid OpenAPI")
+    refusal = directory / "fern-refusal.txt"
+    record = refusal.read_text(encoding="utf-8") if refusal.is_file() else ""
+    if not re.search(r"(?m)^generate_exit: [1-9]", record) or f"fern_cli_version: {PIN[0]}" not in record:
+        problems.append("has no pinned Fern refusal record, so no Fern limitation is established")
+    if not any("Success: no issues found" in text for text in logs.values()):
+        problems.append("links no mypy log showing its SDK imports and type-checks clean")
+    wire_logs = [text for target, text in logs.items() if "wire" in Path(target).name]
+    if not wire_logs or any(re.search(r"Traceback|AssertionError|\bfailed\b", text) for text in wire_logs):
+        problems.append("links no passing wire-evaluation log")
+    wire = directory / "wire_test.py"
+    test = wire.read_text(encoding="utf-8") if wire.is_file() else ""
+    if not re.search(r"(?m)^\s*assert\b", test):
+        problems.append("has no wire_test.py asserting the generated SDK's wire behaviour")
+    try:
+        probe = yaml.safe_load((directory / "probe.yml").read_text(encoding="utf-8"))
+    except (OSError, yaml.YAMLError) as error:
+        return [*problems, f"has no readable probe.yml ({error})"]
+    for default in _declared_defaults(probe):
+        if default not in test:
+            problems.append(f"has a wire_test.py that never asserts the declared default {default!r}")
+    return problems
+
+
 def refusal_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     name, where = proof.refusal, proof.where
     status = known.classes.get(name) if name else None
@@ -625,9 +690,9 @@ def refusal_failures(root: Path, proof: Proof, known: Catalogs) -> list[str]:
     note = root / "docs" / "fern-refusals" / name / "evaluation.md"
     if not note.is_file():
         return [*failures, f"{where}: {name} has no evaluation note"]
-    if status is RefusalStatus.GENERATE and not (note.parent / "wire_test.py").is_file():
-        failures.append(f"{where}: {name} claims default generation without its wire evaluation")
     text = note.read_text(encoding="utf-8")
+    if status is RefusalStatus.GENERATE:
+        failures += [f"{where}: {name} {problem}" for problem in exception_failures(note.parent, text)]
     for probe in proof.source:
         if Path(probe).name not in text:
             failures.append(f"{where}: {name}'s evaluation note does not name the probe {probe}")
