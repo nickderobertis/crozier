@@ -823,9 +823,13 @@ fn collect_keys(v: &Ng, origin: &str, out: &mut BTreeMap<String, Ng>) {
 
 const ROUNDS: usize = 15;
 
-fn timings(report: &mut Report, root: &Path) {
-    let section = "parse time · tests/fixtures/corpus-sources/webflow-v2/openapi.yml (interleaved, 15 rounds)";
-    let text = std::fs::read_to_string(root.join("tests/fixtures/corpus-sources/webflow-v2/openapi.yml")).unwrap();
+/// Parse time of one real document per reader. `webflow-v2/openapi.yml` is the
+/// largest real YAML; `github.com/openapi.json` is the largest real document,
+/// and the refusal engine and `$ref` resolver read it with the YAML reader.
+fn timings(report: &mut Report, root: &Path, rel: &str, rounds: usize) {
+    let section = format!("parse time · {rel} (interleaved, {rounds} rounds)");
+    let section = section.as_str();
+    let text = std::fs::read_to_string(root.join(rel)).unwrap();
     report.section(section).documents = 1;
     report.note(section, format!("{} bytes; build profile `{}`", text.len(), if cfg!(debug_assertions) { "dev (debug — rerun with --profile spike)" } else { "spike (release, no LTO)" }));
     let candidate = options_from_flags(&CANDIDATE);
@@ -841,12 +845,13 @@ fn timings(report: &mut Report, root: &Path) {
             saphyr::Yaml::load_from_str(&text).map(drop).map_err(|e| e.to_string())
         })),
         ("saphyr 0.2 → node tree → serde_yaml_ng::Value (the shim's tree=saphyr conversion)", Box::new(|| saphyr_node(&text).map(drop))),
+        ("serde_json → serde_json::Value (JSON only; what openapi::load uses for .json)", Box::new(|| serde_json::from_str::<serde_json::Value>(&text).map(drop).map_err(|e| e.to_string()))),
     ];
     // Interleaved rounds, so load from other work on the host spreads across
     // every reader rather than landing on one; min and median per reader.
     let outcomes: Vec<Result<(), String>> = runs.iter().map(|(_, run)| run()).collect();
     let mut samples: Vec<Vec<Duration>> = vec![Vec::new(); runs.len()];
-    for _ in 0..ROUNDS {
+    for _ in 0..rounds {
         for (i, (_, run)) in runs.iter().enumerate() {
             let t = Instant::now();
             let _ = std::hint::black_box(run());
@@ -1051,7 +1056,8 @@ fn main() {
         scalar_probes(&mut report);
     }
     if want("timing") {
-        timings(&mut report, &root);
+        timings(&mut report, &root, "tests/fixtures/corpus-sources/webflow-v2/openapi.yml", ROUNDS);
+        on_big_stack(|| timings(&mut report, &root, "tests/fixtures/corpus-sources/github.com/openapi.json", 7));
     }
     report.print(&scratch.join("details.txt"));
 }
