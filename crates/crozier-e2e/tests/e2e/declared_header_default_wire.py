@@ -3,7 +3,7 @@
 Usage: declared_header_default_wire.py SDK_SRC SPEC_JSON. Every operation in
 SPEC_JSON is called once through the generated client, with no arguments, on an
 httpx.MockTransport that records the request; each header parameter declaring a
-string `schema.default` (an operation's own parameter overriding its path's)
+string `schema.default` (an operation's own parameter replacing its path's)
 must arrive with that default. Exit 0 prints one success line; exit 1 names each
 operation whose sent header differs; exit 2 reports invalid CLI arguments or a
 document this script cannot read.
@@ -20,6 +20,7 @@ from typing import Any, NamedTuple
 import httpx
 
 METHODS = ("get", "put", "post", "patch", "delete")
+UNREAD = ("head", "options", "trace")
 
 
 class Operation(NamedTuple):
@@ -33,25 +34,37 @@ class Malformed(ValueError):
     """The document has a shape this script does not read."""
 
 
-def header_defaults(owner: dict[str, Any], where: str) -> dict[str, str]:
-    """The string defaults `owner`'s header parameters declare, by header name."""
+def header_parameters(owner: dict[str, Any], where: str) -> dict[str, dict[str, Any]]:
+    """`owner`'s header parameters, by header name."""
     parameters = owner.get("parameters", [])
     if not isinstance(parameters, list) or not all(isinstance(parameter, dict) for parameter in parameters):
         raise Malformed(f"{where}: parameters is not a list of objects")
+    headers = [parameter for parameter in parameters if parameter.get("in") == "header"]
+    if not all(isinstance(parameter.get("name"), str) for parameter in headers):
+        raise Malformed(f"{where}: a header parameter's name is not a string")
+    return {parameter["name"]: parameter for parameter in headers}
+
+
+def declared_defaults(parameters: dict[str, dict[str, Any]], where: str) -> dict[str, str]:
+    """The string default each effective header parameter declares, by header name."""
     found = {}
-    for parameter in parameters:
+    for name, parameter in parameters.items():
         schema = parameter.get("schema", {})
-        if parameter.get("in") != "header" or not isinstance(schema, dict) or "default" not in schema:
+        if not isinstance(schema, dict) or "default" not in schema:
             continue
-        name, default = parameter.get("name"), schema["default"]
-        if not isinstance(name, str) or not isinstance(default, str):
-            raise Malformed(f"{where}: a header parameter's name or default is not a string")
-        found[name] = default
+        if not isinstance(schema["default"], str):
+            raise Malformed(f"{where}: header {name}'s default is not a string")
+        found[name] = schema["default"]
     return found
 
 
 def operations(spec: object) -> list[Operation]:
-    """Every operation the document declares, with its effective header defaults."""
+    """Every operation the document declares, with the defaults of its effective header parameters.
+
+    An operation's parameter replaces its path item's of the same name, as the
+    OpenAPI Operation Object specifies, so a default the path declares does not
+    survive an override that declares none.
+    """
     paths = spec.get("paths") if isinstance(spec, dict) else None
     if not isinstance(paths, dict):
         raise Malformed("the document has no `paths` object")
@@ -59,7 +72,9 @@ def operations(spec: object) -> list[Operation]:
     for path, item in paths.items():
         if not isinstance(item, dict):
             raise Malformed(f"{path}: the path item is not an object")
-        inherited = header_defaults(item, path)
+        if unread := [verb.upper() for verb in UNREAD if verb in item]:
+            raise Malformed(f"{path}: {', '.join(unread)} operations are not read")
+        inherited = header_parameters(item, path)
         for verb in METHODS:
             operation = item.get(verb)
             if operation is None:
@@ -68,7 +83,8 @@ def operations(spec: object) -> list[Operation]:
             if not isinstance(operation, dict) or not isinstance(operation.get("operationId"), str):
                 raise Malformed(f"{where}: the operation has no string operationId")
             method = re.sub(r"(?<!^)(?=[A-Z])", "_", operation["operationId"]).lower()
-            found.append(Operation(verb.upper(), path, method, inherited | header_defaults(operation, where)))
+            effective = inherited | header_parameters(operation, where)
+            found.append(Operation(verb.upper(), path, method, declared_defaults(effective, where)))
     return found
 
 
@@ -95,11 +111,12 @@ def capture(request: httpx.Request) -> httpx.Response:
     return httpx.Response(200, json=[])
 
 
-# llmlint: ignore[e2e_not_mocked] The emitted SDK is real; the local transport records the request it serializes and supplies only the external server response, as in the repository's SDK wire tier.
+# llmlint: ignore-block[e2e_not_mocked] The emitted SDK is real; the local transport records the request it serializes and supplies only the external server response, as in the repository's SDK wire tier.
 client = sdk.FernApi(
     base_url="https://wire.example.net",
     httpx_client=httpx.Client(transport=httpx.MockTransport(capture)),
 )
+# llmlint: ignore-end[e2e_not_mocked]
 failures = []
 for operation in declared:
     count = len(sent)
