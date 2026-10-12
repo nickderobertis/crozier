@@ -16578,7 +16578,6 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 root = self.mirror()
                 self.rewrite(root / module.INDEX, self.line(original.get(name, witnessed)), line)
                 self.assert_fails(root, message)
-        # The summary names, per open residual, its committed rows and the node closing it.
         lines, failures = module.summary(REPO)
         self.assertEqual([], failures)
         residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
