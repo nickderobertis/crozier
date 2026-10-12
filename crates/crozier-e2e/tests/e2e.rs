@@ -6439,6 +6439,76 @@ fn parameter_header_refusals_keep_adjacent_controls_generating() {
     }
 }
 
+/// The executable wire evidence a default-generation exception for
+/// `header-default-differs-across-operations` must name: each operation's
+/// generated method, called without the header, sends that operation's own
+/// declared default. The equal-default control generates and passes; the same
+/// SDK checked against the probe, whose PUT declares another default, fails.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_operation_header_defaults_reach_the_wire() {
+    let root = repo_root();
+    let python = runtime_python_env().expect("SDK runtime environment");
+    let script = root.join("crates/crozier-e2e/tests/e2e/declared_header_default_wire.py");
+    let probe = root.join("docs/fern-refusals/header-default-differs-across-operations/probe.yml");
+    Command::new(&python)
+        .arg(&script)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains("required: sdk_src, spec"));
+    let mut control: serde_json::Value =
+        serde_json::from_str(&std::fs::read_to_string(&probe).unwrap()).unwrap();
+    control["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
+        serde_json::json!("radial");
+    let out = tempfile::tempdir().unwrap();
+    let spec = out.path().join("control.json");
+    std::fs::write(&spec, serde_json::to_vec_pretty(&control).unwrap()).unwrap();
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(out.path().join("sdk"))
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let src = out.path().join("sdk/src");
+    Command::new(&python)
+        .arg(&script)
+        .arg(out.path().join("missing-sdk"))
+        .arg(&spec)
+        .assert()
+        .code(2)
+        .stderr(predicate::str::contains(
+            "must contain the generated fern package",
+        ));
+    // llmlint: ignore-block[e2e_not_mocked] As in the SDK wire tier, httpx.MockTransport supplies only the external server response and records the requests the emitted SDK sends; crozier and the client run unmodified. Real-network coverage belongs to the live Prism tier.
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&src)
+        .arg(&spec)
+        .assert()
+        .success()
+        .stdout("2 operation(s) sent their declared header defaults\n");
+    Command::new(&python)
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .arg(&script)
+        .arg(&src)
+        .arg(&probe)
+        .assert()
+        .code(1)
+        .stderr(
+            "PUT /measurements: replace_measurements() sent X-Projection: 'radial', \
+             but the operation declares 'linear'\n",
+        );
+    // llmlint: ignore-end[e2e_not_mocked]
+}
+
 #[test]
 fn parameter_departures_reject_unexplained_complete_tree_differences() {
     fn copy_tree(source: &Path, target: &Path) {

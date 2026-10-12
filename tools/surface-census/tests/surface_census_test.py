@@ -15864,17 +15864,6 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 self.assertTrue(any(message in failure for failure in failures), failures)
 
 
-NO_CAPTURE = " has no wire_test.py asserting a request captured from a generated SDK call"
-NEVER_GET = (
-    " has a wire_test.py that never asserts GET /measurements (listMeasurements) header X-Projection 'radial'"
-    " on the request its SDK call sent"
-)
-NEVER_PUT = (
-    " has a wire_test.py that never asserts PUT /measurements (replaceMeasurements) header X-Projection 'linear'"
-    " on the request its SDK call sent"
-)
-
-
 class ScenarioProofIndexTests(unittest.TestCase):
     """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
 
@@ -16338,36 +16327,10 @@ class ScenarioProofIndexTests(unittest.TestCase):
                 self.assert_fails(root, message)
 
     EXCEPTION = "header-default-differs-across-operations"
-    # The wire test a `generate` exception for the class would carry: the generated
-    # SDK's two methods called through a capturing transport, each operation's own
-    # declared X-Projection default asserted on the request that call sent. Its
-    # shape passes against a real crozier SDK of the equal-default control.
-    WIRE_TEST = """import os
-import sys
-
-import httpx
-
-sys.path.insert(0, os.environ["CROZIER_SDK_SRC"])
-
-from fern import FernApi  # noqa: E402  (the generated SDK is importable only once its src/ is on the path)
-
-
-def test_each_operation_sends_its_declared_header_default():
-    sent = []
-
-    def answer(request):
-        sent.append((request.method, request.headers["X-Projection"]))
-        return httpx.Response(200, json=["measurement"])
-
-    client = FernApi(
-        base_url="https://atlas.example.net",
-        httpx_client=httpx.Client(transport=httpx.MockTransport(answer)),
-    )
-    assert client.list_measurements() == ["measurement"]
-    assert client.replace_measurements() == ["measurement"]
-    assert sent == [("GET", "radial"), ("PUT", "linear")]
-"""
-    CAPTURED = '    assert sent == [("GET", "radial"), ("PUT", "linear")]\n'
+    # The executable wire test a `generate` exception for the class names: it sends each
+    # operation's request through the generated SDK to a capturing transport and asserts
+    # that operation's declared X-Projection default on it, failing when they differ.
+    WIRE_TEST = "sdk_env_operation_header_defaults_reach_the_wire"
 
     def claim_generate(self, root: Path) -> Path:
         """Mark the header-default class `generate` and its scenario's outcome to match; return the class dir."""
@@ -16384,18 +16347,16 @@ def test_each_operation_sends_its_declared_header_default():
         return root / "docs/fern-refusals" / self.EXCEPTION
 
     def establish(self, directory: Path) -> None:
-        """Build a scratch exception's evidence: the class's committed validation and mypy logs, plus a
-        synthetic passing wire log, wire test and `generate` note written for the reconciliation to accept."""
-        (directory / "evidence/passing-wire.log").write_text("2 passed in 0.41s\n", encoding="utf-8")
+        """Write a scratch exception's `generate` note over the class's committed validation and mypy logs,
+        naming the real e2e wire test that reaches its probe."""
         (directory / "evaluation.md").write_text(
             "# Header defaults overridden by an operation: generate\n\n"
             "The [probe](probe.yml) is valid OpenAPI ([validation log](evidence/spec-validation.log)); "
             "Fern's refusal is recorded in fern-refusal.txt. The SDK imports and type-checks "
-            "([mypy](evidence/baseline-mypy.log)) and the [wire evaluation](evidence/passing-wire.log) "
-            "asserts both declared defaults, so this class is `generate`.\n",
+            f"([mypy](evidence/baseline-mypy.log)) and `{self.WIRE_TEST}` asserts each operation's "
+            "declared default on the request it sends, so this class is `generate`.\n",
             encoding="utf-8",
         )
-        (directory / "wire_test.py").write_text(self.WIRE_TEST, encoding="utf-8")
 
     # Every spelling the registry's notes use for a decision, refuse -> generate.
     FLIPPED_DECISIONS = (
@@ -16449,256 +16410,6 @@ def test_each_operation_sends_its_declared_header_default():
         self.establish(self.claim_generate(root))
         self.assertEqual([], self.index_script.check(root))
 
-    def test_a_generate_class_asserting_each_default_on_its_whole_captured_request_reconciles(self) -> None:
-        root = self.mirror()
-        directory = self.claim_generate(root)
-        self.establish(directory)
-        test = self.WIRE_TEST.replace(
-            'sent.append((request.method, request.headers["X-Projection"]))', "sent.append(request)"
-        ).replace(
-            self.CAPTURED,
-            '    assert sent[0].headers["x-projection"] == "radial"\n'
-            '    assert sent[-1].headers.get("X-Projection") == "linear"\n',
-        )
-        (directory / "wire_test.py").write_text(test, encoding="utf-8")
-        self.assertEqual([], self.index_script.check(root))
-
-    def test_a_wire_test_not_asserting_each_default_on_its_own_sent_request_is_refused_through_the_cli(self) -> None:
-        wire = self.WIRE_TEST
-
-        def body(statements: str) -> str:
-            return f"def test_defaults():\n{statements}"
-
-        def why(reason: str) -> str:
-            return f" has a wire_test.py whose test_each_operation_sends_its_declared_header_default {reason}"
-
-        never = [NO_CAPTURE, NEVER_GET, NEVER_PUT]
-        fabricated = '[("GET", "radial"), ("PUT", "linear")]'
-        touched = "touches its capture list `sent` at line 24 other than to read it in an assertion"
-        no_append = (
-            "has a transport handler `answer` that does not append each request it receives to one list, "
-            "exactly once, on a path it always reaches"
-        )
-        append = '        sent.append((request.method, request.headers["X-Projection"]))\n'
-        by_method = '{"GET": "radial", "PUT": "linear"}[request.method]'
-        rewrites = "which can change a request before it is captured"
-
-        def handler_touches(line: int) -> str:
-            return (
-                f"has a transport handler `answer` that touches the request it receives at line {line} other than "
-                "to read its fields into the captured entry"
-            )
-
-        respond = '        return httpx.Response(200, json=["measurement"])\n'
-
-        cases: dict[str, tuple[str, list[str]]] = {
-            "empty": ("", [NO_CAPTURE, NEVER_GET, NEVER_PUT]),
-            "unparsable": (
-                wire.replace("def test_each_operation_sends_its_declared_header_default():", "def test_x()"),
-                [" has a wire_test.py that is not valid Python (line 11: ", NO_CAPTURE, NEVER_GET],
-            ),
-            "bare assert with defaults in comments": (
-                body('    """Sends radial and linear."""\n    # GET radial; PUT linear\n    assert True\n'),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "unrelated list": (
-                body('    unrelated = ["radial", "linear"]\n    assert unrelated == ["radial", "linear"]\n'),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "literals passed through a call": (
-                body('    assert str("radial") == "radial"\n    assert str("linear") == "linear"\n'),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            # The capture list filled by hand, never by a transport the SDK client sends through.
-            "list never wired to a transport": (
-                wire.replace("httpx_client=httpx.Client(transport=httpx.MockTransport(answer)),\n", "").replace(
-                    "    assert client.list_measurements()",
-                    '    sent.extend([("GET", "radial"), ("PUT", "linear")])\n    assert client.list_measurements()',
-                ),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "requests sent without the SDK": (
-                wire.replace(
-                    "client = FernApi(", "client = httpx.Client(transport=httpx.MockTransport(answer))\n    _ = dict("
-                )
-                .replace("assert client.list_measurements()", 'assert client.get("https://x/measurements")')
-                .replace("assert client.replace_measurements()", 'assert client.put("https://x/measurements")'),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "assertion after a return": (
-                wire.replace(self.CAPTURED, "    return\n" + self.CAPTURED),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "assertion under a branch": (
-                wire.replace(self.CAPTURED, "    if not sent:\n    " + self.CAPTURED),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "assertion in an uncalled nested function": (
-                wire.replace(self.CAPTURED, "    def check():\n    " + self.CAPTURED),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "assertion in a helper the test does not define": (
-                wire.replace(self.CAPTURED, "    check(sent)\n")
-                + '\n\ndef check(sent):\n    assert sent == [("GET", "radial"), ("PUT", "linear")]\n',
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-            "swapped operation defaults": (
-                wire.replace('("GET", "radial"), ("PUT", "linear")', '("GET", "linear"), ("PUT", "radial")'),
-                [NEVER_GET, NEVER_PUT],
-            ),
-            "one request asserted twice": (
-                wire.replace(self.CAPTURED, '    assert sent[0][1] == "radial"\n    assert sent[0][1] == "linear"\n'),
-                [NEVER_PUT],
-            ),
-            "the default overridden by the call": (
-                wire.replace("client.replace_measurements()", 'client.replace_measurements(x_projection="linear")'),
-                [NEVER_PUT],
-            ),
-            "list rebound before the assertion": (
-                wire.replace(self.CAPTURED, f"    sent = {fabricated}\n{self.CAPTURED}"),
-                [why("binds its capture list `sent` other than once, to `[]`, before building its client"), *never],
-            ),
-            "list prefilled": (
-                wire.replace("    sent = []\n", f"    sent = {fabricated}\n"),
-                [why("binds its capture list `sent` other than once, to `[]`, before building its client"), *never],
-            ),
-            "entries overwritten by slice": (
-                wire.replace(self.CAPTURED, f"    sent[:] = {fabricated}\n{self.CAPTURED}"),
-                [why(touched), *never],
-            ),
-            "one entry overwritten": (
-                wire.replace(self.CAPTURED, f'    sent[1] = ("PUT", "linear")\n{self.CAPTURED}'),
-                [why(touched), *never],
-            ),
-            "entries populated by hand": (
-                wire.replace(self.CAPTURED, f"    sent.clear()\n    sent.extend({fabricated})\n{self.CAPTURED}"),
-                [why(touched), *never],
-            ),
-            "entries changed through an alias": (
-                wire.replace(self.CAPTURED, f'    other = sent\n    other[1] = ("PUT", "linear")\n{self.CAPTURED}'),
-                [why(touched), *never],
-            ),
-            "entry appended inside the assertion": (
-                wire.replace(self.CAPTURED, f'    assert sent.append(("PUT", "linear")) is None\n{self.CAPTURED}'),
-                [why(touched), *never],
-            ),
-            "handler fed a hand-built request": (
-                wire.replace(
-                    self.CAPTURED,
-                    '    answer(httpx.Request("PUT", "https://x", headers={"X-Projection": "linear"}))\n'
-                    + self.CAPTURED,
-                ),
-                [why("names its transport handler `answer` at line 24 other than as the transport's handler"), *never],
-            ),
-            "handler redefined": (
-                wire.replace(self.CAPTURED, f"    def answer(request):\n        return None\n{self.CAPTURED}"),
-                [why("redefines `answer` at line 24"), *never],
-            ),
-            "client rebound without the transport": (
-                wire.replace(
-                    "    assert client.replace_measurements()",
-                    '    client = FernApi(base_url="https://x")\n    assert client.replace_measurements()',
-                ),
-                [why("uses its SDK client `client` at line 23 other than to call its methods"), *never],
-            ),
-            "client aliased": (
-                wire.replace(
-                    "    assert client.replace_measurements()",
-                    "    other = client\n    assert other.replace_measurements()",
-                ),
-                [why("uses its SDK client `client` at line 23 other than to call its methods"), *never],
-            ),
-            "handler appends after its return": (
-                wire.replace(append + respond, respond + append),
-                [why(no_append), *never],
-            ),
-            "handler appends only under a branch": (
-                wire.replace(append, '        if request.method == "GET":\n    ' + append),
-                [why(no_append), *never],
-            ),
-            "handler appends only in an uncalled nested function": (
-                wire.replace(append, "        def later():\n    " + append),
-                [why(no_append), *never],
-            ),
-            "handler rebinds its request": (
-                wire.replace(
-                    append,
-                    '        request = httpx.Request("PUT", "https://x", headers={"X-Projection": "linear"})\n'
-                    + append,
-                ),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler overwrites the captured header": (
-                wire.replace(append, f'        request.headers["X-Projection"] = {by_method}\n' + append),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler writes the header through an alias": (
-                wire.replace(
-                    append,
-                    f'        headers = request.headers\n        headers["X-Projection"] = {by_method}\n' + append,
-                ),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler hands the request to a mutation helper": (
-                wire.replace(append, "        rewrite(request)\n" + append)
-                + '\n\ndef rewrite(request):\n    request.headers["X-Projection"] = "linear"\n',
-                [why(handler_touches(15)), *never],
-            ),
-            "handler hands the headers to a mutation helper": (
-                wire.replace(append, "        rewrite(request.headers)\n" + append),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler updates the headers in place": (
-                wire.replace(append, f'        request.headers.update({{"X-Projection": {by_method}}})\n' + append),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler writes the header in the entry": (
-                wire.replace(
-                    append,
-                    '        sent.append((request.method, request.headers.setdefault("X-Projection", "linear")))\n',
-                ),
-                [why(handler_touches(15)), *never],
-            ),
-            "handler writes the header after capturing it": (
-                wire.replace(append, append + '        request.headers["X-Projection"] = "linear"\n'),
-                [why(handler_touches(16)), *never],
-            ),
-            "client given headers": (
-                wire.replace(
-                    '        base_url="https://atlas.example.net",\n',
-                    '        base_url="https://atlas.example.net",\n        headers={"X-Projection": "linear"},\n',
-                ),
-                [why(f"builds its client with `headers=` at line 18, {rewrites}"), *never],
-            ),
-            "transport client given an event hook": (
-                wire.replace("httpx.Client(transport=", 'httpx.Client(event_hooks={"request": []}, transport='),
-                [why(f"builds its client's transport with `event_hooks=` at line 20, {rewrites}"), *never],
-            ),
-            "call given request options": (
-                wire.replace(
-                    "client.replace_measurements()",
-                    'client.replace_measurements(request_options={"additional_headers": {"X-Projection": "linear"}})',
-                ),
-                [NEVER_PUT],
-            ),
-            "a call only under a short-circuit": (
-                wire.replace("assert client.replace_measurements()", "assert sent or client.replace_measurements()"),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
-            ),
-        }
-        for name, (test, messages) in cases.items():
-            with self.subTest(case=name):
-                root = self.mirror()
-                directory = self.claim_generate(root)
-                self.establish(directory)
-                (directory / "wire_test.py").write_text(test, encoding="utf-8")
-                run = self.run_script("check", root=root)
-                self.assertEqual((1, ""), (run.returncode, run.stdout))
-                for message in messages:
-                    self.assertIn(f"{self.EXCEPTION}{message}", run.stderr)
-                if NO_CAPTURE not in messages:
-                    self.assertNotIn(NO_CAPTURE, run.stderr)
-
     def test_a_generate_class_must_agree_with_its_evaluation_evidence(self) -> None:
         def contradicting_note(directory: Path) -> None:
             note = (REPO / "docs/fern-refusals" / self.EXCEPTION / "evaluation.md").read_text(encoding="utf-8")
@@ -16714,12 +16425,27 @@ def test_each_operation_sends_its_declared_header_default():
                 [
                     "'s evaluation note decides `refuse`, not its registry status `generate`",
                     ": outcome default=generate;strict=refuse disagrees with its evaluation note's `refuse` decision",
-                    " links no passing wire-evaluation log",
                 ],
             ),
-            "missing wire test": (
-                lambda directory: (directory / "wire_test.py").unlink(),
-                [NO_CAPTURE, NEVER_GET, NEVER_PUT],
+            "no wire test named": (
+                replace("evaluation.md", f"`{self.WIRE_TEST}`", "the wire test"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "a wire test that does not exist": (
+                replace("evaluation.md", self.WIRE_TEST, "sdk_env_operation_header_defaults_were_checked"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "the named wire test removed from the tree": (
+                lambda directory: self.rewrite(
+                    directory.parents[2] / "crates/crozier-e2e/tests/e2e.rs",
+                    f"fn {self.WIRE_TEST}()",
+                    "fn sdk_env_renamed_away()",
+                ),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
+            ),
+            "an existing test that never reaches the probe": (
+                replace("evaluation.md", self.WIRE_TEST, "handwritten_fixtures_match_fern_goldens"),
+                [" names no e2e test in crates/crozier-e2e/tests/e2e.rs that exists and reaches its probe"],
             ),
             "no validation evidence": (
                 replace("evaluation.md", "([validation log](evidence/spec-validation.log))", ""),
@@ -16728,42 +16454,6 @@ def test_each_operation_sends_its_declared_header_default():
             "no type-check evidence": (
                 replace("evaluation.md", "([mypy](evidence/baseline-mypy.log))", ""),
                 [" links no mypy log showing its SDK imports and type-checks clean"],
-            ),
-            "failing wire log": (
-                lambda directory: (directory / "evidence/passing-wire.log").write_text(
-                    "1 failed, 1 passed\n", encoding="utf-8"
-                ),
-                [" links no passing wire-evaluation log"],
-            ),
-            "empty wire log": (
-                lambda directory: (directory / "evidence/passing-wire.log").write_text("", encoding="utf-8"),
-                [" links no passing wire-evaluation log"],
-            ),
-            "wire log without a pass summary": (
-                lambda directory: (directory / "evidence/passing-wire.log").write_text(
-                    "checked the headers by hand\n", encoding="utf-8"
-                ),
-                [" links no passing wire-evaluation log"],
-            ),
-            "malformed probe": (
-                lambda directory: (directory / "probe.yml").write_text(
-                    '{"paths": {"/x": {"get": {"parameters": 7}}}}\n', encoding="utf-8"
-                ),
-                [" has a probe.yml whose operations cannot be read: it /x get parameters are not a list of objects"],
-            ),
-            "parameter name not a string": (
-                lambda directory: (directory / "probe.yml").write_text(
-                    '{"paths": {"/x": {"get": {"parameters": [{"in": "header", "name": ["X"]}]}}}}\n',
-                    encoding="utf-8",
-                ),
-                [
-                    " has a probe.yml whose operations cannot be read: it /x get has a parameter whose `in` or"
-                    " `name` is not a string"
-                ],
-            ),
-            "probe without paths": (
-                lambda directory: (directory / "probe.yml").write_text("openapi: 3.0.3\n", encoding="utf-8"),
-                [" has a probe.yml whose operations cannot be read: it declares no `paths` object"],
             ),
             "no Fern limitation": (
                 replace("fern-refusal.txt", "generate_exit: 1", "generate_exit: 0"),
