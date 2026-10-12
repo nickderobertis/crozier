@@ -30,8 +30,10 @@ fi
 modes=${SAPHYR_DIFF_MODES:-tree=json;tree=saphyr;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=saphyr,strict_booleans,budget=none,nonfinite=string,merge=ordinary}
 export SAPHYR_DIFF_MODES=$modes
 # The e2e suite is slow (every golden runs `ruff format`), so it runs the raw
-# default-Options reader once and the two candidate configurations.
-e2e_modes=${SAPHYR_DIFF_E2E_MODES:-tree=json;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=saphyr,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary,wording=today}
+# default-Options reader once and the two candidate configurations. The
+# today-wording adapter is not measured by default: errors need only say what
+# failed and where (the user's ruling); SAPHYR_DIFF_TODAY_WORDING=1 shows it.
+e2e_modes=${SAPHYR_DIFF_E2E_MODES:-tree=json;tree=json,strict_booleans,budget=none,nonfinite=string,merge=ordinary;tree=saphyr,strict_booleans,budget=none,nonfinite=string,merge=ordinary}
 
 cargo build --locked --quiet --profile spike -p saphyr-diff
 cargo build --locked --quiet --profile spike -p crozier --features spike-saphyr --bin crozier

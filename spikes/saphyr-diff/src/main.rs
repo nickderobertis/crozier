@@ -877,6 +877,9 @@ fn timings(report: &mut Report, root: &Path, rel: &str, rounds: usize) {
 fn compare_error_wording(report: &mut Report) {
     let plain = "error wording · serde-saphyr default rendering (candidate Options)";
     let reworded = "error wording · with the today_wording code change (candidate Options)";
+    // The user ruled that errors need only carry what failed and where, not
+    // today's text, so the wording adapter is measured only on request.
+    let adapter = std::env::var_os("SAPHYR_DIFF_TODAY_WORDING").is_some();
     let base = "openapi: 3.0.3\ninfo: {title: probe, version: '1'}\n";
     let ok_tail = "paths:\n  /p:\n    get:\n      operationId: p\n      responses:\n        '200': {description: ok}\n";
     let openapi: Vec<(&str, String)> = vec![
@@ -908,14 +911,14 @@ fn compare_error_wording(report: &mut Report) {
         ("departures: unknown field", "- id: x\n  kind: branding\n  trigger: t\n  fern: f\n  crozier: c\n  reason: r\n  evidence: e\n  extra: x\n"),
         ("departures: not a list", "id: x\n"),
     ];
-    let mut cases: Vec<(String, Result<(), String>, Result<(), String>, Result<(), String>)> = Vec::new();
+    let mut cases: Vec<(String, Result<(), String>, Result<(), String>, Option<Result<(), String>>)> = Vec::new();
     let flags = &CANDIDATE;
     for (name, text) in &openapi {
         cases.push((
             (*name).to_owned(),
             serde_yaml_ng::from_str::<crozier::openapi::OpenApi>(text).map(drop).map_err(|e| e.to_string()),
             serde_saphyr::from_str_with_options::<crozier::openapi::OpenApi>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
-            crozier::spike_yaml::today_wording::read::<crozier::openapi::OpenApi>(text, flags).map(drop),
+            adapter.then(|| crozier::spike_yaml::today_wording::read::<crozier::openapi::OpenApi>(text, flags).map(drop)),
         ));
     }
     for (name, text) in &settings {
@@ -923,7 +926,7 @@ fn compare_error_wording(report: &mut Report) {
             (*name).to_owned(),
             serde_yaml_ng::from_str::<crozier::settings::FileConfig>(text).map(drop).map_err(|e| e.to_string()),
             serde_saphyr::from_str_with_options::<crozier::settings::FileConfig>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
-            crozier::spike_yaml::today_wording::read::<crozier::settings::FileConfig>(text, flags).map(drop),
+            adapter.then(|| crozier::spike_yaml::today_wording::read::<crozier::settings::FileConfig>(text, flags).map(drop)),
         ));
     }
     for (name, text) in &departures {
@@ -931,23 +934,28 @@ fn compare_error_wording(report: &mut Report) {
             (*name).to_owned(),
             serde_yaml_ng::from_str::<Vec<crozier::departures::Departure>>(text).map(drop).map_err(|e| e.to_string()),
             serde_saphyr::from_str_with_options::<Vec<crozier::departures::Departure>>(text, options_from_flags(flags)).map(drop).map_err(|e| e.to_string()),
-            crozier::spike_yaml::today_wording::read::<Vec<crozier::departures::Departure>>(text, flags).map(drop),
+            adapter.then(|| crozier::spike_yaml::today_wording::read::<Vec<crozier::departures::Departure>>(text, flags).map(drop)),
         ));
     }
     report.section(plain).documents = cases.len();
-    report.section(reworded).documents = cases.len();
+    if adapter {
+        report.section(reworded).documents = cases.len();
+    }
     for (name, today, after, fixed) in cases {
         let show = |r: &Result<(), String>| match r {
             Ok(()) => "<accepted>".to_owned(),
             Err(e) => one_line(e),
         };
         if after != today {
-            report.diff(plain, "differs from today", format!("{name}: today: {} | after: {}", show(&today), show(&after)));
+            // Acceptable when it still says what failed and where (a line and column).
+            let located = after.as_ref().err().is_some_and(|e| e.contains("line ") && e.contains(" column "));
+            let signature = if located { "differs from today (says what failed and where)" } else { "differs from today WITHOUT a location" };
+            report.diff(plain, signature, format!("{name}: today: {} | after: {}", show(&today), show(&after)));
         }
-        if fixed == today {
-            report.diff(reworded, "reproduces today's text exactly", format!("{name}: {}", show(&today)));
-        } else {
-            report.diff(reworded, "still differs", format!("{name}: today: {} | after: {}", show(&today), show(&fixed)));
+        match fixed {
+            Some(fixed) if fixed == today => report.diff(reworded, "reproduces today's text exactly", format!("{name}: {}", show(&today))),
+            Some(fixed) => report.diff(reworded, "still differs", format!("{name}: today: {} | after: {}", show(&today), show(&fixed))),
+            None => {}
         }
     }
 }
