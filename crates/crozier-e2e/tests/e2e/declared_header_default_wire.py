@@ -39,7 +39,11 @@ def header_parameters(owner: dict[str, Any], where: str) -> dict[str, dict[str, 
     parameters = owner.get("parameters", [])
     if not isinstance(parameters, list) or not all(isinstance(parameter, dict) for parameter in parameters):
         raise Malformed(f"{where}: parameters is not a list of objects")
-    headers = [parameter for parameter in parameters if parameter.get("in") == "header"]
+    if any("$ref" in parameter for parameter in parameters):
+        raise Malformed(f"{where}: parameter references are not read")
+    if not all(isinstance(parameter.get("in"), str) for parameter in parameters):
+        raise Malformed(f"{where}: a parameter's `in` is not a string")
+    headers = [parameter for parameter in parameters if parameter["in"] == "header"]
     if not all(isinstance(parameter.get("name"), str) for parameter in headers):
         raise Malformed(f"{where}: a header parameter's name is not a string")
     return {parameter["name"]: parameter for parameter in headers}
@@ -50,7 +54,9 @@ def declared_defaults(parameters: dict[str, dict[str, Any]], where: str) -> dict
     found = {}
     for name, parameter in parameters.items():
         schema = parameter.get("schema", {})
-        if not isinstance(schema, dict) or "default" not in schema:
+        if not isinstance(schema, dict) or "$ref" in schema:
+            raise Malformed(f"{where}: header {name}'s schema is not an inline object")
+        if "default" not in schema:
             continue
         if not isinstance(schema["default"], str):
             raise Malformed(f"{where}: header {name}'s default is not a string")
