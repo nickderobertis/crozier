@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "platforms": [
+    {
+      "target": "x86_64-unknown-linux-gnu",
+      "archive": "crozier-<tag>-x86_64-unknown-linux-gnu.tar.gz",
+      "checksum": "crozier-<tag>-x86_64-unknown-linux-gnu.sha256",
+      "attestation": "crozier-<tag>-x86_64-unknown-linux-gnu.sigstore.json",
+      "wheel": true
+    },
+    {
+      "target": "aarch64-unknown-linux-gnu",
+      "archive": "crozier-<tag>-aarch64-unknown-linux-gnu.tar.gz",
+      "checksum": "crozier-<tag>-aarch64-unknown-linux-gnu.sha256",
+      "attestation": "crozier-<tag>-aarch64-unknown-linux-gnu.sigstore.json",
+      "wheel": true
+    },
+    {
+      "target": "x86_64-apple-darwin",
+      "archive": "crozier-<tag>-x86_64-apple-darwin.tar.gz",
+      "checksum": "crozier-<tag>-x86_64-apple-darwin.sha256",
+      "attestation": "crozier-<tag>-x86_64-apple-darwin.sigstore.json",
+      "wheel": true
+    },
+    {
+      "target": "aarch64-apple-darwin",
+      "archive": "crozier-<tag>-aarch64-apple-darwin.tar.gz",
+      "checksum": "crozier-<tag>-aarch64-apple-darwin.sha256",
+      "attestation": "crozier-<tag>-aarch64-apple-darwin.sigstore.json",
+      "wheel": true
+    },
+    {
+      "target": "x86_64-pc-windows-msvc",
+      "archive": "crozier-<tag>-x86_64-pc-windows-msvc.zip",
+      "checksum": "crozier-<tag>-x86_64-pc-windows-msvc.sha256",
+      "attestation": "crozier-<tag>-x86_64-pc-windows-msvc.sigstore.json",
+      "wheel": true
+    }
+  ],
+  "additionalArtifacts": [
+    "sdist",
+    "crate"
+  ],
+  "archiveContents": [
+    "crozier",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "binaryReuse": {
+    "darwin": "The wheel executable is the single binary input to its target archive, validated by content hashes.",
+    "linuxWindows": "Keep the existing separate taiki archive and maturin wheel builders and all assertions. Changing those is outside macOS consolidation and could alter manylinux compatibility; manager ruling c-ead9b0426a1eb68151179e859137fa1c."
+  }
+}

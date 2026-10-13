@@ -86,7 +86,15 @@ fn the_required_contexts_report_on_every_pull_request() {
         .collect();
     assert_eq!(
         needs,
-        ["check", "sdk-env", "install", "package", "live-e2e"]
+        [
+            "check",
+            "sdk-env",
+            "install",
+            "package",
+            "live-e2e",
+            "macos-policy",
+            "macos"
+        ]
     );
 }
 
@@ -183,7 +191,12 @@ fn every_job_that_bootstraps_installs_uv_first() {
     }
     assert_eq!(
         bootstrapping,
-        ["ci.yml:check", "ci.yml:sdk-env", "release.yml:test"],
+        [
+            "ci.yml:macos",
+            "ci.yml:check",
+            "ci.yml:sdk-env",
+            "release.yml:test"
+        ],
         "the jobs that bootstrap"
     );
 }
@@ -196,7 +209,7 @@ fn every_job_that_bootstraps_installs_uv_first() {
 #[test]
 fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
     let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
-    for name in ["check", "sdk-env", "live-e2e"] {
+    for name in ["check", "sdk-env", "live-e2e", "macos"] {
         let steps = steps(job(&workflow, name));
         let gate = steps
             .iter()

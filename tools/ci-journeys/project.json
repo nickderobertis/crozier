@@ -61,7 +61,9 @@
         "{workspaceRoot}/package.json",
         "{workspaceRoot}/bun.lock",
         "{workspaceRoot}/scripts/check-project-boundaries.mjs",
-        "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*"
+        "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*",
+        "{workspaceRoot}/.github/macos-policy.mjs",
+        "{workspaceRoot}/.github/require-ci-results.mjs"
       ]
     }
   }

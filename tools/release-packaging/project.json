@@ -1,0 +1,46 @@
+{
+  "name": "release-packaging",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "tier:promoted",
+    "cost:expensive",
+    "lang:javascript"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/release-packaging/release-package.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "{workspaceRoot}/pyproject.toml",
+        "{workspaceRoot}/scripts/release-native.py",
+        "{workspaceRoot}/scripts/install.sh",
+        "{workspaceRoot}/scripts/smoke.sh",
+        "{workspaceRoot}/.github/workflows/release.yml",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/LICENSE",
+        "{workspaceRoot}/NOTICE",
+        "{workspaceRoot}/CHANGELOG.md",
+        "generator"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node scripts/check-project-boundaries.mjs release-packaging"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries"
+      ]
+    }
+  }
+}
