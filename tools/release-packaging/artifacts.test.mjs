@@ -131,3 +131,16 @@ test('actual workflow artifact paths and signer subjects feed the actual Linux p
   for(const target of targets) assert.ok(wheels.some(path=>path.includes(`wheels-${target}/`)),`missing workflow wheel handoff ${target}`);
   assert.ok(jobs['publish-pypi'].steps.some(s=>s.uses?.startsWith('actions/download-artifact') && s.with.pattern==='wheels-*'));
 });
+
+test('real release builder rejects unsafe manifest versions before building or deriving paths', t=>{
+  const cwd=scratch(t), output=join(cwd,'products'), builder=resolve('tools/release-packaging/release-native.py');
+  for(const version of ['../escape','1.2.3/escape','1.2.3\\escape','1.2.3\n']) {
+    writeFileSync(join(cwd,'Cargo.toml'),`[package]\nname = "crozier"\nversion = ${JSON.stringify(version)}\n`);
+    for(const flags of [[],['--pack-only']]) {
+      const refused=run(['python3',builder,'--target','aarch64-apple-darwin','--tag',`v${version}`,'--out',output,...flags],{},cwd);
+      assert.notEqual(refused.status,0);
+      assert.match(refused.stderr,/unsupported Cargo.toml version/);
+      assert.equal(existsSync(output),false,'invalid identity must fail before product paths are created');
+    }
+  }
+});

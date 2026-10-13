@@ -64,7 +64,7 @@ function main() {
   if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new Error('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
   let decision;
   try { decision = classify(JSON.parse(readFileSync(args[2], 'utf8')), args[4], args[6]); }
-  catch (error) { decision = classify({}, args[4], args[6]); decision.reason = `unreadable event: ${error.message}`; }
+  catch (error) { decision = classify({}, args[4], args[6]); decision.reason += `; unreadable event: ${error.message}`; }
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `macosRequired=${decision.macosRequired}\n`);
   console.log(JSON.stringify(decision));
 }

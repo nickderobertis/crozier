@@ -21,6 +21,11 @@ from email.parser import Parser
 from enum import Enum
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import NewType
+
+Version = NewType("Version", str)
+ReleaseTag = NewType("ReleaseTag", str)
+Sha256 = NewType("Sha256", str)
 
 
 class Target(str, Enum):
@@ -45,20 +50,20 @@ class Target(str, Enum):
 @dataclass(frozen=True)
 class ReleaseContract:
     schemaVersion: int
-    target: str
-    tag: str
-    version: str
+    target: Target
+    tag: ReleaseTag
+    version: Version
     archive: str
     wheel: str
-    binarySha256: str
-    archiveBinarySha256: str
-    wheelBinarySha256: str
+    binarySha256: Sha256
+    archiveBinarySha256: Sha256
+    wheelBinarySha256: Sha256
 
 
 @dataclass(frozen=True)
 class BuildResult:
     wheel: Path
-    version: str
+    version: Version
     contract: ReleaseContract
 
 
@@ -116,10 +121,19 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
     return binary
 
 
-def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
+def release_identity(tag: str) -> tuple[ReleaseTag, Version]:
     version = tomllib.loads(Path("Cargo.toml").read_text())["package"]["version"]
+    if not isinstance(version, str) or not re.fullmatch(
+        r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?", version
+    ):
+        raise ValueError("unsupported Cargo.toml version; use a literal semantic version without path separators")
     if tag != f"v{version}":
         raise ValueError(f"tag {tag} does not match Cargo.toml version {version}; use v{version}")
+    return ReleaseTag(tag), Version(version)
+
+
+def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
+    tag, version = release_identity(tag)
     candidates = list(wheels.glob("*.whl"))
     if len(candidates) != 1:
         raise ValueError(
@@ -149,18 +163,16 @@ def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
         archived = member.read()
     if archived != binary:
         raise ValueError("archive and wheel executable differ; inspect staged contents and rebuild")
-    digest = hashlib.sha256(binary).hexdigest()
+    digest = Sha256(hashlib.sha256(binary).hexdigest())
     contract = ReleaseContract(
-        1, target.value, tag, version, str(packed), str(wheel), digest, hashlib.sha256(archived).hexdigest(), digest
+        1, target, tag, version, str(packed), str(wheel), digest, Sha256(hashlib.sha256(archived).hexdigest()), digest
     )
     (output / f"contract-{target.value}.json").write_text(json.dumps(asdict(contract), indent=2) + "\n")
     return BuildResult(wheel, version, contract)
 
 
 def build(target: Target, tag: str, output: Path) -> BuildResult:
-    version = tomllib.loads(Path("Cargo.toml").read_text())["package"]["version"]
-    if tag != f"v{version}":
-        raise ValueError(f"tag {tag} does not match Cargo.toml version {version}; use v{version}")
+    tag, version = release_identity(tag)
     output.mkdir(parents=True, exist_ok=True)
     wheels = output / f"wheels-{target.value}"
     wheels.mkdir(exist_ok=True)

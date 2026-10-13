@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { workflows, triggered } from './workflow-graph.mjs';
 // Workload identities, not scheduling counts. Both recorder and reader require
 // the same complete event/diff/ownership/publish population.
 export const classes = [
@@ -23,12 +24,15 @@ export function validateTelemetry(telemetry, sourceDigest) {
   if (telemetry.recordingDigest !== recordingDigest(telemetry)) throw new Error('incomplete/corrupted workload telemetry: rerun github-workflows:test');
   const scenarios=telemetry.scenarios, lifecycles=telemetry.lifecycles;
   if (!Array.isArray(scenarios) || !Array.isArray(lifecycles) || JSON.stringify(scenarios.map(s=>s.id).sort()) !== JSON.stringify(scenarioIds()) || JSON.stringify(lifecycles.map(l=>JSON.stringify([l.fork,l.diff,l.crates,l.pypi])).sort()) !== JSON.stringify(lifecycleIds())) throw new Error('incomplete workload telemetry: run github-workflows:test');
+  const graph = workflows();
   for (const scenario of scenarios) {
     if (!classificationIds.includes(scenario.id)) {
       const [eventClass,diff,ownership,crates,pypi]=scenario.id.split('/');
       if (scenario.class !== eventClass || scenario.diff !== diff || scenario.fork !== (ownership === 'fork') || scenario.publish?.crates !== crates.slice(7) || scenario.publish?.pypi !== pypi.slice(5)) throw new Error(`invalid telemetry scenario identity ${scenario.id}`);
     }
     if (!Array.isArray(scenario.runs) || typeof scenario.decision?.macosRequired !== 'boolean') throw new Error(`invalid telemetry scenario ${scenario.id}`);
+    const expected = graph.filter(workflow => triggered(workflow.value, scenario)).map(workflow => workflow.path).sort();
+    if (JSON.stringify(scenario.runs.map(run => run.workflow).sort()) !== JSON.stringify(expected)) throw new Error(`incomplete workflow runs for ${scenario.id}`);
     for (const run of scenario.runs) {
       if (typeof run.workflow !== 'string' || !Array.isArray(run.rows) || !run.rows.length) throw new Error(`invalid telemetry run ${scenario.id}`);
       for (const row of run.rows) {

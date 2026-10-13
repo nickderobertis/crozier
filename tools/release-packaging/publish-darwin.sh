@@ -2,9 +2,9 @@
 # Publish only the previously verified staged products; compilation stays Mac-side.
 set -euo pipefail
 staged="${1:?usage: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
-tag="${2:?tag required}"
-intel="${3:?Intel attestation required}"
-arm="${4:?ARM attestation required}"
+tag="${2:?supply TAG as argument 2: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
+intel="${3:?supply Intel attestation path as argument 3: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
+arm="${4:?supply ARM attestation path as argument 4: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
 if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$ ]]; then
     echo "error: unsupported release tag '$tag'; use the Cargo.toml version tag" >&2
     exit 1

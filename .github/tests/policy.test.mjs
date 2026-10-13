@@ -57,6 +57,9 @@ test('real routing persists its decision; unknown/empty event names emit no omis
     assert.equal(decision.macosRequired,true); assert.equal(decision.isReleaseOnly,false);
     assert.ok(decision.reason.includes(name || '(empty)'));
     assert.equal(readFileSync(output,'utf8'),'macosRequired=true\n');
+    const malformed=h.classify('{broken',h.heads.version,name);
+    assert.equal(malformed.macosRequired,true);
+    assert.ok(malformed.reason.includes(name || '(empty)'));
   }
   const added=h.change({'NEW_CHANGELOG.md':'release notes\n'});
   assert.match(h.classify(pr,added).reason,/non-release file operation/);

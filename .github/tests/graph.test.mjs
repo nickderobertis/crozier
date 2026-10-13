@@ -96,6 +96,8 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
   const corrupt=structuredClone(recorded); corrupt.scenarios.pop();
   assert.throws(()=>validateTelemetry(corrupt,recorded.sourceDigest),/corrupted/);
   for(const change of [
+    t=>t.scenarios.find(s=>s.runs.length).runs.pop(),
+    t=>{for(const s of t.scenarios)s.runs=[]; for(const l of t.lifecycles)l.runs=[];},
     t=>t.scenarios.pop(), t=>t.lifecycles.pop(), t=>t.scenarios[0].class='manual-default', t=>t.scenarios[0].publish.crates='unknown',
     t=>t.scenarios.find(s=>s.runs.length).runs[0].rows.splice(0),
     t=>t.scenarios.find(s=>s.runs.length).runs[0].rows[0].job=null,

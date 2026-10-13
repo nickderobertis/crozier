@@ -30,7 +30,10 @@
         "{workspaceRoot}/NOTICE",
         "{workspaceRoot}/CHANGELOG.md",
         "generator",
-        "{workspaceRoot}/.github/tests/release-contract.json"
+        "{workspaceRoot}/.github/tests/release-contract.json",
+        "{workspaceRoot}/.github/workflow-graph.mjs",
+        "{workspaceRoot}/.github/package.json",
+        "{workspaceRoot}/.github/bun.lock"
       ],
       "dependsOn": [
         {
