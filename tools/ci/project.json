@@ -19,7 +19,8 @@
       },
       "cache": true,
       "inputs": [
-        "default"
+        "default",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "lint": {
@@ -35,7 +36,8 @@
       "inputs": [
         "default",
         "cargo",
-        "boundaries"
+        "boundaries",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "test": {
@@ -52,7 +54,8 @@
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",
-        "{workspaceRoot}/release-plz.toml"
+        "{workspaceRoot}/release-plz.toml",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     }
   }

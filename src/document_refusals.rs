@@ -109,7 +109,7 @@ pub fn check_version_file(path: &Path, strict: bool) -> Result<()> {
     let version = if extension.as_deref() == Some("json") {
         serde_json::from_str::<Version>(&text).ok()
     } else {
-        serde_yaml_ng::from_str::<Version>(&text).ok()
+        crate::yaml::from_str::<Version>(&text).ok()
     };
     if let Some(version) = version {
         check_version(&version.openapi, path, strict)?;
@@ -130,15 +130,12 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     let Ok(text) = std::fs::read_to_string(path) else {
         return Ok(());
     };
-    let Ok(root) = serde_yaml_ng::from_str::<ReferenceDocument>(&text).map(|document| document.0)
-    else {
+    let Ok(root) = crate::yaml::from_str::<serde_json::Value>(&text) else {
         return Ok(());
     };
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+    if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             let has_operation = [
                 "get", "put", "post", "delete", "options", "head", "patch", "trace",
             ]
@@ -164,11 +161,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
             }
         }
     }
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+    if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             for name in [
                 "get",
                 "put",
@@ -193,11 +188,9 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
         }
     }
     // Resolve missing Reference Objects before checking their parameter uses.
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+    if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             for method in [
                 "get", "put", "post", "delete", "options", "head", "patch", "trace",
             ] {
@@ -207,12 +200,10 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                 if ignored_reference_node(operation) {
                     continue;
                 }
-                let shared = item
-                    .get("parameters")
-                    .and_then(serde_yaml_ng::Value::as_sequence);
+                let shared = item.get("parameters").and_then(serde_json::Value::as_array);
                 let local = operation
                     .get("parameters")
-                    .and_then(serde_yaml_ng::Value::as_sequence);
+                    .and_then(serde_json::Value::as_array);
                 for parameter in shared
                     .into_iter()
                     .flatten()
@@ -220,13 +211,13 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                 {
                     let parameter = parameter
                         .get("$ref")
-                        .and_then(serde_yaml_ng::Value::as_str)
+                        .and_then(serde_json::Value::as_str)
                         .and_then(|reference| reference.strip_prefix('#'))
                         .and_then(|pointer| yaml_pointer(&root, pointer))
                         .unwrap_or(parameter);
-                    if parameter.get("in").and_then(serde_yaml_ng::Value::as_str) == Some("path") {
+                    if parameter.get("in").and_then(serde_json::Value::as_str) == Some("path") {
                         if let Some(name) =
-                            parameter.get("name").and_then(serde_yaml_ng::Value::as_str)
+                            parameter.get("name").and_then(serde_json::Value::as_str)
                         {
                             if !route.contains(&format!("{{{name}}}")) {
                                 return refusal(
@@ -270,11 +261,11 @@ struct ExtensionCycles {
 }
 
 fn extension_reference_cycle(
-    node: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    node: &serde_json::Value,
+    root: &serde_json::Value,
     state: &mut ExtensionCycles,
 ) -> bool {
-    if let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = node.get("$ref").and_then(serde_json::Value::as_str) {
         let Some(pointer) = reference.strip_prefix('#') else {
             return false;
         };
@@ -293,10 +284,10 @@ fn extension_reference_cycle(
         return cycle;
     }
     match node {
-        serde_yaml_ng::Value::Mapping(values) => values
+        serde_json::Value::Object(values) => values
             .values()
             .any(|value| extension_reference_cycle(value, root, state)),
-        serde_yaml_ng::Value::Sequence(values) => values
+        serde_json::Value::Array(values) => values
             .iter()
             .any(|value| extension_reference_cycle(value, root, state)),
         _ => false,
@@ -304,8 +295,8 @@ fn extension_reference_cycle(
 }
 
 fn cyclic_extension(
-    node: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    node: &serde_json::Value,
+    root: &serde_json::Value,
     element: &str,
     state: &mut ExtensionCycles,
     property_schema: bool,
@@ -314,9 +305,9 @@ fn cyclic_extension(
         return None;
     }
     match node {
-        serde_yaml_ng::Value::Mapping(values) => {
+        serde_json::Value::Object(values) => {
             for (key, value) in values {
-                let Some(key) = key.as_str() else { continue };
+                let key = key.as_str();
                 let child_element = if element.is_empty() {
                     key.to_owned()
                 } else {
@@ -329,9 +320,9 @@ fn cyclic_extension(
                         return Some(child_element);
                     }
                 } else if key == "properties" {
-                    if let Some(properties) = value.as_mapping() {
+                    if let Some(properties) = value.as_object() {
                         for (name, schema) in properties {
-                            let Some(name) = name.as_str() else { continue };
+                            let name = name.as_str();
                             if let Some(cycle) = cyclic_extension(
                                 schema,
                                 root,
@@ -351,7 +342,7 @@ fn cyclic_extension(
                 }
             }
         }
-        serde_yaml_ng::Value::Sequence(values) => {
+        serde_json::Value::Array(values) => {
             for (index, value) in values.iter().enumerate() {
                 if let Some(cycle) =
                     cyclic_extension(value, root, &format!("{element}/{index}"), state, false)
@@ -374,7 +365,7 @@ enum SchemaLocation {
 }
 
 struct SchemaContext<'a> {
-    root: &'a serde_yaml_ng::Value,
+    root: &'a serde_json::Value,
     path: &'a Path,
     strict: bool,
     names: indexmap::IndexMap<String, bool>,
@@ -383,54 +374,53 @@ struct SchemaContext<'a> {
 }
 
 fn schema_declaration_names(
-    root: &serde_yaml_ng::Value,
+    root: &serde_json::Value,
     include_literals: bool,
-    declaration_kind: fn(&serde_yaml_ng::Value, &serde_yaml_ng::Value) -> bool,
+    declaration_kind: fn(&serde_json::Value, &serde_json::Value) -> bool,
 ) -> indexmap::IndexMap<String, bool> {
     let mut names = indexmap::IndexMap::new();
     if let Some(schemas) = root
         .get("components")
         .and_then(|value| value.get("schemas"))
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         for (key, schema) in schemas {
-            if let Some(key) = key.as_str() {
-                if ignored_reference_node(schema) {
-                    continue;
-                }
-                let name = crate::naming::class_name(key);
-                names.insert(name.clone(), declaration_kind(schema, root));
-                register_inline_declarations(
-                    schema,
-                    &name,
-                    root,
-                    &mut names,
-                    include_literals,
-                    declaration_kind,
-                );
+            let key = key.as_str();
+            if ignored_reference_node(schema) {
+                continue;
             }
+            let name = crate::naming::class_name(key);
+            names.insert(name.clone(), declaration_kind(schema, root));
+            register_inline_declarations(
+                schema,
+                &name,
+                root,
+                &mut names,
+                include_literals,
+                declaration_kind,
+            );
         }
     }
     names
 }
 
 fn register_inline_declarations(
-    schema: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
     parent: &str,
-    root: &serde_yaml_ng::Value,
+    root: &serde_json::Value,
     names: &mut indexmap::IndexMap<String, bool>,
     include_literals: bool,
-    declaration_kind: fn(&serde_yaml_ng::Value, &serde_yaml_ng::Value) -> bool,
+    declaration_kind: fn(&serde_json::Value, &serde_json::Value) -> bool,
 ) {
     if ignored_reference_node(schema) {
         return;
     }
     if let Some(properties) = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         for (key, child) in properties {
-            let Some(key) = key.as_str() else { continue };
+            let key = key.as_str();
             if ignored_reference_node(child) || child.get("$ref").is_some() {
                 continue;
             }
@@ -438,12 +428,12 @@ fn register_inline_declarations(
             let union = ["oneOf", "anyOf"].iter().any(|key| {
                 child
                     .get(key)
-                    .and_then(serde_yaml_ng::Value::as_sequence)
+                    .and_then(serde_json::Value::as_array)
                     .is_some_and(|variants| {
                         variants
                             .iter()
                             .filter(|value| {
-                                value.get("type").and_then(serde_yaml_ng::Value::as_str)
+                                value.get("type").and_then(serde_json::Value::as_str)
                                     != Some("null")
                             })
                             .count()
@@ -452,7 +442,7 @@ fn register_inline_declarations(
             });
             let enumeration = child
                 .get("enum")
-                .and_then(serde_yaml_ng::Value::as_sequence)
+                .and_then(serde_json::Value::as_array)
                 .is_some_and(|values| values.len() > usize::from(!include_literals))
                 || include_literals && child.get("const").is_some();
             if union || enumeration {
@@ -469,7 +459,7 @@ fn register_inline_declarations(
         }
     }
     for key in ["oneOf", "anyOf", "allOf"] {
-        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
             for child in children {
                 register_inline_declarations(
                     child,
@@ -485,11 +475,11 @@ fn register_inline_declarations(
 }
 
 fn schema_is_model(
-    schema: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
+    root: &serde_json::Value,
     seen: &mut Vec<String>,
 ) -> bool {
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         if seen.iter().any(|value| value == reference) {
             return false;
         }
@@ -512,7 +502,7 @@ fn schema_is_model(
     }
     if schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
         .is_some()
     {
         return true;
@@ -522,7 +512,7 @@ fn schema_is_model(
     }
     schema
         .get("allOf")
-        .and_then(serde_yaml_ng::Value::as_sequence)
+        .and_then(serde_json::Value::as_array)
         .is_some_and(|children| {
             children
                 .iter()
@@ -530,26 +520,23 @@ fn schema_is_model(
         })
 }
 
-fn schema_type(schema: &serde_yaml_ng::Value) -> Option<crate::openapi::TypeField> {
+fn schema_type(schema: &serde_json::Value) -> Option<crate::openapi::TypeField> {
     schema
         .get("type")
-        .and_then(|value| serde_yaml_ng::from_value(value.clone()).ok())
+        .and_then(|value| serde_json::from_value(value.clone()).ok())
 }
 
 fn check_object_extension(
-    schema: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
     context: &SchemaContext<'_>,
     element: &str,
 ) -> Result<()> {
-    let Some(children) = schema
-        .get("allOf")
-        .and_then(serde_yaml_ng::Value::as_sequence)
-    else {
+    let Some(children) = schema.get("allOf").and_then(serde_json::Value::as_array) else {
         return Ok(());
     };
     let references = children
         .iter()
-        .filter_map(|child| child.get("$ref").and_then(serde_yaml_ng::Value::as_str))
+        .filter_map(|child| child.get("$ref").and_then(serde_json::Value::as_str))
         .collect::<Vec<_>>();
     let ty = schema_type(schema);
     let primary = ty.as_ref().and_then(crate::openapi::TypeField::primary);
@@ -562,7 +549,7 @@ fn check_object_extension(
     let object = primary == Some("object")
         || schema
             .get("properties")
-            .and_then(serde_yaml_ng::Value::as_mapping)
+            .and_then(serde_json::Value::as_object)
             .is_some()
         || references.len() > 1
         || children
@@ -595,7 +582,7 @@ fn check_object_extension(
         // child with its own fields. Untyped and scalar unions remain refused.
         let object_union = schema
             .get("properties")
-            .and_then(serde_yaml_ng::Value::as_mapping)
+            .and_then(serde_json::Value::as_object)
             .is_some_and(|properties| !properties.is_empty())
             && schema_type(target)
                 .as_ref()
@@ -603,17 +590,17 @@ fn check_object_extension(
                 == Some("object")
             && target
                 .get("properties")
-                .and_then(serde_yaml_ng::Value::as_mapping)
-                .is_none_or(serde_yaml_ng::Mapping::is_empty)
+                .and_then(serde_json::Value::as_object)
+                .is_none_or(serde_json::Map::is_empty)
             && target
                 .get("oneOf")
-                .and_then(serde_yaml_ng::Value::as_sequence)
+                .and_then(serde_json::Value::as_array)
                 .is_some_and(|variants| {
                     variants.len() >= 2
                         && variants.iter().all(|variant| {
                             variant
                                 .get("$ref")
-                                .and_then(serde_yaml_ng::Value::as_str)
+                                .and_then(serde_json::Value::as_str)
                                 .and_then(|reference| reference.strip_prefix('#'))
                                 .and_then(|pointer| yaml_pointer(context.root, pointer))
                                 .is_some_and(|member| {
@@ -633,7 +620,7 @@ fn check_object_extension(
     Ok(())
 }
 
-fn named_default_unsupported(schema: &serde_yaml_ng::Value, root: &serde_yaml_ng::Value) -> bool {
+fn named_default_unsupported(schema: &serde_json::Value, root: &serde_json::Value) -> bool {
     if schema.get("enum").is_some()
         || schema.get("const").is_some()
         || matches!(
@@ -649,13 +636,12 @@ fn named_default_unsupported(schema: &serde_yaml_ng::Value, root: &serde_yaml_ng
         || ["oneOf", "anyOf"].iter().any(|key| {
             schema
                 .get(key)
-                .and_then(serde_yaml_ng::Value::as_sequence)
+                .and_then(serde_json::Value::as_array)
                 .is_some_and(|variants| {
                     variants
                         .iter()
                         .filter(|variant| {
-                            variant.get("type").and_then(serde_yaml_ng::Value::as_str)
-                                != Some("null")
+                            variant.get("type").and_then(serde_json::Value::as_str) != Some("null")
                         })
                         .count()
                         > 1
@@ -664,7 +650,7 @@ fn named_default_unsupported(schema: &serde_yaml_ng::Value, root: &serde_yaml_ng
 }
 
 fn check_named_type_defaults(
-    schema: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
     parent: &str,
     context: &SchemaContext<'_>,
     element: &str,
@@ -674,10 +660,10 @@ fn check_named_type_defaults(
     }
     if let Some(properties) = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         for (key, child) in properties {
-            let Some(key) = key.as_str() else { continue };
+            let key = key.as_str();
             if ignored_reference_node(child) || child.get("$ref").is_some() {
                 continue;
             }
@@ -685,7 +671,7 @@ fn check_named_type_defaults(
             let child_element = format!("{element}/properties/{key}");
             let enumeration = child
                 .get("enum")
-                .and_then(serde_yaml_ng::Value::as_sequence)
+                .and_then(serde_json::Value::as_array)
                 .is_some_and(|values| !values.is_empty())
                 || child.get("const").is_some();
             if child.get("default").is_some_and(|value| !value.is_null())
@@ -703,7 +689,7 @@ fn check_named_type_defaults(
         }
     }
     for key in ["oneOf", "anyOf", "allOf"] {
-        if let Some(variants) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(variants) = schema.get(key).and_then(serde_json::Value::as_array) {
             for (index, child) in variants.iter().enumerate() {
                 check_named_type_defaults(
                     child,
@@ -717,14 +703,12 @@ fn check_named_type_defaults(
     Ok(())
 }
 
-fn missing_header_types(root: &serde_yaml_ng::Value) -> std::collections::HashSet<String> {
+fn missing_header_types(root: &serde_json::Value) -> std::collections::HashSet<String> {
     let mut total = 0usize;
     let mut headers: indexmap::IndexMap<String, (usize, String)> = indexmap::IndexMap::new();
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+    if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             for method in [
                 "get", "put", "post", "delete", "options", "head", "patch", "trace",
             ] {
@@ -737,7 +721,7 @@ fn missing_header_types(root: &serde_yaml_ng::Value) -> std::collections::HashSe
                 total += 1;
                 // An operation crozier cannot read fails its own loader later.
                 let Ok(parsed) =
-                    serde_yaml_ng::from_value::<crate::openapi::Operation>(operation.clone())
+                    serde_json::from_value::<crate::openapi::Operation>(operation.clone())
                 else {
                     continue;
                 };
@@ -747,24 +731,23 @@ fn missing_header_types(root: &serde_yaml_ng::Value) -> std::collections::HashSe
                     .into_iter()
                     .flatten()
                 {
-                    let Some(parameters) = parameters.as_sequence() else {
+                    let Some(parameters) = parameters.as_array() else {
                         continue;
                     };
                     for parameter in parameters {
                         let parameter = parameter
                             .get("$ref")
-                            .and_then(serde_yaml_ng::Value::as_str)
+                            .and_then(serde_json::Value::as_str)
                             .and_then(|reference| reference.strip_prefix('#'))
                             .and_then(|pointer| yaml_pointer(root, pointer))
                             .unwrap_or(parameter);
                         if ignored_reference_node(parameter)
-                            || parameter.get("in").and_then(serde_yaml_ng::Value::as_str)
+                            || parameter.get("in").and_then(serde_json::Value::as_str)
                                 != Some("header")
                         {
                             continue;
                         }
-                        let Some(name) =
-                            parameter.get("name").and_then(serde_yaml_ng::Value::as_str)
+                        let Some(name) = parameter.get("name").and_then(serde_json::Value::as_str)
                         else {
                             continue;
                         };
@@ -789,7 +772,7 @@ fn missing_header_types(root: &serde_yaml_ng::Value) -> std::collections::HashSe
         .collect()
 }
 
-fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
+fn check_document_schemas(root: &serde_json::Value, path: &Path, strict: bool) -> Result<()> {
     let context = SchemaContext {
         root,
         path,
@@ -803,31 +786,28 @@ fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool
     if let Some(schemas) = root
         .get("components")
         .and_then(|value| value.get("schemas"))
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         for (name, schema) in schemas {
-            if let Some(name) = name.as_str() {
-                check_named_type_defaults(
-                    schema,
-                    &crate::naming::class_name(name),
-                    &context,
-                    &format!("components/schemas/{name}"),
-                )?;
-                check_schema(
-                    schema,
-                    &context,
-                    &format!("components/schemas/{name}"),
-                    SchemaLocation::Type,
-                    &mut std::collections::HashSet::new(),
-                )?;
-            }
+            let name = name.as_str();
+            check_named_type_defaults(
+                schema,
+                &crate::naming::class_name(name),
+                &context,
+                &format!("components/schemas/{name}"),
+            )?;
+            check_schema(
+                schema,
+                &context,
+                &format!("components/schemas/{name}"),
+                SchemaLocation::Type,
+                &mut std::collections::HashSet::new(),
+            )?;
         }
     }
-    if let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) {
+    if let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) {
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             for method in [
                 "get", "put", "post", "delete", "options", "head", "patch", "trace",
             ] {
@@ -869,18 +849,12 @@ fn check_document_schemas(root: &serde_yaml_ng::Value, path: &Path, strict: bool
 /// checked. Plain OpenAPI examples and `x-crozier-examples` play no part: Fern
 /// discards the first and never reads the second. Measured in
 /// `docs/fern-refusals/missing-discriminant-property/evaluation.md`.
-fn check_discriminant_examples(
-    root: &serde_yaml_ng::Value,
-    path: &Path,
-    strict: bool,
-) -> Result<()> {
-    let Some(paths) = root.get("paths").and_then(serde_yaml_ng::Value::as_mapping) else {
+fn check_discriminant_examples(root: &serde_json::Value, path: &Path, strict: bool) -> Result<()> {
+    let Some(paths) = root.get("paths").and_then(serde_json::Value::as_object) else {
         return Ok(());
     };
     for (route, item) in paths {
-        let Some(route) = route.as_str() else {
-            continue;
-        };
+        let route = route.as_str();
         for method in [
             "get", "put", "post", "delete", "options", "head", "patch", "trace",
         ] {
@@ -898,15 +872,12 @@ fn check_discriminant_examples(
                 .map(|schema| (format!("{operation_element} request"), schema));
             let responses = operation
                 .get("responses")
-                .and_then(serde_yaml_ng::Value::as_mapping);
-            let mut codes: Vec<(String, &serde_yaml_ng::Value)> = responses
+                .and_then(serde_json::Value::as_object);
+            let mut codes: Vec<(String, &serde_json::Value)> = responses
                 .into_iter()
                 .flatten()
                 .filter_map(|(code, response)| {
-                    let code = code
-                        .as_str()
-                        .map(str::to_owned)
-                        .or_else(|| code.as_u64().map(|code| code.to_string()))?;
+                    let code = code.clone();
                     let schema = json_schema(resolved_node(response, root))?;
                     (code.len() == 3 && code.bytes().all(|b| b.is_ascii_digit()))
                         .then_some((code, schema))
@@ -924,7 +895,7 @@ fn check_discriminant_examples(
                 .map(|(code, schema)| (format!("{operation_element} response {code}"), *schema));
             if let Some(examples) = operation
                 .get("x-fern-examples")
-                .and_then(serde_yaml_ng::Value::as_sequence)
+                .and_then(serde_json::Value::as_array)
             {
                 for (index, example) in examples.iter().enumerate() {
                     let checks = [
@@ -978,17 +949,17 @@ fn check_discriminant_examples(
 }
 
 fn resolved_node<'a>(
-    node: &'a serde_yaml_ng::Value,
-    root: &'a serde_yaml_ng::Value,
-) -> &'a serde_yaml_ng::Value {
+    node: &'a serde_json::Value,
+    root: &'a serde_json::Value,
+) -> &'a serde_json::Value {
     node.get("$ref")
-        .and_then(serde_yaml_ng::Value::as_str)
+        .and_then(serde_json::Value::as_str)
         .and_then(|reference| reference.strip_prefix('#'))
         .and_then(|pointer| yaml_pointer(root, pointer))
         .unwrap_or(node)
 }
 
-fn json_schema(body: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::Value> {
+fn json_schema(body: &serde_json::Value) -> Option<&serde_json::Value> {
     if ignored_reference_node(body) {
         return None;
     }
@@ -996,14 +967,16 @@ fn json_schema(body: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::Value> {
 }
 
 /// The property a discriminated union requires of its example, and its mapping.
-fn discriminated_union(schema: &serde_yaml_ng::Value) -> Option<(&str, &serde_yaml_ng::Mapping)> {
+fn discriminated_union(
+    schema: &serde_json::Value,
+) -> Option<(&str, &serde_json::Map<String, serde_json::Value>)> {
     let discriminator = schema.get("discriminator")?;
     let property = discriminator
         .get("propertyName")
-        .and_then(serde_yaml_ng::Value::as_str)?;
+        .and_then(serde_json::Value::as_str)?;
     let mapping = discriminator
         .get("mapping")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
         .filter(|mapping| !mapping.is_empty())?;
     // Fern imports an `anyOf` discriminator as an undiscriminated union.
     schema.get("anyOf").is_none().then_some((property, mapping))
@@ -1017,8 +990,8 @@ const EXAMPLE_REQUIRED_LEVELS: usize = 12;
 /// The union Fern's own example reaches with every mapping target missing: each
 /// variant is then unknown and the example `{}` has no discriminant.
 fn unmapped_union(
-    schema: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
+    root: &serde_json::Value,
     element: &str,
     levels: usize,
     seen: &mut std::collections::HashSet<(String, usize)>,
@@ -1026,7 +999,7 @@ fn unmapped_union(
     if ignored_reference_node(schema) {
         return None;
     }
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         let pointer = reference.strip_prefix('#')?;
         if !seen.insert((reference.to_owned(), levels)) {
             return None;
@@ -1053,13 +1026,11 @@ fn unmapped_union(
     if levels < EXAMPLE_REQUIRED_LEVELS {
         if let Some(properties) = schema
             .get("properties")
-            .and_then(serde_yaml_ng::Value::as_mapping)
+            .and_then(serde_json::Value::as_object)
         {
-            let required = schema
-                .get("required")
-                .and_then(serde_yaml_ng::Value::as_sequence);
+            let required = schema.get("required").and_then(serde_json::Value::as_array);
             for (name, child) in properties {
-                let Some(name) = name.as_str() else { continue };
+                let name = name.as_str();
                 let is_required = required
                     .is_some_and(|fields| fields.iter().any(|field| field.as_str() == Some(name)));
                 if !is_required && levels >= EXAMPLE_OPTIONAL_LEVELS {
@@ -1072,7 +1043,7 @@ fn unmapped_union(
             }
         }
         for key in ["items", "additionalProperties"] {
-            if let Some(child) = schema.get(key).filter(|child| child.is_mapping()) {
+            if let Some(child) = schema.get(key).filter(|child| child.is_object()) {
                 let child_element = format!("{element}/{key}");
                 if let Some(union) = unmapped_union(child, root, &child_element, levels + 1, seen) {
                     return Some(union);
@@ -1081,7 +1052,7 @@ fn unmapped_union(
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
-        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
             // Fern's example of an undiscriminated union is its first member's.
             let members = if key == "allOf" { children.len() } else { 1 };
             for (index, child) in children.iter().enumerate().take(members) {
@@ -1098,16 +1069,16 @@ fn unmapped_union(
 /// The union an `x-fern-examples` object reaches through `$ref`s and object
 /// properties without naming the union's discriminant.
 fn example_without_discriminant(
-    example: &serde_yaml_ng::Value,
-    schema: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    example: &serde_json::Value,
+    schema: &serde_json::Value,
+    root: &serde_json::Value,
     element: &str,
     seen: &mut std::collections::HashSet<String>,
 ) -> Option<String> {
     if ignored_reference_node(schema) {
         return None;
     }
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         let pointer = reference.strip_prefix('#')?;
         if !seen.insert(reference.to_owned()) {
             return None;
@@ -1117,23 +1088,23 @@ fn example_without_discriminant(
         seen.remove(reference);
         return union;
     }
-    let example = example.as_mapping()?;
+    let example = example.as_object()?;
     if let Some((property, _)) = discriminated_union(schema) {
         return (schema.get("oneOf").is_some() && !example.contains_key(property))
             .then(|| format!("{element} discriminator {property}"));
     }
     let properties = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)?;
+        .and_then(serde_json::Value::as_object)?;
     example.iter().find_map(|(name, value)| {
         let child = properties.get(name)?;
-        let name = name.as_str()?;
+        let name = name.as_str();
         example_without_discriminant(value, child, root, &format!("{element}/{name}"), seen)
     })
 }
 
 fn check_bound_schemas(
-    node: &serde_yaml_ng::Value,
+    node: &serde_json::Value,
     context: &SchemaContext<'_>,
     element: &str,
     seen: &mut std::collections::HashSet<String>,
@@ -1141,7 +1112,7 @@ fn check_bound_schemas(
     if ignored_reference_node(node) {
         return Ok(());
     }
-    if let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = node.get("$ref").and_then(serde_json::Value::as_str) {
         if let Some(pointer) = reference.strip_prefix('#') {
             if seen.insert(reference.to_owned()) {
                 if let Some(target) = yaml_pointer(context.root, pointer) {
@@ -1152,25 +1123,21 @@ fn check_bound_schemas(
         return Ok(());
     }
     match node {
-        serde_yaml_ng::Value::Mapping(values) => {
+        serde_json::Value::Object(values) => {
             for (key, value) in values {
-                let key = key
-                    .as_str()
-                    .map(str::to_owned)
-                    .or_else(|| key.as_i64().map(|key| key.to_string()));
-                let Some(key) = key else { continue };
+                let key = key.as_str();
                 if key == "schema" {
-                    let location = match node.get("in").and_then(serde_yaml_ng::Value::as_str) {
+                    let location = match node.get("in").and_then(serde_json::Value::as_str) {
                         Some("query") => SchemaLocation::Query,
                         Some(_) => SchemaLocation::Parameter,
                         None => SchemaLocation::Type,
                     };
-                    let name = node.get("name").and_then(serde_yaml_ng::Value::as_str);
+                    let name = node.get("name").and_then(serde_json::Value::as_str);
                     let schema_element = name.map_or_else(
                         || format!("{element}/schema"),
                         |name| format!("{element}/{name}/schema"),
                     );
-                    if node.get("in").and_then(serde_yaml_ng::Value::as_str) == Some("header")
+                    if node.get("in").and_then(serde_json::Value::as_str) == Some("header")
                         // llmlint: ignore[contracts_have_one_source_or_a_drift_gate] These are Fern's inline-header declaration exceptions, measured in generator-missing-type/evaluation-logs/fern-*-header.log, not SDK transport ownership. In particular Authorization is a per-method SDK parameter without an auth scheme (ir::is_auth_managed_header), while Fern declares its inline enum successfully. Changing SDK header ownership must not change this refusal classification; the CLI controls preserve all three measured exceptions.
                         && name.is_some_and(|name| {
                             context.missing_header_types.contains(name)
@@ -1185,7 +1152,7 @@ fn check_bound_schemas(
                             .is_none_or(|kind| kind.as_str() == Some("string"))
                         && (value
                             .get("enum")
-                            .and_then(serde_yaml_ng::Value::as_sequence)
+                            .and_then(serde_json::Value::as_array)
                             .is_some_and(|values| {
                                 !values.is_empty()
                                     && values.iter().all(|value| value.as_str().is_some())
@@ -1210,7 +1177,7 @@ fn check_bound_schemas(
                     )?;
                     check_schema(value, context, &schema_element, location, seen)?;
                 } else if !matches!(
-                    key.as_str(),
+                    key,
                     "example" | "examples" | "default" | "enum" | "links" | "headers" | "encoding"
                 ) && !key.starts_with("x-")
                 {
@@ -1218,7 +1185,7 @@ fn check_bound_schemas(
                 }
             }
         }
-        serde_yaml_ng::Value::Sequence(values) => {
+        serde_json::Value::Array(values) => {
             for (index, value) in values.iter().enumerate() {
                 check_bound_schemas(value, context, &format!("{element}/{index}"), seen)?;
             }
@@ -1229,7 +1196,7 @@ fn check_bound_schemas(
 }
 
 fn check_schema_resolution(
-    schema: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
     context: &SchemaContext<'_>,
     element: &str,
     required: bool,
@@ -1238,7 +1205,7 @@ fn check_schema_resolution(
     if ignored_reference_node(schema) {
         return Ok(());
     }
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         let Some(pointer) = reference.strip_prefix('#') else {
             return Ok(());
         };
@@ -1288,13 +1255,11 @@ fn check_schema_resolution(
     }
     if let Some(properties) = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
-        let required_fields = schema
-            .get("required")
-            .and_then(serde_yaml_ng::Value::as_sequence);
+        let required_fields = schema.get("required").and_then(serde_json::Value::as_array);
         for (name, child) in properties {
-            let Some(name) = name.as_str() else { continue };
+            let name = name.as_str();
             let required = required_fields
                 .is_some_and(|fields| fields.iter().any(|field| field.as_str() == Some(name)));
             check_schema_resolution(
@@ -1312,7 +1277,7 @@ fn check_schema_resolution(
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
-        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
             // Fern resolves only a union's first member's required fields.
             let members = if key == "allOf" { children.len() } else { 1 };
             for (index, child) in children.iter().enumerate().take(members) {
@@ -1330,8 +1295,8 @@ fn check_schema_resolution(
 }
 
 fn expanding_union_cycle(
-    schema: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
+    root: &serde_json::Value,
     extends: bool,
     expansions: usize,
     active: &mut std::collections::HashMap<String, usize>,
@@ -1339,7 +1304,7 @@ fn expanding_union_cycle(
     if ignored_reference_node(schema) {
         return false;
     }
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         let Some(pointer) = reference.strip_prefix('#') else {
             return false;
         };
@@ -1353,7 +1318,7 @@ fn expanding_union_cycle(
             && ["oneOf", "anyOf"].iter().any(|key| {
                 target
                     .get(key)
-                    .and_then(serde_yaml_ng::Value::as_sequence)
+                    .and_then(serde_json::Value::as_array)
                     .is_some_and(|variants| variants.len() > 1)
             })
             && !schema_is_model(target, root, &mut Vec::new());
@@ -1368,7 +1333,7 @@ fn expanding_union_cycle(
     }
     if let Some(properties) = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         if properties
             .values()
@@ -1385,7 +1350,7 @@ fn expanding_union_cycle(
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
-        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
             if children
                 .iter()
                 .any(|child| expanding_union_cycle(child, root, key == "allOf", expansions, active))
@@ -1398,7 +1363,7 @@ fn expanding_union_cycle(
 }
 
 fn check_schema(
-    schema: &serde_yaml_ng::Value,
+    schema: &serde_json::Value,
     context: &SchemaContext<'_>,
     element: &str,
     location: SchemaLocation,
@@ -1407,7 +1372,7 @@ fn check_schema(
     if ignored_reference_node(schema) {
         return Ok(());
     }
-    if let Some(reference) = schema.get("$ref").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
         if let Some(pointer) = reference.strip_prefix('#') {
             if seen.insert(reference.to_owned()) {
                 if let Some(target) = yaml_pointer(context.root, pointer) {
@@ -1425,7 +1390,7 @@ fn check_schema(
     if ["oneOf", "anyOf"].iter().any(|key| {
         schema
             .get(key)
-            .and_then(serde_yaml_ng::Value::as_sequence)
+            .and_then(serde_json::Value::as_array)
             .is_some_and(|variants| variants.len() > 1)
     }) && expanding_union_cycle(
         schema,
@@ -1442,8 +1407,8 @@ fn check_schema(
         .filter(|value| !value.is_null() && !matches!(location, SchemaLocation::Type))
     {
         if matches!(location, SchemaLocation::Field)
-            && schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array")
-            && default.as_sequence().is_none()
+            && schema.get("type").and_then(serde_json::Value::as_str) == Some("array")
+            && default.as_array().is_none()
         {
             return refusal(
                 context.path,
@@ -1452,7 +1417,7 @@ fn check_schema(
                 &format!("{element} default {default:?}"),
             );
         }
-        let invalid = match schema.get("type").and_then(serde_yaml_ng::Value::as_str) {
+        let invalid = match schema.get("type").and_then(serde_json::Value::as_str) {
             Some("integer") => default.as_f64().is_none_or(|value| value.fract() != 0.0),
             Some("number") => default.as_f64().is_none(),
             _ => false,
@@ -1466,18 +1431,15 @@ fn check_schema(
             );
         }
     }
-    if let Some(default) = schema.get("default").and_then(serde_yaml_ng::Value::as_str) {
+    if let Some(default) = schema.get("default").and_then(serde_json::Value::as_str) {
         let query_array = matches!(location, SchemaLocation::Query)
-            && schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("array");
+            && schema.get("type").and_then(serde_json::Value::as_str) == Some("array");
         let candidate = if query_array {
             schema.get("items").unwrap_or(schema)
         } else {
             schema
         };
-        if let Some(values) = candidate
-            .get("enum")
-            .and_then(serde_yaml_ng::Value::as_sequence)
-        {
+        if let Some(values) = candidate.get("enum").and_then(serde_json::Value::as_array) {
             // Fern ignores scalar defaults outside the declared enum. Query
             // arrays become an enum-or-list union and validate their scalar default.
             let declared = values.iter().any(|value| value.as_str() == Some(default));
@@ -1497,11 +1459,11 @@ fn check_schema(
     }
     // Fern renders a string enum with no non-null member as an enum class whose
     // `visit` method has no body, which its own `ruff check` cannot parse.
-    if schema.get("type").and_then(serde_yaml_ng::Value::as_str) == Some("string")
+    if schema.get("type").and_then(serde_json::Value::as_str) == Some("string")
         && schema
             .get("enum")
-            .and_then(serde_yaml_ng::Value::as_sequence)
-            .is_some_and(|values| values.iter().all(serde_yaml_ng::Value::is_null))
+            .and_then(serde_json::Value::as_array)
+            .is_some_and(|values| values.iter().all(serde_json::Value::is_null))
     {
         return refusal(
             context.path,
@@ -1512,18 +1474,17 @@ fn check_schema(
     }
     if let Some(properties) = schema
         .get("properties")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
     {
         for (name, child) in properties {
-            if let Some(name) = name.as_str() {
-                check_schema(
-                    child,
-                    context,
-                    &format!("{element}/properties/{name}"),
-                    SchemaLocation::Field,
-                    seen,
-                )?;
-            }
+            let name = name.as_str();
+            check_schema(
+                child,
+                context,
+                &format!("{element}/properties/{name}"),
+                SchemaLocation::Field,
+                seen,
+            )?;
         }
     }
     for key in ["items", "additionalProperties"] {
@@ -1538,7 +1499,7 @@ fn check_schema(
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
-        if let Some(children) = schema.get(key).and_then(serde_yaml_ng::Value::as_sequence) {
+        if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
             for (index, child) in children.iter().enumerate() {
                 check_schema(
                     child,
@@ -1557,27 +1518,20 @@ fn check_schema(
 /// names. It reads the schema as pinned Fern does: `x-crozier-*` extensions,
 /// which Fern ignores, are dropped first, so a canonical extension never makes
 /// a document Fern accepts into a refusal.
-fn retained_enum_default(
-    schema: &serde_yaml_ng::Value,
-    default: &str,
-    path: &Path,
-) -> Result<bool> {
+fn retained_enum_default(schema: &serde_json::Value, default: &str, path: &Path) -> Result<bool> {
     let mut schema = schema.clone();
-    if let Some(mapping) = schema.as_mapping_mut() {
-        mapping.retain(|key, _| {
-            !key.as_str()
-                .is_some_and(|key| key.starts_with("x-crozier-"))
-        });
+    if let Some(mapping) = schema.as_object_mut() {
+        mapping.retain(|key, _| !key.starts_with("x-crozier-"));
         mapping.insert("type".into(), "string".into());
     }
-    let mut schemas = serde_yaml_ng::Mapping::new();
+    let mut schemas = serde_json::Map::new();
     schemas.insert("EnumDefaultProbe".into(), schema);
-    let mut components = serde_yaml_ng::Mapping::new();
+    let mut components = serde_json::Map::new();
     components.insert("schemas".into(), schemas.into());
-    let mut document = serde_yaml_ng::Mapping::new();
+    let mut document = serde_json::Map::new();
     document.insert("openapi".into(), "3.0.3".into());
     document.insert("components".into(), components.into());
-    let Ok(doc) = serde_yaml_ng::from_value::<OpenApi>(document.into()) else {
+    let Ok(doc) = serde_json::from_value::<OpenApi>(document.into()) else {
         return Ok(true);
     };
     let config = crate::config::GenerateConfig::new(
@@ -1598,127 +1552,31 @@ fn retained_enum_default(
         }))
 }
 
-// Schema numeric bounds can exceed u64 in refused documents. Preserve the
-// reference structure without requiring the SDK loader to accept those bounds.
-struct ReferenceDocument(serde_yaml_ng::Value);
-
-impl<'de> serde::Deserialize<'de> for ReferenceDocument {
-    fn deserialize<D: serde::Deserializer<'de>>(
-        deserializer: D,
-    ) -> std::result::Result<Self, D::Error> {
-        struct Visitor;
-        impl<'de> serde::de::Visitor<'de> for Visitor {
-            type Value = ReferenceDocument;
-            fn expecting(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-                f.write_str("an OpenAPI reference document")
-            }
-            fn visit_unit<E: serde::de::Error>(self) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
-            }
-            fn visit_bool<E: serde::de::Error>(
-                self,
-                value: bool,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_i64<E: serde::de::Error>(
-                self,
-                value: i64,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_u64<E: serde::de::Error>(
-                self,
-                value: u64,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_i128<E: serde::de::Error>(
-                self,
-                _value: i128,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
-            }
-            fn visit_u128<E: serde::de::Error>(
-                self,
-                _value: u128,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(serde_yaml_ng::Value::Null))
-            }
-            fn visit_f64<E: serde::de::Error>(
-                self,
-                value: f64,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_str<E: serde::de::Error>(
-                self,
-                value: &str,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_string<E: serde::de::Error>(
-                self,
-                value: String,
-            ) -> std::result::Result<Self::Value, E> {
-                Ok(ReferenceDocument(value.into()))
-            }
-            fn visit_seq<A: serde::de::SeqAccess<'de>>(
-                self,
-                mut sequence: A,
-            ) -> std::result::Result<Self::Value, A::Error> {
-                let mut values = Vec::new();
-                while let Some(ReferenceDocument(value)) = sequence.next_element()? {
-                    values.push(value);
-                }
-                Ok(ReferenceDocument(serde_yaml_ng::Value::Sequence(values)))
-            }
-            fn visit_map<A: serde::de::MapAccess<'de>>(
-                self,
-                mut map: A,
-            ) -> std::result::Result<Self::Value, A::Error> {
-                let mut values = serde_yaml_ng::Mapping::new();
-                while let Some((ReferenceDocument(key), ReferenceDocument(value))) =
-                    map.next_entry()?
-                {
-                    if values.insert(key, value).is_some() {
-                        return Err(serde::de::Error::custom("duplicate document key"));
-                    }
-                }
-                Ok(ReferenceDocument(serde_yaml_ng::Value::Mapping(values)))
-            }
-        }
-        deserializer.deserialize_any(Visitor)
-    }
-}
-
-fn ignored_reference_node(value: &serde_yaml_ng::Value) -> bool {
+fn ignored_reference_node(value: &serde_json::Value) -> bool {
     // Keep the dual-header decision in the existing canonical accessor.
-    let mut extensions = serde_yaml_ng::Mapping::new();
+    let mut extensions = serde_json::Map::new();
     for name in ["x-crozier-ignore", "x-fern-ignore"] {
         if let Some(value) = value.get(name) {
-            extensions.insert(serde_yaml_ng::Value::String(name.into()), value.clone());
+            extensions.insert(name.into(), value.clone());
         }
     }
-    serde_yaml_ng::from_value::<crate::openapi::Schema>(serde_yaml_ng::Value::Mapping(extensions))
+    serde_json::from_value::<crate::openapi::Schema>(serde_json::Value::Object(extensions))
         .is_ok_and(|schema| schema.ignored())
 }
 
 fn check_named_examples(
-    examples: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    examples: &serde_json::Value,
+    root: &serde_json::Value,
     path: &Path,
     strict: bool,
     element: &str,
 ) -> Result<()> {
-    let Some(examples) = examples.as_mapping() else {
+    let Some(examples) = examples.as_object() else {
         return Ok(());
     };
     for (name, example) in examples {
-        let Some(name) = name.as_str() else {
-            continue;
-        };
-        let Some(reference) = example.get("$ref").and_then(serde_yaml_ng::Value::as_str) else {
+        let name = name.as_str();
+        let Some(reference) = example.get("$ref").and_then(serde_json::Value::as_str) else {
             continue;
         };
         if let Some(target) = reference.strip_prefix("#/components/examples/") {
@@ -1737,15 +1595,15 @@ fn check_named_examples(
 }
 
 fn check_reference_objects(
-    value: &serde_yaml_ng::Value,
-    root: &serde_yaml_ng::Value,
+    value: &serde_json::Value,
+    root: &serde_json::Value,
     path: &Path,
     strict: bool,
     element: &str,
 ) -> Result<()> {
-    use serde_yaml_ng::Value;
+    use serde_json::Value;
     match value {
-        Value::Mapping(mapping) => {
+        Value::Object(mapping) => {
             if ignored_reference_node(value) {
                 return Ok(());
             }
@@ -1797,13 +1655,7 @@ fn check_reference_objects(
                 }
             }
             for (key, child) in mapping {
-                let key = if let Some(key) = key.as_str() {
-                    key.to_owned()
-                } else if let Some(key) = key.as_i64() {
-                    key.to_string()
-                } else {
-                    continue;
-                };
+                let key = key.as_str();
                 if key == "examples" {
                     check_named_examples(
                         child,
@@ -1819,7 +1671,7 @@ fn check_reference_objects(
                 // per-item schema, so a `#/components/schemas` reference there is
                 // as valid as under `schema`.
                 if matches!(
-                    key.as_str(),
+                    key,
                     "schema"
                         | "itemSchema"
                         | "schemas"
@@ -1835,7 +1687,7 @@ fn check_reference_objects(
                 check_reference_objects(child, root, path, strict, &format!("{element}/{key}"))?;
             }
         }
-        Value::Sequence(values) => {
+        Value::Array(values) => {
             for (index, child) in values.iter().enumerate() {
                 check_reference_objects(child, root, path, strict, &format!("{element}/{index}"))?;
             }
@@ -1845,10 +1697,7 @@ fn check_reference_objects(
     Ok(())
 }
 
-fn yaml_pointer<'a>(
-    root: &'a serde_yaml_ng::Value,
-    pointer: &str,
-) -> Option<&'a serde_yaml_ng::Value> {
+fn yaml_pointer<'a>(root: &'a serde_json::Value, pointer: &str) -> Option<&'a serde_json::Value> {
     if pointer.is_empty() {
         return Some(root);
     }
@@ -1856,9 +1705,7 @@ fn yaml_pointer<'a>(
     for token in pointer.strip_prefix('/')?.split('/') {
         let token = token.replace("~1", "/").replace("~0", "~");
         value = match value {
-            serde_yaml_ng::Value::Sequence(sequence) => {
-                sequence.get(token.parse::<usize>().ok()?)?
-            }
+            serde_json::Value::Array(sequence) => sequence.get(token.parse::<usize>().ok()?)?,
             _ => value.get(token.as_str())?,
         };
     }
@@ -1914,14 +1761,14 @@ fn imported_reference_scheme(scheme: &SecurityScheme, path: &Path) -> bool {
         };
         let Some(root) = std::fs::read_to_string(&target)
             .ok()
-            .and_then(|text| serde_yaml_ng::from_str::<ReferenceDocument>(&text).ok())
+            .and_then(|text| crate::yaml::from_str::<serde_json::Value>(&text).ok())
         else {
             return false;
         };
-        let Some(value) = yaml_pointer(&root.0, pointer) else {
+        let Some(value) = yaml_pointer(&root, pointer) else {
             return false;
         };
-        let Ok(resolved) = serde_yaml_ng::from_value::<SecurityScheme>(value.clone()) else {
+        let Ok(resolved) = serde_json::from_value::<SecurityScheme>(value.clone()) else {
             return false;
         };
         if resolved.reference.is_none() {
@@ -2302,18 +2149,18 @@ const OPERATION_METHODS: [&str; 8] = [
 /// Every operation Fern imports, with its method and route. Pinned Fern skips
 /// an ignored Path Item or operation before it reads the operation's examples.
 fn imported_operations(
-    root: &serde_yaml_ng::Value,
-) -> impl Iterator<Item = (&'static str, &str, &serde_yaml_ng::Value)> {
+    root: &serde_json::Value,
+) -> impl Iterator<Item = (&'static str, &str, &serde_json::Value)> {
     root.get("paths")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
         .into_iter()
         .flatten()
         .filter(|(_, item)| !ignored_reference_node(item))
-        .filter_map(|(route, item)| Some((route.as_str()?, item)))
+        .map(|(route, item)| (route.as_str(), item))
         .flat_map(|(route, item)| {
             OPERATION_METHODS.iter().filter_map(move |method| {
                 let operation = item.get(*method)?;
-                (operation.is_mapping() && !ignored_reference_node(operation))
+                (operation.is_object() && !ignored_reference_node(operation))
                     .then_some((*method, route, operation))
             })
         })
@@ -2322,11 +2169,11 @@ fn imported_operations(
 /// A node with its local `$ref` chain followed; `None` for a reference that
 /// cannot be followed here (other classes own those).
 fn local_target<'a>(
-    root: &'a serde_yaml_ng::Value,
-    mut node: &'a serde_yaml_ng::Value,
-) -> Option<&'a serde_yaml_ng::Value> {
+    root: &'a serde_json::Value,
+    mut node: &'a serde_json::Value,
+) -> Option<&'a serde_json::Value> {
     for _ in 0..32 {
-        let Some(reference) = node.get("$ref").and_then(serde_yaml_ng::Value::as_str) else {
+        let Some(reference) = node.get("$ref").and_then(serde_json::Value::as_str) else {
             return Some(node);
         };
         node = yaml_pointer(root, reference.strip_prefix('#')?)?;
@@ -2345,15 +2192,15 @@ fn json_examples_media(media_type: &str) -> bool {
 /// The request examples Fern names: the first JSON media type's, else a form
 /// body's. Multipart, XML, text and binary examples are never read.
 fn request_examples<'a>(
-    root: &'a serde_yaml_ng::Value,
-    operation: &'a serde_yaml_ng::Value,
-) -> Option<&'a serde_yaml_ng::Value> {
+    root: &'a serde_json::Value,
+    operation: &'a serde_json::Value,
+) -> Option<&'a serde_json::Value> {
     let content = local_target(root, operation.get("requestBody")?)?
         .get("content")?
-        .as_mapping()?;
+        .as_object()?;
     content
         .iter()
-        .find(|(media_type, _)| media_type.as_str().is_some_and(json_examples_media))
+        .find(|(media_type, _)| json_examples_media(media_type))
         .map(|(_, media)| media)
         .or_else(|| content.get("application/x-www-form-urlencoded"))?
         .get("examples")
@@ -2365,16 +2212,14 @@ fn request_examples<'a>(
 /// passes it to the next code, and a JSON media type's examples are read. Any
 /// other content (text, HTML, PDF, binary) ends the search unread.
 fn response_examples<'a>(
-    root: &'a serde_yaml_ng::Value,
-    operation: &'a serde_yaml_ng::Value,
-) -> Option<&'a serde_yaml_ng::Value> {
-    let responses = operation.get("responses")?.as_mapping()?;
-    let mut candidates: Vec<(u64, &serde_yaml_ng::Value)> = responses
+    root: &'a serde_json::Value,
+    operation: &'a serde_json::Value,
+) -> Option<&'a serde_json::Value> {
+    let responses = operation.get("responses")?.as_object()?;
+    let mut candidates: Vec<(u64, &serde_json::Value)> = responses
         .iter()
         .filter_map(|(code, response)| {
-            let code = code
-                .as_u64()
-                .or_else(|| code.as_str().and_then(|code| code.parse().ok()))?;
+            let code = code.parse::<u64>().ok()?;
             (200..300).contains(&code).then_some((code, response))
         })
         .collect();
@@ -2389,7 +2234,7 @@ fn response_examples<'a>(
         }
         let content = local_target(root, response)?
             .get("content")
-            .and_then(serde_yaml_ng::Value::as_mapping)
+            .and_then(serde_json::Value::as_object)
             .filter(|content| !content.is_empty());
         let Some(content) = content else {
             if code == 0 {
@@ -2399,14 +2244,14 @@ fn response_examples<'a>(
         };
         if let Some((_, media)) = content
             .iter()
-            .find(|(media_type, _)| media_type.as_str().is_some_and(json_examples_media))
+            .find(|(media_type, _)| json_examples_media(media_type))
         {
             return media.get("examples");
         }
         if code == 0
             || !content
                 .keys()
-                .all(|media_type| media_type.as_str() == Some("application/xml"))
+                .all(|media_type| media_type == "application/xml")
         {
             return None;
         }
@@ -2419,40 +2264,31 @@ fn response_examples<'a>(
 /// with its YAML type, so `1` and `"1"` differ), else the map key as a string.
 /// A `summary` beside a `$ref` is not read.
 fn example_name(
-    root: &serde_yaml_ng::Value,
-    key: &serde_yaml_ng::Value,
-    example: &serde_yaml_ng::Value,
-) -> Option<serde_yaml_ng::Value> {
+    root: &serde_json::Value,
+    key: &str,
+    example: &serde_json::Value,
+) -> Option<serde_json::Value> {
     if let Some(summary) = local_target(root, example)?
         .get("summary")
         .filter(|summary| !summary.is_null())
     {
         return Some(summary.clone());
     }
-    let key = match key {
-        serde_yaml_ng::Value::String(key) => key.clone(),
-        serde_yaml_ng::Value::Number(key) => key.to_string(),
-        serde_yaml_ng::Value::Bool(key) => key.to_string(),
-        _ => return None,
-    };
-    Some(serde_yaml_ng::Value::String(key))
+    Some(serde_json::Value::String(key.to_owned()))
 }
 
-fn name_label(name: &serde_yaml_ng::Value) -> String {
-    name.as_str().map_or_else(
-        || {
-            serde_yaml_ng::to_string(name)
-                .unwrap_or_default()
-                .trim_end()
-                .to_owned()
-        },
-        str::to_owned,
-    )
+fn name_label(name: &serde_json::Value) -> String {
+    match name {
+        serde_json::Value::String(text) => text.clone(),
+        serde_json::Value::Number(number) => number.to_string(),
+        serde_json::Value::Bool(boolean) => boolean.to_string(),
+        other => format!("{other:?}"),
+    }
 }
 
 fn first_duplicate(
-    names: impl IntoIterator<Item = serde_yaml_ng::Value>,
-) -> Option<serde_yaml_ng::Value> {
+    names: impl IntoIterator<Item = serde_json::Value>,
+) -> Option<serde_json::Value> {
     let mut seen = Vec::new();
     for name in names {
         if seen.contains(&name) {
@@ -2469,11 +2305,11 @@ fn first_duplicate(
 /// response examples are each compared within themselves, never with each
 /// other or across operations. `x-crozier-examples` is not read: Fern never
 /// reads it, so its content cannot make Fern refuse a document.
-fn check_example_names(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -> Result<()> {
+fn check_example_names(root: &serde_json::Value, path: &Path, strict: bool) -> Result<()> {
     for (method, route, operation) in imported_operations(root) {
         let element = format!("{} {route}", method.to_ascii_uppercase());
         if let Some(examples) = operation.get("x-fern-examples") {
-            let Some(examples) = examples.as_sequence() else {
+            let Some(examples) = examples.as_array() else {
                 continue;
             };
             if !examples.is_empty() {
@@ -2493,7 +2329,7 @@ fn check_example_names(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -
             ("request", request_examples(root, operation)),
             ("response", response_examples(root, operation)),
         ] {
-            let Some(examples) = examples.and_then(serde_yaml_ng::Value::as_mapping) else {
+            let Some(examples) = examples.and_then(serde_json::Value::as_object) else {
                 continue;
             };
             let names = examples
@@ -2512,23 +2348,23 @@ fn check_example_names(root: &serde_yaml_ng::Value, path: &Path, strict: bool) -
 /// parameters overridden by the operation's own of the same name, references
 /// followed, ignored parameters dropped.
 fn query_parameters<'a>(
-    root: &'a serde_yaml_ng::Value,
-    item: &'a serde_yaml_ng::Value,
-    operation: &'a serde_yaml_ng::Value,
-) -> Vec<(&'a str, &'a serde_yaml_ng::Value)> {
-    let mut parameters: Vec<(&str, &serde_yaml_ng::Value)> = Vec::new();
+    root: &'a serde_json::Value,
+    item: &'a serde_json::Value,
+    operation: &'a serde_json::Value,
+) -> Vec<(&'a str, &'a serde_json::Value)> {
+    let mut parameters: Vec<(&str, &serde_json::Value)> = Vec::new();
     for parameter in [item, operation]
         .into_iter()
-        .filter_map(|node| node.get("parameters")?.as_sequence())
+        .filter_map(|node| node.get("parameters")?.as_array())
         .flatten()
     {
         let Some(parameter) = local_target(root, parameter) else {
             continue;
         };
-        if parameter.get("in").and_then(serde_yaml_ng::Value::as_str) != Some("query") {
+        if parameter.get("in").and_then(serde_json::Value::as_str) != Some("query") {
             continue;
         }
-        let Some(name) = parameter.get("name").and_then(serde_yaml_ng::Value::as_str) else {
+        let Some(name) = parameter.get("name").and_then(serde_json::Value::as_str) else {
             continue;
         };
         parameters.retain(|(declared, _)| *declared != name);
@@ -2540,11 +2376,11 @@ fn query_parameters<'a>(
 }
 
 /// A parameter's schema, from `schema` or its first `content` media type.
-fn parameter_schema(parameter: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::Value> {
+fn parameter_schema(parameter: &serde_json::Value) -> Option<&serde_json::Value> {
     parameter.get("schema").or_else(|| {
         parameter
             .get("content")?
-            .as_mapping()?
+            .as_object()?
             .values()
             .next()?
             .get("schema")
@@ -2553,7 +2389,7 @@ fn parameter_schema(parameter: &serde_yaml_ng::Value) -> Option<&serde_yaml_ng::
 
 /// Whether a schema is `nullable` or a list, the shapes an example may omit —
 /// or cannot be followed, which is never refused.
-fn omittable_schema(root: &serde_yaml_ng::Value, schema: Option<&serde_yaml_ng::Value>) -> bool {
+fn omittable_schema(root: &serde_json::Value, schema: Option<&serde_json::Value>) -> bool {
     let Some(schema) = schema else {
         return false;
     };
@@ -2561,16 +2397,13 @@ fn omittable_schema(root: &serde_yaml_ng::Value, schema: Option<&serde_yaml_ng::
         return true;
     };
     let type_is = |name: &str| match schema.get("type") {
-        Some(serde_yaml_ng::Value::String(value)) => value == name,
-        Some(serde_yaml_ng::Value::Sequence(values)) => {
+        Some(serde_json::Value::String(value)) => value == name,
+        Some(serde_json::Value::Array(values)) => {
             values.iter().any(|value| value.as_str() == Some(name))
         }
         _ => false,
     };
-    schema
-        .get("nullable")
-        .and_then(serde_yaml_ng::Value::as_bool)
-        == Some(true)
+    schema.get("nullable").and_then(serde_json::Value::as_bool) == Some(true)
         || type_is("null")
         || type_is("array")
 }
@@ -2586,7 +2419,7 @@ fn omittable_schema(root: &serde_yaml_ng::Value, schema: Option<&serde_yaml_ng::
 /// operation it files into `api.yml`; that is the `type-not-defined` mechanism,
 /// whose detector refuses it first.
 fn check_example_query_parameters(
-    root: &serde_yaml_ng::Value,
+    root: &serde_json::Value,
     path: &Path,
     strict: bool,
 ) -> Result<()> {
@@ -2598,22 +2431,22 @@ fn check_example_query_parameters(
         let parameters = query_parameters(root, item, operation);
         let examples = operation
             .get("x-fern-examples")
-            .and_then(serde_yaml_ng::Value::as_sequence)
+            .and_then(serde_json::Value::as_array)
             .filter(|examples| !examples.is_empty());
         if let Some(examples) = examples {
             for (index, example) in examples.iter().enumerate() {
                 let given = match example.get("query-parameters") {
-                    Some(serde_yaml_ng::Value::Mapping(given)) => given.clone(),
-                    None if example.get("response").is_some() => serde_yaml_ng::Mapping::new(),
+                    Some(serde_json::Value::Object(given)) => given.clone(),
+                    None if example.get("response").is_some() => serde_json::Map::new(),
                     _ => continue,
                 };
                 let missing = parameters.iter().find(|(name, parameter)| {
                     parameter
                         .get("required")
-                        .and_then(serde_yaml_ng::Value::as_bool)
+                        .and_then(serde_json::Value::as_bool)
                         == Some(true)
                         && !omittable_schema(root, parameter_schema(parameter))
-                        && given.get(*name).is_none_or(serde_yaml_ng::Value::is_null)
+                        && given.get(*name).is_none_or(serde_json::Value::is_null)
                 });
                 if let Some((name, _)) = missing {
                     let element =
@@ -2725,7 +2558,7 @@ mod tests {
                 "  /p{index}:\n    get:\n      parameters: [{header}]\n      responses: {{'204': {{description: OK}}}}\n"
             ));
         }
-        let doc: OpenApi = serde_yaml_ng::from_str(&spec).unwrap();
+        let doc: OpenApi = crate::yaml::from_str(&spec).unwrap();
         let config = crate::config::GenerateConfig::new(
             std::path::PathBuf::from("openapi.yml"),
             std::path::PathBuf::from("out"),
@@ -2864,8 +2697,8 @@ mod tests {
 
     #[test]
     fn reference_pointer_decodes_escaped_paths_and_array_indices() {
-        let root = serde_yaml_ng::from_str("paths: {'/probe': {get: {parameters: [{name: id}]}}}")
-            .unwrap();
+        let root =
+            crate::yaml::from_str("paths: {'/probe': {get: {parameters: [{name: id}]}}}").unwrap();
         assert!(yaml_pointer(&root, "/paths/~1probe/get/parameters/0").is_some());
         assert!(yaml_pointer(&root, "/paths/~1probe/get/parameters/1").is_none());
     }
@@ -2917,7 +2750,7 @@ mod tests {
     }
 
     fn document(security: &str, scheme: &str, paths: &str) -> OpenApi {
-        serde_yaml_ng::from_str(&format!(
+        crate::yaml::from_str(&format!(
             "openapi: 3.0.3\n{security}\ncomponents:\n  securitySchemes:\n    session:\n{scheme}\npaths:\n{paths}\n"
         ))
         .unwrap()
@@ -2967,7 +2800,7 @@ mod tests {
     #[test]
     fn a_later_imported_scheme_prevents_an_auth_refusal() {
         let mut doc = document("security: [{session: []}]", COOKIE, OP);
-        let bearer = serde_yaml_ng::from_str("type: http\nscheme: bearer").unwrap();
+        let bearer = crate::yaml::from_str("type: http\nscheme: bearer").unwrap();
         doc.components
             .security_schemes
             .insert("bearer".into(), bearer);
@@ -3057,7 +2890,7 @@ mod tests {
     }
 
     fn example_name_refusal(document: &str) -> Option<String> {
-        let root: serde_yaml_ng::Value = serde_yaml_ng::from_str(document).unwrap();
+        let root: serde_json::Value = crate::yaml::from_str(document).unwrap();
         check_example_names(&root, Path::new("api.yml"), false)
             .err()
             .map(|error| error.to_string())
@@ -3203,7 +3036,7 @@ mod tests {
     #[test]
     fn example_query_parameters_follow_the_examples_fern_checks() {
         let check = |document: String| {
-            let root: serde_yaml_ng::Value = serde_yaml_ng::from_str(&document).unwrap();
+            let root: serde_json::Value = crate::yaml::from_str(&document).unwrap();
             check_example_query_parameters(&root, Path::new("api.yml"), true)
                 .err()
                 .map(|error| error.to_string())

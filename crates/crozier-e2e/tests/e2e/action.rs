@@ -384,8 +384,8 @@ fn every_generator_matching_passes_the_action() {
 /// unlisted fourth never is.
 #[test]
 fn a_paths_block_scalar_checks_every_listed_path() {
-    let with: serde_yaml_ng::Value =
-        serde_yaml_ng::from_str("paths: |\n  first\n  second/crozier.yml\n  third\n").unwrap();
+    let with: serde_json::Value =
+        crate::yaml::from_str("paths: |\n  first\n  second/crozier.yml\n  third\n").unwrap();
     let paths = with["paths"].as_str().unwrap();
     assert_eq!(paths, "first\nsecond/crozier.yml\nthird\n");
 
@@ -1503,12 +1503,12 @@ struct ComposedRun {
 /// `with` (YAML, as a workflow writes it), the action's checkout being this
 /// repository and `ambient` the job's own environment.
 fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) -> ComposedRun {
-    let action: serde_yaml_ng::Value =
-        serde_yaml_ng::from_str(&std::fs::read_to_string(repo_root().join("action.yml")).unwrap())
+    let action: serde_json::Value =
+        crate::yaml::from_str(&std::fs::read_to_string(repo_root().join("action.yml")).unwrap())
             .unwrap();
-    let with: serde_yaml_ng::Value = serde_yaml_ng::from_str(with).unwrap();
-    let declared = action["inputs"].as_mapping().unwrap();
-    for key in with.as_mapping().unwrap().keys() {
+    let with: serde_json::Value = crate::yaml::from_str(with).unwrap();
+    let declared = action["inputs"].as_object().unwrap();
+    for key in with.as_object().unwrap().keys() {
         assert!(
             declared.contains_key(key),
             "action.yml declares no input {key:?}"
@@ -1517,11 +1517,11 @@ fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) ->
     let inputs: BTreeMap<String, String> = declared
         .iter()
         .map(|(name, spec)| {
-            let name = name.as_str().unwrap();
+            let name = name.as_str();
             let value = with
                 .get(name)
                 .or_else(|| spec.get("default"))
-                .and_then(serde_yaml_ng::Value::as_str)
+                .and_then(serde_json::Value::as_str)
                 .unwrap_or("");
             (name.to_string(), value.to_string())
         })
@@ -1538,23 +1538,23 @@ fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) ->
     let mut final_status = 0;
 
     for (index, step) in action["runs"]["steps"]
-        .as_sequence()
+        .as_array()
         .unwrap()
         .iter()
         .enumerate()
     {
-        let id = step.get("id").and_then(serde_yaml_ng::Value::as_str);
+        let id = step.get("id").and_then(serde_json::Value::as_str);
         let label = id
-            .or_else(|| step.get("name").and_then(serde_yaml_ng::Value::as_str))
+            .or_else(|| step.get("name").and_then(serde_json::Value::as_str))
             .unwrap()
             .to_string();
-        let when = step.get("if").and_then(serde_yaml_ng::Value::as_str);
+        let when = step.get("if").and_then(serde_json::Value::as_str);
         if !condition(when, failed, &inputs, &steps) {
             continue;
         }
         ran.push(label.clone());
 
-        if let Some(uses) = step.get("uses").and_then(serde_yaml_ng::Value::as_str) {
+        if let Some(uses) = step.get("uses").and_then(serde_json::Value::as_str) {
             assert!(
                 uses.starts_with("actions/upload-artifact@"),
                 "a `uses:` step this test does not model: {uses}"
@@ -1601,10 +1601,10 @@ fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) ->
         for (key, value) in ambient {
             command.env(key, value);
         }
-        if let Some(env) = step.get("env").and_then(serde_yaml_ng::Value::as_mapping) {
+        if let Some(env) = step.get("env").and_then(serde_json::Value::as_object) {
             for (key, value) in env {
                 command.env(
-                    key.as_str().unwrap(),
+                    key.as_str(),
                     evaluate(value.as_str().unwrap(), &inputs, &steps),
                 );
             }
@@ -1622,12 +1622,12 @@ fn run_action_yml(workspace: &Path, with: &str, ambient: &[(String, String)]) ->
     }
 
     let outputs = action["outputs"]
-        .as_mapping()
+        .as_object()
         .unwrap()
         .iter()
         .map(|(name, spec)| {
             (
-                name.as_str().unwrap().to_string(),
+                name.as_str().to_string(),
                 evaluate(spec["value"].as_str().unwrap(), &inputs, &steps),
             )
         })
@@ -1795,7 +1795,7 @@ fn the_documented_required_check_runs_compare_only_when_specs_or_configs_change(
         .map(|rest| rest.split("```\n").next().unwrap())
         .find(|block| block.contains("\n  changes:\n"))
         .expect("docs/github-action.md gives a required-check workflow");
-    let workflow: serde_yaml_ng::Value = serde_yaml_ng::from_str(block).unwrap();
+    let workflow: serde_json::Value = crate::yaml::from_str(block).unwrap();
 
     // Every pull request runs it: a paths filter would leave the check unreported.
     for trigger in ["pull_request", "push"] {
@@ -1816,14 +1816,14 @@ fn the_documented_required_check_runs_compare_only_when_specs_or_configs_change(
         jobs["changes"]["outputs"]["relevant"].as_str(),
         Some("${{ steps.changed.outputs.relevant }}")
     );
-    let steps = jobs["changes"]["steps"].as_sequence().unwrap();
+    let steps = jobs["changes"]["steps"].as_array().unwrap();
     assert_eq!(steps[0]["with"]["fetch-depth"].as_u64(), Some(0));
     let step = steps
         .iter()
         .find(|step| step["id"].as_str() == Some("changed"))
         .expect("a step with id `changed`");
     let run = step["run"].as_str().unwrap();
-    let env = step["env"].as_mapping().unwrap();
+    let env = step["env"].as_object().unwrap();
 
     // The step's `relevant` output for an event whose base commit is `base`.
     let relevant = |repo: &Path, base: &str| -> String {
@@ -1839,7 +1839,7 @@ fn the_documented_required_check_runs_compare_only_when_specs_or_configs_change(
                 "${{ github.event.pull_request.base.sha || github.event.before }}" => base,
                 other => panic!("an expression this test does not model: {other}"),
             };
-            command.env(key.as_str().unwrap(), value);
+            command.env(key.as_str(), value);
         }
         let out = command.output().unwrap();
         assert!(

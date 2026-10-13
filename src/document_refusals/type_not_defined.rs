@@ -11,7 +11,7 @@
 //!   member that lacks the property it names.
 
 use super::{ignored_reference_node, yaml_pointer};
-use serde_yaml_ng::Value;
+use serde_json::Value;
 
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "options", "head", "patch", "trace",
@@ -19,11 +19,9 @@ const METHODS: [&str; 8] = [
 
 /// The first offending element, or `None` when Fern resolves every reference.
 pub(super) fn undefined_type_reference(root: &Value) -> Option<String> {
-    let paths = root.get("paths").and_then(Value::as_mapping);
+    let paths = root.get("paths").and_then(Value::as_object);
     for (route, item) in paths.into_iter().flatten() {
-        let Some(route) = route.as_str() else {
-            continue;
-        };
+        let route = route.as_str();
         for method in METHODS {
             let Some(operation) = item.get(method) else {
                 continue;
@@ -46,7 +44,7 @@ pub(super) fn undefined_type_reference(root: &Value) -> Option<String> {
 fn filed_as_api(operation: &Value) -> bool {
     let Some(tag) = operation
         .get("tags")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .and_then(|tags| tags.first())
         .and_then(Value::as_str)
     else {
@@ -59,9 +57,9 @@ fn filed_as_api(operation: &Value) -> bool {
 }
 
 fn api_file_reference(root: &Value, item: &Value, operation: &Value) -> Option<String> {
-    let responses = operation.get("responses").and_then(Value::as_mapping);
+    let responses = operation.get("responses").and_then(Value::as_object);
     for (code, _) in responses.into_iter().flatten() {
-        let code = status_text(code);
+        let code = code.clone();
         if fern_error_status(&code) {
             return Some(format!("responses/{code}"));
         }
@@ -76,8 +74,8 @@ fn api_file_reference(root: &Value, item: &Value, operation: &Value) -> Option<S
             return Some(format!("responses/{code}"));
         }
     }
-    let shared = item.get("parameters").and_then(Value::as_sequence);
-    let local = operation.get("parameters").and_then(Value::as_sequence);
+    let shared = item.get("parameters").and_then(Value::as_array);
+    let local = operation.get("parameters").and_then(Value::as_array);
     for parameter in shared.into_iter().chain(local).flatten() {
         let parameter = resolve(root, parameter);
         let located = matches!(
@@ -93,9 +91,9 @@ fn api_file_reference(root: &Value, item: &Value, operation: &Value) -> Option<S
     if let Some(schema) = body.and_then(|body| single_media(body, |_| true)) {
         let media = body
             .and_then(|body| body.get("content"))
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .and_then(|content| content.keys().next())
-            .and_then(Value::as_str)
+            .map(String::as_str)
             .unwrap_or("")
             .to_ascii_lowercase();
         if body_declares_type(root, &media, schema) {
@@ -103,13 +101,6 @@ fn api_file_reference(root: &Value, item: &Value, operation: &Value) -> Option<S
         }
     }
     None
-}
-
-fn status_text(code: &Value) -> String {
-    match code {
-        Value::Number(number) => number.to_string(),
-        _ => code.as_str().unwrap_or("").to_owned(),
-    }
 }
 
 /// The statuses Fern names an error for, measured one operation per status
@@ -125,10 +116,10 @@ fn fern_error_status(code: &str) -> bool {
 /// a sole 2xx, otherwise `default` when no 2xx exists. Other combinations are
 /// unmeasured and left alone.
 fn fern_response(operation: &Value) -> Option<(String, &Value)> {
-    let responses = operation.get("responses").and_then(Value::as_mapping)?;
+    let responses = operation.get("responses").and_then(Value::as_object)?;
     let success: Vec<(String, &Value)> = responses
         .iter()
-        .map(|(code, response)| (status_text(code), response))
+        .map(|(code, response)| (code.clone(), response))
         .filter(|(code, _)| code.len() == 3 && code.starts_with('2'))
         .collect();
     if let Some(found) = success.iter().find(|(code, _)| code == "200") {
@@ -145,19 +136,19 @@ fn fern_response(operation: &Value) -> Option<(String, &Value)> {
 
 /// The schema of a node's only media type, when that media type passes `accept`.
 fn single_media(node: &Value, accept: impl Fn(&str) -> bool) -> Option<&Value> {
-    let content = node.get("content").and_then(Value::as_mapping)?;
+    let content = node.get("content").and_then(Value::as_object)?;
     let mut media = content.iter();
     let (Some((name, value)), None) = (media.next(), media.next()) else {
         return None;
     };
-    accept(name.as_str()?).then(|| value.get("schema"))?
+    accept(name.as_str()).then(|| value.get("schema"))?
 }
 
 fn body_declares_type(root: &Value, media: &str, schema: &Value) -> bool {
     let properties_declare = |schema: &Value| {
         schema
             .get("properties")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .is_some_and(|properties| properties.values().any(declares_type))
     };
     if media == "application/x-www-form-urlencoded" || media == "multipart/form-data" {
@@ -192,7 +183,7 @@ fn declares_type(schema: &Value) -> bool {
         return true;
     }
     for key in ["oneOf", "anyOf"] {
-        if let Some(members) = schema.get(key).and_then(Value::as_sequence) {
+        if let Some(members) = schema.get(key).and_then(Value::as_array) {
             let members: Vec<&Value> = members
                 .iter()
                 .filter(|member| member.get("type").and_then(Value::as_str) != Some("null"))
@@ -204,7 +195,7 @@ fn declares_type(schema: &Value) -> bool {
             };
         }
     }
-    if let Some(members) = schema.get("allOf").and_then(Value::as_sequence) {
+    if let Some(members) = schema.get("allOf").and_then(Value::as_array) {
         return members.iter().any(declares_type);
     }
     if schema_type_is(schema, "array") {
@@ -212,20 +203,20 @@ fn declares_type(schema: &Value) -> bool {
     }
     if schema
         .get("properties")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .is_some_and(|properties| !properties.is_empty())
     {
         return true;
     }
     schema
         .get("additionalProperties")
-        .is_some_and(|value| value.is_mapping() && declares_type(value))
+        .is_some_and(|value| value.is_object() && declares_type(value))
 }
 
 fn schema_type_is(schema: &Value, name: &str) -> bool {
     match schema.get("type") {
         Some(Value::String(found)) => found == name,
-        Some(Value::Sequence(types)) => types.iter().any(|found| found.as_str() == Some(name)),
+        Some(Value::Array(types)) => types.iter().any(|found| found.as_str() == Some(name)),
         _ => false,
     }
 }
@@ -245,7 +236,7 @@ const SCHEMA_PREFIX: &str = "#/components/schemas/";
 /// which is also the whole `application/json` body of an operation.
 fn body_member_union(root: &Value) -> Option<String> {
     let mut bodies = std::collections::HashSet::new();
-    let paths = root.get("paths").and_then(Value::as_mapping);
+    let paths = root.get("paths").and_then(Value::as_object);
     for item in paths.into_iter().flatten().map(|(_, item)| item) {
         // Fern drops a `GET` operation's body, so it never becomes an inline
         // request: the hand-written `bakery-get-body-member` fixture's
@@ -274,12 +265,12 @@ fn body_member_union(root: &Value) -> Option<String> {
     let schemas = root
         .get("components")
         .and_then(|components| components.get("schemas"))
-        .and_then(Value::as_mapping)?;
+        .and_then(Value::as_object)?;
     schemas.iter().find_map(|(name, schema)| {
         find_union(
             root,
             schema,
-            &format!("components/schemas/{}", name.as_str()?),
+            &format!("components/schemas/{}", name.as_str()),
             &bodies,
         )
     })
@@ -292,7 +283,7 @@ fn find_union(
     bodies: &std::collections::HashSet<&str>,
 ) -> Option<String> {
     for key in ["oneOf", "anyOf"] {
-        if let Some(members) = schema.get(key).and_then(Value::as_sequence) {
+        if let Some(members) = schema.get(key).and_then(Value::as_array) {
             let is_body = |member: &Value| {
                 member
                     .get("$ref")
@@ -327,14 +318,14 @@ fn find_union(
     }
     let mut children: Vec<(String, &Value)> = Vec::new();
     for key in ["items", "additionalProperties"] {
-        if let Some(child) = schema.get(key).filter(|child| child.is_mapping()) {
+        if let Some(child) = schema.get(key).filter(|child| child.is_object()) {
             children.push((format!("{pointer}/{key}"), child));
         }
     }
     for key in ["oneOf", "anyOf", "allOf"] {
         for (index, child) in schema
             .get(key)
-            .and_then(Value::as_sequence)
+            .and_then(Value::as_array)
             .into_iter()
             .flatten()
             .enumerate()
@@ -342,9 +333,10 @@ fn find_union(
             children.push((format!("{pointer}/{key}/{index}"), child));
         }
     }
-    let properties = schema.get("properties").and_then(Value::as_mapping);
+    let properties = schema.get("properties").and_then(Value::as_object);
     for (name, child) in properties.into_iter().flatten() {
-        if let Some(name) = name.as_str() {
+        {
+            let name = name.as_str();
             children.push((format!("{pointer}/properties/{name}"), child));
         }
     }
@@ -359,7 +351,7 @@ fn mapped_discriminant<'a>(schema: &'a Value, key: &str) -> Option<&'a str> {
     let discriminator = schema.get("discriminator").filter(|_| key == "oneOf")?;
     discriminator
         .get("mapping")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .filter(|mapping| !mapping.is_empty())?;
     discriminator
         .get("propertyName")
@@ -370,17 +362,17 @@ fn mapped_discriminant<'a>(schema: &'a Value, key: &str) -> Option<&'a str> {
 /// At least two members, every one an object sharing a property whose only
 /// value is a string (`enum` of one, or `const`).
 pub(super) fn inferred_discriminant(root: &Value, members: &[Value]) -> bool {
-    let objects: Vec<&serde_yaml_ng::Mapping> = members
+    let objects: Vec<&serde_json::Map<String, serde_json::Value>> = members
         .iter()
         .filter_map(|member| resolve(root, member).get("properties"))
-        .filter_map(Value::as_mapping)
+        .filter_map(Value::as_object)
         .collect();
     if members.len() < 2 || objects.len() != members.len() {
         return false;
     }
     let single_value = |property: &Value| match property.get("enum") {
         Some(values) => values
-            .as_sequence()
+            .as_array()
             .is_some_and(|values| values.len() == 1 && values[0].is_string()),
         None => property.get("const").is_some_and(Value::is_string),
     };
@@ -397,7 +389,7 @@ mod tests {
     use super::*;
 
     fn element(text: &str) -> Option<String> {
-        undefined_type_reference(&serde_yaml_ng::from_str(text).unwrap())
+        undefined_type_reference(&crate::yaml::from_str(text).unwrap())
     }
 
     const COMPONENTS: &str = "components:\n  schemas:\n    Thing: {type: object, properties: {id: {type: string}}}\n    Color: {type: string, enum: [red, blue]}\n";
