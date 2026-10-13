@@ -1,8 +1,9 @@
 // llmlint: ignore-file[shell_test_tiers_stay_split] This entire file is the task-mandated real-Git classifier journey inside node --test .github/tests/*.test.mjs; the manager approved keeping the recorder and shared classifier proofs in this one private project rather than moving them to a sibling tier.
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { readFileSync, writeFileSync, symlinkSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { test } from 'node:test';
+import { spawnSync } from 'node:child_process';
 import { history, event } from './support.mjs';
 
 test('real git histories admit only release-plz semantic versions/changelog; ownership, title and author cannot forge omission', t => {
@@ -51,7 +52,11 @@ test('real routing persists its decision; unknown/empty event names emit no omis
   for (const name of ['', 'unknown-event']) {
     writeFileSync(output,'');
     const run=h.invoke(pr,h.heads.version,name,h.base,{GITHUB_OUTPUT:output});
-    assert.equal(run.status,2); assert.match(run.stderr,/unknown event name/); assert.equal(run.stdout,''); assert.equal(readFileSync(output,'utf8'),'');
+    assert.equal(run.status,0,run.stderr);
+    const decision=JSON.parse(run.stdout);
+    assert.equal(decision.macosRequired,true); assert.equal(decision.isReleaseOnly,false);
+    assert.ok(decision.reason.includes(name || '(empty)'));
+    assert.equal(readFileSync(output,'utf8'),'macosRequired=true\n');
   }
   const added=h.change({'NEW_CHANGELOG.md':'release notes\n'});
   assert.match(h.classify(pr,added).reason,/non-release file operation/);
@@ -59,4 +64,26 @@ test('real routing persists its decision; unknown/empty event names emit no omis
   assert.match(h.classify(pr,h.git('rev-parse','HEAD')).reason,/non-release file operation/);
   h.git('reset','--hard',h.base); h.git('mv','CHANGELOG.md','NEW_CHANGELOG.md'); h.git('commit','-qm','renamed release notes');
   assert.equal(h.classify(pr,h.git('rev-parse','HEAD')).macosRequired,true);
+});
+
+
+test('a same-named registry dependency version cannot authorize release-only omission', t => {
+  const h=history(t), pr=event('release-plz-test');
+  const registry='\n[[package]]\nname = "crozier"\nversion = "1.0.0"\nsource = "registry+test"\nchecksum = "abc"\n';
+  const base=h.change({'Cargo.lock':h.baseFiles['Cargo.lock']+registry});
+  const head=h.change({'Cargo.lock':h.baseFiles['Cargo.lock']+registry.replace('1.0.0','2.0.0')});
+  const decision=h.classify(pr,head,'pull_request',base);
+  assert.equal(decision.macosRequired,true);
+  assert.equal(decision.isReleaseOnly,false);
+  assert.match(decision.reason,/non-version content changed: Cargo.lock/);
+});
+
+
+test('classifier runs through a filesystem alias as on macOS temporary directories', t => {
+  const h=history(t), alias=join(h.dir,'.git/classifier-directory'), input=join(h.dir,'.git/event.json');
+  symlinkSync(resolve('.github'),alias,'junction');
+  writeFileSync(input,JSON.stringify(event('release-plz-test')));
+  const run=spawnSync(process.execPath,[join(alias,'macos-policy.mjs'),'classify','--event',input,'--base',h.base,'--head',h.heads.source],{cwd:h.dir,encoding:'utf8',env:{...process.env,GITHUB_EVENT_NAME:'pull_request',GITHUB_OUTPUT:''}});
+  assert.equal(run.status,0,run.stderr);
+  assert.equal(JSON.parse(run.stdout).macosRequired,true);
 });

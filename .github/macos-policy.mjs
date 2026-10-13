@@ -2,8 +2,8 @@
 // One authority for release-only omission. The PAT author is also a human;
 // only same-repository release-plz heads with a semantic release diff qualify.
 import { execFileSync } from 'node:child_process';
-import { readFileSync, appendFileSync } from 'node:fs';
-import { pathToFileURL } from 'node:url';
+import { readFileSync, appendFileSync, realpathSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const refPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 function git(...args) {
@@ -36,6 +36,7 @@ function stable(value) {
 }
 export function classify(event, base, head, eventName = process.env.GITHUB_EVENT_NAME ?? 'pull_request') {
   const ordinary = reason => ({ isReleaseOnly: false, macosRequired: true, reason });
+  if (!['pull_request','push','release','workflow_run','repository_dispatch','schedule','workflow_dispatch'].includes(eventName)) return ordinary(`unknown event name '${eventName || '(empty)'}': Mac coverage required`);
   if (eventName !== 'pull_request') return { isReleaseOnly: false, macosRequired: false, reason: `automatic ${eventName}: no Mac lane` };
   try {
     const pr = event.pull_request;
@@ -61,14 +62,12 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
 function main() {
   const args = process.argv.slice(2);
   if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new Error('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
-  const eventName=process.env.GITHUB_EVENT_NAME ?? 'pull_request';
-  if (!['pull_request','push','release','workflow_run','repository_dispatch','schedule','workflow_dispatch'].includes(eventName)) throw new Error(`unknown event name '${eventName}'; supply the actual GitHub event before routing`);
   let decision;
   try { decision = classify(JSON.parse(readFileSync(args[2], 'utf8')), args[4], args[6]); }
   catch (error) { decision = classify({}, args[4], args[6]); decision.reason = `unreadable event: ${error.message}`; }
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `macosRequired=${decision.macosRequired}\n`);
   console.log(JSON.stringify(decision));
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try { main(); } catch (error) { console.error(error.message); process.exitCode = 2; }
 }
