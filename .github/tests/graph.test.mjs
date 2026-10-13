@@ -60,6 +60,25 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
+test('draft lift triggers all required contexts and preserves semantic Mac routing', () => {
+  const ci = workflows().find(w => w.path.endsWith('/ci.yml'));
+  for (const [branch, fork, macosRequired] of [
+    ['feature/change', false, true],
+    ['release-plz-test', false, false],
+    ['release-plz-test', true, true],
+  ]) {
+    const pr = event(branch, fork);
+    pr.action = 'ready_for_review';
+    const scenario = { id: 'draft-lift', eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
+    assert.equal(triggered(ci.value, scenario), true, 'CI must rerun after draft lift');
+    const rows = resolveRun(ci, scenario, { macosRequired });
+    for (const name of ['commitlint', 'gate', 'llmlint']) {
+      assert.equal(rows.find(row => row.job === name)?.result, 'success', name);
+    }
+    assert.deepEqual(rows.filter(row => row.macos).map(row => row.job), macosRequired ? ['macos'] : []);
+  }
+});
+
 function wMac(path,s,decision) {
   if (path.endsWith('/ci.yml')) return decision.macosRequired || s.class === 'manual-opt-in' ? ['macos'] : [];
   if (path.endsWith('/release.yml')) return ['darwin'];
