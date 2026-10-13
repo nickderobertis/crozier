@@ -85,7 +85,7 @@ pub(crate) fn load(args: &crate::GenerateArgs) -> Result<OpenApi> {
     }
 }
 
-fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) -> Result<()> {
+fn source_refusals(source: &serde_json::Value, args: &crate::GenerateArgs) -> Result<()> {
     let mut filtered = OpenApi {
         yaml_unquoted_timestamps: None,
         openapi: String::new(),
@@ -107,25 +107,23 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
         sdk_variables_crozier: None,
         sdk_variables_fern: None,
     };
-    for (route, item) in source["paths"].as_mapping().into_iter().flatten() {
-        let Some(route) = route.as_str() else {
-            continue;
-        };
-        let mut metadata = serde_yaml_ng::Mapping::new();
-        for (method, op) in item.as_mapping().into_iter().flatten() {
-            let Some(fields) = op.as_mapping() else {
+    for (route, item) in source["paths"].as_object().into_iter().flatten() {
+        let route = route.as_str();
+        let mut metadata = serde_json::Map::new();
+        for (method, op) in item.as_object().into_iter().flatten() {
+            let Some(fields) = op.as_object() else {
                 continue;
             };
             let extensions = fields
                 .iter()
-                .filter(|(key, _)| key.as_str().is_some_and(|key| key.starts_with("x-")))
+                .filter(|(key, _)| key.starts_with("x-"))
                 .map(|(key, value)| (key.clone(), value.clone()))
                 .collect();
-            metadata.insert(method.clone(), serde_yaml_ng::Value::Mapping(extensions));
+            metadata.insert(method.clone(), serde_json::Value::Object(extensions));
         }
-        if let Ok(item) = serde_yaml_ng::from_value::<crate::openapi::PathItem>(
-            serde_yaml_ng::Value::Mapping(metadata),
-        ) {
+        if let Ok(item) =
+            serde_json::from_value::<crate::openapi::PathItem>(serde_json::Value::Object(metadata))
+        {
             filtered.paths.insert(route.to_owned(), item);
         }
     }
@@ -137,7 +135,7 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
             let op = &source["paths"][route][method.to_ascii_lowercase()];
             let body = source_target(source, &op["requestBody"]);
             for media in body["content"]
-                .as_mapping()
+                .as_object()
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
@@ -150,7 +148,7 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
                     true,
                 );
                 let inherited = source_target(source, &media["schema"])["allOf"]
-                    .as_sequence()
+                    .as_array()
                     .is_some_and(|members| members.iter().any(|member| member["$ref"].is_string()));
                 let mut names = std::collections::HashSet::new();
                 for (_, name) in fields {
@@ -162,16 +160,15 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
                 // an own property redeclares, as `validate_names` does.
                 let target = source_target(source, &media["schema"]);
                 let mut own = Vec::new();
-                for (key, property) in target["properties"].as_mapping().into_iter().flatten() {
+                for (key, property) in target["properties"].as_object().into_iter().flatten() {
                     if source_target(source, property)["readOnly"].as_bool() != Some(true) {
-                        if let Some(wire) = key.as_str() {
-                            own.push(request_property_name(property).unwrap_or(wire).to_owned());
-                        }
+                        let wire = key.as_str();
+                        own.push(request_property_name(property).unwrap_or(wire).to_owned());
                     }
                 }
                 let mut parents = Vec::new();
                 for member in target["allOf"]
-                    .as_sequence()
+                    .as_array()
                     .into_iter()
                     .flatten()
                     .filter(|member| member["$ref"].is_string())
@@ -197,8 +194,8 @@ fn source_refusals(source: &serde_yaml_ng::Value, args: &crate::GenerateArgs) ->
 }
 
 fn source_request_properties(
-    source: &serde_yaml_ng::Value,
-    node: &serde_yaml_ng::Value,
+    source: &serde_json::Value,
+    node: &serde_json::Value,
     visited: &mut std::collections::HashSet<String>,
     fields: &mut Vec<(String, String)>,
     request_only: bool,
@@ -212,18 +209,17 @@ fn source_request_properties(
     if crate::openapi::refusal_node_ignored(node) {
         return;
     }
-    for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
+    for (key, property) in node["properties"].as_object().into_iter().flatten() {
         if request_only && source_target(source, property)["readOnly"].as_bool() == Some(true) {
             continue;
         }
-        if let Some(wire) = key.as_str() {
-            fields.push((
-                wire.to_owned(),
-                request_property_name(property).unwrap_or(wire).to_owned(),
-            ));
-        }
+        let wire = key.as_str();
+        fields.push((
+            wire.to_owned(),
+            request_property_name(property).unwrap_or(wire).to_owned(),
+        ));
     }
-    for member in node["allOf"].as_sequence().into_iter().flatten() {
+    for member in node["allOf"].as_array().into_iter().flatten() {
         source_request_properties(source, member, visited, fields, request_only);
     }
 }
@@ -265,19 +261,19 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                 .iter()
                 .map(|parameter| {
                     let raw = raw_operation["parameters"]
-                        .as_sequence()
+                        .as_array()
                         .into_iter()
                         .flatten()
                         .chain(
                             source["paths"][route]["parameters"]
-                                .as_sequence()
+                                .as_array()
                                 .into_iter()
                                 .flatten(),
                         )
                         .map(|node| source_target(&source, node))
                         .find(|node| {
                             node["name"].as_str() == Some(parameter.name.as_str())
-                                && serde_yaml_ng::from_value::<crate::openapi::ParameterLocation>(
+                                && serde_json::from_value::<crate::openapi::ParameterLocation>(
                                     node["in"].clone(),
                                 )
                                 .ok()
@@ -327,7 +323,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             let mut body_hints = std::collections::HashMap::new();
             let raw_body = source_target(&source, &raw_operation["requestBody"]);
             for media in raw_body["content"]
-                .as_mapping()
+                .as_object()
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
@@ -507,34 +503,21 @@ fn fern_header_declaration_name(wire: &str) -> String {
     name
 }
 
-fn source_document(path: &Path) -> Result<serde_yaml_ng::Value> {
+fn source_document(path: &Path) -> Result<serde_json::Value> {
     let text = std::fs::read_to_string(path).map_err(|source| Error::ReadSpec {
         path: path.to_owned(),
         source,
     })?;
-    // JSON's numeric visitor accepts large integers as floats; YAML Value's
-    // visitor rejects u128. Neither number matters to name validation.
-    if path
-        .extension()
-        .is_some_and(|extension| extension.eq_ignore_ascii_case("json"))
-    {
-        if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
-            return serde_yaml_ng::to_value(value).map_err(|error| Error::ParseSpec {
-                path: path.to_owned(),
-                message: error.to_string(),
-            });
-        }
-    }
-    serde_yaml_ng::from_str(&text).map_err(|error| Error::ParseSpec {
+    crate::yaml::from_str(&text).map_err(|error| Error::ParseSpec {
         path: path.to_owned(),
         message: error.to_string(),
     })
 }
 
 fn source_target<'a>(
-    source: &'a serde_yaml_ng::Value,
-    mut node: &'a serde_yaml_ng::Value,
-) -> &'a serde_yaml_ng::Value {
+    source: &'a serde_json::Value,
+    mut node: &'a serde_json::Value,
+) -> &'a serde_json::Value {
     let mut visited = std::collections::HashSet::new();
     while let Some(reference) = node["$ref"]
         .as_str()
@@ -552,14 +535,14 @@ fn source_target<'a>(
 }
 
 fn source_pointer_target<'a>(
-    source: &'a serde_yaml_ng::Value,
+    source: &'a serde_json::Value,
     reference: &str,
-) -> Option<&'a serde_yaml_ng::Value> {
+) -> Option<&'a serde_json::Value> {
     let mut target = source;
     for part in reference.strip_prefix("#/")?.split('/') {
         let key = part.replace("~1", "/").replace("~0", "~");
         target = match target {
-            serde_yaml_ng::Value::Sequence(items) => {
+            serde_json::Value::Array(items) => {
                 key.parse::<usize>().ok().and_then(|index| items.get(index))
             }
             _ => target.get(key.as_str()),
@@ -569,8 +552,8 @@ fn source_pointer_target<'a>(
 }
 
 fn source_property_names(
-    source: &serde_yaml_ng::Value,
-    node: &serde_yaml_ng::Value,
+    source: &serde_json::Value,
+    node: &serde_json::Value,
     visited: &mut std::collections::HashSet<String>,
     names: &mut std::collections::HashMap<String, String>,
 ) {
@@ -580,14 +563,13 @@ fn source_property_names(
         }
     }
     let node = source_target(source, node);
-    for (key, property) in node["properties"].as_mapping().into_iter().flatten() {
-        if let Some(wire) = key.as_str() {
-            if let Some(name) = request_property_name(property) {
-                names.insert(wire.to_owned(), name.to_owned());
-            }
+    for (key, property) in node["properties"].as_object().into_iter().flatten() {
+        let wire = key.as_str();
+        if let Some(name) = request_property_name(property) {
+            names.insert(wire.to_owned(), name.to_owned());
         }
     }
-    for member in node["allOf"].as_sequence().into_iter().flatten() {
+    for member in node["allOf"].as_array().into_iter().flatten() {
         source_property_names(source, member, visited, names);
     }
 }
@@ -595,7 +577,7 @@ fn source_property_names(
 /// The request name a body property declares: its `x-crozier-property-name` /
 /// `x-fern-property-name` — the Fern definition `name` the collision check
 /// compares — else the parameter-name spelling this validator also reads.
-fn request_property_name(property: &serde_yaml_ng::Value) -> Option<&str> {
+fn request_property_name(property: &serde_json::Value) -> Option<&str> {
     crate::openapi::refusal_property_name(property)
         .or_else(|| crate::openapi::refusal_parameter_name(property))
 }
@@ -1020,26 +1002,24 @@ pub(crate) fn validate_ir(
 
 /// A component schema's source node without its declared type name, so two
 /// declarations of one name compare on the schema they declare.
-fn without_type_names(node: &serde_yaml_ng::Value) -> serde_yaml_ng::Value {
+fn without_type_names(node: &serde_json::Value) -> serde_json::Value {
     let mut node = node.clone();
-    if let Some(fields) = node.as_mapping_mut() {
+    if let Some(fields) = node.as_object_mut() {
         fields.remove("x-crozier-type-name");
         fields.remove("x-fern-type-name");
     }
     node
 }
 
-fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) -> Result<()> {
-    let mut types: std::collections::HashMap<String, (&str, bool, serde_yaml_ng::Value)> =
+fn source_type_names(source: &serde_json::Value, doc: &OpenApi, path: &Path) -> Result<()> {
+    let mut types: std::collections::HashMap<String, (&str, bool, serde_json::Value)> =
         std::collections::HashMap::new();
     for (name, node) in source["components"]["schemas"]
-        .as_mapping()
+        .as_object()
         .into_iter()
         .flatten()
     {
-        let Some(name) = name.as_str() else {
-            continue;
-        };
+        let name = name.as_str();
         if crate::openapi::refusal_node_ignored(node) {
             continue;
         }
@@ -1083,7 +1063,7 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
     // by a component or an earlier inline declaration is one type to Fern: it
     // generates the merge of an identical schema and refuses one that differs
     // (this class's `evidence/inline-declared-type-name-*`).
-    let mut held: std::collections::HashMap<String, (String, serde_yaml_ng::Value)> = types
+    let mut held: std::collections::HashMap<String, (String, serde_json::Value)> = types
         .iter()
         .map(|(key, (name, _, body))| {
             (
@@ -1093,18 +1073,17 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
         })
         .collect();
     for (name, node) in source["components"]["schemas"]
-        .as_mapping()
+        .as_object()
         .into_iter()
         .flatten()
     {
-        if let Some(name) = name.as_str() {
-            inline_type_names(
-                node,
-                &format!("#/components/schemas/{name}"),
-                &mut held,
-                path,
-            )?;
-        }
+        let name = name.as_str();
+        inline_type_names(
+            node,
+            &format!("#/components/schemas/{name}"),
+            &mut held,
+            path,
+        )?;
     }
     for (route, item) in &doc.paths {
         for (method, op) in item.operations() {
@@ -1115,14 +1094,14 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
             let mut bodies = vec![source_target(source, &operation["requestBody"])];
             bodies.extend(
                 operation["responses"]
-                    .as_mapping()
+                    .as_object()
                     .into_iter()
                     .flat_map(|mapping| mapping.values())
                     .map(|response| source_target(source, response)),
             );
             for media in bodies.into_iter().flat_map(|body| {
                 body["content"]
-                    .as_mapping()
+                    .as_object()
                     .into_iter()
                     .flat_map(|mapping| mapping.values())
             }) {
@@ -1139,24 +1118,24 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
         for (method, _) in item.operations() {
             let operation = &source["paths"][route][method.to_ascii_lowercase()];
             let mut schemas = Vec::new();
-            for parameter in operation["parameters"].as_sequence().into_iter().flatten() {
+            for parameter in operation["parameters"].as_array().into_iter().flatten() {
                 schemas.push(&source_target(source, parameter)["schema"]);
             }
             let body = source_target(source, &operation["requestBody"]);
             for media in body["content"]
-                .as_mapping()
+                .as_object()
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
                 schemas.push(&media["schema"]);
             }
             for response in operation["responses"]
-                .as_mapping()
+                .as_object()
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
                 for media in source_target(source, response)["content"]
-                    .as_mapping()
+                    .as_object()
                     .into_iter()
                     .flat_map(|mapping| mapping.values())
                 {
@@ -1173,7 +1152,7 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
             let operation = &source["webhooks"][event][method.to_ascii_lowercase()];
             let body = source_target(source, &operation["requestBody"]);
             for media in body["content"]
-                .as_mapping()
+                .as_object()
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
@@ -1193,26 +1172,26 @@ fn source_type_names(source: &serde_yaml_ng::Value, doc: &OpenApi, path: &Path) 
 /// held by a different schema, recording each new declaration in `held` in the
 /// order the lifting reads them: properties, items, map values, then members.
 fn inline_type_names(
-    node: &serde_yaml_ng::Value,
+    node: &serde_json::Value,
     location: &str,
-    held: &mut std::collections::HashMap<String, (String, serde_yaml_ng::Value)>,
+    held: &mut std::collections::HashMap<String, (String, serde_json::Value)>,
     path: &Path,
 ) -> Result<()> {
     if node.get("$ref").is_some() || crate::openapi::refusal_node_ignored(node) {
         return Ok(());
     }
-    let mut children: Vec<&serde_yaml_ng::Value> = node["properties"]
-        .as_mapping()
+    let mut children: Vec<&serde_json::Value> = node["properties"]
+        .as_object()
         .into_iter()
         .flat_map(|mapping| mapping.values())
         .collect();
     children.push(&node["items"]);
     children.push(&node["additionalProperties"]);
     for members in ["oneOf", "anyOf", "allOf"] {
-        children.extend(node[members].as_sequence().into_iter().flatten());
+        children.extend(node[members].as_array().into_iter().flatten());
     }
     for child in children {
-        if !child.is_mapping() || child.get("$ref").is_some() {
+        if !child.is_object() || child.get("$ref").is_some() {
             continue;
         }
         if let Some(declared) = crate::openapi::refusal_type_name(child) {
@@ -1234,8 +1213,8 @@ fn inline_type_names(
 }
 
 fn source_reference_names(
-    source: &serde_yaml_ng::Value,
-    node: &serde_yaml_ng::Value,
+    source: &serde_json::Value,
+    node: &serde_json::Value,
     location: &str,
     path: &Path,
 ) -> Result<()> {
@@ -1245,26 +1224,26 @@ fn source_reference_names(
     if let Some(reference) = node["$ref"].as_str() {
         if reference.starts_with("#/definitions/") || reference.starts_with("#/webhooks/") {
             let target = source_target(source, node);
-            if target["type"].as_str() == Some("object") || target["properties"].is_mapping() {
+            if target["type"].as_str() == Some("object") || target["properties"].is_object() {
                 return Err(refusal(path, Class::TypeNameNotLetterLed, format!("{location} reference {reference:?} forms an empty object type name; use a component schema reference")));
             }
         }
         return Ok(());
     }
     for property in node["properties"]
-        .as_mapping()
+        .as_object()
         .into_iter()
         .flat_map(|mapping| mapping.values())
     {
         source_reference_names(source, property, location, path)?;
     }
     for key in ["items", "additionalProperties"] {
-        if node[key].is_mapping() {
+        if node[key].is_object() {
             source_reference_names(source, &node[key], location, path)?;
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
-        for member in node[key].as_sequence().into_iter().flatten() {
+        for member in node[key].as_array().into_iter().flatten() {
             source_reference_names(source, member, location, path)?;
         }
     }
@@ -1272,8 +1251,8 @@ fn source_reference_names(
 }
 
 fn property_reference_cycle(
-    source: &serde_yaml_ng::Value,
-    node: &serde_yaml_ng::Value,
+    source: &serde_json::Value,
+    node: &serde_json::Value,
     stack: &mut std::collections::HashSet<String>,
 ) -> bool {
     if let Some(reference) = node["$ref"].as_str() {
@@ -1289,11 +1268,11 @@ fn property_reference_cycle(
         return cycle;
     }
     node["properties"]
-        .as_mapping()
+        .as_object()
         .into_iter()
         .flat_map(|mapping| mapping.values())
         .any(|property| property_reference_cycle(source, property, stack))
-        || (node["items"].is_mapping() && property_reference_cycle(source, &node["items"], stack))
+        || (node["items"].is_object() && property_reference_cycle(source, &node["items"], stack))
 }
 
 #[cfg(test)]
@@ -1324,7 +1303,7 @@ mod tests {
             .get_mut("UploadEmblemRequest")
             .unwrap();
         let original = object.clone();
-        *object = serde_yaml_ng::from_str("type: string\nenum: [blue, green]\n").unwrap();
+        *object = crate::yaml::from_str("type: string\nenum: [blue, green]\n").unwrap();
         let error = check(&doc).unwrap_err().to_string();
         assert!(error.contains("type-name-collision"), "{error}");
         doc.components
@@ -1386,12 +1365,12 @@ mod tests {
     #[test]
     fn a_declared_type_name_two_differing_schemas_resolve_to_is_refused() {
         let check = |components: &str| {
-            let source: serde_yaml_ng::Value = serde_yaml_ng::from_str(&format!(
+            let source: serde_json::Value = crate::yaml::from_str(&format!(
                 "openapi: 3.0.3\ninfo: {{title: t, version: '1'}}\npaths: {{}}\n\
                  components:\n  schemas:\n{components}"
             ))
             .unwrap();
-            let doc: OpenApi = serde_yaml_ng::from_value(source.clone()).unwrap();
+            let doc: OpenApi = serde_json::from_value(source.clone()).unwrap();
             source_type_names(&source, &doc, Path::new("api.yml"))
         };
         let widget = "    Widget: {x-fern-type-name: Gadget, type: object}\n";

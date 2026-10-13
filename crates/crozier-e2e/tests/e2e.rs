@@ -5,6 +5,9 @@
 //! This is the product's only faithful QA loop, so it never mocks the generator,
 //! the filesystem, or the process boundary. The `just check` gate runs it.
 
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
 use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
@@ -3301,7 +3304,7 @@ fn property_extensions_accept_aliases_and_crozier_precedence() {
             "verified-seal",
         ] {
             let original = std::fs::read_to_string(root.join(fixture).join("openapi.yml")).unwrap();
-            let mut document: serde_json::Value = serde_yaml_ng::from_str(&original).unwrap();
+            let mut document: serde_json::Value = crate::yaml::from_str(&original).unwrap();
             let prefix = format!("x-{spelling}");
             let (module, expected) = match fixture {
                 "gauge-public-fields" => {
@@ -3745,7 +3748,7 @@ fn handwritten_document_as_json(fixture: &str, dir: &Path) -> std::path::PathBuf
             .join("openapi.yml"),
     )
     .expect("the hand-written document");
-    let value: serde_json::Value = serde_yaml_ng::from_str(&yaml).expect("a YAML document");
+    let value: serde_json::Value = crate::yaml::from_str(&yaml).expect("a YAML document");
     let path = dir.join("openapi.json");
     std::fs::write(&path, serde_json::to_vec_pretty(&value).unwrap()).unwrap();
     path
@@ -4162,7 +4165,7 @@ fn sdk_env_multipart_json_module_survives_path_query_and_header_parameters() {
 #[test]
 fn inline_request_parent_overlap_refuses_and_disjoint_fields_recover_through_the_cli() {
     let root = repo_root();
-    let original: serde_json::Value = serde_yaml_ng::from_str(
+    let original: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(
             root.join("docs/openapi-surface/handwritten/json-request-shapes/openapi.yml"),
         )
@@ -4490,7 +4493,7 @@ fn mixed_named_request_media_keep_the_single_operation_through_the_cli() {
 #[test]
 fn alias_reference_scope_controls_keep_their_reference_body_through_the_cli() {
     let root = repo_root();
-    let original: serde_json::Value = serde_yaml_ng::from_str(
+    let original: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(
             root.join("docs/openapi-surface/handwritten/request-alias/openapi.yml"),
         )
@@ -4648,7 +4651,12 @@ fn named_request_media_match_certified_output_and_canonical_extensions() {
                     .arg(out.path())
                     .assert()
                     .failure()
-                    .stderr(predicate::str::contains("expected a string"));
+                    .stderr(
+                        predicate::str::contains("expected string scalar")
+                            .and(predicate::str::contains("openapi.yml"))
+                            .and(predicate::str::contains("sdk-method-name: [invalid]"))
+                            .and(predicate::str::contains("column")),
+                    );
                 std::fs::write(&spec_path, source).unwrap();
                 crozier_clean_env()
                     .args(["--no-config", "generate", "python", "--spec"])
@@ -12683,7 +12691,7 @@ fn eos_extra_fields_forbid_matches_fern_output() {
 fn med_anvisa_price_matches_fern_output() {
     assert_committed_corpus_matches(&MED_ANVISA_PRICE);
     let spec = corpus_spec(MED_ANVISA_PRICE.api).expect("registered medication-price source");
-    let document: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+    let document: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(spec).expect("read medication-price source"),
     )
     .expect("parse medication-price source");
@@ -18446,7 +18454,11 @@ fn a_bad_layout_is_refused_naming_the_value_and_its_layer() {
             predicate::str::contains("invalid config")
                 .and(predicate::str::contains("crozier.yml"))
                 .and(predicate::str::contains("nested"))
-                .and(predicate::str::contains("`packaged` or `flat`")),
+                .and(
+                    predicate::str::contains("expected one of packaged, flat")
+                        .and(predicate::str::contains("layout: nested"))
+                        .and(predicate::str::contains("column")),
+                ),
         );
     }
     // `--layout` is a per-generation flag, so it cannot be broadcast to two.
@@ -21582,8 +21594,10 @@ fn pagination_boolean_form_takes_the_root_contract_in_crozier_spelling() {
         .failure()
         .code(1)
         .stderr(predicates::str::contains(
-            "paths./beacons.get.x-crozier-pagination: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract",
-        ));
+            "invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract",
+        ).and(predicate::str::contains("number.yml"))
+            .and(predicate::str::contains("x-crozier-pagination: 7"))
+            .and(predicate::str::contains("line 7 column")));
     assert!(
         !out.join("src").exists(),
         "a refused document writes nothing"
@@ -24364,7 +24378,7 @@ fn discriminant_refusals_recover_with_a_valid_document_name() {
         }
     }
     for inferred in [false, true] {
-        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let mut document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
         if inferred {
             document["components"]["schemas"]["Asset"]
                 .as_object_mut()
@@ -24457,7 +24471,7 @@ fn repeated_path_names_refuse_and_distinct_positions_recover() {
         repo_root().join("docs/fern-refusals/duplicate-path-parameter/probe.yml"),
     )
     .unwrap();
-    let document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+    let document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
     let mut item = document["paths"]["/accounts/{account_id}/members/{account_id}"].clone();
     item["get"]["parameters"]
         .as_array_mut()
@@ -24606,7 +24620,7 @@ fn declared_parameter_names_deconflict_refusals_and_generation() {
     )
     .unwrap();
     for body in [false, true] {
-        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let mut document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
         let op = &mut document["paths"]["/accounts"]["get"];
         let hint = serde_json::json!({"type": "string", "x-fern-parameter-name": "account_id", "x-crozier-parameter-name": "otherAccount"});
         if body {
@@ -24661,7 +24675,7 @@ fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_genera
     )
     .unwrap();
     for location in ["path", "query", "header"] {
-        let mut document: serde_json::Value = serde_yaml_ng::from_str(&probe).unwrap();
+        let mut document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
         let mut op = document["paths"]["/repos/{name}"]["patch"].clone();
         op["parameters"][0]["in"] = serde_json::json!(location);
         let route = if location == "path" {
@@ -25118,7 +25132,7 @@ fn name_refusals_escape_line_breaks_in_offending_schema_names() {
 fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+    let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/sdk-method-collision/probe.yml"
     ))
     .unwrap();
@@ -25177,7 +25191,7 @@ fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
 fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+    let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
     ))
     .unwrap();
@@ -25220,7 +25234,7 @@ fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
 fn type_names_across_namespaces_refuse_and_distinct_contexts_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+    let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/type-name-collision/probe.yml"
     ))
     .unwrap();
@@ -25271,7 +25285,7 @@ fn type_names_across_namespaces_refuse_and_distinct_contexts_recover() {
 fn numeric_type_names_refuse_and_valid_declared_names_recover() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document: serde_json::Value = serde_yaml_ng::from_str(include_str!(
+    let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/type-name-not-letter-led/probe.yml"
     ))
     .unwrap();
@@ -26198,7 +26212,7 @@ fn sdk_env_pattern_narrowed_evidence_validates_certified_examples_and_recovers()
     )
     .expect("certified SDK evidence environment");
     let source_text = std::fs::read_to_string(fixture.join("openapi.yml")).unwrap();
-    let source_document: serde_json::Value = serde_yaml_ng::from_str(&source_text).unwrap();
+    let source_document: serde_json::Value = crate::yaml::from_str(&source_text).unwrap();
     for golden in [
         fixture.join("fern-expected"),
         root.join("docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected"),
@@ -26504,5 +26518,35 @@ print('ok')
             String::from_utf8_lossy(&run.stderr)
         );
         assert_eq!(String::from_utf8_lossy(&run.stdout).trim(), "ok");
+    }
+}
+
+/// The largest committed document must reach its example refusal, rather than
+/// silently losing the structure check to the parser's default node budget.
+#[test]
+fn github_corpus_retains_its_example_refusal_with_parser_budgets() {
+    let spec = repo_root().join("tests/fixtures/corpus-sources/github.com/openapi.json");
+    let temp = tempfile::tempdir().unwrap();
+    for strict in [false, true] {
+        let mut command = crozier();
+        command.args(["generate", "python", "--spec"]);
+        command
+            .arg(&spec)
+            .arg("--output")
+            .arg(temp.path().join("sdk"));
+        if strict {
+            command.arg("--fern-strict");
+        }
+        let assertion = command.assert().failure().code(1);
+        let stderr = String::from_utf8_lossy(&assertion.get_output().stderr);
+        assert!(
+            stderr.contains("example-type-mismatch: PUT /orgs/{org}/outside_collaborators/{username} requestBody examples"),
+            "{stderr}"
+        );
+        assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");
+        assert!(
+            !temp.path().join("sdk").exists(),
+            "refusal precedes emission"
+        );
     }
 }

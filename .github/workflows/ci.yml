@@ -17,10 +17,8 @@ on:
         type: boolean
         default: false
   pull_request:
-    # GitHub's default types, without `ready_for_review`: a draft's runs already
-    # report the required contexts on its head commit, and marking it ready
-    # changes no commit, so a run on the lift would only repeat them.
-    types: [opened, synchronize, reopened]
+    # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit] Draft-time runs are not accepted as the verdict after the change request is lifted out of draft; the ready_for_review run supplies that verdict even on an unchanged head.
+    types: [opened, synchronize, reopened, ready_for_review]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

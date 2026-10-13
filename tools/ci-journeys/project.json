@@ -19,7 +19,8 @@
       },
       "cache": true,
       "inputs": [
-        "default"
+        "default",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "lint": {
@@ -36,7 +37,8 @@
         "default",
         "cargo",
         "boundaries",
-        "{workspaceRoot}/tools/ci/tests/support/release.rs"
+        "{workspaceRoot}/tools/ci/tests/support/release.rs",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "test": {
@@ -62,6 +64,7 @@
         "{workspaceRoot}/bun.lock",
         "{workspaceRoot}/scripts/check-project-boundaries.mjs",
         "{workspaceRoot}/tests/fixtures/openbanking.org.uk-account-info-openapi/**/*",
+        "{workspaceRoot}/src/yaml.rs",
         "{workspaceRoot}/.github/macos-policy.mjs",
         "{workspaceRoot}/.github/require-ci-results.mjs"
       ]

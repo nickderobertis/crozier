@@ -117,7 +117,7 @@ pub const KEYS: [&str; 7] = [
 /// When the text is not a list of entries with exactly [`KEYS`], or when
 /// [`validation_failures`] finds anything.
 pub fn parse(text: &str) -> Result<Vec<Departure>, Vec<String>> {
-    let entries: Vec<Departure> = serde_yaml_ng::from_str(text).map_err(|error| {
+    let entries: Vec<Departure> = crate::yaml::from_str(text).map_err(|error| {
         vec![format!(
             "the departure catalog is a list of entries holding exactly the keys {}: {error}",
             KEYS.join(", ")
@@ -5573,7 +5573,7 @@ mod tests {
         assert_eq!(spellings.len(), Kind::ALL.len());
         for kind in Kind::ALL {
             assert!(!kind.meaning().is_empty());
-            let parsed: Kind = serde_yaml_ng::from_str(kind.as_str()).unwrap();
+            let parsed: Kind = crate::yaml::from_str(kind.as_str()).unwrap();
             assert_eq!(parsed, kind);
         }
     }

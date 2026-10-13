@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.116](https://github.com/nickderobertis/crozier/compare/v0.0.115...v0.0.116) - 2026-10-13
+
+### Fixed
+
+- *(hooks)* remove CI-duplicated pre-push checks ([#513](https://github.com/nickderobertis/crozier/pull/513))
+
 ## [0.0.115](https://github.com/nickderobertis/crozier/compare/v0.0.114...v0.0.115) - 2026-10-12
 
 ### Other

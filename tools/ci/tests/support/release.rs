@@ -3,7 +3,11 @@
 //! from `tools/ci/tests/release_workflow.rs` (the structural contract) and
 //! `tools/ci-journeys/tests/release_checkout.rs` (the real-git checkout journey).
 
-use serde_yaml_ng::{Mapping, Value};
+#[path = "../../../../src/yaml.rs"]
+mod yaml;
+
+use serde_json::Value;
+type Mapping = serde_json::Map<String, Value>;
 
 const RELEASE_WORKFLOW: &str = include_str!("../../../../.github/workflows/release.yml");
 pub const LONG_PATHS: &str = "git config --global core.longpaths true";
@@ -12,7 +16,7 @@ pub const LONG_PATHS: &str = "git config --global core.longpaths true";
 const WINDOWS_ONLY: &str = "runner.os == 'Windows'";
 
 pub fn workflow() -> Value {
-    serde_yaml_ng::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML")
+    yaml::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML")
 }
 
 pub fn str_of<'a>(mapping: &'a Mapping, key: &str) -> Option<&'a str> {
@@ -29,16 +33,16 @@ pub fn runner_labels(job: &Mapping) -> Vec<String> {
     let matrix = job
         .get("strategy")
         .and_then(|strategy| strategy.get("matrix"))
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("a job on matrix.os has a strategy.matrix");
     let listed = matrix
         .get("os")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .into_iter()
         .flatten();
     let included = matrix
         .get("include")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .into_iter()
         .flatten()
         .filter_map(|entry| entry.get("os"));
@@ -54,12 +58,12 @@ pub fn windows_checkout_jobs() -> Vec<(String, Vec<Mapping>)> {
     let workflow = workflow();
     let jobs = workflow
         .get("jobs")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("release.yml has jobs");
     let mut found = Vec::new();
     for (id, job) in jobs {
-        let id = id.as_str().expect("job ids are strings");
-        let job = job.as_mapping().expect("each job is a mapping");
+        let id = id.as_str();
+        let job = job.as_object().expect("each job is a mapping");
         if !runner_labels(job)
             .iter()
             .any(|label| label.starts_with("windows"))
@@ -68,10 +72,10 @@ pub fn windows_checkout_jobs() -> Vec<(String, Vec<Mapping>)> {
         }
         let steps: Vec<Mapping> = job
             .get("steps")
-            .and_then(Value::as_sequence)
+            .and_then(Value::as_array)
             .expect("each job has steps")
             .iter()
-            .map(|step| step.as_mapping().expect("each step is a mapping").clone())
+            .map(|step| step.as_object().expect("each step is a mapping").clone())
             .collect();
         let Some(checkout) = steps.iter().position(|step| {
             str_of(step, "uses").is_some_and(|uses| uses.starts_with("actions/checkout@"))

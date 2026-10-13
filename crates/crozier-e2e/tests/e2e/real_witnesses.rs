@@ -254,7 +254,7 @@ fn parse(path: &std::path::Path) -> serde_json::Value {
     if path.extension().is_some_and(|ext| ext == "json") {
         serde_json::from_str(&text).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
     } else {
-        serde_yaml_ng::from_str(&text).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
+        crate::yaml::from_str(&text).unwrap_or_else(|error| panic!("{}: {error}", path.display()))
     }
 }
 
