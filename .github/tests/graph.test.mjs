@@ -90,6 +90,8 @@ test('a draft lift reports every required context and requests Mac only without 
     assert.equal(rows.filter(row => row.macos).length, runner === 'macos-latest' ? 1 : 0);
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', name);
   }
+  // The classifier matches the API's job name; a renamed job must fail here, not silently stop reusing.
+  assert.equal(ci.value.jobs.macos.name, macJobName);
   const steps = ci.value.jobs.macos.steps;
   assert.equal(steps[0].if, "env.MAC_REUSED_RUN != ''");
   assert.doesNotMatch(steps[0].run, /just|cargo|crozier --version/);

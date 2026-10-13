@@ -13,6 +13,8 @@ const versionPattern = /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/;
 const repositoryPattern = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const refPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 const shaPattern = /^[0-9a-f]{40}$/;
+// A run reference is written into line-oriented GITHUB_OUTPUT and named by the gate.
+export const runUrlPattern = /^https:\/\/[^\s/]+\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/actions\/runs\/\d+$/;
 // The display name of ci.yml's Mac job; a renamed job proves nothing.
 export const macJobName = 'macOS check, SDK environment and install';
 function git(...args) {
@@ -98,7 +100,7 @@ export async function provenMacRun(event, env = process.env) {
     const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_sha === sha && String(run.id) !== String(env.GITHUB_RUN_ID));
     const proofs = [];
     for (const run of runs) {
-      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string') return { reason: 'unreadable workflow run' };
+      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string' || !runUrlPattern.test(run.html_url)) return { reason: 'unreadable workflow run' };
       const jobs = await api(env, `/repos/${repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`);
       if (!Array.isArray(jobs?.jobs)) return { reason: `unreadable jobs of ${run.html_url}` };
       for (const job of jobs.jobs.filter(job => job?.name === macJobName)) {

@@ -39,7 +39,7 @@ test('the real gate result command propagates failed, cancelled, missing and una
     if (result === undefined) delete bad.macos; else bad.macos.result = result;
     const refused = run(bad); assert.equal(refused.status, 1, `${result}`); assert.match(refused.stderr, /Mac reuse lane did not succeed/);
   }
-  for (const outputs of [{ macosRequired: 'true', macosReusedRun: url }, { macosRequired: 'false', macosReusedRun: 7 }]) {
+  for (const outputs of [{ macosRequired: 'true', macosReusedRun: url }, { macosRequired: 'false', macosReusedRun: 7 }, { macosRequired: 'false', macosReusedRun: ' ' }, { macosRequired: 'false', macosReusedRun: `${url}\nmacosRequired=false` }, { macosRequired: 'false', macosReusedRun: 'not-a-run' }]) {
     const bad = structuredClone(reused); bad['macos-policy'].outputs = outputs;
     assert.match(run(bad).stderr, /malformed Mac reuse decision/);
   }

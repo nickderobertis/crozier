@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Exit 0 accepts all required results; 1 rejects invalid, missing or unsuccessful results.
 // GitHub's needs JSON is the sole doubled boundary in the result journeys.
+import { runUrlPattern } from './macos-policy.mjs';
 try {
   const needs = JSON.parse(process.env.CI_NEEDS);
   for (const id of ['check', 'sdk-env', 'install', 'package', 'live-e2e', 'macos-policy']) {
@@ -9,7 +10,7 @@ try {
   const required = needs['macos-policy'].outputs?.macosRequired;
   if (!['true', 'false'].includes(required)) throw new Error('missing Mac routing decision');
   const reused = needs['macos-policy'].outputs?.macosReusedRun ?? '';
-  if (typeof reused !== 'string' || (reused && required !== 'false')) throw new Error('malformed Mac reuse decision');
+  if (typeof reused !== 'string' || (reused && (required !== 'false' || !runUrlPattern.test(reused)))) throw new Error('malformed Mac reuse decision');
   const mac = needs.macos?.result;
   if (reused) {
     // The reuse lane succeeds only by naming the earlier run; it never stands in for a skip.

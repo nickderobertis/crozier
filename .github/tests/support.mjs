@@ -53,7 +53,7 @@ export async function githubApi(t, state) {
     let body;
     if (state.status) { response.writeHead(state.status); response.end('{}'); return; }
     if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = { workflow_runs: state.runs };
-    else if (jobs) body = { jobs: state.jobs[jobs[1]] ?? [] };
+    else if (jobs) body = { jobs: state.jobs[jobs[1]] === undefined ? [] : state.jobs[jobs[1]] };
     if (!body) { response.writeHead(404); response.end('{}'); return; }
     response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(body));
   });

@@ -162,6 +162,12 @@ test('a draft lift reuses only a proven Mac success on its exact head and otherw
     [{ runs: [run(1)], jobs: { 1: [mac('success', sha, ['ubuntu-latest'])] } }, /no completed Mac job/],
     [{ runs: [run(900)], jobs: { 900: [mac('success')] } }, /no completed Mac job/],
     [{ runs: [{ ...run(1), id: 'one' }], jobs: {} }, /unreadable workflow run/],
+    [{ runs: [{ ...run(1), html_url: `${url}\nmacosRequired=false` }], jobs: { 1: [mac('success')] } }, /unreadable workflow run/],
+    [{ runs: [{ ...run(1), html_url: 'javascript:alert(1)' }], jobs: { 1: [mac('success')] } }, /unreadable workflow run/],
+    [{ runs: undefined, jobs: {} }, /unreadable workflow run list/],
+    [{ runs: { 1: run(1) }, jobs: {} }, /unreadable workflow run list/],
+    [{ runs: [run(1)], jobs: { 1: 'none' } }, /unreadable jobs of/],
+    [{ runs: [run(1)], jobs: { 1: [mac('skipped')] } }, /no completed Mac job/],
     [{ status: 500 }, /unreadable Mac proof: GitHub API .* answered 500/],
     [{ status: 403 }, /answered 403/],
   ]) {
@@ -178,6 +184,10 @@ test('a draft lift reuses only a proven Mac success on its exact head and otherw
     const decision = await h.lift(liftEvent(sha), sha, env);
     assert.equal(decision.macosRequired, true); assert.match(decision.reason, reason);
   }
+  // A skipped Mac job (a release-only run) neither proves nor refutes the head.
+  Object.assign(proven, { runs: [run(1), run(2)], jobs: { 1: [mac('skipped')], 2: [mac('success')] } });
+  assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, 'https://github.com/nickderobertis/crozier/actions/runs/2');
+  Object.assign(proven, { runs: [run(1)], jobs: { 1: [mac('success')] } });
   const unsha = liftEvent('HEAD'); const decision = await h.lift(unsha, sha, { GITHUB_API_URL: api.url });
   assert.equal(decision.macosRequired, true); assert.match(decision.reason, /no exact head SHA/);
   assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, url);
