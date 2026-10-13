@@ -88,12 +88,28 @@ function wMac(path,s,decision) {
 test('unknown runners, calls, matrices and cycles fail loudly; real matrix include/exclude expands', () => {
   assert.deepEqual(matrixRows({os:['linux','mac'],exclude:[{os:'linux'}],include:[{os:'windows',target:'win'}]}),[{os:'mac'},{os:'windows',target:'win'}]);
   assert.deepEqual(matrixRows({include:[{target:'intel',os:'macos-latest'},{target:'arm',os:'macos-latest'}]}),[{target:'intel',os:'macos-latest'},{target:'arm',os:'macos-latest'}]);
+  assert.deepEqual(matrixRows({os:['ubuntu-latest','macos-latest'],include:[{os:'macos-latest',target:'arm'}]}),[{os:'ubuntu-latest'},{os:'macos-latest',target:'arm'}]);
   const scenario={id:'bad',eventName:'push',event:{},branch:'main'};
   for (const jobs of [ {bad:{'runs-on':[]}}, {bad:{'runs-on':'${{ needs.unknown.outputs.runner }}'}}, {bad:{uses:'org/repo/.github/workflows/no.yml@v1'}}, {bad:{'runs-on':'ubuntu-latest',strategy:{matrix:{os:'${{ fromJSON(needs.no.outputs.matrix) }}'}}}}, {bad:{needs:'bad','runs-on':'ubuntu-latest'}} ]) {
     assert.throws(()=>resolveRun({path:'bad.yml',value:{jobs}},scenario,{macosRequired:false}), /unresolved|context|Unexpected|JSON|Cannot|cyclic/i);
   }
 });
 
+
+test('shorthand triggers route declared events and unsupported glob filters fail explicitly', () => {
+  const scenario = { eventName: 'push', event: {}, branch: 'main', tag: 'v0.0.2' };
+  assert.equal(triggered({ on: 'push' }, scenario), true);
+  assert.equal(triggered({ on: 'pull_request' }, scenario), false);
+  assert.equal(triggered({ on: ['push', 'pull_request'] }, scenario), true);
+  assert.equal(triggered({ on: ['release'] }, scenario), false);
+  for (const filter of ['branches', 'tags']) {
+    for (const pattern of ['v*', '**', '!main', 'v[0-9]', 'release?', 'v+']) {
+      assert.throws(() => triggered({ on: { push: { [filter]: [pattern] } } }, scenario), /unresolved workflow trigger filter/);
+    }
+    assert.equal(triggered({ on: { push: { [filter]: [filter === 'branches' ? 'main' : 'v0.0.2'] } } }, scenario), true);
+    assert.equal(triggered({ on: { push: { [filter]: ['other'] } } }, scenario), false);
+  }
+});
 
 test('the real telemetry reader reports both actual graph metrics and event/architecture detail through the SDK', t=>{
   const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-report-'));
@@ -130,7 +146,7 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
 
 
 // llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
-test('a real unsupported capture configuration refuses reusable-workflow resolution', async t=>{
+test('actual local reusable workflows resolve Mac jobs and missing calls/capture configurations fail', async t=>{
   const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-capture-'));
   t.after(()=>rmSync(dir,{recursive:true,force:true}));
   cpSync(resolve(root,'.github'),join(dir,'.github'),{recursive:true,filter:path=>!['node_modules','.telemetry'].includes(basename(path))});
@@ -139,6 +155,19 @@ test('a real unsupported capture configuration refuses reusable-workflow resolut
   const graph=await import(pathToFileURL(join(dir,'.github/workflow-graph.mjs')).href);
   const visual=graph.workflows().find(w=>w.path.endsWith('/visual-docs.yml'));
   assert.throws(()=>graph.resolveRun(visual,{id:'unsupported-capture',eventName:'pull_request',event:event(),branch:'main'},{macosRequired:true}),/unresolved capture architectures/);
+  writeFileSync(join(dir,'.github/workflows/local-proof.yml'), 'on:\n  workflow_call:\njobs:\n  native:\n    runs-on: macos-latest\n    steps:\n      - run: echo proof\n');
+  writeFileSync(join(dir,'.github/workflows/local-caller.yml'), 'on: workflow_dispatch\njobs:\n  proof:\n    uses: ./.github/workflows/local-proof.yml\n');
+  const caller = graph.workflows().find(w=>w.path.endsWith('/local-caller.yml'));
+  const scenario = { id:'local-call',eventName:'workflow_dispatch',event:{},branch:'main',inputs:{} };
+  assert.equal(graph.triggered(caller.value,scenario),true);
+  const rows = graph.resolveRun(caller,scenario,{macosRequired:false});
+  assert.equal(rows.length,1);
+  assert.equal(rows[0].workflow,'.github/workflows/local-proof.yml');
+  assert.equal(rows[0].runner,'macos-latest');
+  assert.equal(rows[0].macos,true);
+  caller.value.jobs.proof.uses='./.github/workflows/missing.yml';
+  assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),/ENOENT/);
+
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
 

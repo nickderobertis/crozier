@@ -68,6 +68,10 @@ export function triggered(workflow, scenario) {
   const on = workflow.on;
   const config = typeof on === 'string' ? (on === scenario.eventName ? {} : undefined) : Array.isArray(on) ? (on.includes(scenario.eventName) ? {} : undefined) : on?.[scenario.eventName];
   if (config === undefined) return false;
+  for (const key of ['branches', 'tags']) {
+    const filters = config?.[key];
+    if (filters !== undefined && (!Array.isArray(filters) || filters.some(filter => typeof filter !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(filter)))) throw new Error(`unresolved workflow trigger filter: ${key}`);
+  }
   if (config?.types && !config.types.includes(scenario.event.action)) return false;
   if (config?.branches && !config.branches.includes(scenario.branch)) return false;
   if (config?.tags && !config.tags.includes(scenario.tag)) return false;
