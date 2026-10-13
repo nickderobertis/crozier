@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { history, event } from './support.mjs';
 
@@ -35,4 +37,25 @@ test('semantic manifests/lockfiles preserve every non-version field and fail clo
   assert.equal(h.classify(release, mixed).macosRequired, true);
   const lock = h.change({ 'Cargo.lock': h.baseFiles['Cargo.lock'].replace('1.0.0','2.0.0') });
   assert.equal(h.classify(release, lock).macosRequired, true);
+});
+
+
+test('real routing persists its decision; unknown/empty event names emit no omission, and release file operations are refused', t => {
+  const h=history(t), pr=event('release-plz-test'), output=join(h.dir,'.git/output');
+  for (const [head,required] of [[h.heads.version,false],[h.heads.source,true]]) {
+    writeFileSync(output,'');
+    const run=h.invoke(pr,head,'pull_request',h.base,{GITHUB_OUTPUT:output});
+    assert.equal(run.status,0,run.stderr); assert.equal(readFileSync(output,'utf8'),`macosRequired=${required}\n`);
+  }
+  for (const name of ['', 'unknown-event']) {
+    writeFileSync(output,'');
+    const run=h.invoke(pr,h.heads.version,name,h.base,{GITHUB_OUTPUT:output});
+    assert.equal(run.status,2); assert.match(run.stderr,/unknown event name/); assert.equal(run.stdout,''); assert.equal(readFileSync(output,'utf8'),'');
+  }
+  const added=h.change({'NEW_CHANGELOG.md':'release notes\n'});
+  assert.match(h.classify(pr,added).reason,/non-release file operation/);
+  h.git('reset','--hard',h.base); h.git('rm','CHANGELOG.md'); h.git('commit','-qm','deleted release notes');
+  assert.match(h.classify(pr,h.git('rev-parse','HEAD')).reason,/non-release file operation/);
+  h.git('reset','--hard',h.base); h.git('mv','CHANGELOG.md','NEW_CHANGELOG.md'); h.git('commit','-qm','renamed release notes');
+  assert.equal(h.classify(pr,h.git('rev-parse','HEAD')).macosRequired,true);
 });

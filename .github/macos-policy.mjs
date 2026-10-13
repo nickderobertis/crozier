@@ -61,6 +61,8 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
 function main() {
   const args = process.argv.slice(2);
   if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new Error('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
+  const eventName=process.env.GITHUB_EVENT_NAME ?? 'pull_request';
+  if (!['pull_request','push','release','workflow_run','repository_dispatch','schedule','workflow_dispatch'].includes(eventName)) throw new Error(`unknown event name '${eventName}'; supply the actual GitHub event before routing`);
   let decision;
   try { decision = classify(JSON.parse(readFileSync(args[2], 'utf8')), args[4], args[6]); }
   catch (error) { decision = classify({}, args[4], args[6]); decision.reason = `unreadable event: ${error.message}`; }

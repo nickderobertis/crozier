@@ -5,12 +5,7 @@ import { resolve } from 'node:path';
 import { root, workflows, triggered, resolveRun, matrixRows, digest } from '../workflow-graph.mjs';
 import { history, event } from './support.mjs';
 
-const classes = [
-  ['pr-opened','pull_request','opened'], ['pr-synchronize','pull_request','synchronize'], ['pr-reopened','pull_request','reopened'],
-  ['base-push','push'], ['release-merge','push'], ['tag-push','push'], ['release-published','release','published'],
-  ['downstream','workflow_run','completed'], ['repository-dispatch','repository_dispatch'], ['schedule','schedule'],
-  ['manual-default','workflow_dispatch'], ['manual-opt-in','workflow_dispatch'],
-];
+import { classes, recordingDigest } from '../scenarios.mjs';
 
 test('actual workflow/call graph resolves event fan-out and records authoritative workload telemetry', t => {
   const h = history(t), graph = workflows(), scenarios = [];
@@ -53,7 +48,8 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     const runs = [...selected,releasePR].flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
     lifecycles.push({fork,diff,crates,pypi,runs});
   }
-  const telemetry = {schemaVersion:1,sourceDigest:digest(),scenarios,lifecycles};
+  const telemetry = {schemaVersion:2,sourceDigest:digest(),scenarios,lifecycles};
+  telemetry.recordingDigest=recordingDigest(telemetry);
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });

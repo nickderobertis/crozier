@@ -19,12 +19,15 @@ export function history(t) {
     source: change({ 'source.rs': 'fn main() { println!("hi"); }\n' }),
     dependency: change({ 'Cargo.toml': baseFiles['Cargo.toml'].replace('serde = "1"','serde = "2"') }),
   };
-  function classify(event, head, eventName = 'pull_request', baseRef = base) {
-    const path = join(dir, 'event.json'); writeFileSync(path, typeof event === 'string' ? event : JSON.stringify(event));
-    const run = spawnSync(process.execPath, [resolve(root, '.github/macos-policy.mjs'), 'classify', '--event', path, '--base', baseRef, '--head', head], { cwd: dir, env: { ...process.env, GITHUB_EVENT_NAME: eventName }, encoding: 'utf8' });
-    assert.equal(run.status, 0, run.stderr); return JSON.parse(run.stdout);
+  function invoke(event, head, eventName = 'pull_request', baseRef = base, extraEnv = {}) {
+    const path = join(dir, '.git/event.json'); writeFileSync(path, typeof event === 'string' ? event : JSON.stringify(event));
+    return spawnSync(process.execPath, [resolve(root, '.github/macos-policy.mjs'), 'classify', '--event', path, '--base', baseRef, '--head', head], { cwd: dir, env: { ...process.env, GITHUB_EVENT_NAME: eventName, GITHUB_OUTPUT: '', ...extraEnv }, encoding: 'utf8' });
   }
-  return { dir, base, baseFiles, heads, git, change, classify };
+  function classify(event, head, eventName = 'pull_request', baseRef = base) {
+    const run=invoke(event,head,eventName,baseRef);
+    assert.equal(run.status,0,run.stderr); return JSON.parse(run.stdout);
+  }
+  return { dir, base, baseFiles, heads, git, change, classify, invoke };
 }
 export function event(branch = 'feature/change', fork = false) {
   const repo = 'nickderobertis/crozier';

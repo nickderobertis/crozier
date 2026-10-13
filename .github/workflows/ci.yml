@@ -54,10 +54,6 @@ jobs:
     if: needs.macos-policy.outputs.macosRequired == 'true' || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
     runs-on: macos-latest
     steps:
-      - name: Enable Git long paths
-        if: runner.os == 'Windows'
-        run: git config --global core.longpaths true
-
       # Full history: the affected tier's base is a merge base or the commit a
       # push replaced, and either must be in the checkout.
       - uses: actions/checkout@v4
@@ -72,6 +68,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      - name: Install workflow syntax checker
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -83,7 +85,7 @@ jobs:
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete,actionlint
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
 
       # uv provisions the Python tooling workspace (the root pyproject.toml's
       # members, locked in uv.lock, Pillow and the ruff/ty/pytest/coverage
@@ -97,11 +99,7 @@ jobs:
       - name: Bootstrap
         run: just bootstrap
 
-      # Every project but the promoted tiers, which run in the jobs below. On
-      # Windows also without `python-workspace`, the combined Python coverage
-      # floor: the suites skip their POSIX-only cases there, so the floor
-      # (AGENTS.md) holds on the Linux and macOS legs, and every tooling
-      # project's own tests still run here.
+      # Mac covers the same offline projects and Python coverage floor as Linux.
       - name: Check
         env:
           CROZIER_PUSH_BEFORE: ${{ github.event.before }}
@@ -140,6 +138,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      - name: Install workflow syntax checker
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -151,7 +155,7 @@ jobs:
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete,actionlint
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
 
       # uv provisions the Python tooling workspace (the root pyproject.toml's
       # members, locked in uv.lock, Pillow and the ruff/ty/pytest/coverage
@@ -207,7 +211,7 @@ jobs:
       - name: Install cargo tools
         uses: taiki-e/install-action@v2
         with:
-          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete,actionlint
+          tool: cargo-nextest,cargo-llvm-cov,cargo-deny,cargo-machete
       # uv builds the SDK venvs in seconds; without it the journeys fall back to
       # venv + pip.
       - uses: astral-sh/setup-uv@v8.3.2
@@ -232,7 +236,6 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This tier is out of the offline `check` by design, and gating merges on it is a stated requirement: the fern-refusals contract has a `generate` class's wire_test.py block the merge, and branch protection requires only `gate`, so a separate workflow could not gate. It installs only a generated SDK's declared pins from public PyPI with no credential, as the live-e2e leg already gated here does with uv and the corpus fetch.
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -319,6 +322,7 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
+      - uses: astral-sh/setup-uv@v8.3.2
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"

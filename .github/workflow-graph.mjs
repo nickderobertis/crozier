@@ -23,7 +23,7 @@ export function digest() {
     }
   }
   collect('.github');
-  files.push('screencomp.toml', 'release-plz.toml', 'scripts/release-native.py');
+  files.push('screencomp.toml', 'release-plz.toml');
   const hash = createHash('sha256');
   for (const path of files.sort()) hash.update(path).update('\0').update(readFileSync(resolve(root, path))).update('\0');
   return hash.digest('hex');
@@ -81,6 +81,7 @@ function reusable(call) {
   if (!entry) throw new Error(`unresolved reusable workflow: ${call}`);
   const content = readFileSync(resolve(root, entry.path));
   if (createHash('sha256').update(content).digest('hex') !== entry.sha256) throw new Error(`reusable snapshot digest mismatch: ${call}`);
+  if (entry.upstreamSha256 && createHash('sha256').update(content.toString().split('\n').slice(1).join('\n')).digest('hex') !== entry.upstreamSha256) throw new Error(`upstream snapshot bytes changed: ${call}`);
   return { path: call, value: parse(content.toString()) };
 }
 let captureArches;

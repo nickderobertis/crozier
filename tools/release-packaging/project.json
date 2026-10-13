@@ -6,20 +6,20 @@
     "type:tooling",
     "tier:promoted",
     "cost:expensive",
-    "lang:javascript"
+    "lang:javascript",
+    "lang:python"
   ],
   "targets": {
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/release-packaging/release-package.test.mjs"
+        "command": "node --test tools/release-packaging/*.test.mjs"
       },
       "cache": true,
       "inputs": [
         "default",
         "crateSource",
         "{workspaceRoot}/pyproject.toml",
-        "{workspaceRoot}/scripts/release-native.py",
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/scripts/smoke.sh",
         "{workspaceRoot}/.github/workflows/release.yml",
@@ -28,18 +28,47 @@
         "{workspaceRoot}/LICENSE",
         "{workspaceRoot}/NOTICE",
         "{workspaceRoot}/CHANGELOG.md",
-        "generator"
+        "generator",
+        "{workspaceRoot}/.github/tests/release-contract.json"
       ]
     },
     "lint": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node scripts/check-project-boundaries.mjs release-packaging"
+        "commands": [
+          "uv run --locked --all-packages ruff check tools/release-packaging",
+          "node --check tools/release-packaging/release-package.test.mjs",
+          "node scripts/check-project-boundaries.mjs release-packaging"
+        ],
+        "parallel": false
       },
       "cache": true,
       "inputs": [
         "default",
-        "boundaries"
+        "boundaries",
+        "pythonTooling"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/release-packaging"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/release-packaging"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling"
       ]
     }
   }

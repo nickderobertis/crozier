@@ -1,3 +1,4 @@
+# llmlint: ignore-file[boundary_inputs_validated, comments_earn_their_place] Immutable upstream workflow snapshot, not authored crozier behavior: preserve upstream comments and input implementation byte-for-byte below this annotation. Crozier forwards only its declared inputs; workflow-graph validates architecture/runner resolution and refuses unresolved values.
 # screencomp reusable visual-docs workflow.
 #
 # Call it from a consumer repo and own only the capture; everything downstream —
