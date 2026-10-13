@@ -1,4 +1,4 @@
-// llmlint: ignore-file[shell_test_tiers_stay_split] Manager ruling c-7641e823c143fd3f2d19efbbe2653e65 places these cheap artifact-contract subprocess journeys in the mandated .github/tests/*.test.mjs workload, with owning builder inputs. Native compilation/install stays behind release-packaging:test; moving these journeys to a sibling host tier would undo that approved separation.
+// llmlint: ignore-file[shell_test_tiers_stay_split] Cheap artifact-contract subprocess journeys belong to the fixed .github/tests/*.test.mjs workload; native compilation/install stays behind release-packaging:test. Separating these source-contract checks from the native target keeps workflow changes from invoking expensive packaging.
 // Non-native products are packed and inspected, never executed on Linux.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -38,6 +38,14 @@ test('real packer validates both Darwin architectures and refuses malformed/ambi
     const built=pack(output,target); assert.equal(built.status,0,built.stderr);
     const contract=JSON.parse(readFileSync(join(output,`contract-${target}.json`),'utf8'));
     assert.equal(contract.target,target); assert.equal(contract.binarySha256,contract.archiveBinarySha256); assert.equal(contract.binarySha256,contract.wheelBinarySha256);
+    const hashes=run(['python3','-c',`import tarfile,zipfile,hashlib,json,sys
+with tarfile.open(sys.argv[1]) as archive: a=archive.extractfile('crozier').read()
+with zipfile.ZipFile(sys.argv[2]) as wheel: w=wheel.read(next(n for n in wheel.namelist() if n.endswith('.data/scripts/crozier')))
+print(json.dumps({'archive':hashlib.sha256(a).hexdigest(),'wheel':hashlib.sha256(w).hexdigest(),'same':a==w}))`,contract.archive,contract.wheel]);
+    assert.equal(hashes.status,0,hashes.stderr);
+    const actual=JSON.parse(hashes.stdout);
+    assert.equal(actual.same,true); assert.equal(contract.binarySha256,actual.archive);
+    assert.equal(contract.archiveBinarySha256,actual.archive); assert.equal(contract.wheelBinarySha256,actual.wheel);
     const contents=run(['python3','-c','import tarfile,json,sys; a=tarfile.open(sys.argv[1]); print(json.dumps(sorted(a.getnames())))',contract.archive]);
     assert.equal(contents.status,0,contents.stderr);
     const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8'));
@@ -144,4 +152,40 @@ test('real release builder rejects unsafe manifest versions before building or d
       assert.equal(existsSync(output),false,'invalid identity must fail before product paths are created');
     }
   }
+});
+
+test('real release builder rejects missing or malformed manifest package tables with actionable errors', t=>{
+  const cwd=scratch(t), output=join(cwd,'products'), builder=resolve('tools/release-packaging/release-native.py');
+  for(const manifest of ['[workspace]\nmembers = []\n','package = "crozier"\n','package = true\n','[package]\nname = "crozier"\n']) {
+    writeFileSync(join(cwd,'Cargo.toml'),manifest);
+    for(const flags of [[],['--pack-only']]) {
+      const refused=run(['python3',builder,'--target','aarch64-apple-darwin','--tag','v0.0.1','--out',output,...flags],{},cwd);
+      assert.notEqual(refused.status,0);
+      assert.match(refused.stderr,/Cargo.toml must contain a package table and version/);
+      assert.doesNotMatch(refused.stderr,/Traceback/);
+      assert.equal(existsSync(output),false);
+    }
+  }
+});
+
+
+test('real packer refuses an absent wheel and recovers in the same staging directory', t=>{
+  const output=scratch(t), target='aarch64-apple-darwin';
+  const missing=pack(output,target);
+  assert.equal(missing.status,1); assert.match(missing.stderr,/expected one wheel.*clean the output directory and rebuild/);
+  assert.doesNotMatch(missing.stderr,/Traceback/);
+  assert.equal(existsSync(join(output,`contract-${target}.json`)),false);
+  wheel(output,target);
+  const recovered=pack(output,target);
+  assert.equal(recovered.status,0,recovered.stderr);
+  assert.match(recovered.stdout,/staged aarch64-apple-darwin.*validated/);
+  assert.equal(existsSync(join(output,`contract-${target}.json`)),true);
+});
+
+test('release builder help documents statuses and invalid invocation uses argparse status 2', ()=>{
+  const args=['python3','tools/release-packaging/release-native.py'];
+  const help=run([...args,'--help']);
+  assert.equal(help.status,0); assert.match(help.stdout.replace(/\s+/g,' '),/0 success; 1 operational or validation failure; 2 invalid invocation/);
+  const invalid=run([...args,'--target','unknown']);
+  assert.equal(invalid.status,2); assert.match(invalid.stderr,/invalid choice/); assert.equal(invalid.stdout,'');
 });

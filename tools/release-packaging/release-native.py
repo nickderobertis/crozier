@@ -128,7 +128,12 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
 
 
 def release_identity(tag: str) -> ReleaseIdentity:
-    version = tomllib.loads(Path("Cargo.toml").read_text())["package"]["version"]
+    package = tomllib.loads(Path("Cargo.toml").read_text()).get("package")
+    if not isinstance(package, dict) or "version" not in package:
+        raise ValueError(
+            "Cargo.toml must contain a package table and version; restore [package] with a literal version"
+        )
+    version = package["version"]
     if not isinstance(version, str) or not re.fullmatch(
         r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?", version
     ):
@@ -189,7 +194,7 @@ def build(target: Target, tag: str, output: Path) -> BuildResult:
 
 
 def smoke(target: Target, tag: str, output: Path, built: BuildResult) -> None:
-    # llmlint: ignore[changed_behavior_has_e2e] Intel-on-ARM execution requires the actual Apple Silicon/Rosetta runner API. The dispatch host proves native installation/generation and both Darwin artifact headers/contents; the production Mac job runs both targets. The task expressly forbids claiming a Linux host executed Darwin binaries.
+    # llmlint: ignore[changed_behavior_has_e2e] Intel-on-ARM execution requires an Apple Silicon/Rosetta runner. Host-native installation and both Darwin artifact contracts are tested locally; the Mac release job installs and runs both architectures.
     prefix = ["arch", "-x86_64"] if target == Target.INTEL_MAC and platform.machine() == "arm64" else []
     installed = output / f"installed-{target.value}"
     # Distinct staged URLs replace forge transport, preserving real installer
@@ -236,7 +241,10 @@ def smoke(target: Target, tag: str, output: Path, built: BuildResult) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        epilog="Exit statuses: 0 success; 1 operational or validation failure; 2 invalid invocation.",
+    )
     parser.add_argument("--target", required=True, choices=[t.value for t in Target])
     parser.add_argument("--tag", required=True)
     parser.add_argument("--out", type=Path, required=True)

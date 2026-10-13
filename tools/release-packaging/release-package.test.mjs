@@ -7,6 +7,7 @@ import { mkdtempSync, readFileSync, rmSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 
 test('production native archive and wheel share a binary and both install and generate; mismatched tags fail before build', t => {
   const scratch = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'crozier-packaging-'));
@@ -26,5 +27,7 @@ test('production native archive and wheel share a binary and both install and ge
   }
   const contract=JSON.parse(readFileSync(join(scratch,`contract-${target}.json`),'utf8'));
   assert.equal(contract.schemaVersion,1); assert.equal(contract.target,target); assert.equal(contract.tag,`v${version}`);
+  const actual=createHash('sha256').update(readFileSync(join(scratch,`installed-${target}`,'crozier'))).digest('hex');
+  for(const field of ['binarySha256','archiveBinarySha256','wheelBinarySha256']) assert.equal(contract[field],actual);
   assert.equal(contract.archiveBinarySha256,contract.wheelBinarySha256); assert.match(contract.binarySha256,/^[a-f0-9]{64}$/);
 });
