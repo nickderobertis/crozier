@@ -47,6 +47,10 @@ function value(input, context, outcomes) {
 export function matrixRows(matrix = {}, context = {}) {
   const resolved = value(matrix, context);
   if (!resolved || typeof resolved !== 'object' || Array.isArray(resolved)) throw new Error('unresolved matrix');
+  for (const key of ['include', 'exclude']) {
+    const entries = resolved[key];
+    if (entries !== undefined && (!Array.isArray(entries) || entries.some(row => !row || typeof row !== 'object' || Array.isArray(row)))) throw new Error(`unresolved matrix ${key}: expected object rows`);
+  }
   let rows = [{}];
   for (const [key, input] of Object.entries(resolved)) {
     if (['include', 'exclude'].includes(key)) continue;
@@ -56,6 +60,7 @@ export function matrixRows(matrix = {}, context = {}) {
   }
   const axes = Object.keys(resolved).filter(k => !['include', 'exclude'].includes(k));
   rows = rows.filter(row => !(resolved.exclude ?? []).some(ex => Object.entries(ex).every(([k, v]) => row[k] === v)));
+  if (!axes.length && resolved.include?.length === 0) throw new Error('unresolved matrix include: no job rows');
   if (!axes.length && resolved.include) return resolved.include.map(row => ({ ...row }));
   for (const include of resolved.include ?? []) {
     const matches = rows.filter(row => axes.every(k => include[k] === undefined || include[k] === row[k]));
@@ -72,6 +77,7 @@ export function triggered(workflow, scenario) {
     const filters = config?.[key];
     if (filters !== undefined && (!Array.isArray(filters) || filters.some(filter => typeof filter !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(filter)))) throw new Error(`unresolved workflow trigger filter: ${key}`);
   }
+  if (config?.types !== undefined && (!Array.isArray(config.types) || !config.types.length || config.types.some(type => typeof type !== 'string' || !type.length))) throw new Error('unresolved workflow trigger types: expected event names');
   if (config?.types && !config.types.includes(scenario.event.action)) return false;
   if (config?.branches && !config.branches.includes(scenario.branch)) return false;
   if (config?.tags && !config.tags.includes(scenario.tag)) return false;

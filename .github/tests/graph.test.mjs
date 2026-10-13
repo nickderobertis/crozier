@@ -89,6 +89,9 @@ test('unknown runners, calls, matrices and cycles fail loudly; real matrix inclu
   assert.deepEqual(matrixRows({os:['linux','mac'],exclude:[{os:'linux'}],include:[{os:'windows',target:'win'}]}),[{os:'mac'},{os:'windows',target:'win'}]);
   assert.deepEqual(matrixRows({include:[{target:'intel',os:'macos-latest'},{target:'arm',os:'macos-latest'}]}),[{target:'intel',os:'macos-latest'},{target:'arm',os:'macos-latest'}]);
   assert.deepEqual(matrixRows({os:['ubuntu-latest','macos-latest'],include:[{os:'macos-latest',target:'arm'}]}),[{os:'ubuntu-latest'},{os:'macos-latest',target:'arm'}]);
+  for (const matrix of [{include:'bad'}, {exclude:'bad'}, {include:[null]}, {include:[1]}, {include:['bad']}, {include:[[]]}, {exclude:[false]}, {exclude:[[]]}, {include:[]}]) {
+    assert.throws(()=>matrixRows(matrix), /unresolved matrix (include|exclude)/);
+  }
   const scenario={id:'bad',eventName:'push',event:{},branch:'main'};
   for (const jobs of [ {bad:{'runs-on':[]}}, {bad:{'runs-on':'${{ needs.unknown.outputs.runner }}'}}, {bad:{uses:'org/repo/.github/workflows/no.yml@v1'}}, {bad:{'runs-on':'ubuntu-latest',strategy:{matrix:{os:'${{ fromJSON(needs.no.outputs.matrix) }}'}}}}, {bad:{needs:'bad','runs-on':'ubuntu-latest'}} ]) {
     assert.throws(()=>resolveRun({path:'bad.yml',value:{jobs}},scenario,{macosRequired:false}), /unresolved|context|Unexpected|JSON|Cannot|cyclic/i);
@@ -102,6 +105,10 @@ test('shorthand triggers route declared events and unsupported glob filters fail
   assert.equal(triggered({ on: 'pull_request' }, scenario), false);
   assert.equal(triggered({ on: ['push', 'pull_request'] }, scenario), true);
   assert.equal(triggered({ on: ['release'] }, scenario), false);
+  const pr = { ...scenario, eventName:'pull_request', event:{action:'opened'} };
+  for (const types of ['reopened', [null], [7], [], {}]) assert.throws(()=>triggered({on:{pull_request:{types}}},pr), /unresolved workflow trigger types/);
+  assert.equal(triggered({on:{pull_request:{types:['opened']}}},pr),true);
+  assert.equal(triggered({on:{pull_request:{types:['reopened']}}},pr),false);
   for (const filter of ['branches', 'tags']) {
     for (const pattern of ['v*', '**', '!main', 'v[0-9]', 'release?', 'v+']) {
       assert.throws(() => triggered({ on: { push: { [filter]: [pattern] } } }, scenario), /unresolved workflow trigger filter/);
