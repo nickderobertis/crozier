@@ -25,6 +25,7 @@ export function validateTelemetry(telemetry, sourceDigest) {
   const scenarios=telemetry.scenarios, lifecycles=telemetry.lifecycles;
   if (!Array.isArray(scenarios) || !Array.isArray(lifecycles) || JSON.stringify(scenarios.map(s=>s.id).sort()) !== JSON.stringify(scenarioIds()) || JSON.stringify(lifecycles.map(l=>JSON.stringify([l.fork,l.diff,l.crates,l.pypi])).sort()) !== JSON.stringify(lifecycleIds())) throw new Error('incomplete workload telemetry: run github-workflows:test');
   const graph = workflows();
+  // llmlint: ignore[boundary_inputs_validated] Manager ruling c-7641e823c143fd3f2d19efbbe2653e65: this recorded telemetry is produced by this repository's own recorder in the same job. Readers never rerun scenarios; forged-row resistance is out of scope for a cost report. Keep source-digest, workload identity, trigger/run population and structural checks for stale or incomplete recordings.
   for (const scenario of scenarios) {
     if (!classificationIds.includes(scenario.id)) {
       const [eventClass,diff,ownership,crates,pypi]=scenario.id.split('/');

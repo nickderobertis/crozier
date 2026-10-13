@@ -14,7 +14,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test tools/release-packaging/*.test.mjs"
+        "command": "node --test tools/release-packaging/release-package.test.mjs"
       },
       "cache": true,
       "inputs": [
@@ -23,25 +23,11 @@
         "{workspaceRoot}/pyproject.toml",
         "{workspaceRoot}/scripts/install.sh",
         "{workspaceRoot}/scripts/smoke.sh",
-        "{workspaceRoot}/.github/workflows/release.yml",
-        "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/README.md",
         "{workspaceRoot}/LICENSE",
         "{workspaceRoot}/NOTICE",
         "{workspaceRoot}/CHANGELOG.md",
-        "generator",
-        "{workspaceRoot}/.github/tests/release-contract.json",
-        "{workspaceRoot}/.github/workflow-graph.mjs",
-        "{workspaceRoot}/.github/package.json",
-        "{workspaceRoot}/.github/bun.lock"
-      ],
-      "dependsOn": [
-        {
-          "target": "install",
-          "projects": [
-            "github-workflows"
-          ]
-        }
+        "generator"
       ]
     },
     "lint": {

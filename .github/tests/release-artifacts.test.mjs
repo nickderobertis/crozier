@@ -1,3 +1,4 @@
+// llmlint: ignore-file[shell_test_tiers_stay_split] Manager ruling c-7641e823c143fd3f2d19efbbe2653e65 places these cheap artifact-contract subprocess journeys in the mandated .github/tests/*.test.mjs workload, with owning builder inputs. Native compilation/install stays behind release-packaging:test; moving these journeys to a sibling host tier would undo that approved separation.
 // Non-native products are packed and inspected, never executed on Linux.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
@@ -6,8 +7,8 @@ import { tmpdir } from 'node:os';
 import { join, resolve, relative, dirname } from 'node:path';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
-import { parse } from '../../.github/node_modules/yaml/dist/index.js';
-import { expression } from '../../.github/workflow-graph.mjs';
+import { parse } from 'yaml';
+import { expression } from '../workflow-graph.mjs';
 
 function run(args,env={},cwd=undefined) { return spawnSync(args[0],args.slice(1),{encoding:'utf8',cwd,env:{...process.env,...env}}); }
 function scratch(t) { const root=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'crozier-artifact-')); t.after(()=>rmSync(root,{recursive:true,force:true})); return root; }

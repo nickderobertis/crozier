@@ -4,7 +4,8 @@
   "projectType": "library",
   "tags": [
     "type:tooling",
-    "lang:javascript"
+    "lang:javascript",
+    "measures:release-packaging"
   ],
   "targets": {
     "install": {
@@ -27,7 +28,14 @@
       "inputs": [
         "default",
         "{workspaceRoot}/screencomp.toml",
-        "{workspaceRoot}/release-plz.toml"
+        "{workspaceRoot}/release-plz.toml",
+        "{workspaceRoot}/tools/release-packaging/release-native.py",
+        "{workspaceRoot}/tools/release-packaging/publish-darwin.sh",
+        "{workspaceRoot}/Cargo.toml",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/LICENSE",
+        "{workspaceRoot}/NOTICE",
+        "{workspaceRoot}/CHANGELOG.md"
       ]
     },
     // llmlint: ignore-end[shell_test_tiers_stay_split]
