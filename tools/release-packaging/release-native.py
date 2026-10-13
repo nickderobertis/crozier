@@ -48,6 +48,12 @@ class Target(str, Enum):
 
 
 @dataclass(frozen=True)
+class ReleaseIdentity:
+    tag: ReleaseTag
+    version: Version
+
+
+@dataclass(frozen=True)
 class ReleaseContract:
     schemaVersion: int
     target: Target
@@ -121,7 +127,7 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
     return binary
 
 
-def release_identity(tag: str) -> tuple[ReleaseTag, Version]:
+def release_identity(tag: str) -> ReleaseIdentity:
     version = tomllib.loads(Path("Cargo.toml").read_text())["package"]["version"]
     if not isinstance(version, str) or not re.fullmatch(
         r"[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?(?:\+[A-Za-z0-9.-]+)?", version
@@ -129,11 +135,12 @@ def release_identity(tag: str) -> tuple[ReleaseTag, Version]:
         raise ValueError("unsupported Cargo.toml version; use a literal semantic version without path separators")
     if tag != f"v{version}":
         raise ValueError(f"tag {tag} does not match Cargo.toml version {version}; use v{version}")
-    return ReleaseTag(tag), Version(version)
+    return ReleaseIdentity(ReleaseTag(tag), Version(version))
 
 
 def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
-    tag, version = release_identity(tag)
+    identity = release_identity(tag)
+    tag, version = identity.tag, identity.version
     candidates = list(wheels.glob("*.whl"))
     if len(candidates) != 1:
         raise ValueError(
@@ -172,7 +179,7 @@ def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
 
 
 def build(target: Target, tag: str, output: Path) -> BuildResult:
-    tag, version = release_identity(tag)
+    tag = release_identity(tag).tag
     output.mkdir(parents=True, exist_ok=True)
     wheels = output / f"wheels-{target.value}"
     wheels.mkdir(exist_ok=True)

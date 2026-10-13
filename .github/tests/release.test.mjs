@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { root, workflows } from '../workflow-graph.mjs';
 const contract=JSON.parse(readFileSync(resolve(root,'.github/tests/release-contract.json'),'utf8'));
 
-test('release retains every platform/artifact; Darwin proof precedes publication and all publisher jobs use Linux', () => {
+test('release retains every platform/artifact; Darwin proof precedes publication and Darwin and registry publication-only jobs use Linux', () => {
   const jobs=workflows().find(w=>w.path.endsWith('/release.yml')).value.jobs;
   const archiveTargets=jobs.upload.strategy.matrix.include.map(r=>r.target);
   const wheelTargets=jobs['build-wheels'].strategy.matrix.include.map(r=>r.target);
