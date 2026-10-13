@@ -1,0 +1,13 @@
+# generate (render_files, plain + --fern-strict) · mode `tree=saphyr` :: corpus chaingateway-io
+diff -ruN before/src/chaingateway_io/types/kdfparams.py after/src/chaingateway_io/types/kdfparams.py
+--- before/src/chaingateway_io/types/kdfparams.py	2026-10-13 00:56:57.129607399 +0000
++++ after/src/chaingateway_io/types/kdfparams.py	2026-10-13 00:56:57.130964606 +0000
+@@ -8,7 +8,7 @@
+ 
+ class Kdfparams(UniversalBaseModel):
+     dklen: int
+-    n: int
++    n: typing.Optional[int] = None
+     p: int
+     r: int
+     salt: str

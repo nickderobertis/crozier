@@ -1,0 +1,245 @@
+== a_bad_layout_is_refused_naming_the_value_and_its_layer
+    thread 'a_bad_layout_is_refused_naming_the_value_and_its_layer' (1255741) panicked at crates/crozier-e2e/tests/e2e.rs:18445:46:
+    Unexpected stderr, failed (((var.contains(invalid config) && var.contains(crozier.yml)) && var.contains(nested)) && var.contains(`packaged` or `flat`))
+    ├── var as str: crozier: invalid config /tmp/.tmpK174ZM/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+    │    --> <input>:1:9
+    │     |
+    │   1 | layout: nested
+    │     |         ^ unknown variant `nested`, expected one of packaged, flat
+    └── var.contains(`packaged` or `flat`)
+        └── var: crozier: invalid config /tmp/.tmpK174ZM/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+             --> <input>:1:9
+              |
+            1 | layout: nested
+              |         ^ unknown variant `nested`, expected one of packaged, flat
+
+    command=`cd "/tmp/.tmpK174ZM" && env -u CROZIER_AUDIENCES -u CROZIER_AUDIENCE_STRICT -u CROZIER_CLIENT_CLASS_NAME -u CROZIER_CONFIG -u CROZIER_DEFAULT_MAX_RETRIES -u CROZIER_ENUM_TYPE -u CROZIER_EXTRA_FIELDS -u CROZIER_FERN_STRICT -u CROZIER_LAYOUT -u CROZIER_PACKAGE_NAME -u CROZIER_PROJECT_NAME CROZIER_OUTPUT="./out" CROZIER_SPEC="./api.yml" "/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "python"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: invalid config /tmp/.tmpK174ZM/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+     --> <input>:1:9
+      |
+    1 | layout: nested
+      |         ^ unknown variant `nested`, expected one of packaged, flat
+    ```
+
+
+== chaingateway_io_matches_fern_output
+    thread 'chaingateway_io_matches_fern_output' (1282635) panicked at crates/crozier-e2e/tests/e2e.rs:1235:13:
+    generated src/fern/types/kdfparams.py does not match the Fern fixture (normalized diff; `-` = Fern golden, `+` = crozier). Reproduce with `just fixtures-diff chaingateway-io src/fern/types/kdfparams.py`; fix the generator, never the fixture; if this is a genuine open gap, add the path to `unmatched`.
+          ⋮ (7 unchanged line(s))
+      
+      class Kdfparams(UniversalBaseModel):
+          dklen: int
+    -     n: int
+    +     n: typing.Optional[int] = None
+          p: int
+          r: int
+          salt: str
+          ⋮ (9 unchanged line(s))
+
+== daniweb_connect_matches_fern_output
+    thread 'daniweb_connect_matches_fern_output' (1295321) panicked at crates/crozier-e2e/tests/e2e.rs:1235:13:
+    generated reference.md does not match the Fern fixture (normalized diff; `-` = Fern golden, `+` = crozier). Reproduce with `just fixtures-diff daniweb-connect reference.md`; fix the generator, never the fixture; if this is a genuine open gap, add the path to `unmatched`.
+          ⋮ (6359 unchanged line(s))
+      <dl>
+      <dd>
+      
+    - **location_importance:** `typing.Optional[PatchUsersRequestLocationImportance]` 
+    + **location_importance:** `typing.Optional[str]` 
+          
+      </dd>
+      </dl>
+          ⋮ (301 unchanged line(s))
+
+== example_unexpected_property_refusal_covers_measured_shapes
+    thread 'example_unexpected_property_refusal_covers_measured_shapes' (1311860) panicked at crates/crozier-e2e/tests/e2e.rs:23495:9:
+    assertion `left == right` failed: union-member-declares-key-control.yml: crozier: could not parse OpenAPI document /home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/docs/fern-refusals/example-unexpected-property/union-member-declares-key-control.yml: error: line 21 column 17: data did not match any variant of untagged enum Composition
+      --> <input>:21:17
+       |
+    19 |                       type: boolean
+    20 |               anyOf:
+    21 |               - title: A
+       |                 ^ data did not match any variant of untagged enum Composition
+    22 |                 type: object
+    23 |                 properties:
+       |
+
+      left: Some(1)
+     right: Some(0)
+== hasura_metadata_matches_fern_output
+    thread 'hasura_metadata_matches_fern_output' (1330516) panicked at crates/crozier-e2e/tests/e2e.rs:8298:10:
+    Unexpected failure.
+    code=1
+    stderr=```"crozier: could not parse OpenAPI document /tmp/.tmpApVvHL/openapi.json: number out of range at line 5155 column 353\n"```
+    command=`"/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "--spec" "/tmp/.tmpApVvHL/openapi.json" "--output" "/tmp/.tmpLOROPr" "--package-name" "fern" "--project-name" "default_package_name"`
+    code=1
+    stdout=""
+    stderr="crozier: could not parse OpenAPI document /tmp/.tmpApVvHL/openapi.json: number out of range at line 5155 column 353\n"
+
+== mermade_openapi_converter_matches_fern_output
+    thread 'mermade_openapi_converter_matches_fern_output' (1357450) panicked at crates/crozier-e2e/tests/e2e.rs:1235:13:
+    generated reference.md does not match the Fern fixture (normalized diff; `-` = Fern golden, `+` = crozier). Reproduce with `just fixtures-diff mermade-openapi-converter reference.md`; fix the generator, never the fixture; if this is a genuine open gap, add the path to `unmatched`.
+          ⋮ (360 unchanged line(s))
+      <dl>
+      <dd>
+      
+    - **validate:** `typing.Optional[ConvertRequestValidate]` 
+    + **validate:** `typing.Optional[str]` 
+          
+      </dd>
+      </dl>
+          ⋮ (79 unchanged line(s))
+
+== mosip_esignet_matches_fern_output
+    thread 'mosip_esignet_matches_fern_output' (1361582) panicked at crates/crozier-e2e/tests/e2e.rs:8298:10:
+    Unexpected failure.
+    code=1
+    stderr=``````
+    crozier: could not parse OpenAPI document /tmp/.tmpk2vCfr/openapi.yaml: error: line 1584 column 25: data did not match any variant of untagged enum Composition
+        --> <input>:1584:25
+         |
+    1582 |                         - Omit to leave unchanged
+    1583 |                       oneOf:
+    1584 |                         - type: \'null\'
+         |                         ^ data did not match any variant of untagged enum Composition
+    1585 |                         - title: RSA Encryption Key
+    1586 |                           type: object
+         |
+    ```
+    ```
+    command=`"/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "--spec" "/tmp/.tmpk2vCfr/openapi.yaml" "--output" "/tmp/.tmpp2XhXc" "--package-name" "fern" "--project-name" "default_package_name"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: could not parse OpenAPI document /tmp/.tmpk2vCfr/openapi.yaml: error: line 1584 column 25: data did not match any variant of untagged enum Composition
+        --> <input>:1584:25
+         |
+    1582 |                         - Omit to leave unchanged
+    1583 |                       oneOf:
+    1584 |                         - type: \'null\'
+         |                         ^ data did not match any variant of untagged enum Composition
+    1585 |                         - title: RSA Encryption Key
+    1586 |                           type: object
+         |
+    ```
+
+
+== named_request_media_match_certified_output_and_canonical_extensions
+    thread 'named_request_media_match_certified_output_and_canonical_extensions' (1363370) panicked at crates/crozier-e2e/tests/e2e.rs:4651:22:
+    Unexpected stderr, failed var.contains(expected a string)
+    ├── var: crozier: could not parse OpenAPI document /tmp/.tmpwHmYCt/openapi.yml: error: line 13 column 37: expected string scalar
+    │     --> <input>:13:37
+    │      |
+    │   11 |         content:
+    │   12 |           application/json:
+    │   13 |             x-fern-sdk-method-name: [invalid]
+    │      |                                     ^ expected string scalar
+    │   14 |             schema:
+    │   15 |               type: object
+    │      |
+    └── var as str: crozier: could not parse OpenAPI document /tmp/.tmpwHmYCt/openapi.yml: error: line 13 column 37: expected string scalar
+          --> <input>:13:37
+           |
+        11 |         content:
+        12 |           application/json:
+        13 |             x-fern-sdk-method-name: [invalid]
+           |                                     ^ expected string scalar
+        14 |             schema:
+        15 |               type: object
+           |
+
+    command=`env -u CROZIER_AUDIENCES -u CROZIER_AUDIENCE_STRICT -u CROZIER_CLIENT_CLASS_NAME -u CROZIER_CONFIG -u CROZIER_DEFAULT_MAX_RETRIES -u CROZIER_ENUM_TYPE -u CROZIER_EXTRA_FIELDS -u CROZIER_FERN_STRICT -u CROZIER_LAYOUT -u CROZIER_OUTPUT -u CROZIER_PACKAGE_NAME -u CROZIER_PROJECT_NAME -u CROZIER_SPEC "/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "--no-config" "generate" "python" "--spec" "/tmp/.tmpwHmYCt/openapi.yml" "--output" "/tmp/.tmpL3kmnM"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: could not parse OpenAPI document /tmp/.tmpwHmYCt/openapi.yml: error: line 13 column 37: expected string scalar
+      --> <input>:13:37
+       |
+    11 |         content:
+    12 |           application/json:
+    13 |             x-fern-sdk-method-name: [invalid]
+       |                                     ^ expected string scalar
+    14 |             schema:
+    15 |               type: object
+       |
+    ```
+
+
+== pagination_boolean_form_takes_the_root_contract_in_crozier_spelling
+    thread 'pagination_boolean_form_takes_the_root_contract_in_crozier_spelling' (1375886) panicked at crates/crozier-e2e/tests/e2e.rs:21584:10:
+    Unexpected stderr, failed var.contains(paths./beacons.get.x-crozier-pagination: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract)
+    ├── var: crozier: could not parse OpenAPI document /tmp/.tmpIqcKd0/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+    │    --> <input>:7:7
+    │     |
+    │   5 |     get:
+    │   6 |       operationId: listBeacons
+    │   7 |       x-crozier-pagination: 7
+    │     |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+    │   8 |       responses: {'204': {description: ok}}
+    │     |
+    └── var as str: crozier: could not parse OpenAPI document /tmp/.tmpIqcKd0/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+         --> <input>:7:7
+          |
+        5 |     get:
+        6 |       operationId: listBeacons
+        7 |       x-crozier-pagination: 7
+          |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+        8 |       responses: {'204': {description: ok}}
+          |
+
+    command=`"/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "python" "--spec" "/tmp/.tmpIqcKd0/number.yml" "--output" "/tmp/.tmpIqcKd0/number" "--package-name" "fern" "--project-name" "default_package_name"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: could not parse OpenAPI document /tmp/.tmpIqcKd0/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document\'s root contract
+     --> <input>:7:7
+      |
+    5 |     get:
+    6 |       operationId: listBeacons
+    7 |       x-crozier-pagination: 7
+      |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document\'s root contract
+    8 |       responses: {\'204\': {description: ok}}
+      |
+    ```
+
+
+== raybot_matches_fern_output
+    thread 'raybot_matches_fern_output' (1388371) panicked at crates/crozier-e2e/tests/e2e.rs:1235:13:
+    generated src/fern/types/led_mode.py does not match the Fern fixture (normalized diff; `-` = Fern golden, `+` = crozier). Reproduce with `just fixtures-diff raybot src/fern/types/led_mode.py`; fix the generator, never the fixture; if this is a genuine open gap, add the path to `unmatched`.
+      
+      
+    - import typing
+    - 
+    - from ..core import enum
+    - 
+    - T_Result = typing.TypeVar("T_Result")
+    - 
+    - 
+    - class LedMode(enum.StrEnum):
+    -     """
+    -     The mode of the led
+    -     """
+    - 
+    -     OFF = "OFF"
+    -     ON = "ON"
+    -     BLINK = "BLINK"
+    - 
+    -     def visit(
+    -         self,
+    -         off: typing.Callable[[], T_Result],
+    -         on: typing.Callable[[], T_Result],
+    -         blink: typing.Callable[[], T_Result],
+    -     ) -> T_Result:
+    -         if self is LedMode.OFF:
+    -             return off()
+    -         if self is LedMode.ON:
+    -             return on()
+    -         if self is LedMode.BLINK:
+    -             return blink()
+    + LedMode = str
+    + """
+    + The mode of the led
+    + """
+

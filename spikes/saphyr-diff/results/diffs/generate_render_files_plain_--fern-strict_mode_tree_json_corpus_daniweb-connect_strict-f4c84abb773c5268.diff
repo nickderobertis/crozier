@@ -1,0 +1,218 @@
+# generate (render_files, plain + --fern-strict) · mode `tree=json` :: corpus daniweb-connect [strict]
+diff -ruN before/reference.md after/reference.md
+--- before/reference.md	2026-10-13 00:56:57.234442731 +0000
++++ after/reference.md	2026-10-13 00:56:57.239110727 +0000
+@@ -6360,7 +6360,7 @@
+ <dl>
+ <dd>
+ 
+-**location_importance:** `typing.Optional[PatchUsersRequestLocationImportance]` 
++**location_importance:** `typing.Optional[str]` 
+     
+ </dd>
+ </dl>
+diff -ruN before/src/dani_web_connect_api/__init__.py after/src/dani_web_connect_api/__init__.py
+--- before/src/dani_web_connect_api/__init__.py	2026-10-13 00:56:57.234498976 +0000
++++ after/src/dani_web_connect_api/__init__.py	2026-10-13 00:56:57.239167678 +0000
+@@ -239,7 +239,6 @@
+         PatchUsersRequestGoalsItem,
+         PatchUsersRequestIndustry,
+         PatchUsersRequestJobPosition,
+-        PatchUsersRequestLocationImportance,
+         PatchUsersRequestTargetedIndustry,
+         PostUsersIdMessagesRequestMetadata0Privacy,
+         PostUsersIdMessagesRequestMetadata1Privacy,
+@@ -428,7 +427,6 @@
+     "PatchUsersRequestGoalsItem": ".users",
+     "PatchUsersRequestIndustry": ".users",
+     "PatchUsersRequestJobPosition": ".users",
+-    "PatchUsersRequestLocationImportance": ".users",
+     "PatchUsersRequestTargetedIndustry": ".users",
+     "Position": ".types",
+     "PositionOrganization": ".types",
+@@ -686,7 +684,6 @@
+     "PatchUsersRequestGoalsItem",
+     "PatchUsersRequestIndustry",
+     "PatchUsersRequestJobPosition",
+-    "PatchUsersRequestLocationImportance",
+     "PatchUsersRequestTargetedIndustry",
+     "Position",
+     "PositionOrganization",
+diff -ruN before/src/dani_web_connect_api/users/client.py after/src/dani_web_connect_api/users/client.py
+--- before/src/dani_web_connect_api/users/client.py	2026-10-13 00:56:57.238601614 +0000
++++ after/src/dani_web_connect_api/users/client.py	2026-10-13 00:56:57.243315023 +0000
+@@ -26,7 +26,6 @@
+ from .types.patch_users_request_goals_item import PatchUsersRequestGoalsItem
+ from .types.patch_users_request_industry import PatchUsersRequestIndustry
+ from .types.patch_users_request_job_position import PatchUsersRequestJobPosition
+-from .types.patch_users_request_location_importance import PatchUsersRequestLocationImportance
+ from .types.patch_users_request_targeted_industry import PatchUsersRequestTargetedIndustry
+ from .types.post_users_id_messages_request_metadata0privacy import PostUsersIdMessagesRequestMetadata0Privacy
+ from .types.post_users_id_messages_request_metadata1privacy import PostUsersIdMessagesRequestMetadata1Privacy
+@@ -907,7 +906,7 @@
+         introduction: typing.Optional[str] = OMIT,
+         job_position: typing.Optional[PatchUsersRequestJobPosition] = OMIT,
+         last_name: typing.Optional[str] = OMIT,
+-        location_importance: typing.Optional[PatchUsersRequestLocationImportance] = OMIT,
++        location_importance: typing.Optional[str] = OMIT,
+         match_tags: typing.Optional[typing.List[str]] = OMIT,
+         pitch: typing.Optional[str] = OMIT,
+         tags: typing.Optional[typing.List[str]] = OMIT,
+@@ -938,7 +937,7 @@
+ 
+         last_name : typing.Optional[str]
+ 
+-        location_importance : typing.Optional[PatchUsersRequestLocationImportance]
++        location_importance : typing.Optional[str]
+ 
+         match_tags : typing.Optional[typing.List[str]]
+ 
+@@ -1976,7 +1975,7 @@
+         introduction: typing.Optional[str] = OMIT,
+         job_position: typing.Optional[PatchUsersRequestJobPosition] = OMIT,
+         last_name: typing.Optional[str] = OMIT,
+-        location_importance: typing.Optional[PatchUsersRequestLocationImportance] = OMIT,
++        location_importance: typing.Optional[str] = OMIT,
+         match_tags: typing.Optional[typing.List[str]] = OMIT,
+         pitch: typing.Optional[str] = OMIT,
+         tags: typing.Optional[typing.List[str]] = OMIT,
+@@ -2007,7 +2006,7 @@
+ 
+         last_name : typing.Optional[str]
+ 
+-        location_importance : typing.Optional[PatchUsersRequestLocationImportance]
++        location_importance : typing.Optional[str]
+ 
+         match_tags : typing.Optional[typing.List[str]]
+ 
+diff -ruN before/src/dani_web_connect_api/users/__init__.py after/src/dani_web_connect_api/users/__init__.py
+--- before/src/dani_web_connect_api/users/__init__.py	2026-10-13 00:56:57.238566368 +0000
++++ after/src/dani_web_connect_api/users/__init__.py	2026-10-13 00:56:57.243267846 +0000
+@@ -12,7 +12,6 @@
+         PatchUsersRequestGoalsItem,
+         PatchUsersRequestIndustry,
+         PatchUsersRequestJobPosition,
+-        PatchUsersRequestLocationImportance,
+         PatchUsersRequestTargetedIndustry,
+         PostUsersIdMessagesRequestMetadata0Privacy,
+         PostUsersIdMessagesRequestMetadata1Privacy,
+@@ -28,7 +27,6 @@
+     "PatchUsersRequestGoalsItem": ".types",
+     "PatchUsersRequestIndustry": ".types",
+     "PatchUsersRequestJobPosition": ".types",
+-    "PatchUsersRequestLocationImportance": ".types",
+     "PatchUsersRequestTargetedIndustry": ".types",
+     "PostUsersIdMessagesRequestMetadata0Privacy": ".types",
+     "PostUsersIdMessagesRequestMetadata1Privacy": ".types",
+@@ -67,7 +65,6 @@
+     "PatchUsersRequestGoalsItem",
+     "PatchUsersRequestIndustry",
+     "PatchUsersRequestJobPosition",
+-    "PatchUsersRequestLocationImportance",
+     "PatchUsersRequestTargetedIndustry",
+     "PostUsersIdMessagesRequestMetadata0Privacy",
+     "PostUsersIdMessagesRequestMetadata1Privacy",
+diff -ruN before/src/dani_web_connect_api/users/raw_client.py after/src/dani_web_connect_api/users/raw_client.py
+--- before/src/dani_web_connect_api/users/raw_client.py	2026-10-13 00:56:57.238650577 +0000
++++ after/src/dani_web_connect_api/users/raw_client.py	2026-10-13 00:56:57.243373470 +0000
+@@ -32,7 +32,6 @@
+ from .types.patch_users_request_goals_item import PatchUsersRequestGoalsItem
+ from .types.patch_users_request_industry import PatchUsersRequestIndustry
+ from .types.patch_users_request_job_position import PatchUsersRequestJobPosition
+-from .types.patch_users_request_location_importance import PatchUsersRequestLocationImportance
+ from .types.patch_users_request_targeted_industry import PatchUsersRequestTargetedIndustry
+ from .types.post_users_id_messages_request_metadata0privacy import PostUsersIdMessagesRequestMetadata0Privacy
+ from .types.post_users_id_messages_request_metadata1privacy import PostUsersIdMessagesRequestMetadata1Privacy
+@@ -1112,7 +1111,7 @@
+         introduction: typing.Optional[str] = OMIT,
+         job_position: typing.Optional[PatchUsersRequestJobPosition] = OMIT,
+         last_name: typing.Optional[str] = OMIT,
+-        location_importance: typing.Optional[PatchUsersRequestLocationImportance] = OMIT,
++        location_importance: typing.Optional[str] = OMIT,
+         match_tags: typing.Optional[typing.List[str]] = OMIT,
+         pitch: typing.Optional[str] = OMIT,
+         tags: typing.Optional[typing.List[str]] = OMIT,
+@@ -1143,7 +1142,7 @@
+ 
+         last_name : typing.Optional[str]
+ 
+-        location_importance : typing.Optional[PatchUsersRequestLocationImportance]
++        location_importance : typing.Optional[str]
+ 
+         match_tags : typing.Optional[typing.List[str]]
+ 
+@@ -2276,7 +2275,7 @@
+         introduction: typing.Optional[str] = OMIT,
+         job_position: typing.Optional[PatchUsersRequestJobPosition] = OMIT,
+         last_name: typing.Optional[str] = OMIT,
+-        location_importance: typing.Optional[PatchUsersRequestLocationImportance] = OMIT,
++        location_importance: typing.Optional[str] = OMIT,
+         match_tags: typing.Optional[typing.List[str]] = OMIT,
+         pitch: typing.Optional[str] = OMIT,
+         tags: typing.Optional[typing.List[str]] = OMIT,
+@@ -2307,7 +2306,7 @@
+ 
+         last_name : typing.Optional[str]
+ 
+-        location_importance : typing.Optional[PatchUsersRequestLocationImportance]
++        location_importance : typing.Optional[str]
+ 
+         match_tags : typing.Optional[typing.List[str]]
+ 
+diff -ruN before/src/dani_web_connect_api/users/types/__init__.py after/src/dani_web_connect_api/users/types/__init__.py
+--- before/src/dani_web_connect_api/users/types/__init__.py	2026-10-13 00:56:57.238650577 +0000
++++ after/src/dani_web_connect_api/users/types/__init__.py	2026-10-13 00:56:57.243373470 +0000
+@@ -11,7 +11,6 @@
+     from .patch_users_request_goals_item import PatchUsersRequestGoalsItem
+     from .patch_users_request_industry import PatchUsersRequestIndustry
+     from .patch_users_request_job_position import PatchUsersRequestJobPosition
+-    from .patch_users_request_location_importance import PatchUsersRequestLocationImportance
+     from .patch_users_request_targeted_industry import PatchUsersRequestTargetedIndustry
+     from .post_users_id_messages_request_metadata0privacy import PostUsersIdMessagesRequestMetadata0Privacy
+     from .post_users_id_messages_request_metadata1privacy import PostUsersIdMessagesRequestMetadata1Privacy
+@@ -26,7 +25,6 @@
+     "PatchUsersRequestGoalsItem": ".patch_users_request_goals_item",
+     "PatchUsersRequestIndustry": ".patch_users_request_industry",
+     "PatchUsersRequestJobPosition": ".patch_users_request_job_position",
+-    "PatchUsersRequestLocationImportance": ".patch_users_request_location_importance",
+     "PatchUsersRequestTargetedIndustry": ".patch_users_request_targeted_industry",
+     "PostUsersIdMessagesRequestMetadata0Privacy": ".post_users_id_messages_request_metadata0privacy",
+     "PostUsersIdMessagesRequestMetadata1Privacy": ".post_users_id_messages_request_metadata1privacy",
+@@ -65,7 +63,6 @@
+     "PatchUsersRequestGoalsItem",
+     "PatchUsersRequestIndustry",
+     "PatchUsersRequestJobPosition",
+-    "PatchUsersRequestLocationImportance",
+     "PatchUsersRequestTargetedIndustry",
+     "PostUsersIdMessagesRequestMetadata0Privacy",
+     "PostUsersIdMessagesRequestMetadata1Privacy",
+diff -ruN before/src/dani_web_connect_api/users/types/patch_users_request_location_importance.py after/src/dani_web_connect_api/users/types/patch_users_request_location_importance.py
+--- before/src/dani_web_connect_api/users/types/patch_users_request_location_importance.py	2026-10-13 00:56:57.238806777 +0000
++++ after/src/dani_web_connect_api/users/types/patch_users_request_location_importance.py	1970-01-01 00:00:00.000000000 +0000
+@@ -1,26 +0,0 @@
+-# This file was auto-generated by crozier from an OpenAPI document.
+-
+-import typing
+-
+-from ...core import enum
+-
+-T_Result = typing.TypeVar("T_Result")
+-
+-
+-class PatchUsersRequestLocationImportance(enum.StrEnum):
+-    YES = "Yes"
+-    SOMEWHAT = "Somewhat"
+-    NO = "No"
+-
+-    def visit(
+-        self,
+-        yes: typing.Callable[[], T_Result],
+-        somewhat: typing.Callable[[], T_Result],
+-        no: typing.Callable[[], T_Result],
+-    ) -> T_Result:
+-        if self is PatchUsersRequestLocationImportance.YES:
+-            return yes()
+-        if self is PatchUsersRequestLocationImportance.SOMEWHAT:
+-            return somewhat()
+-        if self is PatchUsersRequestLocationImportance.NO:
+-            return no()

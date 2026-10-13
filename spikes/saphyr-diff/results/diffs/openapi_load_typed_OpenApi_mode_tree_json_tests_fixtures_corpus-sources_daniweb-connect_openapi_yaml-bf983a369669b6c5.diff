@@ -1,0 +1,16 @@
+# openapi::load (typed OpenApi) · mode `tree=json` :: tests/fixtures/corpus-sources/daniweb-connect/openapi.yaml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:07.629983685 +0000
++++ after/read.txt	2026-10-13 00:36:07.684983652 +0000
+@@ -82546,9 +82546,9 @@
+                                                         pattern_properties: None,
+                                                         enum_values: Some(
+                                                             [
+-                                                                String("Yes"),
++                                                                Bool(true),
+                                                                 String("Somewhat"),
+-                                                                String("No"),
++                                                                Bool(false),
+                                                             ],
+                                                         ),
+                                                         const_value: None,

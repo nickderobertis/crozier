@@ -1,0 +1,15 @@
+# openapi::load (typed OpenApi) · mode `tree=json` :: tests/fixtures/corpus-sources/raybot/api/openapi/openapi.yml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:09.964256332 +0000
++++ after/read.txt	2026-10-13 00:36:09.964860575 +0000
+@@ -13156,8 +13156,8 @@
+                 pattern_properties: None,
+                 enum_values: Some(
+                     [
+-                        String("OFF"),
+-                        String("ON"),
++                        Bool(false),
++                        Bool(true),
+                         String("BLINK"),
+                     ],
+                 ),

@@ -1,0 +1,13 @@
+# openapi::load (typed OpenApi) · mode `tree=saphyr` :: tests/fixtures/corpus-sources/mermade-openapi-converter/openapi.yaml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:09.409846736 +0000
++++ after/read.txt	2026-10-13 00:36:09.409899085 +0000
+@@ -841,7 +841,7 @@
+                                                         pattern_properties: None,
+                                                         enum_values: Some(
+                                                             [
+-                                                                String("on"),
++                                                                Bool(true),
+                                                             ],
+                                                         ),
+                                                         const_value: None,

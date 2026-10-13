@@ -1,0 +1,31 @@
+# malformed OpenAPI (load + render_files errors) · mode `tree=json` :: merge key in a schema [strict]
+diff -ruN before/src/probe/types/m.py after/src/probe/types/m.py
+--- before/src/probe/types/m.py	2026-10-13 00:56:59.760131354 +0000
++++ after/src/probe/types/m.py	2026-10-13 00:56:59.760878213 +0000
+@@ -2,7 +2,22 @@
+ 
+ import typing
+ 
+-M = typing.Any
+-"""
+-merged
+-"""
++import pydantic
++from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
++
++
++class M(UniversalBaseModel):
++    """
++    merged
++    """
++
++    a: typing.Optional[str] = None
++
++    if IS_PYDANTIC_V2:
++        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
++    else:
++
++        class Config:
++            frozen = True
++            smart_union = True
++            extra = pydantic.Extra.allow

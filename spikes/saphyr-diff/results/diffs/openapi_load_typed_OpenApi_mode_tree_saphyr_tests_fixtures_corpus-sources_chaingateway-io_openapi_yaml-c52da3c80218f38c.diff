@@ -1,0 +1,12 @@
+# openapi::load (typed OpenApi) · mode `tree=saphyr` :: tests/fixtures/corpus-sources/chaingateway-io/openapi.yaml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:07.530675441 +0000
++++ after/read.txt	2026-10-13 00:36:07.531448072 +0000
+@@ -2364,7 +2364,6 @@
+                     [
+                         "dklen",
+                         "salt",
+-                        "n",
+                         "r",
+                         "p",
+                     ],

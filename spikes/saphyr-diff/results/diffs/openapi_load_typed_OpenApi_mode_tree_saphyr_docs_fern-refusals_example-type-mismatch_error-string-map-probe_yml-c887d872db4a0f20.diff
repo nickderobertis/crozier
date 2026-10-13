@@ -1,0 +1,13 @@
+# openapi::load (typed OpenApi) · mode `tree=saphyr` :: docs/fern-refusals/example-type-mismatch/error-string-map-probe.yml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:11.381896307 +0000
++++ after/read.txt	2026-10-13 00:36:11.381930697 +0000
+@@ -144,7 +144,7 @@
+                                         Object {
+                                             "a": Object {
+                                                 "summary": String("x"),
+-                                                "value": String("y"),
++                                                "value": Bool(true),
+                                             },
+                                         },
+                                     ),

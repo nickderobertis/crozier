@@ -1,0 +1,106 @@
+== a_bad_layout_is_refused_naming_the_value_and_its_layer
+    thread 'a_bad_layout_is_refused_naming_the_value_and_its_layer' (1496572) panicked at crates/crozier-e2e/tests/e2e.rs:18445:46:
+    Unexpected stderr, failed (((var.contains(invalid config) && var.contains(crozier.yml)) && var.contains(nested)) && var.contains(`packaged` or `flat`))
+    ├── var as str: crozier: invalid config /tmp/.tmppgvs5x/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+    │    --> <input>:1:9
+    │     |
+    │   1 | layout: nested
+    │     |         ^ unknown variant `nested`, expected one of packaged, flat
+    └── var.contains(`packaged` or `flat`)
+        └── var: crozier: invalid config /tmp/.tmppgvs5x/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+             --> <input>:1:9
+              |
+            1 | layout: nested
+              |         ^ unknown variant `nested`, expected one of packaged, flat
+
+    command=`cd "/tmp/.tmppgvs5x" && env -u CROZIER_AUDIENCES -u CROZIER_AUDIENCE_STRICT -u CROZIER_CLIENT_CLASS_NAME -u CROZIER_CONFIG -u CROZIER_DEFAULT_MAX_RETRIES -u CROZIER_ENUM_TYPE -u CROZIER_EXTRA_FIELDS -u CROZIER_FERN_STRICT -u CROZIER_LAYOUT -u CROZIER_PACKAGE_NAME -u CROZIER_PROJECT_NAME CROZIER_OUTPUT="./out" CROZIER_SPEC="./api.yml" "/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "python"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: invalid config /tmp/.tmppgvs5x/crozier.yml: error: line 1 column 9: unknown variant `nested`, expected one of packaged, flat
+     --> <input>:1:9
+      |
+    1 | layout: nested
+      |         ^ unknown variant `nested`, expected one of packaged, flat
+    ```
+
+
+== named_request_media_match_certified_output_and_canonical_extensions
+    thread 'named_request_media_match_certified_output_and_canonical_extensions' (1772434) panicked at crates/crozier-e2e/tests/e2e.rs:4651:22:
+    Unexpected stderr, failed var.contains(expected a string)
+    ├── var: crozier: could not parse OpenAPI document /tmp/.tmpnQgRCp/openapi.yml: error: line 13 column 37: expected string scalar
+    │     --> <input>:13:37
+    │      |
+    │   11 |         content:
+    │   12 |           application/json:
+    │   13 |             x-fern-sdk-method-name: [invalid]
+    │      |                                     ^ expected string scalar
+    │   14 |             schema:
+    │   15 |               type: object
+    │      |
+    └── var as str: crozier: could not parse OpenAPI document /tmp/.tmpnQgRCp/openapi.yml: error: line 13 column 37: expected string scalar
+          --> <input>:13:37
+           |
+        11 |         content:
+        12 |           application/json:
+        13 |             x-fern-sdk-method-name: [invalid]
+           |                                     ^ expected string scalar
+        14 |             schema:
+        15 |               type: object
+           |
+
+    command=`env -u CROZIER_AUDIENCES -u CROZIER_AUDIENCE_STRICT -u CROZIER_CLIENT_CLASS_NAME -u CROZIER_CONFIG -u CROZIER_DEFAULT_MAX_RETRIES -u CROZIER_ENUM_TYPE -u CROZIER_EXTRA_FIELDS -u CROZIER_FERN_STRICT -u CROZIER_LAYOUT -u CROZIER_OUTPUT -u CROZIER_PACKAGE_NAME -u CROZIER_PROJECT_NAME -u CROZIER_SPEC "/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "--no-config" "generate" "python" "--spec" "/tmp/.tmpnQgRCp/openapi.yml" "--output" "/tmp/.tmpjLPmgV"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: could not parse OpenAPI document /tmp/.tmpnQgRCp/openapi.yml: error: line 13 column 37: expected string scalar
+      --> <input>:13:37
+       |
+    11 |         content:
+    12 |           application/json:
+    13 |             x-fern-sdk-method-name: [invalid]
+       |                                     ^ expected string scalar
+    14 |             schema:
+    15 |               type: object
+       |
+    ```
+
+
+== pagination_boolean_form_takes_the_root_contract_in_crozier_spelling
+    thread 'pagination_boolean_form_takes_the_root_contract_in_crozier_spelling' (1808784) panicked at crates/crozier-e2e/tests/e2e.rs:21584:10:
+    Unexpected stderr, failed var.contains(paths./beacons.get.x-crozier-pagination: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract)
+    ├── var: crozier: could not parse OpenAPI document /tmp/.tmpDw7rab/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+    │    --> <input>:7:7
+    │     |
+    │   5 |     get:
+    │   6 |       operationId: listBeacons
+    │   7 |       x-crozier-pagination: 7
+    │     |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+    │   8 |       responses: {'204': {description: ok}}
+    │     |
+    └── var as str: crozier: could not parse OpenAPI document /tmp/.tmpDw7rab/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+         --> <input>:7:7
+          |
+        5 |     get:
+        6 |       operationId: listBeacons
+        7 |       x-crozier-pagination: 7
+          |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document's root contract
+        8 |       responses: {'204': {description: ok}}
+          |
+
+    command=`"/home/nick/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/worktree/target/spike/crozier" "generate" "python" "--spec" "/tmp/.tmpDw7rab/number.yml" "--output" "/tmp/.tmpDw7rab/number" "--package-name" "fern" "--project-name" "default_package_name"`
+    code=1
+    stdout=""
+    stderr=```
+    crozier: could not parse OpenAPI document /tmp/.tmpDw7rab/number.yml: error: line 7 column 7: invalid type: integer `7`, expected a pagination contract, or a boolean taking the document\'s root contract
+     --> <input>:7:7
+      |
+    5 |     get:
+    6 |       operationId: listBeacons
+    7 |       x-crozier-pagination: 7
+      |       ^ invalid type: integer `7`, expected a pagination contract, or a boolean taking the document\'s root contract
+    8 |       responses: {\'204\': {description: ok}}
+      |
+    ```
+
+

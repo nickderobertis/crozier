@@ -1,0 +1,13 @@
+# openapi::load (typed OpenApi) · mode `tree=saphyr` :: docs/fern-refusals/type-name-collision/evidence/namespaced-query-enum-diff.yml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:11.409916977 +0000
++++ after/read.txt	2026-10-13 00:36:11.409942711 +0000
+@@ -41,7 +41,7 @@
+                 enum_values: Some(
+                     [
+                         String("x"),
+-                        String("y"),
++                        Bool(true),
+                     ],
+                 ),
+                 const_value: None,

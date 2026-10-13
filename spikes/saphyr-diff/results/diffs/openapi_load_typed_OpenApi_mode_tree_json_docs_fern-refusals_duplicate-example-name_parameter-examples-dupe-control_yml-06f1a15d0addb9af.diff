@@ -1,0 +1,13 @@
+# openapi::load (typed OpenApi) · mode `tree=json` :: docs/fern-refusals/duplicate-example-name/parameter-examples-dupe-control.yml
+diff -ruN before/read.txt after/read.txt
+--- before/read.txt	2026-10-13 00:36:11.370007577 +0000
++++ after/read.txt	2026-10-13 00:36:11.370126610 +0000
+@@ -143,7 +143,7 @@
+                                 "b": ParameterExample {
+                                     reference: None,
+                                     value: Some(
+-                                        String("y"),
++                                        Bool(true),
+                                     ),
+                                 },
+                             },
