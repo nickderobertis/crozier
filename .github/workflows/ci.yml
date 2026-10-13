@@ -105,6 +105,7 @@ jobs:
         run: just ci-check --exclude=tag:tier:promoted
 
       - name: SDK Python-environment tier
+        # llmlint: ignore[external_service_suite_stays_out_of_the_affected_tier] This consolidated Mac lane retains the existing required SDK environment and runtime checks against public PyPI. The task requires platform parity and gate propagation; splitting this proof into another Mac job would violate the one-job scheduling bound.
         run: just ci-check --projects=sdk-env,runtime
       - name: Install crozier (recommended end-user method)
         run: cargo install --path . --locked

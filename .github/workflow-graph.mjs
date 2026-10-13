@@ -150,7 +150,7 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
       for (const matrix of matrixRows(job.strategy?.matrix, context)) {
         const runner = value(job['runs-on'], { ...context, matrix }, outcomes);
         const labels = Array.isArray(runner) ? runner : [runner];
-        if (labels.some(l => typeof l !== 'string' || !/^(ubuntu|windows|macos)-[\w.-]+$/.test(l))) throw new Error(`unresolved runner ${workflow.path}:${id}: ${JSON.stringify(runner)}`);
+        if (!labels.length || labels.some(l => typeof l !== 'string' || !/^(ubuntu|windows|macos)-[\w.-]+$/.test(l))) throw new Error(`unresolved runner ${workflow.path}:${id}: ${JSON.stringify(runner)}`);
         rows.push({ workflow: workflow.path, event: scenario.id, job: id, matrix, runner, result: 'success', macos: labels.some(l => l.startsWith('macos-')), targets: job.env?.DARWIN_TARGETS?.split(' ') ?? (matrix.target ? [matrix.target] : []) });
       }
     }
