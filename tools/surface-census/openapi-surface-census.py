@@ -5192,8 +5192,8 @@ EXAMPLE_PORT_DIGESTS = {
 # same normalized-body digest, so an edit to either fails until the port is read
 # again.
 REFUSAL_PORT_DIGESTS = {
-    ("src/document_refusals/type_not_defined.rs", "inferred_discriminant"): "89031d16c07fa07a",
-    ("src/document_refusals/type_not_defined.rs", "body_member_union"): "86555f260408efe9",
+    ("src/document_refusals/type_not_defined.rs", "inferred_discriminant"): "1b487088a2e0d3fa",
+    ("src/document_refusals/type_not_defined.rs", "body_member_union"): "37369bfaf17f86ea",
 }
 
 
