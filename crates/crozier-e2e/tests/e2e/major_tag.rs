@@ -159,24 +159,24 @@ fn run(cwd: &Path, args: &[&str]) -> Output {
 /// The `run:` and `env:` of the release workflow's `major-tag` step that moves
 /// the tag, exactly as `.github/workflows/release.yml` declares them.
 fn release_step() -> (String, Vec<(String, String)>) {
-    let workflow: serde_yaml_ng::Value = serde_yaml_ng::from_str(
+    let workflow: serde_json::Value = crate::yaml::from_str(
         &std::fs::read_to_string(repo_root().join(".github/workflows/release.yml"))
             .expect("read release.yml"),
     )
     .expect("release.yml is YAML");
     let steps = workflow["jobs"]["major-tag"]["steps"]
-        .as_sequence()
+        .as_array()
         .expect("release.yml has a major-tag job with steps");
     let mut runs = steps.iter().filter(|step| step.get("run").is_some());
     let step = runs.next().expect("the major-tag job runs a script");
     assert!(runs.next().is_none(), "the major-tag job runs one script");
     let env = step
         .get("env")
-        .and_then(serde_yaml_ng::Value::as_mapping)
+        .and_then(serde_json::Value::as_object)
         .map(|env| {
             env.iter()
                 .map(|(key, value)| {
-                    let key = key.as_str().expect("env keys are strings").to_string();
+                    let key = key.as_str().to_string();
                     let value = value.as_str().expect("env values are strings").to_string();
                     (key, value)
                 })

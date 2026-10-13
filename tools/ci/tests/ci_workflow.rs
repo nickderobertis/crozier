@@ -3,18 +3,21 @@
 //! draft-time runs are the ones the merge path reads: triggering on
 //! `ready_for_review` would only run the whole of CI a second time.
 
-use serde_yaml_ng::Value;
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
+use serde_json::Value;
 
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
 fn marking_a_draft_ready_does_not_rerun_ci() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let types: Vec<&str> = workflow
         .get("on")
         .and_then(|on| on.get("pull_request"))
         .and_then(|pull_request| pull_request.get("types"))
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("ci.yml lists its pull_request types")
         .iter()
         .map(|kind| kind.as_str().expect("types are strings"))
@@ -41,7 +44,7 @@ fn text<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
 
 fn steps(job: &Value) -> &[Value] {
     job.get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("the job has steps")
 }
 
@@ -50,7 +53,7 @@ fn steps(job: &Value) -> &[Value] {
 /// each job's condition is the one that keeps it reporting.
 #[test]
 fn the_required_contexts_report_on_every_pull_request() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let pull_request = workflow
         .get("on")
         .and_then(|on| on.get("pull_request"))
@@ -79,7 +82,7 @@ fn the_required_contexts_report_on_every_pull_request() {
     }
     let needs: Vec<&str> = job(&workflow, "gate")
         .get("needs")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("gate aggregates its legs")
         .iter()
         .map(|need| need.as_str().expect("needs are job ids"))
@@ -95,7 +98,7 @@ fn the_required_contexts_report_on_every_pull_request() {
 /// tier needs; and the legs between them cover every project.
 #[test]
 fn every_gate_leg_routes_its_tier_through_ci_check() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let mut scopes = Vec::new();
     for name in ["check", "sdk-env", "live-e2e"] {
         let job = job(&workflow, name);
@@ -155,14 +158,14 @@ fn every_job_that_bootstraps_installs_uv_first() {
     let mut bootstrapping = Vec::new();
     for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
         let workflow: Value =
-            serde_yaml_ng::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
         let jobs = workflow
             .get("jobs")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .unwrap_or_else(|| panic!("{file} has jobs"));
         for (name, job) in jobs {
-            let name = name.as_str().expect("job ids are strings");
-            let Some(steps) = job.get("steps").and_then(Value::as_sequence) else {
+            let name = name.as_str();
+            let Some(steps) = job.get("steps").and_then(Value::as_array) else {
                 continue;
             };
             let Some(bootstrap) = steps
@@ -195,7 +198,7 @@ fn every_job_that_bootstraps_installs_uv_first() {
 /// never race one first-use rustup install.
 #[test]
 fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     for name in ["check", "sdk-env", "live-e2e"] {
         let steps = steps(job(&workflow, name));
         let gate = steps
@@ -226,7 +229,7 @@ fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
 #[test]
 fn the_release_job_runs_the_full_sweep() {
     let workflow: Value =
-        serde_yaml_ng::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML");
+        crate::yaml::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML");
     let runs: Vec<&str> = steps(job(&workflow, "test"))
         .iter()
         .filter_map(|step| text(step, "run"))

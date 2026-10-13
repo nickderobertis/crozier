@@ -1,16 +1,20 @@
-use serde_yaml_ng::{Mapping, Value};
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
+use serde_json::Value;
+type Mapping = serde_json::Map<String, Value>;
 
 fn mapping<'a>(value: &'a Value, key: &str) -> &'a Mapping {
     value
         .get(key)
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .unwrap_or_else(|| panic!("{key} must be a mapping"))
 }
 
 fn nested_mapping<'a>(mapping: &'a Mapping, key: &str) -> &'a Mapping {
     mapping
         .get(key)
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .unwrap_or_else(|| panic!("{key} must be a mapping"))
 }
 
@@ -19,7 +23,7 @@ fn named_step<'a>(steps: &'a [Value], name: &str) -> (usize, &'a Mapping) {
         .iter()
         .enumerate()
         .find_map(|(index, step)| {
-            let step = step.as_mapping()?;
+            let step = step.as_object()?;
             (step.get("name").and_then(Value::as_str) == Some(name)).then_some((index, step))
         })
         .unwrap_or_else(|| panic!("missing workflow step {name:?}"))
@@ -30,7 +34,7 @@ fn action_step<'a>(steps: &'a [Value], uses: &str) -> (usize, &'a Mapping) {
         .iter()
         .enumerate()
         .find_map(|(index, step)| {
-            let step = step.as_mapping()?;
+            let step = step.as_object()?;
             (step.get("uses").and_then(Value::as_str) == Some(uses)).then_some((index, step))
         })
         .unwrap_or_else(|| panic!("missing workflow action {uses:?}"))
@@ -51,13 +55,13 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     let source = include_str!("../../../.github/workflows/fern-goldens.yml");
     let justfile = include_str!("../../../justfile");
     let tool = include_str!("../../../tools/fern-goldens/fern-goldens");
-    let workflow: Value = serde_yaml_ng::from_str(source).expect("workflow is valid YAML");
+    let workflow: Value = crate::yaml::from_str(source).expect("workflow is valid YAML");
 
     let triggers = mapping(&workflow, "on");
     assert_eq!(triggers.len(), 2, "only weekly and manual runs are allowed");
     let schedule = triggers
         .get("schedule")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("schedule must be a sequence");
     assert_eq!(schedule.len(), 1, "exactly one weekly run is expected");
     assert_eq!(
@@ -128,7 +132,7 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     }
     let generate_steps = generate
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("generation/publication steps must be a sequence");
 
     let (branch_index, branch) = named_step(generate_steps, "Require a supported branch event");
@@ -295,7 +299,7 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     );
     let comparison_steps = comparison
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("comparison steps must be a sequence");
     let (_, comparison_checkout) = action_step(comparison_steps, "actions/checkout@v4");
     let comparison_checkout_with = nested_mapping(comparison_checkout, "with");
@@ -366,7 +370,7 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     );
     let final_needs = final_job
         .get("needs")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("final status needs both phase jobs");
     assert_eq!(
         final_needs
@@ -377,7 +381,7 @@ fn fern_goldens_workflow_is_valid_branch_safe_and_least_privilege() {
     );
     let final_steps = final_job
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("final status steps must be a sequence");
     let (_, final_checkout) = action_step(final_steps, "actions/checkout@v4");
     assert_eq!(
@@ -448,12 +452,12 @@ fn fern_goldens_event_guard_accepts_only_scheduled_main_or_a_dispatched_branch()
     use std::process::Command;
 
     let workflow: Value =
-        serde_yaml_ng::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
+        crate::yaml::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
             .expect("workflow is valid YAML");
     let generate = nested_mapping(mapping(&workflow, "jobs"), "generate_publish");
     let steps = generate
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("generation/publication steps must be a sequence");
     let (_, guard) = named_step(steps, "Require a supported branch event");
     let command = guard
@@ -497,12 +501,12 @@ fn fern_goldens_generation_step_preserves_blank_schedule_and_exact_manual_inputs
     use std::process::Command;
 
     let workflow: Value =
-        serde_yaml_ng::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
+        crate::yaml::from_str(include_str!("../../../.github/workflows/fern-goldens.yml"))
             .expect("workflow is valid YAML");
     let generate = nested_mapping(mapping(&workflow, "jobs"), "generate_publish");
     let steps = generate
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("generation/publication steps must be a sequence");
     let (_, generation) = named_step(steps, "Generate every selected fixture independently");
     let command = generation

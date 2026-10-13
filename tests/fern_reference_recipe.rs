@@ -9,6 +9,9 @@
 //! and npm.)
 #![cfg(unix)]
 
+#[path = "../src/yaml.rs"]
+mod yaml;
+
 use std::collections::{BTreeMap, BTreeSet};
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
@@ -97,13 +100,13 @@ const EXAMPLE: &str = "docs/examples/migrate-from-fern.yml";
 /// `cat > <file> <<'RECIPE'` here-document, as the runner's shell receives it
 /// (the YAML block scalar parsed).
 fn inline_recipe(workflow: &str, source: &str) -> String {
-    let workflow: serde_yaml_ng::Value =
-        serde_yaml_ng::from_str(workflow).unwrap_or_else(|e| panic!("{source} is not YAML: {e}"));
+    let workflow: serde_json::Value =
+        crate::yaml::from_str(workflow).unwrap_or_else(|e| panic!("{source} is not YAML: {e}"));
     let bodies: Vec<String> = workflow["jobs"]
-        .as_mapping()
+        .as_object()
         .unwrap_or_else(|| panic!("{source} has no jobs"))
         .values()
-        .flat_map(|job| job["steps"].as_sequence().unwrap())
+        .flat_map(|job| job["steps"].as_array().unwrap())
         .filter_map(|step| step["run"].as_str())
         .filter_map(|run| run.split_once("<<'RECIPE'\n").map(|(_, rest)| rest))
         .map(|rest| {
@@ -250,7 +253,7 @@ struct Recorded {
     args: Vec<String>,
     env: BTreeMap<String, String>,
     config: serde_json::Value,
-    generators: serde_yaml_ng::Value,
+    generators: serde_json::Value,
 }
 
 /// One run of the recipe with a stand-in `fern`.
@@ -371,7 +374,7 @@ fn run(overrides: &[(&str, &str)], removed: &[&str]) -> Run {
             &std::fs::read_to_string(record.join("fern.config.json")).unwrap(),
         )
         .unwrap(),
-        generators: serde_yaml_ng::from_str(
+        generators: crate::yaml::from_str(
             &std::fs::read_to_string(record.join("generators.yml")).unwrap(),
         )
         .unwrap(),
@@ -385,7 +388,7 @@ fn run(overrides: &[(&str, &str)], removed: &[&str]) -> Run {
     }
 }
 
-fn generator(recorded: &Recorded) -> &serde_yaml_ng::Value {
+fn generator(recorded: &Recorded) -> &serde_json::Value {
     &recorded.generators["groups"]["crozier-reference"]["generators"][0]
 }
 
@@ -414,7 +417,7 @@ fn packaged_builds_the_workspace_and_generates_in_preview_mode() {
     assert!(config.get("default_max_retries").is_none(), "{config:?}");
     let group = &recorded.generators["groups"]["crozier-reference"];
     let audiences: Vec<&str> = group["audiences"]
-        .as_sequence()
+        .as_array()
         .unwrap()
         .iter()
         .map(|a| a.as_str().unwrap())
@@ -465,7 +468,7 @@ fn a_non_default_max_retries_is_written_to_the_fern_config() {
         let config = &generator(&recorded)["config"];
         assert_eq!(
             config["default_max_retries"],
-            serde_yaml_ng::Value::from(0),
+            serde_json::Value::from(0),
             "{layout}: {config:?}"
         );
         assert_eq!(config["client_class_name"], "AcmeClient", "{layout}");
@@ -656,7 +659,7 @@ fn values_with_yaml_meaning_reach_the_workspace_as_written() {
     let recorded = quoted.recorded.expect("fern ran");
     assert_eq!(generator(&recorded)["config"]["client_class_name"], client);
     let audiences: Vec<&str> = recorded.generators["groups"]["crozier-reference"]["audiences"]
-        .as_sequence()
+        .as_array()
         .unwrap()
         .iter()
         .map(|a| a.as_str().unwrap())
