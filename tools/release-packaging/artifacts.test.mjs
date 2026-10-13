@@ -1,12 +1,15 @@
 // Non-native products are packed and inspected, never executed on Linux.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, chmodSync, readdirSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, rmSync, cpSync, chmodSync, readdirSync, globSync, symlinkSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join, resolve, relative, dirname } from 'node:path';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
+import { parse } from '../../.github/node_modules/yaml/dist/index.js';
+import { expression } from '../../.github/workflow-graph.mjs';
 
-function run(args,env={}) { return spawnSync(args[0],args.slice(1),{encoding:'utf8',env:{...process.env,...env}}); }
+function run(args,env={},cwd=undefined) { return spawnSync(args[0],args.slice(1),{encoding:'utf8',cwd,env:{...process.env,...env}}); }
 function scratch(t) { const root=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'crozier-artifact-')); t.after(()=>rmSync(root,{recursive:true,force:true})); return root; }
 const version=/^version = "([^"]+)"/m.exec(readFileSync('Cargo.toml','utf8'))[1];
 function wheel(output,target,kind='valid') {
@@ -14,13 +17,15 @@ function wheel(output,target,kind='valid') {
   const isMac=target.endsWith('apple-darwin');
   const platform=target.startsWith('aarch64')?(isMac?'arm64':'aarch64'):'x86_64';
   const osTag=isMac?'macosx_11_0':'manylinux_2_34';
-  const path=join(dir,`crozier-${version}-py3-none-${kind==='wheel-os'?'windows':osTag}_${kind==='wheel-arch'?'wrong':platform}.whl`);
+  const path=join(dir,`${kind==='filename-name'?'wrong':'crozier'}-${kind==='filename-version'?'999':version}-${kind==='filename-python'?'cp999':'py3'}-${kind==='filename-abi'?'wrong':'none'}-${kind==='wheel-os'?'windows':osTag}_${kind==='wheel-arch'?'wrong':platform}.whl`);
   const made=run(['python3','-c',`import sys,zipfile,struct
 p,v,target,kind=sys.argv[1:]
 b=(bytes.fromhex('cffaedfe')+struct.pack('<I',0x0100000c if target.startswith('aarch64') else 0x01000007) if target.endswith('apple-darwin') else bytes.fromhex('7f454c46')+bytes(14)+struct.pack('<H',183 if target.startswith('aarch64') else 62))+b'contract-fixture'
 with zipfile.ZipFile(p,'w') as z:
- if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind!='binary-arch' else b'wrong')
- if kind!='metadata': z.writestr('crozier-'+v+'.dist-info/METADATA','Name: crozier\\nVersion: '+('999' if kind=='version' else v)+'\\n')
+ if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind not in ('binary-arch','cpu') else b'wrong' if kind=='binary-arch' else (b[:4]+struct.pack('<I',0x0100000c)+b[8:] if target.endswith('apple-darwin') else b[:18]+struct.pack('<H',183)+b[20:]))
+ if kind=='duplicate-executable': z.writestr('other.data/scripts/crozier',b)
+ if kind=='duplicate-metadata': z.writestr('other.dist-info/METADATA','Name: crozier\\nVersion: '+v+'\\n')
+ if kind!='metadata': z.writestr('crozier-'+v+'.dist-info/METADATA','Name: '+('other' if kind=='name' else 'crozier')+'\\nVersion: '+('999' if kind=='version' else v)+'\\n')
 `,path,version,target,kind]); assert.equal(made.status,0,made.stderr); return path;
 }
 function pack(output,target) { return run(['python3','tools/release-packaging/release-native.py','--pack-only','--out',output,'--target',target,'--tag',`v${version}`]); }
@@ -28,6 +33,7 @@ function pack(output,target) { return run(['python3','tools/release-packaging/re
 test('real packer validates both Darwin architectures and refuses malformed/ambiguous wheels', t=>{
   for (const target of ['x86_64-apple-darwin','aarch64-apple-darwin']) {
     const output=scratch(t); wheel(output,target);
+    const previous=join(output,`stage-${target}`); mkdirSync(previous); writeFileSync(join(previous,'stale.txt'),'old unshipped content');
     const built=pack(output,target); assert.equal(built.status,0,built.stderr);
     const contract=JSON.parse(readFileSync(join(output,`contract-${target}.json`),'utf8'));
     assert.equal(contract.target,target); assert.equal(contract.binarySha256,contract.archiveBinarySha256); assert.equal(contract.binarySha256,contract.wheelBinarySha256);
@@ -37,10 +43,11 @@ test('real packer validates both Darwin architectures and refuses malformed/ambi
     assert.deepEqual(JSON.parse(contents.stdout),[...golden.archiveContents].sort());
     assert.equal(contract.archive.split('/').at(-1),golden.platforms.find(p=>p.target===target).archive.replace('<tag>',`v${version}`));
   }
-  for (const target of ['x86_64-apple-darwin','x86_64-unknown-linux-gnu']) for (const kind of ['executable','metadata','version','wheel-arch','binary-arch','wheel-os','ambiguous']) {
+  for (const target of ['x86_64-apple-darwin','x86_64-unknown-linux-gnu']) for (const kind of ['executable','metadata','version','wheel-arch','binary-arch','cpu','wheel-os','name','duplicate-executable','duplicate-metadata','corrupt','filename-name','filename-version','filename-python','filename-abi','ambiguous']) {
     const output=scratch(t); const path=wheel(output,target,kind);
+    if(kind==='corrupt') writeFileSync(path,'invalid zip bytes');
     if(kind==='ambiguous') cpSync(path,join(output,`wheels-${target}`,'duplicate.whl'));
-    const refused=pack(output,target); assert.equal(refused.status,1,kind); assert.match(refused.stderr,/rebuild|clean/); assert.doesNotMatch(refused.stderr,/Traceback/);
+    const refused=pack(output,target); assert.equal(refused.status,1,kind); assert.match(refused.stderr,/rebuild|clean|not a zip file/); assert.doesNotMatch(refused.stderr,/Traceback/);
   }
 });
 
@@ -70,4 +77,57 @@ test('production Linux handoff uploads staged Darwin archives/checksums/bundles 
   const failed=run(args,{...env,GH_FAILURE:'1'}); assert.equal(failed.status,1); assert.match(failed.stderr,/retry this Linux publication job/);
   rmSync(join(output,`v${version}`,`crozier-v${version}-aarch64-apple-darwin.tar.gz`));
   const missing=run(args,env); assert.equal(missing.status,1); assert.match(missing.stderr,/missing staged/);
+});
+
+
+test('actual workflow artifact paths and signer subjects feed the actual Linux publication command and wheel handoff', t=>{
+  const jobs=parse(readFileSync('.github/workflows/release.yml','utf8')).jobs;
+  const root=scratch(t), macTemp=join(root,'mac'), linux=join(root,'linux'); mkdirSync(linux,{recursive:true});
+  const tag=`v${version}`, targets=jobs.darwin.env.DARWIN_TARGETS.split(' ');
+  const builder=jobs.darwin.steps.find(s=>s.name==='Build and install both staged products');
+  const subdirectory=/--out "\$RUNNER_TEMP\/([^"]+)"/.exec(builder.run)[1];
+  const sourceRoot=join(macTemp,subdirectory);
+  for(const target of targets) { wheel(sourceRoot,target); const packed=pack(sourceRoot,target); assert.equal(packed.status,0,packed.stderr); }
+  const upload=jobs.darwin.steps.find(s=>s.uses?.startsWith('actions/upload-artifact'));
+  const download=jobs['publish-darwin'].steps.find(s=>s.uses?.startsWith('actions/download-artifact'));
+  assert.equal(upload.with.name,download.with.name);
+  const context={github:{ref_name:tag,repository:'nickderobertis/crozier'},runner:{temp:macTemp},steps:{},secrets:{GITHUB_TOKEN:'transport-boundary-token'}};
+  const render=text=>text.replace(/\$\{\{(.*?)\}\}/g,(_all,body)=>expression(body,context).coerceString());
+  const destination=join(linux,download.with.path), transported=new Set();
+  // Only GitHub's artifact transport is doubled: enumerate the workflow's
+  // real upload globs and preserve their shared-root layout on download.
+  for(const pattern of render(upload.with.path).trim().split('\n')) {
+    const files=globSync(pattern.trim()); assert.ok(files.length,`empty workflow artifact pattern ${pattern}`);
+    for(const file of files) { const name=relative(sourceRoot,file); assert.ok(!name.startsWith('..')); const to=join(destination,name); mkdirSync(dirname(to),{recursive:true}); cpSync(file,to); transported.add(name); }
+  }
+  symlinkSync(resolve('tools'),join(linux,'tools'),'junction');
+  const bin=join(linux,'bin'); mkdirSync(bin); const calls=join(linux,'calls.json'), fake=join(bin,'gh');
+  writeFileSync(fake,`#!/usr/bin/env python3\nimport sys,json,os\njson.dump(sys.argv[1:],open(os.environ['GH_CALLS'],'w'))\n`); chmodSync(fake,0o755);
+  const subjects=[];
+  for(const signer of jobs['publish-darwin'].steps.filter(s=>s.uses?.startsWith('actions/attest-build-provenance'))) {
+    const subject=render(signer.with['subject-path']), path=join(linux,subject); assert.equal(existsSync(path),true,subject);
+    const target=targets.find(target=>subject.endsWith(`${target}.tar.gz`)); assert.ok(target,subject);
+    const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8')).platforms.find(p=>p.target===target);
+    assert.equal(subject.split('/').at(-1),golden.archive.replace('<tag>',tag));
+    const bundle=join(linux,`${signer.id}-bundle.json`);
+    // Opaque signer-output bytes replace that third-party API; no claim of a
+    // locally minted GitHub OIDC signature is made.
+    writeFileSync(bundle,JSON.stringify({apiBoundary:'attest-build-provenance',subject,sha256:createHash('sha256').update(readFileSync(path)).digest('hex')}));
+    context.steps[signer.id]={outputs:{'bundle-path':bundle}}; subjects.push({target,bundle});
+  }
+  const publish=jobs['publish-darwin'].steps.find(s=>s.name==='Publish Darwin archives and bundles');
+  const env=Object.fromEntries(Object.entries(publish.env).map(([key,value])=>[key,render(value)]));
+  const result=run(['bash','-e','-c',publish.run],{...env,PATH:`${bin}:${process.env.PATH}`,GITHUB_REF_NAME:tag,GITHUB_REPOSITORY:context.github.repository,GH_CALLS:calls},linux);
+  assert.equal(result.status,0,result.stderr);
+  const argv=JSON.parse(readFileSync(calls,'utf8'));
+  for(const {target,bundle} of subjects) {
+    const expected=`crozier-${tag}-${target}.sigstore.json`;
+    assert.ok(argv.includes(`${download.with.path}/${tag}/${expected}`));
+    assert.equal(readFileSync(join(destination,tag,expected),'utf8'),readFileSync(bundle,'utf8'));
+    assert.ok(transported.has(`${tag}/crozier-${tag}-${target}.tar.gz`));
+  }
+  const handoff=jobs['publish-darwin'].steps.find(s=>s.uses?.startsWith('actions/upload-artifact'));
+  const wheels=globSync(handoff.with.path,{cwd:linux});
+  for(const target of targets) assert.ok(wheels.some(path=>path.includes(`wheels-${target}/`)),`missing workflow wheel handoff ${target}`);
+  assert.ok(jobs['publish-pypi'].steps.some(s=>s.uses?.startsWith('actions/download-artifact') && s.with.pattern==='wheels-*'));
 });

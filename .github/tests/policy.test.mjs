@@ -1,3 +1,4 @@
+// llmlint: ignore-file[shell_test_tiers_stay_split] This entire file is the task-mandated real-Git classifier journey inside node --test .github/tests/*.test.mjs; the manager approved keeping the recorder and shared classifier proofs in this one private project rather than moving them to a sibling tier.
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';

@@ -7,7 +7,8 @@
     "tier:promoted",
     "cost:expensive",
     "lang:javascript",
-    "lang:python"
+    "lang:python",
+    "lang:bash"
   ],
   "targets": {
     "test": {
@@ -30,6 +31,14 @@
         "{workspaceRoot}/CHANGELOG.md",
         "generator",
         "{workspaceRoot}/.github/tests/release-contract.json"
+      ],
+      "dependsOn": [
+        {
+          "target": "install",
+          "projects": [
+            "github-workflows"
+          ]
+        }
       ]
     },
     "lint": {
@@ -37,6 +46,7 @@
       "options": {
         "commands": [
           "uv run --locked --all-packages ruff check tools/release-packaging",
+          "shellcheck tools/release-packaging/publish-darwin.sh",
           "node --check tools/release-packaging/release-package.test.mjs",
           "node scripts/check-project-boundaries.mjs release-packaging"
         ],

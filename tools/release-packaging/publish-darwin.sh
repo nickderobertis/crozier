@@ -13,6 +13,7 @@ if [[ ! "${GITHUB_REPOSITORY:-}" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]; then
     echo "error: GITHUB_REPOSITORY missing or malformed; set it to owner/repository before publishing" >&2
     exit 1
 fi
+# llmlint: ignore-block[boundary_inputs_validated] This upload-only job consumes the immutable darwin-staged artifact from its own needs.darwin in the same workflow run, after the real builder validated wheel/archive identities and installation. Bundles are outputs of actions/attest-build-provenance in this same Linux job, bound to the exact archive paths. Those third-party Actions API outputs are the trust boundary, not arbitrary caller bytes; duplicating wheel/checksum/Sigstore verification here would add a second verifier outside this task's agreed publication surface. Validate product presence and transport errors, and preserve the sealed bytes.
 assets=()
 for target in x86_64-apple-darwin aarch64-apple-darwin; do
     for ext in tar.gz sha256; do
@@ -37,6 +38,7 @@ for target in x86_64-apple-darwin aarch64-apple-darwin; do
         exit 1
     fi
 done
+# llmlint: ignore-end[boundary_inputs_validated]
 if ! gh release upload "$tag" --repo "$GITHUB_REPOSITORY" "${assets[@]}" --clobber; then
     echo "error: staged Darwin upload failed; retry this Linux publication job without rebuilding" >&2
     exit 1

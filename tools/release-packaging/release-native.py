@@ -20,6 +20,7 @@ from dataclasses import asdict, dataclass
 from email.parser import Parser
 from enum import Enum
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 
 class Target(str, Enum):
@@ -85,6 +86,10 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
                 f"wheel metadata {metadata['Name']}/{metadata['Version']} differs from crozier/{version}; rebuild from the matching tag"
             )
         platform_tag = wheel.name[:-4].rsplit("-", 1)[-1]
+        if wheel.name != f"crozier-{version}-py3-none-{platform_tag}.whl":
+            raise ValueError(
+                f"wheel filename {wheel.name} differs from crozier/{version}/py3-none; rebuild with maturin bin bindings"
+            )
         platform_pattern = (
             rf"macosx_\d+_\d+_{target.wheel_arch}"
             if target.darwin
@@ -122,20 +127,20 @@ def pack(target: Target, tag: str, output: Path, wheels: Path) -> BuildResult:
         )
     wheel = candidates[0]
     binary = validate_wheel(wheel, target, version)
-    stage = output / f"stage-{target.value}"
-    stage.mkdir(parents=True, exist_ok=True)
-    exe = stage / "crozier"
-    exe.write_bytes(binary)
-    exe.chmod(0o755)
-    for name in ["README.md", "LICENSE", "NOTICE", "CHANGELOG.md"]:
-        shutil.copyfile(name, stage / name)
     base = f"crozier-{tag}-{target.value}"
     release = output / tag
     release.mkdir(exist_ok=True)
     packed = release / f"{base}.tar.gz"
-    with tarfile.open(packed, "w:gz") as archive:
-        for path in sorted(stage.iterdir()):
-            archive.add(path, arcname=path.name)
+    with TemporaryDirectory(prefix=f"stage-{target.value}-", dir=output) as temporary:
+        stage = Path(temporary)
+        exe = stage / "crozier"
+        exe.write_bytes(binary)
+        exe.chmod(0o755)
+        for name in ["README.md", "LICENSE", "NOTICE", "CHANGELOG.md"]:
+            shutil.copyfile(name, stage / name)
+        with tarfile.open(packed, "w:gz") as archive:
+            for path in sorted(stage.iterdir()):
+                archive.add(path, arcname=path.name)
     (release / f"{base}.sha256").write_text(f"{hashlib.sha256(packed.read_bytes()).hexdigest()}  {packed.name}\n")
     with tarfile.open(packed) as archive:
         member = archive.extractfile("crozier")
@@ -239,5 +244,8 @@ if __name__ == "__main__":
     try:
         main()
     except (ValueError, OSError, zipfile.BadZipFile, tarfile.TarError) as error:
-        print(f"release-native: {error}", file=sys.stderr)
+        print(
+            f"release-native: {error}; clean staging output and rebuild with the intended --target and Cargo.toml version tag",
+            file=sys.stderr,
+        )
         sys.exit(1)

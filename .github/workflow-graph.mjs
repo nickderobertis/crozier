@@ -1,7 +1,7 @@
 // Repository-local resolver. Remote reusable workflows are reviewed snapshots;
 // any new call, dynamic runner or output producer must be resolved explicitly.
 import { createHash } from 'node:crypto';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -16,7 +16,7 @@ export function digest() {
   const files = [];
   function collect(dir) {
     for (const entry of readdirSync(resolve(root, dir), { withFileTypes: true })) {
-      if (['node_modules', '.telemetry'].includes(entry.name)) continue;
+      if (['node_modules', '.telemetry'].includes(entry.name) || (dir === '.github' && entry.name === 'budgets.yaml')) continue;
       const path = `${dir}/${entry.name}`;
       if (entry.isDirectory()) collect(path);
       else files.push(path);
@@ -85,6 +85,30 @@ function reusable(call) {
   return { path: call, value: parse(content.toString()) };
 }
 let captureArches;
+const guardOutputs=new Map();
+function policyOutput(job,decision) {
+  const step=job.steps?.find(s=>s.id==='policy');
+  if (job.outputs?.macosRequired !== '${{ steps.policy.outputs.macosRequired }}' || step?.run.trim() !== 'node .github/macos-policy.mjs classify --event "$GITHUB_EVENT_PATH" --base "$PR_BASE" --head "$PR_HEAD"' || step.env?.PR_BASE !== '${{ github.event.pull_request.base.sha }}' || step.env?.PR_HEAD !== '${{ github.event.pull_request.head.sha }}' || step.env?.GITHUB_EVENT_NAME !== undefined) throw new Error('unresolved macos-policy producer wiring');
+  return {macosRequired:String(decision.macosRequired)};
+}
+function registryOutputs(job,publish) {
+  const step=job.steps?.find(s=>s.id==='check');
+  if (job.outputs?.crates !== '${{ steps.check.outputs.crates }}' || job.outputs?.pypi !== '${{ steps.check.outputs.pypi }}' || step?.env?.CARGO_TOKEN !== '${{ secrets.CARGO_REGISTRY_TOKEN }}' || step?.env?.PYPI_TOKEN !== '${{ secrets.PYPI_TOKEN }}' || typeof step.run !== 'string') throw new Error('unresolved registry guard producer wiring');
+  const key=JSON.stringify([step.run,publish]);
+  if (!guardOutputs.has(key)) {
+    const telemetry=resolve(root,'.github/.telemetry'); mkdirSync(telemetry,{recursive:true});
+    const scratch=mkdtempSync(resolve(telemetry,'guard-'));
+    try {
+      const path=resolve(scratch,'outputs');
+      execFileSync('bash',['-e','-c',step.run],{env:{...process.env,GITHUB_OUTPUT:path,CARGO_TOKEN:publish.crates==='true'?'fixture-token':'',PYPI_TOKEN:publish.pypi==='true'?'fixture-token':''},stdio:['ignore','pipe','pipe']});
+      const outputs=Object.fromEntries(readFileSync(path,'utf8').trim().split('\n').map(line=>line.split('=')));
+      if (!['true','false'].includes(outputs.crates) || !['true','false'].includes(outputs.pypi) || outputs.crates!==publish.crates || outputs.pypi!==publish.pypi) throw new Error('invalid registry token routing outputs');
+      guardOutputs.set(key,outputs);
+    } catch(error) { throw new Error(`unresolved registry producer: ${error.message}`); }
+    finally { rmSync(scratch,{recursive:true,force:true}); }
+  }
+  return guardOutputs.get(key);
+}
 export function resolveRun(workflow, scenario, decision, ancestry = []) {
   if (ancestry.includes(workflow.path)) throw new Error('recursive reusable workflow');
   const jobs = workflow.value.jobs;
@@ -103,12 +127,15 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
       };
       const enabled = job.if ? expression(job.if, context, outcomes).coerceString() === 'true' && (/\b(always|failure|cancelled|success)\(/.test(job.if) || outcomes.every(o => o === 'success')) : outcomes.every(o => o === 'success');
       needs[id] = { result: enabled ? 'success' : 'skipped', outputs: {} };
-      if (id === 'macos-policy') needs[id].outputs.macosRequired = String(decision.macosRequired);
-      if (workflow.path.includes('release.yml') && id === 'guard') needs[id].outputs = scenario.publish ?? { crates: 'false', pypi: 'false' };
+      if (id === 'macos-policy') needs[id].outputs=policyOutput(job,decision);
+      if (workflow.path.includes('release.yml') && id === 'guard') needs[id].outputs = registryOutputs(job,scenario.publish ?? { crates: 'false', pypi: 'false' });
       if (id === 'arches' && workflow.path.startsWith('nickderobertis/screencomp/')) {
         // The reusable workflow runs `screencomp arches --format json` on this
         // exact configuration; parse the declared architecture source offline.
-        const arches = captureArches ??= JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' }));
+        const producer=job.steps?.find(s=>s.id==='read');
+        if (job.outputs?.matrix !== '${{ steps.read.outputs.matrix }}' || producer?.env?.ARCHES_OVERRIDE !== '${{ inputs.arches }}' || !producer.run.includes('matrix="$(screencomp arches --format json)"') || !producer.run.includes('matrix="$ARCHES_OVERRIDE"') || !producer.run.includes('echo "matrix=$matrix"')) throw new Error('unresolved capture producer wiring');
+        const configured = captureArches ??= JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' }));
+        const arches=context.inputs.arches ? JSON.parse(context.inputs.arches) : configured;
         if (!Array.isArray(arches) || !arches.length || arches.some(a=>!['x86_64','amd64','arm64','aarch64'].includes(a))) throw new Error(`unresolved capture architectures: ${JSON.stringify(arches)}`);
         needs[id].outputs.matrix = JSON.stringify(arches);
       }

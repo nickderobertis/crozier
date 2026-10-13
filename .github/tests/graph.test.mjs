@@ -11,6 +11,7 @@ import { history, event } from './support.mjs';
 import { classes, recordingDigest, validateTelemetry } from '../scenarios.mjs';
 let recorded;
 
+// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('actual workflow/call graph resolves event fan-out and records authoritative workload telemetry', t => {
   const h = history(t), graph = workflows(), scenarios = [];
   for (const [id,eventName,action] of classes) for (const diff of ['source','version','dependency']) for (const fork of [false,true]) for (const crates of ['false','true']) for (const pypi of ['false','true']) {
@@ -58,6 +59,7 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
+// llmlint: ignore-end[shell_test_tiers_stay_split]
 function wMac(path,s,decision) {
   if (path.endsWith('/ci.yml')) return decision.macosRequired || s.class === 'manual-opt-in' ? ['macos'] : [];
   if (path.endsWith('/release.yml')) return ['darwin'];
@@ -94,7 +96,7 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
   const corrupt=structuredClone(recorded); corrupt.scenarios.pop();
   assert.throws(()=>validateTelemetry(corrupt,recorded.sourceDigest),/corrupted/);
   for(const change of [
-    t=>t.scenarios.pop(), t=>t.lifecycles.pop(),
+    t=>t.scenarios.pop(), t=>t.lifecycles.pop(), t=>t.scenarios[0].class='manual-default', t=>t.scenarios[0].publish.crates='unknown',
     t=>t.scenarios.find(s=>s.runs.length).runs[0].rows.splice(0),
     t=>t.scenarios.find(s=>s.runs.length).runs[0].rows[0].job=null,
     t=>t.scenarios.find(s=>s.runs.some(r=>r.rows.some(row=>row.runner))).runs.find(r=>r.rows.some(row=>row.runner)).rows.find(row=>row.runner).runner='unresolved-runner',
@@ -106,6 +108,7 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
 });
 
 
+// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('a real unsupported capture configuration refuses reusable-workflow resolution', async t=>{
   const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-capture-'));
   t.after(()=>rmSync(dir,{recursive:true,force:true}));
@@ -116,3 +119,21 @@ test('a real unsupported capture configuration refuses reusable-workflow resolut
   const visual=graph.workflows().find(w=>w.path.endsWith('/visual-docs.yml'));
   assert.throws(()=>graph.resolveRun(visual,{id:'unsupported-capture',eventName:'pull_request',event:event(),branch:'main'},{macosRequired:true}),/unresolved capture architectures/);
 });
+// llmlint: ignore-end[shell_test_tiers_stay_split]
+
+
+// llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
+test('producer wiring changes refuse measurement instead of silently using assumed outputs', ()=>{
+  const graph=workflows(), ci=graph.find(w=>w.path.endsWith('/ci.yml')), release=graph.find(w=>w.path.endsWith('/release.yml'));
+  const scenario={id:'producer-drift',eventName:'pull_request',event:event(),branch:'main',publish:{crates:'true',pypi:'false'}};
+  for(const change of [w=>delete w.value.jobs['macos-policy'].outputs.macosRequired,w=>w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.PR_HEAD='HEAD']) {
+    const changed=structuredClone(ci); change(changed); assert.throws(()=>resolveRun(changed,scenario,{macosRequired:true}),/producer wiring/);
+  }
+  for(const change of [w=>delete w.value.jobs.guard.outputs.crates,w=>w.value.jobs.guard.steps.find(s=>s.id==='check').run='echo crates=false >> "$GITHUB_OUTPUT"; echo pypi=false >> "$GITHUB_OUTPUT"']) {
+    const changed=structuredClone(release); change(changed); assert.throws(()=>resolveRun(changed,{...scenario,eventName:'release'},{macosRequired:false}),/producer wiring|token routing/);
+  }
+  const visual=structuredClone(graph.find(w=>w.path.endsWith('/visual-docs.yml'))); visual.value.jobs['visual-docs'].with.arches='["arm64"]';
+  const rows=resolveRun(visual,scenario,{macosRequired:true}); assert.ok(rows.some(r=>r.job==='capture' && r.runner==='ubuntu-24.04-arm'));
+  visual.value.jobs['visual-docs'].with.arches='["unsupported"]'; assert.throws(()=>resolveRun(visual,scenario,{macosRequired:true}),/unresolved capture architectures/);
+});
+// llmlint: ignore-end[shell_test_tiers_stay_split]

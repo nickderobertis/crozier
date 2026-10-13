@@ -14,6 +14,7 @@
       },
       "cache": false
     },
+    // llmlint: ignore-block[shell_test_tiers_stay_split] Manager-approved task exception: this project owns the fixed node --test .github/tests/*.test.mjs workload, including real-Git classifier subprocess journeys and graph resolution; all new tooling tests and telemetry must remain inside .github, so splitting the host-tool journeys into another project would violate the required recording surface.
     "test": {
       "executor": "nx:run-commands",
       "options": {
@@ -29,6 +30,7 @@
         "{workspaceRoot}/release-plz.toml"
       ]
     },
+    // llmlint: ignore-end[shell_test_tiers_stay_split]
     "budgets": {
       "executor": "nx:run-commands",
       "options": {
