@@ -158,3 +158,14 @@ test('producer wiring changes refuse measurement instead of silently using assum
   visual.value.jobs['visual-docs'].with.arches='["unsupported"]'; assert.throws(()=>resolveRun(visual,scenario,{macosRequired:true}),/unresolved capture architectures/);
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
+
+
+test('budget CLI distinguishes invalid invocation from telemetry IO failure', () => {
+  const command = resolve(root, '.github/macos-budget.mjs');
+  const invalid = spawnSync(process.execPath, [command], { encoding: 'utf8' });
+  assert.equal(invalid.status, 2);
+  assert.match(invalid.stderr, /usage:/);
+  const missing = spawnSync(process.execPath, [command, '--metric', 'jobs-per-run', '--telemetry', resolve(root, '.github/.telemetry/absent.json')], { encoding: 'utf8' });
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /ENOENT/);
+});

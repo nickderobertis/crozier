@@ -1,3 +1,4 @@
+// Propagate actionlint status (0 clean, 1 findings); missing tooling exits 1.
 // actionlint is a local focused check. Hosted CI installs the same binary before
 // the project runs; missing tooling is an error, never a silently skipped lint.
 import { spawnSync } from 'node:child_process';

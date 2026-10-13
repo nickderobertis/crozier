@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Publish only the previously verified staged products; compilation stays Mac-side.
 set -euo pipefail
-staged="${1:?usage: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
-tag="${2:?supply TAG as argument 2: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
-intel="${3:?supply Intel attestation path as argument 3: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
-arm="${4:?supply ARM attestation path as argument 4: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE}"
+# Exit 0 uploads staged products; 1 is validation/transport failure; 2 is invalid invocation.
+if [ "$#" -ne 4 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
+    echo "usage: publish-darwin.sh STAGED TAG INTEL_BUNDLE ARM_BUNDLE" >&2
+    exit 2
+fi
+staged="$1"
+tag="$2"
+intel="$3"
+arm="$4"
 if [[ ! "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?(\+[A-Za-z0-9.-]+)?$ ]]; then
     echo "error: unsupported release tag '$tag'; use the Cargo.toml version tag" >&2
     exit 1

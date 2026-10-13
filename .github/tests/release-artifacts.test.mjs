@@ -203,3 +203,10 @@ test('ARM Linux pack-only rejects an Intel executable and recovers with its decl
   const contract=JSON.parse(readFileSync(join(output,`contract-${target}.json`),'utf8'));
   assert.equal(contract.target,target);
 });
+
+
+test('Darwin publication rejects missing arguments with invocation status 2', () => {
+  const invalid = run(['bash', 'tools/release-packaging/publish-darwin.sh']);
+  assert.equal(invalid.status, 2);
+  assert.match(invalid.stderr, /usage:/);
+});

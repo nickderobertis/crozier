@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Exit 0 accepts all required results; 1 rejects invalid, missing or unsuccessful results.
 // GitHub's needs JSON is the sole doubled boundary in the result journeys.
 try {
   const needs = JSON.parse(process.env.CI_NEEDS);

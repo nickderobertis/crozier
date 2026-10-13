@@ -5,6 +5,9 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, appendFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+// Exit 0 emits a routing decision (unreadable PRs require Mac); 1 is output IO failure; 2 is invalid invocation.
+class InvocationError extends Error {}
+const versionPattern = /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/;
 const refPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -20,11 +23,11 @@ function withoutVersion(path, text) {
   const parsed = path.endsWith('.json') ? JSON.parse(text) : parsedToml(text);
   if (path === 'Cargo.lock') {
     const own = parsed.package?.filter(p => p.name === 'crozier' && !p.source);
-    if (own?.length !== 1 || typeof own[0].version !== 'string') throw new Error('missing root lock package');
+    if (own?.length !== 1 || typeof own[0].version !== 'string' || !versionPattern.test(own[0].version)) throw new Error('missing root lock package');
     delete own[0].version;
   } else {
     const owner = path === 'Cargo.toml' ? parsed.package : path === 'pyproject.toml' ? parsed.project : parsed;
-    if (typeof owner?.version !== 'string' || !/^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/.test(owner.version)) throw new Error('missing literal version');
+    if (typeof owner?.version !== 'string' || !versionPattern.test(owner.version)) throw new Error('missing literal version');
     delete owner.version;
   }
   return parsed;
@@ -61,7 +64,7 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
 }
 function main() {
   const args = process.argv.slice(2);
-  if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new Error('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
+  if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new InvocationError('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
   let decision;
   try { decision = classify(JSON.parse(readFileSync(args[2], 'utf8')), args[4], args[6]); }
   catch (error) { decision = classify({}, args[4], args[6]); decision.reason += `; unreadable event: ${error.message}`; }
@@ -69,5 +72,5 @@ function main() {
   console.log(JSON.stringify(decision));
 }
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { main(); } catch (error) { console.error(error.message); process.exitCode = 2; }
+  try { main(); } catch (error) { console.error(error.message); process.exitCode = error instanceof InvocationError ? 2 : 1; }
 }

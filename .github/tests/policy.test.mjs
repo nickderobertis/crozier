@@ -90,3 +90,28 @@ test('classifier runs through a filesystem alias as on macOS temporary directori
   assert.equal(run.status,0,run.stderr);
   assert.equal(JSON.parse(run.stdout).macosRequired,true);
 });
+
+
+test('malformed root lockfile versions require Mac coverage and valid versions recover', t => {
+  const h = history(t), pr = event('release-plz-test');
+  for (const version of ['', 'invalid', '1.2']) {
+    const head = h.change({ 'Cargo.lock': h.baseFiles['Cargo.lock'].replace('0.0.1', version) });
+    const decision = h.classify(pr, head);
+    assert.equal(decision.macosRequired, true, version);
+    assert.equal(decision.isReleaseOnly, false, version);
+    assert.match(decision.reason, /unreadable release classification/);
+  }
+  assert.equal(h.classify(pr, h.heads.version).isReleaseOnly, true);
+});
+
+test('classifier distinguishes invalid invocation from output transport failure', t => {
+  const h = history(t);
+  const invalid = spawnSync(process.execPath, [resolve('.github/macos-policy.mjs')], { encoding: 'utf8' });
+  assert.equal(invalid.status, 2);
+  assert.match(invalid.stderr, /usage:/);
+  const failed = h.invoke(event(), h.heads.source, 'pull_request', h.base, { GITHUB_OUTPUT: h.dir });
+  assert.equal(failed.status, 1);
+  assert.equal(failed.stdout, '');
+  assert.match(failed.stderr, /EISDIR/);
+  assert.equal(h.invoke(event(), h.heads.source).status, 0);
+});
