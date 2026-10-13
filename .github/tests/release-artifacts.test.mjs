@@ -23,7 +23,7 @@ function wheel(output,target,kind='valid') {
 p,v,target,kind=sys.argv[1:]
 b=(bytes.fromhex('cffaedfe')+struct.pack('<I',0x0100000c if target.startswith('aarch64') else 0x01000007) if target.endswith('apple-darwin') else bytes.fromhex('7f454c46')+bytes(14)+struct.pack('<H',183 if target.startswith('aarch64') else 62))+b'contract-fixture'
 with zipfile.ZipFile(p,'w') as z:
- if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind not in ('binary-arch','cpu') else b'wrong' if kind=='binary-arch' else (b[:4]+struct.pack('<I',0x0100000c)+b[8:] if target.endswith('apple-darwin') else b[:18]+struct.pack('<H',183)+b[20:]))
+ if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind not in ('binary-arch','cpu') else b'wrong' if kind=='binary-arch' else (b[:4]+struct.pack('<I',0x0100000c)+b[8:] if target.endswith('apple-darwin') else b[:18]+struct.pack('<H',62 if target.startswith('aarch64') else 183)+b[20:]))
  if kind=='duplicate-executable': z.writestr('other.data/scripts/crozier',b)
  if kind=='duplicate-metadata': z.writestr('other.dist-info/METADATA','Name: crozier\\nVersion: '+v+'\\n')
  if kind!='metadata': z.writestr('crozier-'+v+'.dist-info/METADATA','Name: '+('other' if kind=='name' else 'crozier')+'\\nVersion: '+('999' if kind=='version' else v)+'\\n')
@@ -188,4 +188,18 @@ test('release builder help documents statuses and invalid invocation uses argpar
   assert.equal(help.status,0); assert.match(help.stdout.replace(/\s+/g,' '),/0 success; 1 operational or validation failure; 2 invalid invocation/);
   const invalid=run([...args,'--target','unknown']);
   assert.equal(invalid.status,2); assert.match(invalid.stderr,/invalid choice/); assert.equal(invalid.stdout,'');
+});
+
+
+test('ARM Linux pack-only rejects an Intel executable and recovers with its declared aarch64 wheel', t=>{
+  const output=scratch(t), target='aarch64-unknown-linux-gnu';
+  const bad=wheel(output,target,'cpu');
+  const refused=pack(output,target);
+  assert.equal(refused.status,1); assert.match(refused.stderr,/executable header.*differs from aarch64-unknown-linux-gnu/);
+  assert.equal(existsSync(join(output,`contract-${target}.json`)),false);
+  rmSync(bad); wheel(output,target);
+  const recovered=pack(output,target);
+  assert.equal(recovered.status,0,recovered.stderr); assert.match(recovered.stdout,/staged aarch64-unknown-linux-gnu.*validated/);
+  const contract=JSON.parse(readFileSync(join(output,`contract-${target}.json`),'utf8'));
+  assert.equal(contract.target,target);
 });
