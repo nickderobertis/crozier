@@ -18,8 +18,6 @@ bootstrap:
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
     @just sync-python
-    @git config core.hooksPath .githooks
-    @echo "enabled .githooks (visual-regression pre-push guard)"
 
 # Install the Python tooling's uv workspace (the root pyproject.toml's members,
 # resolved once in uv.lock) into `.venv` on Python 3.14. Part of `bootstrap`;
@@ -463,8 +461,8 @@ test-llmlint-diff:
 # --- Terminal screenshots (informational; never part of `check`) --------------
 # Deterministic SVGs of the real CLI output, rendered by `freeze` from a vendored
 # pinned font and gated/galleried/PR-commented by screencomp. Regenerating is out
-# of the gate; CI's Visual-docs workflow owns the comparison, and the pre-push
-# guard re-captures locally on drift. See screenshots/AGENTS.md.
+# of the gate; CI's Visual-docs workflow owns the comparison. Capture and review
+# locally with the recipes below. See screenshots/AGENTS.md.
 
 # Install the screenshot renderer (`freeze`) on demand, pinned to `.freeze-version`
 # (the single source of truth CI's Visual-docs capture reads too). Needs Go.
