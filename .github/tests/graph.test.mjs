@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { parse, stringify } from 'yaml';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
@@ -60,8 +61,8 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
-test('draft lift triggers all required contexts and preserves semantic Mac routing', () => {
-  const ci = workflows().find(w => w.path.endsWith('/ci.yml'));
+test('draft lift requests no Mac job or replacement CI contexts', () => {
+  const graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
   for (const [branch, fork, macosRequired] of [
     ['feature/change', false, true],
     ['release-plz-test', false, false],
@@ -70,12 +71,11 @@ test('draft lift triggers all required contexts and preserves semantic Mac routi
     const pr = event(branch, fork);
     pr.action = 'ready_for_review';
     const scenario = { id: 'draft-lift', eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
-    assert.equal(triggered(ci.value, scenario), true, 'CI must rerun after draft lift');
-    const rows = resolveRun(ci, scenario, { macosRequired });
-    for (const name of ['commitlint', 'gate', 'llmlint']) {
-      assert.equal(rows.find(row => row.job === name)?.result, 'success', name);
-    }
-    assert.deepEqual(rows.filter(row => row.macos).map(row => row.job), macosRequired ? ['macos'] : []);
+    assert.equal(triggered(ci.value, scenario), false, 'lift must preserve the draft CI verdict');
+    const runs = graph.filter(w => triggered(w.value, scenario));
+    const rows = runs.flatMap(w => resolveRun(w, scenario, { macosRequired }));
+    assert.deepEqual(rows.filter(row => row.macos), []);
+    for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.some(row => row.job === name), false);
   }
 });
 
@@ -109,6 +109,8 @@ test('shorthand triggers route declared events and unsupported glob filters fail
   for (const types of ['reopened', [null], [7], [], {}]) assert.throws(()=>triggered({on:{pull_request:{types}}},pr), /unresolved workflow trigger types/);
   assert.equal(triggered({on:{pull_request:{types:['opened']}}},pr),true);
   assert.equal(triggered({on:{pull_request:{types:['reopened']}}},pr),false);
+  assert.equal(triggered({on:{pull_request:null}},pr),true);
+  assert.equal(triggered({on:{pull_request:null}},{...pr,event:{action:'ready_for_review'}}),false);
   for (const filter of ['branches', 'tags']) {
     for (const pattern of ['v*', '**', '!main', 'v[0-9]', 'release?', 'v+']) {
       assert.throws(() => triggered({ on: { push: { [filter]: [pattern] } } }, scenario), /unresolved workflow trigger filter/);
@@ -162,8 +164,8 @@ test('actual local reusable workflows resolve Mac jobs and missing calls/capture
   const graph=await import(pathToFileURL(join(dir,'.github/workflow-graph.mjs')).href);
   const visual=graph.workflows().find(w=>w.path.endsWith('/visual-docs.yml'));
   assert.throws(()=>graph.resolveRun(visual,{id:'unsupported-capture',eventName:'pull_request',event:event(),branch:'main'},{macosRequired:true}),/unresolved capture architectures/);
-  writeFileSync(join(dir,'.github/workflows/local-proof.yml'), 'on:\n  workflow_call:\njobs:\n  native:\n    runs-on: macos-latest\n    steps:\n      - run: echo proof\n');
-  writeFileSync(join(dir,'.github/workflows/local-caller.yml'), 'on: workflow_dispatch\njobs:\n  proof:\n    uses: ./.github/workflows/local-proof.yml\n');
+  writeFileSync(join(dir,'.github/workflows/local-proof.yml'), 'on:\n  workflow_call:\n    inputs:\n      runner:\n        type: string\n        required: true\n      enabled:\n        type: boolean\n        default: true\n      attempts:\n        type: number\n        default: 1\njobs:\n  native:\n    if: inputs.enabled\n    runs-on: ${{ inputs.runner }}\n    steps:\n      - run: echo proof\n');
+  writeFileSync(join(dir,'.github/workflows/local-caller.yml'), 'on: workflow_dispatch\njobs:\n  proof:\n    uses: ./.github/workflows/local-proof.yml\n    with:\n      runner: macos-latest\n');
   const caller = graph.workflows().find(w=>w.path.endsWith('/local-caller.yml'));
   const scenario = { id:'local-call',eventName:'workflow_dispatch',event:{},branch:'main',inputs:{} };
   assert.equal(graph.triggered(caller.value,scenario),true);
@@ -172,6 +174,22 @@ test('actual local reusable workflows resolve Mac jobs and missing calls/capture
   assert.equal(rows[0].workflow,'.github/workflows/local-proof.yml');
   assert.equal(rows[0].runner,'macos-latest');
   assert.equal(rows[0].macos,true);
+  for (const inputs of [{runner:'macos-latest',enabled:'false'}, {}, {runner:'macos-latest',extra:true}, {runner:'macos-latest',attempts:'1'}, {runner:null}]) {
+    caller.value.jobs.proof.with=inputs;
+    assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),/unresolved reusable input/);
+  }
+  caller.value.jobs.proof.with={runner:'macos-latest',enabled:false,attempts:2};
+  const disabled=graph.resolveRun(caller,scenario,{macosRequired:false});
+  assert.equal(disabled[0].result,'skipped');
+  assert.equal(disabled[0].macos,false);
+  caller.value.jobs.proof.with={runner:'macos-latest',enabled:true,attempts:2};
+  assert.equal(graph.resolveRun(caller,scenario,{macosRequired:false})[0].macos,true);
+  const childPath=join(dir,'.github/workflows/local-proof.yml'), child=readFileSync(childPath,'utf8');
+  for (const key of ['__proto__','constructor']) {
+    writeFileSync(childPath,child.replace('    inputs:\n',`    inputs:\n      ${key}:\n        type: boolean\n        default: true\n`));
+    assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),new RegExp(`unresolved reusable input: unsupported evaluator key ${key}`));
+  }
+  writeFileSync(childPath,child);
   caller.value.jobs.proof.uses='./.github/workflows/missing.yml';
   assert.throws(()=>graph.resolveRun(caller,scenario,{macosRequired:false}),/ENOENT/);
 
@@ -204,4 +222,32 @@ test('budget CLI distinguishes invalid invocation from telemetry IO failure', ()
   const missing = spawnSync(process.execPath, [command, '--metric', 'jobs-per-run', '--telemetry', resolve(root, '.github/.telemetry/absent.json')], { encoding: 'utf8' });
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /ENOENT/);
+});
+
+
+test('the budget wrapper accepts actual telemetry and rejects each exceeded limit through the SDK', t => {
+  const dir = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), 'macos-budget-verdicts-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  cpSync(resolve(root, '.github'), join(dir, '.github'), { recursive: true, filter: path => !['node_modules', '.telemetry'].includes(basename(path)) });
+  symlinkSync(resolve(root, '.github/node_modules'), join(dir, '.github/node_modules'), 'junction');
+  for (const path of ['screencomp.toml', 'release-plz.toml']) cpSync(resolve(root, path), join(dir, path));
+  mkdirSync(join(dir, '.github/.telemetry'));
+  writeFileSync(join(dir, '.github/.telemetry/macos-policy.json'), JSON.stringify(recorded));
+  const specification = join(dir, '.github/budgets.yaml'), original = readFileSync(specification, 'utf8');
+  const invoke = () => spawnSync(process.execPath, [join(dir, '.github/check-budgets.mjs')], { cwd: dir, encoding: 'utf8' });
+  const accepted = invoke();
+  assert.equal(accepted.status, 0, accepted.stderr);
+  assert.equal(accepted.stderr, '');
+  const budgets = parse(original).budgets;
+  for (const budget of budgets) assert.ok(accepted.stdout.includes(`${budget.id}: within`));
+  for (const budget of budgets) {
+    const lowered = parse(original);
+    // Induce rejection in an isolated copy; the SDK alone compares measurements.
+    lowered.budgets.find(entry => entry.id === budget.id).threshold = 0;
+    writeFileSync(specification, stringify(lowered));
+    const rejected = invoke();
+    assert.equal(rejected.status, 1, rejected.stderr);
+    assert.ok(rejected.stdout.includes(`${budget.id}: over`), rejected.stdout);
+    assert.equal(rejected.stderr, '');
+  }
 });

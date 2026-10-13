@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 // Exit 0 emits a routing decision (unreadable PRs require Mac); 1 is output IO failure; 2 is invalid invocation.
 class InvocationError extends Error {}
 const versionPattern = /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/;
+const repositoryPattern = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const refPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -42,8 +43,14 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
   if (!['pull_request','push','release','workflow_run','repository_dispatch','schedule','workflow_dispatch'].includes(eventName)) return ordinary(`unknown event name '${eventName || '(empty)'}': Mac coverage required`);
   if (eventName !== 'pull_request') return { isReleaseOnly: false, macosRequired: false, reason: `automatic ${eventName}: no Mac lane` };
   try {
-    const pr = event.pull_request;
-    if (!pr || !event.repository?.full_name || pr.head?.repo?.full_name !== event.repository.full_name || pr.base?.repo?.full_name !== event.repository.full_name || !/^release-plz-[A-Za-z0-9._-]+$/.test(pr.head?.ref ?? '')) return ordinary('ordinary or unknown PR ownership/branch');
+    const pr = event.pull_request, repository = event.repository?.full_name;
+    for (const [field, value] of [
+      ['repository.full_name', repository],
+      ['pull_request.head.repo.full_name', pr?.head?.repo?.full_name],
+      ['pull_request.base.repo.full_name', pr?.base?.repo?.full_name],
+    ]) if (typeof value !== 'string' || !repositoryPattern.test(value)) return ordinary(`malformed ${field}: expected repository name`);
+    if (typeof pr?.head?.ref !== 'string') return ordinary('malformed pull_request.head.ref: expected branch name');
+    if (pr.head.repo.full_name !== repository || pr.base.repo.full_name !== repository || !/^release-plz-[A-Za-z0-9._-]+$/.test(pr.head.ref)) return ordinary('ordinary or unknown PR ownership/branch');
     const from = commit(base), to = commit(head);
     const paths = git('diff', '--name-status', '--no-renames', '-z', from, to).split('\0');
     if (paths.at(-1) === '') paths.pop();

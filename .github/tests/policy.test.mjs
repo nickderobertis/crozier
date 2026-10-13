@@ -115,3 +115,23 @@ test('classifier distinguishes invalid invocation from output transport failure'
   assert.match(failed.stderr, /EISDIR/);
   assert.equal(h.invoke(event(), h.heads.source).status, 0);
 });
+
+
+test('structured malformed ownership and branch values cannot authorize Mac omission', t => {
+  const h = history(t);
+  for (const fullName of [true, 42, 'invalid-repository']) {
+    const pr = event('release-plz-test');
+    pr.repository.full_name = fullName;
+    pr.pull_request.head.repo.full_name = fullName;
+    pr.pull_request.base.repo.full_name = fullName;
+    const decision=h.classify(pr, h.heads.version);
+    assert.equal(decision.macosRequired, true);
+    assert.match(decision.reason,/repository.full_name/);
+  }
+  const pr = event('release-plz-test');
+  pr.pull_request.head.ref = ['release-plz-test'];
+  const decision=h.classify(pr, h.heads.version);
+  assert.equal(decision.macosRequired, true);
+  assert.match(decision.reason,/pull_request.head.ref/);
+  assert.equal(h.classify(event('release-plz-test'), h.heads.version).isReleaseOnly, true);
+});

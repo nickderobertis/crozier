@@ -77,8 +77,9 @@ export function triggered(workflow, scenario) {
     const filters = config?.[key];
     if (filters !== undefined && (!Array.isArray(filters) || filters.some(filter => typeof filter !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(filter)))) throw new Error(`unresolved workflow trigger filter: ${key}`);
   }
-  if (config?.types !== undefined && (!Array.isArray(config.types) || !config.types.length || config.types.some(type => typeof type !== 'string' || !type.length))) throw new Error('unresolved workflow trigger types: expected event names');
-  if (config?.types && !config.types.includes(scenario.event.action)) return false;
+  const types = config?.types !== undefined ? config.types : scenario.eventName === 'pull_request' ? ['opened', 'synchronize', 'reopened'] : undefined;
+  if (types !== undefined && (!Array.isArray(types) || !types.length || types.some(type => typeof type !== 'string' || !type.length))) throw new Error('unresolved workflow trigger types: expected event names');
+  if (types && !types.includes(scenario.event.action)) return false;
   if (config?.branches && !config.branches.includes(scenario.branch)) return false;
   if (config?.tags && !config.tags.includes(scenario.tag)) return false;
   if (config?.paths || config?.['paths-ignore'] || config?.['branches-ignore'] || config?.['tags-ignore']) throw new Error('unresolved workflow trigger filter');
@@ -152,8 +153,19 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
       if (!enabled) { rows.push({ workflow: workflow.path, event: scenario.id, job: id, result: 'skipped', macos: false }); continue; }
       if (job.uses) {
         const child = reusable(job.uses), declared = child.value.on?.workflow_call?.inputs ?? {};
-        const inputs = Object.fromEntries(Object.entries(declared).map(([k, v]) => [k, v.default ?? '']));
-        for (const [k, v] of Object.entries(job.with ?? {})) inputs[k] = value(v, context, outcomes);
+        const supplied = job.with ?? {};
+        if (!declared || typeof declared !== 'object' || Array.isArray(declared) || typeof supplied !== 'object' || Array.isArray(supplied)) throw new Error('unresolved reusable inputs: expected mappings');
+        for (const key of Object.keys(supplied)) if (!Object.hasOwn(declared, key)) throw new Error(`unresolved reusable input: unknown ${key}`);
+        const inputs = Object.create(null);
+        for (const [key, definition] of Object.entries(declared)) {
+          if (!new data.Dictionary({key, value:new data.BooleanData(true)}).get(key)) throw new Error(`unresolved reusable input: unsupported evaluator key ${key}`);
+          if (!definition || typeof definition !== 'object' || !['string', 'number', 'boolean'].includes(definition.type) || (definition.required !== undefined && typeof definition.required !== 'boolean')) throw new Error(`unresolved reusable input declaration: ${key}`);
+          const provided = Object.hasOwn(supplied, key), hasDefault = Object.hasOwn(definition, 'default');
+          if (definition.required && !provided && !hasDefault) throw new Error(`unresolved reusable input: missing required ${key}`);
+          const input = provided ? value(supplied[key], context, outcomes) : hasDefault ? definition.default : {string:'',number:0,boolean:false}[definition.type];
+          if (typeof input !== definition.type || (definition.type === 'number' && !Number.isFinite(input))) throw new Error(`unresolved reusable input: ${key} must be ${definition.type}`);
+          inputs[key] = input;
+        }
         rows.push(...resolveRun(child, { ...scenario, inputs }, decision, [...ancestry, workflow.path]));
         continue;
       }
