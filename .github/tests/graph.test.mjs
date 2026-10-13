@@ -1,11 +1,15 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { tmpdir } from 'node:os';
+import { pathToFileURL } from 'node:url';
+import { mkdirSync, writeFileSync, mkdtempSync, rmSync, readFileSync, cpSync, symlinkSync } from 'node:fs';
+import { resolve, join, basename } from 'node:path';
 import { root, workflows, triggered, resolveRun, matrixRows, digest } from '../workflow-graph.mjs';
 import { history, event } from './support.mjs';
 
-import { classes, recordingDigest } from '../scenarios.mjs';
+import { classes, recordingDigest, validateTelemetry } from '../scenarios.mjs';
+let recorded;
 
 test('actual workflow/call graph resolves event fan-out and records authoritative workload telemetry', t => {
   const h = history(t), graph = workflows(), scenarios = [];
@@ -50,6 +54,7 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
   }
   const telemetry = {schemaVersion:2,sourceDigest:digest(),scenarios,lifecycles};
   telemetry.recordingDigest=recordingDigest(telemetry);
+  recorded=telemetry;
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
@@ -66,4 +71,48 @@ test('unknown runners, calls, matrices and cycles fail loudly; real matrix inclu
   for (const jobs of [ {bad:{'runs-on':'${{ needs.unknown.outputs.runner }}'}}, {bad:{uses:'org/repo/.github/workflows/no.yml@v1'}}, {bad:{'runs-on':'ubuntu-latest',strategy:{matrix:{os:'${{ fromJSON(needs.no.outputs.matrix) }}'}}}}, {bad:{needs:'bad','runs-on':'ubuntu-latest'}} ]) {
     assert.throws(()=>resolveRun({path:'bad.yml',value:{jobs}},scenario,{macosRequired:false}), /unresolved|context|Unexpected|JSON|Cannot|cyclic/i);
   }
+});
+
+
+test('the real telemetry reader reports both actual graph metrics and event/architecture detail through the SDK', t=>{
+  const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-report-'));
+  t.after(()=>rmSync(dir,{recursive:true,force:true}));
+  for(const metric of ['jobs-per-run','runs-per-change']) {
+    const resultFile=join(dir,`${metric}.json`);
+    const run=spawnSync(process.execPath,[resolve(root,'.github/macos-budget.mjs'),'--metric',metric,'--telemetry',resolve(root,'.github/.telemetry/macos-policy.json')],{encoding:'utf8',env:{...process.env,ONEBUDGETSPEC_RESULT:resultFile}});
+    assert.equal(run.status,0,run.stderr);
+    const report=JSON.parse(readFileSync(resultFile,'utf8'));
+    const values=metric==='jobs-per-run'?recorded.scenarios.flatMap(s=>s.runs.map(r=>r.rows.filter(row=>row.macos).length)):recorded.lifecycles.map(l=>l.runs.length);
+    assert.equal(report.value,Math.max(...values));
+    const detail=JSON.parse(report.detail); assert.equal(detail.sourceDigest,recorded.sourceDigest); assert.equal(detail.metric,metric);
+    assert.deepEqual(detail.scenarios.map(s=>s.event),recorded.scenarios.map(s=>s.id)); assert.deepEqual(detail.lifecycles,recorded.lifecycles);
+    assert.ok(detail.scenarios.some(s=>s.runs.some(r=>r.jobs.some(j=>j.targets?.includes('x86_64-apple-darwin') && j.targets?.includes('aarch64-apple-darwin')))));
+  }
+});
+
+test('recorded workload integrity rejects truncation, bad rows/runners and lifecycle inconsistencies', ()=>{
+  const corrupt=structuredClone(recorded); corrupt.scenarios.pop();
+  assert.throws(()=>validateTelemetry(corrupt,recorded.sourceDigest),/corrupted/);
+  for(const change of [
+    t=>t.scenarios.pop(), t=>t.lifecycles.pop(),
+    t=>t.scenarios.find(s=>s.runs.length).runs[0].rows.splice(0),
+    t=>t.scenarios.find(s=>s.runs.length).runs[0].rows[0].job=null,
+    t=>t.scenarios.find(s=>s.runs.some(r=>r.rows.some(row=>row.runner))).runs.find(r=>r.rows.some(row=>row.runner)).rows.find(row=>row.runner).runner='unresolved-runner',
+    t=>t.lifecycles[0].runs.splice(0),
+  ]) {
+    const bad=structuredClone(recorded); change(bad); bad.recordingDigest=recordingDigest(bad);
+    assert.throws(()=>validateTelemetry(bad,recorded.sourceDigest),/incomplete|invalid|inconsistent/);
+  }
+});
+
+
+test('a real unsupported capture configuration refuses reusable-workflow resolution', async t=>{
+  const dir=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'macos-capture-'));
+  t.after(()=>rmSync(dir,{recursive:true,force:true}));
+  cpSync(resolve(root,'.github'),join(dir,'.github'),{recursive:true,filter:path=>!['node_modules','.telemetry'].includes(basename(path))});
+  symlinkSync(resolve(root,'.github/node_modules'),join(dir,'.github/node_modules'),'junction');
+  writeFileSync(join(dir,'screencomp.toml'),'[capture]\narches = ["unsupported"]\n');
+  const graph=await import(pathToFileURL(join(dir,'.github/workflow-graph.mjs')).href);
+  const visual=graph.workflows().find(w=>w.path.endsWith('/visual-docs.yml'));
+  assert.throws(()=>graph.resolveRun(visual,{id:'unsupported-capture',eventName:'pull_request',event:event(),branch:'main'},{macosRequired:true}),/unresolved capture architectures/);
 });

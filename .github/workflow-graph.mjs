@@ -109,6 +109,7 @@ export function resolveRun(workflow, scenario, decision, ancestry = []) {
         // The reusable workflow runs `screencomp arches --format json` on this
         // exact configuration; parse the declared architecture source offline.
         const arches = captureArches ??= JSON.parse(execFileSync('python3', ['-c', 'import tomllib,json; print(json.dumps(tomllib.load(open("screencomp.toml","rb"))["capture"]["arches"]))'], { cwd: root, encoding: 'utf8' }));
+        if (!Array.isArray(arches) || !arches.length || arches.some(a=>!['x86_64','amd64','arm64','aarch64'].includes(a))) throw new Error(`unresolved capture architectures: ${JSON.stringify(arches)}`);
         needs[id].outputs.matrix = JSON.stringify(arches);
       }
       if (!enabled) { rows.push({ workflow: workflow.path, event: scenario.id, job: id, result: 'skipped', macos: false }); continue; }

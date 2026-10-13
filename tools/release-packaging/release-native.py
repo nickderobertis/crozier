@@ -8,6 +8,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import struct
 import subprocess
@@ -83,10 +84,14 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
             raise ValueError(
                 f"wheel metadata {metadata['Name']}/{metadata['Version']} differs from crozier/{version}; rebuild from the matching tag"
             )
-        if target.wheel_arch not in wheel.name.rsplit("-", 1)[-1]:
-            raise ValueError(
-                f"wheel {wheel.name} does not target {target.wheel_arch}; rebuild with --target {target.value}"
-            )
+        platform_tag = wheel.name[:-4].rsplit("-", 1)[-1]
+        platform_pattern = (
+            rf"macosx_\d+_\d+_{target.wheel_arch}"
+            if target.darwin
+            else rf"(?:manylinux_\d+_\d+|manylinux\d{{4}}|linux)_{target.wheel_arch}"
+        )
+        if not all(re.fullmatch(platform_pattern, tag) for tag in platform_tag.split(".")):
+            raise ValueError(f"wheel {wheel.name} has the wrong platform for {target.value}; rebuild with that target")
         if target.darwin:
             expected = 0x0100000C if target.arm else 0x01000007
             valid = (

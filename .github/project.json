@@ -17,7 +17,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "node --test .github/tests/*.test.mjs"
+        "command": "bash .github/run-tests.sh"
       },
       "dependsOn": [
         "install"
@@ -27,10 +27,7 @@
         "default",
         "{workspaceRoot}/screencomp.toml",
         "{workspaceRoot}/release-plz.toml"
-      ],
-      "metadata": {
-        "description": "llmlint: ignore[shell_test_tiers_stay_split] The manager-approved dispatch fixes this workload as node --test .github/tests/*.test.mjs and requires new graph/classifier tests inside .github; splitting the host-git subprocess journeys would violate that required recording surface."
-      }
+      ]
     },
     "budgets": {
       "executor": "nx:run-commands",
@@ -64,7 +61,7 @@
         "boundaries"
       ],
       "metadata": {
-        "description": "llmlint: ignore[new_projects_keep_the_graph_uniform] This task fixes the private Node dependencies to YAML parsing, the Actions expression evaluator and the budget SDK. Its untyped mjs sources use syntax lint plus real boundary journeys, matching the existing ci mjs tooling; adding a static JS checker would broaden that agreed toolchain. Syntax is not mislabeled as typecheck."
+        "description": "This task fixes the private Node dependencies to YAML parsing, the Actions expression evaluator and the budget SDK. Its untyped mjs sources use syntax lint plus real boundary journeys, matching the existing ci mjs tooling; adding a static JS checker would broaden that agreed toolchain. Syntax is not mislabeled as typecheck."
       }
     }
   }
