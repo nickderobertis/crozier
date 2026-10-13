@@ -11,6 +11,10 @@ try {
   if (!['true', 'false'].includes(required)) throw new Error('missing Mac routing decision');
   const reused = needs['macos-policy'].outputs?.macosReusedRun ?? '';
   if (typeof reused !== 'string' || (reused && (required !== 'false' || !runUrlPattern.test(reused)))) throw new Error('malformed Mac reuse decision');
+  const refusal = needs['macos-policy'].outputs?.macosLiftRefusal ?? '';
+  if (typeof refusal !== 'string' || (refusal && (reused || required !== 'false'))) throw new Error('malformed Mac lift decision');
+  // A lift without proof never succeeds, whatever its Linux-side Mac check reported.
+  if (refusal) throw new Error(`${refusal}; re-run the draft run's Mac job, then re-run all jobs of this run, or push a commit`);
   const mac = needs.macos?.result;
   if (reused) {
     // The reuse lane succeeds only by naming the earlier run; it never stands in for a skip.

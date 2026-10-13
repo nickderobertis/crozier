@@ -39,6 +39,18 @@ test('the real gate result command propagates failed, cancelled, missing and una
     if (result === undefined) delete bad.macos; else bad.macos.result = result;
     const refused = run(bad); assert.equal(refused.status, 1, `${result}`); assert.match(refused.stderr, /Mac reuse lane did not succeed/);
   }
+  // A lift without proof fails the gate whatever the Linux-side Mac check reported.
+  const refusal = 'draft lift has no Mac proof on head abc: Mac proof still in_progress in ' + url;
+  for (const result of ['success', 'failure', 'skipped', 'cancelled', undefined]) {
+    const refused = structuredClone(good); refused['macos-policy'].outputs = { macosRequired: 'false', macosReusedRun: '', macosLiftRefusal: refusal };
+    if (result === undefined) delete refused.macos; else refused.macos.result = result;
+    const verdict = run(refused); assert.equal(verdict.status, 1, `${result}`);
+    assert.ok(verdict.stderr.includes(refusal)); assert.match(verdict.stderr, /re-run the draft run's Mac job, then re-run all jobs of this run, or push a commit/);
+  }
+  for (const outputs of [{ macosRequired: 'true', macosReusedRun: '', macosLiftRefusal: refusal }, { macosRequired: 'false', macosReusedRun: url, macosLiftRefusal: refusal }, { macosRequired: 'false', macosLiftRefusal: 7 }]) {
+    const bad = structuredClone(good); bad['macos-policy'].outputs = outputs;
+    assert.match(run(bad).stderr, /malformed Mac lift decision/);
+  }
   for (const outputs of [{ macosRequired: 'true', macosReusedRun: url }, { macosRequired: 'false', macosReusedRun: 7 }, { macosRequired: 'false', macosReusedRun: ' ' }, { macosRequired: 'false', macosReusedRun: `${url}\nmacosRequired=false` }, { macosRequired: 'false', macosReusedRun: 'not-a-run' }]) {
     const bad = structuredClone(reused); bad['macos-policy'].outputs = outputs;
     assert.match(run(bad).stderr, /malformed Mac reuse decision/);

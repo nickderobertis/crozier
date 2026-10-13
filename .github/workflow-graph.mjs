@@ -99,9 +99,10 @@ let captureArches;
 const guardOutputs=new Map();
 function policyOutput(job,decision) {
   const step=job.steps?.find(s=>s.id==='policy');
-  if (job.outputs?.macosRequired !== '${{ steps.policy.outputs.macosRequired }}' || job.outputs?.macosReusedRun !== '${{ steps.policy.outputs.macosReusedRun }}' || job.permissions?.actions !== 'read' || step?.run.trim() !== 'node .github/macos-policy.mjs classify --event "$GITHUB_EVENT_PATH" --base "$PR_BASE" --head "$PR_HEAD"' || step.env?.PR_BASE !== '${{ github.event.pull_request.base.sha }}' || step.env?.PR_HEAD !== '${{ github.event.pull_request.head.sha }}' || step.env?.GITHUB_TOKEN !== '${{ github.token }}' || step.env?.GITHUB_EVENT_NAME !== undefined) throw new Error('unresolved macos-policy producer wiring');
-  if (decision.reusedRun !== undefined && (typeof decision.reusedRun !== 'string' || !decision.reusedRun || decision.macosRequired)) throw new Error('unresolved macos-policy reuse decision');
-  return {macosRequired:String(decision.macosRequired),macosReusedRun:decision.reusedRun ?? ''};
+  if (job.outputs?.macosRequired !== '${{ steps.policy.outputs.macosRequired }}' || job.outputs?.macosReusedRun !== '${{ steps.policy.outputs.macosReusedRun }}' || job.outputs?.macosLiftRefusal !== '${{ steps.policy.outputs.macosLiftRefusal }}' || job.permissions?.actions !== 'read' || step?.run.trim() !== 'node .github/macos-policy.mjs classify --event "$GITHUB_EVENT_PATH" --base "$PR_BASE" --head "$PR_HEAD"' || step.env?.PR_BASE !== '${{ github.event.pull_request.base.sha }}' || step.env?.PR_HEAD !== '${{ github.event.pull_request.head.sha }}' || step.env?.GITHUB_TOKEN !== '${{ github.token }}' || step.env?.GITHUB_EVENT_NAME !== undefined) throw new Error('unresolved macos-policy producer wiring');
+  for (const key of ['reusedRun','liftRefusal']) if (decision[key] !== undefined && (typeof decision[key] !== 'string' || !decision[key] || decision.macosRequired)) throw new Error('unresolved macos-policy reuse decision');
+  if (decision.reusedRun !== undefined && decision.liftRefusal !== undefined) throw new Error('unresolved macos-policy reuse decision');
+  return {macosRequired:String(decision.macosRequired),macosReusedRun:decision.reusedRun ?? '',macosLiftRefusal:decision.liftRefusal ?? ''};
 }
 function registryOutputs(job,publish) {
   const step=job.steps?.find(s=>s.id==='check');

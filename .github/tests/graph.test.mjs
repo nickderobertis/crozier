@@ -6,11 +6,11 @@ import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
 import { mkdirSync, writeFileSync, mkdtempSync, rmSync, readFileSync, cpSync, symlinkSync } from 'node:fs';
 import { resolve, join, basename } from 'node:path';
-import { root, workflows, triggered, resolveRun, matrixRows, digest } from '../workflow-graph.mjs';
+import { root, workflows, triggered, resolveRun, matrixRows, digest, expression } from '../workflow-graph.mjs';
 import { history, event, githubApi, liftEvent } from './support.mjs';
 import { macJobName } from '../macos-policy.mjs';
 
-import { classes, recordingDigest, validateTelemetry, lifecycleScenarios } from '../scenarios.mjs';
+import { classes, recordingDigest, validateTelemetry, lifecycleScenarios, liftRoutes } from '../scenarios.mjs';
 let recorded;
 
 // llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
@@ -47,39 +47,53 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     }
     scenarios.push({...s,decision,runs});
   }
-  // The draft lift of the ordinary PR, classified against a doubled GitHub API:
-  // proven reuses the draft's Mac job from Linux, unproven runs Mac again.
-  const sha = h.heads.source;
-  const api = await githubApi(t, { runs: [{ id: 1, path: '.github/workflows/ci.yml', head_sha: sha, html_url: 'https://github.com/nickderobertis/crozier/actions/runs/1' }], jobs: { 1: [{ name: macJobName, conclusion: 'success', head_sha: sha, labels: ['macos-latest'] }] } });
-  for (const [id, env] of [['lift/proven', { GITHUB_API_URL: api.url }], ['lift/unproven', { GITHUB_API_URL: api.url, GITHUB_RUN_ID: '1' }]]) {
-    const pr = liftEvent(sha), decision = await h.lift(pr, sha, env);
-    const s = { id, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
+  // Every lift route of the ordinary PR, classified against a doubled GitHub API.
+  // None requests a Mac runner; only the proven route can satisfy the Mac check.
+  const sha = h.heads.source, earlier = { id: 1, path: '.github/workflows/ci.yml', head_sha: sha, html_url: 'https://github.com/nickderobertis/crozier/actions/runs/1' };
+  const macJob = conclusion => ({ name: macJobName, conclusion, head_sha: sha, labels: ['macos-latest'] });
+  const routes = {
+    proven: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('success')] } },
+    'in-progress': { runs: [{ ...earlier, status: 'in_progress' }], jobs: { 1: [macJob(null)] } },
+    cancelled: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('cancelled')] } },
+    failed: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('failure')] } },
+    absent: { runs: [], jobs: {} },
+    'api-unavailable': { status: 503 },
+  };
+  assert.deepEqual(Object.keys(routes), liftRoutes);
+  for (const [route, state] of Object.entries(routes)) {
+    const api = await githubApi(t, state);
+    const pr = liftEvent(sha), decision = await h.lift(pr, sha, { GITHUB_API_URL: api.url });
+    const s = { id: `lift/${route}`, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
     const runs = graph.filter(w => triggered(w.value, s)).map(w => ({ workflow: w.path, rows: resolveRun(w, s, decision) }));
     const ci = runs.find(r => r.workflow.endsWith('/ci.yml'));
-    assert.deepEqual(ci.rows.filter(r => r.job === 'macos').map(r => [r.runner, r.macos]), [[id === 'lift/proven' ? 'ubuntu-latest' : 'macos-latest', id !== 'lift/proven']]);
+    assert.deepEqual(runs.flatMap(r => r.rows.filter(row => row.macos)), [], route);
+    assert.deepEqual(ci.rows.filter(r => r.job === 'macos').map(r => r.runner), ['ubuntu-latest'], route);
+    assert.equal(decision.macosRequired, false, route);
+    if (route === 'proven') assert.equal(decision.reusedRun, earlier.html_url);
+    else assert.match(decision.liftRefusal, /draft lift has no Mac proof/, route);
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(ci.rows.find(r => r.job === name)?.result, 'success', name);
     scenarios.push({ ...s, decision, runs });
   }
   const lifecycles = [];
-  for (const fork of [false,true]) for (const diff of ['source','version','dependency']) for (const crates of ['false','true']) for (const pypi of ['false','true']) {
-    const runs = lifecycleScenarios(scenarios,{fork,diff,crates,pypi}).flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
-    lifecycles.push({fork,diff,crates,pypi,runs});
+  for (const fork of [false,true]) for (const diff of ['source','version','dependency']) for (const crates of ['false','true']) for (const pypi of ['false','true']) for (const lift of ['none',...liftRoutes]) {
+    const runs = lifecycleScenarios(scenarios,{fork,diff,crates,pypi,lift}).flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
+    lifecycles.push({fork,diff,crates,pypi,lift,runs});
   }
-  const telemetry = {schemaVersion:3,sourceDigest:digest(),scenarios,lifecycles};
+  const telemetry = {schemaVersion:4,sourceDigest:digest(),scenarios,lifecycles};
   telemetry.recordingDigest=recordingDigest(telemetry);
   recorded=telemetry;
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
-test('a draft lift reports every required context and requests Mac only without a proven head', () => {
+test('a draft lift reports every required context, never requests Mac and never cancels the draft run', () => {
   const graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
   const url = 'https://github.com/nickderobertis/crozier/actions/runs/1';
   for (const [branch, fork, decision, runner] of [
     ['feature/change', false, { macosRequired: false, reusedRun: url }, 'ubuntu-latest'],
-    ['feature/change', false, { macosRequired: true }, 'macos-latest'],
+    ['feature/change', false, { macosRequired: false, liftRefusal: 'draft lift has no Mac proof on head x: absent' }, 'ubuntu-latest'],
     ['release-plz-test', false, { macosRequired: false }, undefined],
-    ['release-plz-test', true, { macosRequired: true }, 'macos-latest'],
+    ['release-plz-test', true, { macosRequired: false, liftRefusal: 'draft lift has no Mac proof on head x: absent' }, 'ubuntu-latest'],
   ]) {
     const pr = event(branch, fork);
     pr.action = 'ready_for_review';
@@ -87,16 +101,24 @@ test('a draft lift reports every required context and requests Mac only without 
     assert.equal(triggered(ci.value, scenario), true, 'the lift supplies the post-draft verdict');
     const rows = resolveRun(ci, scenario, decision);
     assert.deepEqual(rows.filter(row => row.job === 'macos' && row.result === 'success').map(row => row.runner), runner ? [runner] : []);
-    assert.equal(rows.filter(row => row.macos).length, runner === 'macos-latest' ? 1 : 0);
+    assert.equal(rows.filter(row => row.macos).length, 0);
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', name);
   }
+  // The lift waits behind the draft's run; every other event still cancels its predecessor.
+  const cancel = action => expression(ci.value.concurrency['cancel-in-progress'], { github: { event: { action } } }).coerceString();
+  assert.equal(cancel('ready_for_review'), 'false');
+  for (const action of ['opened', 'synchronize', 'reopened', undefined]) assert.equal(cancel(action), 'true', action);
   // The classifier matches the API's job name; a renamed job must fail here, not silently stop reusing.
   assert.equal(ci.value.jobs.macos.name, macJobName);
   const steps = ci.value.jobs.macos.steps;
   assert.equal(steps[0].if, "env.MAC_REUSED_RUN != ''");
-  assert.doesNotMatch(steps[0].run, /just|cargo|crozier --version/);
-  for (const step of steps.slice(1)) assert.equal(step.if, "env.MAC_REUSED_RUN == ''", step.name ?? step.uses);
-  assert.throws(() => resolveRun(ci, { id: 'bad', eventName: 'pull_request', event: event(), branch: 'main', inputs: {} }, { macosRequired: true, reusedRun: url }), /reuse decision/);
+  assert.equal(steps[1].if, "env.MAC_LIFT_REFUSAL != ''");
+  assert.match(steps[1].run, /exit 1/);
+  for (const step of steps.slice(0, 2)) assert.doesNotMatch(step.run, /just|cargo|crozier --version/);
+  for (const step of steps.slice(2)) assert.equal(step.if, "env.MAC_REUSED_RUN == '' && env.MAC_LIFT_REFUSAL == ''", step.name ?? step.uses);
+  for (const bad of [{ macosRequired: true, reusedRun: url }, { macosRequired: false, reusedRun: url, liftRefusal: 'x' }, { macosRequired: true, liftRefusal: 'x' }]) {
+    assert.throws(() => resolveRun(ci, { id: 'bad', eventName: 'pull_request', event: event(), branch: 'main', inputs: {} }, bad), /reuse decision/);
+  }
 });
 
 function wMac(path,s,decision) {
@@ -168,6 +190,9 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
     t=>t.scenarios.find(s=>s.runs.length).runs[0].rows[0].job=null,
     t=>t.scenarios.find(s=>s.runs.some(r=>r.rows.some(row=>row.runner))).runs.find(r=>r.rows.some(row=>row.runner)).rows.find(row=>row.runner).runner='unresolved-runner',
     t=>t.lifecycles[0].runs.splice(0),
+    t=>{t.scenarios.find(s=>s.id==='lift/failed').decision.macosRequired=true;},
+    t=>{delete t.scenarios.find(s=>s.id==='lift/absent').decision.liftRefusal;},
+    t=>{t.lifecycles=t.lifecycles.filter(l=>l.lift!=='in-progress');},
   ]) {
     const bad=structuredClone(recorded); change(bad); bad.recordingDigest=recordingDigest(bad);
     assert.throws(()=>validateTelemetry(bad,recorded.sourceDigest),/incomplete|invalid|inconsistent/);
@@ -222,7 +247,7 @@ test('actual local reusable workflows resolve Mac jobs and missing calls/capture
 test('producer wiring changes refuse measurement instead of silently using assumed outputs', ()=>{
   const graph=workflows(), ci=graph.find(w=>w.path.endsWith('/ci.yml')), release=graph.find(w=>w.path.endsWith('/release.yml'));
   const scenario={id:'producer-drift',eventName:'pull_request',event:event(),branch:'main',publish:{crates:'true',pypi:'false'}};
-  for(const change of [w=>delete w.value.jobs['macos-policy'].outputs.macosRequired,w=>delete w.value.jobs['macos-policy'].outputs.macosReusedRun,w=>delete w.value.jobs['macos-policy'].permissions,w=>delete w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.GITHUB_TOKEN,w=>w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.PR_HEAD='HEAD']) {
+  for(const change of [w=>delete w.value.jobs['macos-policy'].outputs.macosRequired,w=>delete w.value.jobs['macos-policy'].outputs.macosReusedRun,w=>delete w.value.jobs['macos-policy'].outputs.macosLiftRefusal,w=>delete w.value.jobs['macos-policy'].permissions,w=>delete w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.GITHUB_TOKEN,w=>w.value.jobs['macos-policy'].steps.find(s=>s.id==='policy').env.PR_HEAD='HEAD']) {
     const changed=structuredClone(ci); change(changed); assert.throws(()=>resolveRun(changed,scenario,{macosRequired:true}),/producer wiring/);
   }
   for(const change of [w=>delete w.value.jobs.guard.outputs.crates,w=>w.value.jobs.guard.steps.find(s=>s.id==='check').run='echo crates=false >> "$GITHUB_OUTPUT"; echo pypi=false >> "$GITHUB_OUTPUT"']) {
