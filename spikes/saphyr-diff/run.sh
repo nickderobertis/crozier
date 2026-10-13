@@ -97,14 +97,14 @@ for mode in "${all[@]:1}"; do
     echo "   newly failing: $t"
     { echo "== $t"; awk -v t="$t" '
       index($0, "thread \x27" t "\x27") && /panicked at/ { on = 1 }
-      on && /^note: run with `RUST_BACKTRACE/ { exit }
+      on && /note: run with `RUST_BACKTRACE/ { exit }
       on { print }
     ' "$log"; } >>"$panics"
     # The test's whole panic message (the before/after text), up to Rust's
     # backtrace note; nothing is cut.
     awk -v t="$t" '
       index($0, "thread \x27" t "\x27") && /panicked at/ { on = 1; next }
-      on && /^note: run with `RUST_BACKTRACE/ { exit }
+      on && /note: run with `RUST_BACKTRACE/ { exit }
       on { print "      " $0 }
     ' "$log"
   done
