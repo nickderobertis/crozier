@@ -21,9 +21,10 @@
 # CROZIER_RELEASE_BASE_URL, CROZIER_CHECKSUM_BASE_URL.
 # Set GITHUB_TOKEN to lift the GitHub API rate limit when resolving "latest".
 #
-# Covers Linux and macOS (x86_64, arm64) and Windows x86_64 under a POSIX shell
-# (Git Bash / MSYS / WSL). For native Windows PowerShell or unpublished targets,
-# use `cargo install crozier --locked` or `pip install crozier`.
+# Covers Linux (x86_64, arm64), Apple Silicon macOS and Windows x86_64 under a POSIX shell
+# (Git Bash / MSYS / WSL); Intel macOS is no longer supported and is refused.
+# For native Windows PowerShell or unpublished targets, use
+# `cargo install crozier --locked` or `pip install crozier`.
 #
 # Verification. Like the tool it installs, this script never weakens silently: it
 # aborts rather than install a binary it cannot vouch for, and — crucially — it
@@ -124,6 +125,16 @@ detect_target() {
         arm64 | aarch64) arch_part="aarch64" ;;
         *) err "unsupported architecture: $arch" ;;
     esac
+
+    # macOS releases are Apple Silicon only. A Rosetta shell on Apple Silicon
+    # reports x86_64, yet runs the arm64 binary natively.
+    if [ "$os_part" = "apple-darwin" ] && [ "$arch_part" = "x86_64" ]; then
+        if [ "$(sysctl -in sysctl.proc_translated 2>/dev/null)" = "1" ]; then
+            arch_part="aarch64"
+        else
+            err "Intel macOS (x86_64) is no longer supported: crozier publishes Apple Silicon (arm64) macOS binaries only; build from source with 'cargo install $BIN --locked'"
+        fi
+    fi
 
     # The release matrix publishes Windows for x86_64 only.
     if [ "$ext" = "zip" ] && [ "$arch_part" != "x86_64" ]; then

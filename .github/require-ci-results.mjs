@@ -8,9 +8,17 @@ try {
   }
   const required = needs['macos-policy'].outputs?.macosRequired;
   if (!['true', 'false'].includes(required)) throw new Error('missing Mac routing decision');
+  const reused = needs['macos-policy'].outputs?.macosReusedRun ?? '';
+  if (typeof reused !== 'string' || (reused && required !== 'false')) throw new Error('malformed Mac reuse decision');
   const mac = needs.macos?.result;
-  if (mac !== 'success' && !(mac === 'skipped' && required === 'false')) throw new Error(`Mac proof did not succeed (${mac ?? 'missing'}, required=${required})`);
-  console.log(mac === 'success' ? 'all required lanes succeeded, including Mac' : 'Linux/Windows lanes succeeded; classifier authorized Mac omission');
+  if (reused) {
+    // The reuse lane succeeds only by naming the earlier run; it never stands in for a skip.
+    if (mac !== 'success') throw new Error(`Mac reuse lane did not succeed (${mac ?? 'missing'}, reused=${reused})`);
+    console.log(`Linux/Windows lanes succeeded; no Mac job ran in this run, its proof on this head is ${reused}`);
+  } else {
+    if (mac !== 'success' && !(mac === 'skipped' && required === 'false')) throw new Error(`Mac proof did not succeed (${mac ?? 'missing'}, required=${required})`);
+    console.log(mac === 'success' ? 'all required lanes succeeded, including Mac' : 'Linux/Windows lanes succeeded; classifier authorized Mac omission');
+  }
 } catch (error) {
   console.error(`::error::${error.message}`);
   process.exitCode = 1;

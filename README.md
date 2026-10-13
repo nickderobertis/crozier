@@ -93,7 +93,10 @@ It detects your platform, downloads the matching archive, and verifies it agains
 a trust root independent of where it was downloaded — a Sigstore build-provenance
 attestation when a verifier (`cosign`, `pip install sigstore`, or `gh`) is
 present, else the canonical SHA-256 checksum. Pin a version or install location
-with `sh -s -- --version v0.1.0 --to ~/.local/bin`.
+with `sh -s -- --version v0.1.0 --to ~/.local/bin`. macOS binaries are Apple
+Silicon (arm64) only: Intel macOS archives and wheels are discontinued from the
+next release, and the script refuses Intel macOS — build there with `cargo
+install crozier --locked`.
 
 **From source (latest `main`):**
 

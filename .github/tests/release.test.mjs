@@ -9,7 +9,13 @@ test('release retains every platform/artifact; Darwin proof precedes publication
   const jobs=workflows().find(w=>w.path.endsWith('/release.yml')).value.jobs;
   const archiveTargets=jobs.upload.strategy.matrix.include.map(r=>r.target);
   const wheelTargets=jobs['build-wheels'].strategy.matrix.include.map(r=>r.target);
-  const darwin=jobs.darwin.env.DARWIN_TARGETS.split(' ');
+  const darwin=[jobs.darwin.env.DARWIN_TARGET];
+  assert.equal(contract.schemaVersion,3);
+  // Planner ruling: macOS ships Apple Silicon only; Intel is declared discontinued, never silently dropped.
+  assert.deepEqual(darwin,['aarch64-apple-darwin']);
+  assert.deepEqual(contract.discontinued.map(d=>d.target),['x86_64-apple-darwin']);
+  const workflowText=readFileSync(resolve(root,'.github/workflows/release.yml'),'utf8');
+  for (const {target} of contract.discontinued) assert.equal(workflowText.includes(target),false,target);
   assert.deepEqual([...archiveTargets,...darwin].sort(),contract.platforms.map(p=>p.target).sort());
   assert.deepEqual([...wheelTargets,...darwin].sort(),contract.platforms.map(p=>p.target).sort());
   for (const row of jobs.upload.strategy.matrix.include) {
@@ -23,10 +29,9 @@ test('release retains every platform/artifact; Darwin proof precedes publication
   }
   assert.deepEqual(contract.additionalArtifacts,[jobs['build-sdist'].steps.find(s=>s.uses?.startsWith('PyO3/maturin-action')).with.command,jobs['publish-crate'].steps.some(s=>s.run==='cargo publish --locked')?'crate':'missing']);
   assert.equal(jobs.darwin['runs-on'],'macos-latest'); assert.equal(jobs.darwin.strategy,undefined);
-  const build=jobs.darwin.steps.find(s=>s.name==='Build and install both staged products');
-  assert.match(build.run,/for target in \$DARWIN_TARGETS/);
-  assert.match(build.run,/python3 tools\/release-packaging\/release-native.py --target "\$target" --tag "\$GITHUB_REF_NAME" --out/);
-  assert.ok(jobs.darwin.steps.some(s=>s.run==='softwareupdate --install-rosetta --agree-to-license'));
+  const build=jobs.darwin.steps.find(s=>s.name==='Build and install the staged products');
+  assert.match(build.run,/^python3 tools\/release-packaging\/release-native.py --target "\$DARWIN_TARGET" --tag "\$GITHUB_REF_NAME" --out/);
+  assert.equal(jobs.darwin.steps.some(s=>/rosetta|arch -x86_64/i.test(s.run ?? '')),false);
   for (const id of ['publish-darwin','publish-pypi','publish-crate','major-tag']) {
     assert.equal(jobs[id]['runs-on'],'ubuntu-latest');
     assert.ok(jobs[id].needs.includes(id==='publish-pypi' ? 'publish-darwin' : 'darwin'),id);

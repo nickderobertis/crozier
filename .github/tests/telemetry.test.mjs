@@ -12,7 +12,7 @@ test('measurement refuses missing or stale telemetry instead of rerunning scenar
   const file=join(dir,'stale.json');
   writeFileSync(file,JSON.stringify({schemaVersion:2,sourceDigest:'old-tree'}));
   const incomplete=join(dir,'incomplete.json');
-  writeFileSync(incomplete,JSON.stringify({schemaVersion:2,sourceDigest:digest(),scenarios:[],lifecycles:[]}));
+  writeFileSync(incomplete,JSON.stringify({schemaVersion:3,sourceDigest:digest(),scenarios:[],lifecycles:[]}));
   for (const path of [file,incomplete,join(dir,'missing.json')]) for (const metric of ['jobs-per-run','runs-per-change']) {
     const run=spawnSync(process.execPath,[resolve(root,'.github/macos-budget.mjs'),'--metric',metric,'--telemetry',path],{encoding:'utf8'});
     assert.equal(run.status,1); assert.match(run.stderr,/stale telemetry|incomplete|ENOENT/);

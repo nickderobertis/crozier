@@ -17,7 +17,8 @@ budgets:
     timeout_seconds: 10
   - id: crozier-macos-runs-per-change
     description: >-
-      Maximum Mac-spending workflow runs over one PR push, its base merge,
+      Maximum Mac-spending workflow runs over one PR push (and the lift of its
+      draft, which reuses a Mac proof passed on the same head), its base merge,
       version/changelog-only release PR and merge, release/tag build and all
       downstream automatic events. Manual diagnostics are excluded. Measurement
       uses workflow/call-graph telemetry only. Manager-approved separate scheduling

@@ -23,7 +23,7 @@ function wheel(output,target,kind='valid') {
 p,v,target,kind=sys.argv[1:]
 b=(bytes.fromhex('cffaedfe')+struct.pack('<I',0x0100000c if target.startswith('aarch64') else 0x01000007) if target.endswith('apple-darwin') else bytes.fromhex('7f454c46')+bytes(14)+struct.pack('<H',183 if target.startswith('aarch64') else 62))+b'contract-fixture'
 with zipfile.ZipFile(p,'w') as z:
- if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind not in ('binary-arch','cpu') else b'wrong' if kind=='binary-arch' else (b[:4]+struct.pack('<I',0x0100000c)+b[8:] if target.endswith('apple-darwin') else b[:18]+struct.pack('<H',62 if target.startswith('aarch64') else 183)+b[20:]))
+ if kind!='executable': z.writestr('crozier-'+v+'.data/scripts/crozier',b if kind not in ('binary-arch','cpu') else b'wrong' if kind=='binary-arch' else (b[:4]+struct.pack('<I',0x01000007 if target.startswith('aarch64') else 0x0100000c)+b[8:] if target.endswith('apple-darwin') else b[:18]+struct.pack('<H',62 if target.startswith('aarch64') else 183)+b[20:]))
  if kind=='duplicate-executable': z.writestr('other.data/scripts/crozier',b)
  if kind=='duplicate-metadata': z.writestr('other.dist-info/METADATA','Name: crozier\\nVersion: '+v+'\\n')
  if kind!='metadata': z.writestr('crozier-'+v+'.dist-info/METADATA','Name: '+('other' if kind=='name' else 'crozier')+'\\nVersion: '+('999' if kind=='version' else v)+'\\n')
@@ -31,8 +31,8 @@ with zipfile.ZipFile(p,'w') as z:
 }
 function pack(output,target) { return run(['python3','tools/release-packaging/release-native.py','--pack-only','--out',output,'--target',target,'--tag',`v${version}`]); }
 
-test('real packer validates both Darwin architectures and refuses malformed/ambiguous wheels', t=>{
-  for (const target of ['x86_64-apple-darwin','aarch64-apple-darwin']) {
+test('real packer validates the Apple Silicon target and refuses malformed/ambiguous wheels', t=>{
+  for (const target of ['aarch64-apple-darwin']) {
     const output=scratch(t); wheel(output,target);
     const previous=join(output,`stage-${target}`); mkdirSync(previous); writeFileSync(join(previous,'stale.txt'),'old unshipped content');
     const built=pack(output,target); assert.equal(built.status,0,built.stderr);
@@ -52,7 +52,7 @@ print(json.dumps({'archive':hashlib.sha256(a).hexdigest(),'wheel':hashlib.sha256
     assert.deepEqual(JSON.parse(contents.stdout),[...golden.archiveContents].sort());
     assert.equal(contract.archive.split('/').at(-1),golden.platforms.find(p=>p.target===target).archive.replace('<tag>',`v${version}`));
   }
-  for (const target of ['x86_64-apple-darwin','x86_64-unknown-linux-gnu']) for (const kind of ['executable','metadata','version','wheel-arch','binary-arch','cpu','wheel-os','name','duplicate-executable','duplicate-metadata','corrupt','filename-name','filename-version','filename-python','filename-abi','ambiguous']) {
+  for (const target of ['aarch64-apple-darwin','x86_64-unknown-linux-gnu']) for (const kind of ['executable','metadata','version','wheel-arch','binary-arch','cpu','wheel-os','name','duplicate-executable','duplicate-metadata','corrupt','filename-name','filename-version','filename-python','filename-abi','ambiguous']) {
     const output=scratch(t); const path=wheel(output,target,kind);
     if(kind==='corrupt') writeFileSync(path,'invalid zip bytes');
     if(kind==='ambiguous') cpSync(path,join(output,`wheels-${target}`,'duplicate.whl'));
@@ -62,24 +62,25 @@ print(json.dumps({'archive':hashlib.sha256(a).hexdigest(),'wheel':hashlib.sha256
 
 test('production Linux handoff uploads staged Darwin archives/checksums/bundles and carries wheels; missing products or transport failure refuse', t=>{
   const output=scratch(t), bin=join(output,'bin'); mkdirSync(bin);
-  for(const target of ['x86_64-apple-darwin','aarch64-apple-darwin']) { wheel(output,target); const built=pack(output,target); assert.equal(built.status,0,built.stderr); }
+  for(const target of ['aarch64-apple-darwin']) { wheel(output,target); const built=pack(output,target); assert.equal(built.status,0,built.stderr); }
   const calls=join(output,'calls.json'), fake=join(bin,'gh');
   writeFileSync(fake,`#!/usr/bin/env python3\nimport sys,json,os\njson.dump(sys.argv[1:],open(os.environ['GH_CALLS'],'w'))\nraise SystemExit(int(os.environ.get('GH_FAILURE','0')))\n`); chmodSync(fake,0o755);
-  const intel=join(output,'intel.json'), arm=join(output,'arm.json'); writeFileSync(intel,'signed-intel-boundary'); writeFileSync(arm,'signed-arm-boundary');
+  const arm=join(output,'arm.json'); writeFileSync(arm,'signed-arm-boundary');
   const env={PATH:`${bin}:${process.env.PATH}`,GITHUB_REPOSITORY:'nickderobertis/crozier',GH_CALLS:calls};
-  const args=['bash','tools/release-packaging/publish-darwin.sh',output,`v${version}`,intel,arm];
+  const args=['bash','tools/release-packaging/publish-darwin.sh',output,`v${version}`,arm];
   const published=run(args,env); assert.equal(published.status,0,published.stderr);
   const argv=JSON.parse(readFileSync(calls,'utf8')); assert.deepEqual(argv.slice(0,5),['release','upload',`v${version}`,'--repo','nickderobertis/crozier']);
   assert.equal(argv.at(-1),'--clobber');
   const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8'));
-  for(const target of ['x86_64-apple-darwin','aarch64-apple-darwin']) {
+  for(const target of ['aarch64-apple-darwin']) {
     const expected=golden.platforms.find(p=>p.target===target);
     for(const kind of ['archive','checksum','attestation']) assert.ok(argv.includes(join(output,`v${version}`,expected[kind].replace('<tag>',`v${version}`))));
     assert.equal(readdirSync(join(output,`wheels-${target}`)).filter(n=>n.endsWith('.whl')).length,1);
   }
-  assert.equal(readFileSync(join(output,`v${version}`,`crozier-v${version}-x86_64-apple-darwin.sigstore.json`),'utf8'),'signed-intel-boundary');
+  assert.equal(readFileSync(join(output,`v${version}`,`crozier-v${version}-aarch64-apple-darwin.sigstore.json`),'utf8'),'signed-arm-boundary');
+  assert.equal(argv.some(arg=>arg.includes('x86_64-apple-darwin')),false,'no Intel macOS asset is published');
   const invalidTag=[...args]; invalidTag[3]='v1.2.3/escape'; const invalid=run(invalidTag,env); assert.equal(invalid.status,1); assert.match(invalid.stderr,/unsupported release tag/);
-  for(const index of [4,5]) { const missingBundle=[...args]; missingBundle[index]=join(output,'missing-bundle.json'); const refused=run(missingBundle,env); assert.equal(refused.status,1); assert.match(refused.stderr,/rerun the Linux attestation steps/); }
+  for(const index of [4]) { const missingBundle=[...args]; missingBundle[index]=join(output,'missing-bundle.json'); const refused=run(missingBundle,env); assert.equal(refused.status,1); assert.match(refused.stderr,/rerun the Linux attestation steps/); }
   const missingRepo=run(args,{...env,GITHUB_REPOSITORY:''}); assert.equal(missingRepo.status,1); assert.match(missingRepo.stderr,/set it to owner\/repository/);
   const wheelDir=join(output,'wheels-aarch64-apple-darwin'), wheelPath=join(wheelDir,readdirSync(wheelDir).find(n=>n.endsWith('.whl')));
   rmSync(wheelPath); const missingWheel=run(args,env); assert.equal(missingWheel.status,1); assert.match(missingWheel.stderr,/missing staged .* wheel/); wheel(output,'aarch64-apple-darwin');
@@ -92,8 +93,8 @@ test('production Linux handoff uploads staged Darwin archives/checksums/bundles 
 test('actual workflow artifact paths and signer subjects feed the actual Linux publication command and wheel handoff', t=>{
   const jobs=parse(readFileSync('.github/workflows/release.yml','utf8')).jobs;
   const root=scratch(t), macTemp=join(root,'mac'), linux=join(root,'linux'); mkdirSync(linux,{recursive:true});
-  const tag=`v${version}`, targets=jobs.darwin.env.DARWIN_TARGETS.split(' ');
-  const builder=jobs.darwin.steps.find(s=>s.name==='Build and install both staged products');
+  const tag=`v${version}`, targets=[jobs.darwin.env.DARWIN_TARGET];
+  const builder=jobs.darwin.steps.find(s=>s.name==='Build and install the staged products');
   const subdirectory=/--out "\$RUNNER_TEMP\/([^"]+)"/.exec(builder.run)[1];
   const sourceRoot=join(macTemp,subdirectory);
   for(const target of targets) { wheel(sourceRoot,target); const packed=pack(sourceRoot,target); assert.equal(packed.status,0,packed.stderr); }
@@ -124,7 +125,7 @@ test('actual workflow artifact paths and signer subjects feed the actual Linux p
     writeFileSync(bundle,JSON.stringify({apiBoundary:'attest-build-provenance',subject,sha256:createHash('sha256').update(readFileSync(path)).digest('hex')}));
     context.steps[signer.id]={outputs:{'bundle-path':bundle}}; subjects.push({target,bundle});
   }
-  const publish=jobs['publish-darwin'].steps.find(s=>s.name==='Publish Darwin archives and bundles');
+  const publish=jobs['publish-darwin'].steps.find(s=>s.name==='Publish Darwin archive and bundle');
   const env=Object.fromEntries(Object.entries(publish.env).map(([key,value])=>[key,render(value)]));
   const result=run(['bash','-e','-c',publish.run],{...env,PATH:`${bin}:${process.env.PATH}`,GITHUB_REF_NAME:tag,GITHUB_REPOSITORY:context.github.repository,GH_CALLS:calls},linux);
   assert.equal(result.status,0,result.stderr);
@@ -188,6 +189,31 @@ test('release builder help documents statuses and invalid invocation uses argpar
   assert.equal(help.status,0); assert.match(help.stdout.replace(/\s+/g,' '),/0 success; 1 operational or validation failure; 2 invalid invocation/);
   const invalid=run([...args,'--target','unknown']);
   assert.equal(invalid.status,2); assert.match(invalid.stderr,/invalid choice/); assert.equal(invalid.stdout,'');
+  // Planner ruling: Intel macOS is discontinued, refused by name before any build.
+  for (const flags of [[],['--pack-only']]) {
+    const intel=run([...args,'--target','x86_64-apple-darwin','--tag',`v${version}`,'--out',join(tmpdir(),'never-created'),...flags]);
+    assert.equal(intel.status,2); assert.match(intel.stderr,/Intel macOS is no longer supported; build aarch64-apple-darwin/);
+  }
+});
+
+// The real installer, with only the host's `uname`/`sysctl` doubled: Intel macOS
+// is refused with guidance, while Apple Silicon (natively or under a Rosetta
+// shell) still resolves the arm64 archive. The mirror is empty, so the accepted
+// cases stop at the download and name the archive they asked for.
+test('install.sh refuses Intel macOS and resolves Apple Silicon to the arm64 archive', t=>{
+  const dir=scratch(t), bin=join(dir,'bin'), mirror=join(dir,'mirror'); mkdirSync(bin); mkdirSync(mirror);
+  writeFileSync(join(bin,'uname'),'#!/bin/sh\ncase "$1" in -s) echo "$FAKE_OS";; -m) echo "$FAKE_ARCH";; *) echo "$FAKE_OS";; esac\n'); chmodSync(join(bin,'uname'),0o755);
+  writeFileSync(join(bin,'sysctl'),'#!/bin/sh\necho "$FAKE_TRANSLATED"\n'); chmodSync(join(bin,'sysctl'),0o755);
+  const install=(os,arch,translated='0')=>run(['sh','scripts/install.sh','--version',`v${version}`,'--to',join(dir,'installed')],{PATH:`${bin}:${process.env.PATH}`,FAKE_OS:os,FAKE_ARCH:arch,FAKE_TRANSLATED:translated,CROZIER_RELEASE_BASE_URL:`file://${mirror}`,CROZIER_CHECKSUM_BASE_URL:`file://${mirror}`});
+  const intel=install('Darwin','x86_64');
+  assert.equal(intel.status,1); assert.match(intel.stderr,/Intel macOS \(x86_64\) is no longer supported: crozier publishes Apple Silicon \(arm64\) macOS binaries only; build from source with 'cargo install crozier --locked'/);
+  assert.equal(existsSync(join(dir,'installed')),false);
+  for (const [arch,translated] of [['arm64','0'],['x86_64','1']]) {
+    const arm=install('Darwin',arch,translated);
+    assert.notEqual(arm.status,0); assert.doesNotMatch(arm.stderr,/no longer supported/); assert.match(arm.stderr,/aarch64-apple-darwin/);
+  }
+  const linux=install('Linux','x86_64');
+  assert.doesNotMatch(linux.stderr,/no longer supported/); assert.match(linux.stderr,/x86_64-unknown-linux-gnu/);
 });
 
 

@@ -7,7 +7,6 @@ import argparse
 import hashlib
 import json
 import os
-import platform
 import re
 import shutil
 import struct
@@ -28,15 +27,18 @@ ReleaseTag = NewType("ReleaseTag", str)
 Sha256 = NewType("Sha256", str)
 
 
+# macOS ships Apple Silicon only: Intel macOS is no longer released.
+DISCONTINUED_MAC = "x86_64-apple-darwin"
+
+
 class Target(str, Enum):
-    INTEL_MAC = "x86_64-apple-darwin"
     ARM_MAC = "aarch64-apple-darwin"
     INTEL_LINUX = "x86_64-unknown-linux-gnu"
     ARM_LINUX = "aarch64-unknown-linux-gnu"
 
     @property
     def darwin(self) -> bool:
-        return self in (Target.INTEL_MAC, Target.ARM_MAC)
+        return self == Target.ARM_MAC
 
     @property
     def arm(self) -> bool:
@@ -109,7 +111,7 @@ def validate_wheel(wheel: Path, target: Target, version: str) -> bytes:
         if not all(re.fullmatch(platform_pattern, tag) for tag in platform_tag.split(".")):
             raise ValueError(f"wheel {wheel.name} has the wrong platform for {target.value}; rebuild with that target")
         if target.darwin:
-            expected = 0x0100000C if target.arm else 0x01000007
+            expected = 0x0100000C
             valid = (
                 len(binary) >= 8
                 and binary[:4] == b"\xcf\xfa\xed\xfe"
@@ -194,18 +196,15 @@ def build(target: Target, tag: str, output: Path) -> BuildResult:
 
 
 def smoke(target: Target, tag: str, output: Path, built: BuildResult) -> None:
-    # llmlint: ignore[changed_behavior_has_e2e] Intel-on-ARM execution requires an Apple Silicon/Rosetta runner. Host-native installation and both Darwin artifact contracts are tested locally; the Mac release job installs and runs both architectures.
-    prefix = ["arch", "-x86_64"] if target == Target.INTEL_MAC and platform.machine() == "arm64" else []
     installed = output / f"installed-{target.value}"
     # Distinct staged URLs replace forge transport, preserving real installer
-    # checksum verification. Rosetta selects Intel uname and executes its CLI.
+    # checksum verification.
     checksums = output / "checksum-root"
     checksums.mkdir(exist_ok=True)
     shutil.copytree(output / tag, checksums / tag, dirs_exist_ok=True)
     env = {**os.environ, "CROZIER_RELEASE_BASE_URL": output.as_uri(), "CROZIER_CHECKSUM_BASE_URL": checksums.as_uri()}
-    run(*prefix, "sh", "scripts/install.sh", "--version", tag, "--to", str(installed), env=env)
+    run("sh", "scripts/install.sh", "--version", tag, "--to", str(installed), env=env)
     run(
-        *prefix,
         "bash",
         "scripts/smoke.sh",
         built.version,
@@ -214,8 +213,7 @@ def smoke(target: Target, tag: str, output: Path, built: BuildResult) -> None:
     venv = output / f"venv-{target.value}"
     run("python3", "-m", "venv", str(venv))
     wheel_install = output / f"wheel-installed-{target.value}"
-    # py3-none executable wheels need no Intel Python: pip stages the platform
-    # explicitly, and Rosetta executes the resulting Intel CLI.
+    # py3-none executable wheels install for their declared platform explicitly.
     wheel_platform = built.wheel.name[:-4].rsplit("-", 1)[-1]
     run(
         str(venv / "bin/python"),
@@ -232,7 +230,6 @@ def smoke(target: Target, tag: str, output: Path, built: BuildResult) -> None:
         str(built.wheel),
     )
     run(
-        *prefix,
         "bash",
         "scripts/smoke.sh",
         built.version,
@@ -245,13 +242,15 @@ def main() -> None:
         description=__doc__,
         epilog="Exit statuses: 0 success; 1 operational or validation failure; 2 invalid invocation.",
     )
-    parser.add_argument("--target", required=True, choices=[t.value for t in Target])
+    parser.add_argument("--target", required=True, choices=[t.value for t in Target] + [DISCONTINUED_MAC])
     parser.add_argument("--tag", required=True)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument(
         "--pack-only", action="store_true", help="Validate and pack an existing wheel without compilation or execution"
     )
     args = parser.parse_args()
+    if args.target == DISCONTINUED_MAC:
+        parser.error(f"{DISCONTINUED_MAC}: Intel macOS is no longer supported; build {Target.ARM_MAC.value}")
     target = Target(args.target)
     output = args.out.resolve()
     built = (

@@ -9,8 +9,18 @@ export const classes = [
   ['manual-default','workflow_dispatch'], ['manual-opt-in','workflow_dispatch'],
 ];
 export const classificationIds=['classification/release-plz-2026-10-12','classification/release-plz-forged','classification/unknown','classification/release-plz-mixed'];
+// A draft lift (`ready_for_review`) of the ordinary PR: one whose head already
+// passed the Mac job, and one whose proof the API cannot establish.
+export const liftIds=['lift/proven','lift/unproven'];
+const routeIds=[...classificationIds,...liftIds];
 export function scenarioIds() {
-  return [...classes.flatMap(([id])=>['source','version','dependency'].flatMap(diff=>['same','fork'].flatMap(owner=>['false','true'].flatMap(crates=>['false','true'].map(pypi=>`${id}/${diff}/${owner}/crates=${crates}/pypi=${pypi}`))))),...classificationIds].sort();
+  return [...classes.flatMap(([id])=>['source','version','dependency'].flatMap(diff=>['same','fork'].flatMap(owner=>['false','true'].flatMap(crates=>['false','true'].map(pypi=>`${id}/${diff}/${owner}/crates=${crates}/pypi=${pypi}`))))),...routeIds].sort();
+}
+// The single-push lifecycle: its synchronize run (drafted or not), the proven
+// lift of a draft, base/release/downstream automation and the release PR.
+export function lifecycleScenarios(scenarios, lifecycle) {
+  const selected=scenarios.filter(s=>['pr-synchronize','base-push','release-merge','tag-push','release-published','downstream','repository-dispatch','schedule'].includes(s.class) && s.diff===lifecycle.diff && s.fork===lifecycle.fork && s.publish.crates===lifecycle.crates && s.publish.pypi===lifecycle.pypi);
+  return [...selected,scenarios.find(s=>s.id==='lift/proven'),scenarios.find(s=>s.id==='classification/release-plz-2026-10-12')];
 }
 export function lifecycleIds() {
   return [false,true].flatMap(fork=>['source','version','dependency'].flatMap(diff=>['false','true'].flatMap(crates=>['false','true'].map(pypi=>JSON.stringify([fork,diff,crates,pypi]))))).sort();
@@ -20,14 +30,14 @@ export function recordingDigest(telemetry) {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 export function validateTelemetry(telemetry, sourceDigest) {
-  if (telemetry.schemaVersion !== 2 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
+  if (telemetry.schemaVersion !== 3 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
   if (telemetry.recordingDigest !== recordingDigest(telemetry)) throw new Error('incomplete/corrupted workload telemetry: rerun github-workflows:test');
   const scenarios=telemetry.scenarios, lifecycles=telemetry.lifecycles;
   if (!Array.isArray(scenarios) || !Array.isArray(lifecycles) || JSON.stringify(scenarios.map(s=>s.id).sort()) !== JSON.stringify(scenarioIds()) || JSON.stringify(lifecycles.map(l=>JSON.stringify([l.fork,l.diff,l.crates,l.pypi])).sort()) !== JSON.stringify(lifecycleIds())) throw new Error('incomplete workload telemetry: run github-workflows:test');
   const graph = workflows();
   // llmlint: ignore[boundary_inputs_validated] Manager ruling c-7641e823c143fd3f2d19efbbe2653e65: this recorded telemetry is produced by this repository's own recorder in the same job. Readers never rerun scenarios; forged-row resistance is out of scope for a cost report. Keep source-digest, workload identity, trigger/run population and structural checks for stale or incomplete recordings.
   for (const scenario of scenarios) {
-    if (!classificationIds.includes(scenario.id)) {
+    if (!routeIds.includes(scenario.id)) {
       const [eventClass,diff,ownership,crates,pypi]=scenario.id.split('/');
       if (scenario.class !== eventClass || scenario.diff !== diff || scenario.fork !== (ownership === 'fork') || scenario.publish?.crates !== crates.slice(7) || scenario.publish?.pypi !== pypi.slice(5)) throw new Error(`invalid telemetry scenario identity ${scenario.id}`);
     }
@@ -46,9 +56,7 @@ export function validateTelemetry(telemetry, sourceDigest) {
     }
   }
   for (const lifecycle of lifecycles) {
-    const selected=scenarios.filter(s=>['pr-synchronize','base-push','release-merge','tag-push','release-published','downstream','repository-dispatch','schedule'].includes(s.class) && s.diff===lifecycle.diff && s.fork===lifecycle.fork && s.publish.crates===lifecycle.crates && s.publish.pypi===lifecycle.pypi);
-    selected.push(scenarios.find(s=>s.id==='classification/release-plz-2026-10-12'));
-    const expected=selected.flatMap(s=>s.runs.filter(r=>r.rows.some(row=>row.macos)).map(r=>({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
+    const expected=lifecycleScenarios(scenarios,lifecycle).flatMap(s=>s.runs.filter(r=>r.rows.some(row=>row.macos)).map(r=>({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
     if (JSON.stringify(lifecycle.runs)!==JSON.stringify(expected)) throw new Error('inconsistent lifecycle telemetry');
   }
 }

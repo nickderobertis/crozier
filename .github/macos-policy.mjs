@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // One authority for release-only omission. The PAT author is also a human;
 // only same-repository release-plz heads with a semantic release diff qualify.
+// A draft lift (`ready_for_review`) may instead reuse a Mac proof this same
+// workflow already passed on the exact head; anything short of that proof runs Mac.
 import { execFileSync } from 'node:child_process';
 import { readFileSync, appendFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -10,6 +12,9 @@ class InvocationError extends Error {}
 const versionPattern = /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/;
 const repositoryPattern = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/;
 const refPattern = /^[A-Za-z0-9][A-Za-z0-9._/-]*$/;
+const shaPattern = /^[0-9a-f]{40}$/;
+// The display name of ci.yml's Mac job; a renamed job proves nothing.
+export const macJobName = 'macOS check, SDK environment and install';
 function git(...args) {
   return execFileSync('git', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
 }
@@ -69,15 +74,59 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
     return ordinary(`unreadable release classification: ${error.message}`);
   }
 }
-function main() {
+async function api(env, path) {
+  const response = await fetch(`${env.GITHUB_API_URL}${path}`, {
+    headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GITHUB_TOKEN}`, 'X-GitHub-Api-Version': '2022-11-28' },
+    signal: AbortSignal.timeout(20000),
+  });
+  if (!response.ok) throw new Error(`GitHub API ${path.split('?')[0]} answered ${response.status}`);
+  return response.json();
+}
+// Resolves to the earlier run's URL only when this workflow's Mac job already
+// succeeded on a macOS runner at exactly the lifted head and no other Mac job
+// there disagrees; every other outcome is a reason to run Mac again.
+export async function provenMacRun(event, env = process.env) {
+  const sha = event?.pull_request?.head?.sha, repository = event?.repository?.full_name;
+  if (typeof sha !== 'string' || !shaPattern.test(sha)) return { reason: 'no exact head SHA to match' };
+  if (typeof repository !== 'string' || !repositoryPattern.test(repository)) return { reason: 'malformed repository.full_name' };
+  if (!env.GITHUB_TOKEN || !/^https?:\/\/[^\s]+$/.test(env.GITHUB_API_URL ?? '')) return { reason: 'no GitHub API credential or URL' };
+  const workflow = env.GITHUB_WORKFLOW_REF?.startsWith(`${repository}/`) ? env.GITHUB_WORKFLOW_REF.slice(repository.length + 1).split('@')[0] : '';
+  if (!/^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(workflow)) return { reason: 'unknown workflow path' };
+  try {
+    const listed = await api(env, `/repos/${repository}/actions/runs?head_sha=${sha}&event=pull_request&status=completed&per_page=100`);
+    if (!Array.isArray(listed?.workflow_runs)) return { reason: 'unreadable workflow run list' };
+    const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_sha === sha && String(run.id) !== String(env.GITHUB_RUN_ID));
+    const proofs = [];
+    for (const run of runs) {
+      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string') return { reason: 'unreadable workflow run' };
+      const jobs = await api(env, `/repos/${repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`);
+      if (!Array.isArray(jobs?.jobs)) return { reason: `unreadable jobs of ${run.html_url}` };
+      for (const job of jobs.jobs.filter(job => job?.name === macJobName)) {
+        if (job.conclusion === 'skipped') continue;
+        if (job.conclusion !== 'success' || job.head_sha !== sha) return { reason: `Mac job concluded ${job.conclusion ?? 'unknown'} at ${job.head_sha ?? 'unknown head'} in ${run.html_url}` };
+        if (Array.isArray(job.labels) && job.labels.some(label => typeof label === 'string' && label.startsWith('macos-'))) proofs.push(run.html_url);
+      }
+    }
+    return proofs.length ? { url: proofs[0] } : { reason: 'no completed Mac job on this head' };
+  } catch (error) {
+    return { reason: `unreadable Mac proof: ${error.message}` };
+  }
+}
+async function main() {
   const args = process.argv.slice(2);
   if (args[0] !== 'classify' || args.length !== 7 || args[1] !== '--event' || args[3] !== '--base' || args[5] !== '--head') throw new InvocationError('usage: node .github/macos-policy.mjs classify --event JSON --base REF --head REF');
-  let decision;
-  try { decision = classify(JSON.parse(readFileSync(args[2], 'utf8')), args[4], args[6]); }
+  let decision, event;
+  try { event = JSON.parse(readFileSync(args[2], 'utf8')); decision = classify(event, args[4], args[6]); }
   catch (error) { decision = classify({}, args[4], args[6]); decision.reason += `; unreadable event: ${error.message}`; }
-  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `macosRequired=${decision.macosRequired}\n`);
+  if (decision.macosRequired && (process.env.GITHUB_EVENT_NAME ?? 'pull_request') === 'pull_request' && event?.action === 'ready_for_review') {
+    const proof = await provenMacRun(event);
+    decision = proof.url
+      ? { isReleaseOnly: false, macosRequired: false, reason: `draft lift: Mac proof reused from ${proof.url} on head ${event.pull_request.head.sha}`, reusedRun: proof.url }
+      : { ...decision, reason: `${decision.reason}; draft lift: ${proof.reason}, so the Mac job runs` };
+  }
+  if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `macosRequired=${decision.macosRequired}\nmacosReusedRun=${decision.reusedRun ?? ''}\n`);
   console.log(JSON.stringify(decision));
 }
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { main(); } catch (error) { console.error(error.message); process.exitCode = error instanceof InvocationError ? 2 : 1; }
+  main().catch(error => { console.error(error.message); process.exitCode = error instanceof InvocationError ? 2 : 1; });
 }
