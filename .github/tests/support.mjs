@@ -4,6 +4,7 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
 import { root } from '../workflow-graph.mjs';
+// llmlint: ignore-block[shell_test_tiers_stay_split] The task requires real Git histories and classifier subprocess journeys in node --test .github/tests/*.test.mjs. This shared fixture implements that mandated boundary proof; the manager-approved workload exception keeps it with its callers in this private recording project instead of moving it to a separate tier.
 export function history(t) {
   const dir = mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(), 'macos-policy-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
@@ -29,6 +30,7 @@ export function history(t) {
   }
   return { dir, base, baseFiles, heads, git, change, classify, invoke };
 }
+// llmlint: ignore-end[shell_test_tiers_stay_split]
 export function event(branch = 'feature/change', fork = false) {
   const repo = 'nickderobertis/crozier';
   return { action: 'synchronize', repository: { full_name: repo }, pull_request: { title: 'chore: release', user: { login: 'nickderobertis' }, head: { ref: branch, repo: { full_name: fork ? 'contributor/crozier' : repo } }, base: { ref: 'main', repo: { full_name: repo } } } };
