@@ -1,7 +1,6 @@
-//! `ci.yml` reports the required contexts on every pull request. A draft's runs
-//! report on its head commit, and marking it ready changes no commit, so the
-//! draft-time runs are the ones the merge path reads: triggering on
-//! `ready_for_review` would only run the whole of CI a second time.
+//! `ci.yml` reports the required contexts on every pull request, including when
+//! a draft becomes ready for review. The publication path requires fresh runs
+//! after that transition rather than relying on draft-time results.
 
 #[path = "../../../src/yaml.rs"]
 mod yaml;
@@ -11,7 +10,7 @@ use serde_json::Value;
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
-fn marking_a_draft_ready_does_not_rerun_ci() {
+fn marking_a_draft_ready_runs_the_required_checks() {
     let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let types: Vec<&str> = workflow
         .get("on")
@@ -24,8 +23,8 @@ fn marking_a_draft_ready_does_not_rerun_ci() {
         .collect();
     assert_eq!(
         types,
-        ["opened", "synchronize", "reopened"],
-        "ci.yml keeps the default pull_request types and does not add ready_for_review"
+        ["opened", "synchronize", "reopened", "ready_for_review"],
+        "ci.yml runs on draft lift as well as the default pull_request events"
     );
 }
 
