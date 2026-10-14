@@ -52,7 +52,7 @@ export async function githubApi(t, state) {
     const jobs = url.pathname.match(/^\/repos\/nickderobertis\/crozier\/actions\/runs\/(\d+)\/jobs$/);
     let body;
     if (state.status) { response.writeHead(state.status); response.end('{}'); return; }
-    if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = { workflow_runs: state.runs };
+    if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = { workflow_runs: state.runs, ...(state.total_count === undefined ? {} : { total_count: state.total_count }) };
     else if (jobs) body = { jobs: state.jobs[jobs[1]] === undefined ? [] : state.jobs[jobs[1]] };
     if (!body) { response.writeHead(404); response.end('{}'); return; }
     response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(body));
