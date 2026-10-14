@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.117](https://github.com/nickderobertis/crozier/compare/v0.0.116...v0.0.117) - 2026-10-13
+
+### Fixed
+
+- *(deps)* read OpenAPI documents with serde-saphyr in place of serde_yaml_ng ([#516](https://github.com/nickderobertis/crozier/pull/516))
+
 ## [0.0.116](https://github.com/nickderobertis/crozier/compare/v0.0.115...v0.0.116) - 2026-10-13
 
 ### Fixed
