@@ -223,6 +223,52 @@ fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
     }
 }
 
+/// The pool-maintenance budget builds the repository twice, so only the release
+/// pull request runs it, after the gate has passed, through its recipe; no other
+/// job in either workflow runs it.
+#[test]
+fn the_pool_maintenance_budget_runs_only_on_the_release_pull_request_after_the_gate() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let budget = job(&workflow, "pool-maintenance");
+    assert_eq!(budget.get("needs").and_then(Value::as_str), Some("gate"));
+    assert_eq!(
+        text(budget, "if"),
+        Some("github.event_name == 'pull_request' && startsWith(github.head_ref, 'release-plz-')"),
+        "the release pull request's head branch, as tools/ci/ci-tier.mjs names it"
+    );
+    let runs: Vec<&str> = steps(budget)
+        .iter()
+        .filter_map(|step| text(step, "run"))
+        .collect();
+    assert_eq!(
+        runs,
+        [
+            "just install-nx",
+            "just install-toolchain",
+            "just install-pruner",
+            "just budgets-pool-maintenance"
+        ]
+    );
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
+        let workflow: Value =
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        for (name, job) in workflow.get("jobs").and_then(Value::as_object).unwrap() {
+            if file == "ci.yml" && name == "pool-maintenance" {
+                continue;
+            }
+            let Some(steps) = job.get("steps").and_then(Value::as_array) else {
+                continue;
+            };
+            assert!(
+                !steps.iter().any(|step| text(step, "run")
+                    .is_some_and(|run| run.contains("budgets-pool-maintenance")
+                        || run.contains("pool-maintenance:budgets"))),
+                "{file}: job `{name}` runs the pool-maintenance budget"
+            );
+        }
+    }
+}
+
 /// A hand-cut Release can tag any commit, so release.yml re-gates it with the
 /// full sweep over everything the check matrix gates.
 #[test]

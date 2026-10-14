@@ -47,11 +47,13 @@
         "{workspaceRoot}/deny.toml",
         "{workspaceRoot}/crates/*/Cargo.toml",
         "{workspaceRoot}/tools/*/Cargo.toml",
+        "{workspaceRoot}/pool-maintenance/Cargo.toml",
         "{workspaceRoot}/src/**/*.rs",
         "{workspaceRoot}/tests/*.rs",
         "{workspaceRoot}/tests/support/**/*.rs",
         "{workspaceRoot}/crates/**/*.rs",
-        "{workspaceRoot}/tools/*/tests/**/*.rs"
+        "{workspaceRoot}/tools/*/tests/**/*.rs",
+        "{workspaceRoot}/pool-maintenance/tests/**/*.rs"
       ]
     },
     "doc": {

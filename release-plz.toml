@@ -39,3 +39,7 @@ release = false
 [[package]]
 name = "crozier-github-action"
 release = false
+
+[[package]]
+name = "crozier-pool-maintenance"
+release = false

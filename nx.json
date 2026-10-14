@@ -116,9 +116,31 @@
       "{workspaceRoot}/nx.json",
       "{workspaceRoot}/scripts/check-project-boundaries.mjs",
       "{workspaceRoot}/bun.lock"
+    ],
+    "production": [
+      "default"
     ]
   },
-  "targetDefaults": {},
+  "targetDefaults": {
+    "budgets": {
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        "^production",
+        {
+          "dependentTasksOutputFiles": "**/telemetry/*.json"
+        },
+        {
+          "externalDependencies": [
+            "@onebudgetspec/cli"
+          ]
+        }
+      ]
+    },
+    "budgets-host": {
+      "cache": false
+    }
+  },
   "boundaries": {
     "allow": {
       "type:crate": [

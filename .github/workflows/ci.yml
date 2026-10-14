@@ -147,6 +147,35 @@ jobs:
             exit 1
           fi
 
+  # The pool-maintenance budget (`crozier-pool-maintenance-seconds`,
+  # pool-maintenance/budgets.yaml): how long one declared pool maintenance pass
+  # takes. Its measurement builds the test targets twice, so no per-change path
+  # runs it: only the release pull request, once the gate has passed.
+  pool-maintenance:
+    name: pool-maintenance
+    needs: gate
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'release-plz-')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      # The budget check runs through Nx and the onebudgetspec CLI, both pinned
+      # in bun.lock.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Install Nx and onebudgetspec (bun.lock)
+        run: just install-nx
+      - name: Install the pinned Rust toolchain
+        run: just install-toolchain
+      - name: Install cargo-prune-superseded
+        run: just install-pruner
+      - name: Pool maintenance budget
+        run: just budgets-pool-maintenance
+
   # Live runtime e2e, SEPARATE from `just check` so the core gate stays Node-free:
   # boot a Prism OpenAPI mock server from each fixture's spec and drive the generated
   # SDK through every documented endpoint, asserting a value of the method's declared
