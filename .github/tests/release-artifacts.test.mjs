@@ -9,6 +9,7 @@ import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { parse } from 'yaml';
 import { expression } from '../workflow-graph.mjs';
+import { artifactName, artifactPath, isArtifact } from './support.mjs';
 
 function run(args,env={},cwd=undefined) { return spawnSync(args[0],args.slice(1),{encoding:'utf8',cwd,env:{...process.env,...env}}); }
 function scratch(t) { const root=mkdtempSync(join(process.env.ONEPIPELINE_NODE_SCRATCH_DIR ?? tmpdir(),'crozier-artifact-')); t.after(()=>rmSync(root,{recursive:true,force:true})); return root; }
@@ -50,7 +51,7 @@ print(json.dumps({'archive':hashlib.sha256(a).hexdigest(),'wheel':hashlib.sha256
     assert.equal(contents.status,0,contents.stderr);
     const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8'));
     assert.deepEqual(JSON.parse(contents.stdout),[...golden.archiveContents].sort());
-    assert.equal(contract.archive.split('/').at(-1),golden.platforms.find(p=>p.target===target).archive.replace('<tag>',`v${version}`));
+    assert.equal(artifactName(contract.archive),golden.platforms.find(p=>p.target===target).archive.replace('<tag>',`v${version}`));
   }
   for (const target of ['aarch64-apple-darwin','x86_64-unknown-linux-gnu']) for (const kind of ['executable','metadata','version','wheel-arch','binary-arch','cpu','wheel-os','name','duplicate-executable','duplicate-metadata','corrupt','filename-name','filename-version','filename-python','filename-abi','ambiguous']) {
     const output=scratch(t); const path=wheel(output,target,kind);
@@ -74,7 +75,7 @@ test('production Linux handoff uploads staged Darwin archives/checksums/bundles 
   const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8'));
   for(const target of ['aarch64-apple-darwin']) {
     const expected=golden.platforms.find(p=>p.target===target);
-    for(const kind of ['archive','checksum','attestation']) assert.ok(argv.includes(join(output,`v${version}`,expected[kind].replace('<tag>',`v${version}`))));
+    for(const kind of ['archive','checksum','attestation']) assert.ok(argv.some(arg=>isArtifact(arg,`v${version}/${expected[kind].replace('<tag>',`v${version}`)}`)),kind);
     assert.equal(readdirSync(join(output,`wheels-${target}`)).filter(n=>n.endsWith('.whl')).length,1);
   }
   assert.equal(readFileSync(join(output,`v${version}`,`crozier-v${version}-aarch64-apple-darwin.sigstore.json`),'utf8'),'signed-arm-boundary');
@@ -108,7 +109,7 @@ test('actual workflow artifact paths and signer subjects feed the actual Linux p
   // real upload globs and preserve their shared-root layout on download.
   for(const pattern of render(upload.with.path).trim().split('\n')) {
     const files=globSync(pattern.trim()); assert.ok(files.length,`empty workflow artifact pattern ${pattern}`);
-    for(const file of files) { const name=relative(sourceRoot,file); assert.ok(!name.startsWith('..')); const to=join(destination,name); mkdirSync(dirname(to),{recursive:true}); cpSync(file,to); transported.add(name); }
+    for(const file of files) { const name=relative(sourceRoot,file); assert.ok(!name.startsWith('..')); const to=join(destination,name); mkdirSync(dirname(to),{recursive:true}); cpSync(file,to); transported.add(artifactPath(name)); }
   }
   symlinkSync(resolve('tools'),join(linux,'tools'),'junction');
   const bin=join(linux,'bin'); mkdirSync(bin); const calls=join(linux,'calls.json'), fake=join(bin,'gh');
@@ -118,7 +119,7 @@ test('actual workflow artifact paths and signer subjects feed the actual Linux p
     const subject=render(signer.with['subject-path']), path=join(linux,subject); assert.equal(existsSync(path),true,subject);
     const target=targets.find(target=>subject.endsWith(`${target}.tar.gz`)); assert.ok(target,subject);
     const golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8')).platforms.find(p=>p.target===target);
-    assert.equal(subject.split('/').at(-1),golden.archive.replace('<tag>',tag));
+    assert.equal(artifactName(subject),golden.archive.replace('<tag>',tag));
     const bundle=join(linux,`${signer.id}-bundle.json`);
     // Opaque signer-output bytes replace that third-party API; no claim of a
     // locally minted GitHub OIDC signature is made.
@@ -132,13 +133,13 @@ test('actual workflow artifact paths and signer subjects feed the actual Linux p
   const argv=JSON.parse(readFileSync(calls,'utf8'));
   for(const {target,bundle} of subjects) {
     const expected=`crozier-${tag}-${target}.sigstore.json`;
-    assert.ok(argv.includes(`${download.with.path}/${tag}/${expected}`));
+    assert.ok(argv.some(arg=>isArtifact(arg,`${download.with.path}/${tag}/${expected}`)),expected);
     assert.equal(readFileSync(join(destination,tag,expected),'utf8'),readFileSync(bundle,'utf8'));
     assert.ok(transported.has(`${tag}/crozier-${tag}-${target}.tar.gz`));
   }
   const handoff=jobs['publish-darwin'].steps.find(s=>s.uses?.startsWith('actions/upload-artifact'));
   const wheels=globSync(handoff.with.path,{cwd:linux});
-  for(const target of targets) assert.ok(wheels.some(path=>path.includes(`wheels-${target}/`)),`missing workflow wheel handoff ${target}`);
+  for(const target of targets) assert.ok(wheels.some(path=>artifactPath(path).includes(`wheels-${target}/`)),`missing workflow wheel handoff ${target}`);
   assert.ok(jobs['publish-pypi'].steps.some(s=>s.uses?.startsWith('actions/download-artifact') && s.with.pattern==='wheels-*'));
 });
 
@@ -230,6 +231,23 @@ test('ARM Linux pack-only rejects an Intel executable and recovers with its decl
   assert.equal(contract.target,target);
 });
 
+
+// Regression: a Windows runner reports artifacts as drive-lettered,
+// backslash-separated absolute paths; the comparisons above must still match
+// them by normalised relative path and basename, and still reject neighbours.
+test('artifact comparisons match Windows-style absolute paths by relative path and basename', ()=>{
+  const tag=`v${version}`, golden=JSON.parse(readFileSync('.github/tests/release-contract.json','utf8')).platforms.find(p=>p.target==='aarch64-apple-darwin');
+  const name=golden.archive.replace('<tag>',tag);
+  const windows=`C:\\a\\_temp\\darwin-products\\${tag}\\${name}`;
+  assert.equal(artifactName(windows),name);
+  assert.equal(artifactPath(`${tag}\\${name}`),`${tag}/${name}`);
+  assert.equal(isArtifact(windows,`${tag}/${name}`),true);
+  assert.equal(isArtifact(`D:\\work\\darwin-products\\${tag}\\${name}`,`darwin-products/${tag}/${name}`),true);
+  assert.equal(isArtifact(windows,`.\\${tag}\\${name}`),true);
+  assert.equal(isArtifact(`C:\\a\\other-${name}`,name),false,'a suffix inside a segment is not the artifact');
+  assert.equal(isArtifact(`C:\\a\\v0.0.0\\${name}`,`${tag}/${name}`),false,'a different tag directory is not the artifact');
+  assert.equal(artifactPath('wheels-aarch64-apple-darwin\\crozier.whl').includes('wheels-aarch64-apple-darwin/'),true);
+});
 
 test('Darwin publication rejects missing arguments with invocation status 2', () => {
   const invalid = run(['bash', 'tools/release-packaging/publish-darwin.sh']);

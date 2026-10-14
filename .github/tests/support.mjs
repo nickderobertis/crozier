@@ -66,3 +66,14 @@ export function liftEvent(sha, branch = 'feature/change', fork = false) {
   pr.action = 'ready_for_review'; pr.pull_request.head.sha = sha;
   return pr;
 }
+
+// Artifact names and paths compare platform-independently: a runner may hand
+// back `C:\…\v1\crozier.tar.gz` where the contract says `v1/crozier.tar.gz`.
+export function artifactPath(path) { return String(path).replace(/\\/g, '/').replace(/^(\.\/)+/, ''); }
+export function artifactName(path) { return artifactPath(path).split('/').at(-1); }
+// True when `actual` (absolute or relative, either separator) ends at the
+// relative artifact path `expected` on a whole path-segment boundary.
+export function isArtifact(actual, expected) {
+  const a = artifactPath(actual), e = artifactPath(expected);
+  return a === e || a.endsWith(`/${e}`);
+}
