@@ -80,6 +80,12 @@ test('production Linux handoff uploads staged Darwin archives/checksums/bundles 
   }
   assert.equal(readFileSync(join(output,`v${version}`,`crozier-v${version}-aarch64-apple-darwin.sigstore.json`),'utf8'),'signed-arm-boundary');
   assert.equal(argv.some(arg=>arg.includes('x86_64-apple-darwin')),false,'no Intel macOS asset is published');
+  // A Windows runner hands the script a backslash-separated staged path.
+  const cwd=dirname(dirname(output)), backslashed=relative(cwd,output).replaceAll('/','\\');
+  assert.ok(backslashed.includes('\\'));
+  const windows=run(['bash','tools/release-packaging/publish-darwin.sh',backslashed,`v${version}`,arm].map((arg,i)=>i===1?resolve(arg):arg),env,cwd);
+  assert.equal(windows.status,0,windows.stderr);
+  assert.ok(JSON.parse(readFileSync(calls,'utf8')).some(arg=>isArtifact(arg,`v${version}/crozier-v${version}-aarch64-apple-darwin.tar.gz`)));
   const invalidTag=[...args]; invalidTag[3]='v1.2.3/escape'; const invalid=run(invalidTag,env); assert.equal(invalid.status,1); assert.match(invalid.stderr,/unsupported release tag/);
   for(const index of [4]) { const missingBundle=[...args]; missingBundle[index]=join(output,'missing-bundle.json'); const refused=run(missingBundle,env); assert.equal(refused.status,1); assert.match(refused.stderr,/rerun the Linux attestation steps/); }
   const missingRepo=run(args,{...env,GITHUB_REPOSITORY:''}); assert.equal(missingRepo.status,1); assert.match(missingRepo.stderr,/set it to owner\/repository/);

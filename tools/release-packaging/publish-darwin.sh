@@ -6,7 +6,8 @@ if [ "$#" -ne 3 ] || [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
     echo "usage: publish-darwin.sh STAGED TAG BUNDLE" >&2
     exit 2
 fi
-staged="$1"
+# A Windows runner passes D:\a\..., whose backslashes are glob escapes below.
+staged="${1//\\//}"
 tag="$2"
 bundle="$3"
 # Apple Silicon only: Intel macOS is no longer released.
