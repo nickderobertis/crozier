@@ -42,7 +42,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "cargo nextest run --locked -p crozier-pool-maintenance"
+        "command": "cargo nextest run --locked --no-tests=pass -p crozier-pool-maintenance"
       },
       "cache": true,
       "inputs": [
