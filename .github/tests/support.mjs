@@ -52,8 +52,11 @@ export async function githubApi(t, state) {
     const jobs = url.pathname.match(/^\/repos\/nickderobertis\/crozier\/actions\/runs\/(\d+)\/jobs$/);
     let body;
     if (state.status) { response.writeHead(state.status); response.end('{}'); return; }
-    if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = { workflow_runs: state.runs, ...(state.total_count === undefined ? {} : { total_count: state.total_count }) };
-    else if (jobs) body = { jobs: state.jobs[jobs[1]] === undefined ? [] : state.jobs[jobs[1]] };
+    // Like GitHub, each listing reports its total_count; `total_count` and
+    // `jobs_total_count` (by run id) override it, and the value `omit` drops it.
+    const counted = (key, page, total) => total === 'omit' ? { [key]: page } : { total_count: total === undefined ? (Array.isArray(page) ? page.length : 0) : total, [key]: page };
+    if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = counted('workflow_runs', state.runs, state.total_count);
+    else if (jobs) body = counted('jobs', state.jobs[jobs[1]] === undefined ? [] : state.jobs[jobs[1]], state.jobs_total_count?.[jobs[1]]);
     if (!body) { response.writeHead(404); response.end('{}'); return; }
     response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(body));
   });

@@ -78,6 +78,15 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
     return ordinary(`unreadable release classification: ${error.message}`);
   }
 }
+// A listing proves completeness only when it reports a valid total that its
+// single page holds in full; anything else could hide a Mac request.
+function incomplete(listing, key, what) {
+  const total = listing?.total_count, page = listing?.[key];
+  if (!Array.isArray(page)) return `unreadable ${what}`;
+  if (!Number.isSafeInteger(total) || total < 0) return `unverifiable ${what}: total_count ${JSON.stringify(total) ?? 'missing'}`;
+  if (total !== page.length) return `ambiguous ${what}: total_count ${total} but ${page.length} returned`;
+  return '';
+}
 async function api(env, path) {
   const response = await fetch(`${env.GITHUB_API_URL}${path}`, {
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GITHUB_TOKEN}`, 'X-GitHub-Api-Version': '2022-11-28' },
@@ -111,8 +120,8 @@ export async function provenMacRun(event, env = process.env) {
     // any head: the exact head supplies the proof, and all of them decide
     // whether the pull request has spent a Mac runner yet.
     const listed = await api(env, `/repos/${repository}/actions/runs?branch=${encodeURIComponent(branch)}&event=pull_request&per_page=100`);
-    if (!Array.isArray(listed?.workflow_runs)) return { reason: 'unreadable workflow run list' };
-    if (Number.isSafeInteger(listed.total_count) && listed.total_count > listed.workflow_runs.length) return { reason: `ambiguous: ${listed.total_count} earlier runs exceed one page` };
+    const unlisted = incomplete(listed, 'workflow_runs', 'workflow run list');
+    if (unlisted) return { reason: unlisted };
     const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_repository?.full_name === headRepository && String(run.id) !== String(env.GITHUB_RUN_ID));
     const proofs = [];
     let requested = false;
@@ -123,7 +132,8 @@ export async function provenMacRun(event, env = process.env) {
       // An unfinished run may still request a Mac runner, so it never permits the fallback.
       if (pending) { if (same) return { reason: pending }; requested = true; }
       const jobs = await api(env, `/repos/${repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`);
-      if (!Array.isArray(jobs?.jobs)) return { reason: `unreadable jobs of ${run.html_url}` };
+      const unread = incomplete(jobs, 'jobs', `jobs of ${run.html_url}`);
+      if (unread) return { reason: unread };
       for (const job of jobs.jobs.filter(job => job?.name === macJobName)) {
         if (!requestedMac(job)) continue;
         requested = true;
