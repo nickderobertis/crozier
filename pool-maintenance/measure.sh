@@ -100,7 +100,7 @@ printf 'measure: removed %s of the alternative build'"'"'s %s entries; all %s ot
 
 # The backlog pass's report, appended to the timed pass's detail.
 if [ -n "${ONEBUDGETSPEC_RESULT:-}" ] && [ -f "$ONEBUDGETSPEC_RESULT" ]; then
-  python3 -I - "$ONEBUDGETSPEC_RESULT" "$scratch/backlog.json" <<'PY'
+  python3 -I -S - "$ONEBUDGETSPEC_RESULT" "$scratch/backlog.json" <<'PY'
 import json
 import sys
 
