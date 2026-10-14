@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.118](https://github.com/nickderobertis/crozier/compare/v0.0.117...v0.0.118) - 2026-10-14
+
+### Other
+
+- *(macos)* consolidate coverage and release builds ([#515](https://github.com/nickderobertis/crozier/pull/515))
+
 ## [0.0.117](https://github.com/nickderobertis/crozier/compare/v0.0.116...v0.0.117) - 2026-10-13
 
 ### Fixed
