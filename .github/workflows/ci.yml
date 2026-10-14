@@ -61,9 +61,10 @@ jobs:
     name: macOS check, SDK environment and install
     needs: macos-policy
     if: needs.macos-policy.outputs.macosRequired == 'true' || needs.macos-policy.outputs.macosReusedRun != '' || needs.macos-policy.outputs.macosLiftRefusal != '' || (github.event_name == 'workflow_dispatch' && inputs.macos-diagnostic)
-    # A draft lift never requests a Mac runner: from Linux it reports the run
-    # that already passed this job on its exact head, or fails with why it
-    # cannot (recovery: .github/AGENTS.md).
+    # A draft lift runs this on a Mac only when no earlier run of the pull
+    # request requested one; otherwise, from Linux, it reports the run that
+    # already passed this job on its exact head, or fails with why it cannot
+    # (recovery: .github/AGENTS.md).
     runs-on: ${{ (needs.macos-policy.outputs.macosReusedRun != '' || needs.macos-policy.outputs.macosLiftRefusal != '') && 'ubuntu-latest' || 'macos-latest' }}
     env:
       MAC_REUSED_RUN: ${{ needs.macos-policy.outputs.macosReusedRun }}

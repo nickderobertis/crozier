@@ -19,7 +19,9 @@ budgets:
     description: >-
       Maximum Mac-spending workflow runs over one PR push (with or without a
       draft lift along each modeled route: proof completed, in progress,
-      cancelled, failed, absent or API unavailable), its base merge,
+      cancelled, failed, only on another head or API unavailable, or the
+      fallback that runs Mac because no earlier run of the PR requested it,
+      counted like any other route), its base merge,
       version/changelog-only release PR and merge, release/tag build and all
       downstream automatic events. Manual diagnostics are excluded. Measurement
       uses workflow/call-graph telemetry only. Manager-approved separate scheduling

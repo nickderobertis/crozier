@@ -48,16 +48,18 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     scenarios.push({...s,decision,runs});
   }
   // Every lift route of the ordinary PR, classified against a doubled GitHub API.
-  // None requests a Mac runner; only the proven route can satisfy the Mac check.
-  const sha = h.heads.source, earlier = { id: 1, path: '.github/workflows/ci.yml', head_sha: sha, html_url: 'https://github.com/nickderobertis/crozier/actions/runs/1' };
-  const macJob = conclusion => ({ name: macJobName, conclusion, head_sha: sha, labels: ['macos-latest'] });
+  // Only the fallback route, where no earlier run requested Mac, requests a Mac
+  // runner; only the proven route satisfies the Mac check without one.
+  const sha = h.heads.source, earlier = { id: 1, path: '.github/workflows/ci.yml', head_sha: sha, head_repository: { full_name: 'nickderobertis/crozier' }, html_url: 'https://github.com/nickderobertis/crozier/actions/runs/1' };
+  const macJob = (conclusion, head = sha) => ({ name: macJobName, conclusion, head_sha: head, labels: ['macos-latest'] });
   const routes = {
     proven: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('success')] } },
     'in-progress': { runs: [{ ...earlier, status: 'in_progress' }], jobs: { 1: [macJob(null)] } },
     cancelled: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('cancelled')] } },
     failed: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('failure')] } },
-    absent: { runs: [], jobs: {} },
+    'other-head': { runs: [{ ...earlier, head_sha: h.heads.dependency, status: 'completed' }], jobs: { 1: [macJob('success', h.heads.dependency)] } },
     'api-unavailable': { status: 503 },
+    fallback: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [{ ...macJob('skipped'), labels: [] }] } },
   };
   assert.deepEqual(Object.keys(routes), liftRoutes);
   for (const [route, state] of Object.entries(routes)) {
@@ -66,10 +68,12 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     const s = { id: `lift/${route}`, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
     const runs = graph.filter(w => triggered(w.value, s)).map(w => ({ workflow: w.path, rows: resolveRun(w, s, decision) }));
     const ci = runs.find(r => r.workflow.endsWith('/ci.yml'));
-    assert.deepEqual(runs.flatMap(r => r.rows.filter(row => row.macos)), [], route);
-    assert.deepEqual(ci.rows.filter(r => r.job === 'macos').map(r => r.runner), ['ubuntu-latest'], route);
-    assert.equal(decision.macosRequired, false, route);
+    const fallback = route === 'fallback';
+    assert.deepEqual(runs.flatMap(r => r.rows.filter(row => row.macos).map(row => row.job)), fallback ? ['macos'] : [], route);
+    assert.deepEqual(ci.rows.filter(r => r.job === 'macos').map(r => r.runner), [fallback ? 'macos-latest' : 'ubuntu-latest'], route);
+    assert.equal(decision.macosRequired, fallback, route);
     if (route === 'proven') assert.equal(decision.reusedRun, earlier.html_url);
+    else if (fallback) { assert.match(decision.reason, /no earlier run of this pull request requested a Mac job/); assert.equal(decision.liftRefusal, undefined); }
     else assert.match(decision.liftRefusal, /draft lift has no Mac proof/, route);
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(ci.rows.find(r => r.job === name)?.result, 'success', name);
     scenarios.push({ ...s, decision, runs });
@@ -79,14 +83,14 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     const runs = lifecycleScenarios(scenarios,{fork,diff,crates,pypi,lift}).flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
     lifecycles.push({fork,diff,crates,pypi,lift,runs});
   }
-  const telemetry = {schemaVersion:4,sourceDigest:digest(),scenarios,lifecycles};
+  const telemetry = {schemaVersion:5,sourceDigest:digest(),scenarios,lifecycles};
   telemetry.recordingDigest=recordingDigest(telemetry);
   recorded=telemetry;
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
   writeFileSync(resolve(root,'.github/.telemetry/macos-policy.json'),JSON.stringify(telemetry,null,2)+'\n');
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
-test('a draft lift reports every required context, never requests Mac and never cancels the draft run', () => {
+test('a draft lift reports every required context, requests Mac only on fallback and never cancels the draft run', () => {
   const graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
   const url = 'https://github.com/nickderobertis/crozier/actions/runs/1';
   for (const [branch, fork, decision, runner] of [
@@ -94,6 +98,7 @@ test('a draft lift reports every required context, never requests Mac and never 
     ['feature/change', false, { macosRequired: false, liftRefusal: 'draft lift has no Mac proof on head x: absent' }, 'ubuntu-latest'],
     ['release-plz-test', false, { macosRequired: false }, undefined],
     ['release-plz-test', true, { macosRequired: false, liftRefusal: 'draft lift has no Mac proof on head x: absent' }, 'ubuntu-latest'],
+    ['feature/change', false, { macosRequired: true }, 'macos-latest'],
   ]) {
     const pr = event(branch, fork);
     pr.action = 'ready_for_review';
@@ -101,7 +106,7 @@ test('a draft lift reports every required context, never requests Mac and never 
     assert.equal(triggered(ci.value, scenario), true, 'the lift supplies the post-draft verdict');
     const rows = resolveRun(ci, scenario, decision);
     assert.deepEqual(rows.filter(row => row.job === 'macos' && row.result === 'success').map(row => row.runner), runner ? [runner] : []);
-    assert.equal(rows.filter(row => row.macos).length, 0);
+    assert.equal(rows.filter(row => row.macos).length, decision.macosRequired ? 1 : 0);
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', name);
   }
   // The lift waits behind the draft's run; every other event still cancels its predecessor.
@@ -191,7 +196,9 @@ test('recorded workload integrity rejects truncation, bad rows/runners and lifec
     t=>t.scenarios.find(s=>s.runs.some(r=>r.rows.some(row=>row.runner))).runs.find(r=>r.rows.some(row=>row.runner)).rows.find(row=>row.runner).runner='unresolved-runner',
     t=>t.lifecycles[0].runs.splice(0),
     t=>{t.scenarios.find(s=>s.id==='lift/failed').decision.macosRequired=true;},
-    t=>{delete t.scenarios.find(s=>s.id==='lift/absent').decision.liftRefusal;},
+    t=>{delete t.scenarios.find(s=>s.id==='lift/other-head').decision.liftRefusal;},
+    t=>{t.scenarios.find(s=>s.id==='lift/fallback').decision.macosRequired=false;},
+    t=>{t.scenarios.find(s=>s.id==='lift/fallback').decision.liftRefusal='x';},
     t=>{t.lifecycles=t.lifecycles.filter(l=>l.lift!=='in-progress');},
   ]) {
     const bad=structuredClone(recorded); change(bad); bad.recordingDigest=recordingDigest(bad);

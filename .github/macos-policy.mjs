@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 // One authority for release-only omission. The PAT author is also a human;
 // only same-repository release-plz heads with a semantic release diff qualify.
-// A draft lift (`ready_for_review`) never requests a Mac runner: it reuses a Mac
-// proof this same workflow already passed on the exact head, or its Mac check
-// fails on Linux with the reason (.github/AGENTS.md names the recovery).
+// A draft lift (`ready_for_review`) reuses a Mac proof this same workflow
+// already passed on the exact head. It requests a Mac runner only when no
+// earlier run of the pull request requested one at all; otherwise its Mac
+// check fails on Linux with the reason (.github/AGENTS.md names the recovery).
 import { execFileSync } from 'node:child_process';
 import { readFileSync, appendFileSync, realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -85,33 +86,54 @@ async function api(env, path) {
   if (!response.ok) throw new Error(`GitHub API ${path.split('?')[0]} answered ${response.status}`);
   return response.json();
 }
+// A Mac-named job requested a Mac runner unless it was skipped or its labels
+// show it ran on Linux (an earlier lift's reuse or refusal lane).
+function requestedMac(job) {
+  if (job.conclusion === 'skipped') return false;
+  return !(Array.isArray(job.labels) && job.labels.length && job.labels.every(label => typeof label === 'string' && !label.startsWith('macos-')));
+}
 // Resolves to the earlier run's URL only when this workflow's Mac job already
 // succeeded on a macOS runner at exactly the lifted head and no other Mac job
-// there disagrees; every other outcome is the reason the lift's Mac check fails.
+// there disagrees; to `fallback` only when every earlier run of this pull
+// request was read and none requested a Mac runner; every other outcome is the
+// reason the lift's Mac check fails.
 export async function provenMacRun(event, env = process.env) {
   const sha = event?.pull_request?.head?.sha, repository = event?.repository?.full_name;
+  const branch = event?.pull_request?.head?.ref, headRepository = event?.pull_request?.head?.repo?.full_name;
   if (typeof sha !== 'string' || !shaPattern.test(sha)) return { reason: 'no exact head SHA to match' };
   if (typeof repository !== 'string' || !repositoryPattern.test(repository)) return { reason: 'malformed repository.full_name' };
+  if (typeof branch !== 'string' || !refPattern.test(branch) || typeof headRepository !== 'string' || !repositoryPattern.test(headRepository)) return { reason: 'malformed pull_request head branch or repository' };
   if (!env.GITHUB_TOKEN || !/^https?:\/\/[^\s]+$/.test(env.GITHUB_API_URL ?? '')) return { reason: 'no GitHub API credential or URL' };
   const workflow = env.GITHUB_WORKFLOW_REF?.startsWith(`${repository}/`) ? env.GITHUB_WORKFLOW_REF.slice(repository.length + 1).split('@')[0] : '';
   if (!/^\.github\/workflows\/[\w.-]+\.ya?ml$/.test(workflow)) return { reason: 'unknown workflow path' };
   try {
-    const listed = await api(env, `/repos/${repository}/actions/runs?head_sha=${sha}&event=pull_request&per_page=100`);
+    // Every earlier run of this workflow for the pull request's head branch, at
+    // any head: the exact head supplies the proof, and all of them decide
+    // whether the pull request has spent a Mac runner yet.
+    const listed = await api(env, `/repos/${repository}/actions/runs?branch=${encodeURIComponent(branch)}&event=pull_request&per_page=100`);
     if (!Array.isArray(listed?.workflow_runs)) return { reason: 'unreadable workflow run list' };
-    const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_sha === sha && String(run.id) !== String(env.GITHUB_RUN_ID));
+    if (Number.isSafeInteger(listed.total_count) && listed.total_count > listed.workflow_runs.length) return { reason: `ambiguous: ${listed.total_count} earlier runs exceed one page` };
+    const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_repository?.full_name === headRepository && String(run.id) !== String(env.GITHUB_RUN_ID));
     const proofs = [];
+    let requested = false;
     for (const run of runs) {
-      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string' || !runUrlPattern.test(run.html_url)) return { reason: 'unreadable workflow run' };
-      if (run.status !== 'completed') return { reason: `Mac proof still ${typeof run.status === 'string' ? run.status.replace(/\W/g, '') : 'unknown'} in ${run.html_url}` };
+      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string' || !runUrlPattern.test(run.html_url) || typeof run.head_sha !== 'string') return { reason: 'unreadable workflow run' };
+      const same = run.head_sha === sha;
+      const pending = run.status !== 'completed' && `Mac proof still ${typeof run.status === 'string' ? run.status.replace(/\W/g, '') : 'unknown'} in ${run.html_url}`;
+      // An unfinished run may still request a Mac runner, so it never permits the fallback.
+      if (pending) { if (same) return { reason: pending }; requested = true; }
       const jobs = await api(env, `/repos/${repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`);
       if (!Array.isArray(jobs?.jobs)) return { reason: `unreadable jobs of ${run.html_url}` };
       for (const job of jobs.jobs.filter(job => job?.name === macJobName)) {
-        if (job.conclusion === 'skipped') continue;
+        if (!requestedMac(job)) continue;
+        requested = true;
+        if (!same) continue;
         if (job.conclusion !== 'success' || job.head_sha !== sha) return { reason: `Mac job concluded ${job.conclusion ?? 'unknown'} at ${job.head_sha ?? 'unknown head'} in ${run.html_url}` };
         if (Array.isArray(job.labels) && job.labels.some(label => typeof label === 'string' && label.startsWith('macos-'))) proofs.push(run.html_url);
       }
     }
-    return proofs.length ? { url: proofs[0] } : { reason: 'no completed Mac job on this head' };
+    if (proofs.length) return { url: proofs[0] };
+    return requested ? { reason: 'no completed Mac job on this head' } : { fallback: true, reason: 'no earlier run of this pull request requested a Mac job' };
   } catch (error) {
     return { reason: `unreadable Mac proof: ${error.message}` };
   }
@@ -128,6 +150,8 @@ async function main() {
     const refusal = `draft lift has no Mac proof on head ${event.pull_request?.head?.sha}: ${proof.reason}`.replace(/\s+/g, ' ');
     decision = proof.url
       ? { isReleaseOnly: false, macosRequired: false, reason: `draft lift: Mac proof reused from ${proof.url} on head ${event.pull_request.head.sha}`, reusedRun: proof.url }
+      : proof.fallback
+      ? { isReleaseOnly: false, macosRequired: true, reason: `${decision.reason}; draft lift: ${proof.reason}, so this run requests the Mac job` }
       : { isReleaseOnly: false, macosRequired: false, reason: `${decision.reason}; ${refusal}; no Mac runner is requested and the Mac check fails`, liftRefusal: refusal };
   }
   if (process.env.GITHUB_OUTPUT) appendFileSync(process.env.GITHUB_OUTPUT, `macosRequired=${decision.macosRequired}\nmacosReusedRun=${decision.reusedRun ?? ''}\nmacosLiftRefusal=${decision.liftRefusal ?? ''}\n`);
