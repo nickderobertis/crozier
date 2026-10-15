@@ -18,6 +18,7 @@ bootstrap:
     @./scripts/install-dev-tools.sh
     @./scripts/install-ruff.sh
     @just sync-python
+    @just install-pruner
 
 # Install the Python tooling's uv workspace (the root pyproject.toml's members,
 # resolved once in uv.lock) into `.venv` on Python 3.14. Part of `bootstrap`;
@@ -38,6 +39,24 @@ install-nx:
 install-toolchain:
     @rustup show active-toolchain >/dev/null 2>&1 || rustup toolchain install
     @out=$(rustup component add rustfmt clippy llvm-tools-preview 2>&1) || { echo "$out" >&2; echo "install-toolchain: adding rustfmt, clippy and llvm-tools-preview failed (above); fix rustup's error, then rerun" >&2; exit 1; }
+
+# The cargo-prune-superseded release `pool-maintenance` runs; its one pin.
+prune_superseded_version := "0.1.1"
+
+# Every cargo target dir in the clone, as cargo resolves it: .cargo/config.toml's
+# `target-dir` (no nested config sets another). `pool-maintenance` prunes these.
+pool_maintenance_targets := "target"
+
+# Install the pinned cargo-prune-superseded; skipped when that release is already
+# the one on PATH. Part of `bootstrap`.
+install-pruner:
+    @./pool-maintenance/install-pruner.sh {{ prune_superseded_version }}
+
+# onevcs pool maintenance, which onevcs.toml runs in idle warm-pool slots: remove
+# each unit's superseded builds older than 2 days from every target dir, keeping
+# each unit's newest build and every build modified within the window.
+pool-maintenance:
+    @cargo-prune-superseded --keep-within 2d {{ pool_maintenance_targets }}
 
 # The quality gate — one recipe, two tiers, the tier a flag on it. tools/ci/gate.mjs
 # validates the base and selects the projects; the Nx command below runs over them:
@@ -61,6 +80,24 @@ check *args:
 # then `check` with it. Arguments pass through to `check`.
 ci-check *args:
     @node tools/ci/ci-tier.mjs -- "$@"
+
+# The commit `budgets` measures the affected projects against.
+base := env("NX_BASE", "origin/main")
+
+# The onebudgetspec budgets: every affected project's `budgets` and `budgets-host`
+# targets (`just budgets all` for every project), then the root budgets.yaml when
+# one exists. Excludes `pool-maintenance`, whose measurement builds the repository
+# twice: only the release pull request runs it, via `budgets-pool-maintenance`.
+budgets tier="affected":
+    @just nx {{ if tier == "all" { "run-many" } else if tier == "affected" { "affected --base=" + base } else { error("unknown tier '" + tier + "' — use 'affected' (the default) or 'all'") } }} -t budgets budgets-host --exclude=pool-maintenance
+    @[ ! -f budgets.yaml ] || bunx onebudgetspec check budgets.yaml
+
+# The `crozier-pool-maintenance-seconds` budget (pool-maintenance/budgets.yaml):
+# one steady-state `pool-maintenance` pass, timed. Builds the test targets twice
+# and really prunes this clone's target dir; ci.yml runs it on the release pull
+# request after the gate.
+budgets-pool-maintenance:
+    @just nx run pool-maintenance:budgets-host
 
 # Run Nx itself against this workspace (`just nx show projects`, `just nx graph`).
 nx *args:
