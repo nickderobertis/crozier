@@ -78,6 +78,22 @@ export function classify(event, base, head, eventName = process.env.GITHUB_EVENT
     return ordinary(`unreadable release classification: ${error.message}`);
   }
 }
+// A listing proves completeness only when it reports a valid total that its
+// single page holds in full, and every entry carries the fields the decision
+// reads; anything else could hide a Mac request or a failed Mac job.
+function incomplete(listing, key, what, readable) {
+  const total = listing?.total_count, page = listing?.[key];
+  if (!Array.isArray(page)) return `unreadable ${what}`;
+  if (!Number.isSafeInteger(total) || total < 0) return `unverifiable ${what}: total_count ${JSON.stringify(total) ?? 'missing'}`;
+  if (total !== page.length) return `ambiguous ${what}: total_count ${total} but ${page.length} returned`;
+  const unreadable = page.findIndex(entry => !(entry && typeof entry === 'object' && readable(entry)));
+  return unreadable < 0 ? '' : `unreadable ${what} entry ${unreadable}`;
+}
+const readableRun = run => Number.isSafeInteger(run.id) && typeof run.path === 'string' && typeof run.head_repository?.full_name === 'string'
+  && typeof run.head_sha === 'string' && typeof run.status === 'string' && typeof run.html_url === 'string' && runUrlPattern.test(run.html_url);
+// Only a Mac-named job's conclusion, head and labels decide anything.
+const readableJob = job => typeof job.name === 'string' && (job.name !== macJobName
+  || ((typeof job.conclusion === 'string' || job.conclusion === null) && typeof job.head_sha === 'string' && Array.isArray(job.labels) && job.labels.every(label => typeof label === 'string')));
 async function api(env, path) {
   const response = await fetch(`${env.GITHUB_API_URL}${path}`, {
     headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${env.GITHUB_TOKEN}`, 'X-GitHub-Api-Version': '2022-11-28' },
@@ -111,20 +127,20 @@ export async function provenMacRun(event, env = process.env) {
     // any head: the exact head supplies the proof, and all of them decide
     // whether the pull request has spent a Mac runner yet.
     const listed = await api(env, `/repos/${repository}/actions/runs?branch=${encodeURIComponent(branch)}&event=pull_request&per_page=100`);
-    if (!Array.isArray(listed?.workflow_runs)) return { reason: 'unreadable workflow run list' };
-    if (Number.isSafeInteger(listed.total_count) && listed.total_count > listed.workflow_runs.length) return { reason: `ambiguous: ${listed.total_count} earlier runs exceed one page` };
-    const runs = listed.workflow_runs.filter(run => run?.path === workflow && run.head_repository?.full_name === headRepository && String(run.id) !== String(env.GITHUB_RUN_ID));
+    const unlisted = incomplete(listed, 'workflow_runs', 'workflow run list', readableRun);
+    if (unlisted) return { reason: unlisted };
+    const runs = listed.workflow_runs.filter(run => run.path === workflow && run.head_repository.full_name === headRepository && String(run.id) !== String(env.GITHUB_RUN_ID));
     const proofs = [];
     let requested = false;
     for (const run of runs) {
-      if (!Number.isSafeInteger(run.id) || typeof run.html_url !== 'string' || !runUrlPattern.test(run.html_url) || typeof run.head_sha !== 'string') return { reason: 'unreadable workflow run' };
       const same = run.head_sha === sha;
-      const pending = run.status !== 'completed' && `Mac proof still ${typeof run.status === 'string' ? run.status.replace(/\W/g, '') : 'unknown'} in ${run.html_url}`;
+      const pending = run.status !== 'completed' && `Mac proof still ${run.status.replace(/\W/g, '')} in ${run.html_url}`;
       // An unfinished run may still request a Mac runner, so it never permits the fallback.
       if (pending) { if (same) return { reason: pending }; requested = true; }
       const jobs = await api(env, `/repos/${repository}/actions/runs/${run.id}/jobs?filter=latest&per_page=100`);
-      if (!Array.isArray(jobs?.jobs)) return { reason: `unreadable jobs of ${run.html_url}` };
-      for (const job of jobs.jobs.filter(job => job?.name === macJobName)) {
+      const unread = incomplete(jobs, 'jobs', `jobs of ${run.html_url}`, readableJob);
+      if (unread) return { reason: unread };
+      for (const job of jobs.jobs.filter(job => job.name === macJobName)) {
         if (!requestedMac(job)) continue;
         requested = true;
         if (!same) continue;

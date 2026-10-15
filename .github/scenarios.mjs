@@ -11,9 +11,11 @@ export const classes = [
 export const classificationIds=['classification/release-plz-2026-10-12','classification/release-plz-forged','classification/unknown','classification/release-plz-mixed'];
 // Every draft-lift (`ready_for_review`) route of the ordinary PR: its head's
 // Mac proof completed, still running, cancelled, failed, only on another head,
-// or unreadable because the API is unavailable; or `fallback`, where no earlier
-// run of the PR requested a Mac job. `none` is a PR that was never a draft.
-export const liftRoutes=['proven','in-progress','cancelled','failed','other-head','api-unavailable','fallback'];
+// unreadable because the API is unavailable, or listed in a page that cannot be
+// proven complete and readable (so it could hide the push's Mac request); or
+// `fallback`, where no earlier run of the PR requested a Mac job. `none` is a
+// PR that was never a draft.
+export const liftRoutes=['proven','in-progress','cancelled','failed','other-head','api-unavailable','unreadable-listing','fallback'];
 export const liftIds=liftRoutes.map(route=>`lift/${route}`);
 const routeIds=[...classificationIds,...liftIds];
 export function scenarioIds() {
@@ -38,7 +40,7 @@ export function recordingDigest(telemetry) {
   return createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 }
 export function validateTelemetry(telemetry, sourceDigest) {
-  if (telemetry.schemaVersion !== 5 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
+  if (telemetry.schemaVersion !== 6 || telemetry.sourceDigest !== sourceDigest) throw new Error('missing/stale telemetry: run github-workflows:test on this tree');
   if (telemetry.recordingDigest !== recordingDigest(telemetry)) throw new Error('incomplete/corrupted workload telemetry: rerun github-workflows:test');
   const scenarios=telemetry.scenarios, lifecycles=telemetry.lifecycles;
   if (!Array.isArray(scenarios) || !Array.isArray(lifecycles) || JSON.stringify(scenarios.map(s=>s.id).sort()) !== JSON.stringify(scenarioIds()) || JSON.stringify(lifecycles.map(l=>JSON.stringify([l.fork,l.diff,l.crates,l.pypi,l.lift])).sort()) !== JSON.stringify(lifecycleIds())) throw new Error('incomplete workload telemetry: run github-workflows:test');

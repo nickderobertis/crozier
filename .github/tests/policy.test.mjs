@@ -161,7 +161,6 @@ test('a draft lift reuses a proven Mac success on its exact head, requests Mac o
     [{ runs: [run(1, other)], jobs: { 1: [mac('failure', other)] } }, /no completed Mac job/],
     [{ runs: [run(1, other, '.github/workflows/ci.yml', 'in_progress')], jobs: { 1: [] } }, /no completed Mac job/],
     [{ runs: [run(1)], jobs: { 1: [mac('success', other)] } }, /concluded success at [0-9a-f]{40}/],
-    [{ runs: [run(1)], total_count: 101, jobs: {} }, /ambiguous: 101 earlier runs exceed one page/],
     [{ runs: [{ ...run(1), head_sha: undefined, head_repository: { full_name: 'nickderobertis/crozier' } }], jobs: {} }, /unreadable workflow run/],
     [{ runs: [{ ...run(1), id: 'one' }], jobs: {} }, /unreadable workflow run/],
     [{ runs: [{ ...run(1), html_url: `${url}\nmacosRequired=false` }], jobs: { 1: [mac('success')] } }, /unreadable workflow run/],
@@ -173,7 +172,7 @@ test('a draft lift reuses a proven Mac success on its exact head, requests Mac o
     [{ status: 403 }, /answered 403/],
     [{ status: 503 }, /answered 503/],
   ]) {
-    for (const key of ['runs', 'jobs', 'status', 'total_count']) delete proven[key];
+    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
     Object.assign(proven, state);
     writeFileSync(output, '');
     const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
@@ -197,7 +196,7 @@ test('a draft lift reuses a proven Mac success on its exact head, requests Mac o
     { runs: [run(1, sha, '.github/workflows/ci.yml', 'completed', 'contributor/crozier')], jobs: { 1: [mac('success')] } },
     { runs: [run(900)], jobs: { 900: [mac('success')] } },
   ]) {
-    for (const key of ['runs', 'jobs', 'status', 'total_count']) delete proven[key];
+    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
     Object.assign(proven, state);
     writeFileSync(output, '');
     const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
@@ -206,6 +205,45 @@ test('a draft lift reuses a proven Mac success on its exact head, requests Mac o
     assert.match(decision.reason, /draft lift: no earlier run of this pull request requested a Mac job, so this run requests the Mac job$/);
     assert.equal(readFileSync(output, 'utf8'), 'macosRequired=true\nmacosReusedRun=\nmacosLiftRefusal=\n');
   }
+  // Completeness: a listing whose total_count is missing, malformed or larger
+  // or smaller than its page could hide a Mac request (authorizing a second
+  // Mac run) or a failed Mac job (authorizing reuse), so each refuses on Linux.
+  const fallbackBases = [{ runs: [], jobs: {} }, { runs: [run(1)], jobs: { 1: [] } }, { runs: [run(1)], jobs: { 1: [{ name: 'gate', conclusion: 'success', head_sha: sha, labels: ['ubuntu-latest'] }] } }];
+  const reuseBase = { runs: [run(1)], jobs: { 1: [mac('success')] } };
+  const incomplete = [];
+  for (const base of [...fallbackBases, reuseBase]) for (const total of ['omit', '1', -1, 1.5, null, 101, base.runs.length + 1]) incomplete.push([{ ...base, total_count: total }, total === 'omit' || typeof total !== 'number' || total < 0 || !Number.isInteger(total) ? /unverifiable workflow run list: total_count (missing|"1"|null|-1|1\.5)/ : /ambiguous workflow run list: total_count \d+ but \d+ returned/]);
+  incomplete.push([{ runs: [run(1), run(2)], total_count: 1, jobs: { 1: [mac('success')], 2: [mac('success')] } }, /ambiguous workflow run list: total_count 1 but 2 returned/]);
+  // A fractional jobs total, and one smaller than its nonempty jobs page, on a
+  // fallback candidate (a Linux-only page) and a reuse candidate (a Mac proof).
+  for (const base of [fallbackBases[2], reuseBase]) {
+    for (const total of [0.5, 1.5]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, new RegExp(`unverifiable jobs of https:\\S+/runs/1: total_count ${total}$`)]);
+    incomplete.push([{ ...base, jobs_total_count: { 1: 0 } }, /ambiguous jobs of https:\S+\/runs\/1: total_count 0 but 1 returned$/]);
+  }
+  for (const base of [fallbackBases[1], reuseBase]) for (const total of ['omit', '2', -1, null, base.jobs[1].length + 1, 100]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, total === 'omit' || typeof total !== 'number' || total < 0 ? /unverifiable jobs of https:\S+\/runs\/1: total_count (missing|"2"|null|-1)/ : /ambiguous jobs of https:\S+\/runs\/1: total_count \d+ but \d+ returned/]);
+  // Readability: a counted page whose entries lack the fields the decision
+  // reads could equally hide a Mac request or a failed Mac job.
+  for (const entry of [{}, null, 'run', [], { ...run(1), path: undefined }, { ...run(1), status: undefined }, { ...run(1), head_repository: null }, { ...run(5, sha, '.github/workflows/release.yml'), id: undefined }]) {
+    incomplete.push([{ runs: [entry], total_count: 1, jobs: {} }, /unreadable workflow run list entry 0$/]);
+    incomplete.push([{ ...reuseBase, runs: [run(1), entry] }, /unreadable workflow run list entry 1$/]);
+  }
+  for (const entry of [{}, null, { name: 42 }, { ...mac('failure'), labels: undefined }, { ...mac('failure'), labels: [1] }, { ...mac('failure'), conclusion: undefined }, { ...mac('failure'), head_sha: undefined }]) {
+    incomplete.push([{ runs: [run(1)], jobs: { 1: [entry] } }, /unreadable jobs of https:\S+\/runs\/1 entry 0$/]);
+    incomplete.push([{ runs: [run(1)], jobs: { 1: [mac('success'), entry] } }, /unreadable jobs of https:\S+\/runs\/1 entry 1$/]);
+  }
+  for (const [state, reason] of incomplete) {
+    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
+    Object.assign(proven, state);
+    writeFileSync(output, '');
+    const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
+    assert.equal(decision.macosRequired, false, JSON.stringify(state));
+    assert.equal(decision.reusedRun, undefined, JSON.stringify(state));
+    assert.match(decision.liftRefusal, reason, JSON.stringify(state));
+    assert.equal(readFileSync(output, 'utf8'), `macosRequired=false\nmacosReusedRun=\nmacosLiftRefusal=${decision.liftRefusal}\n`);
+  }
+  // The same bases with complete counts authorize exactly what they did above.
+  for (const base of fallbackBases) { for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key]; Object.assign(proven, base); assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).macosRequired, true); }
+  for (const key of ['total_count', 'jobs_total_count']) delete proven[key];
+  Object.assign(proven, reuseBase); assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, url);
   Object.assign(proven, { runs: [run(1)], jobs: { 1: [mac('success')] } }); delete proven.status;
   const malformed = liftEvent(sha); malformed.pull_request.head.ref = '-bad ref';
   const refusedRef = await h.lift(malformed, sha, { GITHUB_API_URL: api.url });

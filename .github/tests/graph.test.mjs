@@ -59,6 +59,8 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     failed: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [macJob('failure')] } },
     'other-head': { runs: [{ ...earlier, head_sha: h.heads.dependency, status: 'completed' }], jobs: { 1: [macJob('success', h.heads.dependency)] } },
     'api-unavailable': { status: 503 },
+    // The push's run, Mac job included, behind an entry the lift cannot read.
+    'unreadable-listing': { runs: [{}], total_count: 1, jobs: {} },
     fallback: { runs: [{ ...earlier, status: 'completed' }], jobs: { 1: [{ ...macJob('skipped'), labels: [] }] } },
   };
   assert.deepEqual(Object.keys(routes), liftRoutes);
@@ -83,7 +85,7 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
     const runs = lifecycleScenarios(scenarios,{fork,diff,crates,pypi,lift}).flatMap(s => s.runs.filter(r => r.rows.some(row=>row.macos)).map(r => ({event:s.id,workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)})));
     lifecycles.push({fork,diff,crates,pypi,lift,runs});
   }
-  const telemetry = {schemaVersion:5,sourceDigest:digest(),scenarios,lifecycles};
+  const telemetry = {schemaVersion:6,sourceDigest:digest(),scenarios,lifecycles};
   telemetry.recordingDigest=recordingDigest(telemetry);
   recorded=telemetry;
   mkdirSync(resolve(root,'.github/.telemetry'),{recursive:true});
