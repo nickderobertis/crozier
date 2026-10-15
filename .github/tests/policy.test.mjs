@@ -208,11 +208,17 @@ test('a draft lift reuses a proven Mac success on its exact head, requests Mac o
   // Completeness: a listing whose total_count is missing, malformed or larger
   // or smaller than its page could hide a Mac request (authorizing a second
   // Mac run) or a failed Mac job (authorizing reuse), so each refuses on Linux.
-  const fallbackBases = [{ runs: [], jobs: {} }, { runs: [run(1)], jobs: { 1: [] } }];
+  const fallbackBases = [{ runs: [], jobs: {} }, { runs: [run(1)], jobs: { 1: [] } }, { runs: [run(1)], jobs: { 1: [{ name: 'gate', conclusion: 'success', head_sha: sha, labels: ['ubuntu-latest'] }] } }];
   const reuseBase = { runs: [run(1)], jobs: { 1: [mac('success')] } };
   const incomplete = [];
   for (const base of [...fallbackBases, reuseBase]) for (const total of ['omit', '1', -1, 1.5, null, 101, base.runs.length + 1]) incomplete.push([{ ...base, total_count: total }, total === 'omit' || typeof total !== 'number' || total < 0 || !Number.isInteger(total) ? /unverifiable workflow run list: total_count (missing|"1"|null|-1|1\.5)/ : /ambiguous workflow run list: total_count \d+ but \d+ returned/]);
   incomplete.push([{ runs: [run(1), run(2)], total_count: 1, jobs: { 1: [mac('success')], 2: [mac('success')] } }, /ambiguous workflow run list: total_count 1 but 2 returned/]);
+  // A fractional jobs total, and one smaller than its nonempty jobs page, on a
+  // fallback candidate (a Linux-only page) and a reuse candidate (a Mac proof).
+  for (const base of [fallbackBases[2], reuseBase]) {
+    for (const total of [0.5, 1.5]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, new RegExp(`unverifiable jobs of https:\\S+/runs/1: total_count ${total}$`)]);
+    incomplete.push([{ ...base, jobs_total_count: { 1: 0 } }, /ambiguous jobs of https:\S+\/runs\/1: total_count 0 but 1 returned$/]);
+  }
   for (const base of [fallbackBases[1], reuseBase]) for (const total of ['omit', '2', -1, null, base.jobs[1].length + 1, 100]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, total === 'omit' || typeof total !== 'number' || total < 0 ? /unverifiable jobs of https:\S+\/runs\/1: total_count (missing|"2"|null|-1)/ : /ambiguous jobs of https:\S+\/runs\/1: total_count \d+ but \d+ returned/]);
   // Readability: a counted page whose entries lack the fields the decision
   // reads could equally hide a Mac request or a failed Mac job.
