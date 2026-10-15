@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.119](https://github.com/nickderobertis/crozier/compare/v0.0.118...v0.0.119) - 2026-10-15
+
+### Other
+
+- *(pool)* declare crozier's pool maintenance ([#518](https://github.com/nickderobertis/crozier/pull/518))
+
 ## [0.0.118](https://github.com/nickderobertis/crozier/compare/v0.0.117...v0.0.118) - 2026-10-14
 
 ### Other
