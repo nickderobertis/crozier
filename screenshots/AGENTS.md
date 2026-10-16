@@ -5,8 +5,8 @@ CLI**, gated by [screencomp](https://github.com/nickderobertis/screencomp) so a
 change to what a command prints can't land without the committed image changing
 with it. This folder holds the inputs; the mechanics live in
 [`scripts/screenshots.sh`](../scripts/screenshots.sh) (static SVGs; it stays in
-`scripts/` because the pre-push guard and the Visual-docs workflow run it by that
-path) and [`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
+`scripts/` because the Visual-docs workflow runs it by that path) and
+[`demo-gif.py`](demo-gif.py) (the animated hero). `capture` and
 `demo-gif` build crozier but run outside both gate tiers: screencomp owns the
 comparison.
 
@@ -58,11 +58,9 @@ just screenshots-bless    # re-capture AND refresh shots/baseline/<arch>.json
 the pinned one.
 
 After an **intended** output change: `just screenshots-bless`, then commit
-`shots/baseline/` and `docs/screenshots/` together. The `.githooks/pre-push`
-guard (enabled by `just bootstrap`) re-captures automatically when a
-`[guard].paths` file changed and stops the push on un-blessed drift; CI's
-`.github/workflows/visual-docs.yml` is the authoritative gate and also posts a
-before/after gallery comment on the PR.
+`shots/baseline/` and `docs/screenshots/` together. Pushes do not capture or
+classify screenshots; CI's `.github/workflows/visual-docs.yml` is the authoritative
+gate and also posts a before/after gallery comment on the PR.
 
 ## Python checks
 

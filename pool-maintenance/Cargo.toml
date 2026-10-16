@@ -1,0 +1,15 @@
+# Pool maintenance's scripts (`measure.sh`, `install-pruner.sh`), driven for real
+# over a scratch cargo workspace. Test-only and never published; its own Nx
+# project (`pool-maintenance`), which also owns the
+# `crozier-pool-maintenance-seconds` budget beside it.
+[package]
+name = "crozier-pool-maintenance"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dev-dependencies]
+serde_json = { workspace = true }
+tempfile = { workspace = true }

@@ -2525,32 +2525,32 @@ pub enum AdditionalProperties {
 }
 
 /// Version header selected for refusal validation, with canonical precedence.
-pub(crate) fn refusal_version_header(node: &serde_yaml_ng::Value) -> Option<&str> {
+pub(crate) fn refusal_version_header(node: &serde_json::Value) -> Option<&str> {
     node.get("x-crozier-version")
         .or_else(|| node.get("x-fern-version"))?
         .get("header")
-        .and_then(serde_yaml_ng::Value::as_str)
+        .and_then(serde_json::Value::as_str)
 }
 
 /// The declared SDK parameter name used by refusal validation only.
 /// Keep the dual-header precedence here with the other extension accessors.
-pub(crate) fn refusal_parameter_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+pub(crate) fn refusal_parameter_name(node: &serde_json::Value) -> Option<&str> {
     node.get("x-crozier-parameter-name")
-        .and_then(serde_yaml_ng::Value::as_str)
+        .and_then(serde_json::Value::as_str)
         .or_else(|| {
             node.get("x-fern-parameter-name")
-                .and_then(serde_yaml_ng::Value::as_str)
+                .and_then(serde_json::Value::as_str)
         })
 }
 
 /// The declared Python name of an object property, read off its source node for
 /// refusal validation with [`Schema::property_name`]'s precedence.
-pub(crate) fn refusal_property_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+pub(crate) fn refusal_property_name(node: &serde_json::Value) -> Option<&str> {
     node.get("x-crozier-property-name")
-        .and_then(serde_yaml_ng::Value::as_str)
+        .and_then(serde_json::Value::as_str)
         .or_else(|| {
             node.get("x-fern-property-name")
-                .and_then(serde_yaml_ng::Value::as_str)
+                .and_then(serde_json::Value::as_str)
         })
         .map(str::trim)
         .filter(|name| !name.is_empty())
@@ -2558,23 +2558,23 @@ pub(crate) fn refusal_property_name(node: &serde_yaml_ng::Value) -> Option<&str>
 
 /// Declared SDK type name read off the raw source node, for the refusals
 /// classified before the typed parse; emission reads [`Schema::declared_type_name`].
-pub(crate) fn refusal_type_name(node: &serde_yaml_ng::Value) -> Option<&str> {
+pub(crate) fn refusal_type_name(node: &serde_json::Value) -> Option<&str> {
     ["x-crozier-type-name", "x-fern-type-name"]
         .into_iter()
-        .filter_map(|key| node.get(key).and_then(serde_yaml_ng::Value::as_str))
+        .filter_map(|key| node.get(key).and_then(serde_json::Value::as_str))
         .find(|name| !name.trim().is_empty())
 }
 
 /// Read a source node's ignore flag through the ordinary schema accessor,
 /// without asking the typed parser to lower its possibly malformed shape.
-pub(crate) fn refusal_node_ignored(node: &serde_yaml_ng::Value) -> bool {
-    let mut metadata = serde_yaml_ng::Mapping::new();
-    for (key, value) in node.as_mapping().into_iter().flatten() {
-        if key.as_str().is_some_and(|key| key.starts_with("x-")) {
+pub(crate) fn refusal_node_ignored(node: &serde_json::Value) -> bool {
+    let mut metadata = serde_json::Map::new();
+    for (key, value) in node.as_object().into_iter().flatten() {
+        if key.starts_with("x-") {
             metadata.insert(key.clone(), value.clone());
         }
     }
-    serde_yaml_ng::from_value::<Schema>(serde_yaml_ng::Value::Mapping(metadata))
+    serde_json::from_value::<Schema>(serde_json::Value::Object(metadata))
         .is_ok_and(|schema| schema.ignored())
 }
 
@@ -2592,7 +2592,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
 
     let is_yaml = matches!(ext.as_deref(), Some("yml" | "yaml"));
     let mut doc: OpenApi = match ext.as_deref() {
-        Some("yml" | "yaml") => serde_yaml_ng::from_str(&text).map_err(|e| Error::ParseSpec {
+        Some("yml" | "yaml") => crate::yaml::from_str(&text).map_err(|e| Error::ParseSpec {
             path: path.to_path_buf(),
             message: e.to_string(),
         })?,
@@ -2605,7 +2605,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
         Some("json") => serde_json::from_str(&text)
             .or_else(|error| {
                 if error.to_string().starts_with("number out of range") {
-                    serde_yaml_ng::from_str(&text).map_err(|_| error)
+                    crate::yaml::from_str(&text).map_err(|_| error)
                 } else {
                     Err(error)
                 }
@@ -4768,7 +4768,7 @@ mod tests {
 
     #[test]
     fn x_crozier_base_path_wins_over_x_fern_base_path() {
-        let both: OpenApi = serde_yaml_ng::from_str(
+        let both: OpenApi = crate::yaml::from_str(
             "openapi: 3.0.3\nx-fern-base-path: /fern\nx-crozier-base-path: /crozier\npaths: {}\n",
         )
         .expect("document deserializes");
@@ -4777,7 +4777,7 @@ mod tests {
             Some("/crozier")
         );
         let fern: OpenApi =
-            serde_yaml_ng::from_str("openapi: 3.0.3\nx-fern-base-path: /fern\npaths: {}\n")
+            crate::yaml::from_str("openapi: 3.0.3\nx-fern-base-path: /fern\npaths: {}\n")
                 .expect("document deserializes");
         assert_eq!(fern.base_path().map(BasePath::route_prefix), Some("/fern"));
     }
@@ -4812,7 +4812,7 @@ mod tests {
 
     /// Parse a YAML spec string into an [`OpenApi`] for the pure-filter unit tests.
     fn parse(spec: &str) -> OpenApi {
-        serde_yaml_ng::from_str(spec).expect("valid spec")
+        crate::yaml::from_str(spec).expect("valid spec")
     }
 
     fn op_ids(doc: &OpenApi) -> Vec<String> {
@@ -6235,7 +6235,7 @@ mod refusal_name_tests {
             ),
             ("type: string", None),
         ] {
-            let node = serde_yaml_ng::from_str(text).unwrap();
+            let node = crate::yaml::from_str(text).unwrap();
             assert_eq!(super::refusal_parameter_name(&node), expected);
         }
     }
@@ -6261,9 +6261,9 @@ mod refusal_name_tests {
             ("x-fern-property-name: '  '", None),
             ("type: string", None),
         ] {
-            let node: serde_yaml_ng::Value = serde_yaml_ng::from_str(text).unwrap();
+            let node: serde_json::Value = crate::yaml::from_str(text).unwrap();
             assert_eq!(super::refusal_property_name(&node), expected, "{text}");
-            let schema: super::Schema = serde_yaml_ng::from_value(node).unwrap();
+            let schema: super::Schema = serde_json::from_value(node).unwrap();
             assert_eq!(schema.property_name(), expected, "{text}");
         }
     }

@@ -93,7 +93,10 @@ It detects your platform, downloads the matching archive, and verifies it agains
 a trust root independent of where it was downloaded — a Sigstore build-provenance
 attestation when a verifier (`cosign`, `pip install sigstore`, or `gh`) is
 present, else the canonical SHA-256 checksum. Pin a version or install location
-with `sh -s -- --version v0.1.0 --to ~/.local/bin`.
+with `sh -s -- --version v0.1.0 --to ~/.local/bin`. macOS binaries are Apple
+Silicon (arm64) only: Intel macOS archives and wheels are discontinued from the
+next release, and the script refuses Intel macOS — build there with `cargo
+install crozier --locked`.
 
 **From source (latest `main`):**
 
@@ -296,8 +299,11 @@ just format      # format every project in place
 just upgrade     # cargo update, then re-run the gate
 ```
 
-Bootstrap enables the repository hooks (the `.githooks/pre-push` visual-regression
-guard). The tracked `.cargo/config.toml` is the build contract: every `cargo`
+CI verifies the quality gate and visual regression on pull requests. Use
+`just screenshots-bless` after intended CLI output changes and commit the baseline
+and images together (see [`screenshots/AGENTS.md`](screenshots/AGENTS.md)).
+
+The tracked `.cargo/config.toml` is the build contract: every `cargo`
 invocation inside a clone builds into that clone's own `target/` (two worktrees
 never share one), and dev/test builds carry no debuginfo (`debug = 0`), which
 keeps it off the disk. Nothing in the tree configures `sccache`; to share

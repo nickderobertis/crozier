@@ -3,13 +3,7 @@
 [advisories]
 version = 2
 # Each ignored advisory carries its tracked rationale inline.
-ignore = [
-    # Temporary, authorized by the user on 2026-10-12: `unsafe-libyaml` is
-    # unmaintained (informational, no fixed version), reached through
-    # `serde_yaml` / `serde_yaml_ng`. The planned move to `serde-saphyr`, a
-    # safe-Rust parser (plan authoring:serde-yaml-replacement), removes this entry.
-    "RUSTSEC-2024-0449",
-]
+ignore = []
 
 [licenses]
 version = 2
@@ -31,6 +25,15 @@ confidence-threshold = 0.8
 # fail on them. Wildcard version requirements are banned — they defeat the lock.
 multiple-versions = "allow"
 wildcards = "deny"
+deny = [
+    { name = "serde_yaml", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "serde_yaml_ng", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "serde_norway", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "serde_yml", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "unsafe-libyaml", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "unsafe-libyaml-norway", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+    { name = "libyml", reason = "RUSTSEC-2024-0449: avoid the unmaintained libyaml translation" },
+]
 
 [sources]
 unknown-registry = "deny"

@@ -1,0 +1,20 @@
+# The pool-maintenance project's budget: how long one declared pool maintenance
+# pass (onevcs.toml, `just pool-maintenance`) holds a warm slot out of service.
+# Its measurement builds the repository twice, so no per-change path runs it:
+# `just budgets` excludes this project, and ci.yml checks it on the release pull
+# request after the gate (`just budgets-pool-maintenance`).
+schema_version: 1
+budgets:
+  - id: crozier-pool-maintenance-seconds
+    description: |
+      Wall-clock seconds one steady-state pass of this repository's declared pool
+      maintenance takes, after one ordinary run's worth of new superseded builds,
+      as cargo-prune-superseded reports it. Protects how long a regular post-run
+      pass holds one of this repository's warm pool slots out of service.
+    labels: [host]
+    measure: reported
+    command: ["./measure.sh"]
+    unit: seconds
+    direction: max
+    threshold: 20
+    timeout_seconds: 3600

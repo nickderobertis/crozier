@@ -9,7 +9,7 @@
 mod release;
 
 use release::{str_of, windows_checkout_jobs, windows_pre_checkout_commands, workflow, LONG_PATHS};
-use serde_yaml_ng::Value;
+use serde_json::Value;
 
 #[test]
 fn every_windows_release_job_enables_long_paths_before_checkout() {
@@ -47,23 +47,23 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
     let workflow = workflow();
     let jobs = workflow
         .get("jobs")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("release.yml has jobs");
     let job = jobs
         .get("major-tag")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("release.yml has a major-tag job");
 
     let needs: Vec<&str> = job
         .get("needs")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("major-tag lists its needs")
         .iter()
         .map(|need| need.as_str().expect("each need is a job id"))
         .collect();
     let gated: Vec<&str> = jobs
         .keys()
-        .map(|id| id.as_str().expect("job ids are strings"))
+        .map(|id| id.as_str())
         .filter(|id| *id == "upload" || id.starts_with("publish-") || id.starts_with("verify-"))
         .collect();
     assert!(
@@ -91,7 +91,7 @@ fn the_major_tag_job_moves_v0_only_after_every_publish_and_verify_job() {
 
     let steps = job
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("major-tag has steps");
     let checkout = steps
         .iter()

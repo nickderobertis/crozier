@@ -6,6 +6,36 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.119](https://github.com/nickderobertis/crozier/compare/v0.0.118...v0.0.119) - 2026-10-15
+
+### Other
+
+- *(pool)* declare crozier's pool maintenance ([#518](https://github.com/nickderobertis/crozier/pull/518))
+
+## [0.0.118](https://github.com/nickderobertis/crozier/compare/v0.0.117...v0.0.118) - 2026-10-14
+
+### Other
+
+- *(macos)* consolidate coverage and release builds ([#515](https://github.com/nickderobertis/crozier/pull/515))
+
+## [0.0.117](https://github.com/nickderobertis/crozier/compare/v0.0.116...v0.0.117) - 2026-10-13
+
+### Fixed
+
+- *(deps)* read OpenAPI documents with serde-saphyr in place of serde_yaml_ng ([#516](https://github.com/nickderobertis/crozier/pull/516))
+
+## [0.0.116](https://github.com/nickderobertis/crozier/compare/v0.0.115...v0.0.116) - 2026-10-13
+
+### Fixed
+
+- *(hooks)* remove CI-duplicated pre-push checks ([#513](https://github.com/nickderobertis/crozier/pull/513))
+
+## [0.0.115](https://github.com/nickderobertis/crozier/compare/v0.0.114...v0.0.115) - 2026-10-12
+
+### Other
+
+- *(build)* drop dev and test debuginfo; ignore RUSTSEC-2024-0449 until the YAML crate is replaced ([#508](https://github.com/nickderobertis/crozier/pull/508))
+
 ## [0.0.114](https://github.com/nickderobertis/crozier/compare/v0.0.113...v0.0.114) - 2026-10-11
 
 ### Fixed

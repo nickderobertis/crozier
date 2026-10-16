@@ -75,6 +75,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          cache: false
+      - name: Install workflow syntax checker
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -89,9 +95,63 @@ jobs:
         # llmlint: ignore[no_second_broader_sweep_over_an_already_gated_commit, release_does_not_regate_an_already_swept_commit] The standing exception the job's own directive records: a Release cut by hand in the GitHub UI can tag any commit, release-PR or not, and this sweep is the only gate such a tag passes before an irreversible crates.io/PyPI publish.
         run: just check --sweep --exclude=tag:tier:promoted
 
+  # One Apple Silicon allocation builds and installs the only macOS target
+  # (Intel macOS is no longer released) before Linux publishes anything. The
+  # wheel executable is also the archive input.
+  darwin:
+    needs: test
+    runs-on: macos-latest
+    env:
+      DARWIN_TARGET: aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install maturin==1.14.1
+      - name: Install ruff
+        run: ./scripts/install-ruff.sh
+      - name: Build and install the staged products
+        run: python3 tools/release-packaging/release-native.py --target "$DARWIN_TARGET" --tag "$GITHUB_REF_NAME" --out "$RUNNER_TEMP/darwin"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: darwin-staged
+          path: |
+            ${{ runner.temp }}/darwin/v*/*.tar.gz
+            ${{ runner.temp }}/darwin/v*/*.sha256
+            ${{ runner.temp }}/darwin/wheels-*/*.whl
+            ${{ runner.temp }}/darwin/contract-*.json
+
+  publish-darwin:
+    needs: darwin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: darwin-staged
+          path: staged
+      - uses: actions/attest-build-provenance@v2
+        id: arm
+        with:
+          subject-path: staged/${{ github.ref_name }}/crozier-${{ github.ref_name }}-aarch64-apple-darwin.tar.gz
+      - name: Publish Darwin archive and bundle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ARM_BUNDLE: ${{ steps.arm.outputs.bundle-path }}
+        run: bash tools/release-packaging/publish-darwin.sh staged "$GITHUB_REF_NAME" "$ARM_BUNDLE"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-darwin
+          path: staged/wheels-*/*.whl
+
   upload:
     name: upload (${{ matrix.target }})
-    needs: test
+    needs: [test, darwin]
     permissions:
       contents: write
       # Keyless Sigstore signing: `id-token` mints the GitHub Actions OIDC
@@ -103,7 +163,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Native runners per target so nothing needs cross-compilation. `ext`
+          # Linux/Windows runners; Darwin builds in the combined job. `ext`
           # names the archive the upload action leaves in the workspace, which the
           # attestation step then signs.
           - target: x86_64-unknown-linux-gnu
@@ -111,16 +171,6 @@ jobs:
             ext: tar.gz
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
-            ext: tar.gz
-          # Cross-compiled on the arm64 macos-latest runner: GitHub's Intel
-          # macos-13 runners are being retired and queue for tens of minutes,
-          # which stalled publish-pypi (it needs every wheel). macos-latest is
-          # readily available and builds the x86_64 target via `--target`.
-          - target: x86_64-apple-darwin
-            os: macos-latest
-            ext: tar.gz
-          - target: aarch64-apple-darwin
-            os: macos-latest
             ext: tar.gz
           - target: x86_64-pc-windows-msvc
             os: windows-latest
@@ -220,15 +270,16 @@ jobs:
   # just-published archive and verifies it against a trust root independent of
   # the download (the Sigstore bundle via `gh`, which is present on runners, else
   # the canonical checksum) — then smoke-test the installed binary with a real
-  # generation. Runs on the platforms the one-line installer targets
-  # (Linux/macOS, x86_64 + arm64); Windows installs via cargo/pip (see README).
+  # generation. Runs on Linux; the darwin job above already ran the same
+  # installer against the staged Apple Silicon archive before publication.
+  # Windows installs via cargo/pip (see README).
   verify-install-script:
     name: verify-install-script (${{ matrix.os }})
     needs: upload
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -253,7 +304,7 @@ jobs:
   # publishes without a green gate) but NOT on `upload` — a flaky per-platform
   # binary upload must not block the immutable crate publish, and vice versa.
   publish-crate:
-    needs: [guard, test]
+    needs: [guard, test, darwin]
     if: ${{ needs.guard.outputs.crates == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -322,17 +373,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Mirror the binary `upload` matrix: native runners per target.
+          # Mirror the Linux/Windows binary matrix; Darwin wheels are staged above.
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
-          # macos-latest (arm64) cross-compiles the x86_64 wheel — see the
-          # upload matrix; avoids the retiring, slow-to-schedule macos-13.
-          - target: x86_64-apple-darwin
-            os: macos-latest
-          - target: aarch64-apple-darwin
-            os: macos-latest
           - target: x86_64-pc-windows-msvc
             os: windows-latest
     runs-on: ${{ matrix.os }}
@@ -377,7 +422,7 @@ jobs:
   # wheel + the sdist and uploads them with the token. Trusted Publishing (OIDC)
   # is a keyless alternative to adopt later; the token path is wired now.
   publish-pypi:
-    needs: [guard, build-wheels, build-sdist]
+    needs: [guard, build-wheels, build-sdist, publish-darwin]
     if: ${{ needs.guard.outputs.pypi == 'true' }}
     runs-on: ubuntu-latest
     steps:
@@ -448,6 +493,8 @@ jobs:
   major-tag:
     needs:
       - upload
+      - publish-darwin
+      - darwin
       - verify-attestation
       - verify-install-script
       - publish-crate

@@ -1,0 +1,35 @@
+schema_version: 1
+budgets:
+  - id: crozier-macos-jobs-per-run
+    description: >-
+      Maximum resolved Mac runner instances per workflow run over 12 event
+      classes, three diffs, same-repository/fork ownership and every registry
+      publish combination, including opted-in diagnostics. Measurement uses
+      workflow/call-graph telemetry only. Manager-approved separate scheduling
+      constraints: the brief requires both jobs/run and Mac-spending runs/change.
+      inner_measure_reason: one run can occupy several shared Mac slots even
+      when the lifecycle run count stays within its bound.
+    measure: reported
+    command: [node, macos-budget.mjs, --metric, jobs-per-run, --telemetry, .telemetry/macos-policy.json]
+    unit: jobs
+    direction: max
+    threshold: 1
+    timeout_seconds: 10
+  - id: crozier-macos-runs-per-change
+    description: >-
+      Maximum Mac-spending workflow runs over one PR push (with or without a
+      draft lift along each modeled route: proof completed, in progress,
+      cancelled, failed, only on another head, API unavailable or listed
+      in a page not proven complete and readable, or the
+      fallback that runs Mac because no earlier run of the PR requested it,
+      counted like any other route), its base merge,
+      version/changelog-only release PR and merge, release/tag build and all
+      downstream automatic events. Manual diagnostics are excluded. Measurement
+      uses workflow/call-graph telemetry only. Manager-approved separate scheduling
+      constraints: the brief requires both jobs/run and Mac-spending runs/change.
+    measure: reported
+    command: [node, macos-budget.mjs, --metric, runs-per-change, --telemetry, .telemetry/macos-policy.json]
+    unit: runs
+    direction: max
+    threshold: 2
+    timeout_seconds: 10

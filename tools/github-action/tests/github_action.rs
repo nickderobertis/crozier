@@ -5,10 +5,14 @@
 //! `crates/crozier-e2e/tests/e2e/action.rs`; the recipe the example inlines is held to its docs
 //! page in `tests/fern_reference_recipe.rs`.)
 
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
 use std::collections::BTreeMap;
 use std::path::Path;
 
-use serde_yaml_ng::{Mapping, Value};
+use serde_json::Value;
+type Mapping = serde_json::Map<String, Value>;
 
 /// The repository root: this crate sits two levels below it.
 fn root() -> &'static Path {
@@ -23,13 +27,13 @@ fn read(rel: &str) -> String {
 }
 
 fn yaml(rel: &str) -> Value {
-    serde_yaml_ng::from_str(&read(rel)).unwrap_or_else(|e| panic!("{rel} is not YAML: {e}"))
+    crate::yaml::from_str(&read(rel)).unwrap_or_else(|e| panic!("{rel} is not YAML: {e}"))
 }
 
 fn mapping<'a>(value: &'a Value, key: &str) -> &'a Mapping {
     value
         .get(key)
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .unwrap_or_else(|| panic!("no mapping `{key}`"))
 }
 
@@ -38,10 +42,7 @@ fn string<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
 }
 
 fn keys(mapping: &Mapping) -> Vec<String> {
-    mapping
-        .keys()
-        .map(|k| k.as_str().unwrap().to_string())
-        .collect()
+    mapping.keys().map(|k| k.as_str().to_string()).collect()
 }
 
 const INPUTS: [&str; 4] = [
@@ -95,7 +96,7 @@ fn action_yml_carries_marketplace_metadata_and_the_contracted_inputs_and_outputs
     }
 
     // The upload is named by the input and runs only on a mismatch.
-    let steps = action["runs"]["steps"].as_sequence().unwrap();
+    let steps = action["runs"]["steps"].as_array().unwrap();
     let upload = steps
         .iter()
         .find(|s| string(s, "uses").is_some_and(|u| u.starts_with("actions/upload-artifact@")))
@@ -114,7 +115,7 @@ fn action_yml_carries_marketplace_metadata_and_the_contracted_inputs_and_outputs
 #[test]
 fn action_run_steps_take_every_value_through_env() {
     let action = yaml("action.yml");
-    let steps = action["runs"]["steps"].as_sequence().unwrap();
+    let steps = action["runs"]["steps"].as_array().unwrap();
     let runs: Vec<&Value> = steps.iter().filter(|s| s.get("run").is_some()).collect();
     assert_eq!(runs.len(), 3, "install, compare and finish");
     for step in runs {
@@ -234,7 +235,7 @@ fn the_docs_embed_the_example_workflow_byte_identical() {
 fn run_scripts(workflow: &Value) -> Vec<&str> {
     mapping(workflow, "jobs")
         .values()
-        .flat_map(|job| job["steps"].as_sequence().unwrap())
+        .flat_map(|job| job["steps"].as_array().unwrap())
         .filter_map(|step| string(step, "run"))
         .collect()
 }
@@ -250,11 +251,11 @@ fn the_example_workflow_is_a_pull_request_check_on_specs_and_configs() {
     );
     assert_eq!(
         workflow["on"]["push"]["branches"],
-        serde_yaml_ng::from_str::<Value>("[main]").unwrap()
+        crate::yaml::from_str::<Value>("[main]").unwrap()
     );
     for trigger in ["pull_request", "push"] {
         let paths: Vec<&str> = workflow["on"][trigger]["paths"]
-            .as_sequence()
+            .as_array()
             .unwrap_or_else(|| panic!("{trigger} has no paths: filter"))
             .iter()
             .map(|p| p.as_str().unwrap())
@@ -278,7 +279,7 @@ fn the_example_workflow_is_a_pull_request_check_on_specs_and_configs() {
 
     let mut permissions = BTreeMap::new();
     for (k, v) in mapping(&workflow, "permissions") {
-        permissions.insert(k.as_str().unwrap(), v.as_str().unwrap());
+        permissions.insert(k.as_str(), v.as_str().unwrap());
     }
     assert_eq!(permissions, BTreeMap::from([("contents", "read")]));
 
@@ -288,9 +289,7 @@ fn the_example_workflow_is_a_pull_request_check_on_specs_and_configs() {
 
     let jobs = mapping(&workflow, "jobs");
     assert_eq!(jobs.len(), 1, "one job");
-    let steps = jobs.values().next().unwrap()["steps"]
-        .as_sequence()
-        .unwrap();
+    let steps = jobs.values().next().unwrap()["steps"].as_array().unwrap();
     let uses = |prefix: &str| {
         steps
             .iter()

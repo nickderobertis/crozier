@@ -1,28 +1,30 @@
-//! `ci.yml` reports the required contexts on every pull request. A draft's runs
-//! report on its head commit, and marking it ready changes no commit, so the
-//! draft-time runs are the ones the merge path reads: triggering on
-//! `ready_for_review` would only run the whole of CI a second time.
+//! `ci.yml` reports the required contexts on every pull request, including when
+//! a draft becomes ready for review. The publication path requires fresh runs
+//! after that transition rather than relying on draft-time results.
 
-use serde_yaml_ng::Value;
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
+use serde_json::Value;
 
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
-fn marking_a_draft_ready_does_not_rerun_ci() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+fn marking_a_draft_ready_runs_the_required_checks() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let types: Vec<&str> = workflow
         .get("on")
         .and_then(|on| on.get("pull_request"))
         .and_then(|pull_request| pull_request.get("types"))
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("ci.yml lists its pull_request types")
         .iter()
         .map(|kind| kind.as_str().expect("types are strings"))
         .collect();
     assert_eq!(
         types,
-        ["opened", "synchronize", "reopened"],
-        "ci.yml keeps the default pull_request types and does not add ready_for_review"
+        ["opened", "synchronize", "reopened", "ready_for_review"],
+        "ci.yml runs on draft lift as well as the default pull_request events"
     );
 }
 
@@ -41,7 +43,7 @@ fn text<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
 
 fn steps(job: &Value) -> &[Value] {
     job.get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("the job has steps")
 }
 
@@ -50,7 +52,7 @@ fn steps(job: &Value) -> &[Value] {
 /// each job's condition is the one that keeps it reporting.
 #[test]
 fn the_required_contexts_report_on_every_pull_request() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let pull_request = workflow
         .get("on")
         .and_then(|on| on.get("pull_request"))
@@ -79,14 +81,22 @@ fn the_required_contexts_report_on_every_pull_request() {
     }
     let needs: Vec<&str> = job(&workflow, "gate")
         .get("needs")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("gate aggregates its legs")
         .iter()
         .map(|need| need.as_str().expect("needs are job ids"))
         .collect();
     assert_eq!(
         needs,
-        ["check", "sdk-env", "install", "package", "live-e2e"]
+        [
+            "check",
+            "sdk-env",
+            "install",
+            "package",
+            "live-e2e",
+            "macos-policy",
+            "macos"
+        ]
     );
 }
 
@@ -95,7 +105,7 @@ fn the_required_contexts_report_on_every_pull_request() {
 /// tier needs; and the legs between them cover every project.
 #[test]
 fn every_gate_leg_routes_its_tier_through_ci_check() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let mut scopes = Vec::new();
     for name in ["check", "sdk-env", "live-e2e"] {
         let job = job(&workflow, name);
@@ -155,14 +165,14 @@ fn every_job_that_bootstraps_installs_uv_first() {
     let mut bootstrapping = Vec::new();
     for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
         let workflow: Value =
-            serde_yaml_ng::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
         let jobs = workflow
             .get("jobs")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .unwrap_or_else(|| panic!("{file} has jobs"));
         for (name, job) in jobs {
-            let name = name.as_str().expect("job ids are strings");
-            let Some(steps) = job.get("steps").and_then(Value::as_sequence) else {
+            let name = name.as_str();
+            let Some(steps) = job.get("steps").and_then(Value::as_array) else {
                 continue;
             };
             let Some(bootstrap) = steps
@@ -183,7 +193,12 @@ fn every_job_that_bootstraps_installs_uv_first() {
     }
     assert_eq!(
         bootstrapping,
-        ["ci.yml:check", "ci.yml:sdk-env", "release.yml:test"],
+        [
+            "ci.yml:macos",
+            "ci.yml:check",
+            "ci.yml:sdk-env",
+            "release.yml:test"
+        ],
         "the jobs that bootstrap"
     );
 }
@@ -195,8 +210,8 @@ fn every_job_that_bootstraps_installs_uv_first() {
 /// never race one first-use rustup install.
 #[test]
 fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
-    let workflow: Value = serde_yaml_ng::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
-    for name in ["check", "sdk-env", "live-e2e"] {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    for name in ["check", "sdk-env", "live-e2e", "macos"] {
         let steps = steps(job(&workflow, name));
         let gate = steps
             .iter()
@@ -221,12 +236,58 @@ fn every_gate_leg_installs_nextest_and_its_toolchain_before_the_gate() {
     }
 }
 
+/// The pool-maintenance budget builds the repository twice, so only the release
+/// pull request runs it, after the gate has passed, through its recipe; no other
+/// job in either workflow runs it.
+#[test]
+fn the_pool_maintenance_budget_runs_only_on_the_release_pull_request_after_the_gate() {
+    let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
+    let budget = job(&workflow, "pool-maintenance");
+    assert_eq!(budget.get("needs").and_then(Value::as_str), Some("gate"));
+    assert_eq!(
+        text(budget, "if"),
+        Some("github.event_name == 'pull_request' && startsWith(github.head_ref, 'release-plz-')"),
+        "the release pull request's head branch, as tools/ci/ci-tier.mjs names it"
+    );
+    let runs: Vec<&str> = steps(budget)
+        .iter()
+        .filter_map(|step| text(step, "run"))
+        .collect();
+    assert_eq!(
+        runs,
+        [
+            "just install-nx",
+            "just install-toolchain",
+            "just install-pruner",
+            "just budgets-pool-maintenance"
+        ]
+    );
+    for (file, source) in [("ci.yml", CI_WORKFLOW), ("release.yml", RELEASE_WORKFLOW)] {
+        let workflow: Value =
+            crate::yaml::from_str(source).unwrap_or_else(|_| panic!("{file} is valid YAML"));
+        for (name, job) in workflow.get("jobs").and_then(Value::as_object).unwrap() {
+            if file == "ci.yml" && name == "pool-maintenance" {
+                continue;
+            }
+            let Some(steps) = job.get("steps").and_then(Value::as_array) else {
+                continue;
+            };
+            assert!(
+                !steps.iter().any(|step| text(step, "run")
+                    .is_some_and(|run| run.contains("budgets-pool-maintenance")
+                        || run.contains("pool-maintenance:budgets"))),
+                "{file}: job `{name}` runs the pool-maintenance budget"
+            );
+        }
+    }
+}
+
 /// A hand-cut Release can tag any commit, so release.yml re-gates it with the
 /// full sweep over everything the check matrix gates.
 #[test]
 fn the_release_job_runs_the_full_sweep() {
     let workflow: Value =
-        serde_yaml_ng::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML");
+        crate::yaml::from_str(RELEASE_WORKFLOW).expect("release.yml is valid YAML");
     let runs: Vec<&str> = steps(job(&workflow, "test"))
         .iter()
         .filter_map(|step| text(step, "run"))

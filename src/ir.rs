@@ -16555,7 +16555,7 @@ mod tests {
     /// A one-operation document whose `GET /probe` carries the header `X-Things`
     /// with `schema` and `required`.
     fn one_header_doc(schema: &str, required: bool) -> crate::openapi::OpenApi {
-        serde_yaml_ng::from_str(&format!(
+        crate::yaml::from_str(&format!(
             "paths:\n  /probe:\n    get:\n      parameters:\n        - {{name: X-Things, in: header, required: {required}, schema: {schema}}}\n      responses: {{'204': {{description: OK}}}}\n"
         ))
         .expect("document deserializes")
@@ -16609,7 +16609,7 @@ mod tests {
         assert_eq!(defaulted.len(), 1);
         assert!(!defaulted[0].required());
         assert_eq!(defaulted[0].default(), Some("application/json"));
-        let doc: crate::openapi::OpenApi = serde_yaml_ng::from_str(
+        let doc: crate::openapi::OpenApi = crate::yaml::from_str(
             "components:\n  securitySchemes:\n    key: {type: apiKey, in: header, name: X-Things}\npaths:\n  /probe:\n    get:\n      parameters:\n        - {name: X-Things, in: header, required: false, schema: {type: string, default: k}}\n      responses: {'204': {description: OK}}\n",
         )
         .expect("document deserializes");
@@ -16618,7 +16618,7 @@ mod tests {
             .all(|header| header.wire_name != "X-Things"));
         // The transport's own headers never promote.
         for managed in ["Origin", "COOKIE"] {
-            let doc: crate::openapi::OpenApi = serde_yaml_ng::from_str(&format!(
+            let doc: crate::openapi::OpenApi = crate::yaml::from_str(&format!(
                 "paths:\n  /probe:\n    get:\n      parameters:\n        - {{name: {managed}, in: header, required: true, schema: {{type: string}}}}\n      responses: {{'204': {{description: OK}}}}\n"
             ))
             .expect("document deserializes");
@@ -19359,7 +19359,7 @@ mod tests {
 
     fn request_shape_ir() -> super::Ir {
         build_document(
-            serde_yaml_ng::from_str(include_str!(
+            crate::yaml::from_str(include_str!(
                 "../docs/openapi-surface/handwritten/json-request-shapes/openapi.yml"
             ))
             .unwrap(),
@@ -19532,7 +19532,7 @@ mod tests {
     #[test]
     fn alias_reference_correction_is_scoped_to_nonempty_flattened_fields_without_request() {
         let source = include_str!("../docs/openapi-surface/handwritten/request-alias/openapi.yml");
-        let mut document: serde_json::Value = serde_yaml_ng::from_str(source).unwrap();
+        let mut document: serde_json::Value = crate::yaml::from_str(source).unwrap();
         document["components"]["schemas"]["Title"]["properties"] = serde_json::json!({
             "request": { "type": "string" }
         });

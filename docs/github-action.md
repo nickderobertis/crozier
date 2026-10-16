@@ -67,9 +67,10 @@ own ref names, so there is no second version to keep in step.
 
 ## Requirements
 
-- A **Linux or macOS runner** with `bash` and `jq` (GitHub's hosted runners have
-  both). Windows runners are refused: `crozier compare` runs reference commands
-  under `sh`.
+- A **Linux or Apple Silicon macOS runner** with `bash` and `jq` (GitHub's
+  hosted runners have both). Windows runners are refused: `crozier compare` runs
+  reference commands under `sh`. Intel macOS runners are refused too, unless the
+  `version` input is `local`: releases no longer ship an Intel macOS binary.
 - **The reference tool**, set up by your workflow before this step. The Action
   runs your command and nothing else.
 - **`ruff`**, which crozier itself needs to format the Python it generates. The
