@@ -11,7 +11,7 @@
 
 use std::collections::HashSet;
 
-use serde_yaml_ng::Value;
+use serde_json::Value;
 
 use super::{ignored_reference_node, yaml_pointer, Class};
 
@@ -99,7 +99,7 @@ mod parameter_refusal_tests {
                 "X-Calibration-Revision",
             ),
         ] {
-            let root: Value = serde_yaml_ng::from_str(source).unwrap();
+            let root: Value = crate::yaml::from_str(source).unwrap();
             let (found, element) = first_violation(&root).expect("the measured refusal");
             assert_eq!(found.id(), class);
             assert!(element.contains(header), "{element}");
@@ -108,18 +108,18 @@ mod parameter_refusal_tests {
 
     #[test]
     fn matching_defaults_and_distinct_version_headers_are_valid_controls() {
-        let mut defaults: Value = serde_yaml_ng::from_str(include_str!(
+        let mut defaults: Value = crate::yaml::from_str(include_str!(
             "../../docs/fern-refusals/header-default-differs-across-operations/probe.yml"
         ))
         .unwrap();
         defaults["paths"]["/measurements"]["put"]["parameters"][0]["schema"]["default"] =
             Value::String("radial".into());
         assert!(first_violation(&defaults).is_none());
-        let mut version: Value = serde_yaml_ng::from_str(include_str!(
+        let mut version: Value = crate::yaml::from_str(include_str!(
             "../../docs/fern-refusals/version-header-redeclared-as-parameter/probe.yml"
         ))
         .unwrap();
-        version["x-crozier-version"] = serde_yaml_ng::from_str("header: X-Other-Revision").unwrap();
+        version["x-crozier-version"] = crate::yaml::from_str("header: X-Other-Revision").unwrap();
         assert!(first_violation(&version).is_none());
         version["x-crozier-version"] = version["x-fern-version"].clone();
         assert_eq!(
@@ -139,7 +139,7 @@ fn has_composition(schema: &Value) -> bool {
 
 fn non_empty_mapping(value: Option<&Value>) -> bool {
     value
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .is_some_and(|mapping| !mapping.is_empty())
 }
 
@@ -183,10 +183,7 @@ fn bad_scalar(schema: &Value, value: &Value) -> bool {
 }
 
 fn scalar(value: &Value) -> bool {
-    !matches!(
-        value,
-        Value::Mapping(_) | Value::Sequence(_) | Value::Null | Value::Tagged(_)
-    )
+    !matches!(value, Value::Object(_) | Value::Array(_) | Value::Null)
 }
 
 fn literal(value: &Value) -> String {
@@ -195,18 +192,10 @@ fn literal(value: &Value) -> String {
 
 /// The first `*json*` media type of a `content` map.
 fn json_media(content: Option<&Value>) -> Option<&Value> {
-    content?.as_mapping()?.iter().find_map(|(media, value)| {
-        (media.as_str().is_some_and(|media| media.contains("json")) && value.is_mapping())
-            .then_some(value)
-    })
-}
-
-fn response_code(key: &Value) -> Option<String> {
-    match key {
-        Value::String(code) => Some(code.clone()),
-        Value::Number(code) => Some(code.to_string()),
-        _ => None,
-    }
+    content?
+        .as_object()?
+        .iter()
+        .find_map(|(media, value)| (media.contains("json") && value.is_object()).then_some(value))
 }
 
 impl<'a> Doc<'a> {
@@ -222,16 +211,14 @@ impl<'a> Doc<'a> {
 
     fn operations(&self) -> Vec<Operation<'a>> {
         let mut operations = Vec::new();
-        let Some(paths) = self.root.get("paths").and_then(Value::as_mapping) else {
+        let Some(paths) = self.root.get("paths").and_then(Value::as_object) else {
             return operations;
         };
         for (route, item) in paths {
-            let Some(route) = route.as_str() else {
-                continue;
-            };
+            let route = route.as_str();
             for method in METHODS {
                 if let Some(op) = item.get(method) {
-                    if op.is_mapping() && !ignored_reference_node(op) {
+                    if op.is_object() && !ignored_reference_node(op) {
                         operations.push(Operation {
                             route,
                             method,
@@ -250,11 +237,11 @@ impl<'a> Doc<'a> {
         let mut successes: Vec<(String, &'a Value)> = operation
             .op
             .get("responses")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .into_iter()
             .flatten()
             .filter_map(|(code, response)| {
-                let code = response_code(code)?;
+                let code = code.clone();
                 (code.len() == 3 && code.starts_with('2'))
                     .then(|| Some((code, self.resolve(response)?)))?
             })
@@ -296,8 +283,8 @@ impl<'a> Doc<'a> {
     /// Fern checks the path header's example against the operation override's
     /// default. Restrict this refusal to distinct declared string defaults.
     fn header_default_override(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
-        let inherited = operation.item.get("parameters")?.as_sequence()?;
-        let local = operation.op.get("parameters")?.as_sequence()?;
+        let inherited = operation.item.get("parameters")?.as_array()?;
+        let local = operation.op.get("parameters")?.as_array()?;
         for parameter in inherited {
             let Some(parameter) = self.resolve(parameter) else {
                 continue;
@@ -340,7 +327,7 @@ impl<'a> Doc<'a> {
     fn parameters(&self, operation: &Operation<'a>) -> Vec<&'a Value> {
         [operation.item, operation.op]
             .into_iter()
-            .filter_map(|node| node.get("parameters").and_then(Value::as_sequence))
+            .filter_map(|node| node.get("parameters").and_then(Value::as_array))
             .flatten()
             .filter_map(|parameter| self.resolve(parameter))
             .collect()
@@ -371,7 +358,7 @@ impl<'a> Doc<'a> {
             return None;
         }
         let schema = self.resolve(schema)?;
-        if !schema.is_mapping() || !seen.insert(std::ptr::from_ref(schema)) {
+        if !schema.is_object() || !seen.insert(std::ptr::from_ref(schema)) {
             return None;
         }
         if let Some(found) = visit(schema) {
@@ -380,7 +367,7 @@ impl<'a> Doc<'a> {
         for key in ["allOf", "oneOf", "anyOf"] {
             for member in schema
                 .get(key)
-                .and_then(Value::as_sequence)
+                .and_then(Value::as_array)
                 .into_iter()
                 .flatten()
             {
@@ -393,11 +380,11 @@ impl<'a> Doc<'a> {
         let required = required_names(schema);
         for (name, property) in schema
             .get("properties")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .into_iter()
             .flatten()
         {
-            if required_only && !name.as_str().is_some_and(|name| required.contains(&name)) {
+            if required_only && !required.contains(&name.as_str()) {
                 continue;
             }
             if let Some(found) = self.reach_from(property, required_only, visit, seen, depth + 1) {
@@ -405,7 +392,7 @@ impl<'a> Doc<'a> {
             }
         }
         for key in ["items", "additionalProperties"] {
-            if let Some(child) = schema.get(key).filter(|child| child.is_mapping()) {
+            if let Some(child) = schema.get(key).filter(|child| child.is_object()) {
                 if let Some(found) = self.reach_from(child, required_only, visit, seen, depth + 1) {
                     return Some(found);
                 }
@@ -426,7 +413,7 @@ impl<'a> Doc<'a> {
         let named = self
             .request_media(operation)?
             .get("examples")
-            .and_then(Value::as_mapping)?;
+            .and_then(Value::as_object)?;
         if named.len() < 2 {
             return None;
         }
@@ -442,8 +429,8 @@ impl<'a> Doc<'a> {
             .any(|schema| {
                 schema
                     .get("properties")
-                    .and_then(Value::as_mapping)
-                    .is_some_and(serde_yaml_ng::Mapping::is_empty)
+                    .and_then(Value::as_object)
+                    .is_some_and(serde_json::Map::is_empty)
                     && matches!(
                         schema.get("additionalProperties"),
                         None | Some(Value::Bool(false))
@@ -472,15 +459,12 @@ impl<'a> Doc<'a> {
         let op = operation.op;
         let tag = op
             .get("tags")
-            .and_then(Value::as_sequence)
+            .and_then(Value::as_array)
             .and_then(|tags| tags.first())?;
         if tag.as_str() == str_of(op, "operationId")
-            || op.as_mapping().is_some_and(|mapping| {
-                mapping.keys().any(|key| {
-                    key.as_str()
-                        .is_some_and(|key| key.starts_with("x-fern-sdk"))
-                })
-            })
+            || op
+                .as_object()
+                .is_some_and(|mapping| mapping.keys().any(|key| key.starts_with("x-fern-sdk")))
         {
             return None;
         }
@@ -506,7 +490,7 @@ impl<'a> Doc<'a> {
             };
             let detail = format!("header {name}");
             if is_type(target, "string") {
-                if let Some(values) = target.get("enum").and_then(Value::as_sequence) {
+                if let Some(values) = target.get("enum").and_then(Value::as_array) {
                     if !values.iter().any(|value| value.as_str() == Some(name)) {
                         return Some((Class::ExampleNotEnumValue, detail));
                     }
@@ -532,7 +516,7 @@ impl<'a> Doc<'a> {
     fn nullable_parent_example(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let schema = self.response_media(operation)?.get("schema")?;
         self.reach(schema, false, &mut |node| {
-            let members = node.get("allOf").and_then(Value::as_sequence)?;
+            let members = node.get("allOf").and_then(Value::as_array)?;
             let adds = non_empty_mapping(node.get("properties"))
                 || members.iter().any(|member| {
                     !self.nullable_parent(member)
@@ -564,10 +548,10 @@ impl<'a> Doc<'a> {
         operation: &Operation<'a>,
     ) -> Option<(Class, String)> {
         let schema = self.request_media(operation)?.get("schema")?;
-        let properties = schema.get("properties")?.as_mapping()?;
-        let members = schema.get("allOf")?.as_sequence()?;
+        let properties = schema.get("properties")?.as_object()?;
+        let members = schema.get("allOf")?.as_array()?;
         properties.iter().find_map(|(name, property)| {
-            let name = name.as_str()?;
+            let name = name.as_str();
             if property.get("readOnly").and_then(Value::as_bool) != Some(true) {
                 return None;
             }
@@ -610,10 +594,10 @@ impl<'a> Doc<'a> {
             let members = node
                 .get("oneOf")
                 .or_else(|| node.get("anyOf"))
-                .and_then(Value::as_sequence)?;
+                .and_then(Value::as_array)?;
             members.iter().find_map(|member| {
                 let reference = str_of(member, "$ref")?;
-                let parents = self.resolve(member)?.get("allOf")?.as_sequence()?;
+                let parents = self.resolve(member)?.get("allOf")?.as_array()?;
                 let restated = parents.iter().any(|parent| {
                     str_of(parent, "$ref").is_none()
                         && parent
@@ -625,7 +609,7 @@ impl<'a> Doc<'a> {
                         && self
                             .resolve(parent)
                             .and_then(|parent| parent.get("allOf"))
-                            .and_then(Value::as_sequence)
+                            .and_then(Value::as_array)
                             .is_some_and(|grandparents| {
                                 grandparents.iter().any(|grandparent| {
                                     str_of(grandparent, "$ref").is_some()
@@ -721,7 +705,7 @@ impl<'a> Doc<'a> {
             let example = match media.get("example") {
                 Some(example) => example,
                 None => {
-                    let first = media.get("examples")?.as_mapping()?.values().next()?;
+                    let first = media.get("examples")?.as_object()?.values().next()?;
                     self.resolve(first)?.get("value")?
                 }
             };
@@ -737,13 +721,13 @@ impl<'a> Doc<'a> {
         let schema = self.resolve(schema)?;
         match value {
             // An `allOf` lends its members' properties (Zoom's `dashboardMeetings`).
-            Value::Mapping(fields) => fields.iter().find_map(|(name, field)| {
-                let name = name.as_str()?;
+            Value::Object(fields) => fields.iter().find_map(|(name, field)| {
+                let name = name.as_str();
                 let property = std::iter::once(schema)
                     .chain(
                         schema
                             .get("allOf")
-                            .and_then(Value::as_sequence)
+                            .and_then(Value::as_array)
                             .into_iter()
                             .flatten()
                             .filter_map(|member| self.resolve(member)),
@@ -751,8 +735,8 @@ impl<'a> Doc<'a> {
                     .find_map(|owner| owner.get("properties")?.get(name))?;
                 self.written_scalar(property, field, depth + 1)
             }),
-            Value::Sequence(items) => {
-                let item_schema = schema.get("items").filter(|items| items.is_mapping())?;
+            Value::Array(items) => {
+                let item_schema = schema.get("items").filter(|items| items.is_object())?;
                 items
                     .iter()
                     .find_map(|item| self.written_scalar(item_schema, item, depth + 1))
@@ -773,11 +757,11 @@ impl<'a> Doc<'a> {
     fn shadowed_union_property(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let media = self.request_media(operation)?;
         let schema = self.resolve(media.get("schema")?)?;
-        let top = schema.get("properties").and_then(Value::as_mapping)?;
+        let top = schema.get("properties").and_then(Value::as_object)?;
         let members = schema
             .get("oneOf")
             .or_else(|| schema.get("anyOf"))
-            .and_then(Value::as_sequence)?;
+            .and_then(Value::as_array)?;
         if !super::type_not_defined::inferred_discriminant(self.root, members) {
             return None;
         }
@@ -787,19 +771,16 @@ impl<'a> Doc<'a> {
         }
         for (name, example) in media
             .get("examples")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .into_iter()
             .flatten()
         {
-            if let (Some(name), Some(value)) = (name.as_str(), self.resolve(example)?.get("value"))
-            {
+            if let (name, Some(value)) = (name.as_str(), self.resolve(example)?.get("value")) {
                 written.push((format!("examples/{name}"), value));
             }
         }
         for (property, _) in top {
-            let Some(property) = property.as_str() else {
-                continue;
-            };
+            let property = property.as_str();
             let Some(declared) = self.member_object_keys(members, property) else {
                 continue;
             };
@@ -807,13 +788,16 @@ impl<'a> Doc<'a> {
                 continue;
             }
             for (name, value) in &written {
-                let Some(keys) = value.get(property).and_then(Value::as_mapping) else {
+                let Some(keys) = value.get(property).and_then(Value::as_object) else {
                     continue;
                 };
                 if let Some(key) = keys.keys().find(|key| !declared.contains(key)) {
                     return Some((
                         Class::ExampleUnexpectedProperty,
-                        format!("request {name} {property}.{}", literal(key)),
+                        format!(
+                            "request {name} {property}.{}",
+                            literal(&Value::String(key.clone()))
+                        ),
                     ));
                 }
             }
@@ -824,7 +808,7 @@ impl<'a> Doc<'a> {
     /// The property names the union members' object declarations of
     /// `property` give, or `None` when a member declares it as anything but a
     /// closed object of named properties.
-    fn member_object_keys(&self, members: &'a [Value], property: &str) -> Option<Vec<&'a Value>> {
+    fn member_object_keys(&self, members: &'a [Value], property: &str) -> Option<Vec<&'a String>> {
         let mut declared = Vec::new();
         for member in members {
             let Some(nested) = self
@@ -843,7 +827,7 @@ impl<'a> Doc<'a> {
             {
                 return None;
             }
-            declared.extend(nested.get("properties").and_then(Value::as_mapping)?.keys());
+            declared.extend(nested.get("properties").and_then(Value::as_object)?.keys());
         }
         Some(declared)
     }
@@ -852,7 +836,7 @@ impl<'a> Doc<'a> {
     /// body against the first success response, its request against the JSON
     /// request body and its query parameters against theirs.
     fn fern_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
-        let entries = operation.op.get("x-fern-examples")?.as_sequence()?;
+        let entries = operation.op.get("x-fern-examples")?.as_array()?;
         let response = self
             .response_media(operation)
             .and_then(|media| media.get("schema"));
@@ -883,13 +867,13 @@ impl<'a> Doc<'a> {
             }
             for (name, value) in entry
                 .get("query-parameters")
-                .and_then(Value::as_mapping)
+                .and_then(Value::as_object)
                 .into_iter()
                 .flatten()
             {
                 let Some(schema) = queries
                     .iter()
-                    .find(|(query, _)| Some(*query) == name.as_str())
+                    .find(|(query, _)| *query == name.as_str())
                     .map(|(_, schema)| *schema)
                 else {
                     continue;
@@ -914,18 +898,18 @@ impl<'a> Doc<'a> {
         operation
             .op
             .get("responses")
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .into_iter()
             .flatten()
             .find_map(|(code, response)| {
-                let code = response_code(code)?;
+                let code = code.clone();
                 if code.len() != 3 || !(code.starts_with('4') || code.starts_with('5')) {
                     return None;
                 }
                 let media = json_media(self.resolve(response)?.get("content"))?;
                 let example = media.get("example")?;
                 let schema = self.resolve(media.get("schema")?)?;
-                (matches!(example, Value::Mapping(_) | Value::Sequence(_))
+                (matches!(example, Value::Object(_) | Value::Array(_))
                     && plain_string(schema)
                     && self.error_bodies(&code).all(plain_string))
                 .then(|| {
@@ -941,11 +925,8 @@ impl<'a> Doc<'a> {
     fn error_bodies(&self, code: &str) -> impl Iterator<Item = &'a Value> + '_ {
         let code = code.to_owned();
         self.operations().into_iter().filter_map(move |operation| {
-            let responses = operation.op.get("responses")?.as_mapping()?;
-            let response = responses
-                .iter()
-                .find(|(key, _)| response_code(key).as_deref() == Some(code.as_str()))?
-                .1;
+            let responses = operation.op.get("responses")?.as_object()?;
+            let response = responses.iter().find(|(key, _)| key.as_str() == code)?.1;
             let schema = json_media(self.resolve(response)?.get("content"))?.get("schema")?;
             self.resolve(schema)
         })
@@ -965,7 +946,7 @@ impl<'a> Doc<'a> {
             return None;
         }
         if is_type(schema, "string") {
-            if let Some(values) = schema.get("enum").and_then(Value::as_sequence) {
+            if let Some(values) = schema.get("enum").and_then(Value::as_array) {
                 let text = value.as_str()?;
                 return (!values.iter().any(|member| member.as_str() == Some(text)))
                     .then(|| (Class::ExampleNotEnumValue, literal(value)));
@@ -980,17 +961,17 @@ impl<'a> Doc<'a> {
             return (!is_integral(value)).then(|| (Class::ExampleTypeMismatch, literal(value)));
         }
         if is_type(schema, "array") {
-            let item_schema = schema.get("items").filter(|items| items.is_mapping())?;
+            let item_schema = schema.get("items").filter(|items| items.is_object())?;
             return value
-                .as_sequence()?
+                .as_array()?
                 .iter()
                 .find_map(|item| self.validate(item_schema, item, depth + 1));
         }
-        let properties = schema.get("properties").and_then(Value::as_mapping);
+        let properties = schema.get("properties").and_then(Value::as_object);
         if !(is_type(schema, "object") || (schema.get("type").is_none() && properties.is_some())) {
             return None;
         }
-        let Some(fields) = value.as_mapping() else {
+        let Some(fields) = value.as_object() else {
             return Some((Class::ExampleTypeMismatch, literal(value)));
         };
         if let Some(missing) = required_names(schema)
@@ -1011,10 +992,7 @@ impl<'a> Doc<'a> {
                     }
                 }
                 None if closed => {
-                    return Some((
-                        Class::ExampleUnexpectedProperty,
-                        name.as_str().unwrap_or_default().to_owned(),
-                    ));
+                    return Some((Class::ExampleUnexpectedProperty, name.as_str().to_owned()));
                 }
                 None => {}
             }
@@ -1026,10 +1004,10 @@ impl<'a> Doc<'a> {
         self.root
             .get("components")
             .and_then(|components| components.get("schemas"))
-            .and_then(Value::as_mapping)
+            .and_then(Value::as_object)
             .into_iter()
             .flatten()
-            .filter_map(|(key, schema)| Some((key.as_str()?, schema)))
+            .map(|(key, schema)| (key.as_str(), schema))
             .collect()
     }
 
@@ -1105,19 +1083,19 @@ impl<'a> Doc<'a> {
         {
             return None;
         }
-        let mut properties = serde_yaml_ng::Mapping::new();
+        let mut properties = serde_json::Map::new();
         let mut required = Vec::new();
-        for member in schema.get("allOf")?.as_sequence()? {
+        for member in schema.get("allOf")?.as_array()? {
             let member = self.resolve(member)?;
             if has_composition(member) {
                 return None;
             }
-            if let Some(own) = member.get("properties").and_then(Value::as_mapping) {
+            if let Some(own) = member.get("properties").and_then(Value::as_object) {
                 properties.extend(own.iter().map(|(key, value)| (key.clone(), value.clone())));
             }
             required.extend(required_names(member).into_iter().map(Value::from));
         }
-        let mut flat = serde_yaml_ng::Mapping::new();
+        let mut flat = serde_json::Map::new();
         flat.insert("properties".into(), properties.into());
         flat.insert("required".into(), required.into());
         Some(flat.into())
@@ -1132,7 +1110,7 @@ impl<'a> Doc<'a> {
     /// a component, an absent reference, an optional or no top-level property.
     fn required_beside_definitions_member(&self) -> Option<(Class, String)> {
         for (key, schema) in self.component_schemas() {
-            let Some(members) = schema.get("allOf").and_then(Value::as_sequence) else {
+            let Some(members) = schema.get("allOf").and_then(Value::as_array) else {
                 continue;
             };
             let into_definitions = |member: &Value| {
@@ -1193,13 +1171,11 @@ impl<'a> Doc<'a> {
         for (index, (key, owner)) in components.iter().enumerate() {
             for (property, schema) in owner
                 .get("properties")
-                .and_then(Value::as_mapping)
+                .and_then(Value::as_object)
                 .into_iter()
                 .flatten()
             {
-                let Some(property) = property.as_str() else {
-                    continue;
-                };
+                let property = property.as_str();
                 if str_of(schema, "$ref").is_some() {
                     continue;
                 }
@@ -1272,10 +1248,10 @@ impl<'a> Doc<'a> {
                     .find_map(|(owner_key, owner)| {
                         owner
                             .get("properties")
-                            .and_then(Value::as_mapping)?
+                            .and_then(Value::as_object)?
                             .iter()
                             .find_map(|(property, schema)| {
-                                let property = property.as_str()?;
+                                let property = property.as_str();
                                 (str_of(schema, "$ref").is_none()
                                     && object_or_untyped(schema)
                                     && !has_composition(schema)
@@ -1315,25 +1291,25 @@ impl<'a> Doc<'a> {
         for (index, (key, owner)) in components.iter().enumerate() {
             let members = owner
                 .get("allOf")
-                .and_then(Value::as_sequence)
+                .and_then(Value::as_array)
                 .into_iter()
                 .flatten()
-                .filter_map(|member| member.get("oneOf").and_then(Value::as_sequence))
+                .filter_map(|member| member.get("oneOf").and_then(Value::as_array))
                 .flatten()
                 .filter(|member| str_of(member, "$ref").is_some())
                 .filter_map(|member| self.resolve(member));
             for member in members {
                 for (property, schema) in member
                     .get("properties")
-                    .and_then(Value::as_mapping)
+                    .and_then(Value::as_object)
                     .into_iter()
                     .flatten()
                 {
-                    let (Some(property), Some(first)) = (
+                    let (property, Some(first)) = (
                         property.as_str(),
                         schema
                             .get("enum")
-                            .and_then(Value::as_sequence)
+                            .and_then(Value::as_array)
                             .and_then(|values| values.first())
                             .and_then(Value::as_str),
                     ) else {
@@ -1351,7 +1327,7 @@ impl<'a> Doc<'a> {
                         components[index + 1..].iter().find(|(other, winner)| {
                             crate::naming::class_name(other) == name
                                 && is_type(winner, "string")
-                                && winner.get("enum").and_then(Value::as_sequence).is_some_and(
+                                && winner.get("enum").and_then(Value::as_array).is_some_and(
                                     |values| {
                                         !values.iter().any(|value| value.as_str() == Some(first))
                                     },
@@ -1388,7 +1364,7 @@ fn string_led_union(schema: &Value) -> bool {
     schema
         .get("anyOf")
         .or_else(|| schema.get("oneOf"))
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .filter(|members| members.len() >= 2)
         .is_some_and(|members| {
             let first = &members[0];
@@ -1405,8 +1381,8 @@ fn string_led_union(schema: &Value) -> bool {
 /// string property the winner lacks is unexpected (Fern's response example
 /// fills a string with its name; other property kinds are not measured).
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
-    let own = loser.get("properties").and_then(Value::as_mapping)?;
-    let theirs = winner.get("properties").and_then(Value::as_mapping)?;
+    let own = loser.get("properties").and_then(Value::as_object)?;
+    let theirs = winner.get("properties").and_then(Value::as_object)?;
     if !matches!(
         winner.get("additionalProperties"),
         None | Some(Value::Bool(false))
@@ -1434,7 +1410,7 @@ fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
 fn required_names(schema: &Value) -> Vec<&str> {
     schema
         .get("required")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .into_iter()
         .flatten()
         .filter_map(Value::as_str)
@@ -1446,7 +1422,7 @@ mod tests {
     use super::*;
 
     fn yaml(text: &str) -> Value {
-        serde_yaml_ng::from_str(text).unwrap()
+        crate::yaml::from_str(text).unwrap()
     }
 
     #[test]

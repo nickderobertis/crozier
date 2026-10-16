@@ -1,0 +1,74 @@
+{
+  "name": "release-packaging",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "tier:promoted",
+    "cost:expensive",
+    "lang:javascript",
+    "lang:python",
+    "lang:bash"
+  ],
+  "targets": {
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --test tools/release-packaging/release-package.test.mjs"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "crateSource",
+        "{workspaceRoot}/pyproject.toml",
+        "{workspaceRoot}/scripts/install.sh",
+        "{workspaceRoot}/scripts/smoke.sh",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/LICENSE",
+        "{workspaceRoot}/NOTICE",
+        "{workspaceRoot}/CHANGELOG.md",
+        "generator"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "uv run --locked --all-packages ruff check tools/release-packaging",
+          "shellcheck tools/release-packaging/publish-darwin.sh",
+          "node --check tools/release-packaging/release-package.test.mjs",
+          "node scripts/check-project-boundaries.mjs release-packaging"
+        ],
+        "parallel": false
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "boundaries",
+        "pythonTooling"
+      ]
+    },
+    "format": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ruff format --check tools/release-packaging"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ]
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages ty check tools/release-packaging"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "pythonTooling"
+      ]
+    }
+  }
+}

@@ -114,7 +114,7 @@ fn the_migration_guide_workflow_runs_as_written() {
     // Step 1: the config exactly as the README shows it, and what it names.
     let config = block("README.md", "config");
     write(&repo.join("crozier.yml"), &config);
-    let parsed: serde_yaml_ng::Value = serde_yaml_ng::from_str(&config).unwrap();
+    let parsed: serde_json::Value = crate::yaml::from_str(&config).unwrap();
     let python = &parsed["generators"]["python"];
     let spec = python["spec"].as_str().expect("step 1 names a spec");
     let output = python["output"].as_str().expect("step 1 names an output");

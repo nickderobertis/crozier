@@ -112,7 +112,7 @@ Use the `just` recipes; do not hand-roll equivalents.
 
 - `just bootstrap` — set up from a clean clone.
 - `.cargo/config.toml` is tracked and is the cargo build contract: per-clone
-  `target/` (never shared across worktrees) and `profile.dev.debug = 1`. It
+  `target/` (never shared across worktrees) and `profile.dev.debug = 0` (no debuginfo). It
   configures no `sccache`; a compile cache is a user-level `~/.cargo/config.toml`
   `[build] rustc-wrapper`, which cargo merges with this one.
 - `just check` — the gate (`--sweep` for the broader tier). Must pass before any

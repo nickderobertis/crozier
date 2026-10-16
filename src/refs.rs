@@ -328,7 +328,7 @@ impl DocumentLocation {
 struct Resolver<'a> {
     fetcher: &'a dyn RemoteFetcher,
     spec: &'a Path,
-    documents: HashMap<String, serde_yaml_ng::Value>,
+    documents: HashMap<String, serde_json::Value>,
     active: Vec<String>,
     imported: IndexMap<String, Schema>,
     importing: HashSet<(String, String)>,
@@ -338,6 +338,21 @@ struct Resolver<'a> {
 }
 
 impl Resolver<'_> {
+    /// Reference targets are objects; serde's defaulted structs also accept
+    /// empty arrays, so check the document shape before typed deserialization.
+    fn deserialize_object<T: serde::de::DeserializeOwned>(
+        &self,
+        node: serde_json::Value,
+        reference: &str,
+        kind: &str,
+    ) -> Result<T> {
+        if !node.is_object() {
+            return Err(self.error(reference, &format!("not {kind}: expected an object")));
+        }
+        serde_json::from_value(node)
+            .map_err(|error| self.error(reference, &format!("not {kind}: {error}")))
+    }
+
     fn resolve_path_item(&mut self, item: &mut PathItem, source: &DocumentLocation) -> Result<()> {
         let mut source_path = source.clone();
         if let Some(reference) = item.reference.clone() {
@@ -361,9 +376,7 @@ impl Resolver<'_> {
                             "the referenced document has no Path Item at that pointer",
                         )
                     })?;
-                *item = serde_yaml_ng::from_value(node).map_err(|error| {
-                    self.error(&reference, &format!("not a Path Item: {error}"))
-                })?;
+                *item = self.deserialize_object(node, &reference, "a Path Item")?;
             }
         }
         for parameter in &mut item.parameters {
@@ -420,7 +433,9 @@ impl Resolver<'_> {
                 .split_once('#')
                 .map_or("", |(_, fragment)| fragment);
             let node = pointer(self.document(&location, &reference).ok()?, fragment)?.clone();
-            let resolved: SecurityScheme = serde_yaml_ng::from_value(node).ok()?;
+            let resolved: SecurityScheme = self
+                .deserialize_object(node, &reference, "a security scheme")
+                .ok()?;
             let Some(next) = resolved.reference.clone() else {
                 return Some(resolved);
             };
@@ -449,8 +464,7 @@ impl Resolver<'_> {
                     "the referenced document has no parameter at that pointer",
                 )
             })?;
-        *parameter = serde_yaml_ng::from_value(node)
-            .map_err(|error| self.error(&reference, &format!("not a parameter: {error}")))?;
+        *parameter = self.deserialize_object(node, &reference, "a parameter")?;
         Ok(())
     }
 
@@ -628,8 +642,7 @@ impl Resolver<'_> {
         if self.imported.contains_key(name) || !self.importing.insert(identity.clone()) {
             return Ok(Some(name.to_string()));
         }
-        let mut schema: Schema = serde_yaml_ng::from_value(node)
-            .map_err(|error| self.error(reference, &format!("not a schema: {error}")))?;
+        let mut schema: Schema = self.deserialize_object(node, reference, "a schema")?;
         let mut locals: Vec<(String, String)> = Vec::new();
         for_each_schema_in(&mut schema, &mut |node| {
             let Some(value) = node.reference.as_deref() else {
@@ -695,8 +708,7 @@ impl Resolver<'_> {
                 "the referenced document has no node at that pointer",
             )
         })?;
-        let mut resolved: Schema = serde_yaml_ng::from_value(node)
-            .map_err(|error| self.error(reference, &format!("not a schema: {error}")))?;
+        let mut resolved: Schema = self.deserialize_object(node, reference, "a schema")?;
         self.active.push(reference.to_string());
         let nested = self.resolve_schema(&mut resolved, &path);
         self.active.pop();
@@ -706,11 +718,7 @@ impl Resolver<'_> {
 
     /// The parsed document at `url`, fetched once per load. YAML is a superset of
     /// JSON, so one parser reads both `.yaml` and `.json` references.
-    fn document(
-        &mut self,
-        path: &DocumentLocation,
-        reference: &str,
-    ) -> Result<&serde_yaml_ng::Value> {
+    fn document(&mut self, path: &DocumentLocation, reference: &str) -> Result<&serde_json::Value> {
         let key = path.key();
         if !self.documents.contains_key(&key) {
             let text = match path {
@@ -727,7 +735,7 @@ impl Resolver<'_> {
                     })?
                 }
             };
-            let value = serde_yaml_ng::from_str(&text)
+            let value = crate::yaml::from_str(&text)
                 .map_err(|error| self.error(reference, &format!("could not parse it: {error}")))?;
             self.documents.insert(key.clone(), value);
         }
@@ -745,16 +753,13 @@ impl Resolver<'_> {
 
 /// Walk a JSON pointer (RFC 6901) into a parsed document. An empty pointer is
 /// the document itself.
-fn pointer<'a>(
-    document: &'a serde_yaml_ng::Value,
-    fragment: &str,
-) -> Option<&'a serde_yaml_ng::Value> {
+fn pointer<'a>(document: &'a serde_json::Value, fragment: &str) -> Option<&'a serde_json::Value> {
     let mut node = document;
     for segment in fragment.split('/').skip_while(|segment| segment.is_empty()) {
         let key = segment.replace("~1", "/").replace("~0", "~");
         node = match node {
-            serde_yaml_ng::Value::Mapping(map) => map.get(serde_yaml_ng::Value::from(key))?,
-            serde_yaml_ng::Value::Sequence(items) => items.get(key.parse::<usize>().ok()?)?,
+            serde_json::Value::Object(map) => map.get(&key)?,
+            serde_json::Value::Array(items) => items.get(key.parse::<usize>().ok()?)?,
             _ => return None,
         };
     }
@@ -795,7 +800,7 @@ mod tests {
     }
 
     fn parse(spec: &str) -> OpenApi {
-        serde_yaml_ng::from_str(spec).expect("valid spec")
+        crate::yaml::from_str(spec).expect("valid spec")
     }
 
     fn resolved(spec: &str, documents: &[(&str, &str)]) -> (OpenApi, Vec<String>) {
@@ -1289,10 +1294,10 @@ components:
 
     #[test]
     fn a_pointer_walks_sequences_escapes_and_the_whole_document() {
-        let document: serde_yaml_ng::Value =
-            serde_yaml_ng::from_str("a/b:\n  - first\n  - second\n").expect("valid yaml");
+        let document: serde_json::Value =
+            crate::yaml::from_str("a/b:\n  - first\n  - second\n").expect("valid yaml");
         assert_eq!(
-            pointer(&document, "/a~1b/1").and_then(serde_yaml_ng::Value::as_str),
+            pointer(&document, "/a~1b/1").and_then(serde_json::Value::as_str),
             Some("second")
         );
         assert!(pointer(&document, "").is_some());
@@ -1491,6 +1496,7 @@ components:
         .expect("root");
         for (body, expected) in [
             ("Health: []\n", "not a Path Item"),
+            ("Health: 7\n", "not a Path Item"),
             (
                 "Health:\n  get:\n    responses:\n      '200':\n        description: OK\n        content:\n          application/json:\n            schema:\n              $ref: missing.yml#/Model\n",
                 "could not read",
@@ -1514,7 +1520,7 @@ components:
             spec,
             documents: HashMap::from([(
                 path.key(),
-                serde_yaml_ng::from_str(
+                crate::yaml::from_str(
                     "HealthResponse:\n  type: object\n  properties:\n    status:\n      $ref: '#/Status'\nStatus:\n  type: string\n  enum: [ok, down]\n",
                 )
                 .expect("sibling document"),

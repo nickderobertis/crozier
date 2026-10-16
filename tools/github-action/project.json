@@ -20,7 +20,8 @@
       },
       "cache": true,
       "inputs": [
-        "default"
+        "default",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "lint": {
@@ -36,7 +37,8 @@
       "inputs": [
         "default",
         "cargo",
-        "boundaries"
+        "boundaries",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     },
     "test": {
@@ -51,7 +53,8 @@
         "{workspaceRoot}/action.yml",
         "{workspaceRoot}/docs/github-action.md",
         "{workspaceRoot}/docs/examples/**/*",
-        "{workspaceRoot}/docs/fern-reference.md"
+        "{workspaceRoot}/docs/fern-reference.md",
+        "{workspaceRoot}/src/yaml.rs"
       ]
     }
   }

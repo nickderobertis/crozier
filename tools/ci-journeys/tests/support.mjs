@@ -42,7 +42,7 @@ export function scratchWorkspace(t) {
     rmSync(root, { recursive: true, force: true });
     rmSync(remote, { recursive: true, force: true });
   });
-  for (const path of ["justfile", "tools/ci/gate.mjs", "tools/ci/ci-tier.mjs", "scripts/check-project-boundaries.mjs", "package.json"]) {
+  for (const path of ["justfile", "tools/ci/gate.mjs", "tools/ci/ci-tier.mjs", ".github/macos-policy.mjs", "scripts/check-project-boundaries.mjs", "package.json"]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
     cpSync(join(REPO, path), join(root, path));
   }

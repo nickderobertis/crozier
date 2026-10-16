@@ -36,6 +36,7 @@ pub mod refs;
 pub mod schema;
 pub mod settings;
 pub mod wrap;
+mod yaml;
 
 pub use emit::GeneratedFile;
 pub use error::{Error, Result};

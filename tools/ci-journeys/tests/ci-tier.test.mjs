@@ -153,3 +153,21 @@ test("ci-check exits with the gate's own failure", (t) => {
   assert.notEqual(failed.status, 0, failed.output);
   assert.match(failed.output, /gate: a target failed/);
 });
+
+// The scheduling classifier is a different decision from the release-prep
+// sweep: even mixed release-plz heads sweep Linux/Windows and owe the Mac lane.
+test("release-prep sweep and semantic Mac omission remain independent", (t) => {
+  const root = scratchWorkspace(t);
+  const base = git(root, "rev-parse", "HEAD");
+  const head = commitChange(root, "a/src.txt", "mixed release source edit\n");
+  const pr = { repository: { full_name: "nickderobertis/crozier" }, pull_request: {
+    head: { ref: "release-plz-test", repo: { full_name: "nickderobertis/crozier" } },
+    base: { repo: { full_name: "nickderobertis/crozier" } },
+  } };
+  write(root, { "event.json": JSON.stringify(pr) });
+  const env = { GITHUB_EVENT_NAME: "pull_request", GITHUB_HEAD_REF: "release-plz-test", GITHUB_BASE_REF: "main" };
+  assert.equal(decide(root, env).tier, "sweep");
+  const run = spawnSync(process.execPath, [join(root, ".github/macos-policy.mjs"), "classify", "--event", join(root, "event.json"), "--base", base, "--head", head], { cwd: root, env: { ...process.env, ...env }, encoding: "utf8" });
+  assert.equal(run.status, 0, run.stderr);
+  assert.equal(JSON.parse(run.stdout).macosRequired, true);
+});

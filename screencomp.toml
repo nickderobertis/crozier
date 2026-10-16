@@ -23,9 +23,8 @@ label = "Command"
 values = ["main", "generate"]
 
 [guard]
-# Local pre-push guard (.githooks/pre-push): re-capture only when something that
-# can change the rendered CLI output changes — the arg/help/error surface, the
-# settings/config layering and its JSON Schema, the generator + its templates and
+# Paths relevant to visual review of rendered CLI output: the arg/help/error
+# surface, the settings/config layering and its JSON Schema, the generator + its templates and
 # vendored assets (the `generate` tree, the `model` file, and the GIF are real
 # generated output), or the capture machinery + demo config itself.
 paths = [

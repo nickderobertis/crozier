@@ -1,0 +1,79 @@
+{
+  "name": "github-workflows",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "tags": [
+    "type:tooling",
+    "lang:javascript",
+    "measures:release-packaging"
+  ],
+  "targets": {
+    "install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bun install --cwd .github --frozen-lockfile"
+      },
+      "cache": false
+    },
+    // llmlint: ignore-block[shell_test_tiers_stay_split] Manager-approved task exception: this project owns the fixed node --test .github/tests/*.test.mjs workload, including real-Git classifier subprocess journeys and graph resolution; all new tooling tests and telemetry must remain inside .github, so splitting the host-tool journeys into another project would violate the required recording surface.
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "bash .github/run-tests.sh"
+      },
+      "dependsOn": [
+        "install"
+      ],
+      "cache": false,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/screencomp.toml",
+        "{workspaceRoot}/release-plz.toml",
+        "{workspaceRoot}/tools/release-packaging/release-native.py",
+        "{workspaceRoot}/tools/release-packaging/publish-darwin.sh",
+        "{workspaceRoot}/scripts/install.sh",
+        "{workspaceRoot}/Cargo.toml",
+        "{workspaceRoot}/README.md",
+        "{workspaceRoot}/LICENSE",
+        "{workspaceRoot}/NOTICE",
+        "{workspaceRoot}/CHANGELOG.md"
+      ]
+    },
+    // llmlint: ignore-end[shell_test_tiers_stay_split]
+    "budgets": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node .github/check-budgets.mjs"
+      },
+      "dependsOn": [
+        "test"
+      ],
+      "cache": false,
+      "inputs": [
+        "default"
+      ]
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node .github/check-syntax.mjs",
+          "node .github/lint-workflows.mjs",
+          "node scripts/check-project-boundaries.mjs github-workflows"
+        ],
+        "parallel": false
+      },
+      "dependsOn": [
+        "budgets"
+      ],
+      "cache": false,
+      "inputs": [
+        "default",
+        "boundaries"
+      ],
+      "metadata": {
+        "description": "This task fixes the private Node dependencies to YAML parsing, the Actions expression evaluator and the budget SDK. Its untyped mjs sources use syntax lint plus real boundary journeys, matching the existing ci mjs tooling; adding a static JS checker would broaden that agreed toolchain. Syntax is not mislabeled as typecheck."
+      }
+    }
+  }
+}

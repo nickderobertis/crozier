@@ -7,20 +7,24 @@
 //! Every context `ci.yml` reports is a candidate for branch protection, so the
 //! job must share a name with none of them and none may depend on it.
 
-use serde_yaml_ng::{Mapping, Value};
+#[path = "../../../src/yaml.rs"]
+mod yaml;
+
+use serde_json::Value;
+type Mapping = serde_json::Map<String, Value>;
 
 const NOTIGNORED_WORKFLOW: &str = include_str!("../../../.github/workflows/notignored.yml");
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 const FORK_GUARD: &str = "github.event.pull_request.head.repo.full_name == github.repository";
 
 fn parse(source: &str) -> Value {
-    serde_yaml_ng::from_str(source).expect("workflow is valid YAML")
+    crate::yaml::from_str(source).expect("workflow is valid YAML")
 }
 
 fn jobs(workflow: &Value) -> &Mapping {
     workflow
         .get("jobs")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("workflow has jobs")
 }
 
@@ -28,10 +32,7 @@ fn only_job(workflow: &Value) -> (&str, &Mapping) {
     let jobs = jobs(workflow);
     assert_eq!(jobs.len(), 1, "notignored.yml defines exactly one job");
     let (id, job) = jobs.iter().next().expect("one job");
-    (
-        id.as_str().expect("job ids are strings"),
-        job.as_mapping().expect("the job is a mapping"),
-    )
+    (id.as_str(), job.as_object().expect("the job is a mapping"))
 }
 
 /// The context a job reports: its `name`, else its id.
@@ -43,7 +44,7 @@ fn needs(job: &Mapping) -> Vec<String> {
     match job.get("needs") {
         None => Vec::new(),
         Some(Value::String(one)) => vec![one.clone()],
-        Some(Value::Sequence(many)) => many
+        Some(Value::Array(many)) => many
             .iter()
             .map(|need| need.as_str().expect("needs are job ids").to_owned())
             .collect(),
@@ -58,10 +59,10 @@ fn runs_on_pull_requests_only() {
         .get("on")
         .expect("notignored.yml declares its trigger");
     let triggers: Vec<&str> = on
-        .as_mapping()
+        .as_object()
         .expect("`on` is a mapping")
         .keys()
-        .map(|key| key.as_str().expect("trigger names are strings"))
+        .map(|key| key.as_str())
         .collect();
     assert_eq!(triggers, ["pull_request"]);
 }
@@ -71,16 +72,11 @@ fn grants_only_a_read_tree_and_a_pull_request_comment() {
     let workflow = parse(NOTIGNORED_WORKFLOW);
     let permissions = workflow
         .get("permissions")
-        .and_then(Value::as_mapping)
+        .and_then(Value::as_object)
         .expect("notignored.yml sets workflow permissions");
     let granted: Vec<(&str, &str)> = permissions
         .iter()
-        .map(|(scope, level)| {
-            (
-                scope.as_str().expect("scopes are strings"),
-                level.as_str().expect("levels are strings"),
-            )
-        })
+        .map(|(scope, level)| (scope.as_str(), level.as_str().expect("levels are strings")))
         .collect();
     assert_eq!(granted, [("contents", "read"), ("pull-requests", "write")]);
     let (_, job) = only_job(&workflow);
@@ -97,7 +93,7 @@ fn skips_forks_and_checks_out_full_history_before_the_action() {
     assert_eq!(job.get("if").and_then(Value::as_str), Some(FORK_GUARD));
     let steps = job
         .get("steps")
-        .and_then(Value::as_sequence)
+        .and_then(Value::as_array)
         .expect("the job has steps");
     let uses: Vec<&str> = steps
         .iter()
@@ -127,8 +123,8 @@ fn shares_no_context_with_ci_and_nothing_in_ci_needs_it() {
     let ci = parse(CI_WORKFLOW);
     let ci_jobs = jobs(&ci);
     for (ci_id, ci_job) in ci_jobs {
-        let ci_id = ci_id.as_str().expect("job ids are strings");
-        let ci_job = ci_job.as_mapping().expect("each job is a mapping");
+        let ci_id = ci_id.as_str();
+        let ci_job = ci_job.as_object().expect("each job is a mapping");
         let name = context(ci_id, ci_job);
         assert_ne!(name, own, "notignored reports ci.yml's {name} context");
         let mut pending = needs(ci_job);
@@ -140,7 +136,7 @@ fn shares_no_context_with_ci_and_nothing_in_ci_needs_it() {
             }
             let upstream = ci_jobs
                 .get(need.as_str())
-                .and_then(Value::as_mapping)
+                .and_then(Value::as_object)
                 .unwrap_or_else(|| panic!("{name} needs unknown job {need}"));
             pending.extend(needs(upstream));
             seen.push(need);
