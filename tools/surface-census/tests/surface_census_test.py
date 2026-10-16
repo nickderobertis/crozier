@@ -4930,6 +4930,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "operation.operationId:hyphenated-tag-method",
             "operation.operationId:tag-spelled-split-prefix",
             "operation.operationId:all-caps-tag-split-prefix",
+            "operation.operationId:camel-case-tag-prefix",
             "operation.x-fern-sdk-group-name:leading-underscore",
             "operation.x-fern-sdk-group-name:without-method-name",
             "operation.x-fern-sdk-method-name:sequence",
@@ -13822,6 +13823,13 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
             | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
         )
         document = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        # A selector only a hand-written fixture covers cites that fixture, not
+        # census counts: no registered source declares it.
+        handwritten = {
+            cells[2]
+            for line in document.splitlines()
+            if (cells := table_cells(line, 8)) is not None and cells[3] == "handwritten"
+        }
         evidence = {}
         for line in document.splitlines():
             cells = table_cells(line, 8)
@@ -13830,6 +13838,7 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
             match = re.search(r"census `([^`]+)`:", cells[4])
             if match and match.group(1) in selectors:
                 evidence[match.group(1)] = cells[4]
+        selectors -= handwritten - set(evidence)
         self.assertEqual(selectors, set(evidence))
         completed = run(
             "--vendored-only", "--json", *(arg for selector in sorted(selectors) for arg in ("--selector", selector))
@@ -15954,6 +15963,32 @@ class ScenarioProofIndexTests(unittest.TestCase):
     def edited(self, row: dict[str, str], **cells: str) -> str:
         return self.line({**row, **cells})
 
+    def python_enums_mirror(self) -> tuple[Path, dict[str, str]]:
+        """A mirror in which one closed measurement shape holds an open `python_enums`
+        residual, recorded as the index records one: its committed diff, its `open`
+        cell and the parity node closing it. No committed shape holds one."""
+        module = self.index_script
+        root = self.mirror()
+        rows, _ = module.read_tsv(root / module.INDEX, module.INDEX_HEADER)
+        row = next(row for row in rows if row["kind"] == "measurement" and row["open"] == module.NONE)
+        opened = {**row, "open": module.PYTHON_ENUMS, "closer": f"{module.ParityNode.NAMING_WIRE}:{row['shape']}"}
+        self.rewrite(root / module.INDEX, self.line(row), self.line(opened))
+        diff = root / module.PYTHON_ENUMS_RESIDUALS / f"{row['shape']}.diff"
+        diff.parent.mkdir(parents=True, exist_ok=True)
+        diff.write_text(
+            "# crozier compare: crozier.yml python\n"
+            "# normalized diff: `-` reference, `+` crozier\n\n"
+            "--- reference/src/fern/trams/raw_client.py\n"
+            "+++ crozier/src/fern/trams/raw_client.py\n"
+            "      \u22ee (47 unchanged line(s))\n"
+            "              headers={\n"
+            '-                 "X-Shift": shift.value if shift is not None else None,\n'
+            '+                 "X-Shift": str(shift) if shift is not None else None,\n'
+            "              },\n",
+            encoding="utf-8",
+        )
+        return root, opened
+
     def assert_fails(self, root: Path, message: str) -> None:
         failures = self.index_script.check(root)
         self.assertTrue(any(message in failure for failure in failures), failures)
@@ -16511,7 +16546,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
-        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        _, python_enums = self.python_enums_mirror()
         closed = next(row for row in rows if row["open"] == module.NONE and row["kind"] == "handwritten")
         cases = {
             # A residual reattributed away leaves the shape claiming one it no longer has.
@@ -16542,7 +16577,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         }
         for name, (mutate, message) in cases.items():
             with self.subTest(case=name):
-                root = self.mirror()
+                root, _ = self.python_enums_mirror()
                 mutate(root)
                 self.assert_fails(root, message)
         lines, failures = module.summary(REPO)
@@ -16554,7 +16589,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
-        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        seeded, python_enums = self.python_enums_mirror()
         closed = next(row for row in rows if row["open"] == module.NONE)
         cases = {
             "closer dropped": (
@@ -16589,6 +16624,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
             if row["owner"] == witnessed["shape"]
         )
         self.assertIn(f"  {witnessed['shape']}: {cited} -> {witnessed['closer']}", lines)
+        lines, failures = module.summary(seeded)
+        self.assertEqual([], failures)
         self.assertIn(
             f"  {python_enums['shape']}: {module.PYTHON_ENUMS_RESIDUALS}/{python_enums['shape']}.diff"
             f" -> {python_enums['closer']}",

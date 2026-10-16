@@ -3389,10 +3389,11 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "1cd98d93de04e7bb",
+    "endpoint_method_name": "01aaa4f73183c559",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
+    "dotted_tag_group_method": "4f8b8852f85ba4ee",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
     "method_from_groupless_id": "3ba287086971a152",
     "method_from_hyphenated_tag_id": "4eb571e881d67d51",
@@ -3914,6 +3915,9 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
                 return _sanitized(to_snake_case(inner))
     if not text:
         return None  # the summary or route fallback names this method, not the id
+    dotted = _dotted_tag_group_method(text, tag)
+    if dotted is not None:
+        return _sanitized(_ascii_lower(dotted))
     if "." in text and all(_is_ascii_alnum(char) for char in text.split(".", 1)[0]):
         group = text.split(".", 1)[0]
         if group[:1].isascii() and group[:1].islower() and any(char in _ASCII_UPPER for char in group):
@@ -3944,6 +3948,18 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
     if hyphenated is not None:
         return hyphenated
     return _groupless_method(text, tag)
+
+
+def _dotted_tag_group_method(text: str, tag: str | None) -> str | None:
+    """`dotted_tag_group_method`: `<group>.<method>` whose group is the tag's one word."""
+    group, dot, method = text.partition(".")
+
+    def alphanumeric(part: str) -> bool:
+        return bool(part) and all(_is_ascii_alnum(char) for char in part)
+
+    if not dot or tag is None or not (alphanumeric(group) and alphanumeric(method)):
+        return None
+    return method if _fern_location_tokens(tag) == [_ascii_lower(group)] else None
 
 
 def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | None:
