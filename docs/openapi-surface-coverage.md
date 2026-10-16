@@ -3899,6 +3899,7 @@ is in both.
 
 | hole | property the current grammar cannot express | extension that would close it |
 |---|---|---|
+| **H-boolean-value** | The sole-reference property arm accepts absent or false `nullable`, and rejects true | The existing grammar records nullable presence, not its boolean truth; only `additionalProperties` has boolean-valued selectors |
 | **H-ordered-members** | Exactly two ordered `allOf` members: first a reference resolving to a string enum, then a string scalar carrying a pattern and no enum, reference, properties or nested composition | Ordered member selection with target resolution and sibling conjunctions |
 
 **This table is machine-readable, and this is the restatement of it.** The
@@ -4465,7 +4466,7 @@ both count it and the earlier arm runs — the chain overlap
 | 6 | `if let Some(member) = sole_inline_all_of(prop_schema)` — one inline `allOf` member and nothing else declared. The arity half is `schema.allOf:sole-member` and the nine sibling-absence tests are the nine negated members, eight at the property and one at the member the descent reaches. Without them the arity alone counts VolView's `TaskSpec.id`, a `type: string` beside a one-member `allOf`, which this function sends to its closing `base_type_ref` | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.enum&!schema.items&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>!schema.$ref` |
 | 7a | `string_enum_values(prop_schema)` → a hoisted enum, over a written `enum`, which the helper refuses unless the values are strings | `schema.properties>schema.enum:string-valued` |
 | 7b | the same over a `const`, the spelling the helper falls back to when no `enum` is written | `schema.properties>schema.const:string-valued` |
-| 18 | a one-member `allOf` property reference with annotations or default, kept as its referenced type; no sibling type declaration or explicit nullability | `schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref` |
+| 18 | `annotated_sole_all_of_ref` succeeds: no wrapper `$ref`, `type`, declared `properties`, `additionalProperties`, `items`, `oneOf`, `anyOf`, `enum` or `const`; `nullable` is absent or false; exactly one `allOf` member carries a reference. An annotation or default preserves the referenced type | **H-boolean-value** |
 | 8a | `prop_schema.reference.is_none() && is_inline_struct(prop_schema)` → `hoist_object`, on a property whose `properties` are non-empty | `schema.properties>schema.properties:non-empty` |
 | 8b | the same arm on a property declaring `allOf`, which `is_inline_struct` takes only for a property declaring no scalar `type` | `schema.properties>!schema.type:primary-scalar&schema.allOf` |
 | 8c | the same arm on a property writing an explicitly empty `properties: {}` beside no `additionalProperties` | `schema.properties>!schema.additionalProperties&!schema.properties:non-empty&schema.properties&schema.type:primary=object` |
@@ -4557,6 +4558,9 @@ Seven hole kinds are gone: H-arity, H-empty-collection, H-type-multiplicity,
 H-boolean-value, H-enum-value-kind, H-key-segment-position and
 H-key-all-templated no longer name any case, because every arm they named is now
 counted by its own selector.
+The later sole-reference property arm restores H-boolean-value for `nullable`
+truth: its absence and false value both pass, while true fails. A presence
+selector cannot distinguish them, and the grammar is not widened for this case.
 
 **What the pointer-form family closed after it.** Two of those nine holes turned
 on a `$ref` *value* rather than on a node's declared fields — H-pointer-form, the

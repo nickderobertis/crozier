@@ -1901,7 +1901,6 @@ CONJUNCTIONS = {
     "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": "one per Schema Object whose anyOf has an array member with an inline string-valued enum item, hoisted as the variant item enum",
     "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": "one per Schema Object whose oneOf has an array member with an inline string-valued const item, hoisted as the variant item enum",
     "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": "one per Schema Object whose anyOf has an array member with an inline string-valued const item, hoisted as the variant item enum",
-    "schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref": "one per Schema Object whose property is a sole allOf reference with no sibling type declaration and no explicit nullability; annotations and defaults do not coin a model",
     "schema.oneOf>schema.enum:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `enum`",
     "schema.anyOf>schema.enum:string-valued": "one per Schema Object one of whose `anyOf` members declares a string-valued `enum`",
     "schema.oneOf>schema.const:string-valued": "one per Schema Object one of whose `oneOf` members declares a string-valued `const`",
@@ -2391,11 +2390,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
         Case("7a", block="prop_type_ref", selector="schema.properties>schema.enum:string-valued"),
         Case("7b", block="prop_type_ref", selector="schema.properties>schema.const:string-valued"),
-        Case(
-            "18",
-            block="prop_type_ref",
-            selector="schema.properties>!schema.$ref&!schema.additionalProperties&!schema.anyOf&!schema.const&!schema.enum&!schema.items&!schema.nullable=true&!schema.oneOf&!schema.properties&!schema.type&schema.allOf:sole-member&schema.allOf>schema.$ref",
-        ),
+        Case("18", hole="H-boolean-value"),
         Case("8a", block="prop_type_ref", selector="schema.properties>schema.properties:non-empty"),
         Case("8b", block="prop_type_ref", selector="schema.properties>!schema.type:primary-scalar&schema.allOf"),
         Case(
