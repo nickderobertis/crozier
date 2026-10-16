@@ -463,7 +463,7 @@ format-iri	schema.format=iri	src/ir.rs::base_type_ref[=^ {12}_ => TypeRef::Primi
 boolean-schema-true	fixture=webflow-v2	none	
 xml-wrapped	schema.xml.wrapped	none	
 apiKey-query	fixture=esp32-streamline-bridge,fixture=groupe-psa,fixture=ziptax-node	src/ir.rs::auth_model[find\(\x7cscheme\x7c \{]	
-oneof-anyof-variant	schema.oneOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::composed_variant,src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);],src/ir.rs::InlineHoister::hoist_union_variant[=^ {24}return list;],src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	—
+oneof-anyof-variant	schema.oneOf>schema.anyOf	src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{],src/ir.rs::Builder::composed_variant,src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);],src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	—
 enum-deburred-member	schema.enum:deburred-member	src/naming.rs::deburr,src/naming.rs::deburr_letter	
 enum-letter-run-member	schema.enum:letter-run-member	src/naming.rs::enum_words[if is_single_letter && single_letter_run \{]	
 enum-alphanumeric-join-member	schema.enum:alphanumeric-join-member	src/naming.rs::enum_words[if current_is_short_letter_run && previous_is_numeric_letter]	

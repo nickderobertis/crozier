@@ -2846,6 +2846,7 @@ fn handwritten_fixtures_match_fern_goldens() {
 }
 
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
+/// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, and JSON problem responses.
 #[test]
 fn schema_shape_arms_match_complete_certified_trees() {
@@ -2872,6 +2873,12 @@ fn schema_shape_arms_match_complete_certified_trees() {
             "kiln-array-mode",
             "src/fern/types/stream_mode.py",
             "typing.List[StreamModeZeroItem]",
+            "typing.List[str]",
+        ),
+        (
+            "kiln-array-variants",
+            "src/fern/types/create_profile_request_unit.py",
+            "typing.List[CreateProfileRequestUnitZeroItem]",
             "typing.List[str]",
         ),
         (
