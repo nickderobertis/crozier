@@ -3190,6 +3190,8 @@ fn following() { let other = 42; }
             107: "one-hundred-and-seven",
             110: "one-hundred-and-ten",
             111: "one-hundred-and-eleven",
+            114: "one-hundred-and-fourteen",
+            116: "one-hundred-and-sixteen",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
