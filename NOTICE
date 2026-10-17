@@ -603,3 +603,9 @@ Additional hosted-API specifications:
     The repository's LICENSE at that revision permits redistribution under
     MIT; corpus row 2803 records the immutable reference. The unmodified
     source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Supabase Management API (v1): the publisher's own description at
+    https://raw.githubusercontent.com/supabase/supabase/36371de15127206280d2d40786e8578dfe1b681a/apps/docs/spec/api_v1_openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    Apache-2.0; corpus row 2804 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.

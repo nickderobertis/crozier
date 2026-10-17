@@ -1818,3 +1818,30 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2803 | `rice-shower` | a nullable `anyOf` member's description documented on its property; a required query array lowered to an optional parameter | ✅ byte-matched after this node's repairs |
+
+## Row 2804 — a management API with component-level body examples
+
+The Supabase Management API v1 its publisher ships in `supabase/supabase`.
+Its request-body components carry component-level `example`s (object,
+top-level array and form-urlencoded bodies, and a map of objects), which
+crozier now writes into its snippets as Fern does; `reference.md` documents the
+JSON function bodies offered beside a binary media type by their inlined
+properties, as the generated signatures take them. Two documentation
+differences remain, each a catalogued departure: the `anyOf` path parameter
+`branch_id_or_ref` keeps its schema-level example
+(`anyof-path-param-schema-example`), and the text-only branch diff operation
+keeps its optional query parameters' examples
+(`text-response-optional-query-examples`). The function-deploy docstrings take
+the catalogued `multipart-object-required-file-example` correction.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#supabase).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2804 | `supabase-api-v1` | github-raw | https://raw.githubusercontent.com/supabase/supabase/36371de15127206280d2d40786e8578dfe1b681a/apps/docs/spec/api_v1_openapi.json | `36371de15127206280d2d40786e8578dfe1b681a` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The Supabase Management API v1 (projects, branches and environments, auth, database, edge functions, secrets, OAuth, organizations, billing and more), whose request-body components carry component-level examples and whose function bodies offer JSON beside a binary media type |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2804 | `supabase-api-v1` | component-level request-body examples; JSON-beside-binary body parameters in `reference.md`; map-of-objects examples; an `anyOf` path parameter's schema example (`anyof-path-param-schema-example`); a text-response operation's optional query examples (`text-response-optional-query-examples`) | ✅ byte-matched after this node's repairs; its other differences are catalogued departures |

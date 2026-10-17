@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .apply_project_addon_body_addon_variant_one import ApplyProjectAddonBodyAddonVariantOne
+from .apply_project_addon_body_addon_variant_three import ApplyProjectAddonBodyAddonVariantThree
+from .apply_project_addon_body_addon_variant_two import ApplyProjectAddonBodyAddonVariantTwo
+from .apply_project_addon_body_addon_variant_zero import ApplyProjectAddonBodyAddonVariantZero
+
+ApplyProjectAddonBodyAddonVariant = typing.Union[
+    ApplyProjectAddonBodyAddonVariantZero,
+    ApplyProjectAddonBodyAddonVariantOne,
+    ApplyProjectAddonBodyAddonVariantTwo,
+    ApplyProjectAddonBodyAddonVariantThree,
+]

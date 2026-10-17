@@ -1,0 +1,10 @@
+
+
+import typing
+
+from .v1update_jit_access_config_response_applied_successfully import V1UpdateJitAccessConfigResponseAppliedSuccessfully
+from .v1update_jit_access_config_response_unavailable_reason import V1UpdateJitAccessConfigResponseUnavailableReason
+
+V1UpdateJitAccessConfigResponse = typing.Union[
+    V1UpdateJitAccessConfigResponseAppliedSuccessfully, V1UpdateJitAccessConfigResponseUnavailableReason
+]

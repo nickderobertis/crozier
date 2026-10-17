@@ -323,6 +323,7 @@ inventory=(
   dystore_api_matches_fern_output
   langchain_agent_server_matches_fern_output
   rice_shower_matches_fern_output
+  supabase_api_v1_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

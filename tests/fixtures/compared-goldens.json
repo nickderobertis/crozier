@@ -1155,6 +1155,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/supabase-api-v1/expected": {},
+    "tests/fixtures/supabase-api-v1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/svix-webhooks/expected": {},
     "tests/fixtures/swagger-petstore-distribution/expected-flat": {},
     "tests/fixtures/swagger-petstore-organization/expected-flat": {},

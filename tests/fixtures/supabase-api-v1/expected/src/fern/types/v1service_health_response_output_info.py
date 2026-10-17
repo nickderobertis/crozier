@@ -1,0 +1,13 @@
+
+
+import typing
+
+from .v1service_health_response_output_info_connected_cluster import V1ServiceHealthResponseOutputInfoConnectedCluster
+from .v1service_health_response_output_info_db_schema import V1ServiceHealthResponseOutputInfoDbSchema
+from .v1service_health_response_output_info_description import V1ServiceHealthResponseOutputInfoDescription
+
+V1ServiceHealthResponseOutputInfo = typing.Union[
+    V1ServiceHealthResponseOutputInfoDescription,
+    V1ServiceHealthResponseOutputInfoConnectedCluster,
+    V1ServiceHealthResponseOutputInfoDbSchema,
+]

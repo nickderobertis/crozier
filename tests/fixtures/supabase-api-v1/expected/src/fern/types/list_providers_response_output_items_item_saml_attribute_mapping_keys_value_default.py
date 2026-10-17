@@ -1,0 +1,11 @@
+
+
+import typing
+
+from .list_providers_response_output_items_item_saml_attribute_mapping_keys_value_default_zero import (
+    ListProvidersResponseOutputItemsItemSamlAttributeMappingKeysValueDefaultZero,
+)
+
+ListProvidersResponseOutputItemsItemSamlAttributeMappingKeysValueDefault = typing.Union[
+    ListProvidersResponseOutputItemsItemSamlAttributeMappingKeysValueDefaultZero, float, str, bool
+]

@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .v1get_services_health_request_services_one_item import V1GetServicesHealthRequestServicesOneItem
+
+V1GetServicesHealthRequestServices = typing.Union[str, typing.List[V1GetServicesHealthRequestServicesOneItem]]

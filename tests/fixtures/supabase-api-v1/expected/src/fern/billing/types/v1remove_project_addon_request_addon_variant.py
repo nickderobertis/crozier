@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .v1remove_project_addon_request_addon_variant_one import V1RemoveProjectAddonRequestAddonVariantOne
+from .v1remove_project_addon_request_addon_variant_three import V1RemoveProjectAddonRequestAddonVariantThree
+from .v1remove_project_addon_request_addon_variant_two import V1RemoveProjectAddonRequestAddonVariantTwo
+from .v1remove_project_addon_request_addon_variant_zero import V1RemoveProjectAddonRequestAddonVariantZero
+
+V1RemoveProjectAddonRequestAddonVariant = typing.Union[
+    V1RemoveProjectAddonRequestAddonVariantZero,
+    V1RemoveProjectAddonRequestAddonVariantOne,
+    V1RemoveProjectAddonRequestAddonVariantTwo,
+    V1RemoveProjectAddonRequestAddonVariantThree,
+]
