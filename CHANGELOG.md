@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.121](https://github.com/nickderobertis/crozier/compare/v0.0.120...v0.0.121) - 2026-10-17
+
+### Fixed
+
+- *(parity)* match Fern's types for single-member allOf, nested enum and union-member shapes ([#528](https://github.com/nickderobertis/crozier/pull/528))
+
 ## [0.0.120](https://github.com/nickderobertis/crozier/compare/v0.0.119...v0.0.120) - 2026-10-17
 
 ### Fixed
