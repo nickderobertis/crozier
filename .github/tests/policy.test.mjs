@@ -4,8 +4,7 @@ import { readFileSync, writeFileSync, symlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { spawnSync } from 'node:child_process';
-import { history, event, githubApi, liftEvent } from './support.mjs';
-import { macJobName } from '../macos-policy.mjs';
+import { history, event } from './support.mjs';
 
 test('real git histories admit only release-plz semantic versions/changelog; ownership, title and author cannot forge omission', t => {
   const h = history(t);
@@ -48,7 +47,7 @@ test('real routing persists its decision; unknown/empty event names emit no omis
   for (const [head,required] of [[h.heads.version,false],[h.heads.source,true]]) {
     writeFileSync(output,'');
     const run=h.invoke(pr,head,'pull_request',h.base,{GITHUB_OUTPUT:output});
-    assert.equal(run.status,0,run.stderr); assert.equal(readFileSync(output,'utf8'),`macosRequired=${required}\nmacosReusedRun=\nmacosLiftRefusal=\n`);
+    assert.equal(run.status,0,run.stderr); assert.equal(readFileSync(output,'utf8'),`macosRequired=${required}\n`);
   }
   for (const name of ['', 'unknown-event']) {
     writeFileSync(output,'');
@@ -57,7 +56,7 @@ test('real routing persists its decision; unknown/empty event names emit no omis
     const decision=JSON.parse(run.stdout);
     assert.equal(decision.macosRequired,true); assert.equal(decision.isReleaseOnly,false);
     assert.ok(decision.reason.includes(name || '(empty)'));
-    assert.equal(readFileSync(output,'utf8'),'macosRequired=true\nmacosReusedRun=\nmacosLiftRefusal=\n');
+    assert.equal(readFileSync(output,'utf8'),'macosRequired=true\n');
     const malformed=h.classify('{broken',h.heads.version,name);
     assert.equal(malformed.macosRequired,true);
     assert.ok(malformed.reason.includes(name || '(empty)'));
@@ -137,139 +136,3 @@ test('structured malformed ownership and branch values cannot authorize Mac omis
   assert.equal(h.classify(event('release-plz-test'), h.heads.version).isReleaseOnly, true);
 });
 
-
-test('a draft lift reuses a proven Mac success on its exact head, requests Mac only when the PR never did, and otherwise refuses', async t => {
-  const h = history(t), sha = h.heads.source, other = h.heads.dependency, url = 'https://github.com/nickderobertis/crozier/actions/runs/1';
-  const run = (id, head = sha, path = '.github/workflows/ci.yml', status = 'completed', owner = 'nickderobertis/crozier') => ({ id, path, head_sha: head, head_repository: { full_name: owner }, status, html_url: `https://github.com/nickderobertis/crozier/actions/runs/${id}` });
-  const mac = (conclusion, head = sha, labels = ['macos-latest']) => ({ name: macJobName, conclusion, head_sha: head, labels });
-  const proven = { runs: [run(1)], jobs: { 1: [{ name: 'gate', conclusion: 'success', head_sha: sha, labels: ['ubuntu-latest'] }, mac('success')] } };
-  const api = await githubApi(t, proven);
-  const output = join(h.dir, '.git/lift-output'); writeFileSync(output, '');
-  const reused = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
-  assert.deepEqual(reused, { isReleaseOnly: false, macosRequired: false, reason: `draft lift: Mac proof reused from ${url} on head ${sha}`, reusedRun: url });
-  assert.equal(readFileSync(output, 'utf8'), `macosRequired=false\nmacosReusedRun=${url}\nmacosLiftRefusal=\n`);
-  assert.ok(api.requests.every(r => r.authorization === 'Bearer fixture-token'));
-  assert.ok(api.requests[0].url.includes('branch=feature%2Fchange&event=pull_request'));
-  for (const [state, reason] of [
-    [{ runs: [run(1, sha, '.github/workflows/ci.yml', 'in_progress')], jobs: { 1: [mac(null)] } }, /Mac proof still in_progress in https:/],
-    [{ runs: [run(1, sha, '.github/workflows/ci.yml', 'queued')], jobs: { 1: [] } }, /Mac proof still queued/],
-    [{ runs: [run(1)], jobs: { 1: [mac('failure')] } }, /concluded failure/],
-    [{ runs: [run(1)], jobs: { 1: [mac('cancelled')] } }, /concluded cancelled/],
-    [{ runs: [run(1), run(2)], jobs: { 1: [mac('success')], 2: [mac('failure')] } }, /concluded failure/],
-    // The PR already spent a Mac runner on another head, finished or not: no fallback.
-    [{ runs: [run(1, other)], jobs: { 1: [mac('success', other)] } }, /no completed Mac job/],
-    [{ runs: [run(1, other)], jobs: { 1: [mac('failure', other)] } }, /no completed Mac job/],
-    [{ runs: [run(1, other, '.github/workflows/ci.yml', 'in_progress')], jobs: { 1: [] } }, /no completed Mac job/],
-    [{ runs: [run(1)], jobs: { 1: [mac('success', other)] } }, /concluded success at [0-9a-f]{40}/],
-    [{ runs: [{ ...run(1), head_sha: undefined, head_repository: { full_name: 'nickderobertis/crozier' } }], jobs: {} }, /unreadable workflow run/],
-    [{ runs: [{ ...run(1), id: 'one' }], jobs: {} }, /unreadable workflow run/],
-    [{ runs: [{ ...run(1), html_url: `${url}\nmacosRequired=false` }], jobs: { 1: [mac('success')] } }, /unreadable workflow run/],
-    [{ runs: [{ ...run(1), html_url: 'javascript:alert(1)' }], jobs: { 1: [mac('success')] } }, /unreadable workflow run/],
-    [{ runs: undefined, jobs: {} }, /unreadable workflow run list/],
-    [{ runs: { 1: run(1) }, jobs: {} }, /unreadable workflow run list/],
-    [{ runs: [run(1)], jobs: { 1: 'none' } }, /unreadable jobs of/],
-    [{ status: 500 }, /unreadable Mac proof: GitHub API .* answered 500/],
-    [{ status: 403 }, /answered 403/],
-    [{ status: 503 }, /answered 503/],
-  ]) {
-    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
-    Object.assign(proven, state);
-    writeFileSync(output, '');
-    const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
-    assert.equal(decision.macosRequired, false, JSON.stringify(state));
-    assert.equal(decision.reusedRun, undefined);
-    assert.match(decision.liftRefusal, reason);
-    assert.match(decision.liftRefusal, new RegExp(`^draft lift has no Mac proof on head ${sha}: `));
-    assert.doesNotMatch(decision.liftRefusal, /\n/);
-    assert.match(decision.reason, /no Mac runner is requested and the Mac check fails$/);
-    assert.equal(readFileSync(output, 'utf8'), `macosRequired=false\nmacosReusedRun=\nmacosLiftRefusal=${decision.liftRefusal}\n`);
-  }
-  // Fallback: every earlier run of the PR was read and none requested a Mac
-  // runner, so the lift itself runs the Mac job instead of failing.
-  for (const state of [
-    { runs: [], jobs: {} },
-    { runs: [run(1)], jobs: { 1: [] } },
-    { runs: [run(1)], jobs: { 1: [mac('skipped')] } },
-    { runs: [run(1, other)], jobs: { 1: [mac('skipped', other)] } },
-    { runs: [run(1, sha, '.github/workflows/release.yml')], jobs: { 1: [mac('success')] } },
-    { runs: [run(1)], jobs: { 1: [mac('success', sha, ['ubuntu-latest'])] } },
-    { runs: [run(1, sha, '.github/workflows/ci.yml', 'completed', 'contributor/crozier')], jobs: { 1: [mac('success')] } },
-    { runs: [run(900)], jobs: { 900: [mac('success')] } },
-  ]) {
-    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
-    Object.assign(proven, state);
-    writeFileSync(output, '');
-    const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
-    assert.equal(decision.macosRequired, true, JSON.stringify(state));
-    assert.equal(decision.reusedRun, undefined); assert.equal(decision.liftRefusal, undefined);
-    assert.match(decision.reason, /draft lift: no earlier run of this pull request requested a Mac job, so this run requests the Mac job$/);
-    assert.equal(readFileSync(output, 'utf8'), 'macosRequired=true\nmacosReusedRun=\nmacosLiftRefusal=\n');
-  }
-  // Completeness: a listing whose total_count is missing, malformed or larger
-  // or smaller than its page could hide a Mac request (authorizing a second
-  // Mac run) or a failed Mac job (authorizing reuse), so each refuses on Linux.
-  const fallbackBases = [{ runs: [], jobs: {} }, { runs: [run(1)], jobs: { 1: [] } }, { runs: [run(1)], jobs: { 1: [{ name: 'gate', conclusion: 'success', head_sha: sha, labels: ['ubuntu-latest'] }] } }];
-  const reuseBase = { runs: [run(1)], jobs: { 1: [mac('success')] } };
-  const incomplete = [];
-  for (const base of [...fallbackBases, reuseBase]) for (const total of ['omit', '1', -1, 1.5, null, 101, base.runs.length + 1]) incomplete.push([{ ...base, total_count: total }, total === 'omit' || typeof total !== 'number' || total < 0 || !Number.isInteger(total) ? /unverifiable workflow run list: total_count (missing|"1"|null|-1|1\.5)/ : /ambiguous workflow run list: total_count \d+ but \d+ returned/]);
-  incomplete.push([{ runs: [run(1), run(2)], total_count: 1, jobs: { 1: [mac('success')], 2: [mac('success')] } }, /ambiguous workflow run list: total_count 1 but 2 returned/]);
-  // A fractional jobs total, and one smaller than its nonempty jobs page, on a
-  // fallback candidate (a Linux-only page) and a reuse candidate (a Mac proof).
-  for (const base of [fallbackBases[2], reuseBase]) {
-    for (const total of [0.5, 1.5]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, new RegExp(`unverifiable jobs of https:\\S+/runs/1: total_count ${total}$`)]);
-    incomplete.push([{ ...base, jobs_total_count: { 1: 0 } }, /ambiguous jobs of https:\S+\/runs\/1: total_count 0 but 1 returned$/]);
-  }
-  for (const base of [fallbackBases[1], reuseBase]) for (const total of ['omit', '2', -1, null, base.jobs[1].length + 1, 100]) incomplete.push([{ ...base, jobs_total_count: { 1: total } }, total === 'omit' || typeof total !== 'number' || total < 0 ? /unverifiable jobs of https:\S+\/runs\/1: total_count (missing|"2"|null|-1)/ : /ambiguous jobs of https:\S+\/runs\/1: total_count \d+ but \d+ returned/]);
-  // Readability: a counted page whose entries lack the fields the decision
-  // reads could equally hide a Mac request or a failed Mac job.
-  for (const entry of [{}, null, 'run', [], { ...run(1), path: undefined }, { ...run(1), status: undefined }, { ...run(1), head_repository: null }, { ...run(5, sha, '.github/workflows/release.yml'), id: undefined }]) {
-    incomplete.push([{ runs: [entry], total_count: 1, jobs: {} }, /unreadable workflow run list entry 0$/]);
-    incomplete.push([{ ...reuseBase, runs: [run(1), entry] }, /unreadable workflow run list entry 1$/]);
-  }
-  for (const entry of [{}, null, { name: 42 }, { ...mac('failure'), labels: undefined }, { ...mac('failure'), labels: [1] }, { ...mac('failure'), conclusion: undefined }, { ...mac('failure'), head_sha: undefined }]) {
-    incomplete.push([{ runs: [run(1)], jobs: { 1: [entry] } }, /unreadable jobs of https:\S+\/runs\/1 entry 0$/]);
-    incomplete.push([{ runs: [run(1)], jobs: { 1: [mac('success'), entry] } }, /unreadable jobs of https:\S+\/runs\/1 entry 1$/]);
-  }
-  for (const [state, reason] of incomplete) {
-    for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key];
-    Object.assign(proven, state);
-    writeFileSync(output, '');
-    const decision = await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url, GITHUB_OUTPUT: output });
-    assert.equal(decision.macosRequired, false, JSON.stringify(state));
-    assert.equal(decision.reusedRun, undefined, JSON.stringify(state));
-    assert.match(decision.liftRefusal, reason, JSON.stringify(state));
-    assert.equal(readFileSync(output, 'utf8'), `macosRequired=false\nmacosReusedRun=\nmacosLiftRefusal=${decision.liftRefusal}\n`);
-  }
-  // The same bases with complete counts authorize exactly what they did above.
-  for (const base of fallbackBases) { for (const key of ['runs', 'jobs', 'status', 'total_count', 'jobs_total_count']) delete proven[key]; Object.assign(proven, base); assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).macosRequired, true); }
-  for (const key of ['total_count', 'jobs_total_count']) delete proven[key];
-  Object.assign(proven, reuseBase); assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, url);
-  Object.assign(proven, { runs: [run(1)], jobs: { 1: [mac('success')] } }); delete proven.status;
-  const malformed = liftEvent(sha); malformed.pull_request.head.ref = '-bad ref';
-  const refusedRef = await h.lift(malformed, sha, { GITHUB_API_URL: api.url });
-  assert.equal(refusedRef.macosRequired, false); assert.match(refusedRef.liftRefusal, /malformed pull_request head branch or repository/);
-  for (const [env, reason] of [[{ GITHUB_API_URL: api.url, GITHUB_TOKEN: '' }, /no GitHub API credential/], [{ GITHUB_API_URL: 'http://127.0.0.1:1' }, /unreadable Mac proof/], [{ GITHUB_API_URL: api.url, GITHUB_WORKFLOW_REF: '' }, /unknown workflow path/]]) {
-    const decision = await h.lift(liftEvent(sha), sha, env);
-    assert.equal(decision.macosRequired, false); assert.match(decision.liftRefusal, reason);
-  }
-  // A skipped Mac job (a release-only run) neither proves nor refutes the head.
-  Object.assign(proven, { runs: [run(1), run(2)], jobs: { 1: [mac('skipped')], 2: [mac('success')] } });
-  assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, 'https://github.com/nickderobertis/crozier/actions/runs/2');
-  Object.assign(proven, { runs: [run(1)], jobs: { 1: [mac('success')] } });
-  const unsha = liftEvent('HEAD'); const decision = await h.lift(unsha, sha, { GITHUB_API_URL: api.url });
-  assert.equal(decision.macosRequired, false); assert.match(decision.liftRefusal, /no exact head SHA/);
-  // A fork's release-plz-named lift is ordinary: it reuses only its own head
-  // repository's proof, never a same-named branch's in the base repository.
-  Object.assign(proven, { runs: [run(1, sha, '.github/workflows/ci.yml', 'completed', 'contributor/crozier')], jobs: { 1: [mac('success')] } });
-  const fork = await h.lift(liftEvent(sha, 'release-plz-test', true), sha, { GITHUB_API_URL: api.url });
-  assert.equal(fork.macosRequired, false); assert.equal(fork.reusedRun, url);
-  Object.assign(proven, { runs: [run(1)], jobs: { 1: [mac('success')] } });
-  assert.equal((await h.lift(liftEvent(sha), sha, { GITHUB_API_URL: api.url })).reusedRun, url);
-  // A release-only lift needs no proof, and an ordinary synchronize never reads the API.
-  const before = api.requests.length;
-  const release = await h.lift(liftEvent(h.heads.version, 'release-plz-test'), h.heads.version, { GITHUB_API_URL: api.url });
-  assert.equal(release.isReleaseOnly, true); assert.equal(release.reusedRun, undefined);
-  const synchronize = liftEvent(sha); synchronize.action = 'synchronize';
-  assert.equal((await h.lift(synchronize, sha, { GITHUB_API_URL: api.url })).macosRequired, true);
-  assert.equal(api.requests.length, before);
-});
