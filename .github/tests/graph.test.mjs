@@ -61,8 +61,6 @@ test('actual workflow/call graph resolves event fan-out and records authoritativ
 // llmlint: ignore-block[shell_test_tiers_stay_split] This host-tool graph journey is part of the task-mandated node --test .github/tests/*.test.mjs workload, whose recorder and classifier/producer proofs must remain together inside .github; the manager approved this scoped exception rather than splitting the required recording surface.
 test('marking a draft ready starts no run; the head\'s opened or synchronize run already reports every required context, Mac included', t => {
   const h = history(t), graph = workflows(), ci = graph.find(w => w.path.endsWith('/ci.yml'));
-  // The real classifier routes the ordinary PR's head to the Mac lane on every
-  // event that runs CI, and the real graph then reports each required context.
   for (const action of ['opened', 'synchronize', 'reopened']) {
     const pr = event(); pr.action = action; pr.pull_request.head.sha = h.heads.source;
     const scenario = { id: `pr-${action}`, eventName: 'pull_request', event: pr, branch: 'main', inputs: {} };
@@ -78,7 +76,6 @@ test('marking a draft ready starts no run; the head\'s opened or synchronize run
   const scenario = { id: 'pr-ready-for-review', eventName: 'pull_request', event: lift, branch: 'main', inputs: {} };
   assert.equal(triggered(ci.value, scenario), false, 'ci.yml must not run when a draft is marked ready');
   assert.deepEqual(graph.filter(w => triggered(w.value, scenario)).map(w => w.path), []);
-  // A newer run on the same ref always cancels the older one.
   assert.equal(ci.value.concurrency['cancel-in-progress'], true);
 });
 // llmlint: ignore-end[shell_test_tiers_stay_split]
