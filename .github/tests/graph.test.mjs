@@ -71,7 +71,6 @@ test('marking a draft ready starts no run; the head\'s opened or synchronize run
     for (const name of ['commitlint', 'gate', 'llmlint']) assert.equal(rows.find(row => row.job === name)?.result, 'success', `${action} ${name}`);
     assert.deepEqual(rows.filter(row => row.macos).map(row => [row.job, row.runner]), [['macos', 'macos-latest']], action);
   }
-  // The lift changes no commit, so those results stand: no workflow runs again.
   const lift = event(); lift.action = 'ready_for_review'; lift.pull_request.head.sha = h.heads.source;
   const scenario = { id: 'pr-ready-for-review', eventName: 'pull_request', event: lift, branch: 'main', inputs: {} };
   assert.equal(triggered(ci.value, scenario), false, 'ci.yml must not run when a draft is marked ready');

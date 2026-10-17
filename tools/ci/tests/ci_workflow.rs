@@ -1,7 +1,5 @@
-//! `ci.yml` reports the required contexts on every pull request. A draft's runs
-//! report on its head commit, and marking it ready changes no commit, so the
-//! draft-time runs are the ones the merge path reads: triggering on
-//! `ready_for_review` would only run the whole of CI a second time.
+//! Pins `ci.yml`'s `pull_request` trigger types; the reason is the comment
+//! beside them.
 
 #[path = "../../../src/yaml.rs"]
 mod yaml;
