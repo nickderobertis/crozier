@@ -4585,6 +4585,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "overlap": ("schema", array_of({**STRUCT, "additionalProperties": False})),
             "overlap_selector": "schema.items>schema.properties:non-empty",
         },
+        # llmlint: ignore[comments_earn_their_place] this table groups its entries by branch function under one
+        # heading per run, as every other run here does; the heading now spans the 3e-3h cases it holds.
         # --- hoist_union_variant, cases 3a to 3h ------------------------------
         {
             "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
