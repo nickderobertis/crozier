@@ -1233,7 +1233,15 @@ fn assert_generated_tree_matches(
     expected_root: &Path,
     out: &Path,
 ) {
-    let context = Context::from_trees(expected_root, out);
+    // The parsed source document, as `crozier compare` and the hand-written
+    // gate supply it, so a departure whose rule reads the specification applies
+    // to a corpus golden exactly as it does to a user's comparison.
+    let mut context = Context::from_trees(expected_root, out);
+    if let Some(spec) = corpus_spec(c.api).filter(|spec| spec.is_file()) {
+        let document = crozier::openapi::load(&spec)
+            .unwrap_or_else(|error| panic!("{}: {}: {error}", c.api, spec.display()));
+        context = context.with_source_document(document);
+    }
     let mut observed = Vec::new();
     for rel in walk_files(expected_root) {
         if c.unmatched.contains(&rel.as_str()) {
