@@ -13,7 +13,7 @@ try {
   validateTelemetry(telemetry,digest());
   const counts = metric === 'jobs-per-run' ? telemetry.scenarios.flatMap(s => s.runs.map(r => r.rows.filter(row => row.macos).length)) : telemetry.lifecycles.map(l => l.runs.length);
   const actual = Math.max(...counts);
-  const detail = JSON.stringify({sourceDigest:telemetry.sourceDigest,metric,scenarios:telemetry.scenarios.map(s=>({event:s.id,...(s.decision.reusedRun?{macosCheck:'reused'}:s.decision.liftRefusal?{macosCheck:'fails without proof'}:{}),runs:s.runs.filter(r=>r.rows.some(row=>row.macos)).map(r=>({workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)}))})),lifecycles:telemetry.lifecycles});
+  const detail = JSON.stringify({sourceDigest:telemetry.sourceDigest,metric,scenarios:telemetry.scenarios.map(s=>({event:s.id,runs:s.runs.filter(r=>r.rows.some(row=>row.macos)).map(r=>({workflow:r.workflow,jobs:r.rows.filter(row=>row.macos)}))})),lifecycles:telemetry.lifecycles});
   report(actual,detail);
   console.log(`${metric}: ${actual}`);
 } catch (error) { console.error(`macos-budget: ${error.message}`); process.exitCode=error instanceof InvocationError ? 2 : 1; }

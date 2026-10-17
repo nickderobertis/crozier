@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
-import { execFileSync, spawnSync, execFile } from 'node:child_process';
-import { createServer } from 'node:http';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve, join } from 'node:path';
@@ -29,45 +28,12 @@ export function history(t) {
     const run=invoke(event,head,eventName,baseRef);
     assert.equal(run.status,0,run.stderr); return JSON.parse(run.stdout);
   }
-  // Asynchronous, so an in-process API double can answer the subprocess.
-  function lift(event, head, env = {}) {
-    const path = join(dir, '.git/lift-event.json'); writeFileSync(path, JSON.stringify(event));
-    return new Promise((done, fail) => execFile(process.execPath, [resolve(root, '.github/macos-policy.mjs'), 'classify', '--event', path, '--base', base, '--head', head], { cwd: dir, env: { ...process.env, GITHUB_EVENT_NAME: 'pull_request', GITHUB_OUTPUT: '', GITHUB_TOKEN: 'fixture-token', GITHUB_WORKFLOW_REF: 'nickderobertis/crozier/.github/workflows/ci.yml@refs/pull/1/merge', GITHUB_RUN_ID: '900', ...env }, encoding: 'utf8' }, (error, stdout, stderr) => error ? fail(new Error(stderr || error.message)) : done(JSON.parse(stdout))));
-  }
-  return { dir, base, baseFiles, heads, git, change, classify, invoke, lift };
+  return { dir, base, baseFiles, heads, git, change, classify, invoke };
 }
 // llmlint: ignore-end[shell_test_tiers_stay_split]
 export function event(branch = 'feature/change', fork = false) {
   const repo = 'nickderobertis/crozier';
   return { action: 'synchronize', repository: { full_name: repo }, pull_request: { title: 'chore: release', user: { login: 'nickderobertis' }, head: { ref: branch, repo: { full_name: fork ? 'contributor/crozier' : repo } }, base: { ref: 'main', repo: { full_name: repo } } } };
-}
-
-// GitHub's REST API is the third-party boundary a draft lift reads; this double
-// answers its two run/job listings from `state` and records every request.
-export async function githubApi(t, state) {
-  const requests = [];
-  const server = createServer((request, response) => {
-    requests.push({ url: request.url, authorization: request.headers.authorization });
-    const url = new URL(request.url, 'http://double');
-    const jobs = url.pathname.match(/^\/repos\/nickderobertis\/crozier\/actions\/runs\/(\d+)\/jobs$/);
-    let body;
-    if (state.status) { response.writeHead(state.status); response.end('{}'); return; }
-    // Like GitHub, each listing reports its total_count; `total_count` and
-    // `jobs_total_count` (by run id) override it, and the value `omit` drops it.
-    const counted = (key, page, total) => total === 'omit' ? { [key]: page } : { total_count: total === undefined ? (Array.isArray(page) ? page.length : 0) : total, [key]: page };
-    if (url.pathname === '/repos/nickderobertis/crozier/actions/runs') body = counted('workflow_runs', state.runs, state.total_count);
-    else if (jobs) body = counted('jobs', state.jobs[jobs[1]] === undefined ? [] : state.jobs[jobs[1]], state.jobs_total_count?.[jobs[1]]);
-    if (!body) { response.writeHead(404); response.end('{}'); return; }
-    response.writeHead(200, { 'content-type': 'application/json' }); response.end(JSON.stringify(body));
-  });
-  await new Promise(done => server.listen(0, '127.0.0.1', done));
-  t.after(() => server.close());
-  return { url: `http://127.0.0.1:${server.address().port}`, requests };
-}
-export function liftEvent(sha, branch = 'feature/change', fork = false) {
-  const pr = event(branch, fork);
-  pr.action = 'ready_for_review'; pr.pull_request.head.sha = sha;
-  return pr;
 }
 
 // Artifact names and paths compare platform-independently: a runner may hand

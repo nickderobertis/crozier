@@ -1,6 +1,5 @@
-//! `ci.yml` reports the required contexts on every pull request, including when
-//! a draft becomes ready for review. The publication path requires fresh runs
-//! after that transition rather than relying on draft-time results.
+//! Pins `ci.yml`'s `pull_request` trigger types; the reason is the comment
+//! beside them.
 
 #[path = "../../../src/yaml.rs"]
 mod yaml;
@@ -10,7 +9,7 @@ use serde_json::Value;
 const CI_WORKFLOW: &str = include_str!("../../../.github/workflows/ci.yml");
 
 #[test]
-fn marking_a_draft_ready_runs_the_required_checks() {
+fn marking_a_draft_ready_does_not_rerun_ci() {
     let workflow: Value = crate::yaml::from_str(CI_WORKFLOW).expect("ci.yml is valid YAML");
     let types: Vec<&str> = workflow
         .get("on")
@@ -23,8 +22,8 @@ fn marking_a_draft_ready_runs_the_required_checks() {
         .collect();
     assert_eq!(
         types,
-        ["opened", "synchronize", "reopened", "ready_for_review"],
-        "ci.yml runs on draft lift as well as the default pull_request events"
+        ["opened", "synchronize", "reopened"],
+        "ci.yml keeps the default pull_request types and does not add ready_for_review"
     );
 }
 
