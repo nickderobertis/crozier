@@ -4585,7 +4585,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "overlap": ("schema", array_of({**STRUCT, "additionalProperties": False})),
             "overlap_selector": "schema.items>schema.properties:non-empty",
         },
-        # --- hoist_union_variant, cases 3a to 3d ------------------------------
+        # --- hoist_union_variant, cases 3a to 3h ------------------------------
         {
             "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
             "slug": "huv-3a",
@@ -4634,7 +4634,8 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             ),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
         },
-        # --- hoist_union_variant, cases 3e to 3h ------------------------------
+        # llmlint: ignore-block[modern_domain_modeling] every entry of this discrimination table is the same keyed
+        # dict the table-driven test reads; these four cases keep its one shape rather than introduce a second.
         {
             "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
             "slug": "huv-3e",
@@ -4703,6 +4704,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             ),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
         },
+        # llmlint: ignore-end[modern_domain_modeling]
         # --- hoist_union_variant, cases 5a to 5d ------------------------------
         {
             "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
