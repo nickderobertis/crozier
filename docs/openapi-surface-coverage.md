@@ -1671,10 +1671,10 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 39 rows are the 27 generator categories, the base-path and string-map
-example gaps, the six additional scenarios the parameter fix closed, the union
-scenario whose Markdown example the union fix corrects, and the three
-clients-and-extensions scenarios whose correction is a Fern defect. Other
+These 44 rows are the 27 generator categories and the 17 scenarios later
+parity repairs closed: the base-path and string-map example gaps, the
+parameter fix's additional scenarios, and every scenario whose correction is a
+Fern defect. Other
 scenarios are not proof claims here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
@@ -1732,6 +1732,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | allof-enum-ref-narrowed-by-scalar-member | Enum and scalar allOf alias rendering; pattern-invalid generated example corrected | Fern behaviour + Fern defect | `models-refs` | docs/openapi-surface/handwritten/measurement-phase/fern-expected; docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected | `handwritten_fixtures_match_fern_goldens; remaining_model_shapes_match_the_certified_fern_trees` | `pattern-narrowed-enum-example` |
 | integer-example-beyond-double-precision | Integer examples beyond 2^53 written as their nearest double; an int64 example rounded past the format's range corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/odometer-reading/fern-expected; docs/fern-measurements/literals-mode/odometer-reading/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::int64_example_correction_explains_only_the_out_of_range_rounding` | `int64-example-rounded-out-of-range` |
 | literal-example-dollar-escaped-in-docstring | A `$`-holding const lowered to a one-value literal; the docstring example's added backslash corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/prompt-variable/fern-expected; docs/fern-measurements/literals-mode/prompt-variable/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::dollar_docstring_correction_explains_only_the_declared_const` | `docstring-literal-dollar-escape` |
+| tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
