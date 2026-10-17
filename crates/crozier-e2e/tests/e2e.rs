@@ -62,6 +62,11 @@ mod literals_mode;
 #[path = "e2e/examples_docs.rs"]
 mod examples_docs;
 
+/// The client naming, request encoding and enum-mode measurement cases, and the
+/// unexplained bytes beside each of those shapes that still fail.
+#[path = "e2e/naming_wire.rs"]
+mod naming_wire;
+
 /// The registered real specifications proving parity shapes, held to the
 /// shapes they declare.
 #[path = "e2e/real_witnesses.rs"]
@@ -851,6 +856,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (PARAMETER_LOWERING_DIR, "fern-expected"),
         (CLIENTS_EXTENSIONS_DIR, "fern-expected"),
         (examples_docs::EXAMPLES_DOCS_DIR, "fern-expected"),
+        (naming_wire::NAMING_WIRE_DIR, "fern-expected"),
         ("docs/fern-measurements/bodies-responses", "fern-expected"),
         (
             crozier::departures::EVIDENCE_DIR.trim_end_matches('/'),
@@ -862,9 +868,23 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         };
         for entry in entries.filter_map(Result::ok) {
             if entry.path().join(tree).is_dir() {
+                let compared = if dir == naming_wire::NAMING_WIRE_DIR
+                    && entry
+                        .path()
+                        .join(tree)
+                        .join(literals_mode::MANIFEST)
+                        .is_file()
+                {
+                    departures_ledger::ComparedGolden {
+                        excluded: vec![literals_mode::MANIFEST.to_string()],
+                        carve_outs: Default::default(),
+                    }
+                } else {
+                    departures_ledger::ComparedGolden::default()
+                };
                 add(
                     format!("{dir}/{}/{tree}", entry.file_name().to_string_lossy()),
-                    departures_ledger::ComparedGolden::default(),
+                    compared,
                 );
             }
         }

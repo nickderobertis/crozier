@@ -7,8 +7,9 @@ that revision, and its bytes were checked against the recorded digest. Fern CLI
 **5.67.1** with `fernapi/fern-python-sdk` **5.20.0** then generated it afresh,
 and crozier compared its output from the finished generator, through the shared
 departure engine. Fern generated every one. The table retains only witnesses whose fresh
-comparison exits **3**. Vocode now compares with exit **0**, so its closed row
-and empty diff are retired; its exact source provenance is retained below.
+comparison exits **3**. Kompaz, speech-ai and vocode now compare with exit
+**0**, so their closed rows and empty diffs are retired; their exact source
+provenance is retained in their sections below.
 None enters an `unmatched` allowance.
 
 Each `<witness>.diff` is that witness's complete normalized comparison: `-` for
@@ -56,19 +57,31 @@ claims it, so it remains `unowned`.
 
 ## kompaz
 
-Two residual causes remain: `OrganizationLogo` tag/prefix folding and the
-multipart example hunks that cause prevents the existing departure from
-admitting. The three problem+json error-body models and their exports now match.
-The root import-order row also closes: with identical imported name sets, the
-existing `init-type-checking-import-order` rule admits it.
+The complete fresh comparison matches: **exit 0**, 74 files compared. The
+three `application/problem+json` error-body models and their exports, and the
+`OrganizationLogo` tag's `organizationlogo` group with its
+`show`/`update`/`destroy` methods, all match. With that file equal to Fern's, the
+catalogued `multipart-object-required-file-example` correction applies to the
+`PUT /organizations/{organization}/logo` docstring examples, and the root
+`__init__.py`'s reordered imports are taken by the catalogued
+`init-type-checking-import-order` departure. Its row and diff are retired; its
+exact source provenance is retained below.
+
+Source: `Stichting-KOMPAZ-1/KOMPAZ-web-frontend:openapi.json` at revision `a847053e46b98324c57183af2b2c09abe01f8ecf`.
+Source SHA-256: `0437ad48ef2e96fae47e804e86333cbf76ad6a280918373a9f479f9646240511`.
 
 ## langchain
 
-The `stream_mode` array-item enum modules, aliases and exports now match.
-The remaining causes are the collapsed `assistant_id` description, variant
-constructors in the `post_a2a` example, the `runs/batch` content-type header and
-the `kwargs_` enum visitor callback. The root import-order row also closes under
-`init-type-checking-import-order` once the imported name sets agree.
+Two causes, both `unowned`:
+
+- the description of `assistant_id`, a collapsed two-string `anyOf`, which Fern
+  omits;
+- the variant constructors in the `post_a2a` example's union items.
+
+The inline `stream_mode` array-item enum modules, aliases and exports, the
+`content-type` header on the titled array body of `runs/batch` and the `kwargs_`
+enum visitor callback now match. The root `__init__.py`'s reordered imports are
+taken by the catalogued `init-type-checking-import-order` departure.
 
 ## rice-shower
 
@@ -78,25 +91,35 @@ description remain residuals.
 
 ## speech-ai
 
-Every certified public client method is exposed (112 sync/async methods and
-resource accessors), including the SSML, OpenAI speech and transcription
-operations. The one-member allOf bodies now match. Only the STT multipart
-`format` field serialization remains, owned by parity-naming-wire's
-`multipart-optional-enum-part-plain-field` difference.
+The complete fresh comparison matches: **exit 0**, 108 files compared. Every
+certified public client method is exposed (112 sync/async methods and resource
+accessors), including the SSML, OpenAI speech and transcription operations: the
+one-member `allOf` request bodies on `POST /v1/ssml` and `POST /v1/audio/speech`
+are flattened into method parameters with no standalone body type, and the
+nullable enum-`$ref` multipart part `format` is sent as a plain form field. Its
+row and diff are retired; its exact source provenance is retained below.
+
+Source: `lenML/Speech-AI-Forge:docs/openapi.json` at revision `a41b70abba866ecded6e1e90beea6cc68e3fd0ae`.
+Source SHA-256: `1ae1ec5faa3031d10996730f4dfda9726b828ef3a9bd8554d77adcd4ba1b32f6`.
 
 ## supabase
 
 The nullable `JsonValue_Output` union member now keeps its `Optional`, and the
 urlencoded `grant_type` parameter reuses `OAuthTokenBodyGrantType`; the extra
-operation enum, its module and its exports are gone. The root import-order row
-also closes under `init-type-checking-import-order` once the imported name sets
-agree. The remaining example and naming differences retain their individual
-attributions in `residuals.tsv`.
+operation enum, its module and its exports are gone. The root import-order rows
+close under `init-type-checking-import-order` once the imported name sets agree.
+The remaining causes, all `unowned` except the `text/plain` example row, keep
+their individual attributions in `residuals.tsv`:
+
+- the example of the `branch_id_or_ref` `anyOf` path parameter;
+- component `example`s on array, object and form request bodies;
+- `reference.md`'s parameter list for JSON-beside-binary function bodies;
+- missing commas in a map-of-objects example.
 
 ## Import boundary
 
 The six generated SDKs were installed as real packages under Python 3.14.7 and
-Pydantic 2.14.0. Every relative import resolves to a module the package contains.
+Pydantic 2.14.1. Every relative import resolves to a module the package contains.
 Vocode, speech-ai, langchain, kompaz and rice-shower import every module cleanly.
 
 Supabase's root package and standalone `JsonValueOutput` alias import cleanly,

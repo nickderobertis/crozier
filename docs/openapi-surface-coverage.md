@@ -29,7 +29,7 @@ the ledger, [`MANIFEST.tsv`](openapi-surface/probe-expected/MANIFEST.tsv) and
 the [hand-written fixtures](openapi-surface/handwritten/AGENTS.md), those 713
 split four ways:
 
-- **496 carry byte-match evidence against a registered real-world
+- **497 carry byte-match evidence against a registered real-world
   specification.** At least one golden-only witness that is not a hand-authored
   feature target declares the feature, and its committed Fern golden
   byte-matches where the feature's code lands.
@@ -43,7 +43,7 @@ split four ways:
   specification declares the feature, its real-specification search failed, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
-  decided and none is registrable. One hundred and thirty-three read `search-incomplete`. Of those,
+  decided and none is registrable. 136 read `search-incomplete`. Of those,
   six read `search-incomplete`
   only because GitHub refused 12 candidates at every route the first searches
   took. The
@@ -101,7 +101,7 @@ split four ways:
   (corpus rows 2200 and 2201).
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
-  496 and never count as a real-specification match.
+  497 and never count as a real-specification match.
 - **9 remain unproven.** 8 are the `FIXTURE` `gap` rows. Each is a feature the
   naming and example predicates of #361 brought inside the census that no
   registered golden source declares, and none has had a witness search, so each
@@ -161,7 +161,7 @@ committed measurement without them. No arm rests on a witness whose redistributi
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 111. Corpus row 223
+`composition-index-pointer` and is one of the 112. Corpus row 223
 (`nexmo-conversation`) rested on the same aggregation-only grant and is
 withdrawn too
 ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
@@ -218,11 +218,11 @@ real-specification match.
   loses `Optional`; owned by `parity-schema-shapes` as
   `nullable-nested-anyof-union-member`). Neither counts as fully closed; the
   [index summary](#scenario-proof-index) names their `residuals.tsv` rows.
-- **A `python_enums` residual of a literals-proven shape (1):**
-  `enum-header-params-stringified` sends `str(...)` where Fern sends `.value`
-  ([measurement](fern-measurements/python-enums-residuals/README.md)); owned by
-  `parity-naming-wire` as `python-enums-header-value`, and not counted as fully
-  closed.
+- **The two enum-mode measurements are closed in both modes:**
+  `enum-header-params-stringified` sends each Python enum member's `.value`,
+  and `enum-extension-names-dropped-under-literals` retains member descriptions
+  under `python_enums`. Complete certified trees and negative comparisons are
+  held by the naming-wire and literals-mode gates.
 - **Features and arms resting on hand-written fixtures only (11 features, 54
   arms):** weaker proof, counted apart above; each fixture's cover cites the
   failed real-specification search that admitted it.
@@ -492,9 +492,18 @@ field was written and a valued selector says which member of a closed set it was
 written with; neither can say anything about a field's *array members*, about two
 declarations' values *compared*, or about the map keys the count rule above
 deliberately excludes as names. The predicates are themselves a closed list of
-153, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
+157, declared in `tools/surface-census/openapi-surface-census.py` and restated here, with a
 drift gate over the pair:
 
+- `operation.operationId:camel-case-tag-prefix` — one per operation with an upper-camel
+  multiword tag and lower-camel dotted operationId starting with that tag, ignoring case
+- `operation.requestBody:optional-nullable-enum-multipart-part` — one per operation with
+  an optional, defaulted multipart part whose anyOf is a string-enum component reference
+  beside null
+- `operation.requestBody:titled-array-component-oas-three-one` — one per OpenAPI 3.1
+  operation whose JSON body references a titled, described array component
+- `schema.enum:kwargs-member` — one per string enum containing kwargs, whose visitor
+  callback is named kwargs_
 - `pathItem.$ref:relative-file` — one per Path Item Object whose `$ref` has a non-empty
   relative file path before an optional `#` fragment; the referring Path Item counts
   even when the target lies outside the registered source tree
@@ -1018,7 +1027,7 @@ drift gate over the pair:
   A field written as JSON `null` is not written at all here, which is how `serde` reads
   one into the `Option` fields `is_unknown` tests
 
-**Eighty-four of the 153 are node-local**, which is what makes them one family:
+**Eighty-six of the 157 are node-local**, which is what makes them one family:
 each is decided from one object-model node's own declared fields and their
 values, with no `$ref` resolution and no document-scope comparison. The six
 `schema.$ref:` spellings that read a pointer's segment structure are node-local
@@ -1027,7 +1036,7 @@ fields, and reading its segments is not resolving it, and so is
 `schema.allOf:annotated-ref`, which reads one node's `allOf` members and no
 further, and `schema.example:unread-date-time`, which reads one node's `format`
 and selected example. The other
-sixty-nine — `operation.operationId:duplicate`, `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`, `schema.$ref:undeclared-component-head`, `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`, `schema.anyOf:discriminated-union`, `schema.discriminator:inheritance-union`, `parameter.schema:subset-header-string-default`, `parameter.schema:promoted-date-header`, `parameter.schema:single-required-header`, `operation.operationId:digit-leading-method`, `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`, `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`, `operation.requestBody:body-prefixed-single-use`, `operation.requestBody:get-union-member`, `operation.requestBody:titled-inline-container-oas-three-zero`, `operation.responses:empty-schema-success-oas-three-zero`, `operation.responses:schemaless-text-success`, `operation.responses:schemaless-download-success`, `operation.responses:suffixed-status-key`, `operation.requestBody:schemaless-json`, `operation.responses:schemaless-wav-success`, `operation.responses:space-suffixed-status-key`, `operation.requestBody:blank-description-optional-object`, `operation.requestBody:described-inline-scalar`, `operation.requestBody:plain-string-map`, `operation.responses:contentless-two-hundred-with-created`, `operation.responses:event-stream-binary`, `operation.responses:event-stream-inline-const-union`, `operation.responses:event-stream-item-schema-ref`, `operation.responses:event-stream-event-dispatch`, `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`, `mediaType.example:deprecated-property`, `components.schemas:fields-reach-cycles-unsorted`, `components.schemas:cycle-into-cycle`, `mediaType.schema:closed-empty-object-property`, `securityScheme.x-fern-header:named`, `securityScheme.x-fern-bearer:named`, `securityScheme.x-fern-basic:named-or-env`, `securityScheme.x-fern-token-variable-name:bearer`, `components.securitySchemes:duplicate-api-key-header`, `securityScheme.scheme:capitalised-http`, `operation.x-fern-pagination:cursor`, `operation.x-fern-pagination:offset`, `operation.x-fern-pagination:boolean-over-root`, `operation.x-fern-pagination:nullable-response`, `operation.tags:empty-string`, `operation.x-fern-sdk-group-name:types-beside-child-group`, `operation.x-fern-idempotent:with-root-headers`, `operation.x-fern-retries:disabled`, `operation.servers:named-beside-document-server`, `server.x-fern-default-url:templated`, `server.x-fern-server-name:several-undescribed`, `schema.x-fern-sdk-group-name:component`, `schema.x-tags:component`, `schema.x-fern-type-name:inline-property`, `openapi.webhooks:inline-json-body-named`, `operation.x-fern-webhook:true`, `parameter.schema:nullable-array-items-oas-three-zero`, `parameter.schema:required-nullable-scalar-oas-three-zero`, `operation.parameters:path-order-oas-three-one` — read the document beyond the
+seventy-one — `operation.requestBody:optional-nullable-enum-multipart-part`, `operation.requestBody:titled-array-component-oas-three-one`, `operation.operationId:duplicate`, `openapi.paths:normalized-collision`, `components.schemas:normalized-collision`, `schema.$ref:undeclared-component-head`, `schema.$ref:resolves-to-component`, `schema.oneOf:discriminated-union`, `schema.anyOf:discriminated-union`, `schema.discriminator:inheritance-union`, `parameter.schema:subset-header-string-default`, `parameter.schema:promoted-date-header`, `parameter.schema:single-required-header`, `operation.operationId:digit-leading-method`, `operation.responses:wildcard-binary`, `parameter.example:non-scalar-query`, `mediaType.examples:named-beside-example`, `mediaType.examples:named-only`, `schema.example:on-ref-to-object`, `schema.example:on-ref-to-enum`, `schema.example:on-ref-to-union`, `schema.example:on-ref-to-alias`, `operation.requestBody:body-prefixed-single-use`, `operation.requestBody:get-union-member`, `operation.requestBody:titled-inline-container-oas-three-zero`, `operation.responses:empty-schema-success-oas-three-zero`, `operation.responses:schemaless-text-success`, `operation.responses:schemaless-download-success`, `operation.responses:suffixed-status-key`, `operation.requestBody:schemaless-json`, `operation.responses:schemaless-wav-success`, `operation.responses:space-suffixed-status-key`, `operation.requestBody:blank-description-optional-object`, `operation.requestBody:described-inline-scalar`, `operation.requestBody:plain-string-map`, `operation.responses:contentless-two-hundred-with-created`, `operation.responses:event-stream-binary`, `operation.responses:event-stream-inline-const-union`, `operation.responses:event-stream-item-schema-ref`, `operation.responses:event-stream-event-dispatch`, `mediaType.schema:allof-parent-body`, `mediaType.example:nested-null-member`, `mediaType.example:deprecated-property`, `components.schemas:fields-reach-cycles-unsorted`, `components.schemas:cycle-into-cycle`, `mediaType.schema:closed-empty-object-property`, `securityScheme.x-fern-header:named`, `securityScheme.x-fern-bearer:named`, `securityScheme.x-fern-basic:named-or-env`, `securityScheme.x-fern-token-variable-name:bearer`, `components.securitySchemes:duplicate-api-key-header`, `securityScheme.scheme:capitalised-http`, `operation.x-fern-pagination:cursor`, `operation.x-fern-pagination:offset`, `operation.x-fern-pagination:boolean-over-root`, `operation.x-fern-pagination:nullable-response`, `operation.tags:empty-string`, `operation.x-fern-sdk-group-name:types-beside-child-group`, `operation.x-fern-idempotent:with-root-headers`, `operation.x-fern-retries:disabled`, `operation.servers:named-beside-document-server`, `server.x-fern-default-url:templated`, `server.x-fern-server-name:several-undescribed`, `schema.x-fern-sdk-group-name:component`, `schema.x-tags:component`, `schema.x-fern-type-name:inline-property`, `openapi.webhooks:inline-json-body-named`, `operation.x-fern-webhook:true`, `parameter.schema:nullable-array-items-oas-three-zero`, `parameter.schema:required-nullable-scalar-oas-three-zero`, `operation.parameters:path-order-oas-three-one` — read the document beyond the
 node, and say so in their own sentence. The first nine and the two cycle
 readings compare one document's own values against each other; the next
 twenty-nine read where the node stands (an operation's route, a request body's
@@ -1821,12 +1830,11 @@ shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
-closed with no open residual: 158
-closed on their proof with a residual open: 2
-  enum-header-params-stringified: docs/fern-measurements/python-enums-residuals/enum-header-params-stringified.diff -> parity-naming-wire:python-enums-header-value
+closed with no open residual: 159
+closed on their proof with a residual open: 1
   text-response-drops-request-example: supabase reference.md -647,0 +647,2; supabase src/fern/environments/client.py -396,0 +396,2, -1257,0 +1259,2 -> parity-examples-docs:text-response-optional-query-examples
-witnesses: differs 7
-witness hunks by owner: text-response-drops-request-example 3, unowned 193
+witnesses: differs 5
+witness hunks by owner: text-response-drops-request-example 3, unowned 151
 ```
 
 ## The category rules
@@ -1993,7 +2001,7 @@ for either; each bullet below says where its number comes from.
 | [`schemas`](openapi-surface/schemas.md) | 334 | 251 | 14 | 60 | 9 | 7 | 0 | 2 |
 | [`bodies-media`](openapi-surface/bodies-media.md) | 76 | 46 | 5 | 25 | 0 | 0 | 0 | 0 |
 | [`security`](openapi-surface/security.md) | 56 | 41 | 9 | 6 | 0 | 0 | 0 | 0 |
-| [`document-paths`](openapi-surface/document-paths.md) | 83 | 68 | 3 | 11 | 1 | 1 | 0 | 0 |
+| [`document-paths`](openapi-surface/document-paths.md) | 84 | 68 | 3 | 12 | 1 | 1 | 0 | 0 |
 | [`oas31-extensions`](openapi-surface/oas31-extensions.md) | 71 | 38 | 2 | 19 | 12 | 0 | 0 | 12 |
 | **total** | **713** | **497** | **52** | **142** | **22** | **8** | **0** | **14** |
 
@@ -2996,7 +3004,7 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**59** golden rows rest on one document: a single golden-only witness declares
+**60** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
@@ -3053,6 +3061,7 @@ ledger, so a registration that adds a second witness removes the row here.
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
 | `multiple-of` | `schemas` | `fergus` |
+| `openapi31-titled-array-body-content-type` | `bodies-media` | `tamoss` |
 | `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |
 | `property-sole-oneof-closed-object-member` | `schemas` | `mistle-control-plane` |
 | `range-3XX` | `bodies-media` | `osparc-simcore-webserver` |

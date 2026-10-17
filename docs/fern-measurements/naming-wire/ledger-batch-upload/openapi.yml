@@ -1,0 +1,50 @@
+openapi: 3.1.0
+info:
+  title: Ledger Batches
+  version: 1.0.0
+paths:
+  /entries/batch:
+    post:
+      operationId: createEntries
+      tags: [entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryBatch"
+      responses:
+        "204":
+          description: The entries were recorded.
+  /entries/void:
+    post:
+      operationId: voidEntries
+      tags: [entries]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EntryIds"
+      responses:
+        "204":
+          description: The entries were voided.
+components:
+  schemas:
+    Entry:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: integer
+    EntryBatch:
+      type: array
+      items:
+        $ref: "#/components/schemas/Entry"
+      minItems: 1
+      title: EntryBatch
+      description: Entries to record together.
+    EntryIds:
+      type: array
+      items:
+        type: string

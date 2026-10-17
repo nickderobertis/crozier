@@ -2364,6 +2364,8 @@ class RecipeWiringTests(unittest.TestCase):
 # document's version, a local Response `$ref`), so none is node-local.
 BODY_AND_RESPONSE_PREDICATES = frozenset(
     {
+        "operation.requestBody:optional-nullable-enum-multipart-part",
+        "operation.requestBody:titled-array-component-oas-three-one",
         "operation.requestBody:body-prefixed-single-use",
         "operation.requestBody:get-union-member",
         "operation.requestBody:titled-inline-container-oas-three-zero",
@@ -5004,6 +5006,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
             "operation.operationId:hyphenated-tag-method",
             "operation.operationId:tag-spelled-split-prefix",
             "operation.operationId:all-caps-tag-split-prefix",
+            "operation.operationId:camel-case-tag-prefix",
             "operation.x-fern-sdk-group-name:leading-underscore",
             "operation.x-fern-sdk-group-name:without-method-name",
             "operation.x-fern-sdk-method-name:sequence",
@@ -13896,6 +13899,13 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
             | {"schema.example=" + kind for kind in census.EXAMPLE_KINDS if kind != "object"}
         )
         document = (REPO / "docs/openapi-surface/schemas.md").read_text(encoding="utf-8")
+        # A selector only a hand-written fixture covers cites that fixture, not
+        # census counts: no registered source declares it.
+        handwritten = {
+            cells[2]
+            for line in document.splitlines()
+            if (cells := table_cells(line, 8)) is not None and cells[3] == "handwritten"
+        }
         evidence = {}
         for line in document.splitlines():
             cells = table_cells(line, 8)
@@ -13904,6 +13914,7 @@ class ExampleEnumAndSchemaNameSelectorControls(unittest.TestCase):
             match = re.search(r"census `([^`]+)`:", cells[4])
             if match and match.group(1) in selectors:
                 evidence[match.group(1)] = cells[4]
+        selectors -= handwritten - set(evidence)
         self.assertEqual(selectors, set(evidence))
         completed = run(
             "--vendored-only", "--json", *(arg for selector in sorted(selectors) for arg in ("--selector", selector))
@@ -16028,6 +16039,32 @@ class ScenarioProofIndexTests(unittest.TestCase):
     def edited(self, row: dict[str, str], **cells: str) -> str:
         return self.line({**row, **cells})
 
+    def python_enums_mirror(self) -> tuple[Path, dict[str, str]]:
+        """A mirror in which one closed measurement shape holds an open `python_enums`
+        residual, recorded as the index records one: its committed diff, its `open`
+        cell and the parity node closing it. No committed shape holds one."""
+        module = self.index_script
+        root = self.mirror()
+        rows, _ = module.read_tsv(root / module.INDEX, module.INDEX_HEADER)
+        row = next(row for row in rows if row["kind"] == "measurement" and row["open"] == module.NONE)
+        opened = {**row, "open": module.PYTHON_ENUMS, "closer": f"{module.ParityNode.NAMING_WIRE}:{row['shape']}"}
+        self.rewrite(root / module.INDEX, self.line(row), self.line(opened))
+        diff = root / module.PYTHON_ENUMS_RESIDUALS / f"{row['shape']}.diff"
+        diff.parent.mkdir(parents=True, exist_ok=True)
+        diff.write_text(
+            "# crozier compare: crozier.yml python\n"
+            "# normalized diff: `-` reference, `+` crozier\n\n"
+            "--- reference/src/fern/trams/raw_client.py\n"
+            "+++ crozier/src/fern/trams/raw_client.py\n"
+            "      \u22ee (47 unchanged line(s))\n"
+            "              headers={\n"
+            '-                 "X-Shift": shift.value if shift is not None else None,\n'
+            '+                 "X-Shift": str(shift) if shift is not None else None,\n'
+            "              },\n",
+            encoding="utf-8",
+        )
+        return root, opened
+
     def assert_fails(self, root: Path, message: str) -> None:
         failures = self.index_script.check(root)
         self.assertTrue(any(message in failure for failure in failures), failures)
@@ -16585,7 +16622,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
-        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        _, python_enums = self.python_enums_mirror()
         closed = next(row for row in rows if row["open"] == module.NONE and row["kind"] == "handwritten")
         cases = {
             # A residual reattributed away leaves the shape claiming one it no longer has.
@@ -16616,7 +16653,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         }
         for name, (mutate, message) in cases.items():
             with self.subTest(case=name):
-                root = self.mirror()
+                root, _ = self.python_enums_mirror()
                 mutate(root)
                 self.assert_fails(root, message)
         lines, failures = module.summary(REPO)
@@ -16628,7 +16665,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
         witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
-        python_enums = next(row for row in rows if row["open"] == module.PYTHON_ENUMS)
+        seeded, python_enums = self.python_enums_mirror()
         closed = next(row for row in rows if row["open"] == module.NONE)
         cases = {
             "closer dropped": (
@@ -16663,6 +16700,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
             if row["owner"] == witnessed["shape"]
         )
         self.assertIn(f"  {witnessed['shape']}: {cited} -> {witnessed['closer']}", lines)
+        lines, failures = module.summary(seeded)
+        self.assertEqual([], failures)
         self.assertIn(
             f"  {python_enums['shape']}: {module.PYTHON_ENUMS_RESIDUALS}/{python_enums['shape']}.diff"
             f" -> {python_enums['closer']}",
@@ -16822,6 +16861,90 @@ class ScenarioProofIndexTests(unittest.TestCase):
         for text, message in cases.items():
             with self.subTest(text=text), self.assertRaisesRegex(module.MalformedDiff, re.escape(message)):
                 module.diff_hunks(text)
+
+
+class NamingWireCensusTests(unittest.TestCase):
+    """Count the authored shapes through the census's public document boundary."""
+
+    def test_measurement_name_ending_in_literals_keeps_its_exact_source(self) -> None:
+        index = load_script("tools/surface-census/scenario-proof-index.py")
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            source = "docs/fern-measurements/literals-mode/enum-extension-names-dropped-under-literals/openapi.yml"
+            path = root / source
+            path.parent.mkdir(parents=True)
+            path.write_text("openapi: 3.0.3\n", encoding="utf-8")
+            golden = "docs/fern-measurements/naming-wire/enum-extension-names-dropped-under-literals/fern-expected"
+            self.assertEqual(index.golden_source(root, golden), source)
+            path.unlink()
+            self.assertIsNone(index.golden_source(root, golden))
+
+    def test_owned_shapes_and_adjacent_controls(self) -> None:
+        census = load_census()
+        cases = (
+            ("gallery-plaque-groups", "operation.operationId:camel-case-tag-prefix"),
+            ("transcript-format-part", "operation.requestBody:optional-nullable-enum-multipart-part"),
+            ("ledger-batch-upload", "operation.requestBody:titled-array-component-oas-three-one"),
+            ("survey-field-selector", "schema.enum:kwargs-member"),
+        )
+        for fixture, selector in cases:
+            with self.subTest(fixture=fixture):
+                area = (
+                    "docs/fern-measurements/naming-wire"
+                    if fixture == "ledger-batch-upload"
+                    else "docs/openapi-surface/handwritten"
+                )
+                document = census.load_document(REPO / area / fixture / "openapi.yml")
+                self.assertGreater(census.census_document(document).get(selector, 0), 0)
+                control = json.loads(json.dumps(document))
+                match fixture:
+                    case "gallery-plaque-groups":
+                        for item in control["paths"].values():
+                            for operation in item.values():
+                                operation["tags"] = ["OtherGroup"]
+                    case "transcript-format-part":
+                        control["components"]["schemas"]["CaptionFormat"] = {"type": "object"}
+                    case "ledger-batch-upload":
+                        control["openapi"] = "3.0.3"
+                    case "survey-field-selector":
+                        control["paths"]["/responses"]["get"]["parameters"][0]["schema"]["items"]["enum"].remove(
+                            "kwargs"
+                        )
+                self.assertEqual(census.census_document(control).get(selector, 0), 0)
+                self.assertIsNone(census.selector_error(selector))
+
+    def test_multipart_required_and_malformed_required_lists_are_not_optional(self) -> None:
+        census = load_census()
+        source = REPO / "docs/openapi-surface/handwritten/transcript-format-part/openapi.yml"
+        for required in (True, 23, "format", ["format"], [False]):
+            with self.subTest(required=required):
+                document = census.load_document(source)
+                form = document["paths"]["/transcripts"]["post"]["requestBody"]["content"]["multipart/form-data"][
+                    "schema"
+                ]
+                form["required"] = required
+                self.assertEqual(
+                    census.census_document(document).get(
+                        "operation.requestBody:optional-nullable-enum-multipart-part", 0
+                    ),
+                    0,
+                )
+
+    def test_camel_tag_shape_excludes_upper_prefix_and_lower_tag(self) -> None:
+        census = load_census()
+        source = REPO / "docs/openapi-surface/handwritten/gallery-plaque-groups/openapi.yml"
+        for variant in ("upper-prefix", "lower-tag"):
+            with self.subTest(variant=variant):
+                document = census.load_document(source)
+                for operation in document["paths"]["/galleries/{gallery}/plaque"].values():
+                    match variant:
+                        case "upper-prefix":
+                            operation["operationId"] = "GalleryPlaque.show"
+                        case "lower-tag":
+                            operation["tags"] = ["galleryPlaque"]
+                self.assertEqual(
+                    census.census_document(document).get("operation.operationId:camel-case-tag-prefix", 0), 0
+                )
 
 
 if __name__ == "__main__":

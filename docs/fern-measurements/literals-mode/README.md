@@ -1,4 +1,4 @@
-# Forty-six parity shapes, measured under Fern's default enum type
+# 49 parity shapes, measured under Fern's default enum type
 
 Each case is one shape crozier and Fern generate identically, measured with
 `pydantic_config.enum_type` unset — Fern's own default, `literals` — the mode

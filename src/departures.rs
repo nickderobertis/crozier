@@ -2593,7 +2593,11 @@ pub fn differing_window(fern: &[&str], crozier: &[&str]) -> Option<Region> {
 
 /// `init-type-checking-import-order`: in an `__init__.py`, both sides'
 /// `if typing.TYPE_CHECKING:` blocks differ, yet sort to the same text under
-/// ruff's isort. The region is the blocks' differing window.
+/// ruff's isort. The region is the blocks' differing window. When they do not
+/// sort alike, the region is instead the window of import statements the two
+/// sides order differently, when that window is the same statements, each
+/// importing the same names ([`reordered_statements`]); every other difference
+/// in the block stays a difference.
 fn init_type_checking_import_order(pair: &Pair<'_>) -> Result<Option<Region>, String> {
     if pair.rel != "__init__.py" && !pair.rel.ends_with("/__init__.py") {
         return Ok(None);
@@ -2612,14 +2616,114 @@ fn init_type_checking_import_order(pair: &Pair<'_>) -> Result<Option<Region>, St
     let (Some(fern_body), Some(crozier_body)) = (dedent(fern), dedent(crozier)) else {
         return Ok(None);
     };
-    if ruff_isort(&fern_body)? != ruff_isort(&crozier_body)? {
-        return Ok(None);
-    }
+    let window = if ruff_isort(&fern_body)? == ruff_isort(&crozier_body)? {
+        window
+    } else {
+        match reordered_statements(fern, crozier) {
+            Some(window) => window,
+            None => return Ok(None),
+        }
+    };
     Ok(Some(Region {
         fern: fern_block.start + window.fern.start..fern_block.start + window.fern.end,
         crozier: crozier_block.start + window.crozier.start
             ..crozier_block.start + window.crozier.end,
     }))
+}
+
+/// The lines of the import statements two `TYPE_CHECKING` blocks order
+/// differently: from the first statement whose source module differs between
+/// the sides to the last. `None` unless both blocks import from the same modules,
+/// the only statements that move are the root client's and environment's
+/// (`from .client`, `from .environment`), and each statement in that window is
+/// the same text on both sides, so the window is one permutation of identical
+/// statements. A package whose tag subpackages re-export types is that case
+/// beside another difference: Fern sorts `from .client` and `from .environment`
+/// among `from .auth`, `from .crons`, …, crozier writes them ahead, and a name
+/// only one side re-exports stays outside the window.
+fn reordered_statements(fern: &[&str], crozier: &[&str]) -> Option<Region> {
+    let (fern_statements, crozier_statements) = (statements(fern)?, statements(crozier)?);
+    let module = |side: &[&str], range: &std::ops::Range<usize>| -> String {
+        let head = side[range.start].trim_start();
+        head.split_once(" import")
+            .map_or(head, |(module, _)| module)
+            .to_string()
+    };
+    let fern_modules: Vec<String> = fern_statements
+        .iter()
+        .map(|range| module(fern, range))
+        .collect();
+    let crozier_modules: Vec<String> = crozier_statements
+        .iter()
+        .map(|range| module(crozier, range))
+        .collect();
+    let mut sorted = (fern_modules.clone(), crozier_modules.clone());
+    sorted.0.sort();
+    sorted.1.sort();
+    if sorted.0 != sorted.1 || sorted.0.windows(2).any(|pair| pair[0] == pair[1]) {
+        return None;
+    }
+    let first = fern_modules
+        .iter()
+        .zip(&crozier_modules)
+        .position(|(f, c)| f != c)?;
+    let last = fern_modules.len()
+        - 1
+        - fern_modules
+            .iter()
+            .rev()
+            .zip(crozier_modules.iter().rev())
+            .position(|(f, c)| f != c)?;
+    let settled = |modules: &[String]| -> Vec<String> {
+        modules[first..=last]
+            .iter()
+            .filter(|module| !matches!(module.as_str(), "from .client" | "from .environment"))
+            .cloned()
+            .collect()
+    };
+    if settled(&fern_modules) != settled(&crozier_modules) {
+        return None;
+    }
+    let text = |side: &[&str], range: &std::ops::Range<usize>| side[range.clone()].join("\n");
+    for (index, name) in fern_modules.iter().enumerate().take(last + 1).skip(first) {
+        let other = crozier_modules
+            .iter()
+            .position(|candidate| candidate == name)?;
+        if !(first..=last).contains(&other)
+            || text(fern, &fern_statements[index]) != text(crozier, &crozier_statements[other])
+        {
+            return None;
+        }
+    }
+    Some(Region {
+        fern: fern_statements[first].start..fern_statements[last].end,
+        crozier: crozier_statements[first].start..crozier_statements[last].end,
+    })
+}
+
+/// A `TYPE_CHECKING` block's import statements, each the lines from its
+/// `from …`/`import …` line to the next; `None` when a non-blank line precedes
+/// the first statement.
+fn statements(block: &[&str]) -> Option<Vec<std::ops::Range<usize>>> {
+    let starts: Vec<usize> = block
+        .iter()
+        .enumerate()
+        .filter(|(_, line)| line.starts_with("    from ") || line.starts_with("    import "))
+        .map(|(index, _)| index)
+        .collect();
+    if block[..starts.first().copied().unwrap_or(block.len())]
+        .iter()
+        .any(|line| !line.is_empty())
+    {
+        return None;
+    }
+    Some(
+        starts
+            .iter()
+            .enumerate()
+            .map(|(index, start)| *start..starts.get(index + 1).copied().unwrap_or(block.len()))
+            .collect(),
+    )
 }
 
 /// The lines inside `lines`' `if typing.TYPE_CHECKING:` block: from the line

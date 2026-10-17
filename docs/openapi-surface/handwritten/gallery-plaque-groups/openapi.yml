@@ -1,0 +1,54 @@
+openapi: 3.0.3
+info:
+  title: Gallery Plaques
+  version: 1.0.0
+paths:
+  /galleries/{gallery}/plaque:
+    get:
+      operationId: galleryPlaque.show
+      tags: [GalleryPlaque]
+      parameters:
+        - name: gallery
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The gallery's plaque.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plaque"
+    delete:
+      operationId: galleryPlaque.destroy
+      tags: [GalleryPlaque]
+      parameters:
+        - name: gallery
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The plaque was removed.
+  /galleries/{gallery}/lights:
+    get:
+      operationId: lightingPlan.show
+      tags: [GalleryLighting]
+      parameters:
+        - name: gallery
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: The lighting plan was shown.
+components:
+  schemas:
+    Plaque:
+      type: object
+      properties:
+        title:
+          type: string
