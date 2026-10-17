@@ -3162,6 +3162,7 @@ fn following() { let other = 42; }
         words = {
             0: "zero",
             1: "one",
+            2: "two",
             3: "three",
             4: "four",
             5: "five",
@@ -3538,6 +3539,10 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf": {},
@@ -4626,6 +4631,75 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
                 {"anyOf": [array_of({"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]})]},
             ),
             "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        },
+        # --- hoist_union_variant, cases 3e to 3h ------------------------------
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+            "slug": "huv-3e",
+            "branch": "hoist_union_variant case 3e",
+            "select": ("schema", {"oneOf": [array_of({"type": "string", "enum": ["upper"]}), {"type": "string"}]}),
+            "near": ("schema", {"oneOf": [array_of({"type": "integer", "enum": [1]}), {"type": "string"}]}),
+            "overlap": (
+                "schema",
+                {
+                    "oneOf": [
+                        array_of({"enum": ["upper"], "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+            "slug": "huv-3f",
+            "branch": "hoist_union_variant case 3f",
+            "select": ("schema", {"anyOf": [array_of({"type": "string", "enum": ["upper"]}), {"type": "string"}]}),
+            "near": ("schema", {"anyOf": [array_of({"type": "integer", "enum": [1]}), {"type": "string"}]}),
+            "overlap": (
+                "schema",
+                {
+                    "anyOf": [
+                        array_of({"enum": ["upper"], "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+            "slug": "huv-3g",
+            "branch": "hoist_union_variant case 3g",
+            "select": ("schema", {"oneOf": [array_of({"type": "string", "const": "upper"}), {"type": "string"}]}),
+            "near": ("schema", {"oneOf": [array_of({"type": "integer", "const": 1}), {"type": "string"}]}),
+            "overlap": (
+                "schema",
+                {
+                    "oneOf": [
+                        array_of({"const": "upper", "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        },
+        {
+            "selector": "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+            "slug": "huv-3h",
+            "branch": "hoist_union_variant case 3h",
+            "select": ("schema", {"anyOf": [array_of({"type": "string", "const": "upper"}), {"type": "string"}]}),
+            "near": ("schema", {"anyOf": [array_of({"type": "integer", "const": 1}), {"type": "string"}]}),
+            "overlap": (
+                "schema",
+                {
+                    "anyOf": [
+                        array_of({"const": "upper", "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
         },
         # --- hoist_union_variant, cases 5a to 5d ------------------------------
         {

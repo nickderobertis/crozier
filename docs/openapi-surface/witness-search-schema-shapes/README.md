@@ -41,7 +41,8 @@ arm evidence only; they do not become corpus rows or change the scenario plan.
 
 ## Success-counter anchors
 
-The fresh measurement at `eb26d1616731` supersedes condition-only anchors.
+The fresh measurement at `43760d0bf062`, over the source merged with main,
+supersedes condition-only anchors.
 The one-member body anchor now selects the successful `Some(member)` match arm;
 the variant property anchor selects its referenced-type return; the flattened
 field anchor selects its fallback conversion; the inline array anchor selects
@@ -67,3 +68,9 @@ shape: its complete two-mode regression remains at
 [`schema-shapes/kiln-problem-response`](../../fern-measurements/schema-shapes/kiln-problem-response/).
 The other fixtures retain only covers for successful arms no registered golden
 reaches; these coordinates describe the measured source, not stable line IDs.
+
+The hoisted enum list return is now the `hoist_union_variant` case-analysis
+branch of four region rows (cases 3e to 3h), not a `oneof-anyof-variant` site.
+Golden-reach measures it unreached, so each row is `handwritten`:
+kiln-array-mode covers `anyof-array-variant-inline-enum-item`, and
+kiln-array-variants covers the `oneOf` enum, `oneOf` const and `anyOf` const rows.
