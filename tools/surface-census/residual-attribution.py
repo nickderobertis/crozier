@@ -111,23 +111,12 @@ def _stringify_null_examples(node: Any) -> int:
     return count
 
 
-def _drop_server_extensions(document: Any) -> int:
-    """Drop every `x-` extension a top-level Server Object writes."""
-    count = 0
-    for server in document.get("servers") or []:
-        for key in [key for key in server if isinstance(key, str) and key.startswith("x-")]:
-            del server[key]
-            count += 1
-    return count
-
-
 # key -> (the residual row that is its only real witness, the perturbation)
 CASES: dict[str, tuple[str, Callable[[Any], int]]] = {
     "format-idn-hostname": ("short-io", _retype_format("idn-hostname")),
     "format-iri": ("short-io", _retype_format("iri")),
     "boolean-schema-true": ("webflow-v2", _retype_true_schemas),
     "schema-example-null": ("webflow-v2", _stringify_null_examples),
-    "extension-server": ("webflow-v2", _drop_server_extensions),
 }
 
 
