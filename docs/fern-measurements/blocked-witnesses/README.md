@@ -106,6 +106,18 @@ from merge base `19c121ed7` and in freshly generated certified output. This is a
 preexisting runtime incompatibility, not a departure used to admit the owned
 nullable union-member difference. All other Supabase module imports pass.
 
+The eleven are `fern.billing.client`, `fern.billing.raw_client`,
+`fern.domains.client`, `fern.domains.raw_client`, and the seven
+`fern.types.list_project_addons_response_output*` and
+`fern.types.update_custom_hostname_response_output*` models. They fail the same
+way under Pydantic 2.9, 2.10 and 2.11 on Python 3.12, and with the alias's
+member written without `Optional`. Supabase's import boundary is therefore its
+root package, every module outside the `JsonValueOutput` alias graph, and the
+static resolution of its relative imports. Making the alias importable is a
+catalogued recursive-alias departure across every golden with such an alias,
+which keeps the declared Python 3.8+ support; it is follow-up work, not this
+comparison's.
+
 ## twitter
 
 One cause, `unowned`. The first named media example of `statuses/update` is an
