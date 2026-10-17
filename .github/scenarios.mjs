@@ -13,7 +13,7 @@ export function scenarioIds() {
   return [...classes.flatMap(([id])=>['source','version','dependency'].flatMap(diff=>['same','fork'].flatMap(owner=>['false','true'].flatMap(crates=>['false','true'].map(pypi=>`${id}/${diff}/${owner}/crates=${crates}/pypi=${pypi}`))))),...classificationIds].sort();
 }
 // The single-push lifecycle: its synchronize run, base/release/downstream
-// automation and the release PR. Marking a draft ready starts no run.
+// automation and the release PR.
 export function lifecycleScenarios(scenarios, lifecycle) {
   const selected=scenarios.filter(s=>['pr-synchronize','base-push','release-merge','tag-push','release-published','downstream','repository-dispatch','schedule'].includes(s.class) && s.diff===lifecycle.diff && s.fork===lifecycle.fork && s.publish.crates===lifecycle.crates && s.publish.pypi===lifecycle.pypi);
   return [...selected,scenarios.find(s=>s.id==='classification/release-plz-2026-10-12')];
