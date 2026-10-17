@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.120](https://github.com/nickderobertis/crozier/compare/v0.0.119...v0.0.120) - 2026-10-17
+
+### Fixed
+
+- *(parity)* match Fern's tag grouping, enum values and request encoding ([#511](https://github.com/nickderobertis/crozier/pull/511))
+
 ## [0.0.119](https://github.com/nickderobertis/crozier/compare/v0.0.118...v0.0.119) - 2026-10-15
 
 ### Other
