@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "rice-shower",
+  "corpus_spec_ref": "b100b3633a68a41ba63181379455e98b4814da19",
+  "corpus_spec_url": "https://raw.githubusercontent.com/Q2TM/low-temperature-control/b100b3633a68a41ba63181379455e98b4814da19/apps/rice-shower/docs/openapi.yaml"
+}

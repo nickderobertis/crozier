@@ -1061,6 +1061,12 @@
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},
     "tests/fixtures/redocly.com-museum/expected": {},
     "tests/fixtures/reverb.com/expected": {},
+    "tests/fixtures/rice-shower/expected": {},
+    "tests/fixtures/rice-shower/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/sac-backend/expected": {},
     "tests/fixtures/schema-constraints/expected": {},
     "tests/fixtures/servers-webhooks/expected": {},

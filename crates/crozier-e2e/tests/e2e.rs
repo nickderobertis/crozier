@@ -9499,6 +9499,7 @@ const CORPORA: &[&Corpus] = &[
     &VOCODE_CORE,
     &DYSTORE_API,
     &LANGCHAIN_AGENT_SERVER,
+    &RICE_SHOWER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12648,6 +12649,20 @@ const LANGCHAIN_AGENT_SERVER: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `rice-shower`: corpus row 2803, the Rice Shower low-temperature
+/// control API, whose nullable described `anyOf` body property keeps its member's
+/// description.
+const RICE_SHOWER: Corpus = Corpus {
+    api: "rice-shower",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
 /// revision declaring `x-fern-streaming`: two `stream-condition` operations with
 /// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
@@ -13451,6 +13466,13 @@ fn dystore_api_matches_fern_output() {
 #[test]
 fn langchain_agent_server_matches_fern_output() {
     assert_committed_corpus_matches(&LANGCHAIN_AGENT_SERVER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn rice_shower_matches_fern_output() {
+    assert_committed_corpus_matches(&RICE_SHOWER);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

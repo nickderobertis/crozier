@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .stop_experiment_response_stop_reason_one import StopExperimentResponseStopReasonOne
+from .stop_experiment_response_stop_reason_three import StopExperimentResponseStopReasonThree
+from .stop_experiment_response_stop_reason_two import StopExperimentResponseStopReasonTwo
+from .stop_experiment_response_stop_reason_zero import StopExperimentResponseStopReasonZero
+
+StopExperimentResponseStopReason = typing.Union[
+    StopExperimentResponseStopReasonZero,
+    StopExperimentResponseStopReasonOne,
+    StopExperimentResponseStopReasonTwo,
+    StopExperimentResponseStopReasonThree,
+]

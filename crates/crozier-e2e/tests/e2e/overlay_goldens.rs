@@ -72,6 +72,8 @@ const KINDS: &[Kind] = &[
     //   only in the generator record and the absent `core/enum.py`.
     // - `langchain-agent-server`: inline array-item and property enums of an agent
     //   server's run, stream and protocol models.
+    // - `rice-shower`: nested const-only and inline enums of an experiment
+    //   API's stop reasons and statuses.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -92,6 +94,7 @@ const KINDS: &[Kind] = &[
             "vocode-core",
             "dystore-api",
             "langchain-agent-server",
+            "rice-shower",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

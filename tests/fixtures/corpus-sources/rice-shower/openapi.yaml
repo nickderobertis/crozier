@@ -1,0 +1,2273 @@
+openapi: 3.0.3
+info:
+  title: Rice Shower (LT Capstone)
+  description: API Web Server that scrape Lakeshore Metrics and save it to
+    time-series database, then allow user to query the data.
+  version: 0.1.0
+tags:
+  - name: Query
+    description: Endpoints for querying collected data from time-series database
+  - name: Scrape
+    description: Endpoints for getting metrics/status from the scraper
+  - name: Systems
+    description: Endpoints for managing system configuration (registry)
+  - name: Experiments
+    description: Endpoints for managing PID experiments (named runs with snapshots)
+paths:
+  /query/thermo/{system_id}:
+    get:
+      tags:
+        - Query
+      operationId: getThermoMetrics
+      summary: Get Thermometer Metrics
+      description: Query thermometer metrics data from time series database
+      parameters:
+        - name: system_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channels
+          in: query
+          required: true
+          schema:
+            description: List of channel numbers to retrieve
+            type: array
+            items:
+              type: number
+        - name: time_start
+          in: query
+          required: true
+          schema:
+            description: Start time for the query in ISO format
+            anyOf:
+              - description: Start time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: time_end
+          in: query
+          required: true
+          schema:
+            description: End time for the query in ISO format
+            anyOf:
+              - description: End time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: interval
+          in: query
+          required: true
+          schema:
+            description: Interval in seconds for time bucketing
+            default: 10
+            type: number
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dataPoints
+                  - metrics
+                properties:
+                  dataPoints:
+                    description: Total number of data points returned
+                    type: number
+                  metrics:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - time
+                        - channels
+                      properties:
+                        time:
+                          description: Timestamp of the metric
+                          format: date-time
+                          type: string
+                        channels:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - channel
+                              - kelvin
+                            properties:
+                              channel:
+                                description: Channel number
+                                type: number
+                              kelvin:
+                                description: Temperature in Kelvin
+                                type: number
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /query/heater/{system_id}:
+    get:
+      tags:
+        - Query
+      operationId: getHeaterMetrics
+      summary: Get Heater Metrics
+      description: Query heater metrics data from time series database
+      parameters:
+        - name: system_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: channels
+          in: query
+          required: true
+          schema:
+            description: List of heater channel numbers to retrieve
+            type: array
+            items:
+              type: number
+        - name: time_start
+          in: query
+          required: true
+          schema:
+            description: Start time for the query in ISO format
+            anyOf:
+              - description: Start time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: time_end
+          in: query
+          required: true
+          schema:
+            description: End time for the query in ISO format
+            anyOf:
+              - description: End time for the query in ISO format
+                type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: interval
+          in: query
+          required: true
+          schema:
+            description: Interval in seconds for time bucketing
+            default: 10
+            type: number
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - dataPoints
+                  - metrics
+                properties:
+                  dataPoints:
+                    description: Total number of data points returned
+                    type: number
+                  metrics:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - time
+                        - channels
+                      properties:
+                        time:
+                          description: Timestamp of the metric
+                          format: date-time
+                          type: string
+                        channels:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - channel
+                              - powerWatts
+                              - powerPercent
+                            properties:
+                              channel:
+                                description: Channel number
+                                type: number
+                              powerWatts:
+                                description: Power in Watts
+                                type: number
+                              powerPercent:
+                                description: Requested power as a percentage (0-100). Reflects PID output or
+                                  manual setting.
+                                type: number
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /scrape/metrics:
+    get:
+      tags:
+        - Scrape
+      operationId: getAllScrapeMetrics
+      summary: Get All Scrape Metrics
+      description: Retrieve scraping metrics for all active systems, including
+        per-system error counts and success totals
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - systemId
+                    - thermo
+                    - heater
+                  properties:
+                    systemId:
+                      description: System identifier
+                      type: string
+                    thermo:
+                      description: Scraping metrics for thermometer data
+                      type: object
+                      required:
+                        - lastError
+                        - errorCount
+                        - successCount
+                      properties:
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if no errors have occurred
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        errorCount:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - id
+                              - count
+                            properties:
+                              id:
+                                description: Channel number or pin number
+                                type: number
+                              count:
+                                description: Number of errors for this channel/pin
+                                type: number
+                        successCount:
+                          description: Total number of successful scrapes
+                          type: number
+                    heater:
+                      description: Scraping metrics for heater data
+                      type: object
+                      required:
+                        - lastError
+                        - errorCount
+                        - successCount
+                      properties:
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if no errors have occurred
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        errorCount:
+                          type: array
+                          items:
+                            type: object
+                            required:
+                              - id
+                              - count
+                            properties:
+                              id:
+                                description: Channel number or pin number
+                                type: number
+                              count:
+                                description: Number of errors for this channel/pin
+                                type: number
+                        successCount:
+                          description: Total number of successful scrapes
+                          type: number
+  /scrape/metrics/{systemId}:
+    get:
+      tags:
+        - Scrape
+      operationId: getSystemScrapeMetrics
+      summary: Get System Scrape Metrics
+      description: Retrieve scraping metrics for a specific system by its ID
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - systemId
+                  - thermo
+                  - heater
+                properties:
+                  systemId:
+                    description: System identifier
+                    type: string
+                  thermo:
+                    description: Scraping metrics for thermometer data
+                    type: object
+                    required:
+                      - lastError
+                      - errorCount
+                      - successCount
+                    properties:
+                      lastError:
+                        nullable: true
+                        anyOf:
+                          - description: Timestamp of the last error, or null if no errors have occurred
+                            format: date-time
+                            type: string
+                          - type: "null"
+                      errorCount:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - count
+                          properties:
+                            id:
+                              description: Channel number or pin number
+                              type: number
+                            count:
+                              description: Number of errors for this channel/pin
+                              type: number
+                      successCount:
+                        description: Total number of successful scrapes
+                        type: number
+                  heater:
+                    description: Scraping metrics for heater data
+                    type: object
+                    required:
+                      - lastError
+                      - errorCount
+                      - successCount
+                    properties:
+                      lastError:
+                        nullable: true
+                        anyOf:
+                          - description: Timestamp of the last error, or null if no errors have occurred
+                            format: date-time
+                            type: string
+                          - type: "null"
+                      errorCount:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                            - id
+                            - count
+                          properties:
+                            id:
+                              description: Channel number or pin number
+                              type: number
+                            count:
+                              description: Number of errors for this channel/pin
+                              type: number
+                      successCount:
+                        description: Total number of successful scrapes
+                        type: number
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /scrape/status:
+    get:
+      tags:
+        - Scrape
+      operationId: getAllScrapeStatus
+      summary: Get All Scrape Status
+      description: Retrieve windowed scrape status (success/error counts in last 1m,
+        10m, and since start) for all active systems
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - systemId
+                    - thermo
+                    - heater
+                    - startedAt
+                  properties:
+                    systemId:
+                      description: System identifier
+                      type: string
+                    thermo:
+                      type: object
+                      required:
+                        - successLast1M
+                        - successLast10M
+                        - successTotal
+                        - errorsLast1M
+                        - errorsLast10M
+                        - errorsTotal
+                        - lastError
+                        - lastErrorMessage
+                        - errorCountPerChannel
+                      properties:
+                        successLast1M:
+                          description: Number of successful scrapes in the last 1 minute
+                          type: number
+                        successLast10M:
+                          description: Number of successful scrapes in the last 10 minutes
+                          type: number
+                        successTotal:
+                          description: Total number of successful scrapes since service start
+                          type: number
+                        errorsLast1M:
+                          description: Number of failed scrapes in the last 1 minute
+                          type: number
+                        errorsLast10M:
+                          description: Number of failed scrapes in the last 10 minutes
+                          type: number
+                        errorsTotal:
+                          description: Total number of failed scrapes since service start
+                          type: number
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if none
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        lastErrorMessage:
+                          nullable: true
+                          anyOf:
+                            - description: Message of the last error, or null if none
+                              type: string
+                            - type: "null"
+                        errorCountPerChannel:
+                          description: Mapping of channel number to cumulative error count for that
+                            channel
+                          type: object
+                          patternProperties:
+                            ^(.*)$:
+                              type: number
+                    heater:
+                      type: object
+                      required:
+                        - successLast1M
+                        - successLast10M
+                        - successTotal
+                        - errorsLast1M
+                        - errorsLast10M
+                        - errorsTotal
+                        - lastError
+                        - lastErrorMessage
+                        - errorCountPerChannel
+                      properties:
+                        successLast1M:
+                          description: Number of successful scrapes in the last 1 minute
+                          type: number
+                        successLast10M:
+                          description: Number of successful scrapes in the last 10 minutes
+                          type: number
+                        successTotal:
+                          description: Total number of successful scrapes since service start
+                          type: number
+                        errorsLast1M:
+                          description: Number of failed scrapes in the last 1 minute
+                          type: number
+                        errorsLast10M:
+                          description: Number of failed scrapes in the last 10 minutes
+                          type: number
+                        errorsTotal:
+                          description: Total number of failed scrapes since service start
+                          type: number
+                        lastError:
+                          nullable: true
+                          anyOf:
+                            - description: Timestamp of the last error, or null if none
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        lastErrorMessage:
+                          nullable: true
+                          anyOf:
+                            - description: Message of the last error, or null if none
+                              type: string
+                            - type: "null"
+                        errorCountPerChannel:
+                          description: Mapping of channel number to cumulative error count for that
+                            channel
+                          type: object
+                          patternProperties:
+                            ^(.*)$:
+                              type: number
+                    startedAt:
+                      description: UTC timestamp when this scraper was started
+                      format: date-time
+                      type: string
+  /scrape/status/{systemId}:
+    get:
+      tags:
+        - Scrape
+      operationId: getSystemScrapeStatus
+      summary: Get System Scrape Status
+      description: Retrieve windowed scrape status for a specific system by its ID
+      parameters:
+        - name: systemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - systemId
+                  - thermo
+                  - heater
+                  - startedAt
+                properties:
+                  systemId:
+                    description: System identifier
+                    type: string
+                  thermo:
+                    type: object
+                    required:
+                      - successLast1M
+                      - successLast10M
+                      - successTotal
+                      - errorsLast1M
+                      - errorsLast10M
+                      - errorsTotal
+                      - lastError
+                      - lastErrorMessage
+                      - errorCountPerChannel
+                    properties:
+                      successLast1M:
+                        description: Number of successful scrapes in the last 1 minute
+                        type: number
+                      successLast10M:
+                        description: Number of successful scrapes in the last 10 minutes
+                        type: number
+                      successTotal:
+                        description: Total number of successful scrapes since service start
+                        type: number
+                      errorsLast1M:
+                        description: Number of failed scrapes in the last 1 minute
+                        type: number
+                      errorsLast10M:
+                        description: Number of failed scrapes in the last 10 minutes
+                        type: number
+                      errorsTotal:
+                        description: Total number of failed scrapes since service start
+                        type: number
+                      lastError:
+                        nullable: true
+                        anyOf:
+                          - description: Timestamp of the last error, or null if none
+                            format: date-time
+                            type: string
+                          - type: "null"
+                      lastErrorMessage:
+                        nullable: true
+                        anyOf:
+                          - description: Message of the last error, or null if none
+                            type: string
+                          - type: "null"
+                      errorCountPerChannel:
+                        description: Mapping of channel number to cumulative error count for that
+                          channel
+                        type: object
+                        patternProperties:
+                          ^(.*)$:
+                            type: number
+                  heater:
+                    type: object
+                    required:
+                      - successLast1M
+                      - successLast10M
+                      - successTotal
+                      - errorsLast1M
+                      - errorsLast10M
+                      - errorsTotal
+                      - lastError
+                      - lastErrorMessage
+                      - errorCountPerChannel
+                    properties:
+                      successLast1M:
+                        description: Number of successful scrapes in the last 1 minute
+                        type: number
+                      successLast10M:
+                        description: Number of successful scrapes in the last 10 minutes
+                        type: number
+                      successTotal:
+                        description: Total number of successful scrapes since service start
+                        type: number
+                      errorsLast1M:
+                        description: Number of failed scrapes in the last 1 minute
+                        type: number
+                      errorsLast10M:
+                        description: Number of failed scrapes in the last 10 minutes
+                        type: number
+                      errorsTotal:
+                        description: Total number of failed scrapes since service start
+                        type: number
+                      lastError:
+                        nullable: true
+                        anyOf:
+                          - description: Timestamp of the last error, or null if none
+                            format: date-time
+                            type: string
+                          - type: "null"
+                      lastErrorMessage:
+                        nullable: true
+                        anyOf:
+                          - description: Message of the last error, or null if none
+                            type: string
+                          - type: "null"
+                      errorCountPerChannel:
+                        description: Mapping of channel number to cumulative error count for that
+                          channel
+                        type: object
+                        patternProperties:
+                          ^(.*)$:
+                            type: number
+                  startedAt:
+                    description: UTC timestamp when this scraper was started
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /systems/:
+    get:
+      tags:
+        - Systems
+      operationId: listSystems
+      summary: List Systems
+      description: List all registered systems with their thermometers and heaters
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                    - id
+                    - displayName
+                    - location
+                    - thermoUrl
+                    - heaterUrl
+                    - enabled
+                    - thermos
+                    - heaters
+                    - createdAt
+                    - updatedAt
+                  properties:
+                    id:
+                      description: Unique system slug, e.g. lab-2005
+                      type: string
+                    displayName:
+                      description: Human-readable system name
+                      type: string
+                    location:
+                      nullable: true
+                      anyOf:
+                        - description: Physical location description
+                          type: string
+                        - type: "null"
+                    thermoUrl:
+                      description: Base URL to thermo/ls-api instance
+                      type: string
+                    heaterUrl:
+                      description: Base URL to heater-api instance
+                      type: string
+                    enabled:
+                      description: Whether scraping is enabled
+                      type: boolean
+                    thermos:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - channel
+                          - label
+                        properties:
+                          channel:
+                            description: Thermometer channel number
+                            type: number
+                          label:
+                            nullable: true
+                            anyOf:
+                              - description: Display label for this thermometer
+                                type: string
+                              - type: "null"
+                    heaters:
+                      type: array
+                      items:
+                        type: object
+                        required:
+                          - channel
+                          - label
+                        properties:
+                          channel:
+                            description: Heater channel number
+                            type: number
+                          label:
+                            nullable: true
+                            anyOf:
+                              - description: Display label for this heater
+                                type: string
+                              - type: "null"
+                    createdAt:
+                      description: Creation timestamp
+                      format: date-time
+                      type: string
+                    updatedAt:
+                      description: Last update timestamp
+                      format: date-time
+                      type: string
+    post:
+      tags:
+        - Systems
+      operationId: createSystem
+      summary: Create System
+      description: Register a new system with thermometers and heaters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - id
+                - displayName
+                - thermoUrl
+                - heaterUrl
+                - thermos
+                - heaters
+              properties:
+                id:
+                  description: Unique system slug
+                  type: string
+                displayName:
+                  description: Human-readable name
+                  type: string
+                location:
+                  nullable: true
+                  anyOf:
+                    - description: Physical location
+                      type: string
+                    - type: "null"
+                thermoUrl:
+                  description: Base URL to thermo/ls-api
+                  type: string
+                heaterUrl:
+                  description: Base URL to heater-api
+                  type: string
+                enabled:
+                  default: true
+                  type: boolean
+                thermos:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Thermometer channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this thermometer
+                            type: string
+                          - type: "null"
+                heaters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Heater channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this heater
+                            type: string
+                          - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "409":
+          description: Response for status 409
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "422":
+          description: Response for status 422
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /systems/{id}:
+    get:
+      tags:
+        - Systems
+      operationId: getSystem
+      summary: Get System
+      description: Get a single system by ID with its thermometers and heaters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    put:
+      tags:
+        - Systems
+      operationId: updateSystem
+      summary: Update System
+      description: Update an existing system. Thermos/heaters are replaced if provided.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                location:
+                  nullable: true
+                  anyOf:
+                    - type: string
+                    - type: "null"
+                thermoUrl:
+                  type: string
+                heaterUrl:
+                  type: string
+                enabled:
+                  type: boolean
+                thermos:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Thermometer channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this thermometer
+                            type: string
+                          - type: "null"
+                heaters:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - channel
+                      - label
+                    properties:
+                      channel:
+                        description: Heater channel number
+                        type: number
+                      label:
+                        nullable: true
+                        anyOf:
+                          - description: Display label for this heater
+                            type: string
+                          - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - displayName
+                  - location
+                  - thermoUrl
+                  - heaterUrl
+                  - enabled
+                  - thermos
+                  - heaters
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    description: Unique system slug, e.g. lab-2005
+                    type: string
+                  displayName:
+                    description: Human-readable system name
+                    type: string
+                  location:
+                    nullable: true
+                    anyOf:
+                      - description: Physical location description
+                        type: string
+                      - type: "null"
+                  thermoUrl:
+                    description: Base URL to thermo/ls-api instance
+                    type: string
+                  heaterUrl:
+                    description: Base URL to heater-api instance
+                    type: string
+                  enabled:
+                    description: Whether scraping is enabled
+                    type: boolean
+                  thermos:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Thermometer channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this thermometer
+                              type: string
+                            - type: "null"
+                  heaters:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - channel
+                        - label
+                      properties:
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        label:
+                          nullable: true
+                          anyOf:
+                            - description: Display label for this heater
+                              type: string
+                            - type: "null"
+                  createdAt:
+                    description: Creation timestamp
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    description: Last update timestamp
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "422":
+          description: Response for status 422
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Systems
+      operationId: deleteSystem
+      summary: Delete System
+      description: Delete a system and all its associated thermometers and heaters
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /experiments/:
+    get:
+      tags:
+        - Experiments
+      operationId: listExperiments
+      summary: List Experiments
+      description: List experiments with optional filters by system, channel, status,
+        name, and start-time range. Sorted by startedAt desc.
+      parameters:
+        - name: systemId
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: channel
+          in: query
+          required: false
+          schema:
+            type: number
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - running
+              - completed
+              - aborted
+        - name: nameContains
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: startedAfter
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: startedBefore
+          in: query
+          required: false
+          schema:
+            anyOf:
+              - type: Date
+              - format: date-time
+                type: string
+              - format: date
+                type: string
+              - type: number
+        - name: limit
+          in: query
+          required: false
+          schema:
+            minimum: 1
+            maximum: 200
+            default: 50
+            type: number
+        - name: offset
+          in: query
+          required: false
+          schema:
+            minimum: 0
+            default: 0
+            type: number
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - total
+                  - experiments
+                properties:
+                  total:
+                    description: Total experiments matching the filter
+                    type: number
+                  experiments:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                        - id
+                        - name
+                        - systemId
+                        - channel
+                        - status
+                        - startedAt
+                        - endedAt
+                        - startSetpoint
+                        - startKp
+                        - startKi
+                        - startKd
+                        - stopReason
+                        - stopDetail
+                        - notes
+                        - createdAt
+                        - updatedAt
+                      properties:
+                        id:
+                          format: uuid
+                          description: Experiment id
+                          type: string
+                        name:
+                          description: User-supplied experiment name
+                          type: string
+                        systemId:
+                          description: System id
+                          type: string
+                        channel:
+                          description: Heater channel number
+                          type: number
+                        status:
+                          type: string
+                          enum:
+                            - running
+                            - completed
+                            - aborted
+                        startedAt:
+                          description: When the experiment (and PID) started
+                          format: date-time
+                          type: string
+                        endedAt:
+                          nullable: true
+                          anyOf:
+                            - description: When the experiment ended; null while running
+                              format: date-time
+                              type: string
+                            - type: "null"
+                        startSetpoint:
+                          nullable: true
+                          anyOf:
+                            - description: Target temp °C captured at start
+                              type: number
+                            - type: "null"
+                        startKp:
+                          nullable: true
+                          anyOf:
+                            - description: Kp captured at start
+                              type: number
+                            - type: "null"
+                        startKi:
+                          nullable: true
+                          anyOf:
+                            - description: Ki captured at start
+                              type: number
+                            - type: "null"
+                        startKd:
+                          nullable: true
+                          anyOf:
+                            - description: Kd captured at start
+                              type: number
+                            - type: "null"
+                        stopReason:
+                          nullable: true
+                          anyOf:
+                            - anyOf:
+                                - const: manual
+                                  type: string
+                                - const: overheat
+                                  type: string
+                                - const: sensor_timeout
+                                  type: string
+                                - const: external_stop
+                                  type: string
+                            - type: "null"
+                        stopDetail:
+                          nullable: true
+                          anyOf:
+                            - type: string
+                            - type: "null"
+                        notes:
+                          nullable: true
+                          anyOf:
+                            - type: string
+                            - type: "null"
+                        createdAt:
+                          format: date-time
+                          type: string
+                        updatedAt:
+                          format: date-time
+                          type: string
+    post:
+      tags:
+        - Experiments
+      operationId: startExperiment
+      summary: Start Experiment
+      description: Create an experiment and start the PID loop. Captures setpoint and
+        Kp/Ki/Kd as the experiment's start snapshot. Refuses if PID is already
+        active or another experiment is running on the same channel.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - systemId
+                - channel
+              properties:
+                name:
+                  minLength: 1
+                  description: Experiment name
+                  type: string
+                systemId:
+                  type: string
+                channel:
+                  type: number
+                notes:
+                  nullable: true
+                  anyOf:
+                    - type: string
+                    - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                  - systemId
+                  - channel
+                  - status
+                  - startedAt
+                  - endedAt
+                  - startSetpoint
+                  - startKp
+                  - startKi
+                  - startKd
+                  - stopReason
+                  - stopDetail
+                  - notes
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    format: uuid
+                    description: Experiment id
+                    type: string
+                  name:
+                    description: User-supplied experiment name
+                    type: string
+                  systemId:
+                    description: System id
+                    type: string
+                  channel:
+                    description: Heater channel number
+                    type: number
+                  status:
+                    type: string
+                    enum:
+                      - running
+                      - completed
+                      - aborted
+                  startedAt:
+                    description: When the experiment (and PID) started
+                    format: date-time
+                    type: string
+                  endedAt:
+                    nullable: true
+                    anyOf:
+                      - description: When the experiment ended; null while running
+                        format: date-time
+                        type: string
+                      - type: "null"
+                  startSetpoint:
+                    nullable: true
+                    anyOf:
+                      - description: Target temp °C captured at start
+                        type: number
+                      - type: "null"
+                  startKp:
+                    nullable: true
+                    anyOf:
+                      - description: Kp captured at start
+                        type: number
+                      - type: "null"
+                  startKi:
+                    nullable: true
+                    anyOf:
+                      - description: Ki captured at start
+                        type: number
+                      - type: "null"
+                  startKd:
+                    nullable: true
+                    anyOf:
+                      - description: Kd captured at start
+                        type: number
+                      - type: "null"
+                  stopReason:
+                    nullable: true
+                    anyOf:
+                      - anyOf:
+                          - const: manual
+                            type: string
+                          - const: overheat
+                            type: string
+                          - const: sensor_timeout
+                            type: string
+                          - const: external_stop
+                            type: string
+                      - type: "null"
+                  stopDetail:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  notes:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  createdAt:
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "409":
+          description: Response for status 409
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "502":
+          description: Response for status 502
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /experiments/active:
+    get:
+      tags:
+        - Experiments
+      operationId: getActiveExperiment
+      summary: Get Active Experiment
+      description: Return the currently running experiment for a given (systemId,
+        channel), or null if none.
+      parameters:
+        - name: systemId
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: channel
+          in: query
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - experiment
+                properties:
+                  experiment:
+                    nullable: true
+                    anyOf:
+                      - type: object
+                        required:
+                          - id
+                          - name
+                          - systemId
+                          - channel
+                          - status
+                          - startedAt
+                          - endedAt
+                          - startSetpoint
+                          - startKp
+                          - startKi
+                          - startKd
+                          - stopReason
+                          - stopDetail
+                          - notes
+                          - createdAt
+                          - updatedAt
+                        properties:
+                          id:
+                            format: uuid
+                            description: Experiment id
+                            type: string
+                          name:
+                            description: User-supplied experiment name
+                            type: string
+                          systemId:
+                            description: System id
+                            type: string
+                          channel:
+                            description: Heater channel number
+                            type: number
+                          status:
+                            anyOf:
+                              - const: running
+                                type: string
+                              - const: completed
+                                type: string
+                              - const: aborted
+                                type: string
+                          startedAt:
+                            description: When the experiment (and PID) started
+                            format: date-time
+                            type: string
+                          endedAt:
+                            nullable: true
+                            anyOf:
+                              - description: When the experiment ended; null while running
+                                format: date-time
+                                type: string
+                              - type: "null"
+                          startSetpoint:
+                            nullable: true
+                            anyOf:
+                              - description: Target temp °C captured at start
+                                type: number
+                              - type: "null"
+                          startKp:
+                            nullable: true
+                            anyOf:
+                              - description: Kp captured at start
+                                type: number
+                              - type: "null"
+                          startKi:
+                            nullable: true
+                            anyOf:
+                              - description: Ki captured at start
+                                type: number
+                              - type: "null"
+                          startKd:
+                            nullable: true
+                            anyOf:
+                              - description: Kd captured at start
+                                type: number
+                              - type: "null"
+                          stopReason:
+                            nullable: true
+                            anyOf:
+                              - anyOf:
+                                  - const: manual
+                                    type: string
+                                  - const: overheat
+                                    type: string
+                                  - const: sensor_timeout
+                                    type: string
+                                  - const: external_stop
+                                    type: string
+                              - type: "null"
+                          stopDetail:
+                            nullable: true
+                            anyOf:
+                              - type: string
+                              - type: "null"
+                          notes:
+                            nullable: true
+                            anyOf:
+                              - type: string
+                              - type: "null"
+                          createdAt:
+                            format: date-time
+                            type: string
+                          updatedAt:
+                            format: date-time
+                            type: string
+                      - type: "null"
+  /experiments/{id}:
+    get:
+      tags:
+        - Experiments
+      operationId: getExperiment
+      summary: Get Experiment
+      description: Get a single experiment by id.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                  - systemId
+                  - channel
+                  - status
+                  - startedAt
+                  - endedAt
+                  - startSetpoint
+                  - startKp
+                  - startKi
+                  - startKd
+                  - stopReason
+                  - stopDetail
+                  - notes
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    format: uuid
+                    description: Experiment id
+                    type: string
+                  name:
+                    description: User-supplied experiment name
+                    type: string
+                  systemId:
+                    description: System id
+                    type: string
+                  channel:
+                    description: Heater channel number
+                    type: number
+                  status:
+                    type: string
+                    enum:
+                      - running
+                      - completed
+                      - aborted
+                  startedAt:
+                    description: When the experiment (and PID) started
+                    format: date-time
+                    type: string
+                  endedAt:
+                    nullable: true
+                    anyOf:
+                      - description: When the experiment ended; null while running
+                        format: date-time
+                        type: string
+                      - type: "null"
+                  startSetpoint:
+                    nullable: true
+                    anyOf:
+                      - description: Target temp °C captured at start
+                        type: number
+                      - type: "null"
+                  startKp:
+                    nullable: true
+                    anyOf:
+                      - description: Kp captured at start
+                        type: number
+                      - type: "null"
+                  startKi:
+                    nullable: true
+                    anyOf:
+                      - description: Ki captured at start
+                        type: number
+                      - type: "null"
+                  startKd:
+                    nullable: true
+                    anyOf:
+                      - description: Kd captured at start
+                        type: number
+                      - type: "null"
+                  stopReason:
+                    nullable: true
+                    anyOf:
+                      - anyOf:
+                          - const: manual
+                            type: string
+                          - const: overheat
+                            type: string
+                          - const: sensor_timeout
+                            type: string
+                          - const: external_stop
+                            type: string
+                      - type: "null"
+                  stopDetail:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  notes:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  createdAt:
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    patch:
+      tags:
+        - Experiments
+      operationId: updateExperiment
+      summary: Update Experiment
+      description: Update an experiment's name or notes (no other fields).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  minLength: 1
+                  type: string
+                notes:
+                  nullable: true
+                  anyOf:
+                    - type: string
+                    - type: "null"
+        required: true
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                  - systemId
+                  - channel
+                  - status
+                  - startedAt
+                  - endedAt
+                  - startSetpoint
+                  - startKp
+                  - startKi
+                  - startKd
+                  - stopReason
+                  - stopDetail
+                  - notes
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    format: uuid
+                    description: Experiment id
+                    type: string
+                  name:
+                    description: User-supplied experiment name
+                    type: string
+                  systemId:
+                    description: System id
+                    type: string
+                  channel:
+                    description: Heater channel number
+                    type: number
+                  status:
+                    type: string
+                    enum:
+                      - running
+                      - completed
+                      - aborted
+                  startedAt:
+                    description: When the experiment (and PID) started
+                    format: date-time
+                    type: string
+                  endedAt:
+                    nullable: true
+                    anyOf:
+                      - description: When the experiment ended; null while running
+                        format: date-time
+                        type: string
+                      - type: "null"
+                  startSetpoint:
+                    nullable: true
+                    anyOf:
+                      - description: Target temp °C captured at start
+                        type: number
+                      - type: "null"
+                  startKp:
+                    nullable: true
+                    anyOf:
+                      - description: Kp captured at start
+                        type: number
+                      - type: "null"
+                  startKi:
+                    nullable: true
+                    anyOf:
+                      - description: Ki captured at start
+                        type: number
+                      - type: "null"
+                  startKd:
+                    nullable: true
+                    anyOf:
+                      - description: Kd captured at start
+                        type: number
+                      - type: "null"
+                  stopReason:
+                    nullable: true
+                    anyOf:
+                      - anyOf:
+                          - const: manual
+                            type: string
+                          - const: overheat
+                            type: string
+                          - const: sensor_timeout
+                            type: string
+                          - const: external_stop
+                            type: string
+                      - type: "null"
+                  stopDetail:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  notes:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  createdAt:
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+    delete:
+      tags:
+        - Experiments
+      operationId: deleteExperiment
+      summary: Delete Experiment
+      description: Delete a non-running experiment. Refuses to delete a running one.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - success
+                properties:
+                  success:
+                    type: boolean
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "409":
+          description: Response for status 409
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+  /experiments/{id}/stop:
+    post:
+      tags:
+        - Experiments
+      operationId: stopExperiment
+      summary: Stop Experiment
+      description: Stop a running experiment. Calls the heater PID stop endpoint and
+        finalizes the experiment row.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Response for status 200
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - name
+                  - systemId
+                  - channel
+                  - status
+                  - startedAt
+                  - endedAt
+                  - startSetpoint
+                  - startKp
+                  - startKi
+                  - startKd
+                  - stopReason
+                  - stopDetail
+                  - notes
+                  - createdAt
+                  - updatedAt
+                properties:
+                  id:
+                    format: uuid
+                    description: Experiment id
+                    type: string
+                  name:
+                    description: User-supplied experiment name
+                    type: string
+                  systemId:
+                    description: System id
+                    type: string
+                  channel:
+                    description: Heater channel number
+                    type: number
+                  status:
+                    type: string
+                    enum:
+                      - running
+                      - completed
+                      - aborted
+                  startedAt:
+                    description: When the experiment (and PID) started
+                    format: date-time
+                    type: string
+                  endedAt:
+                    nullable: true
+                    anyOf:
+                      - description: When the experiment ended; null while running
+                        format: date-time
+                        type: string
+                      - type: "null"
+                  startSetpoint:
+                    nullable: true
+                    anyOf:
+                      - description: Target temp °C captured at start
+                        type: number
+                      - type: "null"
+                  startKp:
+                    nullable: true
+                    anyOf:
+                      - description: Kp captured at start
+                        type: number
+                      - type: "null"
+                  startKi:
+                    nullable: true
+                    anyOf:
+                      - description: Ki captured at start
+                        type: number
+                      - type: "null"
+                  startKd:
+                    nullable: true
+                    anyOf:
+                      - description: Kd captured at start
+                        type: number
+                      - type: "null"
+                  stopReason:
+                    nullable: true
+                    anyOf:
+                      - anyOf:
+                          - const: manual
+                            type: string
+                          - const: overheat
+                            type: string
+                          - const: sensor_timeout
+                            type: string
+                          - const: external_stop
+                            type: string
+                      - type: "null"
+                  stopDetail:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  notes:
+                    nullable: true
+                    anyOf:
+                      - type: string
+                      - type: "null"
+                  createdAt:
+                    format: date-time
+                    type: string
+                  updatedAt:
+                    format: date-time
+                    type: string
+        "404":
+          description: Response for status 404
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Response for status 500
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+components:
+  schemas: {}

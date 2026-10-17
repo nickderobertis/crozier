@@ -597,3 +597,9 @@ Additional hosted-API specifications:
     The repository's LICENSE at that revision permits redistribution under
     MIT; corpus row 2802 records the immutable reference. The unmodified
     source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Rice Shower (LT Capstone) API: the publisher's own description at
+    https://raw.githubusercontent.com/Q2TM/low-temperature-control/b100b3633a68a41ba63181379455e98b4814da19/apps/rice-shower/docs/openapi.yaml.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2803 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.

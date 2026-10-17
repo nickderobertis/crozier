@@ -1797,3 +1797,24 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2802 | `langchain-agent-server` | union-item request examples rendered as variant constructors; a collapsed two-string `anyOf` property keeping its description (`collapsed-anyof-property-description`) | ✅ byte-matched after this node's repair; its other differences are catalogued departures |
+
+## Row 2803 — a lab-control document with nullable and query-array parameters
+
+The Rice Shower low-temperature control API its publisher ships in
+`Q2TM/low-temperature-control`. `createSystem`'s inline body property
+`location` is a nullable `anyOf` whose string member carries the description;
+crozier now writes that description in the docstrings and `reference.md`, as
+Fern does. The metrics queries' required `channels` array is lowered to an
+optional parameter and left out of the usage examples on both sides.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#rice-shower).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2803 | `rice-shower` | github-raw | https://raw.githubusercontent.com/Q2TM/low-temperature-control/b100b3633a68a41ba63181379455e98b4814da19/apps/rice-shower/docs/openapi.yaml | `b100b3633a68a41ba63181379455e98b4814da19` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The Rice Shower low-temperature control API (experiments, query, scrape, systems), whose `createSystem` body declares a nullable described `anyOf` property and whose metrics queries require a number-array `channels` parameter |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2803 | `rice-shower` | a nullable `anyOf` member's description documented on its property; a required query array lowered to an optional parameter | ✅ byte-matched after this node's repairs |
