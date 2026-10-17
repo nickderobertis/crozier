@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.20.0",
+  "corpus_spec_name": "dystore-api",
+  "corpus_spec_ref": "ffd4d907e6909b0e2b137a490765e144e8d537e7",
+  "corpus_spec_url": "https://raw.githubusercontent.com/dystcz/dystore-api/ffd4d907e6909b0e2b137a490765e144e8d537e7/openapi.yaml"
+}

@@ -855,6 +855,12 @@
     "tests/fixtures/dnd5eapi.co/expected": {},
     "tests/fixtures/docu-goapiserver/expected": {},
     "tests/fixtures/dot-ai/expected": {},
+    "tests/fixtures/dystore-api/expected": {},
+    "tests/fixtures/dystore-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ego-microservices/expected": {},
     "tests/fixtures/electric-sql/expected": {},
     "tests/fixtures/embedpdf-cloudpdf/expected": {},

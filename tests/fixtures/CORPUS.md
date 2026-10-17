@@ -1751,3 +1751,25 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2800 | `vocode-core` | flattened request types and their variants' `action_trigger` references | ✅ byte-matched with no repair of its own |
+
+## Row 2801 — a storefront document with an emoji-bearing tag
+
+The Lunar storefront API its publisher ships in `dystcz/dystore-api` tags a
+group of operations `⚠️ Not supported yet`. Fern's `reference.md` spells that
+group with the raw emoji in its calls, links and imports, which no Python
+identifier admits, while crozier documents the identifier-safe
+`not_supported_yet` its code defines: the catalogued
+`emoji-tag-reference-identifiers` departure. Every other file matches Fern's
+output byte for byte.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#dystore).
+The document declares no `info.license`; the repository's `LICENSE.md` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2801 | `dystore-api` | github-raw | https://raw.githubusercontent.com/dystcz/dystore-api/ffd4d907e6909b0e2b137a490765e144e8d537e7/openapi.yaml | `ffd4d907e6909b0e2b137a490765e144e8d537e7` | MIT (the publisher repository's own `LICENSE.md`; the document declares no `info.license`) | committed | The Lunar storefront API (accounts, addresses, carts, collections, customers, media, orders, products, shipping options), whose `⚠️ Not supported yet` tag groups operations under an emoji-bearing name |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2801 | `dystore-api` | an emoji-bearing tag documented by its identifier-safe client attribute (`emoji-tag-reference-identifiers`) | ✅ byte-matched; its one difference is the catalogued departure |

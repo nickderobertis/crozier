@@ -9497,6 +9497,7 @@ const CORPORA: &[&Corpus] = &[
     &GOOGLEAPIS_SPEECH_V2BETA1,
     &GOOGLEAPIS_YOUTUBEANALYTICS_V1,
     &VOCODE_CORE,
+    &DYSTORE_API,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12618,6 +12619,20 @@ const VOCODE_CORE: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `dystore-api`: corpus row 2801, the Lunar storefront API,
+/// whose emoji-bearing `⚠️ Not supported yet` tag `reference.md` documents by
+/// its identifier-safe client attribute.
+const DYSTORE_API: Corpus = Corpus {
+    api: "dystore-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
 /// revision declaring `x-fern-streaming`: two `stream-condition` operations with
 /// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
@@ -13407,6 +13422,13 @@ fn zylon_private_gpt_matches_fern_output() {
 #[test]
 fn vocode_core_matches_fern_output() {
     assert_committed_corpus_matches(&VOCODE_CORE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn dystore_api_matches_fern_output() {
+    assert_committed_corpus_matches(&DYSTORE_API);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

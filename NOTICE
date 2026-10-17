@@ -578,10 +578,16 @@ Additional examples and documentation specifications:
     corpus row 2201 records the immutable reference. The unmodified source and
     Fern-generated output are vendored, with Python comments stripped as above.
 
-Additional hosted-API specification:
+Additional hosted-API specifications:
 
   * Vocode Hosted API: the publisher's own description at
     https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json.
     The repository's LICENSE at that revision permits redistribution under
     MIT; corpus row 2800 records the immutable reference. The unmodified source
     and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Lunar API (dystore): the publisher's own description at
+    https://raw.githubusercontent.com/dystcz/dystore-api/ffd4d907e6909b0e2b137a490765e144e8d537e7/openapi.yaml.
+    The repository's LICENSE.md at that revision permits redistribution under
+    MIT; corpus row 2801 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
