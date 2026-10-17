@@ -1,0 +1,15 @@
+
+
+import typing
+
+from .join_thread_stream_threads_thread_id_stream_get_request_stream_modes_one_item import (
+    JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModesOneItem,
+)
+from .join_thread_stream_threads_thread_id_stream_get_request_stream_modes_zero import (
+    JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModesZero,
+)
+
+JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes = typing.Union[
+    JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModesZero,
+    typing.List[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModesOneItem],
+]

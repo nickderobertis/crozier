@@ -968,6 +968,12 @@
     },
     "tests/fixtures/kytos-sdntrace-cp/expected": {},
     "tests/fixtures/langchain-agent-protocol/expected": {},
+    "tests/fixtures/langchain-agent-server/expected": {},
+    "tests/fixtures/langchain-agent-server/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/letta/expected": {},
     "tests/fixtures/listennotes/expected": {},
     "tests/fixtures/livepeer-ai-runner/expected": {},

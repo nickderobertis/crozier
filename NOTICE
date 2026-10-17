@@ -591,3 +591,9 @@ Additional hosted-API specifications:
     The repository's LICENSE.md at that revision permits redistribution under
     MIT; corpus row 2801 records the immutable reference. The unmodified
     source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * LangSmith Deployment (Agent Server) API: the publisher's own description at
+    https://raw.githubusercontent.com/langchain-ai/docs/264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e/src/langsmith/agent-server-openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2802 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.

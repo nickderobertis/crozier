@@ -1773,3 +1773,27 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2801 | `dystore-api` | an emoji-bearing tag documented by its identifier-safe client attribute (`emoji-tag-reference-identifiers`) | ✅ byte-matched; its one difference is the catalogued departure |
+
+## Row 2802 — an agent-server document with union-item examples
+
+The LangSmith Deployment agent-server API its publisher ships in
+`langchain-ai/docs`. Its `POST /a2a/{assistant_id}` example holds items of an
+inline `oneOf` of titled objects each tagged by a one-value `kind` enum, which
+crozier now renders, as Fern does, as the union's variant constructors. The
+required `assistant_id` property, an `anyOf` of two strings that both collapse
+to `str`, keeps its declared description in crozier's docstrings and
+`reference.md` where Fern writes none: the catalogued
+`collapsed-anyof-property-description` departure. Its streaming methods' `reference.md`
+headings take the catalogued `stream-reference-return-type` correction.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#langchain).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2802 | `langchain-agent-server` | github-raw | https://raw.githubusercontent.com/langchain-ai/docs/264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e/src/langsmith/agent-server-openapi.json | `264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The LangSmith Deployment agent-server API (assistants, threads, thread and stateless runs, crons, store, streaming, system, A2A, MCP), whose A2A request example holds `kind`-tagged union items and whose run and cron bodies declare `assistant_id` as a two-string `anyOf` |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2802 | `langchain-agent-server` | union-item request examples rendered as variant constructors; a collapsed two-string `anyOf` property keeping its description (`collapsed-anyof-property-description`) | ✅ byte-matched after this node's repair; its other differences are catalogued departures |

@@ -70,6 +70,8 @@ const KINDS: &[Kind] = &[
     //   request types and their action variants in a publisher's document.
     // - `dystore-api`: no enum reaches its tree, so its literals tree differs
     //   only in the generator record and the absent `core/enum.py`.
+    // - `langchain-agent-server`: inline array-item and property enums of an agent
+    //   server's run, stream and protocol models.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -89,6 +91,7 @@ const KINDS: &[Kind] = &[
             "googleapis-youtubeanalytics-v1",
             "vocode-core",
             "dystore-api",
+            "langchain-agent-server",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which
