@@ -16039,6 +16039,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
             copy(row["evidence"].partition("#")[0])
             if row["diff"] != module.NONE:
                 copy(str(module.WITNESSES.parent / row["diff"]))
+            if row["status"] == module.WitnessStatus.REGISTERED:
+                (cls.base / "tests/fixtures" / row["corpus"].split("`")[1] / "expected").mkdir(parents=True)
 
     def mirror(self) -> Path:
         root = Path(tempfile.mkdtemp())
@@ -16094,6 +16096,46 @@ class ScenarioProofIndexTests(unittest.TestCase):
             encoding="utf-8",
         )
         return root, opened
+
+    def differing_mirror(self, root: Path | None = None, owned: bool = True) -> tuple[Path, dict[str, str], str]:
+        """`root` (a fresh mirror by default) with one handed-off witness whose comparison still
+        differs, recorded as `witnesses.tsv` records one: its committed diff and the residual rows
+        attributing each hunk. When `owned`, a closed real shape owns its first hunk, so that
+        shape's `open` cell names the witness and its `closer` the parity node closing it; the
+        second hunk is unowned. No committed witness differs."""
+        module = self.index_script
+        root = root or self.mirror()
+        witness = "lighthouse"
+        diff = root / module.WITNESSES.parent / f"{witness}.diff"
+        diff.write_text(
+            "# crozier compare: crozier.yml python\n"
+            "# normalized diff: `-` reference, `+` crozier\n\n"
+            "--- reference/reference.md\n"
+            "+++ crozier/reference.md\n"
+            "      \u22ee (3 unchanged line(s))\n"
+            "  client.beacons.list(\n"
+            '-     region="region",\n'
+            '+     region="north-sea",\n'
+            "  )\n"
+            "      \u22ee (10 unchanged line(s))\n"
+            "+ **region:** `str` \u2014 The sea area\n",
+            encoding="utf-8",
+        )
+        first, second = module.diff_hunks(diff.read_text(encoding="utf-8"))
+        rows, _ = module.read_tsv(root / module.INDEX, module.INDEX_HEADER)
+        row = next(row for row in rows if row["kind"] == "real" and row["open"] == module.NONE)
+        opened = {**row, "open": witness, "closer": f"{module.ParityNode.EXAMPLES_DOCS}:{row['shape']}"}
+        if owned:
+            self.rewrite(root / module.INDEX, self.line(row), self.line(opened))
+        evidence = f"{module.WITNESSES.parent}/README.md"
+        with (root / module.WITNESSES).open("a", encoding="utf-8") as listed:
+            listed.write(
+                f"{witness}\tbeacon/lighthouse:openapi.yml\t{'0' * 40}\t{'0' * 64}\tdiffers\t—\t{witness}.diff\t{evidence}\n"
+            )
+        with (root / module.RESIDUALS).open("a", encoding="utf-8") as residuals:
+            for hunk, owner in ((first, row["shape"] if owned else module.UNOWNED), (second, module.UNOWNED)):
+                residuals.write(f"{witness}\t{hunk.file}\t{hunk.spelling}\t{owner}\tGET /beacons region example\n")
+        return root, opened, witness
 
     def assert_fails(self, root: Path, message: str) -> None:
         failures = self.index_script.check(root)
@@ -16153,7 +16195,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
         root = self.mirror()
         witnesses, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
         line = "\t".join(witnesses[0][column] for column in module.WITNESS_HEADER)
-        self.rewrite(root / module.WITNESSES, line, line.replace("\tdiffers\t", "\tpending\t"))
+        self.rewrite(root / module.WITNESSES, line, line.replace(f"\t{witnesses[0]['status']}\t", "\tpending\t"))
         self.assert_fails(root, "status pending is neither registered nor differs")
 
     def test_a_golden_removed_or_dropped_from_the_gate_fails(self) -> None:
@@ -16624,7 +16666,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
 
     def test_every_differing_witness_hunk_is_attributed_exactly_once(self) -> None:
         module = self.index_script
-        root = self.mirror()
+        root, _, _ = self.differing_mirror()
+        self.assertEqual([], module.check(root))
         residuals = root / module.RESIDUALS
         lines = residuals.read_text(encoding="utf-8").splitlines(keepends=True)
         witness, file, hunks, owner, _shape = lines[1].rstrip("\n").split("\t")
@@ -16651,7 +16694,7 @@ class ScenarioProofIndexTests(unittest.TestCase):
     def test_the_open_cell_is_exactly_the_shapes_committed_residuals(self) -> None:
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
-        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        _, witnessed, _ = self.differing_mirror()
         _, python_enums = self.python_enums_mirror()
         closed = next(row for row in rows if row["open"] == module.NONE and row["kind"] == "handwritten")
         cases = {
@@ -16684,6 +16727,8 @@ class ScenarioProofIndexTests(unittest.TestCase):
         for name, (mutate, message) in cases.items():
             with self.subTest(case=name):
                 root, _ = self.python_enums_mirror()
+                self.differing_mirror(root)
+                self.assertEqual([], module.check(root))
                 mutate(root)
                 self.assert_fails(root, message)
         lines, failures = module.summary(REPO)
@@ -16694,9 +16739,9 @@ class ScenarioProofIndexTests(unittest.TestCase):
     def test_each_open_residual_names_the_parity_node_closing_it(self) -> None:
         module = self.index_script
         rows, _ = module.read_tsv(REPO / module.INDEX, module.INDEX_HEADER)
-        witnessed = next(row for row in rows if row["open"] not in (module.NONE, module.PYTHON_ENUMS))
+        differing, witnessed, _ = self.differing_mirror()
         seeded, python_enums = self.python_enums_mirror()
-        closed = next(row for row in rows if row["open"] == module.NONE)
+        closed = next(row for row in rows if row["open"] == module.NONE and row["shape"] != witnessed["shape"])
         cases = {
             "closer dropped": (
                 self.edited(witnessed, closer=module.NONE),
@@ -16718,12 +16763,12 @@ class ScenarioProofIndexTests(unittest.TestCase):
         original = {"closer dropped": witnessed, "closer on a fully closed shape": closed}
         for name, (line, message) in cases.items():
             with self.subTest(case=name):
-                root = self.mirror()
+                root, _, _ = self.differing_mirror()
                 self.rewrite(root / module.INDEX, self.line(original.get(name, witnessed)), line)
                 self.assert_fails(root, message)
-        lines, failures = module.summary(REPO)
+        lines, failures = module.summary(differing)
         self.assertEqual([], failures)
-        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        residuals, _ = module.read_tsv(differing / module.RESIDUALS, module.RESIDUAL_HEADER)
         cited = "; ".join(
             f"{row['witness']} {row['file']} {', '.join(row['hunks'].split(';'))}"
             for row in residuals
@@ -16740,11 +16785,11 @@ class ScenarioProofIndexTests(unittest.TestCase):
 
     def test_a_registered_witness_names_its_corpus_row_and_no_residual(self) -> None:
         module = self.index_script
-        root = self.mirror()
+        root, _, witness = self.differing_mirror(owned=False)
         witnesses = root / module.WITNESSES
         residuals = root / module.RESIDUALS
         rows, _ = module.read_tsv(witnesses, module.WITNESS_HEADER)
-        row = rows[0]
+        row = next(row for row in rows if row["witness"] == witness)
         line = "\t".join(row[column] for column in module.WITNESS_HEADER)
         registered = "\t".join(
             {**row, "status": "registered", "corpus": "332 `netgsm-sms`", "diff": module.NONE}[column]
@@ -16767,18 +16812,15 @@ class ScenarioProofIndexTests(unittest.TestCase):
 
     def test_the_hunks_command_prints_what_residuals_cite(self) -> None:
         module = self.index_script
-        rows, _ = module.read_tsv(REPO / module.WITNESSES, module.WITNESS_HEADER)
-        diff = REPO / module.WITNESSES.parent / rows[0]["diff"]
+        root, _, witness = self.differing_mirror()
+        diff = root / module.WITNESSES.parent / f"{witness}.diff"
         run = self.run_script("hunks", str(diff))
         self.assertEqual(0, run.returncode, run.stderr)
         printed = [tuple(line.split("\t")) for line in run.stdout.splitlines()]
         self.assertEqual([tuple(hunk) for hunk in module.diff_hunks(diff.read_text(encoding="utf-8"))], printed)
-        residuals, _ = module.read_tsv(REPO / module.RESIDUALS, module.RESIDUAL_HEADER)
+        residuals, _ = module.read_tsv(root / module.RESIDUALS, module.RESIDUAL_HEADER)
         cited = sorted(
-            (row["file"], hunk)
-            for row in residuals
-            if row["witness"] == rows[0]["witness"]
-            for hunk in row["hunks"].split(";")
+            (row["file"], hunk) for row in residuals if row["witness"] == witness for hunk in row["hunks"].split(";")
         )
         self.assertEqual(cited, sorted(printed))
         missing = self.run_script("hunks", str(diff.with_name("absent.diff")))

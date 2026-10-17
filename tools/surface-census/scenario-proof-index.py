@@ -1031,7 +1031,7 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
         hunks[residual.owner or UNOWNED] += len(residual.hunks)
 
     def spelled(counts: Counter[str]) -> str:
-        return ", ".join(f"{name} {count}" for name, count in sorted(counts.items()))
+        return ", ".join(f"{name} {count}" for name, count in sorted(counts.items())) or NONE
 
     def rows(proof: Proof, residual: str) -> str:
         """The committed rows behind one open residual: its `residuals.tsv` hunks, or its python_enums diff."""

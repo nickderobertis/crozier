@@ -1830,11 +1830,10 @@ shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
-closed with no open residual: 159
-closed on their proof with a residual open: 1
-  text-response-drops-request-example: supabase reference.md -647,0 +647,2; supabase src/fern/environments/client.py -396,0 +396,2, -1257,0 +1259,2 -> parity-examples-docs:text-response-optional-query-examples
-witnesses: differs 5
-witness hunks by owner: text-response-drops-request-example 3, unowned 151
+closed with no open residual: 160
+closed on their proof with a residual open: 0
+witnesses: registered 6
+witness hunks by owner: —
 ```
 
 ## The category rules
