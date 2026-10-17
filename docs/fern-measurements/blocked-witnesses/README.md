@@ -55,35 +55,31 @@ claims it, so it remains `unowned`.
 
 ## kompaz
 
-Four causes, all `unowned`:
+One cause, `unowned`: three `application/problem+json` component responses.
+Fern hoists them as unused `*ErrorBody` models, and crozier emits none of them.
 
-- The camel-case tag `OrganizationLogo` with `organizationLogo.*` operation ids.
-  Fern folds it to the heading `Organizationlogo` and strips the tag prefix to
-  `show`/`update`/`destroy`. crozier keeps `OrganizationLogo` and
-  `organization_logo_*`.
-- Three `application/problem+json` component responses. Fern hoists them as
-  unused `*ErrorBody` models, and crozier emits none of them.
-- The order of the root `__init__.py` re-exports.
-
-Two more hunks are docstring-example lines of the catalogued
-`multipart-object-required-file-example` correction. The engine applies that
-departure only when every other line of the file equals Fern's
-(`multipart_object_required_file_example` in `src/departures.rs`). The
-tag-prefix difference in the same `organizationlogo/client.py` blocks it, so
-those lines belong to that cause. They are not a README multipart scenario's,
-whose triggers are README argument order and optional file parts.
+The `OrganizationLogo` tag's `organizationLogo.*` operations now match: the
+`organizationlogo` group, its `Organizationlogo` heading and the
+`show`/`update`/`destroy` methods. With that file otherwise equal to Fern's, the
+catalogued `multipart-object-required-file-example` correction applies to the
+`PUT /organizations/{organization}/logo` docstring examples. The root
+`__init__.py`'s reordered `.auth`, `.client` and `.environment` imports are
+taken by the catalogued `init-type-checking-import-order` departure; the
+`*ErrorBody` names beside them stay that cause's.
 
 ## langchain
 
-Six causes, all `unowned`:
+Three causes, all `unowned`:
 
 - the inline `stream_mode` item enum, which Fern hoists as `*StreamModeZeroItem`;
 - the description of `assistant_id`, a collapsed two-string `anyOf`, which Fern
   omits;
-- the variant constructors in the `post_a2a` example's union items;
-- the order of the root `__init__.py` re-exports;
-- the `content-type` header on the titled, described array body of `runs/batch`;
-- the `kwargs_` name of an enum visitor callback.
+- the variant constructors in the `post_a2a` example's union items.
+
+The `content-type` header on the titled array body of `runs/batch` and the
+`kwargs_` enum visitor callback now match. The root `__init__.py`'s reordered
+`.client` import is taken by the catalogued `init-type-checking-import-order`
+departure; the `*StreamModeZeroItem` names beside it stay that cause's.
 
 ## rice-shower
 
@@ -97,24 +93,28 @@ Three causes, all `unowned`:
 
 ## speech-ai
 
-Two causes, both `unowned`:
+One cause, `unowned`: one-member `allOf` request bodies on `POST /v1/ssml`
+and `POST /v1/audio/speech`. Fern keeps both operations and flattens the
+referenced object. crozier drops them, together with the `open_ai_api` and
+`ssml` clients, and writes the components as standalone types.
 
-- One-member `allOf` request bodies on `POST /v1/ssml` and
-  `POST /v1/audio/speech`. Fern keeps both operations and flattens the
-  referenced object. crozier drops them, together with the `open_ai_api` and
-  `ssml` clients, and writes the components as standalone types.
-- Nullable enum-`$ref` multipart parts, which crozier JSON-encodes.
+The nullable enum-`$ref` multipart part `format` now matches, sent as a plain
+form field.
 
 ## supabase
 
-Eight causes are `unowned`:
+Seven causes are `unowned`:
 
 - the example of the `branch_id_or_ref` `anyOf` path parameter;
 - component `example`s on array, object and form request bodies;
 - `OAuthTokenBody`'s operation-level enum hoisting;
 - `reference.md`'s parameter list for JSON-beside-binary function bodies;
-- missing commas in a map-of-objects example;
-- the order of the root `__init__.py` re-exports.
+- missing commas in a map-of-objects example.
+
+The root `__init__.py`'s reordered `.client` and `.environment` imports are
+taken by the catalogued `init-type-checking-import-order` departure; the
+operation-scoped `V1ExchangeOauthTokenRequestGrantType` re-export beside them
+stays the `OAuthTokenBody` cause's.
 
 The `file=["example_file"]` docstring lines in `edge_functions/client.py` are
 the catalogued multipart file-example correction. The engine cannot apply it

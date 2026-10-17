@@ -1,0 +1,9 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "8813c6cc01d87bce3b5b479e9fdccf4e0285313656adc54f998ecbad45420ed8"
+
+[[covers]]
+key = "camel-case-tag-group-and-prefix"
+search = "docs/openapi-surface/witness-search-naming-wire/README.md#bounded-public-witnesses"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-naming-wire/README.md"

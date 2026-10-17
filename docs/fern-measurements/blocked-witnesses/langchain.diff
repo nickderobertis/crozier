@@ -67,23 +67,7 @@
           RunCreateStreamingStateful,
           RunCreateStreamingStatefulOnDisconnect,
           RunCreateStreamingStateless,
-      ⋮ (33 unchanged line(s))
-      )
-      from . import a2a, assistants, crons, mcp, stateless_runs, store, streaming, system, thread_runs, threads
-      from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
-+     from .client import AsyncFernApi, FernApi
-      from .a2a import (
-          PostA2ARequestJsonrpc,
-          PostA2ARequestMethod,
-      ⋮ (18 unchanged line(s))
-          AssistantSearchRequestSortBy,
-          AssistantSearchRequestSortOrder,
-      )
--     from .client import AsyncFernApi, FernApi
-      from .crons import (
-          CronCreateConfig,
-          CronCreateDurability,
-      ⋮ (5 unchanged line(s))
+      ⋮ (69 unchanged line(s))
           CronCreateOnRunCompleted,
           CronCreateStreamMode,
           CronCreateStreamModeOne,
@@ -606,17 +590,7 @@ Only in reference: src/fern/crons/types/thread_cron_create_stream_mode_zero_item
   
           input : typing.Optional[RunCreateStatelessInput]
               The input to the graph.
-      ⋮ (159 unchanged line(s))
-              "runs/batch",
-              method="POST",
-              json=convert_and_respect_annotation_metadata(object_=request, annotation=RunBatchCreate, direction="write"),
--             headers={
--                 "content-type": "application/json",
--             },
-              request_options=request_options,
-              omit=OMIT,
-          )
-      ⋮ (84 unchanged line(s))
+      ⋮ (252 unchanged line(s))
           Parameters
           ----------
           assistant_id : str
@@ -640,17 +614,7 @@ Only in reference: src/fern/crons/types/thread_cron_create_stream_mode_zero_item
   
           input : typing.Optional[RunCreateStatelessInput]
               The input to the graph.
-      ⋮ (159 unchanged line(s))
-              "runs/batch",
-              method="POST",
-              json=convert_and_respect_annotation_metadata(object_=request, annotation=RunBatchCreate, direction="write"),
--             headers={
--                 "content-type": "application/json",
--             },
-              request_options=request_options,
-              omit=OMIT,
-          )
-      ⋮ (53 unchanged line(s))
+      ⋮ (221 unchanged line(s))
 
 --- reference/src/fern/thread_runs/client.py
 +++ crozier/src/fern/thread_runs/client.py
@@ -755,28 +719,6 @@ Only in reference: src/fern/crons/types/thread_cron_create_stream_mode_zero_item
           on_disconnect : typing.Optional[RunCreateStreamingStatefulOnDisconnect]
               The disconnect mode to use. Must be one of 'cancel' or 'continue'.
       ⋮ (655 unchanged line(s))
-
---- reference/src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py
-+++ crozier/src/fern/thread_runs/types/list_runs_http_threads_thread_id_runs_get_request_select_item.py
-      ⋮ (27 unchanged line(s))
-          updated_at: typing.Callable[[], T_Result],
-          status: typing.Callable[[], T_Result],
-          metadata: typing.Callable[[], T_Result],
--         kwargs_: typing.Callable[[], T_Result],
-+         kwargs: typing.Callable[[], T_Result],
-          multitask_strategy: typing.Callable[[], T_Result],
-          langsmith_session_name: typing.Callable[[], T_Result],
-      ) -> T_Result:
-      ⋮ (12 unchanged line(s))
-          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.METADATA:
-              return metadata()
-          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.KWARGS:
--             return kwargs_()
-+             return kwargs()
-          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.MULTITASK_STRATEGY:
-              return multitask_strategy()
-          if self is ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem.LANGSMITH_SESSION_NAME:
-      ⋮ (1 unchanged line(s))
 
 --- reference/src/fern/types/__init__.py
 +++ crozier/src/fern/types/__init__.py

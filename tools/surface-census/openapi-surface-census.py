@@ -1197,6 +1197,10 @@ REF_TRANSPARENT = {"schema", "pathItem"}
 # *group of members at* the schema a `$ref` resolves to — the target's own fields,
 # read as a group — which is what the `~>` operator below descends for.
 PREDICATES = {
+    "operation.operationId:camel-case-tag-prefix": "one per operation with an upper-camel multiword tag and lower-camel dotted operationId starting with that tag, ignoring case",
+    "operation.requestBody:optional-nullable-enum-multipart-part": "one per operation with an optional, defaulted multipart part whose anyOf is a string-enum component reference beside null",
+    "operation.requestBody:titled-array-component-oas-three-one": "one per OpenAPI 3.1 operation whose JSON body references a titled, described array component",
+    "schema.enum:kwargs-member": "one per string enum containing kwargs, whose visitor callback is named kwargs_",
     "pathItem.$ref:relative-file": (
         "one per Path Item Object whose `$ref` has a non-empty relative file path "
         "before an optional `#` fragment; the referring Path Item counts even "
@@ -1772,6 +1776,8 @@ PREDICATES = {
 # Predicates that read document context rather than one object-model node.
 # GrammarContractTests independently reconciles this partition and its prose.
 DOCUMENT_COMPARING_PREDICATES = (
+    "operation.requestBody:optional-nullable-enum-multipart-part",
+    "operation.requestBody:titled-array-component-oas-three-one",
     "operation.operationId:duplicate",
     "openapi.paths:normalized-collision",
     "components.schemas:normalized-collision",
@@ -3383,10 +3389,11 @@ def numeric_enum_name(value: int) -> str:
 # branch edited in `src/ir.rs` fails until it is read again here.
 
 METHOD_NAME_PORT_DIGESTS = {
-    "endpoint_method_name": "1cd98d93de04e7bb",
+    "endpoint_method_name": "01aaa4f73183c559",
     "tag_spelling_id": "f1c4b306fa5fbeda",
     "operation_id_matches_tag_spelling": "f272f8b33d154d30",
     "dotted_id_names_a_group": "ea9faa16ab1e1ea6",
+    "dotted_tag_group_method": "4f8b8852f85ba4ee",
     "method_from_dotted_id": "9b5cc4e4625b43d2",
     "method_from_groupless_id": "3ba287086971a152",
     "method_from_hyphenated_tag_id": "4eb571e881d67d51",
@@ -3908,6 +3915,9 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
                 return _sanitized(to_snake_case(inner))
     if not text:
         return None  # the summary or route fallback names this method, not the id
+    dotted = _dotted_tag_group_method(text, tag)
+    if dotted is not None:
+        return _sanitized(_ascii_lower(dotted))
     if "." in text and all(_is_ascii_alnum(char) for char in text.split(".", 1)[0]):
         group = text.split(".", 1)[0]
         if group[:1].isascii() and group[:1].islower() and any(char in _ASCII_UPPER for char in group):
@@ -3938,6 +3948,18 @@ def _id_method_name(operation: dict[Any, Any], method: str, url: str) -> tuple[s
     if hyphenated is not None:
         return hyphenated
     return _groupless_method(text, tag)
+
+
+def _dotted_tag_group_method(text: str, tag: str | None) -> str | None:
+    """`dotted_tag_group_method`: `<group>.<method>` whose group is the tag's one word."""
+    group, dot, method = text.partition(".")
+
+    def alphanumeric(part: str) -> bool:
+        return bool(part) and all(_is_ascii_alnum(char) for char in part)
+
+    if not dot or tag is None or not (alphanumeric(group) and alphanumeric(method)):
+        return None
+    return method if _fern_location_tokens(tag) == [_ascii_lower(group)] else None
 
 
 def _hyphenated_tag_method(text: str, tag: str | None) -> tuple[str, bool] | None:
@@ -4417,6 +4439,8 @@ def enum_member_predicates(node: dict[Any, Any]) -> list[str]:
             continue
         if not isinstance(value, str):
             continue
+        if value == "kwargs":
+            found.add("schema.enum:kwargs-member")
         if value == "":
             found.add("schema.enum:empty-member")
         if "*" in value:
@@ -5613,6 +5637,17 @@ class Census:
                 and declared != [name for name in template if name in declared]
             ):
                 found.append("operation.parameters:path-order-oas-three-one")
+            tag, operation_id = _first_tag(node), node.get("operationId")
+            if (
+                isinstance(tag, str)
+                and isinstance(operation_id, str)
+                and re.fullmatch(r"[A-Za-z0-9]+\.[A-Za-z0-9]+", operation_id)
+                and tag[:1].isupper()
+                and operation_id[:1].islower()
+                and len([word for word in split_words(tag) if not word.isdigit()]) > 1
+                and operation_id.split(".", 1)[0].lower() == tag.lower()
+            ):
+                found.append("operation.operationId:camel-case-tag-prefix")
             if operation_method_prefixed(node, method, url):
                 found.append("operation.operationId:digit-leading-method")
             if (
@@ -5920,6 +5955,37 @@ class Census:
         content = body.get("content") if isinstance(body, dict) else None
         media = content.get("application/json") if isinstance(content, dict) else None
         schema = media.get("schema") if isinstance(media, dict) else None
+        if isinstance(schema, dict) and isinstance(schema.get("$ref"), str):
+            target = self.component_target(schema["$ref"])
+            if (
+                self.openapi_version.startswith("3.1")
+                and isinstance(target, dict)
+                and primary_type(target.get("type")) == "array"
+                and isinstance(target.get("title"), str)
+                and isinstance(target.get("description"), str)
+            ):
+                found.append("operation.requestBody:titled-array-component-oas-three-one")
+        multipart = content.get("multipart/form-data") if isinstance(content, dict) else None
+        form = multipart.get("schema") if isinstance(multipart, dict) else None
+        properties = form.get("properties") if isinstance(form, dict) else None
+        required = form.get("required", []) if isinstance(form, dict) else []
+        if not isinstance(required, list) or not all(isinstance(name, str) for name in required):
+            properties = None
+        for name, part in properties.items() if isinstance(properties, dict) else ():
+            members = part.get("anyOf") if isinstance(part, dict) else None
+            if not isinstance(members, list) or len(members) != 2 or "default" not in part or name in required:
+                continue
+            nulls = [member for member in members if isinstance(member, dict) and member.get("type") == "null"]
+            refs = [member for member in members if isinstance(member, dict) and isinstance(member.get("$ref"), str)]
+            target = self.component_target(refs[0]["$ref"]) if len(refs) == 1 else None
+            if (
+                len(nulls) == 1
+                and isinstance(target, dict)
+                and primary_type(target.get("type")) == "string"
+                and string_enum_values(target)
+            ):
+                found.append("operation.requestBody:optional-nullable-enum-multipart-part")
+                break
         map_body = body
         seen_bodies: set[str] = set()
         while isinstance(map_body, dict) and isinstance(map_body.get("$ref"), str):

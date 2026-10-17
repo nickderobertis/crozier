@@ -1,0 +1,42 @@
+openapi: 3.1.0
+info:
+  title: Transcript Studio
+  version: 1.0.0
+paths:
+  /transcripts:
+    post:
+      operationId: createTranscript
+      tags: [transcripts]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio:
+                  type: string
+                  format: binary
+                format:
+                  anyOf:
+                    - $ref: "#/components/schemas/CaptionFormat"
+                    - type: "null"
+                  default: txt
+                margins:
+                  anyOf:
+                    - $ref: "#/components/schemas/Margins"
+                    - type: "null"
+      responses:
+        "204":
+          description: The transcript was queued.
+components:
+  schemas:
+    CaptionFormat:
+      type: string
+      enum: [txt, vtt, srt]
+      title: CaptionFormat
+    Margins:
+      type: object
+      properties:
+        left:
+          type: integer

@@ -697,8 +697,14 @@ def golden_source(root: Path, golden: str) -> str | None:
     case = root.joinpath(*parts[:-1])
     if found := _document(case, root):
         return found
-    name = re.sub(r"-(?:literals|flat)$", "", case.name)
-    candidates = [root / HANDWRITTEN / name, *sorted((root / MEASUREMENTS).glob(f"*/{name}"))]
+    # A shape's actual name may end in `-literals`; prefer that same-name
+    # document before treating the suffix as an overlay mode.
+    names = dict.fromkeys((case.name, re.sub(r"-(?:literals|flat)$", "", case.name)))
+    candidates = [
+        candidate
+        for name in names
+        for candidate in [root / HANDWRITTEN / name, *sorted((root / MEASUREMENTS).glob(f"*/{name}"))]
+    ]
     return next((found for candidate in candidates if (found := _document(candidate, root))), None)
 
 

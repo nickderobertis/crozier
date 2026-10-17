@@ -259,10 +259,10 @@ when the two differ.
 ### `init-type-checking-import-order`
 
 - **Kind:** `ordering`
-- **Trigger:** A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports from several sources.
-- **Fern writes:** The block's imports in the order Fern's generator collected them.
-- **crozier writes:** The same import statements, in crozier's sorted order.
-- **Why:** The block exists only for type checkers and is never executed, and the two blocks import exactly the same names: sorted with ruff's isort, they are identical. crozier emits a deterministic sorted order rather than reproducing Fern's collection order.
+- **Trigger:** A lazy-loading `__init__.py` whose `if typing.TYPE_CHECKING:` block imports from several sources, including a root package whose tag subpackages re-export their hoisted types.
+- **Fern writes:** The block's imports in the order Fern's generator collected them, the root client's and environment's statements sorted by module among the tag subpackages'.
+- **crozier writes:** The same import statements, in crozier's sorted order, the root client's and environment's statements ahead of every tag subpackage's.
+- **Why:** The block exists only for type checkers and is never executed, and the reordered statements import exactly the same names: sorted with ruff's isort, the two blocks are identical, or, where they differ in another way, the window of statements that moves is one permutation of identical statements and every other difference in the block remains a difference. crozier emits a deterministic sorted order rather than reproducing Fern's collection order.
 - **Evidence:** [`docs/departures/evidence/init-type-checking-import-order.md`](../../docs/departures/evidence/init-type-checking-import-order.md)
 
 ### `int64-example-rounded-out-of-range`

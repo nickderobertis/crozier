@@ -948,11 +948,13 @@ pub fn enum_member_name(value: &str) -> String {
 /// but fails at import — so a value sanitizing to `self` gets the trailing `_`
 /// (`self` → `self_`). `cls` is deliberately *not* escaped: `visit` is an ordinary
 /// instance method, so a `cls` parameter is legal and does not shadow the receiver
-/// — Fern leaves it alone, and matching Fern is the contract.
+/// — Fern leaves it alone, and matching Fern is the contract. `kwargs` is escaped
+/// too (`kwargs_`), as LangChain's agent-server `select` enum measures; Fern
+/// leaves every other pydantic-model name (`json`, `copy`, `schema`, …) alone here.
 #[must_use]
 pub fn enum_visit_param(value: &str) -> String {
     let mut name = finalize_enum_ident(enum_identifier(value));
-    if name == "self" {
+    if name == "self" || name == "kwargs" {
         name.push('_');
     }
     name
@@ -1364,6 +1366,11 @@ mod tests {
         // is legal and does not shadow the receiver — Fern leaves it alone.
         assert_eq!(enum_member_name("cls"), "CLS");
         assert_eq!(enum_visit_param("cls"), "cls");
+        // `kwargs` is escaped, the other pydantic-model names are not.
+        assert_eq!(enum_member_name("kwargs"), "KWARGS");
+        assert_eq!(enum_visit_param("kwargs"), "kwargs_");
+        assert_eq!(enum_visit_param("json"), "json");
+        assert_eq!(enum_visit_param("copy"), "copy");
     }
 
     #[test]

@@ -1261,11 +1261,11 @@ fn python_enums_stay_the_default_class_form() {
     let files = render_enum_type(crozier::settings::EnumType::PythonEnums);
     assert!(files["src/acme/types/status.py"].contains("class Status(enum.StrEnum):"));
     assert!(files.contains_key("src/acme/core/enum.py"));
-    // A component enum header is typed by its class and sent as its string.
+    // A component enum header is typed by its class and sent as its member value.
     let raw = &files["src/acme/pets/raw_client.py"];
     assert!(raw.contains("mode: Mode,"), "{raw}");
     assert!(
-        raw.contains("\"X-Mode\": str(mode) if mode is not None else None"),
+        raw.contains("\"X-Mode\": mode.value if mode is not None else None"),
         "{raw}"
     );
     let client = &files["src/acme/pets/client.py"];

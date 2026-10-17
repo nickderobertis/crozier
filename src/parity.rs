@@ -803,6 +803,57 @@ mod tests {
     }
 
     #[test]
+    fn init_import_order_admits_reordered_statements_beside_another_difference() {
+        // Fern sorts `from .client` and `from .environment` among the tag
+        // subpackages' re-exports; crozier writes them first. The `.types`
+        // statement also differs by a name, which no rule explains.
+        let block = |types: &str, order: [&str; 4]| {
+            format!(
+                "import typing\n\nif typing.TYPE_CHECKING:\n    from .types import {types}\n{}_dynamic_imports = {{}}\n",
+                order.iter().map(|line| format!("    {line}\n")).collect::<String>()
+            )
+        };
+        let (auth, client, environment, user) = (
+            "from .auth import (\n        AuthMeResponse,\n    )",
+            "from .client import AsyncFernApi, FernApi",
+            "from .environment import FernApiEnvironment",
+            "from .user import UserIndexResponse",
+        );
+        let crozier = block("Account", [client, environment, auth, user]);
+        let reference = block("Account", [auth, client, environment, user]);
+        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        assert!(compared.matches(), "{:?}", compared.diff());
+        assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
+
+        let reference = block("Account, ErrorBody", [auth, client, environment, user]);
+        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        assert!(!compared.matches());
+        assert_eq!(ids(&compared), [(5, "init-type-checking-import-order")]);
+        let diff = compared.diff().expect("the name difference remains");
+        assert!(
+            diff.contains("ErrorBody") && !diff.contains("from .client"),
+            "{diff}"
+        );
+
+        // A moved statement importing another name is no reordering.
+        let moved = auth.replace("AuthMeResponse", "AuthMeResponse,\n        AuthToken");
+        let reference = block("Account, ErrorBody", [&moved, client, environment, user]);
+        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        assert!(!compared.matches() && compared.departures.is_empty());
+        // Nor is a tag subpackage's statement moving among the others.
+        let reference = block("Account, ErrorBody", [user, client, environment, auth]);
+        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        assert!(!compared.matches() && compared.departures.is_empty());
+        // Nor is one importing from a module only one side has.
+        let reference = block(
+            "Account, ErrorBody",
+            [auth, client, "from .zone import Zone", user],
+        );
+        let compared = compare("src/fern/__init__.py", &crozier, &reference);
+        assert!(!compared.matches() && compared.departures.is_empty());
+    }
+
+    #[test]
     fn metadata_generator_config_is_one_departure_on_that_path_only() {
         let crozier = crate::emit::FERN_METADATA_RECORD;
         let reference = crozier.replace("python_enums", "literals");
