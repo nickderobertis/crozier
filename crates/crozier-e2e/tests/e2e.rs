@@ -9501,6 +9501,7 @@ const CORPORA: &[&Corpus] = &[
     &LANGCHAIN_AGENT_SERVER,
     &RICE_SHOWER,
     &SUPABASE_API_V1,
+    &RTA_IN_JAPAN_TWITTER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12677,6 +12678,20 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
+/// whose first named request example's empty array is filled from its schema
+/// example.
+const RTA_IN_JAPAN_TWITTER: Corpus = Corpus {
+    api: "rta-in-japan-twitter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
 /// revision declaring `x-fern-streaming`: two `stream-condition` operations with
 /// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
@@ -13494,6 +13509,13 @@ fn rice_shower_matches_fern_output() {
 #[test]
 fn supabase_api_v1_matches_fern_output() {
     assert_committed_corpus_matches(&SUPABASE_API_V1);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn rta_in_japan_twitter_matches_fern_output() {
+    assert_committed_corpus_matches(&RTA_IN_JAPAN_TWITTER);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 

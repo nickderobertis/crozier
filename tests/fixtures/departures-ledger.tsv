@@ -3872,6 +3872,12 @@ tests/fixtures/rice-shower/expected	src/fern/core/client_wrapper.py	36	sdk-ident
 tests/fixtures/rice-shower/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/rice-shower/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 tests/fixtures/rice-shower/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
+tests/fixtures/rta-in-japan-twitter/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/rta-in-japan-twitter/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/rta-in-japan-twitter/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/rta-in-japan-twitter/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/rta-in-japan-twitter/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/rta-in-japan-twitter/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/sac-backend/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/sac-backend/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/sac-backend/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix

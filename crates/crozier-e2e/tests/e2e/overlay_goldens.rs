@@ -76,6 +76,7 @@ const KINDS: &[Kind] = &[
     //   API's stop reasons and statuses.
     // - `supabase-api-v1`: inline property and query enums across a large
     //   management API's request and response models.
+    // - `rta-in-japan-twitter`: a posting API's one media-type enum.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -98,6 +99,7 @@ const KINDS: &[Kind] = &[
             "langchain-agent-server",
             "rice-shower",
             "supabase-api-v1",
+            "rta-in-japan-twitter",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

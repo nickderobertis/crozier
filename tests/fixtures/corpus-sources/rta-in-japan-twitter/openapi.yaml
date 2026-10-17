@@ -1,0 +1,615 @@
+openapi: 3.0.2
+info:
+  title: RTA in Japan Twitter API
+  description: ""
+  version: 1.1.0
+externalDocs:
+  description: Twitter API References
+  url: https://developer.twitter.com/en/docs/api-reference-index
+servers:
+- url: https://localhost:3000/
+paths:
+  /statuses/user_timeline:
+    get:
+      description: "規定のアカウントのタイムライン(home)を取得する。"
+      tags:
+      - statuses
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusesResponse'
+              examples:
+                response1:
+                  $ref: '#/components/examples/statusResponse1'
+                response2:
+                  $ref: '#/components/examples/statusResponse2' 
+                response3:
+                  $ref: '#/components/examples/statusResponse3' 
+                response4:
+                  $ref: '#/components/examples/statusResponse4' 
+                response5:
+                  $ref: '#/components/examples/statusResponse5'
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /statuses/mentions_timeline:
+    get:
+      description: "規定のアカウントに対するメンションを取得する。"
+      tags:
+      - statuses
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusesResponse'
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /statuses/hash:
+    get:
+      description: "規定のハッシュタグで検索した結果を取得する。"
+      tags:
+      - statuses
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusesResponse'
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /statuses/update:
+    post:
+      description: "ツイート投稿する"
+      tags:
+      - statuses
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/requestUpdate'
+            examples:
+              request1:
+                summary: "メディア無し"
+                value: {
+                  "status": "走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ\nｗｗｗｗｗ\nｗｗｗｗｗｗｗｗｗｗｗｗｗｗ",
+                  "media_ids": [],
+                  "in_reply_to_tweet_id": null,
+                  "quote_tweet_id": null
+                }
+              request2:
+                summary: "メディア有り"
+                value: {
+                  "status": "走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ",
+                  "media_ids": [
+                    "710511363345354753"
+                  ],
+                  "in_reply_to_tweet_id": null,
+                  "quote_tweet_id": null
+                }
+              request2-1:
+                summary: "メディア4枚"
+                value: {
+                  "status": "走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ",
+                  "media_ids": [
+                    "1421878566539579392",
+                    "1421878576962367491",
+                    "1421878582134001668",
+                    "1421878586374430724"
+                  ],
+                  "in_reply_to_tweet_id": null,
+                  "quote_tweet_id": null
+                }
+              request3:
+                summary: "返信有り"
+                value: {
+                  "status": "走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ",
+                  "media_ids": [],
+                  "in_reply_to_tweet_id": "1421495434665553924",
+                  "quote_tweet_id": null
+                }
+              request4:
+                summary: "引用有り"
+                value: {
+                  "status": "走者乙ｗｗｗｗｗｗｗｗｗｗｗｗ",
+                  "media_ids": [],
+                  "in_reply_to_tweet_id": null,
+                  "quote_tweet_id": "1421878914524147713"
+                }
+              response5:
+                summary: "全部盛り"
+                value: {
+                  "status":"全部\n盛り",
+                  "media_ids":["1421879381006323716"],
+                  "in_reply_to_tweet_id":"1421879119529201664",
+                  "quote_tweet_id":"1421879119529201664"
+                }
+      responses:
+        200:
+          description: "ツイート投稿後のstatuses/user_timelineに相当するもの"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusesResponse'
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /media/upload/:
+    post:
+      description: "画像、動画ファイルをアップロードする。"
+      tags:
+      - media
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+      requestBody:
+        description: ""
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                # 'file' will be the field name in this multipart request
+                file:
+                  type: string
+                  format: binary
+      responses:
+        200:
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  code:
+                    type: "integer"
+                    example: 0
+                  data:
+                    type: "object"
+                    properties:
+                      media_id_string:
+                        type: string
+                        example: "1234567890"
+
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+  /statuses/destroy/{id}:
+    post:
+      description: "指定したIDのツイートを削除する。"
+      tags:
+      - statuses
+      parameters:
+        - in: header
+          name: X-Auth
+          schema:
+            type: string
+            example: "ABCDEFG123456"
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+          description: "削除対象のツイートID"
+      responses:
+        200:
+          description: "処理実行後のstatuses/user_timelineに相当するもの"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/statusesResponse'
+        503:
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorResponse'
+components:
+    schemas:
+      statusesResponse:
+        type: object
+        properties:
+          code:
+            type: integer
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/statuses'
+      statuses:
+        type: object
+        properties:
+          id:
+            type: string
+            example: '1338971066773905408'
+          text:
+            type: string
+            example: >-
+              💡 Using Twitter data for academic research? Join our next
+              livestream this Friday @ 9am PT on https://t.co/GrtBOXh5Y1!n
+              n@SuhemParack will show how to get started with recent search &amp;
+              filtered stream endpoints on the #TwitterAPI v2, the new Tweet
+              payload, annotations, &amp; more. https://t.co/IraD2Z7wEg
+          user:
+            $ref: '#/components/schemas/user'
+          created_at:
+            type: string
+            format: date-time
+            example: '2020-12-10T20:00:10Z'
+          entities:
+            $ref: '#/components/schemas/statuses_entities'
+          media:
+            type: array
+            items:
+              $ref: '#/components/schemas/media'
+          in_reply_to_status:
+            $ref: '#/components/schemas/statuses'
+          quoted_status:
+            $ref: '#/components/schemas/statuses'
+        required:
+          - id
+          - text
+          - user
+          - created_at
+      media:
+        type: object
+        properties:
+          media_key:
+            type: string
+            example: '13_1263145212760805376'
+          type:
+            type: string
+            enum:
+              - animated_gif
+              - photo
+              - video
+          url:
+            type: string
+          preview_image_url:
+            type: string
+            example: https://pbs.twimg.com/media/EYeX7akWsAIP1_1.jpg
+          width:
+            type: integer
+            example: 1920
+          height:
+            type: integer
+            example: 1080
+        required:
+          - media_key
+          - type
+          - url
+          - preview_image_url
+          - width
+          - height
+      statuses_entities:
+        type: object
+        properties:
+          annotations:
+            type: array
+            items:
+              type: object
+          urls:
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: integer
+                  example: 10
+                end:
+                  type: integer
+                  example: 33
+                url:
+                  type: string
+                  example: https://t.co/9BbWekeWq2
+                expanded_url:
+                  type: string
+                  example: https://twitter.com/TwitterDev/status/1374104599456534531
+                display_url:
+                  type: string
+                  example: twitter.com/TwitterDev/sta…
+              required:
+                - start
+                - end
+                - url
+                - expanded_url
+                - display_url
+          hashtags:
+            type: array
+            items:
+              type: object
+          mentions:
+            type: array
+            items:
+              type: object
+              properties:
+                start:
+                  type: number
+                  example: 0
+                end:
+                  type: number
+                  example: 11
+                id:
+                  type: string
+                  example: '2244994945'
+                username:
+                  type: string
+                  example: TwitterDev
+              required:
+                - start
+                - end
+                - id
+                - username
+          cashtags:
+            type: array
+            items:
+              type: object
+      user:
+        type: object
+        properties:
+          id:
+            type: string
+            example: '2244994945'
+          name:
+            type: string
+            example: Twitter Dev
+          username:
+            type: string
+            example: TwitterDev
+          created_at:
+            type: string
+            format: date-time
+            example: '2013-12-14T04:35:55.000Z'
+          profile_image_url:
+            type: string
+            example: >-
+              https://pbs.twimg.com/profile_images/1267175364003901441/tBZNFAgA_normal.jpg
+        required:
+          - id
+          - name
+          - username
+          - created_at
+          - profile_image_url
+      errorResponse:
+        type: object
+        properties:
+          code:
+            type: integer
+          error:
+            type: object
+            properties:
+              message:
+                type: string
+                example: エラー内容とかをここに
+        example:
+            code: 10
+            error:
+              message: ヤバイｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ
+      requestUpdate:
+        type: object
+        properties:
+          status:
+            description: ツイート本文
+            type: string
+            example: 走者乙ｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗｗ
+          media_ids:
+            description: 事前にアップロードした画像・動画のID
+            type: array
+            items:
+              type: string
+            example:
+              - '710511363345354753'
+          in_reply_to_tweet_id:
+            description: リプライ先のツイートID
+            type: string
+            example: ''
+          quote_tweet_id:
+            description: 引用RTの引用元ツイートID
+            type: string
+            example: ''
+    examples:
+      statusResponse1:
+        summary: 素のやつ
+        value:
+          code: 0
+          data:
+            - id: '1578074395490521088'
+              text: 'じゅげむ　じゅげむ　ごこうのすりきれ\nかいじゃりすいぎょの　すいぎょうまつ\n\nうんらいまつ　ふうらいまつ\n\nくうねるところに　すむところ\n\nやぶらこうじの　ぶらこうじ\n\nパイポパイポ\n\nパイポのシューリンガン\n\nシューリンガンのグーリンダイ\n\nグーリンダイのポンポコピーのポンポコナーの\n\nちょう'
+              user: 
+                id: '1543882205264355328'
+                username: dev_cma
+                name: dev-cma
+                profile_image_url: https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png
+                created_at: '2022-07-04T09:00:38.000Z'
+              created_at: '2022-10-06T17:27:09.000Z'
+      statusResponse2:
+        summary: 返信つき
+        value:
+          code: 0
+          data:
+          - id: '1581992205912195072'
+            text: '@TwitterDev こんにちは～～～～～'
+            created_at: '2022-10-17T12:55:08.000Z'
+            entities:
+              mentions:
+              - start: 0
+                end: 11
+                username: TwitterDev
+                id: '2244994945'
+            user: 
+              id: '1543882205264355328'
+              username: dev_cma
+              name: dev-cma
+              profile_image_url: https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png
+              created_at: '2022-07-04T09:00:38.000Z'
+            in_reply_to_status:
+              id: '1578074395490521088'
+              text: hello, twitter world!
+              created_at: '2022-10-06T17:27:09.000Z'
+              user: 
+                id: '2244994945'
+                name: Twitter Dev
+                username: TwitterDev
+                profile_image_url: https://pbs.twimg.com/profile_images/1354494203451961345/d8HkZl6p_normal.jpg
+                created_at: '2011-10-22T07:20:30.000Z'
+      statusResponse3:
+        summary: 引用つき
+        value:
+          code: 0
+          data:
+          - id: '1582002263043686400'
+            text: 引用します～～～～～～～～ https://t.co/wNfJxgBNpM
+            created_at: '2022-10-17T13:35:06.000Z'
+            user: 
+              id: '1543882205264355328'
+              username: dev_cma
+              name: dev-cma
+              profile_image_url: https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png
+              created_at: '2022-07-04T09:00:38.000Z'
+            entities:
+              urls:
+                - start: 14
+                  end: 37
+                  url: https://t.co/wNfJxgBNpM
+                  expanded_url: https://twitter.com/cma2819/status/1580874156110856192
+                  display_url: twitter.com/cma2819/status…
+            quoted_status:
+              id: '1578074395490521088'
+              text: hello, twitter world!
+              created_at: '2022-10-06T17:27:09.000Z'
+              user: 
+                id: '2244994945'
+                name: Twitter Dev
+                username: TwitterDev
+                profile_image_url: https://pbs.twimg.com/profile_images/1354494203451961345/d8HkZl6p_normal.jpg
+                created_at: '2011-10-22T07:20:30.000Z'
+      statusResponse4:
+        summary: メディア付き
+        value:
+          code: 0
+          data:
+          - id: '1581990427372109826'
+            text: 画像といっしょについーと https://t.co/Z0NNkoat7u
+            created_at: '2022-10-17T12:48:04.000Z'
+            user: 
+              id: '1543882205264355328'
+              username: dev_cma
+              name: dev-cma
+              profile_image_url: https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png
+              created_at: '2022-07-04T09:00:38.000Z'
+            entities:
+              urls:
+                - start: 13
+                  end: 36
+                  url: https://t.co/Z0NNkoat7u
+                  expanded_url: https://twitter.com/dev_cma/status/1581990427372109826/photo/1
+                  display_url: pic.twitter.com/Z0NNkoat7u
+                  media_key: '3_1581990310632050690'
+                - start: 13
+                  end: 36
+                  url: https://t.co/Z0NNkoat7u
+                  expanded_url: https://twitter.com/dev_cma/status/1581990427372109826/photo/1
+                  display_url: pic.twitter.com/Z0NNkoat7u
+                  media_key: '3_1581990357591433217'
+            media:
+              - media_key: '3_1581990310632050690'
+                type: photo
+                url: https://pbs.twimg.com/media/FfRbzkdVUAIy7xK.png
+                width: 640
+                height: 480
+              - media_key: '3_1581990357591433217'
+                type: photo
+                url: https://pbs.twimg.com/media/FfRb2TZUoAEmWY_.jpg
+                width: 400
+                height: 400
+      statusResponse5:
+        summary: 画像・動画つき
+        value:
+          code: 0
+          data:
+          - id: '1582229831671902208'
+            text: 動画・画像つきツイートてすてす https://t.co/UVG5ApQDjm https://t.co/vuzbXpzTGm
+            created_at: '2022-10-18T04:39:22.000Z'
+            entities:
+              urls:
+                - start: 16
+                  end: 39
+                  url: https://t.co/UVG5ApQDjm
+                  expanded_url: https://twitter.com/i/web/status/1582229831671902208
+                  display_url: twitter.com/i/web/status/1…
+                - start: 40
+                  end: 63
+                  url: https://t.co/vuzbXpzTGm
+                  expanded_url: https://twitter.com/dev_cma/status/1582229831671902208/video/1
+                  display_url: pic.twitter.com/vuzbXpzTGm
+                  media_key: '7_1582229783521288194'
+            media:
+              - width: 720
+                media_key: '7_1582229783521288194'
+                preview_image_url: https://pbs.twimg.com/ext_tw_video_thumb/1582229783521288194/pu/img/E63l4dXvk1wL6EJm.jpg
+                type: video
+                height: 1280
+              - width: 2048
+                url: https://pbs.twimg.com/media/FfU1mugVUAA4yum.jpg
+                media_key: '3_1582229783525543936'
+                type: photo
+                height: 1536
+            user:
+              id: '1543882205264355328'
+              name: dev-cma
+              username: dev_cma
+              profile_image_url: https://abs.twimg.com/sticky/default_profile_images/default_profile_normal.png
+              created_at: '2022-07-04T09:00:38.000Z'
+  
+  

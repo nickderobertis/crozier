@@ -1845,3 +1845,23 @@ pinned revision is the redistribution grant.
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
 | 2804 | `supabase-api-v1` | component-level request-body examples; JSON-beside-binary body parameters in `reference.md`; map-of-objects examples; an `anyOf` path parameter's schema example (`anyof-path-param-schema-example`); a text-response operation's optional query examples (`text-response-optional-query-examples`) | ✅ byte-matched after this node's repairs; its other differences are catalogued departures |
+
+## Row 2805 — a posting API whose first named example holds an empty array
+
+The RTA in Japan Twitter API its publisher ships in
+`RTAinJapan/rta-in-japan-twitter-api-docs`. The first named request example of
+`POST /statuses/update` holds an empty `media_ids` array while the property's
+schema declares an example; crozier now fills it from that schema example, as
+Fern does.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#twitter).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2805 | `rta-in-japan-twitter` | github-raw | https://raw.githubusercontent.com/RTAinJapan/rta-in-japan-twitter-api-docs/b5b30318e41647d44795f85dbfc428da8e93739a/openapi.yaml | `b5b30318e41647d44795f85dbfc428da8e93739a` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The RTA in Japan Twitter API (statuses, media), whose `statuses/update` named request examples open with an empty `media_ids` array beside a property-level schema example |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2805 | `rta-in-japan-twitter` | an empty array in the first named request example filled from the property's schema example | ✅ byte-matched after this node's repair |

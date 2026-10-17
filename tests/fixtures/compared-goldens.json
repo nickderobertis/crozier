@@ -1067,6 +1067,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/rta-in-japan-twitter/expected": {},
+    "tests/fixtures/rta-in-japan-twitter/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/sac-backend/expected": {},
     "tests/fixtures/schema-constraints/expected": {},
     "tests/fixtures/servers-webhooks/expected": {},

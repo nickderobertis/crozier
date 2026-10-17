@@ -609,3 +609,9 @@ Additional hosted-API specifications:
     The repository's LICENSE at that revision permits redistribution under
     Apache-2.0; corpus row 2804 records the immutable reference. The unmodified
     source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * RTA in Japan Twitter API: the publisher's own description at
+    https://raw.githubusercontent.com/RTAinJapan/rta-in-japan-twitter-api-docs/b5b30318e41647d44795f85dbfc428da8e93739a/openapi.yaml.
+    The repository's LICENSE at that revision permits redistribution under
+    Apache-2.0; corpus row 2805 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
