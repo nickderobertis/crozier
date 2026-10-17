@@ -1,0 +1,7 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "9287e4a0b519d6edee08430a90d920b3c262f8e37553d8856d93fe57ea9a2aa6"
+
+source_digest = "c778f3ed136ff05d787840e5f156bbd9837a5b6b42f01f983cd932be57172652"
+reason = "Registered goldens reach the allOf arm `src/openapi.rs::collapse_sole_composition_member`; this fixture no longer claims a handwritten coverage gap."
+regression = "A request body whose sole allOf member is a referenced object beside sibling annotations, complete bidirectional SDK comparison in both enum modes, and adjacent unexplained mismatch rejection."

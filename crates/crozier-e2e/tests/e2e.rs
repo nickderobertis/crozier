@@ -2875,7 +2875,8 @@ fn handwritten_fixtures_match_fern_goldens() {
 
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
-/// nullable union members, referenced form enums, and JSON problem responses.
+/// nullable union members, referenced form enums, JSON problem responses, and a
+/// query union of an enum and its array (no literals-mode tree is measured).
 #[test]
 fn schema_shape_arms_match_complete_certified_trees() {
     for (shape, file, matched, unexplained) in [
@@ -2927,9 +2928,21 @@ fn schema_shape_arms_match_complete_certified_trees() {
             "message: str",
             "message: bool",
         ),
+        (
+            "query-union-array-enum-member",
+            "src/fern/signals/types/inspect_signals_request_kind.py",
+            "typing.List[InspectSignalsRequestKindOneItem]",
+            "typing.List[str]",
+        ),
     ] {
-        for mode in ["python-enums", "literals"] {
-            let fixture_dir = if shape == "kiln-problem-response" {
+        let measured = std::path::Path::new(SCHEMA_SHAPES_DIR).join(shape);
+        let modes: &[&str] = if shape == "query-union-array-enum-member" {
+            &["python-enums"]
+        } else {
+            &["python-enums", "literals"]
+        };
+        for &mode in modes {
+            let fixture_dir = if repo_root().join(&measured).is_dir() {
                 SCHEMA_SHAPES_DIR
             } else {
                 HANDWRITTEN_DIR
@@ -2956,7 +2969,7 @@ fn schema_shape_arms_match_complete_certified_trees() {
                 format!("{SCHEMA_SHAPES_LITERALS_DIR}/{shape}/fern-expected")
             };
             let expected = repo_root().join(&golden);
-            if shape == "kiln-problem-response" && mode == "python-enums" {
+            if fixture_dir == SCHEMA_SHAPES_DIR && mode == "python-enums" {
                 let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
                 for field in [
                     "fern_cli_version = \"5.67.1\"".to_owned(),

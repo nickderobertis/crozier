@@ -362,8 +362,11 @@
     "docs/fern-measurements/schema-shapes-literals/kiln-nested-reason/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-variant-trigger/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-annotated-body/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -524,12 +527,10 @@
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
     "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
-    "docs/openapi-surface/handwritten/kiln-annotated-body/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-form-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected": {},
-    "docs/openapi-surface/handwritten/kiln-nullable-member/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-variant-trigger/fern-expected": {},
     "docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected": {},
     "docs/openapi-surface/handwritten/lamp-room-log/fern-expected": {},
@@ -583,7 +584,6 @@
     "docs/openapi-surface/handwritten/property-sole-oneof-empty-object-member/fern-expected": {},
     "docs/openapi-surface/handwritten/query-array-items-union/fern-expected": {},
     "docs/openapi-surface/handwritten/query-param-ref-to-enum-or-array-union-converted/fern-expected": {},
-    "docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected": {},
     "docs/openapi-surface/handwritten/quiz-nullable-response-union/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected": {},
