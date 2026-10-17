@@ -63,7 +63,12 @@ even when the lookup returns no values.
 
 The last map has no separate successful-result counter. Registered goldens
 reach its media-selection call and the flattened field fallback, superseding
-those covers. Suffix reach does not establish the exact problem-media object
+those covers. The registered redocly.com-museum golden answers its shared
+`400`, `401` and `404` component responses with `application/problem+json`
+alone, so its referenced `Error` body passes through this map and hoists no
+`{Class}Body`; `problem_json_component_responses_match_registered_museum_golden`
+compares that complete tree bidirectionally and fails both an over-hoisted
+body model and a retyped error body. Suffix reach does not establish the exact problem-media object
 shape: its complete two-mode regression remains at
 [`schema-shapes/kiln-problem-response`](../../fern-measurements/schema-shapes/kiln-problem-response/).
 The other fixtures retain only covers for successful arms no registered golden

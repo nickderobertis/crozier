@@ -2982,6 +2982,58 @@ fn schema_shape_arms_match_complete_certified_trees() {
     }
 }
 
+/// The registered Redocly Museum golden answers its shared `400`, `401` and `404`
+/// component responses with `application/problem+json` alone, so error-body
+/// hoisting selects that representation. Its schema is a component reference,
+/// which types each error class's body and hoists no `{Class}Body` model. The
+/// complete tree matches the certified golden bidirectionally; an over-hoisted
+/// body model and a retyped error body each fail.
+#[test]
+fn problem_json_component_responses_match_registered_museum_golden() {
+    let spec = corpus_spec(REDOCLY_COM_MUSEUM.api).expect("the museum source is committed");
+    let golden = "tests/fixtures/redocly.com-museum/expected";
+    let expected = repo_root().join(golden);
+    let ledger = departure_ledger().golden(golden, &[]).unwrap();
+    let source = tempfile::tempdir().expect("output directory");
+    let out = source.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let check = |out: &Path| {
+        golden_tree_failures(
+            REDOCLY_COM_MUSEUM.api,
+            spec.to_str().unwrap(),
+            &ledger,
+            &expected,
+            out,
+        )
+    };
+    let failures = check(&out);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+
+    let hoisted = out.join("src/fern/types/bad_request_error_body.py");
+    std::fs::copy(out.join("src/fern/types/error.py"), &hoisted).unwrap();
+    let failures = check(&out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("src/fern/types/bad_request_error_body.py")),
+        "an over-hoisted problem body model must fail: {failures:?}"
+    );
+    std::fs::remove_file(&hoisted).unwrap();
+
+    let file = "src/fern/errors/bad_request_error.py";
+    let path = out.join(file);
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(text.contains("body: Error,"), "{file} types its body Error");
+    std::fs::write(&path, text.replace("body: Error,", "body: typing.Any,")).unwrap();
+    let failures = check(&out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains(&format!("{file} differs"))),
+        "the adjacent unexplained error body type must fail: {failures:?}"
+    );
+}
+
 /// Complete certified output for integer-valued numbers and encoded JSON strings,
 /// with adjacent ordinary scalar formats kept as controls.
 #[test]
