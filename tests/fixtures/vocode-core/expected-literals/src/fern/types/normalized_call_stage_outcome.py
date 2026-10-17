@@ -1,0 +1,15 @@
+
+
+import typing
+
+NormalizedCallStageOutcome = typing.Union[
+    typing.Literal[
+        "human_unanswered",
+        "call_did_not_connect",
+        "human_disconnected",
+        "bot_disconnected",
+        "transfer_unanswered",
+        "transfer_disconnected",
+    ],
+    typing.Any,
+]

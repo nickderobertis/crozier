@@ -319,6 +319,7 @@ inventory=(
   mermade_openapi_converter_matches_fern_output
   googleapis_speech_v2beta1_matches_fern_output
   googleapis_youtubeanalytics_v1_matches_fern_output
+  vocode_core_matches_fern_output
 )
 
 filter="test(=${inventory[0]})"

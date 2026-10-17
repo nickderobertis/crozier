@@ -9488,6 +9488,7 @@ const CORPORA: &[&Corpus] = &[
     &MERMADE_OPENAPI_CONVERTER,
     &GOOGLEAPIS_SPEECH_V2BETA1,
     &GOOGLEAPIS_YOUTUBEANALYTICS_V1,
+    &VOCODE_CORE,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12595,6 +12596,20 @@ const NETGSM_SMS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `vocode-core`: corpus row 2800, Vocode's Hosted API as its publisher ships it,
+/// whose flattened request types and their variants' `action_trigger`
+/// references match with no repair of its own.
+const VOCODE_CORE: Corpus = Corpus {
+    api: "vocode-core",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
 /// revision declaring `x-fern-streaming`: two `stream-condition` operations with
 /// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
@@ -13379,6 +13394,13 @@ fn googleapis_youtubeanalytics_v1_matches_fern_output() {
 fn zylon_private_gpt_matches_fern_output() {
     assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn vocode_core_matches_fern_output() {
+    assert_committed_corpus_matches(&VOCODE_CORE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn waylay_queries_matches_fern_output() {

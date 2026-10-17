@@ -1731,3 +1731,23 @@ golden this row adds. The witness search that found both is
 The repairs: `openapi::normalize_comment_close_descriptions` breaks every `*/`
 in a description as Fern does, and `emit::generate` writes no `README.md` in a
 flat tree whose document has no call to demonstrate.
+
+## Row 2800 — a publisher's hosted-API document whose comparison now matches
+
+Vocode's Hosted API, the document its publisher ships in `vocodedev/vocode-core`,
+was screened as a blocked witness and compared again on the finished generator:
+every certified public client method and resource accessor is exposed, including
+`buy_number`, and its flattened request types, their exports and the flattened
+variants' `action_trigger` references match Fern's output with only catalogued
+departures. Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#vocode).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2800 | `vocode-core` | github-raw | https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json | `e054c33a72787b6a4920f91eb8598ad0bafb4240` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | Vocode's Hosted API: account connections, actions, agents, calls, numbers, prompts, usage, vector databases, voices and webhooks, with flattened request bodies whose variants reference shared `action_trigger` schemas |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2800 | `vocode-core` | flattened request types and their variants' `action_trigger` references | ✅ byte-matched with no repair of its own |

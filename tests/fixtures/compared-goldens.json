@@ -1159,6 +1159,12 @@
     "tests/fixtures/typescript-service-template/expected": {},
     "tests/fixtures/vellum-gateway/expected": {},
     "tests/fixtures/viskit-studio/expected": {},
+    "tests/fixtures/vocode-core/expected": {},
+    "tests/fixtures/vocode-core/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/volview-backend-contract/expected": {},
     "tests/fixtures/vtex-pricing/expected": {},
     "tests/fixtures/waylay-queries/expected": {},

@@ -66,6 +66,8 @@ const KINDS: &[Kind] = &[
     // - `googleapis-youtubeanalytics-v1`: a document with no operation, so no
     //   enum reaches its tree and its literals tree differs only in the
     //   generator record and the absent `core/enum.py`, its `README.md` empty.
+    // - `vocode-core`: inline and referenced property enums of flattened
+    //   request types and their action variants in a publisher's document.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -83,6 +85,7 @@ const KINDS: &[Kind] = &[
             "aws-mobileanalytics",
             "googleapis-speech-v2beta1",
             "googleapis-youtubeanalytics-v1",
+            "vocode-core",
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

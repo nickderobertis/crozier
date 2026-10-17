@@ -4036,6 +4036,13 @@ tests/fixtures/viskit-studio/expected	src/fern/core/client_wrapper.py	35	sdk-ide
 tests/fixtures/viskit-studio/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 tests/fixtures/viskit-studio/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 tests/fixtures/viskit-studio/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected	src/fern/__init__.py	419	init-type-checking-import-order
+tests/fixtures/vocode-core/expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected	src/fern/core/client_wrapper.py	39	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected	src/fern/core/client_wrapper.py	40	sdk-identity-header-prefix
+tests/fixtures/vocode-core/expected-literals	.fern/metadata.json	5	fern-metadata-generator-config
 tests/fixtures/volview-backend-contract/expected	src/fern/__init__.py	107	init-type-checking-import-order
 tests/fixtures/volview-backend-contract/expected	src/fern/context/client.py	188	multipart-object-required-file-example
 tests/fixtures/volview-backend-contract/expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix

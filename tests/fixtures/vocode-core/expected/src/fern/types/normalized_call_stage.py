@@ -1,0 +1,30 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class NormalizedCallStage(enum.StrEnum):
+    CREATED = "created"
+    PICKED_UP = "picked_up"
+    TRANSFER_STARTED = "transfer_started"
+    TRANSFER_SUCCESSFUL = "transfer_successful"
+
+    def visit(
+        self,
+        created: typing.Callable[[], T_Result],
+        picked_up: typing.Callable[[], T_Result],
+        transfer_started: typing.Callable[[], T_Result],
+        transfer_successful: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is NormalizedCallStage.CREATED:
+            return created()
+        if self is NormalizedCallStage.PICKED_UP:
+            return picked_up()
+        if self is NormalizedCallStage.TRANSFER_STARTED:
+            return transfer_started()
+        if self is NormalizedCallStage.TRANSFER_SUCCESSFUL:
+            return transfer_successful()

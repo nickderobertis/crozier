@@ -577,3 +577,11 @@ Additional examples and documentation specifications:
     Attribution 3.0 redistribution, inside the aggregation's CC0-1.0 LICENSE;
     corpus row 2201 records the immutable reference. The unmodified source and
     Fern-generated output are vendored, with Python comments stripped as above.
+
+Additional hosted-API specification:
+
+  * Vocode Hosted API: the publisher's own description at
+    https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2800 records the immutable reference. The unmodified source
+    and Fern-generated output are vendored, with Python comments stripped as above.
