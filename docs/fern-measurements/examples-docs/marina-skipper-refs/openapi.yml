@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Marina Charters
+  version: 1.0.0
+paths:
+  /charters:
+    post:
+      operationId: bookCharter
+      tags: [charters]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CharterBooking'
+      responses:
+        '204':
+          description: Booked
+  /charters/{charter_id}:
+    get:
+      operationId: getCharter
+      tags: [charters]
+      parameters:
+        - name: charter_id
+          in: path
+          required: true
+          schema: {type: string}
+      responses:
+        '200':
+          description: The charter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Charter'
+components:
+  schemas:
+    CharterBooking:
+      type: object
+      properties:
+        skipper:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The skipper's ID or licence number.
+        guests:
+          type: integer
+          description: How many guests board.
+      required: [skipper]
+    Charter:
+      type: object
+      properties:
+        skipper:
+          anyOf:
+            - type: string
+              format: uuid
+            - type: string
+          description: The skipper's ID or licence number.
+        vessel:
+          type: string
+          description: The vessel chartered.
+      required: [skipper]

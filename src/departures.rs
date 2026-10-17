@@ -41,16 +41,20 @@ pub enum Kind {
     Provenance,
     /// crozier orders statements whose order has no effect deterministically.
     Ordering,
+    /// Both outputs are valid, and crozier's documents more of what the
+    /// specification declares.
+    RicherDocumentation,
 }
 
 impl Kind {
     /// Every kind, in the order the reference lists them.
-    pub const ALL: [Kind; 5] = [
+    pub const ALL: [Kind; 6] = [
         Kind::FernDefect,
         Kind::Branding,
         Kind::Packaging,
         Kind::Provenance,
         Kind::Ordering,
+        Kind::RicherDocumentation,
     ];
 
     /// The kind as the catalog spells it.
@@ -62,6 +66,7 @@ impl Kind {
             Kind::Packaging => "packaging",
             Kind::Provenance => "provenance",
             Kind::Ordering => "ordering",
+            Kind::RicherDocumentation => "richer-documentation",
         }
     }
 
@@ -79,6 +84,9 @@ impl Kind {
             Kind::Provenance => "crozier writes a fixed record of how the SDK was generated.",
             Kind::Ordering => {
                 "crozier writes statements whose order has no effect in its own deterministic order."
+            }
+            Kind::RicherDocumentation => {
+                "Both outputs are valid; crozier's documents more of what the specification declares."
             }
         }
     }
@@ -295,6 +303,7 @@ pub struct Context {
     crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
     request_examples: OnceLock<RequestExampleContext>,
     empty_namespace: OnceLock<EmptyNamespace>,
+    crozier_paths: OnceLock<BTreeSet<String>>,
 }
 
 /// The files of an empty-namespace package (`_`) Fern wrote one level too high,
@@ -342,6 +351,12 @@ impl Context {
             empty_namespace: OnceLock::from(EmptyNamespace::default()),
             crozier_returns: OnceLock::from(method_returns(crozier.iter().copied())),
             request_examples: OnceLock::from(request_example_context(crozier.iter().copied())),
+            crozier_paths: OnceLock::from(
+                crozier
+                    .iter()
+                    .map(|(path, _)| (*path).to_string())
+                    .collect::<BTreeSet<_>>(),
+            ),
         }
     }
 
@@ -466,6 +481,18 @@ impl Context {
                     .iter()
                     .map(|(rel, text)| (rel.as_str(), text.as_str())),
             )
+        })
+    }
+
+    /// The relative path of every file crozier's tree holds.
+    fn crozier_paths(&self) -> &BTreeSet<String> {
+        self.crozier_paths.get_or_init(|| {
+            self.roots
+                .as_ref()
+                .and_then(|(_, crozier)| crate::parity::walk_files(crozier).ok())
+                .unwrap_or_default()
+                .into_iter()
+                .collect()
         })
     }
 
@@ -964,11 +991,15 @@ fn multipart_example_lines<'a>(
                         let Some(wire) = wires.get(*name) else {
                             continue;
                         };
-                        let value = if annotation.contains("Sequence[") {
-                            format!("[\"example_{wire}\"]")
-                        } else {
-                            format!("\"example_{wire}\"")
-                        };
+                        // A list of files is either sequence annotation:
+                        // Supabase's function deploy takes
+                        // `file: typing.List[core.File]`.
+                        let value =
+                            if annotation.contains("Sequence[") || annotation.contains("List[") {
+                                format!("[\"example_{wire}\"]")
+                            } else {
+                                format!("\"example_{wire}\"")
+                            };
                         allowed.insert(format!("{name}={value}"));
                     }
                 }
@@ -1708,6 +1739,11 @@ pub type LineRule = fn(&Pair<'_>, &str, &str) -> bool;
 /// A rule's recogniser for one line crozier writes with no Fern counterpart.
 pub type AddedRule = fn(&Pair<'_>, &str) -> bool;
 
+/// A rule's recogniser for one line crozier writes with no Fern counterpart,
+/// given its 0-based index in crozier's file, for a line whose meaning depends
+/// on the lines around it (an item of a list argument, a docstring line).
+pub type AddedAtRule = fn(&Pair<'_>, usize) -> bool;
+
 /// The tree a file present on only one side belongs to.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Side {
@@ -1720,7 +1756,7 @@ pub enum Side {
 /// A rule's recogniser for a whole file at a path only one side has.
 pub type FileRule = fn(&Context, &str, Side) -> bool;
 
-/// How one entry's rule recognises its departure: by any of the four shapes.
+/// How one entry's rule recognises its departure: by any of the five shapes.
 #[derive(Clone, Copy, Default)]
 pub struct Rule {
     /// A region of the pair.
@@ -1729,18 +1765,23 @@ pub struct Rule {
     pub line: Option<LineRule>,
     /// A line only crozier writes.
     pub added: Option<AddedRule>,
+    /// A line only crozier writes, recognised by its position.
+    pub added_at: Option<AddedAtRule>,
     /// A file only one side has.
     pub file: Option<FileRule>,
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 24] = [
+pub const RULE_IDS: [&str; 29] = [
+    "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
+    "collapsed-anyof-property-description",
     "constant-header-docs-arguments",
     "date-header-constructor-example",
     "docstring-literal-dollar-escape",
+    "emoji-tag-reference-identifiers",
     "empty-namespace-package",
     "fern-metadata-generator-config",
     "flat-pagination-pager-docs",
@@ -1750,6 +1791,7 @@ pub const RULE_IDS: [&str; 24] = [
     "lifted-base-path-positional-example",
     "multipart-object-required-file-example",
     "nullable-items-docs",
+    "optional-lowered-required-query-array-example",
     "pattern-narrowed-enum-example",
     "readme-client-class-casing",
     "repeated-credential-example-keyword",
@@ -1758,6 +1800,7 @@ pub const RULE_IDS: [&str; 24] = [
     "sdk-name-version-headers",
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
+    "text-response-optional-query-examples",
     "union-value-wrapper-docs-example",
 ];
 
@@ -1766,8 +1809,29 @@ pub const RULE_IDS: [&str; 24] = [
 pub fn rule(id: &str) -> Option<Rule> {
     let none = Rule::default();
     Some(match id {
+        "anyof-path-param-schema-example" => Rule {
+            line: Some(anyof_path_param_schema_example),
+            ..none
+        },
         "body-query-parameter-value" => Rule {
             region: Some(body_query_parameter_value),
+            ..none
+        },
+        "collapsed-anyof-property-description" => Rule {
+            line: Some(collapsed_anyof_property_description),
+            added_at: Some(collapsed_anyof_property_description_line),
+            ..none
+        },
+        "emoji-tag-reference-identifiers" => Rule {
+            line: Some(emoji_tag_reference_identifiers),
+            ..none
+        },
+        "optional-lowered-required-query-array-example" => Rule {
+            added_at: Some(optional_lowered_required_query_array_example),
+            ..none
+        },
+        "text-response-optional-query-examples" => Rule {
+            added: Some(text_response_optional_query_examples),
             ..none
         },
         "closed-empty-object-example" => Rule {
@@ -3706,6 +3770,465 @@ fn sdk_name_version_header_added(pair: &Pair<'_>, crozier: &str) -> bool {
             .fern
             .iter()
             .any(|line| identity_pair_line(line, "X-Fern-").is_some())
+}
+
+/// The files whose worked examples document a method call: the Markdown
+/// writers' and each high-level `client.py`'s docstrings.
+fn example_file(rel: &str) -> bool {
+    DOCS_FILES.contains(&rel) || high_level_client(rel)
+}
+
+/// A keyword argument line of a worked example call, `<indent><name>=<value>,`,
+/// as its indentation, keyword and value text.
+fn keyword_argument_line(line: &str) -> Option<(&str, &str, &str)> {
+    let trimmed = line.trim_start();
+    let indent = &line[..line.len() - trimmed.len()];
+    let (name, value) = trimmed.strip_suffix(',')?.split_once('=')?;
+    python_identifier(name).then_some((indent, name, value))
+}
+
+/// Every operation of the source document, each with the parameters it takes:
+/// its own and its path item's.
+fn source_operations(
+    source: &crate::openapi::OpenApi,
+) -> impl Iterator<Item = (&crate::openapi::Operation, Vec<&crate::openapi::Parameter>)> {
+    source.paths.values().flat_map(|item| {
+        item.operations().into_iter().map(move |(_, operation)| {
+            let parameters = operation
+                .parameters
+                .iter()
+                .chain(item.parameters.iter().filter(|shared| {
+                    !operation
+                        .parameters
+                        .iter()
+                        .any(|own| own.name == shared.name && own.location == shared.location)
+                }))
+                .collect();
+            (operation, parameters)
+        })
+    })
+}
+
+/// Whether `keyword` is the argument a parameter or property named `wire` is
+/// passed as.
+fn argument_names(wire: &str, keyword: &str) -> bool {
+    [
+        crate::naming::field_name(wire),
+        crate::naming::request_field_name(wire),
+        crate::naming::model_field_name(wire),
+    ]
+    .iter()
+    .any(|name| name.trim_end_matches('_') == keyword.trim_end_matches('_'))
+}
+
+/// A schema's own declared example, the singular `example` before the first of
+/// `examples`.
+fn declared_schema_example(schema: &crate::openapi::Schema) -> Option<&serde_json::Value> {
+    schema.example.as_ref().or_else(|| schema.examples.first())
+}
+
+/// The example values a parameter declares: its own `example` and `examples`,
+/// then its schema's.
+fn declared_parameter_examples(
+    parameter: &crate::openapi::Parameter,
+) -> impl Iterator<Item = &serde_json::Value> {
+    parameter
+        .example
+        .iter()
+        .chain(
+            parameter
+                .examples
+                .values()
+                .filter_map(|example| example.value.as_ref()),
+        )
+        .chain(parameter.schema.as_ref().and_then(declared_schema_example))
+}
+
+fn is_query(parameter: &crate::openapi::Parameter) -> bool {
+    parameter.location == Some(crate::openapi::ParameterLocation::Query)
+}
+
+fn is_path(parameter: &crate::openapi::Parameter) -> bool {
+    parameter.location == Some(crate::openapi::ParameterLocation::Path)
+}
+
+/// `anyof-path-param-schema-example`: in a worked example, Fern's
+/// `<name>="<name>"` placeholder for a path parameter whose schema is an
+/// `anyOf`/`oneOf` composition, against crozier's `<name>=<example>` — the
+/// string the composition's own schema-level `example` declares. Every other
+/// character of the line is the same.
+fn anyof_path_param_schema_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let (Some((fern_indent, fern_name, fern_value)), Some((indent, name, value))) =
+        (keyword_argument_line(fern), keyword_argument_line(crozier))
+    else {
+        return false;
+    };
+    if fern_indent != indent || fern_name != name || fern_value == value {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    source_operations(source).any(|(_, parameters)| {
+        parameters.iter().any(|parameter| {
+            let Some(schema) = parameter.schema.as_ref() else {
+                return false;
+            };
+            is_path(parameter)
+                && argument_names(&parameter.name, name)
+                && fern_value == format!("{:?}", parameter.name)
+                && schema.reference.is_none()
+                && (schema.any_of.is_some() || schema.one_of.is_some())
+                && declared_schema_example(schema)
+                    .filter(|example| example.is_string())
+                    .and_then(crate::ir::example_literal)
+                    .is_some_and(|literal| literal == value)
+        })
+    })
+}
+
+/// Whether an operation's successful responses answer only `text/*` content.
+fn text_only_success(operation: &crate::openapi::Operation) -> bool {
+    let mut media = operation
+        .responses
+        .iter()
+        .filter(|(status, _)| status.starts_with('2'))
+        .flat_map(|(_, response)| response.content.keys())
+        .peekable();
+    media.peek().is_some() && media.all(|media_type| media_type.starts_with("text/"))
+}
+
+/// `text-response-optional-query-examples`: a worked-example argument line only
+/// crozier writes, `<name>=<example>,`, passing an optional query parameter of
+/// an operation whose successful responses are all `text/*`, where the value
+/// is one the parameter or its schema declares.
+fn text_response_optional_query_examples(pair: &Pair<'_>, crozier: &str) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let Some((_, name, value)) = keyword_argument_line(crozier) else {
+        return false;
+    };
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    source_operations(source)
+        .filter(|(operation, _)| text_only_success(operation))
+        .any(|(_, parameters)| {
+            parameters.iter().any(|parameter| {
+                is_query(parameter)
+                    && parameter.required != Some(true)
+                    && argument_names(&parameter.name, name)
+                    && declared_parameter_examples(parameter)
+                        .filter_map(crate::ir::example_literal)
+                        .any(|literal| literal == value)
+            })
+        })
+}
+
+/// The list argument a worked example's line `at` belongs to, when it is one:
+/// its keyword and its items' text. A list on one line, `<name>=[a, b],`, is its
+/// own block; a wrapped one runs from `<indent><name>=[` to `<indent>],` with
+/// one item on each line between.
+fn list_argument_at<'l>(lines: &[&'l str], at: usize) -> Option<(&'l str, Vec<&'l str>)> {
+    let line = *lines.get(at)?;
+    if let Some((_, name, value)) = keyword_argument_line(line) {
+        let items = value.strip_prefix('[')?.strip_suffix(']')?;
+        let items = if items.is_empty() {
+            Vec::new()
+        } else {
+            items.split(", ").collect()
+        };
+        return Some((name, items));
+    }
+    // The nearest opener at or above the line, indented no deeper than it:
+    // the line itself, the list an item or the closer belongs to.
+    let depth = |line: &str| line.len() - line.trim_start().len();
+    let opener = (0..=at)
+        .rev()
+        .find(|&index| lines[index].ends_with("=[") && depth(lines[index]) <= depth(line))?;
+    let indent = &lines[opener][..depth(lines[opener])];
+    let name = lines[opener].trim_start().strip_suffix("=[")?;
+    let closer = (opener + 1..lines.len()).find(|&index| lines[index] == format!("{indent}],"))?;
+    if at > closer || !python_identifier(name) {
+        return None;
+    }
+    // Every item is flat, on its own line one level in.
+    let items = lines[opener + 1..closer]
+        .iter()
+        .map(|item| {
+            let item = item.strip_prefix(indent)?.strip_prefix("    ")?;
+            (!item.starts_with(' ') && !item.is_empty()).then(|| item.trim_end_matches(','))
+        })
+        .collect::<Option<Vec<_>>>()?;
+    Some((name, items))
+}
+
+/// Whether a list item's Python text is the JSON value `expected`: a number of
+/// equal value (`1.0` for `1`), a string, or a boolean.
+fn item_is_value(item: &str, expected: &serde_json::Value) -> bool {
+    match expected {
+        serde_json::Value::Number(number) => item
+            .parse::<f64>()
+            .ok()
+            .zip(number.as_f64())
+            .is_some_and(|(left, right)| left == right),
+        serde_json::Value::String(_) => {
+            crate::ir::example_literal(expected).as_deref() == Some(item)
+        }
+        serde_json::Value::Bool(value) => item == if *value { "True" } else { "False" },
+        _ => false,
+    }
+}
+
+/// `optional-lowered-required-query-array-example`: a line only crozier writes
+/// that belongs to a worked example's list argument for a required query array
+/// parameter, whose items are exactly the array example the parameter or its
+/// schema declares. A synthesized list is not admitted.
+fn optional_lowered_required_query_array_example(pair: &Pair<'_>, at: usize) -> bool {
+    if !example_file(pair.rel) {
+        return false;
+    }
+    let Some((name, items)) = list_argument_at(pair.crozier, at) else {
+        return false;
+    };
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    source_operations(source).any(|(_, parameters)| {
+        parameters.iter().any(|parameter| {
+            is_query(parameter)
+                && parameter.required == Some(true)
+                && parameter
+                    .schema
+                    .as_ref()
+                    .and_then(|schema| schema.ty.as_ref()?.primary())
+                    == Some("array")
+                && argument_names(&parameter.name, name)
+                && declared_parameter_examples(parameter).any(|example| {
+                    example.as_array().is_some_and(|values| {
+                        !values.is_empty()
+                            && values.len() == items.len()
+                            && values
+                                .iter()
+                                .zip(&items)
+                                .all(|(value, item)| item_is_value(item, value))
+                    })
+                })
+        })
+    })
+}
+
+/// The descriptions of every source property that is an `anyOf`/`oneOf` of two
+/// or more non-null inline alternatives, the first of them undescribed, with a
+/// description of its own: keyed by the property's wire name.
+fn collapsed_property_descriptions(source: &crate::openapi::OpenApi) -> Vec<(String, String)> {
+    let mut found = Vec::new();
+    let mut visit = |schema: &crate::openapi::Schema| {
+        for (name, property) in &schema.properties {
+            let Some(members) = property.any_of.as_ref().or(property.one_of.as_ref()) else {
+                continue;
+            };
+            let alternatives: Vec<_> = members
+                .iter()
+                .filter(|member| member.ty.as_ref().and_then(|ty| ty.primary()) != Some("null"))
+                .collect();
+            let Some(description) = property.description.as_deref() else {
+                continue;
+            };
+            if property.reference.is_none()
+                && alternatives.len() >= 2
+                && alternatives.iter().all(|member| {
+                    member.reference.is_none()
+                        && member.properties.is_empty()
+                        && member.items.is_none()
+                })
+                && alternatives[0].description.is_none()
+            {
+                found.push((
+                    name.clone(),
+                    description.trim_end_matches(['\r', '\n']).to_string(),
+                ));
+            }
+        }
+    };
+    visit_source_schemas(Some(source), &mut visit);
+    found
+}
+
+/// `collapsed-anyof-property-description`, on an aligned pair of lines: the
+/// `reference.md` parameter row Fern writes bare, `**<name>:** `<type>` `, that
+/// crozier ends with the property's description, and the model field Fern
+/// declares bare, `<name>: <type>`, that crozier declares
+/// `<name>: <type> = pydantic.Field()` to carry it.
+fn collapsed_anyof_property_description(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let properties = collapsed_property_descriptions(source);
+    if pair.rel == "reference.md" {
+        let Some(head) = fern.strip_suffix(' ') else {
+            return false;
+        };
+        let Some(name) = head
+            .strip_prefix("**")
+            .and_then(|rest| rest.split_once(":** `"))
+            .map(|(name, _)| name)
+        else {
+            return false;
+        };
+        return properties.iter().any(|(wire, description)| {
+            argument_names(wire, name)
+                && crozier
+                    == format!(
+                        "{head}{}",
+                        crate::emit::reference_param_suffix(Some(description))
+                    )
+        });
+    }
+    pair.rel.ends_with(".py")
+        && crozier.strip_suffix(" = pydantic.Field()") == Some(fern)
+        && fern.trim_start().split_once(": ").is_some_and(|(name, _)| {
+            fern.starts_with("    ")
+                && properties
+                    .iter()
+                    .any(|(wire, _)| argument_names(wire, name))
+        })
+}
+
+/// `collapsed-anyof-property-description`, on a line only crozier writes: a
+/// line of the description a `client.py`/`raw_client.py` docstring documents
+/// under `<name> : <type>`, or of the docstring block (with the blank line
+/// after it) that follows a model's `<name>: <type> = pydantic.Field()`. The
+/// block's text must be the property's description.
+fn collapsed_anyof_property_description_line(pair: &Pair<'_>, at: usize) -> bool {
+    if !pair.rel.ends_with(".py") {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let lines = pair.crozier;
+    let described = |name: &str, text: &str| {
+        collapsed_property_descriptions(source)
+            .iter()
+            .any(|(wire, description)| argument_names(wire, name) && description.trim() == text)
+    };
+    // A model field's docstring block: `"""`, the description, `"""`, blank.
+    if let Some(field) = (at.saturating_sub(64)..=at).rev().find(|&index| {
+        lines[index].starts_with("    ")
+            && !lines[index].starts_with("     ")
+            && lines[index].ends_with(" = pydantic.Field()")
+    }) {
+        let open = field + 1;
+        if lines.get(open) == Some(&"    \"\"\"") {
+            if let Some(close) = (open + 1..lines.len()).find(|&index| lines[index] == "    \"\"\"")
+            {
+                let blank = close + 1;
+                let text = lines[open + 1..close]
+                    .iter()
+                    .map(|line| line.strip_prefix("    ").unwrap_or(line))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                let name = lines[field]
+                    .trim_start()
+                    .split_once(": ")
+                    .map_or("", |(name, _)| name);
+                if (open..=blank).contains(&at)
+                    && lines.get(blank).is_some_and(|line| line.is_empty())
+                    && described(name, text.trim())
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    // A method docstring's parameter description, indented one level under
+    // `<name> : <type>`.
+    let indent = lines[at].len() - lines[at].trim_start().len();
+    if lines[at].trim().is_empty() || indent < 4 {
+        return false;
+    }
+    let Some(header) = (0..at).rev().find(|&index| {
+        let line = lines[index];
+        line.trim().is_empty() || line.len() - line.trim_start().len() < indent
+    }) else {
+        return false;
+    };
+    let header_line = lines[header];
+    if header_line.len() - header_line.trim_start().len() + 4 != indent {
+        return false;
+    }
+    let Some((name, _)) = header_line.trim_start().split_once(" : ") else {
+        return false;
+    };
+    let end = (header + 1..lines.len())
+        .find(|&index| {
+            lines[index].trim().is_empty()
+                || lines[index].len() - lines[index].trim_start().len() < indent
+        })
+        .unwrap_or(lines.len());
+    let text = lines[header + 1..end]
+        .iter()
+        .map(|line| &line[indent..])
+        .collect::<Vec<_>>()
+        .join("\n");
+    described(name, text.trim())
+}
+
+/// The module directories crozier's package holds, each the directory of a
+/// `client.py` under `src/<package>/`.
+fn crozier_modules(context: &Context) -> BTreeSet<String> {
+    context
+        .crozier_paths()
+        .iter()
+        .filter_map(|path| {
+            let rest = path.strip_prefix("src/")?;
+            let (_, module) = rest.split_once('/')?;
+            module.strip_suffix("/client.py").map(str::to_string)
+        })
+        .collect()
+}
+
+/// `emoji-tag-reference-identifiers`: a `README.md` or `reference.md` line Fern
+/// writes with a tag's raw spelling, its words joined by `_` with a character
+/// no Python identifier admits kept (`⚠️_not_supported_yet`), where crozier's
+/// line is the same with the identifier crozier's package uses for that tag's
+/// module (`not_supported_yet`) at every occurrence.
+fn emoji_tag_reference_identifiers(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    if !DOCS_FILES.contains(&pair.rel) || fern == crozier {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let modules = crozier_modules(pair.context);
+    source
+        .paths
+        .values()
+        .flat_map(|item| item.operations())
+        .flat_map(|(_, operation)| &operation.tags)
+        .any(|tag| {
+            let raw = tag
+                .to_lowercase()
+                .split_whitespace()
+                .collect::<Vec<_>>()
+                .join("_");
+            let identifier: String = raw
+                .chars()
+                .filter(|character| character.is_ascii_alphanumeric() || *character == '_')
+                .collect::<String>()
+                .trim_matches('_')
+                .to_string();
+            raw != identifier
+                && python_identifier(&identifier)
+                && modules.contains(&identifier)
+                && crozier.contains(identifier.as_str())
+                && crozier.replace(identifier.as_str(), &raw) == fern
+        })
 }
 
 #[cfg(test)]
@@ -5779,5 +6302,390 @@ mod tests {
             super::compact_python(&[" \"a b\" : '\\'c d' "]),
             "\"a b\":'\\'c d'"
         );
+    }
+
+    /// A context whose source document is `document` and whose crozier tree
+    /// holds `crozier` (each `(path, text)`).
+    fn source_context(document: serde_json::Value, crozier: &[(&str, &str)]) -> Context {
+        Context::from_sources([], crozier.iter().copied())
+            .with_source_document(serde_json::from_value(document).expect("a source document"))
+    }
+
+    fn line_holds(rule: LineRule, rel: &str, context: &Context, fern: &str, crozier: &str) -> bool {
+        let (fern_lines, crozier_lines) = ([fern], [crozier]);
+        rule(
+            &Pair {
+                rel,
+                fern: &fern_lines,
+                crozier: &crozier_lines,
+                context,
+            },
+            fern,
+            crozier,
+        )
+    }
+
+    fn added_at_holds(rule: AddedAtRule, rel: &str, context: &Context, crozier: &str) -> Vec<bool> {
+        let lines: Vec<&str> = crozier.split('\n').collect();
+        (0..lines.len())
+            .map(|at| {
+                rule(
+                    &Pair {
+                        rel,
+                        fern: &[],
+                        crozier: &lines,
+                        context,
+                    },
+                    at,
+                )
+            })
+            .collect()
+    }
+
+    #[test]
+    fn anyof_path_param_schema_example_admits_only_the_declared_composition_example() {
+        let document = |schema: serde_json::Value, location: &str| {
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/docks/{dock}": {"get": {
+                "parameters": [{"name": "dock", "in": location, "required": true, "schema": schema}],
+                "responses": {}
+            }}}})
+        };
+        let composed = serde_json::json!({
+            "example": "northbasin",
+            "anyOf": [{"type": "string", "pattern": "^[a-z]+$"}, {"type": "string", "format": "uuid"}]
+        });
+        let context = source_context(document(composed.clone(), "path"), &[]);
+        let (fern, crozier) = ("    dock=\"dock\",", "    dock=\"northbasin\",");
+        let rule: LineRule = anyof_path_param_schema_example;
+        for rel in ["README.md", "reference.md", "src/fern/docks/client.py"] {
+            assert!(line_holds(rule, rel, &context, fern, crozier), "{rel}");
+        }
+        // Outside an example file, another value, another keyword, another
+        // indentation, or Fern's line naming something else: no departure.
+        assert!(!line_holds(
+            rule,
+            "src/fern/docks/raw_client.py",
+            &context,
+            fern,
+            crozier
+        ));
+        for (left, right) in [
+            (fern, "    dock=\"southbasin\","),
+            (fern, "    berth=\"northbasin\","),
+            (fern, "        dock=\"northbasin\","),
+            ("    dock=\"other\",", crozier),
+            (fern, fern),
+        ] {
+            assert!(
+                !line_holds(rule, "README.md", &context, left, right),
+                "{right}"
+            );
+        }
+        // A query parameter, a plain string schema, or no source document.
+        let query = source_context(document(composed, "query"), &[]);
+        assert!(!line_holds(rule, "README.md", &query, fern, crozier));
+        let plain = source_context(
+            document(
+                serde_json::json!({"type": "string", "example": "northbasin"}),
+                "path",
+            ),
+            &[],
+        );
+        assert!(!line_holds(rule, "README.md", &plain, fern, crozier));
+        assert!(!line_holds(
+            rule,
+            "README.md",
+            &Context::default(),
+            fern,
+            crozier
+        ));
+    }
+
+    #[test]
+    fn text_response_optional_query_examples_admit_only_a_declared_optional_query_value() {
+        let document = |media: &str, required: bool| {
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/log": {"get": {
+                "parameters": [{"name": "columns", "in": "query", "required": required,
+                    "schema": {"type": "string", "example": "vessel,arrival"}}],
+                "responses": {"200": {"description": "ok", "content": {media: {"schema": {"type": "string"}}}}}
+            }}}})
+        };
+        let context = source_context(document("text/plain", false), &[]);
+        let line = "    columns=\"vessel,arrival\",";
+        for rel in ["README.md", "reference.md", "src/fern/docks/client.py"] {
+            assert!(
+                text_response_optional_query_examples(&pair_with(rel, &context), line),
+                "{rel}"
+            );
+        }
+        assert!(!text_response_optional_query_examples(
+            &pair_with("README.md", &context),
+            "    columns=\"vessel\","
+        ));
+        assert!(!text_response_optional_query_examples(
+            &pair_with("README.md", &context),
+            "    rows=\"vessel,arrival\","
+        ));
+        assert!(!text_response_optional_query_examples(
+            &pair_with("src/fern/docks/raw_client.py", &context),
+            line
+        ));
+        for (media, required) in [("application/json", false), ("text/plain", true)] {
+            let other = source_context(document(media, required), &[]);
+            assert!(
+                !text_response_optional_query_examples(&pair_with("README.md", &other), line),
+                "{media} {required}"
+            );
+        }
+        assert!(!text_response_optional_query_examples(
+            &pair_with("README.md", &Context::default()),
+            line
+        ));
+    }
+
+    fn pair_with<'a>(rel: &'a str, context: &'a Context) -> Pair<'a> {
+        Pair {
+            rel,
+            fern: &[],
+            crozier: &[],
+            context,
+        }
+    }
+
+    #[test]
+    fn optional_lowered_required_query_array_example_admits_only_the_declared_list() {
+        let document = |required: bool, example: serde_json::Value| {
+            serde_json::json!({"openapi": "3.0.3", "paths": {"/tides": {"get": {
+                "parameters": [{"name": "gauges", "in": "query", "required": required,
+                    "schema": {"type": "array", "items": {"type": "number"}, "example": example}}],
+                "responses": {}
+            }}}})
+        };
+        let context = source_context(document(true, serde_json::json!([3, 7])), &[]);
+        let rule: AddedAtRule = optional_lowered_required_query_array_example;
+        let wrapped = "client.tides.get_surge(\n    station_id=\"s\",\n    gauges=[\n        3,\n        7\n    ],\n)";
+        assert_eq!(
+            added_at_holds(rule, "reference.md", &context, wrapped),
+            [false, false, true, true, true, true, false]
+        );
+        let flat = "        client.tides.get_surge(\n            gauges=[3.0, 7.0],\n        )";
+        assert_eq!(
+            added_at_holds(rule, "src/fern/tides/client.py", &context, flat),
+            [false, true, false]
+        );
+        // Another list, a nested one, a raw client, an optional or undeclared
+        // parameter, or no source document: no departure.
+        for (rel, text) in [
+            (
+                "reference.md",
+                wrapped.replace("        7\n", "        8\n"),
+            ),
+            (
+                "reference.md",
+                wrapped.replace("        7\n", "            7\n"),
+            ),
+            ("src/fern/tides/client.py", flat.replace("7.0", "7.5")),
+            (
+                "src/fern/tides/client.py",
+                flat.replace("[3.0, 7.0]", "[1.1]"),
+            ),
+            ("src/fern/tides/raw_client.py", flat.to_string()),
+        ] {
+            assert!(
+                !added_at_holds(rule, rel, &context, &text)
+                    .iter()
+                    .any(|holds| *holds),
+                "{text}"
+            );
+        }
+        for other in [
+            source_context(document(false, serde_json::json!([3, 7])), &[]),
+            source_context(document(true, serde_json::Value::Null), &[]),
+            Context::default(),
+        ] {
+            assert!(!added_at_holds(rule, "reference.md", &other, wrapped)
+                .iter()
+                .any(|holds| *holds));
+        }
+        assert!(item_is_value("\"a\"", &serde_json::json!("a")));
+        assert!(item_is_value("True", &serde_json::json!(true)));
+        assert!(!item_is_value("{}", &serde_json::json!({})));
+    }
+
+    #[test]
+    fn collapsed_anyof_property_description_admits_only_the_property_description() {
+        let property = |first: serde_json::Value| {
+            serde_json::json!({"openapi": "3.0.3", "paths": {}, "components": {"schemas": {
+                "Charter": {"type": "object", "required": ["skipper"], "properties": {
+                    "skipper": {"description": "The skipper's ID.", "anyOf": [first, {"type": "string"}]}
+                }}
+            }}})
+        };
+        let context = source_context(
+            property(serde_json::json!({"type": "string", "format": "uuid"})),
+            &[],
+        );
+        let rule: LineRule = collapsed_anyof_property_description;
+        let row = "**skipper:** `str` ";
+        assert!(line_holds(
+            rule,
+            "reference.md",
+            &context,
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            row,
+            "**skipper:** `str` — Another."
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            "**guests:** `int` ",
+            "**guests:** `int` — The skipper's ID."
+        ));
+        let field = "    skipper: str";
+        assert!(line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            field,
+            "    skipper: str = pydantic.Field()"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            field,
+            "    skipper: str = pydantic.Field(alias=\"s\")"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            "    guests: int",
+            "    guests: int = pydantic.Field()"
+        ));
+        let added: AddedAtRule = collapsed_anyof_property_description_line;
+        let model = "class Charter(UniversalBaseModel):\n    skipper: str = pydantic.Field()\n    \"\"\"\n    The skipper's ID.\n    \"\"\"\n\n    vessel: str";
+        assert_eq!(
+            added_at_holds(added, "src/fern/types/charter.py", &context, model),
+            [false, false, true, true, true, true, false]
+        );
+        let docstring = "        Parameters\n        ----------\n        skipper : str\n            The skipper's ID.\n\n        guests : int";
+        assert_eq!(
+            added_at_holds(added, "src/fern/charters/client.py", &context, docstring),
+            [false, false, false, true, false, false]
+        );
+        for text in [
+            model.replace("The skipper's ID.", "Another."),
+            docstring.replace("The skipper's ID.", "Another."),
+        ] {
+            assert!(
+                !added_at_holds(added, "src/fern/charters/client.py", &context, &text)
+                    .iter()
+                    .any(|holds| *holds)
+            );
+        }
+        assert!(!added_at_holds(added, "reference.md", &context, docstring)
+            .iter()
+            .any(|holds| *holds));
+        // A first alternative carrying its own description is the one Fern
+        // keeps, and the rule does not apply; nor without the document.
+        let described = source_context(
+            property(serde_json::json!({"type": "string", "description": "Own."})),
+            &[],
+        );
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &described,
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
+        assert!(
+            !added_at_holds(added, "src/fern/charters/client.py", &described, docstring)
+                .iter()
+                .any(|holds| *holds)
+        );
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
+    }
+
+    #[test]
+    fn emoji_tag_reference_identifiers_admit_only_the_raw_tag_spelling_of_a_module() {
+        let document = serde_json::json!({"openapi": "3.0.3", "paths": {"/legacy": {"get": {
+            "tags": ["🚧 Legacy endpoints"], "responses": {}
+        }}}});
+        let modules = [("src/fern/legacy_endpoints/client.py", "")];
+        let context = source_context(document.clone(), &modules);
+        let rule: LineRule = emoji_tag_reference_identifiers;
+        let crozier = "<code>client.legacy_endpoints.<a href=\"src/fern/legacy_endpoints/client.py\">list</a>(...)</code>";
+        let fern = crozier.replace("legacy_endpoints", "🚧_legacy_endpoints");
+        for rel in ["README.md", "reference.md"] {
+            assert!(line_holds(rule, rel, &context, &fern, crozier), "{rel}");
+        }
+        assert!(!line_holds(
+            rule,
+            "src/fern/client.py",
+            &context,
+            &fern,
+            crozier
+        ));
+        // One occurrence left raw, another module, a module crozier lacks, or no
+        // document: no departure.
+        let half = crozier.replacen("legacy_endpoints", "🚧_legacy_endpoints", 1);
+        assert!(!line_holds(rule, "reference.md", &context, &fern, &half));
+        let other = fern.replace("🚧_legacy_endpoints.<a", "🚧_legacy.<a");
+        assert!(!line_holds(rule, "reference.md", &context, &other, crozier));
+        let without_module = source_context(document, &[("src/fern/other/client.py", "")]);
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &without_module,
+            &fern,
+            crozier
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            &fern,
+            crozier
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            crozier,
+            crozier
+        ));
+    }
+
+    #[test]
+    fn a_list_of_files_takes_the_list_placeholder() {
+        let raw = "    def deploy(\n        self,\n    ):\n        files={\n            \"bundle\": bundle,\n        }\n";
+        let context = Context::from_sources([], [("src/acme/raw_client.py", raw)]);
+        let fern = "    def deploy(\n        self,\n        *,\n        bundle: typing.List[core.File],\n    ) -> None:\n        \"\"\"\n        Examples\n        --------\n        client.deploy(\n            slug=\"s\",\n        )\n        \"\"\"\n";
+        let rule: RegionRule = multipart_object_required_file_example;
+        let listed = fern.replace(
+            "            slug=\"s\",\n",
+            "            slug=\"s\",\n            bundle=[\"example_bundle\"],\n",
+        );
+        assert!(region_of(rule, "src/acme/client.py", fern, &listed, &context).is_some());
+        let single = fern.replace(
+            "            slug=\"s\",\n",
+            "            slug=\"s\",\n            bundle=\"example_bundle\",\n",
+        );
+        assert!(region_of(rule, "src/acme/client.py", fern, &single, &context).is_none());
     }
 }

@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Marina Crews
+  version: 1.0.0
+paths:
+  /crews:
+    post:
+      operationId: registerCrew
+      tags: [crews]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrewRequest'
+      responses:
+        '204':
+          description: Registered
+components:
+  schemas:
+    CrewRequest:
+      type: object
+      properties:
+        vessel: {type: string}
+        roster:
+          type: object
+          properties:
+            roles:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  name: {type: string}
+                  certified: {type: boolean}
+          required: [roles]
+      required: [vessel]
+      example:
+        vessel: Sea Lark
+        roster:
+          roles:
+            skipper: {name: Ada}
+            mate: {name: Rui}
+            engineer: {name: Lin}

@@ -1,0 +1,49 @@
+openapi: 3.0.3
+info:
+  title: Marina Radio
+  version: 1.0.0
+paths:
+  /radio/messages:
+    post:
+      operationId: broadcast
+      tags: [radio]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: object
+                  properties:
+                    channel: {type: string}
+                    parts:
+                      type: array
+                      items:
+                        oneOf:
+                          - title: Voice Part
+                            type: object
+                            properties:
+                              kind: {type: string, enum: [voice]}
+                              transcript: {type: string}
+                            required: [kind, transcript]
+                          - title: Position Part
+                            type: object
+                            properties:
+                              kind: {type: string, enum: [position]}
+                              fix: {type: object, additionalProperties: true}
+                            required: [kind, fix]
+                  required: [channel, parts]
+              required: [message]
+            example:
+              message:
+                channel: '16'
+                parts:
+                  - kind: voice
+                    transcript: Requesting a berth for the night
+                  - kind: position
+                    fix: {grid: SU4205}
+      responses:
+        '204':
+          description: Broadcast

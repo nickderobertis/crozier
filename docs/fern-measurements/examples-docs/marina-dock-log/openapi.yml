@@ -1,0 +1,28 @@
+openapi: 3.0.3
+info:
+  title: Marina Dock Log
+  version: 1.0.0
+paths:
+  /docks/{dock_id}/log:
+    get:
+      operationId: exportDockLog
+      tags: [docks]
+      parameters:
+        - name: dock_id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: columns
+          in: query
+          required: false
+          schema: {type: string, example: 'vessel,arrival'}
+        - name: compact
+          in: query
+          required: false
+          schema: {type: string, example: 'true'}
+      responses:
+        '200':
+          description: The log as CSV text
+          content:
+            text/plain:
+              schema: {type: string}

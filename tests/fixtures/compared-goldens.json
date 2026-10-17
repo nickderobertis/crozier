@@ -49,6 +49,18 @@
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules-literals/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-component-examples/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-crew-roles/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-dock-log/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-dock-refs/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-empty-list-example/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-firmware-upload/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-nullable-note/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-radio-parts/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-skipper-refs/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"

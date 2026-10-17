@@ -174,6 +174,7 @@ pub fn compare_file(
     // Line rules, inside each run of lines the alignment leaves unpaired.
     let line_rules = rules_of(|rule| rule.line);
     let added_rules = rules_of(|rule| rule.added);
+    let added_at_rules = rules_of(|rule| rule.added_at);
     let current: Vec<&str> = lines.iter().map(|(line, _)| *line).collect();
     let line_rule = |i: usize, j: usize| -> Option<(&'static str, usize)> {
         let origin = lines[j].1?;
@@ -187,7 +188,14 @@ pub fn compare_file(
         added_rules
             .iter()
             .find(|(_, holds)| holds(&pair, current[j]))
-            .map(|(id, _)| (*id, origin))
+            .map(|(id, _)| *id)
+            .or_else(|| {
+                added_at_rules
+                    .iter()
+                    .find(|(_, holds)| holds(&pair, origin))
+                    .map(|(id, _)| *id)
+            })
+            .map(|id| (id, origin))
     };
     let mut result: Vec<&str> = Vec::with_capacity(current.len());
     let ops = align(fern.len(), current.len(), |i, j| fern[i] == current[j]);

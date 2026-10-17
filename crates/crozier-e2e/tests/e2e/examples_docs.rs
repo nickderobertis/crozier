@@ -32,6 +32,66 @@ const CASES: &[(&str, &str, &[&str])] = &[
         "docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml",
         &["--enum-type", "literals"],
     ),
+    (
+        "marina-component-examples",
+        "docs/fern-measurements/examples-docs/marina-component-examples/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-component-examples-literals",
+        "docs/fern-measurements/examples-docs/marina-component-examples/openapi.yml",
+        &["--enum-type", "literals"],
+    ),
+    (
+        "marina-crew-roles",
+        "docs/fern-measurements/examples-docs/marina-crew-roles/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-dock-log",
+        "docs/fern-measurements/examples-docs/marina-dock-log/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-dock-refs",
+        "docs/fern-measurements/examples-docs/marina-dock-refs/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-emoji-tag",
+        "docs/fern-measurements/examples-docs/marina-emoji-tag/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-empty-list-example",
+        "docs/fern-measurements/examples-docs/marina-empty-list-example/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-firmware-upload",
+        "docs/fern-measurements/examples-docs/marina-firmware-upload/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-nullable-note",
+        "docs/fern-measurements/examples-docs/marina-nullable-note/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-radio-parts",
+        "docs/fern-measurements/examples-docs/marina-radio-parts/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-skipper-refs",
+        "docs/fern-measurements/examples-docs/marina-skipper-refs/openapi.yml",
+        &[],
+    ),
+    (
+        "marina-tide-channels",
+        "docs/fern-measurements/examples-docs/marina-tide-channels/openapi.yml",
+        &[],
+    ),
 ];
 
 /// Crozier's output over `spec` with `flags`, compared whole with the Fern
@@ -217,4 +277,112 @@ fn plain_multipart_file_correction_explains_only_the_placeholder() {
             .any(|failure| failure.contains("src/fern/client.py differs")),
         "{failures:?}"
     );
+}
+
+/// Each isolating case of a component, empty-array, union-item, map,
+/// parameter-list or description match, and of a catalogued departure, fails
+/// on one unexplained byte beside what it pins: the match is byte for byte, and
+/// each departure's rule admits only its own difference.
+#[test]
+fn examples_docs_cases_fail_on_an_adjacent_unexplained_byte() {
+    let root = repo_root();
+    for (case, rel, from, to) in [
+        (
+            "marina-component-examples",
+            "reference.md",
+            "    grant=SessionFormGrant.HARBOUR_PASS,",
+            "    grant=SessionFormGrant.REFRESH,",
+        ),
+        (
+            "marina-component-examples-literals",
+            "reference.md",
+            "    grant=\"harbour_pass\",",
+            "    grant=\"refresh\",",
+        ),
+        (
+            "marina-crew-roles",
+            "src/fern/crews/client.py",
+            "                        name=\"Ada\",\n                    ),",
+            "                        name=\"Ada\",\n                    )",
+        ),
+        (
+            "marina-empty-list-example",
+            "reference.md",
+            "        \"8801723\"",
+            "        \"5520193\"",
+        ),
+        (
+            "marina-firmware-upload",
+            "reference.md",
+            "**version:** `typing.Optional[str]` ",
+            "**version:** `typing.Optional[int]` ",
+        ),
+        (
+            "marina-nullable-note",
+            "reference.md",
+            " — Pontoon the berth is moored to",
+            " — Pontoon",
+        ),
+        (
+            "marina-radio-parts",
+            "src/fern/radio/client.py",
+            "transcript=\"Requesting a berth for the night\",",
+            "transcript=\"Requesting a berth\",",
+        ),
+        (
+            "marina-tide-channels",
+            "reference.md",
+            "client.tides.get_surge(\n    station_id=\"station_id\",",
+            "client.tides.get_surge(\n    station_id=\"station\",",
+        ),
+        (
+            "marina-dock-refs",
+            "src/fern/docks/client.py",
+            "dock_id_or_code=\"dock_id_or_code\",",
+            "dock_id_or_code=\"dock\",",
+        ),
+        (
+            "marina-dock-log",
+            "src/fern/docks/client.py",
+            "dock_id=\"dock_id\",",
+            "dock_id=\"dock\",",
+        ),
+        (
+            "marina-skipper-refs",
+            "reference.md",
+            "**skipper:** `str` ",
+            "**skipper:** `int` ",
+        ),
+        (
+            "marina-emoji-tag",
+            "reference.md",
+            "client.🚧_legacy_endpoints.list_legacy_moorings(",
+            "client.🚧_legacy_endpoint.list_legacy_moorings(",
+        ),
+    ] {
+        let (_, spec, flags) = CASES
+            .iter()
+            .find(|(name, _, _)| *name == case)
+            .unwrap_or_else(|| panic!("{case} is a CASES row"));
+        let expected = root
+            .join(EXAMPLES_DOCS_DIR)
+            .join(case)
+            .join("fern-expected");
+        let copy = tempfile::tempdir().expect("golden copy tempdir");
+        copy_dir(&expected, copy.path());
+        perturb(copy.path(), rel, from, to);
+        let failures = tree_failures(
+            case,
+            &root.join(spec),
+            flags,
+            &golden_path(&expected),
+            copy.path(),
+        );
+        assert!(
+            failures
+                .iter()
+                .any(|failure| failure.contains(&format!("{rel} differs"))),
+            "{case} {rel}: {failures:?}"
+        );
+    }
 }

@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title: Marina Legacy
+  version: 1.0.0
+tags:
+  - name: Moorings
+  - name: '🚧 Legacy endpoints'
+paths:
+  /legacy/moorings:
+    get:
+      operationId: listLegacyMoorings
+      tags: ['🚧 Legacy endpoints']
+      parameters:
+        - name: include
+          in: query
+          schema: {type: string, example: buoys}
+      responses:
+        '200':
+          description: Moorings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: {type: integer}
+  /legacy/me:
+    get:
+      operationId: getLegacyAccount
+      tags: ['🚧 Legacy endpoints']
+      responses:
+        '200':
+          description: The account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+  /moorings:
+    get:
+      operationId: listMoorings
+      tags: [Moorings]
+      responses:
+        '200':
+          description: Moorings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Account'
+components:
+  schemas:
+    Account:
+      type: object
+      properties:
+        name: {type: string}

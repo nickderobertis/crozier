@@ -1,0 +1,27 @@
+openapi: 3.1.0
+info:
+  title: Marina Berths
+  version: 1.0.0
+paths:
+  /berths:
+    post:
+      operationId: createBerth
+      tags: [berths]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                code:
+                  type: string
+                pontoon:
+                  anyOf:
+                    - type: string
+                      description: Pontoon the berth is moored to
+                    - type: 'null'
+              required: [code]
+      responses:
+        '204':
+          description: Created
