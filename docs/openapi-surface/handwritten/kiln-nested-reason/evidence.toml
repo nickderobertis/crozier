@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "096ff0e9faa44cf3b3f8e393052a2cf5997e76a48a9d627bfbf786a9977c6fe7"
+
+[[covers]]
+key = "oneof-anyof-variant"
+arm = 'src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"

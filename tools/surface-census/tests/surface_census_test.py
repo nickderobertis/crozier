@@ -41,7 +41,8 @@ import tomllib
 import unicodedata
 import unittest
 from collections import Counter
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
 from typing import Any, ClassVar
@@ -3164,6 +3165,7 @@ fn following() { let other = 42; }
         words = {
             0: "zero",
             1: "one",
+            2: "two",
             3: "three",
             4: "four",
             5: "five",
@@ -3192,6 +3194,8 @@ fn following() { let other = 42; }
             107: "one-hundred-and-seven",
             110: "one-hundred-and-ten",
             111: "one-hundred-and-eleven",
+            114: "one-hundred-and-fourteen",
+            116: "one-hundred-and-sixteen",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -3538,6 +3542,10 @@ class ConjunctionCensusTests(unittest.TestCase):
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued": {},
+        "schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": {},
+        "schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf": {},
         "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf": {},
         "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf": {},
@@ -4422,6 +4430,58 @@ POINTER_WALK_SELECTORS = frozenset(
 POINTER_WALK_MEMBERS = frozenset(f"schema.$ref:pointer-walk-reaches={arm}" for arm in _POINTER_WALK_ARMS)
 
 
+@dataclass(frozen=True)
+class SchemaDocument:
+    """A discriminating input whose one interesting node is a schema."""
+
+    root: dict
+
+    def source(self, title: str) -> dict:
+        return schema_source(title, self.root)
+
+
+@dataclass(frozen=True)
+class PathsDocument:
+    """A discriminating input whose one interesting node is a Paths Object key."""
+
+    key: str
+
+    def source(self, title: str) -> dict:
+        return paths_source(title, self.key)
+
+
+CaseDocument = SchemaDocument | PathsDocument
+
+
+@dataclass(frozen=True)
+class DiscriminationCase:
+    """A node-local selector, the branch it was read off, and its documents.
+
+    `select` is counted once and `near` not at all; `overlap`, present exactly when
+    another case's condition can also hold, is counted by this selector and by
+    `overlap_selector` both.
+    """
+
+    selector: str
+    slug: str
+    branch: str
+    select: CaseDocument
+    near: CaseDocument
+    overlap: CaseDocument | None = None
+    overlap_selector: str | None = None
+
+    def __post_init__(self) -> None:
+        if (self.overlap is None) != (self.overlap_selector is None):
+            raise ValueError(f"{self.slug}: an overlap document and its overlap selector come together")
+
+    def documents(self) -> Iterator[tuple[str, CaseDocument]]:
+        """Each document with the role its fixture name carries."""
+        yield "select", self.select
+        yield "near", self.near
+        if self.overlap is not None:
+            yield "overlap", self.overlap
+
+
 class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     """What each node-local selector counts, over inputs that discriminate its branch.
 
@@ -4442,451 +4502,501 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
     the same shapes.
     """
 
-    # selector, slug, the branch it was read off, and the three documents.
-    CASES: tuple[dict, ...] = (
-        # --- the predicates, each read at the node that declares it -----------
-        {
-            "selector": "schema.type:primary=array",
-            "slug": "primary-array",
-            "branch": "the `type: array` guard of nested_array_element case 1",
-            "select": ("schema", array_of({"type": "string"})),
-            "near": ("schema", {"type": ["string", "array"], "items": {"type": "string"}}),
-        },
-        {
-            "selector": "schema.properties:non-empty",
-            "slug": "properties-non-empty",
-            "branch": "the `properties` disjunct of `is_inline_struct`",
-            "select": ("schema", STRUCT),
-            "near": ("schema", EMPTY_PROPERTIES),
-        },
-        {
-            "selector": "schema.oneOf:sole-member",
-            "slug": "one-of-sole-member",
-            "branch": "prop_type_ref case 12's `members.len() == 1`",
-            "select": ("schema", {"oneOf": [{"type": "string"}]}),
-            "near": ("schema", TWO_ONE_OF),
-        },
-        {
-            "selector": "schema.anyOf:sole-member",
-            "slug": "any-of-sole-member",
-            "branch": "prop_type_ref case 12's `members.len() == 1`, `anyOf` spelling",
-            "select": ("schema", {"anyOf": [{"type": "string"}]}),
-            "near": ("schema", TWO_ANY_OF),
-        },
-        {
-            "selector": "schema.oneOf:sole-non-null-member",
-            "slug": "one-of-sole-non-null",
-            "branch": "prop_type_ref case 11's nullable pair",
-            "select": ("schema", NULLABLE_ONE_OF),
-            "near": ("schema", TWO_ONE_OF),
-        },
-        {
-            "selector": "schema.anyOf:sole-non-null-member",
-            "slug": "any-of-sole-non-null",
-            "branch": "prop_type_ref case 11's nullable pair, `anyOf` spelling",
-            "select": ("schema", NULLABLE_ANY_OF),
-            "near": ("schema", TWO_ANY_OF),
-        },
-        {
-            "selector": "schema.enum:string-valued",
-            "slug": "enum-string-valued",
-            "branch": "prop_type_ref case 7a's `string_enum_values`",
-            "select": ("schema", {"enum": ["alpha", "beta"]}),
-            "near": ("schema", {"enum": [1, 2]}),
-        },
-        {
-            "selector": "schema.const:string-valued",
-            "slug": "const-string-valued",
-            "branch": "prop_type_ref case 7b's `const` fallback",
-            "select": ("schema", {"const": "alpha"}),
-            "near": ("schema", {"const": 1}),
-        },
-        {
-            "selector": "schema.oneOf:several-non-null-members",
-            "slug": "one-of-several-non-null",
-            "branch": "the arity `hoist_union_variant` case 14 reads off a map's value",
-            "select": ("schema", TWO_ONE_OF),
-            "near": ("schema", NULLABLE_ONE_OF),
-        },
-        {
-            "selector": "schema.anyOf:several-non-null-members",
-            "slug": "any-of-several-non-null",
-            "branch": "the same arity, `anyOf` spelling",
-            "select": ("schema", TWO_ANY_OF),
-            "near": ("schema", NULLABLE_ANY_OF),
-        },
-        {
-            "selector": "schema.additionalProperties=false",
-            "slug": "additional-properties-false",
-            "branch": "the closed-object disjunct of `is_inline_struct`",
-            "select": ("schema", CLOSED_OBJECT),
-            "near": ("schema", OPEN_OBJECT),
-        },
-        {
-            "selector": "schema.additionalProperties=true",
-            "slug": "additional-properties-true",
-            "branch": "`is_map`'s open-map arm, the other boolean of the same field",
-            "select": ("schema", OPEN_OBJECT),
-            "near": ("schema", {"type": "object", "additionalProperties": {"type": "string"}}),
-        },
-        {
-            "selector": "openapi.paths:leading-literal-segment",
-            "slug": "leading-literal",
-            "branch": "path_group case 1",
-            "select": ("paths", "/widgets/{id}"),
-            "near": ("paths", "/{id}/widgets"),
-        },
-        {
-            "selector": "openapi.paths:template-before-literal-segment",
-            "slug": "template-before-literal",
-            "branch": "path_group case 2",
-            "select": ("paths", "/{tenant}/widgets/{id}"),
-            "near": ("paths", "/{tenant}/{id}"),
-        },
-        {
-            "selector": "openapi.paths:all-segments-templated",
-            "slug": "all-templated",
-            "branch": "path_group case 3",
-            "select": ("paths", "/{tenant}/{id}"),
-            "near": ("paths", "/{tenant}/widgets"),
-        },
-        # --- nested_array_element ---------------------------------------------
-        {
-            "selector": "schema.items>schema.type:primary=array",
-            "slug": "nae-1",
-            "branch": "nested_array_element case 1",
-            "select": ("schema", array_of(array_of(STRUCT))),
-            "near": ("schema", array_of({"type": ["string", "array"], "items": STRUCT})),
-            "overlap": ("schema", array_of({"$ref": "#/components/schemas/Other", "type": "array"})),
-            "overlap_selector": "schema.items>schema.$ref",
-        },
-        {
-            "selector": "schema.items>schema.properties:non-empty",
-            "slug": "nae-4",
-            "branch": "nested_array_element case 4",
-            "select": ("schema", array_of(STRUCT)),
-            "near": ("schema", array_of(EMPTY_PROPERTIES)),
-            "overlap": ("schema", array_of({**array_of({"type": "string"}), **STRUCT})),
-            "overlap_selector": "schema.items>schema.type:primary=array",
-        },
-        {
-            "selector": "schema.items>schema.additionalProperties=false",
-            "slug": "nae-6",
-            "branch": "nested_array_element case 6",
-            "select": ("schema", array_of(CLOSED_OBJECT)),
-            "near": ("schema", array_of(OPEN_OBJECT)),
-            "overlap": ("schema", array_of({**STRUCT, "additionalProperties": False})),
-            "overlap_selector": "schema.items>schema.properties:non-empty",
-        },
-        # --- hoist_union_variant, cases 3a to 3d ------------------------------
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
-            "slug": "huv-3a",
-            "branch": "hoist_union_variant case 3a",
-            "select": ("schema", {"oneOf": [array_of(NULLABLE_ANY_OF)]}),
-            "near": ("schema", {"oneOf": [array_of(TWO_ANY_OF)]}),
-            "overlap": (
-                "schema",
+    CASES: tuple[DiscriminationCase, ...] = (
+        DiscriminationCase(
+            selector="schema.type:primary=array",
+            slug="primary-array",
+            branch="the `type: array` guard of nested_array_element case 1",
+            select=SchemaDocument(array_of({"type": "string"})),
+            near=SchemaDocument({"type": ["string", "array"], "items": {"type": "string"}}),
+        ),
+        DiscriminationCase(
+            selector="schema.properties:non-empty",
+            slug="properties-non-empty",
+            branch="the `properties` disjunct of `is_inline_struct`",
+            select=SchemaDocument(STRUCT),
+            near=SchemaDocument(EMPTY_PROPERTIES),
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf:sole-member",
+            slug="one-of-sole-member",
+            branch="prop_type_ref case 12's `members.len() == 1`",
+            select=SchemaDocument({"oneOf": [{"type": "string"}]}),
+            near=SchemaDocument(TWO_ONE_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf:sole-member",
+            slug="any-of-sole-member",
+            branch="prop_type_ref case 12's `members.len() == 1`, `anyOf` spelling",
+            select=SchemaDocument({"anyOf": [{"type": "string"}]}),
+            near=SchemaDocument(TWO_ANY_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf:sole-non-null-member",
+            slug="one-of-sole-non-null",
+            branch="prop_type_ref case 11's nullable pair",
+            select=SchemaDocument(NULLABLE_ONE_OF),
+            near=SchemaDocument(TWO_ONE_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf:sole-non-null-member",
+            slug="any-of-sole-non-null",
+            branch="prop_type_ref case 11's nullable pair, `anyOf` spelling",
+            select=SchemaDocument(NULLABLE_ANY_OF),
+            near=SchemaDocument(TWO_ANY_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.enum:string-valued",
+            slug="enum-string-valued",
+            branch="prop_type_ref case 7a's `string_enum_values`",
+            select=SchemaDocument({"enum": ["alpha", "beta"]}),
+            near=SchemaDocument({"enum": [1, 2]}),
+        ),
+        DiscriminationCase(
+            selector="schema.const:string-valued",
+            slug="const-string-valued",
+            branch="prop_type_ref case 7b's `const` fallback",
+            select=SchemaDocument({"const": "alpha"}),
+            near=SchemaDocument({"const": 1}),
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf:several-non-null-members",
+            slug="one-of-several-non-null",
+            branch="the arity `hoist_union_variant` case 14 reads off a map's value",
+            select=SchemaDocument(TWO_ONE_OF),
+            near=SchemaDocument(NULLABLE_ONE_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf:several-non-null-members",
+            slug="any-of-several-non-null",
+            branch="the same arity, `anyOf` spelling",
+            select=SchemaDocument(TWO_ANY_OF),
+            near=SchemaDocument(NULLABLE_ANY_OF),
+        ),
+        DiscriminationCase(
+            selector="schema.additionalProperties=false",
+            slug="additional-properties-false",
+            branch="the closed-object disjunct of `is_inline_struct`",
+            select=SchemaDocument(CLOSED_OBJECT),
+            near=SchemaDocument(OPEN_OBJECT),
+        ),
+        DiscriminationCase(
+            selector="schema.additionalProperties=true",
+            slug="additional-properties-true",
+            branch="`is_map`'s open-map arm, the other boolean of the same field",
+            select=SchemaDocument(OPEN_OBJECT),
+            near=SchemaDocument({"type": "object", "additionalProperties": {"type": "string"}}),
+        ),
+        DiscriminationCase(
+            selector="openapi.paths:leading-literal-segment",
+            slug="leading-literal",
+            branch="path_group case 1",
+            select=PathsDocument("/widgets/{id}"),
+            near=PathsDocument("/{id}/widgets"),
+        ),
+        DiscriminationCase(
+            selector="openapi.paths:template-before-literal-segment",
+            slug="template-before-literal",
+            branch="path_group case 2",
+            select=PathsDocument("/{tenant}/widgets/{id}"),
+            near=PathsDocument("/{tenant}/{id}"),
+        ),
+        DiscriminationCase(
+            selector="openapi.paths:all-segments-templated",
+            slug="all-templated",
+            branch="path_group case 3",
+            select=PathsDocument("/{tenant}/{id}"),
+            near=PathsDocument("/{tenant}/widgets"),
+        ),
+        DiscriminationCase(
+            selector="schema.items>schema.type:primary=array",
+            slug="nae-1",
+            branch="nested_array_element case 1",
+            select=SchemaDocument(array_of(array_of(STRUCT))),
+            near=SchemaDocument(array_of({"type": ["string", "array"], "items": STRUCT})),
+            overlap=SchemaDocument(array_of({"$ref": "#/components/schemas/Other", "type": "array"})),
+            overlap_selector="schema.items>schema.$ref",
+        ),
+        DiscriminationCase(
+            selector="schema.items>schema.properties:non-empty",
+            slug="nae-4",
+            branch="nested_array_element case 4",
+            select=SchemaDocument(array_of(STRUCT)),
+            near=SchemaDocument(array_of(EMPTY_PROPERTIES)),
+            overlap=SchemaDocument(array_of({**array_of({"type": "string"}), **STRUCT})),
+            overlap_selector="schema.items>schema.type:primary=array",
+        ),
+        DiscriminationCase(
+            selector="schema.items>schema.additionalProperties=false",
+            slug="nae-6",
+            branch="nested_array_element case 6",
+            select=SchemaDocument(array_of(CLOSED_OBJECT)),
+            near=SchemaDocument(array_of(OPEN_OBJECT)),
+            overlap=SchemaDocument(array_of({**STRUCT, "additionalProperties": False})),
+            overlap_selector="schema.items>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+            slug="huv-3a",
+            branch="hoist_union_variant case 3a",
+            select=SchemaDocument({"oneOf": [array_of(NULLABLE_ANY_OF)]}),
+            near=SchemaDocument({"oneOf": [array_of(TWO_ANY_OF)]}),
+            overlap=SchemaDocument(
                 {"oneOf": [array_of({"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]})]},
             ),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
-        },
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
-            "slug": "huv-3b",
-            "branch": "hoist_union_variant case 3b",
-            "select": ("schema", {"oneOf": [array_of(NULLABLE_ONE_OF)]}),
-            "near": ("schema", {"oneOf": [array_of(TWO_ONE_OF)]}),
-            "overlap": (
-                "schema",
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+            slug="huv-3b",
+            branch="hoist_union_variant case 3b",
+            select=SchemaDocument({"oneOf": [array_of(NULLABLE_ONE_OF)]}),
+            near=SchemaDocument({"oneOf": [array_of(TWO_ONE_OF)]}),
+            overlap=SchemaDocument(
                 {"oneOf": [array_of({"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]})]},
             ),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
-            "slug": "huv-3c",
-            "branch": "hoist_union_variant case 3c",
-            "select": ("schema", {"anyOf": [array_of(NULLABLE_ANY_OF)]}),
-            "near": ("schema", {"anyOf": [array_of(TWO_ANY_OF)]}),
-            "overlap": (
-                "schema",
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+            slug="huv-3c",
+            branch="hoist_union_variant case 3c",
+            select=SchemaDocument({"anyOf": [array_of(NULLABLE_ANY_OF)]}),
+            near=SchemaDocument({"anyOf": [array_of(TWO_ANY_OF)]}),
+            overlap=SchemaDocument(
                 {"anyOf": [array_of({"anyOf": [{"type": "null"}, {"oneOf": [{"type": "string"}]}]})]},
             ),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
-            "slug": "huv-3d",
-            "branch": "hoist_union_variant case 3d",
-            "select": ("schema", {"anyOf": [array_of(NULLABLE_ONE_OF)]}),
-            "near": ("schema", {"anyOf": [array_of(TWO_ONE_OF)]}),
-            "overlap": (
-                "schema",
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+            slug="huv-3d",
+            branch="hoist_union_variant case 3d",
+            select=SchemaDocument({"anyOf": [array_of(NULLABLE_ONE_OF)]}),
+            near=SchemaDocument({"anyOf": [array_of(TWO_ONE_OF)]}),
+            overlap=SchemaDocument(
                 {"anyOf": [array_of({"oneOf": [{"type": "null"}, {"anyOf": [{"type": "string"}]}]})]},
             ),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
-        },
-        # --- hoist_union_variant, cases 5a to 5d ------------------------------
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
-            "slug": "huv-5a",
-            "branch": "hoist_union_variant case 5a",
-            "select": ("schema", {"oneOf": [array_of(TWO_ONE_OF)]}),
-            "near": ("schema", {"oneOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
-            "overlap": ("schema", {"oneOf": [array_of(NULLABLE_ONE_OF)]}),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
-        },
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
-            "slug": "huv-5b",
-            "branch": "hoist_union_variant case 5b",
-            "select": ("schema", {"oneOf": [array_of(TWO_ANY_OF)]}),
-            "near": ("schema", {"oneOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
-            "overlap": ("schema", {"oneOf": [array_of(NULLABLE_ANY_OF)]}),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
-            "slug": "huv-5c",
-            "branch": "hoist_union_variant case 5c",
-            "select": ("schema", {"anyOf": [array_of(TWO_ONE_OF)]}),
-            "near": ("schema", {"anyOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
-            "overlap": ("schema", {"anyOf": [array_of(NULLABLE_ONE_OF)]}),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
-            "slug": "huv-5d",
-            "branch": "hoist_union_variant case 5d",
-            "select": ("schema", {"anyOf": [array_of(TWO_ANY_OF)]}),
-            "near": ("schema", {"anyOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
-            "overlap": ("schema", {"anyOf": [array_of(NULLABLE_ANY_OF)]}),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
-        },
-        # --- hoist_union_variant, cases 7a to 7d ------------------------------
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
-            "slug": "huv-7a",
-            "branch": "hoist_union_variant case 7a",
-            "select": ("schema", {"oneOf": [array_of(STRUCT)]}),
-            "near": ("schema", {"oneOf": [array_of(EMPTY_PROPERTIES)]}),
-            "overlap": ("schema", {"oneOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
-            "slug": "huv-7b",
-            "branch": "hoist_union_variant case 7b",
-            "select": ("schema", {"anyOf": [array_of(STRUCT)]}),
-            "near": ("schema", {"anyOf": [array_of(EMPTY_PROPERTIES)]}),
-            "overlap": ("schema", {"anyOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
-        },
-        {
-            "selector": "schema.oneOf>schema.enum:string-valued",
-            "slug": "huv-2a",
-            "branch": "hoist_union_variant case 2a",
-            "select": ("schema", {"oneOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
-            "near": ("schema", {"oneOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
-            "overlap": ("schema", {"oneOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
-            "overlap_selector": "schema.oneOf>schema.$ref",
-        },
-        {
-            "selector": "schema.anyOf>schema.enum:string-valued",
-            "slug": "huv-2b",
-            "branch": "hoist_union_variant case 2b",
-            "select": ("schema", {"anyOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
-            "near": ("schema", {"anyOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
-            "overlap": ("schema", {"anyOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
-            "overlap_selector": "schema.anyOf>schema.$ref",
-        },
-        {
-            "selector": "schema.oneOf>schema.const:string-valued",
-            "slug": "huv-2c",
-            "branch": "hoist_union_variant case 2c",
-            "select": ("schema", {"oneOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
-            "near": ("schema", {"oneOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
-            "overlap": ("schema", {"oneOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
-            "overlap_selector": "schema.oneOf>schema.$ref",
-        },
-        {
-            "selector": "schema.anyOf>schema.const:string-valued",
-            "slug": "huv-2d",
-            "branch": "hoist_union_variant case 2d",
-            "select": ("schema", {"anyOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
-            "near": ("schema", {"anyOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
-            "overlap": ("schema", {"anyOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
-            "overlap_selector": "schema.anyOf>schema.$ref",
-        },
-        {
-            "selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
-            "slug": "huv-7c",
-            "branch": "hoist_union_variant case 7c",
-            "select": ("schema", {"oneOf": [array_of(CLOSED_OBJECT)]}),
-            "near": ("schema", {"oneOf": [array_of(OPEN_OBJECT)]}),
-            "overlap": ("schema", {"oneOf": [array_of({**STRUCT, "additionalProperties": False})]}),
-            "overlap_selector": "schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
-            "slug": "huv-7d",
-            "branch": "hoist_union_variant case 7d",
-            "select": ("schema", {"anyOf": [array_of(CLOSED_OBJECT)]}),
-            "near": ("schema", {"anyOf": [array_of(OPEN_OBJECT)]}),
-            "overlap": ("schema", {"anyOf": [array_of({**STRUCT, "additionalProperties": False})]}),
-            "overlap_selector": "schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
-        },
-        # --- hoist_union_variant, cases 8a and 8b -----------------------------
-        {
-            "selector": "schema.oneOf>schema.properties:non-empty",
-            "slug": "huv-8a",
-            "branch": "hoist_union_variant case 8a",
-            "select": ("schema", {"oneOf": [STRUCT]}),
-            "near": ("schema", {"oneOf": [EMPTY_PROPERTIES]}),
-            "overlap": ("schema", {"oneOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
-            "overlap_selector": "schema.oneOf>schema.allOf",
-        },
-        {
-            "selector": "schema.anyOf>schema.properties:non-empty",
-            "slug": "huv-8b",
-            "branch": "hoist_union_variant case 8b",
-            "select": ("schema", {"anyOf": [STRUCT]}),
-            "near": ("schema", {"anyOf": [EMPTY_PROPERTIES]}),
-            "overlap": ("schema", {"anyOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
-            "overlap_selector": "schema.anyOf>schema.allOf",
-        },
-        # --- prop_type_ref ----------------------------------------------------
-        {
-            "selector": "schema.properties>schema.enum:string-valued",
-            "slug": "ptr-7a",
-            "branch": "prop_type_ref case 7a",
-            "select": ("schema", {"properties": {"kind": {"enum": ["alpha", "beta"]}}}),
-            "near": ("schema", {"properties": {"kind": {"enum": [1, 2]}}}),
-            "overlap": ("schema", {"properties": {"kind": {"enum": ["alpha"], **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.const:string-valued",
-            "slug": "ptr-7b",
-            "branch": "prop_type_ref case 7b",
-            "select": ("schema", {"properties": {"kind": {"const": "alpha"}}}),
-            "near": ("schema", {"properties": {"kind": {"const": 1}}}),
-            "overlap": ("schema", {"properties": {"kind": {"const": "alpha", **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.example:schema-shaped",
-            "slug": "schema-shaped-example",
-            "branch": "`example_is_schema_definition`",
-            "select": ("schema", {"example": {"field": {"type": "string"}}}),
-            "near": ("schema", {"example": {"field": {"description": "metadata"}}}),
-        },
-        {
-            "selector": "schema.properties>schema.properties:non-empty",
-            "slug": "ptr-8a",
-            "branch": "prop_type_ref case 8a",
-            "select": ("schema", {"properties": {"nested": STRUCT}}),
-            "near": ("schema", {"properties": {"nested": EMPTY_PROPERTIES}}),
-            "overlap": ("schema", {"properties": {"nested": {**STRUCT, **TWO_ONE_OF}}}),
-            "overlap_selector": "schema.properties>schema.oneOf",
-        },
-        {
-            "selector": "schema.properties>schema.additionalProperties=false&schema.properties",
-            "slug": "ptr-8d",
-            "branch": "prop_type_ref case 8d",
-            "select": ("schema", {"properties": {"bag": {**CLOSED_OBJECT, "properties": {}}}}),
-            "near": ("schema", {"properties": {"bag": CLOSED_OBJECT}}),
-            "overlap": ("schema", {"properties": {"bag": {**STRUCT, "additionalProperties": False}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.oneOf:sole-non-null-member",
-            "slug": "ptr-11a",
-            "branch": "prop_type_ref case 11a",
-            "select": ("schema", {"properties": {"maybe": NULLABLE_ONE_OF}}),
-            "near": ("schema", {"properties": {"maybe": TWO_ONE_OF}}),
-            "overlap": ("schema", {"properties": {"maybe": {**NULLABLE_ONE_OF, **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.anyOf:sole-non-null-member",
-            "slug": "ptr-11b",
-            "branch": "prop_type_ref case 11b",
-            "select": ("schema", {"properties": {"maybe": NULLABLE_ANY_OF}}),
-            "near": ("schema", {"properties": {"maybe": TWO_ANY_OF}}),
-            "overlap": ("schema", {"properties": {"maybe": {**NULLABLE_ANY_OF, **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.type:primary=array",
-            "slug": "ptr-15",
-            "branch": "prop_type_ref case 15",
-            "select": ("schema", {"properties": {"many": array_of(STRUCT)}}),
-            "near": ("schema", {"properties": {"many": {"type": ["string", "array"], "items": STRUCT}}}),
-            "overlap": ("schema", {"properties": {"many": {**array_of(STRUCT), **TWO_ONE_OF}}}),
-            "overlap_selector": "schema.properties>schema.oneOf",
-        },
-        {
-            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
-            "slug": "ptr-12a",
-            "branch": "prop_type_ref case 12a",
-            "select": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT, {"type": "string"}]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [STRUCT], **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
-            "slug": "ptr-12b",
-            "branch": "prop_type_ref case 12b",
-            "select": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT, {"type": "string"}]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [STRUCT], **STRUCT}}}),
-            "overlap_selector": "schema.properties>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
-            "slug": "ptr-12c",
-            "branch": "prop_type_ref case 12c",
-            "select": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**STRUCT, "additionalProperties": False}]}}}),
-            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
-            "slug": "ptr-12d",
-            "branch": "prop_type_ref case 12d",
-            "select": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
-            "near": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
-            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**STRUCT, "additionalProperties": False}]}}}),
-            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
-        },
-        {
-            "selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
-            "slug": "historical-closed-oneof",
-            "branch": "historical closed-member witness search",
-            "select": ("schema", {"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
-            "near": (
-                "schema",
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+            slug="huv-3e",
+            branch="hoist_union_variant case 3e",
+            select=SchemaDocument({"oneOf": [array_of({"type": "string", "enum": ["upper"]}), {"type": "string"}]}),
+            near=SchemaDocument({"oneOf": [array_of({"type": "integer", "enum": [1]}), {"type": "string"}]}),
+            overlap=SchemaDocument(
+                {
+                    "oneOf": [
+                        array_of({"enum": ["upper"], "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.enum:string-valued",
+            slug="huv-3f",
+            branch="hoist_union_variant case 3f",
+            select=SchemaDocument({"anyOf": [array_of({"type": "string", "enum": ["upper"]}), {"type": "string"}]}),
+            near=SchemaDocument({"anyOf": [array_of({"type": "integer", "enum": [1]}), {"type": "string"}]}),
+            overlap=SchemaDocument(
+                {
+                    "anyOf": [
+                        array_of({"enum": ["upper"], "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+            slug="huv-3g",
+            branch="hoist_union_variant case 3g",
+            select=SchemaDocument({"oneOf": [array_of({"type": "string", "const": "upper"}), {"type": "string"}]}),
+            near=SchemaDocument({"oneOf": [array_of({"type": "integer", "const": 1}), {"type": "string"}]}),
+            overlap=SchemaDocument(
+                {
+                    "oneOf": [
+                        array_of({"const": "upper", "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>!schema.$ref&schema.const:string-valued",
+            slug="huv-3h",
+            branch="hoist_union_variant case 3h",
+            select=SchemaDocument({"anyOf": [array_of({"type": "string", "const": "upper"}), {"type": "string"}]}),
+            near=SchemaDocument({"anyOf": [array_of({"type": "integer", "const": 1}), {"type": "string"}]}),
+            overlap=SchemaDocument(
+                {
+                    "anyOf": [
+                        array_of({"const": "upper", "anyOf": [{"type": "null"}, {"type": "string"}]}),
+                        {"type": "string"},
+                    ]
+                },
+            ),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+            slug="huv-5a",
+            branch="hoist_union_variant case 5a",
+            select=SchemaDocument({"oneOf": [array_of(TWO_ONE_OF)]}),
+            near=SchemaDocument({"oneOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
+            overlap=SchemaDocument({"oneOf": [array_of(NULLABLE_ONE_OF)]}),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf",
+            slug="huv-5b",
+            branch="hoist_union_variant case 5b",
+            select=SchemaDocument({"oneOf": [array_of(TWO_ANY_OF)]}),
+            near=SchemaDocument({"oneOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
+            overlap=SchemaDocument({"oneOf": [array_of(NULLABLE_ANY_OF)]}),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+            slug="huv-5c",
+            branch="hoist_union_variant case 5c",
+            select=SchemaDocument({"anyOf": [array_of(TWO_ONE_OF)]}),
+            near=SchemaDocument({"anyOf": [{"type": ["string", "array"], "items": TWO_ONE_OF}]}),
+            overlap=SchemaDocument({"anyOf": [array_of(NULLABLE_ONE_OF)]}),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf",
+            slug="huv-5d",
+            branch="hoist_union_variant case 5d",
+            select=SchemaDocument({"anyOf": [array_of(TWO_ANY_OF)]}),
+            near=SchemaDocument({"anyOf": [{"type": ["string", "array"], "items": TWO_ANY_OF}]}),
+            overlap=SchemaDocument({"anyOf": [array_of(NULLABLE_ANY_OF)]}),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.anyOf:sole-non-null-member",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+            slug="huv-7a",
+            branch="hoist_union_variant case 7a",
+            select=SchemaDocument({"oneOf": [array_of(STRUCT)]}),
+            near=SchemaDocument({"oneOf": [array_of(EMPTY_PROPERTIES)]}),
+            overlap=SchemaDocument({"oneOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+            slug="huv-7b",
+            branch="hoist_union_variant case 7b",
+            select=SchemaDocument({"anyOf": [array_of(STRUCT)]}),
+            near=SchemaDocument({"anyOf": [array_of(EMPTY_PROPERTIES)]}),
+            overlap=SchemaDocument({"anyOf": [array_of({**STRUCT, **TWO_ONE_OF})]}),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.enum:string-valued",
+            slug="huv-2a",
+            branch="hoist_union_variant case 2a",
+            select=SchemaDocument({"oneOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
+            near=SchemaDocument({"oneOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
+            overlap=SchemaDocument({"oneOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
+            overlap_selector="schema.oneOf>schema.$ref",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.enum:string-valued",
+            slug="huv-2b",
+            branch="hoist_union_variant case 2b",
+            select=SchemaDocument({"anyOf": [{"type": "string", "enum": ["mobile"]}, {"type": "integer"}]}),
+            near=SchemaDocument({"anyOf": [{"type": "integer", "enum": [1]}, {"type": "integer"}]}),
+            overlap=SchemaDocument({"anyOf": [{"$ref": "#/components/schemas/Mode", "enum": ["mobile"]}]}),
+            overlap_selector="schema.anyOf>schema.$ref",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.const:string-valued",
+            slug="huv-2c",
+            branch="hoist_union_variant case 2c",
+            select=SchemaDocument({"oneOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
+            near=SchemaDocument({"oneOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
+            overlap=SchemaDocument({"oneOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
+            overlap_selector="schema.oneOf>schema.$ref",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.const:string-valued",
+            slug="huv-2d",
+            branch="hoist_union_variant case 2d",
+            select=SchemaDocument({"anyOf": [{"type": "string", "const": "mobile"}, {"type": "integer"}]}),
+            near=SchemaDocument({"anyOf": [{"type": "integer", "const": 1}, {"type": "integer"}]}),
+            overlap=SchemaDocument({"anyOf": [{"$ref": "#/components/schemas/Mode", "const": "mobile"}]}),
+            overlap_selector="schema.anyOf>schema.$ref",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+            slug="huv-7c",
+            branch="hoist_union_variant case 7c",
+            select=SchemaDocument({"oneOf": [array_of(CLOSED_OBJECT)]}),
+            near=SchemaDocument({"oneOf": [array_of(OPEN_OBJECT)]}),
+            overlap=SchemaDocument({"oneOf": [array_of({**STRUCT, "additionalProperties": False})]}),
+            overlap_selector="schema.oneOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.type:primary=array&schema.items>schema.additionalProperties=false",
+            slug="huv-7d",
+            branch="hoist_union_variant case 7d",
+            select=SchemaDocument({"anyOf": [array_of(CLOSED_OBJECT)]}),
+            near=SchemaDocument({"anyOf": [array_of(OPEN_OBJECT)]}),
+            overlap=SchemaDocument({"anyOf": [array_of({**STRUCT, "additionalProperties": False})]}),
+            overlap_selector="schema.anyOf>schema.type:primary=array&schema.items>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.oneOf>schema.properties:non-empty",
+            slug="huv-8a",
+            branch="hoist_union_variant case 8a",
+            select=SchemaDocument({"oneOf": [STRUCT]}),
+            near=SchemaDocument({"oneOf": [EMPTY_PROPERTIES]}),
+            overlap=SchemaDocument({"oneOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
+            overlap_selector="schema.oneOf>schema.allOf",
+        ),
+        DiscriminationCase(
+            selector="schema.anyOf>schema.properties:non-empty",
+            slug="huv-8b",
+            branch="hoist_union_variant case 8b",
+            select=SchemaDocument({"anyOf": [STRUCT]}),
+            near=SchemaDocument({"anyOf": [EMPTY_PROPERTIES]}),
+            overlap=SchemaDocument({"anyOf": [{**STRUCT, "allOf": [{"type": "object"}]}]}),
+            overlap_selector="schema.anyOf>schema.allOf",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.enum:string-valued",
+            slug="ptr-7a",
+            branch="prop_type_ref case 7a",
+            select=SchemaDocument({"properties": {"kind": {"enum": ["alpha", "beta"]}}}),
+            near=SchemaDocument({"properties": {"kind": {"enum": [1, 2]}}}),
+            overlap=SchemaDocument({"properties": {"kind": {"enum": ["alpha"], **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.const:string-valued",
+            slug="ptr-7b",
+            branch="prop_type_ref case 7b",
+            select=SchemaDocument({"properties": {"kind": {"const": "alpha"}}}),
+            near=SchemaDocument({"properties": {"kind": {"const": 1}}}),
+            overlap=SchemaDocument({"properties": {"kind": {"const": "alpha", **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.example:schema-shaped",
+            slug="schema-shaped-example",
+            branch="`example_is_schema_definition`",
+            select=SchemaDocument({"example": {"field": {"type": "string"}}}),
+            near=SchemaDocument({"example": {"field": {"description": "metadata"}}}),
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.properties:non-empty",
+            slug="ptr-8a",
+            branch="prop_type_ref case 8a",
+            select=SchemaDocument({"properties": {"nested": STRUCT}}),
+            near=SchemaDocument({"properties": {"nested": EMPTY_PROPERTIES}}),
+            overlap=SchemaDocument({"properties": {"nested": {**STRUCT, **TWO_ONE_OF}}}),
+            overlap_selector="schema.properties>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.additionalProperties=false&schema.properties",
+            slug="ptr-8d",
+            branch="prop_type_ref case 8d",
+            select=SchemaDocument({"properties": {"bag": {**CLOSED_OBJECT, "properties": {}}}}),
+            near=SchemaDocument({"properties": {"bag": CLOSED_OBJECT}}),
+            overlap=SchemaDocument({"properties": {"bag": {**STRUCT, "additionalProperties": False}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.oneOf:sole-non-null-member",
+            slug="ptr-11a",
+            branch="prop_type_ref case 11a",
+            select=SchemaDocument({"properties": {"maybe": NULLABLE_ONE_OF}}),
+            near=SchemaDocument({"properties": {"maybe": TWO_ONE_OF}}),
+            overlap=SchemaDocument({"properties": {"maybe": {**NULLABLE_ONE_OF, **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.anyOf:sole-non-null-member",
+            slug="ptr-11b",
+            branch="prop_type_ref case 11b",
+            select=SchemaDocument({"properties": {"maybe": NULLABLE_ANY_OF}}),
+            near=SchemaDocument({"properties": {"maybe": TWO_ANY_OF}}),
+            overlap=SchemaDocument({"properties": {"maybe": {**NULLABLE_ANY_OF, **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.type:primary=array",
+            slug="ptr-15",
+            branch="prop_type_ref case 15",
+            select=SchemaDocument({"properties": {"many": array_of(STRUCT)}}),
+            near=SchemaDocument({"properties": {"many": {"type": ["string", "array"], "items": STRUCT}}}),
+            overlap=SchemaDocument({"properties": {"many": {**array_of(STRUCT), **TWO_ONE_OF}}}),
+            overlap_selector="schema.properties>schema.oneOf",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+            slug="ptr-12a",
+            branch="prop_type_ref case 12a",
+            select=SchemaDocument({"properties": {"wrapper": {"oneOf": [STRUCT]}}}),
+            near=SchemaDocument({"properties": {"wrapper": {"oneOf": [STRUCT, {"type": "string"}]}}}),
+            overlap=SchemaDocument({"properties": {"wrapper": {"oneOf": [STRUCT], **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+            slug="ptr-12b",
+            branch="prop_type_ref case 12b",
+            select=SchemaDocument({"properties": {"wrapper": {"anyOf": [STRUCT]}}}),
+            near=SchemaDocument({"properties": {"wrapper": {"anyOf": [STRUCT, {"type": "string"}]}}}),
+            overlap=SchemaDocument({"properties": {"wrapper": {"anyOf": [STRUCT], **STRUCT}}}),
+            overlap_selector="schema.properties>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
+            slug="ptr-12c",
+            branch="prop_type_ref case 12c",
+            select=SchemaDocument({"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            near=SchemaDocument({"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
+            overlap=SchemaDocument({"properties": {"wrapper": {"oneOf": [{**STRUCT, "additionalProperties": False}]}}}),
+            overlap_selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
+            slug="ptr-12d",
+            branch="prop_type_ref case 12d",
+            select=SchemaDocument({"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            near=SchemaDocument({"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
+            overlap=SchemaDocument({"properties": {"wrapper": {"anyOf": [{**STRUCT, "additionalProperties": False}]}}}),
+            overlap_selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.properties:non-empty",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false",
+            slug="historical-closed-oneof",
+            branch="historical closed-member witness search",
+            select=SchemaDocument({"properties": {"wrapper": {"oneOf": [CLOSED_OBJECT]}}}),
+            near=SchemaDocument(
                 {"properties": {"wrapper": {"oneOf": [{"type": "object", "additionalProperties": True}]}}},
             ),
-            "overlap": ("schema", {"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
-            "overlap_selector": "schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
-        },
-        {
-            "selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
-            "slug": "historical-closed-anyof",
-            "branch": "historical closed-member witness search",
-            "select": ("schema", {"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
-            "near": (
-                "schema",
+            overlap=SchemaDocument({"properties": {"wrapper": {"oneOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            overlap_selector="schema.properties>schema.oneOf:sole-member&schema.oneOf>schema.additionalProperties=false&schema.properties",
+        ),
+        DiscriminationCase(
+            selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false",
+            slug="historical-closed-anyof",
+            branch="historical closed-member witness search",
+            select=SchemaDocument({"properties": {"wrapper": {"anyOf": [CLOSED_OBJECT]}}}),
+            near=SchemaDocument(
                 {"properties": {"wrapper": {"anyOf": [{"type": "object", "additionalProperties": True}]}}},
             ),
-            "overlap": ("schema", {"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
-            "overlap_selector": "schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
-        },
+            overlap=SchemaDocument({"properties": {"wrapper": {"anyOf": [{**CLOSED_OBJECT, "properties": {}}]}}}),
+            overlap_selector="schema.properties>schema.anyOf:sole-member&schema.anyOf>schema.additionalProperties=false&schema.properties",
+        ),
     )
 
     # Predicates outside this discrimination table: the three that compare one
@@ -4954,13 +5064,9 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             for case in cls.CASES:
-                for role in ("select", "near", "overlap"):
-                    if role not in case:
-                        continue
-                    kind, payload = case[role]
-                    name = f"{case['slug']}-{role}"
-                    document = schema_source(name, payload) if kind == "schema" else paths_source(name, payload)
-                    write_json_fixture(root, name, document)
+                for role, document in case.documents():
+                    name = f"{case.slug}-{role}"
+                    write_json_fixture(root, name, document.source(name))
             completed = run("--vendored-only", "--fixtures-root", str(root), "--json")
         assert completed.returncode == 0, completed.stderr
         payload = json.loads(completed.stdout)
@@ -4968,21 +5074,21 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
 
     def test_the_table_covers_every_selector_this_node_declared(self) -> None:
         """A selector declared and never discriminated is one nobody measured."""
-        self.assertEqual(self.DECLARED_HERE, {case["selector"] for case in self.CASES})
+        self.assertEqual(self.DECLARED_HERE, {case.selector for case in self.CASES})
 
     def test_each_selector_counts_its_own_node_and_not_its_near_miss(self) -> None:
         for case in self.CASES:
-            selector, slug = case["selector"], case["slug"]
-            with self.subTest(selector=selector, branch=case["branch"]):
+            selector, slug = case.selector, case.slug
+            with self.subTest(selector=selector, branch=case.branch):
                 self.assertEqual(
                     1,
                     self.reported.get((selector, f"{slug}-select")),
-                    f"{selector} does not count the node that selects {case['branch']}",
+                    f"{selector} does not count the node that selects {case.branch}",
                 )
                 self.assertNotIn(
                     (selector, f"{slug}-near"),
                     self.reported,
-                    f"{selector} counts a node missing {case['branch']} by one property",
+                    f"{selector} counts a node missing {case.branch} by one property",
                 )
 
     def test_each_permitted_overlap_is_counted_by_both_cases(self) -> None:
@@ -4994,14 +5100,14 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         is allowed on.
         """
         for case in self.CASES:
-            if "overlap" not in case:
+            if case.overlap is None:
                 continue
-            selector, slug = case["selector"], case["slug"]
+            selector, slug = case.selector, case.slug
             with self.subTest(selector=selector):
                 self.assertEqual(1, self.reported.get((selector, f"{slug}-overlap")))
                 self.assertEqual(
                     1,
-                    self.reported.get((case["overlap_selector"], f"{slug}-overlap")),
+                    self.reported.get((case.overlap_selector, f"{slug}-overlap")),
                     "the overlap document is not counted by the case that claims it",
                 )
 
@@ -5017,7 +5123,7 @@ class NodeLocalSelectorDiscriminationTests(unittest.TestCase):
         so `path_group` has no node two of its three arms claim. Every entry that
         is neither carries an overlap document.
         """
-        exempt = {case["selector"] for case in self.CASES if "overlap" not in case}
+        exempt = {case.selector for case in self.CASES if case.overlap is None}
         self.assertEqual(
             {selector for selector in self.DECLARED_HERE if not census.is_conjunction(selector)},
             exempt,

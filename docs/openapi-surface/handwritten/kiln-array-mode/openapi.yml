@@ -1,0 +1,103 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Kiln Controller",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/streams": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Stream"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        },
+        "operationId": "createStream"
+      }
+    },
+    "/inline": {
+      "post": {
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "anyOf": [
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "temperature",
+                            "power"
+                          ]
+                        }
+                      },
+                      {
+                        "type": "string",
+                        "enum": [
+                          "temperature",
+                          "power"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Accepted"
+          }
+        },
+        "operationId": "createInlineStream"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Stream": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "anyOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "temperature",
+                    "power"
+                  ]
+                }
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "temperature",
+                  "power"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "responses": {}
+  }
+}

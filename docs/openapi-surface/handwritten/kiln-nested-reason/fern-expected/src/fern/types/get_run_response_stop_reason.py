@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .get_run_response_stop_reason_one import GetRunResponseStopReasonOne
+from .get_run_response_stop_reason_zero import GetRunResponseStopReasonZero
+
+GetRunResponseStopReason = typing.Union[GetRunResponseStopReasonZero, GetRunResponseStopReasonOne]

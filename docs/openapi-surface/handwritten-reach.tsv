@@ -53,6 +53,12 @@ json-request-shapes	format-binary	src/emit.rs::build_example_inner[if s\.type_re
 json-request-shapes	format-binary	src/ir.rs::scalar_body[=Some\("binary"\)]	2	2
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[if is_optional\(target\) \&\&]	1	1
 json-request-shapes	request-body-content	src/ir.rs::resolve_request_body[let own_count = fields\.len\(\)]	20	27
+kiln-annotated-body	allof	src/openapi.rs::collapse_sole_composition_member[=Some\(member\) => \(member\x2c true\)]	2	2
+kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]	2	2
+kiln-form-mode	media-type-form-urlencoded	src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]	2	2
+kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5
+kiln-nullable-member	nullable	src/ir.rs::Builder::variant_ref[=optional_type_ref\(composed\)]	2	2
+kiln-variant-trigger	allof	src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]	1	1
 kitchen-nested-mapping-target	discriminator-mapping	src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]	18	20
 kitchen-nested-mapping-target	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if union_target \{]	20	20
 library-union-shared-fields	oneof-discriminated-union	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]	10	10

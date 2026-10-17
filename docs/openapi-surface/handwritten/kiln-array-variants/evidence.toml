@@ -1,0 +1,21 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "fbcd85fbfbef85bfd8de59d4c7e392622eb0e220b347d67281b025129fce4773"
+
+[[covers]]
+key = "anyof-array-variant-inline-const-item"
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+
+[[covers]]
+key = "oneof-array-variant-inline-const-item"
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
+
+[[covers]]
+key = "oneof-array-variant-inline-enum-item"
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"

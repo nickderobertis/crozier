@@ -307,34 +307,6 @@
   </dl>
       ⋮ (584 unchanged line(s))
 
---- reference/src/fern/__init__.py
-+++ crozier/src/fern/__init__.py
-      ⋮ (539 unchanged line(s))
-      from .o_auth import (
-          V1AuthorizeUserRequestCodeChallengeMethod,
-          V1AuthorizeUserRequestResponseType,
-+         V1ExchangeOauthTokenRequestGrantType,
-          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
-          V1OauthAuthorizeProjectClaimRequestResponseType,
-      )
-      ⋮ (489 unchanged line(s))
-      "V1CreateProjectBodyRegionSelection_SmartGroup": ".projects",
-      "V1CreateProjectBodyRegionSelection_Specific": ".projects",
-      "V1DeployAFunctionRequestMetadata": ".edge_functions",
-+     "V1ExchangeOauthTokenRequestGrantType": ".o_auth",
-      "V1GetAllProjectsForOrganizationRequestSort": ".projects",
-      "V1GetAvailableRegionsRequestContinent": ".projects",
-      "V1GetAvailableRegionsRequestDesiredInstanceSize": ".projects",
-      ⋮ (580 unchanged line(s))
-      "V1CreateProjectBodyRegionSelection_SmartGroup",
-      "V1CreateProjectBodyRegionSelection_Specific",
-      "V1DeployAFunctionRequestMetadata",
-+     "V1ExchangeOauthTokenRequestGrantType",
-      "V1GetAllProjectsForOrganizationRequestSort",
-      "V1GetAvailableRegionsRequestContinent",
-      "V1GetAvailableRegionsRequestDesiredInstanceSize",
-      ⋮ (105 unchanged line(s))
-
 --- reference/src/fern/auth/client.py
 +++ crozier/src/fern/auth/client.py
       ⋮ (1560 unchanged line(s))
@@ -577,66 +549,9 @@
   
       ⋮ (506 unchanged line(s))
 
---- reference/src/fern/o_auth/__init__.py
-+++ crozier/src/fern/o_auth/__init__.py
-      ⋮ (4 unchanged line(s))
-      from .types import (
-          V1AuthorizeUserRequestCodeChallengeMethod,
-          V1AuthorizeUserRequestResponseType,
-+         V1ExchangeOauthTokenRequestGrantType,
-          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
-          V1OauthAuthorizeProjectClaimRequestResponseType,
-      )
-  _dynamic_imports: typing.Dict[str, str] = {
-      "V1AuthorizeUserRequestCodeChallengeMethod": ".types",
-      "V1AuthorizeUserRequestResponseType": ".types",
-+     "V1ExchangeOauthTokenRequestGrantType": ".types",
-      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod": ".types",
-      "V1OauthAuthorizeProjectClaimRequestResponseType": ".types",
-  }
-      ⋮ (23 unchanged line(s))
-  __all__ = [
-      "V1AuthorizeUserRequestCodeChallengeMethod",
-      "V1AuthorizeUserRequestResponseType",
-+     "V1ExchangeOauthTokenRequestGrantType",
-      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod",
-      "V1OauthAuthorizeProjectClaimRequestResponseType",
-  ]
-
 --- reference/src/fern/o_auth/client.py
 +++ crozier/src/fern/o_auth/client.py
-      ⋮ (3 unchanged line(s))
-  
-  from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
-  from ..core.request_options import RequestOptions
-- from ..types.o_auth_token_body_grant_type import OAuthTokenBodyGrantType
-  from ..types.o_auth_token_response_output import OAuthTokenResponseOutput
-  from .raw_client import AsyncRawOAuthClient, RawOAuthClient
-  from .types.v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
-  from .types.v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
-+ from .types.v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
-  from .types.v1oauth_authorize_project_claim_request_code_challenge_method import (
-      V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
-  )
-      ⋮ (108 unchanged line(s))
-      def v1exchange_oauth_token(
-          self,
-          *,
--         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
-+         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
-          client_id: typing.Optional[str] = OMIT,
-          client_secret: typing.Optional[str] = OMIT,
-          code: typing.Optional[str] = OMIT,
-      ⋮ (10 unchanged line(s))
-  
-          Parameters
-          ----------
--         grant_type : typing.Optional[OAuthTokenBodyGrantType]
-+         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
-  
-          client_id : typing.Optional[str]
-  
-      ⋮ (25 unchanged line(s))
+      ⋮ (171 unchanged line(s))
   
           Examples
           --------
@@ -659,25 +574,7 @@
           """
           _response = self._raw_client.v1exchange_oauth_token(
               grant_type=grant_type,
-      ⋮ (243 unchanged line(s))
-      async def v1exchange_oauth_token(
-          self,
-          *,
--         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
-+         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
-          client_id: typing.Optional[str] = OMIT,
-          client_secret: typing.Optional[str] = OMIT,
-          code: typing.Optional[str] = OMIT,
-      ⋮ (10 unchanged line(s))
-  
-          Parameters
-          ----------
--         grant_type : typing.Optional[OAuthTokenBodyGrantType]
-+         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
-  
-          client_id : typing.Optional[str]
-  
-      ⋮ (27 unchanged line(s))
+      ⋮ (294 unchanged line(s))
           --------
           import asyncio
   
@@ -704,87 +601,6 @@
   
           asyncio.run(main())
       ⋮ (150 unchanged line(s))
-
---- reference/src/fern/o_auth/raw_client.py
-+++ crozier/src/fern/o_auth/raw_client.py
-      ⋮ (11 unchanged line(s))
-  from ..errors.forbidden_error import ForbiddenError
-  from ..errors.too_many_requests_error import TooManyRequestsError
-  from ..errors.unauthorized_error import UnauthorizedError
-- from ..types.o_auth_token_body_grant_type import OAuthTokenBodyGrantType
-  from ..types.o_auth_token_response_output import OAuthTokenResponseOutput
-  from .types.v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
-  from .types.v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
-+ from .types.v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
-  from .types.v1oauth_authorize_project_claim_request_code_challenge_method import (
-      V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
-  )
-      ⋮ (124 unchanged line(s))
-      def v1exchange_oauth_token(
-          self,
-          *,
--         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
-+         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
-          client_id: typing.Optional[str] = OMIT,
-          client_secret: typing.Optional[str] = OMIT,
-          code: typing.Optional[str] = OMIT,
-      ⋮ (10 unchanged line(s))
-  
-          Parameters
-          ----------
--         grant_type : typing.Optional[OAuthTokenBodyGrantType]
-+         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
-  
-          client_id : typing.Optional[str]
-  
-      ⋮ (402 unchanged line(s))
-      async def v1exchange_oauth_token(
-          self,
-          *,
--         grant_type: typing.Optional[OAuthTokenBodyGrantType] = OMIT,
-+         grant_type: typing.Optional[V1ExchangeOauthTokenRequestGrantType] = OMIT,
-          client_id: typing.Optional[str] = OMIT,
-          client_secret: typing.Optional[str] = OMIT,
-          code: typing.Optional[str] = OMIT,
-      ⋮ (10 unchanged line(s))
-  
-          Parameters
-          ----------
--         grant_type : typing.Optional[OAuthTokenBodyGrantType]
-+         grant_type : typing.Optional[V1ExchangeOauthTokenRequestGrantType]
-  
-          client_id : typing.Optional[str]
-  
-      ⋮ (283 unchanged line(s))
-
---- reference/src/fern/o_auth/types/__init__.py
-+++ crozier/src/fern/o_auth/types/__init__.py
-      ⋮ (3 unchanged line(s))
-  if typing.TYPE_CHECKING:
-      from .v1authorize_user_request_code_challenge_method import V1AuthorizeUserRequestCodeChallengeMethod
-      from .v1authorize_user_request_response_type import V1AuthorizeUserRequestResponseType
-+     from .v1exchange_oauth_token_request_grant_type import V1ExchangeOauthTokenRequestGrantType
-      from .v1oauth_authorize_project_claim_request_code_challenge_method import (
-          V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod,
-      )
-      ⋮ (1 unchanged line(s))
-  _dynamic_imports: typing.Dict[str, str] = {
-      "V1AuthorizeUserRequestCodeChallengeMethod": ".v1authorize_user_request_code_challenge_method",
-      "V1AuthorizeUserRequestResponseType": ".v1authorize_user_request_response_type",
-+     "V1ExchangeOauthTokenRequestGrantType": ".v1exchange_oauth_token_request_grant_type",
-      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod": ".v1oauth_authorize_project_claim_request_code_challenge_method",
-      "V1OauthAuthorizeProjectClaimRequestResponseType": ".v1oauth_authorize_project_claim_request_response_type",
-  }
-      ⋮ (23 unchanged line(s))
-  __all__ = [
-      "V1AuthorizeUserRequestCodeChallengeMethod",
-      "V1AuthorizeUserRequestResponseType",
-+     "V1ExchangeOauthTokenRequestGrantType",
-      "V1OauthAuthorizeProjectClaimRequestCodeChallengeMethod",
-      "V1OauthAuthorizeProjectClaimRequestResponseType",
-  ]
-
-Only in crozier: src/fern/o_auth/types/v1exchange_oauth_token_request_grant_type.py
 
 --- reference/src/fern/projects/client.py
 +++ crozier/src/fern/projects/client.py
@@ -869,14 +685,3 @@ Only in crozier: src/fern/o_auth/types/v1exchange_oauth_token_request_grant_type
   
   
       ⋮ (4 unchanged line(s))
-
---- reference/src/fern/types/json_value_output.py
-+++ crozier/src/fern/types/json_value_output.py
-      ⋮ (5 unchanged line(s))
-  
-  from .json_value_output_zero import JsonValueOutputZero
-  
-- JsonValueOutput = typing.Union[
--     typing.Optional[JsonValueOutputZero], typing.List["JsonValueOutput"], typing.Dict[str, "JsonValueOutput"]
-- ]
-+ JsonValueOutput = typing.Union[JsonValueOutputZero, typing.List["JsonValueOutput"], typing.Dict[str, "JsonValueOutput"]]

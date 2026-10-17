@@ -849,6 +849,8 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
         (AUTHORED_PROBES_DIR, "fern-expected"),
         (HANDWRITTEN_DIR, "fern-expected"),
         (MODELS_REFS_LITERALS_DIR, "fern-expected"),
+        (SCHEMA_SHAPES_LITERALS_DIR, "fern-expected"),
+        (SCHEMA_SHAPES_DIR, "fern-expected"),
         (MODELS_REFS_REMOTE_DIR, "fern-expected"),
         (MODELS_REFS_COMPOSED_NARROWING_DIR, "fern-expected"),
         (PARAMETER_LOWERING_DIR, "fern-expected"),
@@ -2835,6 +2837,8 @@ fn unwritten_module_imports_names_a_missing_module() {
 }
 
 const HANDWRITTEN_DIR: &str = "docs/openapi-surface/handwritten";
+const SCHEMA_SHAPES_DIR: &str = "docs/fern-measurements/schema-shapes";
+const SCHEMA_SHAPES_LITERALS_DIR: &str = "docs/fern-measurements/schema-shapes-literals";
 const MODELS_REFS_LITERALS_DIR: &str = "docs/fern-measurements/models-refs-literals";
 const MODELS_REFS_REMOTE_DIR: &str = "docs/fern-measurements/models-refs-remote";
 const MODELS_REFS_COMPOSED_NARROWING_DIR: &str =
@@ -2858,6 +2862,195 @@ fn handwritten_fixtures_match_fern_goldens() {
         "the hand-written fixtures break their contract \
          (docs/openapi-surface/handwritten/AGENTS.md):\n{}",
         failures.join("\n")
+    );
+}
+
+/// Complete SDKs for annotated bodies and variant fields, nested enum unions,
+/// inline enum and const array items beside another union member,
+/// nullable union members, referenced form enums, and JSON problem responses.
+#[test]
+fn schema_shape_arms_match_complete_certified_trees() {
+    for (shape, file, matched, unexplained) in [
+        (
+            "kiln-annotated-body",
+            "src/fern/raw_client.py",
+            "peak: int",
+            "peak: str",
+        ),
+        (
+            "kiln-variant-trigger",
+            "src/fern/types/list_actions_response_item.py",
+            "typing.Optional[Trigger]",
+            "typing.Optional[str]",
+        ),
+        (
+            "kiln-nested-reason",
+            "src/fern/types/get_run_response.py",
+            "typing.Optional[GetRunResponseStopReason]",
+            "typing.Optional[str]",
+        ),
+        (
+            "kiln-array-mode",
+            "src/fern/types/stream_mode.py",
+            "typing.List[StreamModeZeroItem]",
+            "typing.List[str]",
+        ),
+        (
+            "kiln-array-variants",
+            "src/fern/types/create_profile_request_unit.py",
+            "typing.List[CreateProfileRequestUnitZeroItem]",
+            "typing.List[str]",
+        ),
+        (
+            "kiln-nullable-member",
+            "src/fern/types/value.py",
+            "typing.Optional[ValueZero]",
+            "ValueZero",
+        ),
+        (
+            "kiln-form-mode",
+            "src/fern/client.py",
+            "grant_type: TokenBodyGrantType",
+            "grant_type: str",
+        ),
+        (
+            "kiln-problem-response",
+            "src/fern/types/bad_request_error_body.py",
+            "message: str",
+            "message: bool",
+        ),
+    ] {
+        for mode in ["python-enums", "literals"] {
+            let fixture_dir = if shape == "kiln-problem-response" {
+                SCHEMA_SHAPES_DIR
+            } else {
+                HANDWRITTEN_DIR
+            };
+            let fixture = repo_root().join(fixture_dir).join(shape);
+            let source = tempfile::tempdir().expect("source recovery directory");
+            let spec = source.path().join("openapi.yml");
+            let out = source.path().join("sdk");
+            probe_command(&spec, &out)
+                .assert()
+                .failure()
+                .stderr(predicate::str::contains("could not read spec"));
+            assert!(!out.exists(), "{shape}: a missing source writes no SDK");
+            std::fs::copy(fixture.join("openapi.yml"), &spec).unwrap();
+            probe_command(&spec, &out)
+                .args(["--enum-type", mode])
+                .assert()
+                .success();
+            let golden = if mode == "python-enums" {
+                format!("{fixture_dir}/{shape}/fern-expected")
+            } else if shape == "kiln-problem-response" {
+                format!("{SCHEMA_SHAPES_DIR}/{shape}-literals/fern-expected")
+            } else {
+                format!("{SCHEMA_SHAPES_LITERALS_DIR}/{shape}/fern-expected")
+            };
+            let expected = repo_root().join(&golden);
+            if shape == "kiln-problem-response" && mode == "python-enums" {
+                let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
+                for field in [
+                    "fern_cli_version = \"5.67.1\"".to_owned(),
+                    "fern_python_sdk_version = \"5.20.0\"".to_owned(),
+                    format!("digest = \"{}\"", probe_artifact_digest(&expected).unwrap()),
+                    format!(
+                        "source_digest = \"{}\"",
+                        sha256_hex(&std::fs::read(&spec).unwrap())
+                    ),
+                ] {
+                    assert!(evidence.contains(&field), "{shape}: missing {field}");
+                }
+            }
+            if mode == "literals" {
+                let evidence =
+                    std::fs::read_to_string(expected.parent().unwrap().join("evidence.md"))
+                        .unwrap();
+                let digest = evidence
+                    .split_once("Canonical tree SHA-256: `")
+                    .unwrap()
+                    .1
+                    .split('`')
+                    .next()
+                    .unwrap();
+                assert_eq!(probe_artifact_digest(&expected).unwrap(), digest);
+            }
+            let ledger = departure_ledger().golden(&golden, &[]).unwrap();
+            let failures =
+                golden_tree_failures(shape, spec.to_str().unwrap(), &ledger, &expected, &out);
+            assert!(failures.is_empty(), "{}", failures.join("\n"));
+
+            if shape == "kiln-annotated-body" {
+                assert!(!out.join("src/fern/types/flat_schedule.py").exists());
+                let reference = std::fs::read_to_string(out.join("reference.md")).unwrap();
+                assert!(!reference.contains("— Flattened schedule"));
+            }
+
+            let path = out.join(file);
+            let text = std::fs::read_to_string(&path).unwrap();
+            assert!(text.contains(matched), "{shape}: {file} contains {matched}");
+            std::fs::write(&path, text.replace(matched, unexplained)).unwrap();
+            let failures =
+                golden_tree_failures(shape, spec.to_str().unwrap(), &ledger, &expected, &out);
+            assert!(
+                failures
+                    .iter()
+                    .any(|failure| failure.contains(&format!("{file} differs"))),
+                "{shape}: the adjacent unexplained annotation must fail: {failures:?}"
+            );
+        }
+    }
+}
+
+/// The registered Redocly Museum golden answers its shared `400`, `401` and `404`
+/// component responses with `application/problem+json` alone, so error-body
+/// hoisting selects that representation. Its schema is a component reference,
+/// which types each error class's body and hoists no `{Class}Body` model. The
+/// complete tree matches the certified golden bidirectionally; an over-hoisted
+/// body model and a retyped error body each fail.
+#[test]
+fn problem_json_component_responses_match_registered_museum_golden() {
+    let spec = corpus_spec(REDOCLY_COM_MUSEUM.api).expect("the museum source is committed");
+    let golden = "tests/fixtures/redocly.com-museum/expected";
+    let expected = repo_root().join(golden);
+    let ledger = departure_ledger().golden(golden, &[]).unwrap();
+    let source = tempfile::tempdir().expect("output directory");
+    let out = source.path().join("sdk");
+    probe_command(&spec, &out).assert().success();
+    let check = |out: &Path| {
+        golden_tree_failures(
+            REDOCLY_COM_MUSEUM.api,
+            spec.to_str().unwrap(),
+            &ledger,
+            &expected,
+            out,
+        )
+    };
+    let failures = check(&out);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+
+    let hoisted = out.join("src/fern/types/bad_request_error_body.py");
+    std::fs::copy(out.join("src/fern/types/error.py"), &hoisted).unwrap();
+    let failures = check(&out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains("src/fern/types/bad_request_error_body.py")),
+        "an over-hoisted problem body model must fail: {failures:?}"
+    );
+    std::fs::remove_file(&hoisted).unwrap();
+
+    let file = "src/fern/errors/bad_request_error.py";
+    let path = out.join(file);
+    let text = std::fs::read_to_string(&path).unwrap();
+    assert!(text.contains("body: Error,"), "{file} types its body Error");
+    std::fs::write(&path, text.replace("body: Error,", "body: typing.Any,")).unwrap();
+    let failures = check(&out);
+    assert!(
+        failures
+            .iter()
+            .any(|failure| failure.contains(&format!("{file} differs"))),
+        "the adjacent unexplained error body type must fail: {failures:?}"
     );
 }
 

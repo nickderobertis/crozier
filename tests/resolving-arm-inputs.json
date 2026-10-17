@@ -11234,7 +11234,7 @@
      "part": "schema.allOf:annotated-ref: one member, which members.len() < 2 refuses",
      "arms": [],
      "entered": {
-      "declaration": "Object(MakeThingRequestAnnotated)"
+      "none": "prop_type_ref reaches the lone allOf reference and returns the existing Target type; the matched path coins no extra declaration, as the kiln-variant-trigger complete golden proves"
      }
     },
     "gate-two-refs": {
@@ -11952,7 +11952,7 @@
      "part": "the member count: one member, which members.len() < 2 refuses",
      "arms": [],
      "entered": {
-      "declaration": "Object(MakeThingRequestAnnotated)"
+      "none": "prop_type_ref reaches the lone allOf reference and returns the existing Target type; the matched path coins no extra declaration, as the kiln-variant-trigger complete golden proves"
      }
     },
     "gate-two-refs": {

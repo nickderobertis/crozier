@@ -1,0 +1,10 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "772d4951497a55c24d5424fc0ecbe1b508a5e4c9ecd13c3b8d78c03cbfe1c25b"
+
+[[covers]]
+key = "nullable"
+arm = 'src/ir.rs::Builder::variant_ref[=optional_type_ref\(composed\)]'
+search = "docs/openapi-surface/witness-search-schema-shapes/README.md#witness-search"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-schema-shapes/README.md"
