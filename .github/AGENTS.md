@@ -7,12 +7,8 @@ invoking native packaging. Keep native compilation/install behind
 
 ## Draft lift and the Mac check
 
-A `ready_for_review` run of `ci.yml` waits for the draft's run (concurrency does
-not cancel it), then reuses that run's Mac job if it passed on exactly the same
-head. It requests a Mac runner itself only when no earlier run of the pull
-request requested one, so the change still spends at most two Mac runs. Both
-decisions trust a run or job listing only when its `total_count` equals its
-single page and every entry is readable — anything else could hide a Mac request;
-otherwise its `macos` job fails on Linux with the reason, and so does `gate`. Recovery: re-run the draft run's Mac job,
-then re-run all jobs of the lift run (the policy job must re-read the API), or
-push a commit, which runs Mac on the new head.
+`ci.yml` does not run when a draft is marked ready for review: its
+`pull_request` types are `opened`, `synchronize` and `reopened`. The draft's run
+already reported `gate` (Mac lane included), `commitlint` and `llmlint` on the
+head commit, and the lift changes no commit, so those results satisfy branch
+protection. A failed draft run is recovered by re-running it or pushing a commit.
