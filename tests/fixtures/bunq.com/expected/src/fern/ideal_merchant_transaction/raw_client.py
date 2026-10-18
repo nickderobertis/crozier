@@ -13,6 +13,7 @@ from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..types.amount import Amount
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.ideal_merchant_transaction_create import IdealMerchantTransactionCreate
 from ..types.ideal_merchant_transaction_listing import IdealMerchantTransactionListing
 from ..types.ideal_merchant_transaction_read import IdealMerchantTransactionRead
@@ -68,9 +69,9 @@ class RawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -208,9 +209,9 @@ class RawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -273,9 +274,9 @@ class RawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -335,9 +336,9 @@ class AsyncRawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -475,9 +476,9 @@ class AsyncRawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -540,9 +541,9 @@ class AsyncRawIdealMerchantTransactionClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

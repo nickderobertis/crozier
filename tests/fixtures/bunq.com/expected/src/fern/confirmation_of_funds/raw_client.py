@@ -13,6 +13,7 @@ from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..types.amount import Amount
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.confirmation_of_funds_create import ConfirmationOfFundsCreate
 from ..types.pointer import Pointer
 from pydantic import ValidationError
@@ -84,9 +85,9 @@ class RawConfirmationOfFundsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -164,9 +165,9 @@ class AsyncRawConfirmationOfFundsClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

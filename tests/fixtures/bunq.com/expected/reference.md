@@ -2174,7 +2174,7 @@ client.server_error.create_server_error(
 <dl>
 <dd>
 
-**request:** `ServerError` 
+**request:** `ServerErrorBody` 
     
 </dd>
 </dl>

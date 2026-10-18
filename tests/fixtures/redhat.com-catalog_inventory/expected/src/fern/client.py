@@ -105,7 +105,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if base_path is not None:
             _base_path = base_path if base_path is not None else "/api/catalog-inventory/v1.0"
-            base_url = "https://cloud.redhat.com/{basePath}".format(basePath=_base_path)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://cloud.redhat.com/{basePath}",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://cloud.redhat.com/{basePath}")
+            if base_url is None:
+                base_url = _url_template.format(basePath=_base_path)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             username=username,
@@ -396,7 +401,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if base_path is not None:
             _base_path = base_path if base_path is not None else "/api/catalog-inventory/v1.0"
-            base_url = "https://cloud.redhat.com/{basePath}".format(basePath=_base_path)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://cloud.redhat.com/{basePath}",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://cloud.redhat.com/{basePath}")
+            if base_url is None:
+                base_url = _url_template.format(basePath=_base_path)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             username=username,

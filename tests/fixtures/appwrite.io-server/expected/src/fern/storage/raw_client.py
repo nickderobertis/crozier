@@ -1,6 +1,5 @@
 
 
-import json
 import typing
 from json.decoder import JSONDecodeError
 
@@ -122,8 +121,8 @@ class RawStorageClient:
             method="POST",
             data={
                 "file": file,
-                "read": json.dumps(jsonable_encoder(read)) if read is not OMIT else OMIT,
-                "write": json.dumps(jsonable_encoder(write)) if write is not OMIT else OMIT,
+                "read": jsonable_encoder(read) if read is not OMIT else OMIT,
+                "write": jsonable_encoder(write) if write is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,
@@ -556,8 +555,8 @@ class AsyncRawStorageClient:
             method="POST",
             data={
                 "file": file,
-                "read": json.dumps(jsonable_encoder(read)) if read is not OMIT else OMIT,
-                "write": json.dumps(jsonable_encoder(write)) if write is not OMIT else OMIT,
+                "read": jsonable_encoder(read) if read is not OMIT else OMIT,
+                "write": jsonable_encoder(write) if write is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,

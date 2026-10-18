@@ -1543,6 +1543,7 @@ client = FernApi(
 )
 
 client.leads.add(
+    company_name="Spacex",
     name="Elon Musk",
 )
 
@@ -1802,6 +1803,7 @@ client = FernApi(
 
 client.leads.update(
     id_="id",
+    company_name="Spacex",
     name="Elon Musk",
 )
 
@@ -2456,6 +2458,7 @@ client = FernApi(
 )
 
 client.opportunities.add(
+    primary_contact_id="12345",
     title="New Rocket",
 )
 
@@ -2715,6 +2718,7 @@ client = FernApi(
 
 client.opportunities.update(
     id_="id",
+    primary_contact_id="12345",
     title="New Rocket",
 )
 

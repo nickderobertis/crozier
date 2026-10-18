@@ -15,6 +15,7 @@ from ..types.attachment_conversation_content_listing import AttachmentConversati
 from ..types.attachment_monetary_account_content_listing import AttachmentMonetaryAccountContentListing
 from ..types.attachment_public_content_listing import AttachmentPublicContentListing
 from ..types.attachment_user_content_listing import AttachmentUserContentListing
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.export_annual_overview_content_listing import ExportAnnualOverviewContentListing
 from ..types.export_rib_content_listing import ExportRibContentListing
 from ..types.export_statement_card_content_listing import ExportStatementCardContentListing
@@ -66,9 +67,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -123,9 +124,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -180,9 +181,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -245,9 +246,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -310,9 +311,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -367,9 +368,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -432,9 +433,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -497,9 +498,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -566,9 +567,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -631,9 +632,9 @@ class RawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -690,9 +691,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -747,9 +748,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -804,9 +805,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -869,9 +870,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -934,9 +935,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -991,9 +992,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1056,9 +1057,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1121,9 +1122,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1190,9 +1191,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1255,9 +1256,9 @@ class AsyncRawContentClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

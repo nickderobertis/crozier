@@ -14,6 +14,7 @@ from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..types.address import Address
 from ..types.amount import Amount
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.bunq_id import BunqId
 from ..types.geolocation import Geolocation
 from ..types.label_monetary_account import LabelMonetaryAccount
@@ -74,9 +75,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -313,9 +314,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -378,9 +379,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -621,9 +622,9 @@ class RawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -683,9 +684,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -922,9 +923,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -987,9 +988,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1230,9 +1231,9 @@ class AsyncRawRequestInquiryClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

@@ -14,6 +14,7 @@ from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..types.avatar_create import AvatarCreate
 from ..types.avatar_read import AvatarRead
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.image import Image
 from pydantic import ValidationError
 
@@ -87,9 +88,9 @@ class RawAvatarClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -141,9 +142,9 @@ class RawAvatarClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -224,9 +225,9 @@ class AsyncRawAvatarClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -278,9 +279,9 @@ class AsyncRawAvatarClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

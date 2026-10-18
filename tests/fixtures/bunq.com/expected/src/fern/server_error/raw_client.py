@@ -10,7 +10,8 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
-from ..types.server_error import ServerError
+from ..types.bad_request_error_body import BadRequestErrorBody
+from ..types.server_error_body import ServerErrorBody
 from ..types.server_error_create import ServerErrorCreate
 from pydantic import ValidationError
 
@@ -23,14 +24,14 @@ class RawServerErrorClient:
         self._client_wrapper = client_wrapper
 
     def create_server_error(
-        self, *, request: ServerError, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ServerErrorBody, request_options: typing.Optional[RequestOptions] = None
     ) -> HttpResponse[ServerErrorCreate]:
         """
         An endpoint that will always throw an error.
 
         Parameters
         ----------
-        request : ServerError
+        request : ServerErrorBody
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -61,9 +62,9 @@ class RawServerErrorClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -83,14 +84,14 @@ class AsyncRawServerErrorClient:
         self._client_wrapper = client_wrapper
 
     async def create_server_error(
-        self, *, request: ServerError, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ServerErrorBody, request_options: typing.Optional[RequestOptions] = None
     ) -> AsyncHttpResponse[ServerErrorCreate]:
         """
         An endpoint that will always throw an error.
 
         Parameters
         ----------
-        request : ServerError
+        request : ServerErrorBody
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -121,9 +122,9 @@ class AsyncRawServerErrorClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

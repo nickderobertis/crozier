@@ -4,7 +4,7 @@ import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
-from ..types.server_error import ServerError
+from ..types.server_error_body import ServerErrorBody
 from ..types.server_error_create import ServerErrorCreate
 from .raw_client import AsyncRawServerErrorClient, RawServerErrorClient
 
@@ -28,14 +28,14 @@ class ServerErrorClient:
         return self._raw_client
 
     def create_server_error(
-        self, *, request: ServerError, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ServerErrorBody, request_options: typing.Optional[RequestOptions] = None
     ) -> ServerErrorCreate:
         """
         An endpoint that will always throw an error.
 
         Parameters
         ----------
-        request : ServerError
+        request : ServerErrorBody
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -81,14 +81,14 @@ class AsyncServerErrorClient:
         return self._raw_client
 
     async def create_server_error(
-        self, *, request: ServerError, request_options: typing.Optional[RequestOptions] = None
+        self, *, request: ServerErrorBody, request_options: typing.Optional[RequestOptions] = None
     ) -> ServerErrorCreate:
         """
         An endpoint that will always throw an error.
 
         Parameters
         ----------
-        request : ServerError
+        request : ServerErrorBody
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

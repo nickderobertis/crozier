@@ -187,7 +187,7 @@ class FoldersClient:
 
     def update(
         self,
-        id: str,
+        id_path_param: str,
         *,
         raw: typing.Optional[bool] = None,
         description: typing.Optional[str] = OMIT,
@@ -200,7 +200,7 @@ class FoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         raw : typing.Optional[bool]
@@ -233,11 +233,11 @@ class FoldersClient:
             api_key="YOUR_API_KEY",
         )
         client.folders.update(
-            id="id",
+            id_path_param="id",
         )
         """
         _response = self._raw_client.update(
-            id,
+            id_path_param,
             raw=raw,
             description=description,
             name=name,
@@ -248,7 +248,7 @@ class FoldersClient:
 
     def copy(
         self,
-        id: str,
+        id_path_param: str,
         *,
         parent_folder_id: ParentFolderId,
         raw: typing.Optional[bool] = None,
@@ -261,7 +261,7 @@ class FoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         parent_folder_id : ParentFolderId
@@ -294,13 +294,18 @@ class FoldersClient:
             api_key="YOUR_API_KEY",
         )
         client.folders.copy(
-            id="id",
+            id_path_param="id",
             fields="id,updated_at",
             parent_folder_id="1234",
         )
         """
         _response = self._raw_client.copy(
-            id, parent_folder_id=parent_folder_id, raw=raw, fields=fields, name=name, request_options=request_options
+            id_path_param,
+            parent_folder_id=parent_folder_id,
+            raw=raw,
+            fields=fields,
+            name=name,
+            request_options=request_options,
         )
         return _response.data
 
@@ -501,7 +506,7 @@ class AsyncFoldersClient:
 
     async def update(
         self,
-        id: str,
+        id_path_param: str,
         *,
         raw: typing.Optional[bool] = None,
         description: typing.Optional[str] = OMIT,
@@ -514,7 +519,7 @@ class AsyncFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         raw : typing.Optional[bool]
@@ -552,14 +557,14 @@ class AsyncFoldersClient:
 
         async def main() -> None:
             await client.folders.update(
-                id="id",
+                id_path_param="id",
             )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.update(
-            id,
+            id_path_param,
             raw=raw,
             description=description,
             name=name,
@@ -570,7 +575,7 @@ class AsyncFoldersClient:
 
     async def copy(
         self,
-        id: str,
+        id_path_param: str,
         *,
         parent_folder_id: ParentFolderId,
         raw: typing.Optional[bool] = None,
@@ -583,7 +588,7 @@ class AsyncFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         parent_folder_id : ParentFolderId
@@ -621,7 +626,7 @@ class AsyncFoldersClient:
 
         async def main() -> None:
             await client.folders.copy(
-                id="id",
+                id_path_param="id",
                 fields="id,updated_at",
                 parent_folder_id="1234",
             )
@@ -630,6 +635,11 @@ class AsyncFoldersClient:
         asyncio.run(main())
         """
         _response = await self._raw_client.copy(
-            id, parent_folder_id=parent_folder_id, raw=raw, fields=fields, name=name, request_options=request_options
+            id_path_param,
+            parent_folder_id=parent_folder_id,
+            raw=raw,
+            fields=fields,
+            name=name,
+            request_options=request_options,
         )
         return _response.data

@@ -44,6 +44,7 @@ client = FernApi(
 )
 
 client.leads.add(
+    company_name="Spacex",
     name="Elon Musk",
 )
 ```
@@ -79,6 +80,7 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.leads.add(
+        company_name="Spacex",
         name="Elon Musk",
     )
 
