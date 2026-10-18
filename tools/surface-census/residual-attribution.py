@@ -26,7 +26,6 @@ and not the offline census suite.
 from __future__ import annotations
 
 import importlib.util
-import io
 import json
 import shutil
 import subprocess
@@ -194,8 +193,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
-    for stream in (sys.stdout, sys.stderr):
-        if isinstance(stream, io.TextIOWrapper):
-            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     sys.exit(main())

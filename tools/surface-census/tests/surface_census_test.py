@@ -15983,6 +15983,51 @@ class HandwrittenE2eCoversTests(unittest.TestCase):
                 self.assertTrue(any(message in failure for failure in failures), failures)
 
 
+class LegacyLocaleEncodingTests(unittest.TestCase):
+    """A Windows pipe defaults to the locale's code page; every census entry point still writes UTF-8."""
+
+    # Each entry point's arguments that make it echo an em dash on stderr before it does any work.
+    ECHOED: ClassVar[dict[str, tuple[str, ...]]] = {
+        "apis-guru-gap-screen.py": ("\u2014",),
+        "fixtures-coverage-report.py": ("--repo-root", ".", "--tier", ".", "--golden-tier", ".", "\u2014"),
+        "golden-reach-search.py": ("\u2014",),
+        "golden-reach.py": ("\u2014",),
+        "handwritten-fixtures.py": ("\u2014",),
+        "openapi-surface-census.py": ("\u2014",),
+        "probe-differential-isolation.py": ("missing-root", "\u2014", "missing-probe", "missing-control"),
+        "scenario-proof-index.py": ("\u2014",),
+        "update-predicate-grammar.py": ("\u2014",),
+        "witness-search-region-keys.py": ("\u2014",),
+    }
+    LEGACY: ClassVar[dict[str, str]] = {"PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+
+    def test_every_entry_point_writes_its_diagnostics_as_utf8(self) -> None:
+        # residual-attribution.py prints only `json.dumps` output, which is ASCII whatever it reports.
+        scripts = {path.name for path in (REPO / "tools/surface-census").glob("*.py")} - {"residual-attribution.py"}
+        self.assertEqual(scripts, set(self.ECHOED), "give a new entry point the UTF-8 stream guard and a row here")
+        for name, args in self.ECHOED.items():
+            with self.subTest(name):
+                run = subprocess.run(
+                    [sys.executable, str(REPO / "tools/surface-census" / name), *args],
+                    capture_output=True,
+                    check=False,
+                    cwd=REPO,
+                    env={**os.environ, **self.LEGACY},
+                    timeout=120,
+                )
+                self.assertIn("\u2014", run.stderr.decode("utf-8"), run.stderr)
+
+    def test_the_proof_index_summary_writes_utf8(self) -> None:
+        run = subprocess.run(
+            [sys.executable, str(REPO / "tools/surface-census/scenario-proof-index.py"), "summary"],
+            capture_output=True,
+            check=False,
+            env={**os.environ, **self.LEGACY},
+        )
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn("witness hunks by owner: \u2014", run.stdout.decode("utf-8").splitlines())
+
+
 class ScenarioProofIndexTests(unittest.TestCase):
     """Each scenario shape's proof, and each handed-off witness, reconciles with what it cites."""
 
@@ -16846,13 +16891,6 @@ class ScenarioProofIndexTests(unittest.TestCase):
         section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
         quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
         self.assertEqual(run.stdout, quoted, "re-run `scenario-proof-index.py summary` and quote it")
-
-    def test_the_summary_is_utf8_under_a_legacy_locale_encoding(self) -> None:
-        """A Windows pipe defaults to the locale's code page; the em dash still arrives as UTF-8."""
-        legacy = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
-        run = self.run_script("summary", env=legacy)
-        self.assertEqual(0, run.returncode, run.stderr)
-        self.assertIn("witness hunks by owner: \u2014", run.stdout.splitlines())
 
     def test_repository_paths_are_spelled_with_slashes_under_windows_path_semantics(self) -> None:
         """On Windows `str()` of a `Path` uses backslashes; every path the tooling renders still uses `/`."""
