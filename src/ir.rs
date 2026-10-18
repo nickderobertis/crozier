@@ -2010,8 +2010,10 @@ pub struct SingleBody {
 /// status code.
 #[derive(Debug, Clone)]
 pub struct ErrorResponse {
-    /// The HTTP status code that triggers this error.
+    /// The HTTP status code that triggers this error; a range's lowest status.
     pub status_code: u16,
+    /// Whether this is a `4XX`/`5XX` range, raised for any status in it.
+    pub wildcard: bool,
     /// The generated exception class name (e.g. `BadRequestError`).
     pub class_name: String,
     /// The error body type parsed into the exception (`$ref` to a named type).
@@ -2021,8 +2023,11 @@ pub struct ErrorResponse {
 /// A generated exception class under `errors/`, one per distinct declared error.
 #[derive(Debug, Clone)]
 pub struct ErrorClass {
-    /// The HTTP status code passed to `ApiError`.
+    /// The HTTP status code passed to `ApiError`; a range's lowest status.
     pub status_code: u16,
+    /// Whether this is a `4XX`/`5XX` range: its constructor also takes the
+    /// actual `status_code`, defaulting to the range's lowest.
+    pub wildcard: bool,
     /// The exception class name (e.g. `BadRequestError`).
     pub class_name: String,
     /// The error body type accepted by the constructor.
@@ -3117,6 +3122,7 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
             if !classes.iter().any(|c| c.class_name == err.class_name) {
                 classes.push(ErrorClass {
                     status_code: err.status_code,
+                    wildcard: err.wildcard,
                     class_name: err.class_name.clone(),
                     body_type: err.body_type.clone(),
                 });
@@ -3128,7 +3134,7 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
 }
 
 fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
-    let multiply_declared = multiply_declared_error_statuses(doc);
+    let unequal = unequal_error_statuses(doc);
     let mut downgrade = std::collections::HashSet::new();
     let mut first_by_class: std::collections::HashMap<String, TypeRef> =
         std::collections::HashMap::new();
@@ -3153,19 +3159,7 @@ fn normalize_error_body_types(doc: &OpenApi, endpoints: &mut [Endpoint]) {
     }
     for ep in endpoints {
         for err in &mut ep.errors {
-            // The multiply-declared rule reaches only the body type this module
-            // *coins* from an inline schema. A `$ref` body keeps its named type
-            // however many operations declare the status.
-            // A component schema already carrying that name is a `$ref` body, not
-            // a coinage: OpenCodeUI's `BadRequestError` schema is renamed
-            // `BadRequestErrorBody` (see `openapi::normalize_error_class_schema_names`)
-            // and its forty-nine `400`s keep it.
-            let coined_name = format!("{}Body", err.class_name);
-            let coined = !doc.components.schemas.contains_key(&coined_name)
-                && err.body_type == TypeRef::Named(coined_name);
-            if downgrade.contains(&err.class_name)
-                || coined && multiply_declared.contains(&err.class_name)
-            {
+            if downgrade.contains(&err.class_name) || unequal.contains(&err.class_name) {
                 err.body_type = TypeRef::Primitive(Prim::Any);
             }
         }
@@ -5607,7 +5601,10 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// Fern walks a canonical integer key before every other key, so the later,
 /// spelled-out declaration overrides it. Measured at Fern 5.20.0 with the
 /// spelled-out key both after and before the plain one.
-fn error_response_entries(op: &Operation) -> Vec<(u16, &Response)> {
+///
+/// A `4XX` or `5XX` range key (any case) follows every concrete status as an
+/// error of its own (see [`ErrorStatus`]), the last spelling of a range winning.
+fn error_response_entries(op: &Operation) -> Vec<(ErrorStatus, &Response)> {
     let canonical = |code: &str| {
         !code.is_empty()
             && code.bytes().all(|byte| byte.is_ascii_digit())
@@ -5616,8 +5613,13 @@ fn error_response_entries(op: &Operation) -> Vec<(u16, &Response)> {
     };
     let mut winners: IndexMap<u16, (bool, usize)> = IndexMap::new();
     let mut entries = Vec::new();
+    let mut ranges: IndexMap<u16, &Response> = IndexMap::new();
     for (index, (code, response)) in op.responses.iter().enumerate() {
         if code.starts_with('2') {
+            continue;
+        }
+        if let Some(status) = wildcard_key_status(code) {
+            ranges.insert(status, response);
             continue;
         }
         let Some(status) = response_key_status(code) else {
@@ -5637,8 +5639,59 @@ fn error_response_entries(op: &Operation) -> Vec<(u16, &Response)> {
                 .get(status)
                 .is_some_and(|(_, winner)| winner == index)
         })
-        .map(|(_, status, response)| (status, response))
+        .map(|(_, code, response)| {
+            let status = ErrorStatus {
+                code,
+                wildcard: false,
+            };
+            (status, response)
+        })
+        .chain(ranges.into_iter().map(|(code, response)| {
+            let status = ErrorStatus {
+                code,
+                wildcard: true,
+            };
+            (status, response)
+        }))
         .collect()
+}
+
+/// An error a Responses Object key declares: a status, or the `4XX`/`5XX`
+/// range whose lowest status it carries. Fern CLI 5.163.1 reads a range key,
+/// in any case, as an error of its own — `ClientRequestError` for `4XX` and
+/// `ServerError` for `5XX` — where 5.67.1 read its leading digit and declared
+/// nothing; fern-python-sdk 5.41.3 raises it for any status in the range,
+/// after every concrete status the operation declares.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct ErrorStatus {
+    /// The status, or the range's lowest one (`400`, `500`).
+    pub code: u16,
+    /// Whether the key is a `4XX`/`5XX` range.
+    pub wildcard: bool,
+}
+
+impl ErrorStatus {
+    /// The generated exception class name: Fern's name for a range, else the
+    /// status's own (see [`error_class_name`]).
+    pub(crate) fn class_name(self) -> Option<&'static str> {
+        match (self.wildcard, self.code) {
+            (true, 400) => Some("ClientRequestError"),
+            (true, 500) => Some("ServerError"),
+            (true, _) => None,
+            (false, code) => error_class_name(code),
+        }
+    }
+}
+
+/// The lowest status of a `4XX`/`5XX` range key, matched in any case and
+/// nothing else around it: `" 4XX"` is no range (and declares the status `4`,
+/// which no error is).
+fn wildcard_key_status(key: &str) -> Option<u16> {
+    match key.to_ascii_uppercase().as_str() {
+        "4XX" => Some(400),
+        "5XX" => Some(500),
+        _ => None,
+    }
 }
 
 /// The status a Responses Object key declares, read the way Fern reads one: its
@@ -5728,22 +5781,9 @@ pub(crate) fn error_class_name(status: u16) -> Option<&'static str> {
 
 /// The exception body type for an error response. A `$ref`/scalar/container body
 /// resolves through [`base_type_ref`] (in response context — `List`/`Dict`, never
-/// `Sequence`); an error with no `application/json` body takes Fern's
-/// `typing.Any` in Fern 5.20.
+/// `Sequence`); an error with no body takes Fern's `typing.Any`.
 fn error_body_type(resp: &Response, class: &str) -> TypeRef {
-    // Fern imports an error's first declared concrete representation. FOLIO's
-    // shared 400 response writes `text/plain` before `application/json`, and
-    // the generated exception carries `str` even though the JSON body is typed.
-    let schema = resp
-        .content
-        .values()
-        .filter_map(|media| media.schema.as_ref())
-        .find(|schema| !is_unknown(schema))
-        .or_else(|| {
-            resp.content
-                .values()
-                .find_map(|media| media.schema.as_ref())
-        });
+    let schema = error_body_schema(resp);
     // A `oneOf`/`anyOf` body is Fern's `{Class}Body` union alias, and a one-member
     // one is that member: Zulip's single `502` answers two bouncer errors and its
     // class is typed `BadGatewayErrorBody`, while its `429` answers
@@ -5769,30 +5809,48 @@ fn error_body_type(resp: &Response, class: &str) -> TypeRef {
         {
             TypeRef::List(Box::new(TypeRef::Named(format!("{class}BodyItem"))))
         }
-        Some(schema) if resp.reference.is_none() && is_inline_struct(schema) => {
-            TypeRef::Named(format!("{class}Body"))
-        }
+        // An inline object is the hoisted `{Class}Body` whether the operation
+        // writes it or reaches it through a `$ref` to `components.responses`:
+        // frankfurter's shared `NotFound`, apideck's `Unauthorized` and bunq's
+        // `GenericError` type their classes `NotFoundErrorBody`,
+        // `UnauthorizedErrorBody` and `BadRequestErrorBody`, measured at Fern CLI
+        // 5.163.1 with fern-python-sdk 5.41.3. Whether the class keeps it once
+        // several operations declare the status is
+        // [`unequal_error_statuses`]'s call.
+        Some(schema) if is_inline_struct(schema) => TypeRef::Named(format!("{class}Body")),
         // An inline union body is hoisted the same way (see
         // `hoist_error_body_types`): the Vonage Messages API's `401` is a `oneOf`
         // of two `$ref`s sharing a `type` discriminant, and Fern's exception
         // carries the discriminated union `UnauthorizedErrorBody`.
-        Some(schema) if resp.reference.is_none() && is_inline_union(schema) => {
-            TypeRef::Named(format!("{class}Body"))
-        }
-        // A named `$ref`, scalar, or container keeps its resolved type. An inline
-        // object reached through a `$ref` to `components.responses` (bunq's
-        // `GenericError`) or an otherwise-untyped body resolves to bare `Any`, the
-        // same as a body-less error in Fern 5.20.
+        Some(schema) if is_inline_union(schema) => TypeRef::Named(format!("{class}Body")),
+        // A named `$ref`, scalar, or container keeps its resolved type; an
+        // otherwise-untyped body is bare `Any`, the same as a body-less error.
         Some(schema) => base_type_ref(schema),
         None => TypeRef::Primitive(Prim::Any),
     }
 }
 
+/// The schema an error response's body is converted from. Fern imports an
+/// error's first declared concrete representation: FOLIO's shared 400 response
+/// writes `text/plain` before `application/json`, and the generated exception
+/// carries `str` even though the JSON body is typed.
+fn error_body_schema(resp: &Response) -> Option<&Schema> {
+    resp.content
+        .values()
+        .filter_map(|media| media.schema.as_ref())
+        .find(|schema| !is_unknown(schema))
+        .or_else(|| {
+            resp.content
+                .values()
+                .find_map(|media| media.schema.as_ref())
+        })
+}
+
 /// Hoist a standalone `{ErrorClassName}Body` model for each error response whose
 /// body is an inline object (bunq's shared 400 `GenericError` → `BadRequestErrorBody`),
 /// deduplicated by name so a body reused across every endpoint is emitted once. The
-/// error class itself keeps its `Any` body (see [`error_body_type`]); this type lives
-/// in the package-root `types/`, reachable only through the aggregators.
+/// model is emitted whether or not the error class is typed with it (see
+/// [`unequal_error_statuses`]); it lives in the package-root `types/`.
 fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     let mut bodies: IndexMap<String, Schema> = IndexMap::new();
     let mut union_declarations: Vec<(String, Schema)> = Vec::new();
@@ -5800,7 +5858,7 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
             for (status, resp) in error_response_entries(op) {
-                let Some(class) = error_class_name(status) else {
+                let Some(class) = status.class_name() else {
                     continue;
                 };
                 // Any JSON representation declares the body, `application/json`
@@ -6003,37 +6061,148 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     }
 }
 
-/// The error classes whose status is declared by more than one operation in the
-/// document. Fern types an error class's `body` with its `{Class}Body` model only
-/// where exactly one response in the whole document declares that status —
-/// `mosip-esignet`'s single `405`, letta's single `409`. A second declaration
-/// downgrades the class to `typing.Any` however alike the two are: letta's four
-/// `500`s share one shape and its two `402`s share one shape, and both classes are
-/// `typing.Any` in the golden, while `mosip-esignet`'s five `401`s (one with a
-/// body, four without) are the same rule seen from the other side. The merged
-/// `{Class}Body` model is still emitted either way — only the class's annotation
-/// moves. Compositions of a typed base and property-only refinements are the
-/// exception: Fern retains the base as the shared body even across operations.
-fn multiply_declared_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
-    let mut seen: IndexMap<String, (usize, bool)> = IndexMap::new();
+/// The error classes whose declarations across the document are not one schema.
+/// Fern's importer compares every operation's body for a status with the first
+/// one it met, and a status whose bodies differ is declared with an unknown
+/// body: its class is `typing.Any`, though the merged `{Class}Body` model is
+/// still emitted. Bodies that are the same schema keep their type however many
+/// operations declare them — frankfurter's three `404`s, bunq's every `400` and
+/// apideck's four `401`s each reach one shared component response, and letta's
+/// four `500`s write one shape four times; all are typed with their
+/// `{Class}Body`, measured at Fern CLI 5.163.1 with fern-python-sdk 5.41.3. A
+/// body-less declaration beside a bodied one differs from it (`mosip-esignet`'s
+/// five `401`s).
+fn unequal_error_statuses(doc: &OpenApi) -> std::collections::HashSet<String> {
+    let mut first: IndexMap<&str, Option<&Schema>> = IndexMap::new();
+    let mut unequal = std::collections::HashSet::new();
     for (_, item) in &doc.paths {
         for (_, op) in item.operations() {
             for (status, response) in error_response_entries(op) {
-                let Some(class) = error_class_name(status) else {
+                let Some(class) = status.class_name() else {
                     continue;
                 };
-                let entry = seen.entry(class.to_string()).or_insert((0, true));
-                entry.0 += 1;
-                entry.1 &= response_schema(response)
-                    .and_then(|schema| composed_error_base(doc, schema))
-                    .is_some();
+                let schema = error_body_schema(response);
+                match first.get(class) {
+                    None => {
+                        first.insert(class, schema);
+                    }
+                    Some(earlier) if !error_schemas_equal(*earlier, schema) => {
+                        unequal.insert(class.to_string());
+                    }
+                    Some(_) => {}
+                }
             }
         }
     }
-    seen.into_iter()
-        .filter(|(_, (count, composed))| *count > 1 && !composed)
-        .map(|(class, _)| class)
-        .collect()
+    unequal
+}
+
+/// Whether two error bodies are one schema to Fern's importer, which compares
+/// the shapes it converted rather than the documents' spelling: two `$ref`s by
+/// the component they name, two objects by their property names and each
+/// property's shape and optionality (a description, an example or a
+/// composition's `$ref` bases never count), two enums by their value sets, and
+/// two primitives by their converted type. An absent body is the unknown schema.
+fn error_schemas_equal(a: Option<&Schema>, b: Option<&Schema>) -> bool {
+    let unknown = |schema: Option<&Schema>| schema.is_none_or(is_unknown);
+    match (a, b) {
+        _ if unknown(a) || unknown(b) => unknown(a) && unknown(b),
+        (Some(a), Some(b)) => body_shapes_equal(a, b),
+        _ => false,
+    }
+}
+
+fn body_shapes_equal(a: &Schema, b: &Schema) -> bool {
+    let reference = |schema: &Schema| {
+        schema
+            .reference
+            .clone()
+            .or_else(|| single_all_of_ref(schema).map(str::to_string))
+    };
+    match (reference(a), reference(b)) {
+        (Some(left), Some(right)) => return left == right,
+        (None, None) => {}
+        _ => return false,
+    }
+    if is_unknown(a) || is_unknown(b) {
+        return is_unknown(a) && is_unknown(b);
+    }
+    if a.explicitly_nullable() != b.explicitly_nullable() {
+        return false;
+    }
+    match (string_enum_values(a), string_enum_values(b)) {
+        (Some(left), Some(right)) => {
+            let left: std::collections::BTreeSet<_> = left.into_iter().collect();
+            let right: std::collections::BTreeSet<_> = right.into_iter().collect();
+            return left == right;
+        }
+        (None, None) => {}
+        _ => return false,
+    }
+    let members = |schema: &'_ Schema| schema.one_of.clone().or_else(|| schema.any_of.clone());
+    match (members(a), members(b)) {
+        (Some(left), Some(right)) => {
+            return a.discriminator.as_ref().map(|d| &d.property_name)
+                == b.discriminator.as_ref().map(|d| &d.property_name)
+                && left.len() == right.len()
+                && left
+                    .iter()
+                    .zip(&right)
+                    .all(|(left, right)| body_shapes_equal(left, right));
+        }
+        (None, None) => {}
+        _ => return false,
+    }
+    let is_array =
+        |schema: &Schema| schema.ty.as_ref().and_then(TypeField::primary) == Some("array");
+    if is_array(a) || is_array(b) {
+        return is_array(a)
+            && is_array(b)
+            && match (a.items.as_deref(), b.items.as_deref()) {
+                (Some(left), Some(right)) => body_shapes_equal(left, right),
+                (left, right) => left.is_none_or(is_unknown) && right.is_none_or(is_unknown),
+            };
+    }
+    if is_map(a) || is_map(b) {
+        let value = |schema: &Schema| match &schema.additional_properties {
+            Some(AdditionalProperties::Schema(value)) => Some(value.as_ref().clone()),
+            _ => None,
+        };
+        return is_map(a) && is_map(b) && error_schemas_equal(value(a).as_ref(), value(b).as_ref());
+    }
+    let object = |schema: &Schema| is_object_type(schema) || schema.all_of.is_some();
+    if object(a) || object(b) {
+        if !(object(a) && object(b)) {
+            return false;
+        }
+        let left = object_body_properties(a);
+        let right = object_body_properties(b);
+        return left.len() == right.len()
+            && left.iter().all(|(name, (required, schema))| {
+                right.get(name).is_some_and(|(other_required, other)| {
+                    required == other_required && body_shapes_equal(schema, other)
+                })
+            });
+    }
+    base_type_ref(a) == base_type_ref(b)
+}
+
+/// An object body's own properties with whether each is required, its inline
+/// `allOf` members' included; a member that is a `$ref` is a base Fern compares
+/// nothing of.
+fn object_body_properties(schema: &Schema) -> IndexMap<&str, (bool, &Schema)> {
+    let inline_members = schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter(|member| member.reference.is_none());
+    let mut properties = IndexMap::new();
+    for part in inline_members.chain(std::iter::once(schema)) {
+        for (name, property) in &part.properties {
+            properties.insert(name.as_str(), (part.required.contains(name), property));
+        }
+    }
+    properties
 }
 
 /// Fern retains the first typed base of an error composition and discards the
@@ -6064,16 +6233,25 @@ fn composed_error_base(doc: &OpenApi, schema: &Schema) -> Option<String> {
 fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
     let mut out = Vec::new();
     for (status, resp) in error_response_entries(op) {
-        let Some(class) = error_class_name(status) else {
+        let Some(class) = status.class_name() else {
             continue;
         };
         out.push(ErrorResponse {
-            status_code: status,
+            status_code: status.code,
+            wildcard: status.wildcard,
             class_name: class.to_string(),
             body_type: error_body_type(resp, class),
         });
     }
-    out.sort_by_key(|error| error.status_code);
+    // Fern's importer keeps the responses in JavaScript key order — integer
+    // statuses ascending, then each range where the document first writes it —
+    // and fern-python-sdk 5.41.3 tests every concrete status before a range.
+    out.sort_by_key(|error| {
+        (
+            error.wildcard,
+            if error.wildcard { 0 } else { error.status_code },
+        )
+    });
     out
 }
 
@@ -9311,31 +9489,6 @@ fn success_response_key(op: &Operation) -> Option<String> {
                 .find(|(code, _)| code.as_str() == "default")
         })
         .map(|(code, _)| code.clone())
-}
-
-fn response_schema(response: &Response) -> Option<&Schema> {
-    let select = |typed_only: bool| {
-        let keep = |media: &&crate::openapi::MediaType| {
-            !typed_only
-                || media
-                    .schema
-                    .as_ref()
-                    .is_some_and(|schema| !is_unknown(schema))
-        };
-        response
-            .content
-            .get("application/json")
-            .filter(keep)
-            .or_else(|| response.content.get("application/jwt").filter(keep))
-            .or_else(|| response.content.get("*/*").filter(keep))
-            .or_else(|| response.content.values().find(|media| keep(media)))
-    };
-    // A media whose schema says nothing loses to one that says something: every
-    // braintrust error response offers `text/plain` as `{type: string}` beside
-    // `application/json` as the bare `{nullable: true}`, and Fern types the error
-    // body `str` rather than the unknown the preference order would otherwise
-    // reach first.
-    select(true).or_else(|| select(false))?.schema.as_ref()
 }
 
 /// Whether crozier can render an operation's success response. Every resolved
@@ -16279,12 +16432,11 @@ mod tests {
         module_from_grouped_id, module_identifier, oauth_scope_enum, optional_type_ref,
         parameter_example, path_group, property_description, query_parameter_example, ref_to_class,
         request_and_response_refs_match, request_schema_use_count, resolve_request_body,
-        resolve_schema_pointer, response_schema, sample_string_of_length, scalar_body,
-        success_response_entry, synthesized_method_name, title_from_tag, variant_class_name,
-        AliasType, Auth, Builder, Field, InlineHoister, ObjectType, Prim, RequestBody, TypeDecl,
-        TypeRef,
+        resolve_schema_pointer, sample_string_of_length, scalar_body, success_response_entry,
+        synthesized_method_name, title_from_tag, variant_class_name, AliasType, Auth, Builder,
+        Field, InlineHoister, ObjectType, Prim, RequestBody, TypeDecl, TypeRef,
     };
-    use crate::openapi::{OpenApi, Operation, Parameter, Response, Schema, TypeField};
+    use crate::openapi::{OpenApi, Operation, Parameter, Schema, TypeField};
 
     fn object_field(name: &str, required: bool, type_ref: TypeRef) -> Field {
         Field {
@@ -16709,7 +16861,7 @@ mod tests {
     }
 
     #[test]
-    fn direct_inline_error_uses_its_body_model_but_a_response_ref_does_not() {
+    fn an_inline_error_body_uses_its_body_model_however_the_response_is_reached() {
         let mut response: crate::openapi::Response = serde_json::from_value(serde_json::json!({
             "description": "Conflict",
             "content": { "application/json": { "schema": {
@@ -16726,11 +16878,158 @@ mod tests {
             super::error_body_type(&response, "BadRequestError"),
             TypeRef::Named("BadRequestErrorBody".to_string())
         );
-        response.reference = Some("#/components/responses/BadRequest".to_string());
+        // bunq's shared `GenericError` response: reached through a `$ref`, its
+        // inline object is still the class's `BadRequestErrorBody`.
+        response.reference = Some("#/components/responses/GenericError".to_string());
         assert_eq!(
             super::error_body_type(&response, "BadRequestError"),
-            TypeRef::Primitive(Prim::Any)
+            TypeRef::Named("BadRequestErrorBody".to_string())
         );
+    }
+
+    #[test]
+    fn an_error_class_keeps_its_body_type_only_while_every_declaration_is_one_schema() {
+        let error_bodies = |second: serde_json::Value| -> Vec<(String, TypeRef)> {
+            let message = serde_json::json!({
+                "type": "object",
+                "properties": { "message": { "type": "string" } }
+            });
+            let ir = build_document(serde_json::json!({
+                "openapi": "3.0.0",
+                "info": { "title": "Nursery", "version": "1" },
+                "paths": {
+                    "/plants": { "get": { "operationId": "listPlants", "responses": {
+                        "200": { "description": "ok" },
+                        "404": { "description": "gone", "content": {
+                            "application/json": { "schema": message.clone() }
+                        } },
+                        "5XX": { "description": "down", "content": {
+                            "application/json": { "schema": message }
+                        } }
+                    } } },
+                    "/seeds": { "get": { "operationId": "listSeeds", "responses": {
+                        "200": { "description": "ok" },
+                        "404": second
+                    } } }
+                }
+            }));
+            ir.errors
+                .iter()
+                .map(|error| (error.class_name.clone(), error.body_type.clone()))
+                .collect()
+        };
+        let named = |name: &str| TypeRef::Named(name.to_string());
+        // frankfurter's three `404`s are one shape, and the class is typed.
+        assert_eq!(
+            error_bodies(serde_json::json!({ "description": "also gone", "content": {
+                "application/json": { "schema": {
+                    "description": "Spelled differently, the same shape",
+                    "type": "object",
+                    "properties": { "message": { "type": "string", "example": "no" } }
+                } }
+            } })),
+            [
+                ("NotFoundError".to_string(), named("NotFoundErrorBody")),
+                ("ServerError".to_string(), named("ServerErrorBody")),
+            ]
+        );
+        // A property the first declaration lacks, a different property type, a
+        // required property the first leaves optional, or no body at all is
+        // another schema, and the class falls back to `typing.Any`.
+        for second in [
+            serde_json::json!({ "type": "object", "properties": {
+                "message": { "type": "string" }, "code": { "type": "integer" }
+            } }),
+            serde_json::json!({ "type": "object", "properties": {
+                "message": { "type": "integer" }
+            } }),
+            serde_json::json!({ "type": "object", "required": ["message"], "properties": {
+                "message": { "type": "string" }
+            } }),
+        ] {
+            assert_eq!(
+                error_bodies(serde_json::json!({ "description": "other", "content": {
+                    "application/json": { "schema": second.clone() }
+                } }))[0],
+                ("NotFoundError".to_string(), TypeRef::Primitive(Prim::Any)),
+                "{second}"
+            );
+        }
+        assert_eq!(
+            error_bodies(serde_json::json!({ "description": "bodiless" }))[0],
+            ("NotFoundError".to_string(), TypeRef::Primitive(Prim::Any))
+        );
+    }
+
+    #[test]
+    fn error_schema_equality_reads_the_converted_shape() {
+        let schema = |value: serde_json::Value| -> Schema {
+            serde_json::from_value(value).expect("schema deserializes")
+        };
+        let equal = |a: serde_json::Value, b: serde_json::Value| {
+            super::error_schemas_equal(Some(&schema(a)), Some(&schema(b)))
+        };
+        let reference =
+            |name: &str| serde_json::json!({ "$ref": format!("#/components/schemas/{name}") });
+        assert!(equal(reference("Problem"), reference("Problem")));
+        assert!(!equal(reference("Problem"), reference("Fault")));
+        assert!(!equal(
+            reference("Problem"),
+            serde_json::json!({ "type": "object" })
+        ));
+        assert!(equal(
+            serde_json::json!({ "allOf": [reference("Problem")] }),
+            reference("Problem")
+        ));
+        assert!(equal(
+            serde_json::json!({ "enum": ["a", "b"] }),
+            serde_json::json!({ "type": "string", "enum": ["b", "a"] })
+        ));
+        assert!(!equal(
+            serde_json::json!({ "enum": ["a"] }),
+            serde_json::json!({ "enum": ["a", "b"] })
+        ));
+        assert!(equal(
+            serde_json::json!({ "type": "array", "items": { "type": "string" } }),
+            serde_json::json!({ "type": "array", "items": { "type": "string" } })
+        ));
+        assert!(!equal(
+            serde_json::json!({ "type": "array", "items": { "type": "string" } }),
+            serde_json::json!({ "type": "array", "items": { "type": "integer" } })
+        ));
+        assert!(equal(
+            serde_json::json!({ "type": "object", "additionalProperties": { "type": "string" } }),
+            serde_json::json!({ "additionalProperties": { "type": "string" } })
+        ));
+        assert!(!equal(
+            serde_json::json!({ "type": "string" }),
+            serde_json::json!({ "type": "string", "nullable": true })
+        ));
+        assert!(equal(
+            serde_json::json!({ "oneOf": [reference("A"), { "type": "string" }] }),
+            serde_json::json!({ "anyOf": [reference("A"), { "type": "string" }] })
+        ));
+        assert!(!equal(
+            serde_json::json!({ "oneOf": [reference("A"), reference("B")] }),
+            serde_json::json!({ "oneOf": [reference("B"), reference("A")] })
+        ));
+        // A composition compares its own and its inline members' properties;
+        // the `$ref` bases it extends are not compared.
+        assert!(equal(
+            serde_json::json!({ "allOf": [reference("Base"), { "properties": {
+                "detail": { "type": "string" }
+            } }] }),
+            serde_json::json!({ "allOf": [reference("Other"), reference("More")],
+                "properties": { "detail": { "type": "string" } } })
+        ));
+        assert!(super::error_schemas_equal(
+            None,
+            Some(&schema(serde_json::json!({})))
+        ));
+        assert!(!super::error_schemas_equal(
+            None,
+            Some(&schema(serde_json::json!({ "type": "string" })))
+        ));
     }
 
     #[test]
@@ -18370,37 +18669,6 @@ mod tests {
             }
         }));
         assert!(!super::has_bodyless_success(&ranged));
-    }
-
-    #[test]
-    fn response_schema_checks_each_supported_media_and_missing_schema() {
-        let response = |content: serde_json::Value| -> Response {
-            serde_json::from_value(serde_json::json!({ "content": content }))
-                .expect("response deserializes")
-        };
-        for media_type in ["application/json", "application/jwt", "*/*", "text/csv"] {
-            let response = response(serde_json::json!({
-                media_type: { "schema": { "type": "string", "title": media_type } }
-            }));
-            assert_eq!(
-                response_schema(&response).unwrap().title.as_deref(),
-                Some(media_type)
-            );
-        }
-        let precedence = response(serde_json::json!({
-            "text/csv": { "schema": { "title": "fallback" } },
-            "application/jwt": { "schema": { "title": "jwt" } },
-            "application/json": { "schema": { "title": "json" } }
-        }));
-        assert_eq!(
-            response_schema(&precedence).unwrap().title.as_deref(),
-            Some("json")
-        );
-        assert!(response_schema(&response(serde_json::json!({}))).is_none());
-        assert!(response_schema(&response(serde_json::json!({
-            "application/json": {}
-        })))
-        .is_none());
     }
 
     #[test]
@@ -22300,38 +22568,55 @@ mod tests {
             serde_json::from_value(serde_json::json!({ "responses": responses }))
                 .expect("operation deserializes")
         };
-        let described = |op: &Operation| -> Vec<(u16, String)> {
+        let described = |op: &Operation| -> Vec<(u16, bool, String)> {
             super::error_response_entries(op)
                 .into_iter()
                 .map(|(status, response)| {
-                    (status, response.description.clone().unwrap_or_default())
+                    (
+                        status.code,
+                        status.wildcard,
+                        response.description.clone().unwrap_or_default(),
+                    )
                 })
                 .collect()
         };
         let after = op(serde_json::json!({
             "200": { "description": "ok" },
+            "5XX": { "description": "server" },
             "429": { "description": "plain" },
             "429 (burst)": { "description": "burst" },
             "4xx": { "description": "range" },
+            " 4XX": { "description": "spaced" },
             "x-200:err message": { "description": "vendor" }
         }));
+        // A range key, in any case, is an error of its own after every status;
+        // a spaced one is no range and declares the status `4`.
         assert_eq!(
             described(&after),
-            [(429, "burst".to_string()), (4, "range".to_string())]
+            [
+                (429, false, "burst".to_string()),
+                (4, false, "spaced".to_string()),
+                (500, true, "server".to_string()),
+                (400, true, "range".to_string()),
+            ]
         );
         let before = op(serde_json::json!({
             "423 (sealed)": { "description": "sealed" },
             "423": { "description": "plain" },
             "0423": { "description": "padded" }
         }));
-        assert_eq!(described(&before), [(423, "padded".to_string())]);
+        assert_eq!(described(&before), [(423, false, "padded".to_string())]);
         let errors = super::resolve_errors(&after);
         assert_eq!(
             errors
                 .iter()
-                .map(|error| (error.status_code, error.class_name.as_str()))
+                .map(|error| (error.status_code, error.wildcard, error.class_name.as_str()))
                 .collect::<Vec<_>>(),
-            [(429, "TooManyRequestsError")]
+            [
+                (429, false, "TooManyRequestsError"),
+                (500, true, "ServerError"),
+                (400, true, "ClientRequestError"),
+            ]
         );
     }
 

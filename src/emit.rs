@@ -2111,6 +2111,7 @@ fn error_files(
                 base => base,
                 body_type => body_type,
                 status_code => err.status_code,
+                wildcard => err.wildcard,
             },
         )?;
         files.push(GeneratedFile {
@@ -5772,22 +5773,7 @@ fn raw_body(ep: &Endpoint, is_async: bool, inner: &str, imports: &mut Imports) -
         let module = naming::module_name(&err.class_name);
         imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
-        lines.extend([
-            format!(
-                "            if _response.status_code == {}:",
-                err.status_code
-            ),
-            format!("                raise {}(", err.class_name),
-            "                    headers=dict(_response.headers),".to_string(),
-            "                    body=typing.cast(".to_string(),
-            format!("                        {body},"),
-            "                        parse_obj_as(".to_string(),
-            format!("                            type_={body},"),
-            "                            object_=_response.json(),".to_string(),
-            "                        ),".to_string(),
-            "                    ),".to_string(),
-            "                )".to_string(),
-        ]);
+        lines.extend(error_raise_branch(err, &body, "            "));
     }
     lines.extend([
         "            _response_json = _response.json()".to_string(),
@@ -6826,24 +6812,44 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
         let module = naming::module_name(&err.class_name);
         imports.add_from(&imports.error_import_path(&module), &err.class_name);
         let body = raw_type_str(&err.body_type, imports);
-        lines.extend([
-            format!(
-                "                    if _response.status_code == {}:",
-                err.status_code
-            ),
-            format!("                        raise {}(", err.class_name),
-            "                            headers=dict(_response.headers),".to_string(),
-            "                            body=typing.cast(".to_string(),
-            format!("                                {body},"),
-            "                                parse_obj_as(".to_string(),
-            format!("                                    type_={body},"),
-            "                                    object_=_response.json(),".to_string(),
-            "                                ),".to_string(),
-            "                            ),".to_string(),
-            "                        )".to_string(),
-        ]);
+        lines.extend(error_raise_branch(err, &body, "                    "));
     }
     lines.join("\n")
+}
+
+/// One declared error's `raise` branch at `indent`: the status test, then the
+/// exception built from the parsed body. A `4XX`/`5XX` range tests the whole
+/// range and hands the exception the actual status, as fern-python-sdk 5.41.3
+/// writes it.
+fn error_raise_branch(err: &crate::ir::ErrorResponse, body: &str, indent: &str) -> Vec<String> {
+    let test = if err.wildcard {
+        format!(
+            "if {} <= _response.status_code < {}:",
+            err.status_code,
+            err.status_code + 100
+        )
+    } else {
+        format!("if _response.status_code == {}:", err.status_code)
+    };
+    let mut lines = vec![
+        format!("{indent}{test}"),
+        format!("{indent}    raise {}(", err.class_name),
+        format!("{indent}        headers=dict(_response.headers),"),
+        format!("{indent}        body=typing.cast("),
+        format!("{indent}            {body},"),
+        format!("{indent}            parse_obj_as("),
+        format!("{indent}                type_={body},"),
+        format!("{indent}                object_=_response.json(),"),
+        format!("{indent}            ),"),
+        format!("{indent}        ),"),
+    ];
+    if err.wildcard {
+        lines.push(format!(
+            "{indent}        status_code=_response.status_code,"
+        ));
+    }
+    lines.push(format!("{indent}    )"));
+    lines
 }
 
 /// Assemble the root `client.py`: the `FernApi`/`AsyncFernApi` classes that
@@ -13792,11 +13798,20 @@ mod tests {
         ep.request_body = Some(RequestBody::Bytes {
             content_type: "application/octet-stream".to_string(),
         });
-        ep.errors = vec![ErrorResponse {
-            status_code: 400,
-            class_name: "BadRequestError".to_string(),
-            body_type: TypeRef::Named("BadInfo".to_string()),
-        }];
+        ep.errors = vec![
+            ErrorResponse {
+                status_code: 400,
+                wildcard: false,
+                class_name: "BadRequestError".to_string(),
+                body_type: TypeRef::Named("BadInfo".to_string()),
+            },
+            ErrorResponse {
+                status_code: 500,
+                wildcard: true,
+                class_name: "ServerError".to_string(),
+                body_type: TypeRef::Named("BadInfo".to_string()),
+            },
+        ];
         let out = raw_method(&ep, false, &mut i);
         // A bytes body streams via `content=` under the octet-stream content type.
         assert!(
@@ -13817,6 +13832,20 @@ mod tests {
         assert!(i
             .render()
             .contains("from ..errors.bad_request_error import BadRequestError"));
+        // A `5XX` range raises for any status in it, handing the exception the
+        // actual status; the concrete status alone gets no `status_code`.
+        assert!(
+            out.contains(
+                "            if 500 <= _response.status_code < 600:\n                raise ServerError("
+            ),
+            "{out}"
+        );
+        assert_eq!(
+            out.matches("\n                    status_code=_response.status_code,\n")
+                .count(),
+            1,
+            "{out}"
+        );
     }
 
     #[test]
