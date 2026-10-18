@@ -3705,15 +3705,15 @@ fn core_files(pkg: &str, paginated: bool, enum_type: EnumType, auth: &Auth) -> V
 /// The empty `_AUTH_HEADERS` set the vendored `core/http_client.py` declares.
 const EMPTY_AUTH_HEADERS: &str = "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset()\n";
 
-/// `core/http_client.py` with `_AUTH_HEADERS` naming the header the SDK's
-/// credential travels in, lower-cased, so its logged requests redact it: an
-/// `apiKey` scheme's own header, `authorization` for a bearer or basic
-/// credential, and none for an unauthenticated API.
+/// `core/http_client.py` with `_AUTH_HEADERS` naming the header an `apiKey`
+/// credential travels in, lower-cased, so its logged requests redact it. Fern
+/// names only header schemes there: a bearer or basic credential's
+/// `Authorization` is already in the runtime's own sensitive set, and the set
+/// stays empty for it as for an unauthenticated API.
 fn http_client_with_auth_headers(asset: &str, auth: &Auth) -> String {
     let header = match auth {
         Auth::ApiKey { header, .. } => Some(header.to_ascii_lowercase()),
-        Auth::Bearer { .. } | Auth::Basic { .. } => Some("authorization".to_owned()),
-        Auth::None => None,
+        Auth::Bearer { .. } | Auth::Basic { .. } | Auth::None => None,
     };
     debug_assert!(
         asset.contains(EMPTY_AUTH_HEADERS),
@@ -3722,7 +3722,10 @@ fn http_client_with_auth_headers(asset: &str, auth: &Auth) -> String {
     match header {
         Some(header) => asset.replacen(
             EMPTY_AUTH_HEADERS,
-            &format!("_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({{{}}})\n", literal_enum_value(&header)),
+            &format!(
+                "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({{{}}})\n",
+                literal_enum_value(&header)
+            ),
             1,
         ),
         None => asset.to_owned(),
@@ -11984,6 +11987,49 @@ mod tests {
                     "responses": {"204": {"description": "OK"}}}}
             }
         })
+    }
+
+    /// The `_AUTH_HEADERS` line of the `core/http_client.py` emitted for a
+    /// document whose only security scheme is `scheme`.
+    fn auth_headers_line(scheme: serde_json::Value) -> String {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "components": {"securitySchemes": {"credential": scheme}},
+            "security": [{"credential": []}],
+            "paths": {"/probe": {"get": {"operationId": "probe",
+                "responses": {"204": {"description": "OK"}}}}}
+        }));
+        let (_, http_client) = files
+            .iter()
+            .find(|(path, _)| path == "src/api/core/http_client.py")
+            .expect("core/http_client.py is emitted");
+        http_client
+            .lines()
+            .find(|line| line.starts_with("_AUTH_HEADERS"))
+            .expect("http_client.py declares _AUTH_HEADERS")
+            .to_owned()
+    }
+
+    #[test]
+    fn an_api_key_header_is_redacted_by_name_and_a_bearer_token_is_not_listed() {
+        assert_eq!(
+            auth_headers_line(
+                serde_json::json!({"type": "apiKey", "in": "header", "name": "X-Api-Key"})
+            ),
+            "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({\"x-api-key\"})"
+        );
+        // `Authorization` is in the runtime's own sensitive set, so Fern lists no
+        // bearer or basic credential's header here.
+        for scheme in [
+            serde_json::json!({"type": "http", "scheme": "bearer"}),
+            serde_json::json!({"type": "http", "scheme": "basic"}),
+        ] {
+            assert_eq!(
+                auth_headers_line(scheme),
+                "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset()"
+            );
+        }
     }
 
     #[test]
