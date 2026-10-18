@@ -11494,6 +11494,7 @@ impl Builder<'_> {
                         // declares a flat model of `CodedError`'s fields.
                         || target.all_of.is_some())
                 {
+                    let target = with_annotation_xml(target, schema);
                     self.use_site_copy(name, &target, description);
                     return;
                 }
@@ -12604,6 +12605,7 @@ impl Builder<'_> {
         if self.copying_refs.iter().any(|copying| copying == reference) {
             return Some(TypeRef::Named(ref_to_class(reference)));
         }
+        let target = with_annotation_xml(target, schema);
         self.copying_refs.push(reference.to_string());
         let copy = self.use_site_copy(ctx, &target, description);
         self.copying_refs.pop();
@@ -12872,6 +12874,7 @@ impl Builder<'_> {
                             resolve_ref_from_schemas(self.schemas, reference).cloned()
                         {
                             if !target.properties.is_empty() && !is_map(&target) {
+                                let target = with_annotation_xml(target, value);
                                 let copy = self.use_site_copy(&value_name, &target, description);
                                 return TypeRef::Dict(
                                     Box::new(TypeRef::Primitive(Prim::Str)),
@@ -14994,6 +14997,28 @@ fn sole_all_of_ref(schema: &Schema) -> Option<&str> {
         return None;
     };
     member.reference.as_deref()
+}
+
+/// The target of an annotated `$ref` as the annotation sees it: Fern merges the
+/// `allOf` members over the target, so an XML object the annotation carries (the
+/// schema's own, else the last member's) replaces the target's. AWS documents
+/// name every list element this way — CloudFront's `SignerList.items` is
+/// `allOf: [$ref Signer, {xml: {name: Signer}}]`, and the element's copy is a
+/// `<Signer>` XML model though `Signer` itself declares no `xml`.
+fn with_annotation_xml(mut target: Schema, schema: &Schema) -> Schema {
+    let annotation = schema.xml.clone().or_else(|| {
+        schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .filter_map(|member| member.xml.clone())
+            .next_back()
+    });
+    if annotation.is_some() {
+        target.xml = annotation;
+    }
+    target
 }
 
 /// A property-level `allOf` that adds annotations to exactly one `$ref` without
@@ -24068,6 +24093,43 @@ mod xml_encoding_tests {
         );
         assert_eq!(xml, None);
         assert_eq!(fields, [("name".to_string(), None)]);
+    }
+
+    #[test]
+    fn an_annotation_naming_an_xml_element_makes_its_copy_an_xml_model() {
+        // A list element that only annotates its `$ref` with an XML name is a
+        // copy of the target, and that copy is an XML model under the name.
+        let (xml, fields) = object(
+            serde_json::json!({
+                "Signer": {"type": "object", "properties": {"account": {"type": "string"}}},
+                "SignerList": {"type": "array", "items": {"allOf": [
+                    {"$ref": "#/components/schemas/Signer"},
+                    {"xml": {"name": "Signer"}}
+                ]}},
+                "Signers": {"type": "object", "properties": {"items": {"allOf": [
+                    {"$ref": "#/components/schemas/SignerList"},
+                    {"description": "The signers."}
+                ]}}}
+            }),
+            "SignersItemsItem",
+        );
+        assert_eq!(
+            xml,
+            Some(XmlEncoding {
+                name: "Signer".to_string(),
+                namespace: None,
+                prefix: None,
+            })
+        );
+        assert_eq!(fields, [("account".to_string(), element(None))]);
+        // The referenced component itself stays a plain model.
+        let (xml, _) = object(
+            serde_json::json!({
+                "Signer": {"type": "object", "properties": {"account": {"type": "string"}}}
+            }),
+            "Signer",
+        );
+        assert_eq!(xml, None);
     }
 
     #[test]
