@@ -819,9 +819,9 @@ class GoldenFernPinsTests(unittest.TestCase):
 
     def test_a_golden_metadata_record_that_is_no_pin_set_is_refused(self) -> None:
         good = {
-            "cliVersion": "5.20.0",
+            "cliVersion": "5.20.0",  # certified-pair: stand-in
             "generatorName": "fernapi/fern-python-sdk",
-            "generatorVersion": "4.3.17",
+            "generatorVersion": "4.3.17",  # certified-pair: stand-in
             "generatorConfig": {"enum_type": "python_enums"},
         }
         for label, text, message in (

@@ -652,7 +652,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (
                 json.dumps(
                     {
-                        "fern_python_sdk_version": "4.9.0",
+                        "fern_python_sdk_version": "4.9.0",  # certified-pair: stand-in
                         "corpus_spec_name": "alpha",
                         "corpus_spec_ref": "1",
                         "corpus_spec_url": "https://example.test/alpha/openapi.json",
@@ -1736,7 +1736,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         lines = result.stderr.splitlines()
         self.assertEqual(len(lines), 1, result.stderr)
         self.assertIn("wrote 2 files to", lines[0])
-        self.assertIn("(python-sdk@5.20.0, packaged)", lines[0])
+        self.assertIn("(python-sdk@5.20.0, packaged)", lines[0])  # certified-pair: stand-in
         self.assertIn("review, then wire them into the e2e manifest", lines[0])
 
         # What the quiet run withheld is reported when Fern fails, with Fern's
@@ -1752,7 +1752,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         self.assertEqual(failed.returncode, 7, failed.stderr)
         self.assertIn("simulated generator failure", failed.stderr)
-        self.assertIn("fern generate (python-sdk@5.20.0, packaged) exited 7", failed.stderr)
+        self.assertIn("fern generate (python-sdk@5.20.0, packaged) exited 7", failed.stderr)  # certified-pair: stand-in
         self.assertIn("fix the cause Fern printed above, then re-run", failed.stderr)
         self.assertIn("CROZIER_FERN_NO_DOCKER_SHIM=1", failed.stderr)
         self.assertIn("set CROZIER_FERN_DOCKER_CA to the bundle", failed.stderr)
@@ -1807,7 +1807,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     "  path: openapi/openapi.yml\n"
                     "groups:\n"
                     "  python-sdk:\n" + ("    audiences:\n" + audience_lines if audiences else "") + "    generators:\n"
-                    "      - name: fernapi/fern-python-sdk\n"
+                    "      - name: fernapi/fern-python-sdk\n"  # certified-pair: stand-in
                     "        version: 5.20.0\n"
                     "        config:\n"
                     + (f"          client_class_name: {client_class_name}\n" if client_class_name else "")
