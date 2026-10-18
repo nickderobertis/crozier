@@ -72,8 +72,11 @@ assert sys.argv[1] == "internal-strip"
 sys.stdout.write("".join(l for l in open(sys.argv[2]) if not l.startswith("#")))
 """
 
-METADATA = {"cliVersion": "9.8.7", "generatorName": "fernapi/fern-python-sdk", "generatorVersion": "6.5.4"}
-EVIDENCE = 'fern_cli_version = "1.0.0"\nfern_python_sdk_version = "1.0.0"\ndigest = "{}"\n\n[[covers]]\nkey = "k"\n'
+# A stand-in pair the scratch repository certifies, never the real one, so each
+# assertion shows the tool read the pair from the scratch metadata.json.
+CLI, SDK, OLD = "9.8.7", "6.5.4", "1.0.0"
+METADATA = {"cliVersion": CLI, "generatorName": "fernapi/fern-python-sdk", "generatorVersion": SDK}
+EVIDENCE = f'fern_cli_version = "{OLD}"\nfern_python_sdk_version = "{OLD}"\ndigest = "{{}}"\n\n[[covers]]\nkey = "k"\n'
 
 
 def tree_digest(tree: Path) -> str:
@@ -145,19 +148,19 @@ class FernReferencesTests(unittest.TestCase):
         result = self.run_tool("generate", "handwritten", "alpha")
 
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("handwritten: 1 regenerated, 0 failed at Fern CLI 9.8.7", result.stdout)
+        self.assertIn(f"handwritten: 1 regenerated, 0 failed at Fern CLI {CLI}", result.stdout)
         tree = fixture / "fern-expected"
         self.assertFalse((tree / "src/fern/stale.py").exists())
         self.assertEqual((tree / "src/fern/client.py").read_text(encoding="utf-8"), "CLIENT = 1\n")
         self.assertTrue((tree / "src/fern/core/enum.py").is_file())
         self.assertTrue((tree / "src/fern/audience_public.py").is_file())
         evidence = (fixture / "evidence.toml").read_text(encoding="utf-8")
-        self.assertIn('fern_cli_version = "9.8.7"\nfern_python_sdk_version = "6.5.4"\n', evidence)
+        self.assertIn(f'fern_cli_version = "{CLI}"\nfern_python_sdk_version = "{SDK}"\n', evidence)
         self.assertIn(f'digest = "{tree_digest(tree)}"', evidence)
         self.assertIn('[[covers]]\nkey = "k"\n', evidence)
         (call,) = self.calls()
-        self.assertEqual(call["config"], {"organization": "fern", "version": "9.8.7"})
-        self.assertIn("version: 6.5.4", call["generators"])
+        self.assertEqual(call["config"], {"organization": "fern", "version": CLI})
+        self.assertIn(f"version: {SDK}", call["generators"])
         # Only the named item ran: beta keeps its stale tree.
         self.assertTrue((self.root / "docs/openapi-surface/handwritten/beta/fern-expected/src/fern/stale.py").exists())
 
@@ -193,8 +196,8 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(
             manifest,
             {
-                "fern_python_sdk_version": "6.5.4",
-                "fern_cli_version": "9.8.7",
+                "fern_python_sdk_version": SDK,
+                "fern_cli_version": CLI,
                 "enum_type": "literals",
                 "base": "fern-expected",
                 "digest": tree_digest(base),
@@ -257,7 +260,7 @@ class FernReferencesTests(unittest.TestCase):
         record = (expected / "refused.fern-refusal.txt").read_text(encoding="utf-8")
         self.assertEqual(
             record,
-            "fern_cli_version: 9.8.7\nfern_python_sdk_version: 6.5.4\ngenerate_exit: 1\n"
+            f"fern_cli_version: {CLI}\nfern_python_sdk_version: {SDK}\ngenerate_exit: 1\n"
             "diagnostic: Stub refused the document\noutput_tree: none\n",
         )
         rows = (expected / "MANIFEST.tsv").read_text(encoding="utf-8").splitlines()
@@ -289,7 +292,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("2-no: Fern now refuses 2-no", result.stderr)
         case = self.root / "docs/openapi-surface/authored-probes/1-ok"
         log = (case / "fern.log").read_text(encoding="utf-8")
-        self.assertTrue(log.startswith("Fern CLI 9.8.7, python-sdk 6.5.4\ncheck exit: 0\nAll checks passed\n\n"))
+        self.assertTrue(log.startswith(f"Fern CLI {CLI}, python-sdk {SDK}\ncheck exit: 0\nAll checks passed\n\n"))
         self.assertIn("\ngenerate exit: 0\n[api]: python-sdk Wrote files to <workspace>/preview/fern-python-sdk\n", log)
         self.assertTrue((case / "fern-expected/src/fern/client.py").is_file())
         refused = (self.root / "docs/openapi-surface/authored-probes/2-no/fern.log").read_text(encoding="utf-8")
@@ -346,7 +349,7 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         log = (self.root / "docs/fern-refusals/zeta/evidence/rerun.pinned-fern.log").read_text(encoding="utf-8")
-        self.assertTrue(log.startswith("Fern CLI 9.8.7, python-sdk 6.5.4\ncheck exit: 0\n"))
+        self.assertTrue(log.startswith(f"Fern CLI {CLI}, python-sdk {SDK}\ncheck exit: 0\n"))
         self.assertEqual((self.root / "docs/fern-refusals/zeta/evidence/orphan.pinned-fern.log").read_text(), "old\n")
 
 
