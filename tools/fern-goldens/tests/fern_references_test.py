@@ -17,7 +17,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 import unittest
 from pathlib import Path
 
@@ -300,7 +299,9 @@ class FernReferencesTests(unittest.TestCase):
         self.handwritten("alpha")
         result = self.run_tool("generate", "handwritten", "nosuch")
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("no handwritten item nosuch; `fern-references.py list handwritten` names the family", result.stderr)
+        self.assertIn(
+            "no handwritten item nosuch; `fern-references.py list handwritten` names the family", result.stderr
+        )
         self.assertEqual(self.calls(), [])
 
     def test_a_missing_certified_pair_names_how_to_restore_it(self) -> None:
@@ -317,9 +318,10 @@ class FernReferencesTests(unittest.TestCase):
             "tests/fixtures/alpha/expected-literals/.crozier-overlay.json",
             "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
             "tests/fixtures/gamma/openapi.yml",
+            "tests/fixtures/delta/known-fern-failure.json",
         ):
             self.write(path, "{}\n")
-        self.assertEqual(self.run_tool("list", "corpus").stdout, "alpha\nbeta\n")
+        self.assertEqual(self.run_tool("list", "corpus").stdout, "alpha\nbeta\ndelta\n")
         self.assertEqual(
             self.run_tool("list", "overlays").stdout,
             "alpha/expected-default-max-retries\nalpha/expected-literals\n",

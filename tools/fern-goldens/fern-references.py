@@ -337,12 +337,15 @@ def flat_goldens() -> dict[str, str]:
 
 
 def list_corpus() -> list[str]:
+    """Every fixture with a packaged or flat golden, and every row whose golden is
+    an exact known Fern failure (retried at each pair, as `fern-goldens` does)."""
+    fixtures = ROOT / FIXTURES
     return sorted(
-        path.parent.name
-        for name in ("expected", "expected-flat")
-        for path in (ROOT / FIXTURES).glob(f"*/{name}")
-        if path.is_dir()
-        if name == "expected" or not (path.parent / "expected").is_dir()
+        {
+            path.parent.name
+            for pattern in ("*/expected", "*/expected-flat", "*/known-fern-failure.json")
+            for path in fixtures.glob(pattern)
+        }
     )
 
 
@@ -368,7 +371,9 @@ def generate_corpus(item: str, pair: Pair) -> None:
     logs = ROOT / LOGS / "corpus"
     script = str(ROOT / "tools/fern-goldens/generate-fern-fixture.sh")
     if item in rows:
-        if (ROOT / FIXTURES / item / "expected").is_dir():
+        if (ROOT / FIXTURES / item / "expected").is_dir() or (
+            ROOT / FIXTURES / item / "known-fern-failure.json"
+        ).is_file():
             # `fern-goldens` regenerates the packaged golden and a flat one over the row's own spec.
             run_script(
                 [

@@ -348,6 +348,43 @@ required evidence uploads; a missing/failed phase stays red. If the comparison
 runner is terminated before its upload step, the comparison artifact may be
 absent, but the earlier generation artifact and published fixture commit remain.
 
+## Regenerating every reference family
+
+A move of the certified pair — `cliVersion` and `generatorVersion` in
+[`../assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json),
+the one place the pair is declared — regenerates every committed Fern
+reference, family by family. Each family is one command, which runs Fern one
+generation at a time in a scratch workspace outside the checkout and writes each
+item where its gate reads it:
+
+```sh
+just fern-references-list <family>              # the family's item names, one per line
+just fern-references <family>                   # every item, at the certified pair
+just fern-references <family> <item>...         # exactly the named items
+just fern-references <family> --version V --cli-version C [<item>...]   # another pair
+```
+
+| family | what it writes | through |
+|---|---|---|
+| `corpus` | `tests/fixtures/<fixture>/expected/` and `expected-flat/` | `fern-goldens generate` for a `CORPUS.md` row, `generate-fern-fixture.sh` for a vendored fixture |
+| `overlays` | `tests/fixtures/<fixture>/expected-literals/` and `expected-default-max-retries/` | `fern-overlay-goldens.sh --jobs 1` |
+| `handwritten` | `docs/openapi-surface/handwritten/<fixture>/fern-expected/`, with `evidence.toml`'s versions and `digest` | the probe workspace below |
+| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base | the probe workspace below |
+| `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
+| `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
+| `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |
+
+The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
+`tools/fern-goldens/fern-references.py` itself so it can write outside
+`tests/fixtures/`. Run `corpus` before `overlays`, and `handwritten` before
+`measurements`: an overlay is reduced against the tree it overlays. A probe
+whose outcome changes form (a tree Fern now refuses, or a refusal it now
+generates from) is written and reported, because its `MANIFEST.tsv` row's form
+and verdict are a Contract A decision; an authored probe Fern now refuses moves
+to the refusal registry. Omitting `--version` here keeps the certified pair;
+`just fern-goldens-generate` without `--version` still resolves the newest
+stable Fern tag.
+
 ## Publication safety
 
 Each fixture is generated into a same-filesystem staging directory and replaces
