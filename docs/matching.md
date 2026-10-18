@@ -1474,7 +1474,10 @@ model. What Fern reads, and so what crozier reads:
   `x-fern-xml-text` makes it the text; its XML name likewise; `wrapped` and
   `x-crozier-xml-list-separator` / `x-fern-xml-list-separator` are read the same
   way. A property an inline `allOf` member contributes takes that member's XML
-  reading only if the member is an XML element itself.
+  reading only if the member is an XML element itself;
+- an annotated `$ref` (`allOf: [$ref Target, {xml: {name}}]`, AWS's list
+  elements) is copied as an XML model under the annotation's name, whether or
+  not `Target` declares one (`amazonaws.com-cloudfront`).
 
 The generated tests are Fern's own: a model whose required child element the
 sample document leaves out fails its round trip in Fern's SDK too.
