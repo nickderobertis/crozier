@@ -1,5 +1,5 @@
 # Reference
-<details><summary><code>client.<a href="src/fern/client.py">send_message</a>(...) -> SendMessageResponse</code></summary>
+<details><summary><code>client.<a href="src/fern/client.py">send_message</a>(...) -> SendMessageResponseMessageUuid</code></summary>
 <dl>
 <dd>
 
@@ -26,7 +26,7 @@ Send a Message
 <dd>
 
 ```python
-from fern import FernApi, SendMessageRequestZero
+from fern import FernApi, SendMessageRequestZero, ChannelOptionsSmsChannel, TextMessageType
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -36,7 +36,13 @@ client = FernApi(
 )
 
 client.send_message(
-    request=SendMessageRequestZero(),
+    request=SendMessageRequestZero(
+        to="apricot",
+        from_="from",
+        channel=ChannelOptionsSmsChannel.SMS,
+        text={"key": "value"},
+        message_type=TextMessageType.TEXT,
+    ),
 )
 
 ```

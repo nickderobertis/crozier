@@ -11,9 +11,12 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
+from ..errors.client_request_error import ClientRequestError
+from ..errors.server_error import ServerError
 from ..types.contact_by_id_response import ContactByIdResponse
 from ..types.contact_item_payload import ContactItemPayload
 from ..types.contacts_response import ContactsResponse
+from ..types.error_response import ErrorResponse
 from .types.create_contact_payload_contact_type import CreateContactPayloadContactType
 from .types.get_contacts_request_filter_contact_type import GetContactsRequestFilterContactType
 from .types.get_contacts_request_sort_field import GetContactsRequestSortField
@@ -100,6 +103,30 @@ class RawContactsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -206,6 +233,30 @@ class RawContactsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -248,6 +299,30 @@ class RawContactsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -343,6 +418,30 @@ class RawContactsClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -429,6 +528,30 @@ class AsyncRawContactsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -535,6 +658,30 @@ class AsyncRawContactsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -577,6 +724,30 @@ class AsyncRawContactsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -672,6 +843,30 @@ class AsyncRawContactsClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

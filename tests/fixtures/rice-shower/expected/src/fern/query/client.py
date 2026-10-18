@@ -46,12 +46,16 @@ class QueryClient:
         system_id : str
 
         time_start : GetThermoMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetThermoMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -103,12 +107,16 @@ class QueryClient:
         system_id : str
 
         time_start : GetHeaterMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetHeaterMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of heater channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -176,12 +184,16 @@ class AsyncQueryClient:
         system_id : str
 
         time_start : GetThermoMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetThermoMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -241,12 +253,16 @@ class AsyncQueryClient:
         system_id : str
 
         time_start : GetHeaterMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetHeaterMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of heater channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

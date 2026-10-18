@@ -111,7 +111,7 @@ class AsyncEventsClient:
 
 
         async def main() -> None:
-            response = await client.events.watch_events()
+            response = client.events.watch_events()
             async for chunk in response:
                 yield chunk
 

@@ -91,7 +91,11 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.runs.create_and_stream_run()
+client.runs.create_and_stream_run(
+    metadata={
+        "key": "value"
+    },
+)
 ```
 
 ## Advanced

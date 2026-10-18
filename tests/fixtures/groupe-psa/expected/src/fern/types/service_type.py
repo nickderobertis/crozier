@@ -1,14 +1,25 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
-from .created_at_field import CreatedAtField
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
 from .service_type_type import ServiceTypeType
 
 
-class ServiceType(CreatedAtField):
+class ServiceType(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     type: typing.Optional[ServiceTypeType] = None
 
     if IS_PYDANTIC_V2:

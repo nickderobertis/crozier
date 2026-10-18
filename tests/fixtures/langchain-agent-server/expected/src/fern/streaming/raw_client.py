@@ -46,6 +46,7 @@ class RawStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread to observe.
 
         channels : typing.Sequence[ProtocolChannel]
             Channels to subscribe to for the lifetime of this connection.
@@ -92,6 +93,8 @@ class RawStreamingClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -160,6 +163,7 @@ class RawStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread the command applies to.
 
         id : int
             Client-assigned command id; echoed in the response.
@@ -246,6 +250,7 @@ class AsyncRawStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread to observe.
 
         channels : typing.Sequence[ProtocolChannel]
             Channels to subscribe to for the lifetime of this connection.
@@ -292,6 +297,8 @@ class AsyncRawStreamingClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -360,6 +367,7 @@ class AsyncRawStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread the command applies to.
 
         id : int
             Client-assigned command id; echoed in the response.

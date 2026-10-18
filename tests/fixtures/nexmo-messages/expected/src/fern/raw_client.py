@@ -19,7 +19,7 @@ from .types.error_internal import ErrorInternal
 from .types.error_payment_required import ErrorPaymentRequired
 from .types.error_throttled import ErrorThrottled
 from .types.send_message_request import SendMessageRequest
-from .types.send_message_response import SendMessageResponse
+from .types.send_message_response_message_uuid import SendMessageResponseMessageUuid
 from .types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.unprocessable_entity_error_body import UnprocessableEntityErrorBody
 from pydantic import ValidationError
@@ -34,7 +34,7 @@ class RawFernApi:
 
     def send_message(
         self, *, request: SendMessageRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> HttpResponse[SendMessageResponse]:
+    ) -> HttpResponse[SendMessageResponseMessageUuid]:
         """
         Send a Message
 
@@ -47,7 +47,7 @@ class RawFernApi:
 
         Returns
         -------
-        HttpResponse[SendMessageResponse]
+        HttpResponse[SendMessageResponseMessageUuid]
             Accepted.
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -61,9 +61,9 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SendMessageResponse,
+                    SendMessageResponseMessageUuid,
                     parse_obj_as(
-                        type_=SendMessageResponse,
+                        type_=SendMessageResponseMessageUuid,
                         object_=_response.json(),
                     ),
                 )
@@ -139,7 +139,7 @@ class AsyncRawFernApi:
 
     async def send_message(
         self, *, request: SendMessageRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> AsyncHttpResponse[SendMessageResponse]:
+    ) -> AsyncHttpResponse[SendMessageResponseMessageUuid]:
         """
         Send a Message
 
@@ -152,7 +152,7 @@ class AsyncRawFernApi:
 
         Returns
         -------
-        AsyncHttpResponse[SendMessageResponse]
+        AsyncHttpResponse[SendMessageResponseMessageUuid]
             Accepted.
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -166,9 +166,9 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 _data = typing.cast(
-                    SendMessageResponse,
+                    SendMessageResponseMessageUuid,
                     parse_obj_as(
-                        type_=SendMessageResponse,
+                        type_=SendMessageResponseMessageUuid,
                         object_=_response.json(),
                     ),
                 )

@@ -264,12 +264,12 @@ class BackgroundRunsClient:
     def create_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -282,6 +282,9 @@ class BackgroundRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -296,9 +299,6 @@ class BackgroundRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -330,15 +330,17 @@ class BackgroundRunsClient:
         client = FernApi(
             base_url="https://yourhost.com/path/to/api",
         )
-        client.background_runs.create_run()
+        client.background_runs.create_run(
+            metadata={"key": "value"},
+        )
         """
         _response = self._raw_client.create_run(
+            metadata=metadata,
             stream_mode=stream_mode,
             thread_id=thread_id,
             agent_id=agent_id,
             input=input,
             messages=messages,
-            metadata=metadata,
             config=config,
             webhook=webhook,
             on_completion=on_completion,
@@ -642,12 +644,12 @@ class AsyncBackgroundRunsClient:
     async def create_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -660,6 +662,9 @@ class AsyncBackgroundRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -674,9 +679,6 @@ class AsyncBackgroundRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -713,18 +715,20 @@ class AsyncBackgroundRunsClient:
 
 
         async def main() -> None:
-            await client.background_runs.create_run()
+            await client.background_runs.create_run(
+                metadata={"key": "value"},
+            )
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.create_run(
+            metadata=metadata,
             stream_mode=stream_mode,
             thread_id=thread_id,
             agent_id=agent_id,
             input=input,
             messages=messages,
-            metadata=metadata,
             config=config,
             webhook=webhook,
             on_completion=on_completion,

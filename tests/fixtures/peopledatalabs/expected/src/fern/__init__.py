@@ -94,9 +94,7 @@ if typing.TYPE_CHECKING:
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .autocomplete import GetV5AutocompleteRequestField, PostV5AutocompleteRequestField
     from .client import AsyncFernApi, FernApi
-    from .company_endpoints import PostV5CompanySearchRequest
     from .environment import FernApiEnvironment
-    from .person_endpoints import PostV5PersonSearchRequest
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
@@ -160,8 +158,6 @@ _dynamic_imports: typing.Dict[str, str] = {
     "PersonRetrieveBulk": ".types",
     "PersonSex": ".types",
     "PostV5AutocompleteRequestField": ".autocomplete",
-    "PostV5CompanySearchRequest": ".company_endpoints",
-    "PostV5PersonSearchRequest": ".person_endpoints",
     "Profiles": ".types",
     "ProfilesNetwork": ".types",
     "School": ".types",
@@ -274,8 +270,6 @@ __all__ = [
     "PersonRetrieveBulk",
     "PersonSex",
     "PostV5AutocompleteRequestField",
-    "PostV5CompanySearchRequest",
-    "PostV5PersonSearchRequest",
     "Profiles",
     "ProfilesNetwork",
     "School",

@@ -4723,7 +4723,7 @@ Create a new reusable callback.
 <dd>
 
 ```python
-from fern import FernApi, RemoteType
+from fern import FernApi, RemoteCallbackSubscribeCallback, RemoteCallbackSubscribeCallbackWebhook, RemoteType
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -4734,8 +4734,13 @@ client = FernApi(
 
 client.remote.set_fleet_vehicle_remote(
     fid="fid",
+    callback=RemoteCallbackSubscribeCallback(
+        webhook=RemoteCallbackSubscribeCallbackWebhook(
+            target="http://example.com",
+            name="name",
+        ),
+    ),
     remote_types=[
-        RemoteType.THERMAL_PRECONDITIONING,
         RemoteType.THERMAL_PRECONDITIONING
     ],
 )
@@ -4893,7 +4898,7 @@ Update an existing ```Callback``` that has been posted (and accepted previously)
 <dd>
 
 ```python
-from fern import FernApi, RemoteType
+from fern import FernApi, RemoteCallbackSubscribeCallback, RemoteCallbackSubscribeCallbackWebhook, RemoteType
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -4905,8 +4910,13 @@ client = FernApi(
 client.remote.set_fleet_vehicle_remote_by_id(
     fid="fid",
     cbid="cbid",
+    callback=RemoteCallbackSubscribeCallback(
+        webhook=RemoteCallbackSubscribeCallbackWebhook(
+            target="http://example.com",
+            name="name",
+        ),
+    ),
     remote_types=[
-        RemoteType.THERMAL_PRECONDITIONING,
         RemoteType.THERMAL_PRECONDITIONING
     ],
 )

@@ -8,9 +8,9 @@ from .invitation_failed_error_errors_item_item import InvitationFailedErrorError
 
 
 class InvitationFailedError(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
-    code: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
+    code: typing.Any
     errors: typing.Optional[typing.List[typing.List[InvitationFailedErrorErrorsItemItem]]] = pydantic.Field(
         default=None
     )

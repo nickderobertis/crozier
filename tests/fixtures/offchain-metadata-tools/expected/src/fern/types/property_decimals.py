@@ -8,7 +8,7 @@ from .generic_property import GenericProperty
 
 
 class PropertyDecimals(GenericProperty):
-    value: typing.Optional[float] = None
+    value: float
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

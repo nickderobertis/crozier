@@ -48,22 +48,11 @@ class ExpectationClient:
 
         Examples
         --------
-        from fern import FernApi
+        from fern import Expectation, FernApi
 
         client = FernApi()
         client.expectation.create_expectation(
-            request={
-                "httpRequest": {
-                    "method": "GET",
-                    "path": "/api/users",
-                    "queryStringParameters": {"page": ["1"], "limit": ["10"]},
-                },
-                "httpResponse": {
-                    "statusCode": 200,
-                    "headers": {"Content-Type": ["application/json"]},
-                    "body": '{"users":[{"id":1,"name":"John Doe"}],"total":1}',
-                },
-            },
+            request=[Expectation()],
         )
         """
         _response = self._raw_client.create_expectation(request=request, request_options=request_options)
@@ -278,25 +267,14 @@ class AsyncExpectationClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi
+        from fern import AsyncFernApi, Expectation
 
         client = AsyncFernApi()
 
 
         async def main() -> None:
             await client.expectation.create_expectation(
-                request={
-                    "httpRequest": {
-                        "method": "GET",
-                        "path": "/api/users",
-                        "queryStringParameters": {"page": ["1"], "limit": ["10"]},
-                    },
-                    "httpResponse": {
-                        "statusCode": 200,
-                        "headers": {"Content-Type": ["application/json"]},
-                        "body": '{"users":[{"id":1,"name":"John Doe"}],"total":1}',
-                    },
-                },
+                request=[Expectation()],
             )
 
 

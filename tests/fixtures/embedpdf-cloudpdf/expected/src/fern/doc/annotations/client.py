@@ -98,6 +98,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         document_password : typing.Optional[str]
             Base64-encoded password for an encrypted document. Valid only with the API token (403 anywhere else). An encrypted document answers 422 DocPasswordRequired when the header is absent. Viewer doc JWTs use the SDK password-session flow instead.
@@ -149,6 +150,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsCreateRequest
 
@@ -206,6 +208,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         annot_key : str
 
@@ -264,6 +267,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         annot_key : str
 
@@ -325,6 +329,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsExportAppearanceRequest
 
@@ -382,6 +387,7 @@ class AnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsFlattenRequest
 
@@ -508,6 +514,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         document_password : typing.Optional[str]
             Base64-encoded password for an encrypted document. Valid only with the API token (403 anywhere else). An encrypted document answers 422 DocPasswordRequired when the header is absent. Viewer doc JWTs use the SDK password-session flow instead.
@@ -567,6 +574,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsCreateRequest
 
@@ -632,6 +640,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         annot_key : str
 
@@ -698,6 +707,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         annot_key : str
 
@@ -767,6 +777,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsExportAppearanceRequest
 
@@ -833,6 +844,7 @@ class AsyncAnnotationsClient:
         layer_name : str
 
         page_key : str
+            The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
 
         request : DocAnnotationsFlattenRequest
 

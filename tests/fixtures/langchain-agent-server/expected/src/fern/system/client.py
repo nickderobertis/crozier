@@ -63,6 +63,7 @@ class SystemClient:
         Parameters
         ----------
         format : typing.Optional[SystemMetricsMetricsGetRequestFormat]
+            Response format: prometheus (default) or json
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -119,6 +120,7 @@ class SystemClient:
         Parameters
         ----------
         check_db : typing.Optional[int]
+            Whether to check database connectivity (0=false, 1=true)
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -204,6 +206,7 @@ class AsyncSystemClient:
         Parameters
         ----------
         format : typing.Optional[SystemMetricsMetricsGetRequestFormat]
+            Response format: prometheus (default) or json
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -276,6 +279,7 @@ class AsyncSystemClient:
         Parameters
         ----------
         check_db : typing.Optional[int]
+            Whether to check database connectivity (0=false, 1=true)
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

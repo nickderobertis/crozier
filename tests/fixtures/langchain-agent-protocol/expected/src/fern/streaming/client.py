@@ -280,7 +280,7 @@ class AsyncStreamingClient:
 
 
         async def main() -> None:
-            response = await client.streaming.open_thread_sse_stream(
+            response = client.streaming.open_thread_sse_stream(
                 thread_id="thread_id",
                 channels=[StreamingChannelZero.VALUES],
             )

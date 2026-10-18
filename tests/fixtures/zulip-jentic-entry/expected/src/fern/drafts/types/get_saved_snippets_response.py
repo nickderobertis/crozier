@@ -8,8 +8,8 @@ from ...types.saved_snippet import SavedSnippet
 
 
 class GetSavedSnippetsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     saved_snippets: typing.Optional[typing.List[SavedSnippet]] = pydantic.Field(default=None)
     """

@@ -1,18 +1,18 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .created_at_field import CreatedAtField
 from .energy_extension import EnergyExtension
 from .energy_sub_type import EnergySubType
 from .energy_type import EnergyType
 
 
-class Energy(CreatedAtField):
+class Energy(UniversalBaseModel):
     """
     Describe vehicle energy supply for thermic, low emission vehicle or both.
     """
@@ -46,6 +46,14 @@ class Energy(CreatedAtField):
     """
 
     extension: typing.Optional[EnergyExtension] = None
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

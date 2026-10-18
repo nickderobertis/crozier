@@ -11,7 +11,7 @@ from .location_message_type import LocationMessageType
 
 class Location(BaseMessageType):
     location: LocationLocation
-    message_type: typing.Optional[LocationMessageType] = pydantic.Field(default=None)
+    message_type: LocationMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `location` in this field
     """

@@ -10,7 +10,7 @@ from .order_order import OrderOrder
 
 
 class Order(BaseMessageType):
-    message_type: typing.Optional[OrderMessageType] = pydantic.Field(default=None)
+    message_type: OrderMessageType = pydantic.Field()
     """
     The type of message to send.
     """

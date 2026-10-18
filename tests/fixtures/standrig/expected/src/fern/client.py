@@ -3079,7 +3079,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.get_api_playback_events()
+            response = client.get_api_playback_events()
             async for chunk in response:
                 yield chunk
 

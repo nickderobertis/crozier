@@ -16,20 +16,18 @@ from .to_id import ToId
 
 
 class MessageStatusMessenger(UniversalBaseModel):
-    channel: typing.Optional[MessageStatusMessengerChannel] = pydantic.Field(default=None)
+    channel: MessageStatusMessengerChannel = pydantic.Field()
     """
     The channel sending to.
     """
 
-    from_: typing_extensions.Annotated[
-        typing.Optional[FromId], FieldMetadata(alias="from"), pydantic.Field(alias="from")
-    ] = None
-    status: typing.Optional[MessageStatusMessengerStatus] = pydantic.Field(default=None)
+    from_: typing_extensions.Annotated[FromId, FieldMetadata(alias="from"), pydantic.Field(alias="from")]
+    status: MessageStatusMessengerStatus = pydantic.Field()
     """
     The status of the message.
     """
 
-    to: typing.Optional[ToId] = None
+    to: ToId
     client_ref: typing.Optional[str] = pydantic.Field(default=None)
     """
     Client reference of up to 100 characters. The reference will be present in every message status.

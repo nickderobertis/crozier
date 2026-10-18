@@ -10,6 +10,11 @@ from .vehicle_status import VehicleStatus
 
 
 class VehicleDetailResponseData(UniversalBaseModel):
+    status: VehicleStatus = pydantic.Field()
+    """
+    Inventory availability. v1.0 supports exactly three values: `available` (in stock now), `intransit` (allocated / en route to the dealership), `pending` (deal in progress). A vehicle in any other state is OUT OF STOCK and MUST NOT appear in inventory feeds — dealers omit it and buyer agents ignore any item missing or carrying an unknown status. Required on inventory listings; omitted on vehicle_of_interest and trade_in.
+    """
+
     condition: typing.Optional[VehicleDetailResponseDataCondition] = pydantic.Field(default=None)
     """
     Combined condition enum spanning both sale-condition and trade-in-condition vocabularies. For inventory listings and vehicle_of_interest use one of `new` | `used` | `cpo` (Certified Pre-Owned). For trade_in use one of `excellent` | `good` | `fair` | `poor`. The using schema enforces the correct subset by context.
@@ -38,11 +43,6 @@ class VehicleDetailResponseData(UniversalBaseModel):
     trim: typing.Optional[str] = pydantic.Field(default=None)
     """
     Trim level (e.g. 'EX-L', 'M Sport', 'Lariat').
-    """
-
-    status: typing.Optional[VehicleStatus] = pydantic.Field(default=None)
-    """
-    Inventory availability. v1.0 supports exactly three values: `available` (in stock now), `intransit` (allocated / en route to the dealership), `pending` (deal in progress). A vehicle in any other state is OUT OF STOCK and MUST NOT appear in inventory feeds — dealers omit it and buyer agents ignore any item missing or carrying an unknown status. Required on inventory listings; omitted on vehicle_of_interest and trade_in.
     """
 
     rooftop: typing.Optional[str] = pydantic.Field(default=None)

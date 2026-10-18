@@ -19,6 +19,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.abyss_season_response_dto_output import AbyssSeasonResponseDtoOutput
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.battle_analytics_response_dto_output import BattleAnalyticsResponseDtoOutput
 from ..types.battle_characters_response_dto_output import BattleCharactersResponseDtoOutput
 from ..types.battle_created_response_dto_output import BattleCreatedResponseDtoOutput
@@ -31,6 +32,7 @@ from ..types.battle_user_worlds_response_dto_output import BattleUserWorldsRespo
 from ..types.battle_warriors_search_response_dto_output import BattleWarriorsSearchResponseDtoOutput
 from ..types.battles_list_response_dto_output import BattlesListResponseDtoOutput
 from ..types.combat_profile_response_dto_output import CombatProfileResponseDtoOutput
+from ..types.forbidden_error_body import ForbiddenErrorBody
 from ..types.head_to_head_paginated_response_dto_output import HeadToHeadPaginatedResponseDtoOutput
 from ..types.ph_growth_data_point_response_dto_output import PhGrowthDataPointResponseDtoOutput
 from ..types.player_vs_player_paginated_response_dto_output import PlayerVsPlayerPaginatedResponseDtoOutput
@@ -38,6 +40,7 @@ from ..types.profession_win_rate_response_dto_output import ProfessionWinRateRes
 from ..types.rating_delta_by_opponent_response_dto_output import RatingDeltaByOpponentResponseDtoOutput
 from ..types.rating_growth_data_point_response_dto_output import RatingGrowthDataPointResponseDtoOutput
 from ..types.streak_response_dto_output import StreakResponseDtoOutput
+from ..types.too_many_requests_error_body import TooManyRequestsErrorBody
 from .types.battles_controller_get_battle_analytics_request_period import (
     BattlesControllerGetBattleAnalyticsRequestPeriod,
 )
@@ -183,9 +186,9 @@ class RawBattlesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -205,9 +208,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -216,9 +219,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -358,9 +361,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -369,9 +372,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -429,9 +432,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -440,9 +443,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -540,9 +543,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -551,9 +554,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -623,9 +626,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -634,9 +637,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -762,9 +765,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -773,9 +776,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -901,9 +904,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -912,9 +915,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1040,9 +1043,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1051,9 +1054,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1179,9 +1182,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1190,9 +1193,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1318,9 +1321,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1329,9 +1332,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1457,9 +1460,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1468,9 +1471,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1596,9 +1599,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1607,9 +1610,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1735,9 +1738,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1746,9 +1749,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1882,9 +1885,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1893,9 +1896,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1958,9 +1961,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1969,9 +1972,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2029,9 +2032,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2040,9 +2043,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2102,9 +2105,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2124,9 +2127,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2186,9 +2189,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2208,9 +2211,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2270,9 +2273,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2292,9 +2295,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2352,9 +2355,9 @@ class RawBattlesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2374,9 +2377,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2396,9 +2399,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2458,9 +2461,9 @@ class RawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2480,9 +2483,9 @@ class RawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2568,9 +2571,9 @@ class AsyncRawBattlesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2590,9 +2593,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2601,9 +2604,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2743,9 +2746,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2754,9 +2757,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2814,9 +2817,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2825,9 +2828,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2925,9 +2928,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2936,9 +2939,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3008,9 +3011,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3019,9 +3022,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3147,9 +3150,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3158,9 +3161,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3286,9 +3289,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3297,9 +3300,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3425,9 +3428,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3436,9 +3439,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3564,9 +3567,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3575,9 +3578,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3703,9 +3706,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3714,9 +3717,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3842,9 +3845,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3853,9 +3856,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3981,9 +3984,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3992,9 +3995,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4120,9 +4123,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4131,9 +4134,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4267,9 +4270,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4278,9 +4281,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4343,9 +4346,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4354,9 +4357,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4414,9 +4417,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4425,9 +4428,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4487,9 +4490,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4509,9 +4512,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4571,9 +4574,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4593,9 +4596,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4655,9 +4658,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4677,9 +4680,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4737,9 +4740,9 @@ class AsyncRawBattlesClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4759,9 +4762,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4781,9 +4784,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4843,9 +4846,9 @@ class AsyncRawBattlesClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -4865,9 +4868,9 @@ class AsyncRawBattlesClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),

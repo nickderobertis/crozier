@@ -8,8 +8,8 @@ from ...types.ignored_parameters_unsupported import IgnoredParametersUnsupported
 
 
 class UpdateMessageFlagsForNarrowResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     processed_count: int = pydantic.Field()
     """
     The number of messages that were within the

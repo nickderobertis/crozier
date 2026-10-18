@@ -8,8 +8,8 @@ from ...types.legacy_presence_format import LegacyPresenceFormat
 
 
 class GetPresenceResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     server_timestamp: typing.Optional[float] = pydantic.Field(default=None)
     """

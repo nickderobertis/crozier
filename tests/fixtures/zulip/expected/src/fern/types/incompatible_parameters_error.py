@@ -7,9 +7,9 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class IncompatibleParametersError(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
-    code: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
+    code: typing.Any
     parameters: typing.Optional[str] = pydantic.Field(default=None)
     """
     A string containing the parameters, separated by commas,

@@ -4455,7 +4455,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.global_event()
+            response = client.global_event()
             async for chunk in response:
                 yield chunk
 
@@ -9279,7 +9279,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.event_subscribe()
+            response = client.event_subscribe()
             async for chunk in response:
                 yield chunk
 

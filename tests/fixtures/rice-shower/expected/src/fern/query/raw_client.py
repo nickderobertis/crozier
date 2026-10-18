@@ -12,6 +12,7 @@ from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.internal_server_error import InternalServerError
+from ..types.internal_server_error_body import InternalServerErrorBody
 from .types.get_heater_metrics_request_time_end import GetHeaterMetricsRequestTimeEnd
 from .types.get_heater_metrics_request_time_start import GetHeaterMetricsRequestTimeStart
 from .types.get_heater_metrics_response import GetHeaterMetricsResponse
@@ -43,12 +44,16 @@ class RawQueryClient:
         system_id : str
 
         time_start : GetThermoMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetThermoMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -87,9 +92,9 @@ class RawQueryClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -121,12 +126,16 @@ class RawQueryClient:
         system_id : str
 
         time_start : GetHeaterMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetHeaterMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of heater channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -165,9 +174,9 @@ class RawQueryClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -204,12 +213,16 @@ class AsyncRawQueryClient:
         system_id : str
 
         time_start : GetThermoMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetThermoMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -248,9 +261,9 @@ class AsyncRawQueryClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -282,12 +295,16 @@ class AsyncRawQueryClient:
         system_id : str
 
         time_start : GetHeaterMetricsRequestTimeStart
+            Start time for the query in ISO format
 
         time_end : GetHeaterMetricsRequestTimeEnd
+            End time for the query in ISO format
 
         interval : float
+            Interval in seconds for time bucketing
 
         channels : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            List of heater channel numbers to retrieve
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -326,9 +343,9 @@ class AsyncRawQueryClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

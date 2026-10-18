@@ -46,6 +46,7 @@ class StreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread to observe.
 
         channels : typing.Sequence[ProtocolChannel]
             Channels to subscribe to for the lifetime of this connection.
@@ -110,6 +111,7 @@ class StreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread the command applies to.
 
         id : int
             Client-assigned command id; echoed in the response.
@@ -180,6 +182,7 @@ class AsyncStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread to observe.
 
         channels : typing.Sequence[ProtocolChannel]
             Channels to subscribe to for the lifetime of this connection.
@@ -213,7 +216,7 @@ class AsyncStreamingClient:
 
 
         async def main() -> None:
-            response = await client.streaming.protocol_thread_events_post(
+            response = client.streaming.protocol_thread_events_post(
                 thread_id="thread_id",
                 channels=["channels"],
             )
@@ -253,6 +256,7 @@ class AsyncStreamingClient:
         Parameters
         ----------
         thread_id : str
+            The ID of the thread the command applies to.
 
         id : int
             Client-assigned command id; echoed in the response.

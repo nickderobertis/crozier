@@ -1,5 +1,6 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
@@ -8,7 +9,6 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.serialization import FieldMetadata
 from .adas import Adas
 from .battery import Battery
-from .created_at_field import CreatedAtField
 from .doors_state import DoorsState
 from .driving_behavior import DrivingBehavior
 from .energy import Energy
@@ -34,7 +34,16 @@ from .vin import Vin
 from .wiping_blades_state import WipingBladesState
 
 
-class Status(CreatedAtField, UpdatedAtField):
+class Status(UpdatedAtField):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     links: typing_extensions.Annotated[StatusLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     vin: Vin
     ignition: typing.Optional[Ignition] = None

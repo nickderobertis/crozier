@@ -64,12 +64,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.contextual_completions.prompt_completion_v1completions_post_stream(
-        prompt="How do you fry an egg?",
-        system_prompt="You are a rapper. Always answer with a rap.",
-        use_context=False,
-        include_sources=False,
-    )
+    async for chunk in client.contextual_completions.prompt_completion_v1completions_post_stream(...):
+        print(chunk)
 
 
 asyncio.run(main())

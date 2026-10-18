@@ -9,7 +9,6 @@ from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
-from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.method_not_allowed_error import MethodNotAllowedError
 from ..errors.not_found_error import NotFoundError
@@ -17,7 +16,6 @@ from ..errors.payment_required_error import PaymentRequiredError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.company import Company
-from .types.post_v5company_search_request import PostV5CompanySearchRequest
 from pydantic import ValidationError
 
 
@@ -217,12 +215,40 @@ class RawCompanyEndpointsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def company_search(
-        self, *, request: PostV5CompanySearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Company]:
         """
         Parameters
         ----------
-        request : PostV5CompanySearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM company WHERE XXX, where XXX is a standard SQL boolean query involving our company fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -235,9 +261,18 @@ class RawCompanyEndpointsClient:
         _response = self._client_wrapper.httpx_client.request(
             "v5/company/search",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=PostV5CompanySearchRequest, direction="write"
-            ),
+            json={
+                "query": query,
+                "sql": sql,
+                "size": size,
+                "from": from_,
+                "scroll_token": scroll_token,
+                "titlecase": titlecase,
+                "pretty": pretty,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -520,12 +555,40 @@ class AsyncRawCompanyEndpointsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def company_search(
-        self, *, request: PostV5CompanySearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Company]:
         """
         Parameters
         ----------
-        request : PostV5CompanySearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM company WHERE XXX, where XXX is a standard SQL boolean query involving our company fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -538,9 +601,18 @@ class AsyncRawCompanyEndpointsClient:
         _response = await self._client_wrapper.httpx_client.request(
             "v5/company/search",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=PostV5CompanySearchRequest, direction="write"
-            ),
+            json={
+                "query": query,
+                "sql": sql,
+                "size": size,
+                "from": from_,
+                "scroll_token": scroll_token,
+                "titlecase": titlecase,
+                "pretty": pretty,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )

@@ -38,8 +38,8 @@ class SearchOperatorBoolean_IsTrue(UniversalBaseModel):
 SearchOperatorBoolean = typing_extensions.Annotated[
     typing.Union[SearchOperatorBoolean_IsFalse, SearchOperatorBoolean_IsTrue], pydantic.Field(discriminator="operator")
 ]
-from .search_operator_is_true import SearchOperatorIsTrue
 from .search_operator_is_false import SearchOperatorIsFalse
+from .search_operator_is_true import SearchOperatorIsTrue
 
 update_forward_refs(
     SearchOperatorBoolean_IsFalse,

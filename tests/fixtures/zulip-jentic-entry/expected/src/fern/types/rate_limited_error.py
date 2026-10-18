@@ -9,9 +9,9 @@ from ..core.serialization import FieldMetadata
 
 
 class RateLimitedError(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
-    code: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
+    code: typing.Any
     retry_after: typing_extensions.Annotated[
         typing.Optional[int],
         FieldMetadata(alias="retry-after"),

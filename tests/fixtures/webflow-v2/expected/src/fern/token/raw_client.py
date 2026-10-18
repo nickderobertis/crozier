@@ -9,8 +9,13 @@ from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.client_request_error import ClientRequestError
 from ..errors.forbidden_error import ForbiddenError
+from ..errors.server_error import ServerError
 from ..errors.unauthorized_error import UnauthorizedError
+from ..types.client_request_error_body import ClientRequestErrorBody
+from ..types.server_error_body import ServerErrorBody
+from ..types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.authorized_by_token_response import AuthorizedByTokenResponse
 from .types.introspect_token_response import IntrospectTokenResponse
 from pydantic import ValidationError
@@ -58,9 +63,9 @@ class RawTokenClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -75,6 +80,30 @@ class RawTokenClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ClientRequestErrorBody,
+                        parse_obj_as(
+                            type_=ClientRequestErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ServerErrorBody,
+                        parse_obj_as(
+                            type_=ServerErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -123,12 +152,36 @@ class RawTokenClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ClientRequestErrorBody,
+                        parse_obj_as(
+                            type_=ClientRequestErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ServerErrorBody,
+                        parse_obj_as(
+                            type_=ServerErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -182,9 +235,9 @@ class AsyncRawTokenClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -199,6 +252,30 @@ class AsyncRawTokenClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ClientRequestErrorBody,
+                        parse_obj_as(
+                            type_=ClientRequestErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ServerErrorBody,
+                        parse_obj_as(
+                            type_=ServerErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -247,12 +324,36 @@ class AsyncRawTokenClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ClientRequestErrorBody,
+                        parse_obj_as(
+                            type_=ClientRequestErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ServerErrorBody,
+                        parse_obj_as(
+                            type_=ServerErrorBody,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:

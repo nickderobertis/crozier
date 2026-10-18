@@ -9,8 +9,8 @@ from .dev_list_users_response_direct_users_item import DevListUsersResponseDirec
 
 
 class DevListUsersResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     direct_admins: typing.Optional[typing.List[DevListUsersResponseDirectAdminsItem]] = pydantic.Field(default=None)
     """

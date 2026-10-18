@@ -11,7 +11,7 @@ from .file_message_type import FileMessageType
 
 class File(BaseMessageType):
     file: FileFile
-    message_type: typing.Optional[FileMessageType] = pydantic.Field(default=None)
+    message_type: FileMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `file` in this field
     """

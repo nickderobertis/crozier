@@ -15,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..errors.not_found_error import NotFoundError
 from ..types.draft import Draft
 from ..types.json_success import JsonSuccess
+from ..types.not_found_error_body import NotFoundErrorBody
 from .types.create_drafts_response import CreateDraftsResponse
 from .types.create_saved_snippet_response import CreateSavedSnippetResponse
 from .types.edit_draft_request_draft import EditDraftRequestDraft
@@ -174,9 +175,9 @@ class RawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -241,9 +242,9 @@ class RawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -409,9 +410,9 @@ class RawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -487,9 +488,9 @@ class RawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -654,9 +655,9 @@ class AsyncRawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -721,9 +722,9 @@ class AsyncRawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -889,9 +890,9 @@ class AsyncRawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -967,9 +968,9 @@ class AsyncRawDraftsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),

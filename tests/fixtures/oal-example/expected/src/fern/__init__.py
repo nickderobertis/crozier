@@ -14,6 +14,7 @@ if typing.TYPE_CHECKING:
         Obj3Stuff,
         Obj3StuffZero,
     )
+    from .errors import ClientRequestError, ServerError
     from . import blah
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -21,6 +22,7 @@ if typing.TYPE_CHECKING:
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "ClientRequestError": ".errors",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
@@ -31,6 +33,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "Obj3": ".types",
     "Obj3Stuff": ".types",
     "Obj3StuffZero": ".types",
+    "ServerError": ".errors",
     "__version__": ".version",
     "blah": ".blah",
 }
@@ -59,6 +62,7 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "ClientRequestError",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
@@ -69,6 +73,7 @@ __all__ = [
     "Obj3",
     "Obj3Stuff",
     "Obj3StuffZero",
+    "ServerError",
     "__version__",
     "blah",
 ]

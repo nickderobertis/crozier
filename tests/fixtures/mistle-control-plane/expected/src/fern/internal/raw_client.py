@@ -19,6 +19,7 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.bad_gateway_error_body import BadGatewayErrorBody
 from ..types.internal_dispatch_schedules_response import InternalDispatchSchedulesResponse
+from ..types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.post_internal_identity_linking_resolve_principal_credential_response import (
     PostInternalIdentityLinkingResolvePrincipalCredentialResponse,
 )
@@ -166,9 +167,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -280,9 +281,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -391,9 +392,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -490,9 +491,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -620,9 +621,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -726,9 +727,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -797,9 +798,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -879,9 +880,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -993,9 +994,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1109,9 +1110,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1234,9 +1235,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1364,9 +1365,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1469,9 +1470,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1575,9 +1576,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1708,9 +1709,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1821,9 +1822,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1939,9 +1940,9 @@ class RawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2046,9 +2047,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2160,9 +2161,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2271,9 +2272,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2370,9 +2371,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2500,9 +2501,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2606,9 +2607,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2677,9 +2678,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2759,9 +2760,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2873,9 +2874,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2989,9 +2990,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3114,9 +3115,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3244,9 +3245,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3349,9 +3350,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3455,9 +3456,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3588,9 +3589,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3701,9 +3702,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -3819,9 +3820,9 @@ class AsyncRawInternalClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),

@@ -19,14 +19,18 @@ from ...errors.internal_server_error import InternalServerError
 from ...errors.not_found_error import NotFoundError
 from ...errors.too_many_requests_error import TooManyRequestsError
 from ...errors.unauthorized_error import UnauthorizedError
+from ...types.internal_server_error_body import InternalServerErrorBody
+from ...types.not_found_error_body import NotFoundErrorBody
 from ...types.time_on_page_reports_request_filter import TimeOnPageReportsRequestFilter
 from ...types.time_on_page_reports_request_timeseries import TimeOnPageReportsRequestTimeseries
+from ...types.too_many_requests_error_body import TooManyRequestsErrorBody
 from ...types.top_dimensions_reports_request_filter import TopDimensionsReportsRequestFilter
 from ...types.top_events_reports_request_filter import TopEventsReportsRequestFilter
 from ...types.top_events_reports_request_timeseries import TopEventsReportsRequestTimeseries
 from ...types.top_pages_reports_request_filter import TopPagesReportsRequestFilter
 from ...types.top_pages_reports_request_timeseries import TopPagesReportsRequestTimeseries
 from ...types.traffic_reports_request_filter import TrafficReportsRequestFilter
+from ...types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.time_on_page_reports_request_device_type import TimeOnPageReportsRequestDeviceType
 from .types.time_on_page_reports_request_metric_scope import TimeOnPageReportsRequestMetricScope
 from .types.time_on_page_reports_response import TimeOnPageReportsResponse
@@ -185,9 +189,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -207,9 +211,9 @@ class RawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -218,9 +222,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -229,9 +233,9 @@ class RawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -390,9 +394,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -412,9 +416,9 @@ class RawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -423,9 +427,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -434,9 +438,9 @@ class RawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -591,9 +595,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -613,9 +617,9 @@ class RawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -624,9 +628,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -635,9 +639,9 @@ class RawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -786,9 +790,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -808,9 +812,9 @@ class RawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -819,9 +823,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -830,9 +834,9 @@ class RawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -984,9 +988,9 @@ class RawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1006,9 +1010,9 @@ class RawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1017,9 +1021,9 @@ class RawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1028,9 +1032,9 @@ class RawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1185,9 +1189,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1207,9 +1211,9 @@ class AsyncRawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1218,9 +1222,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1229,9 +1233,9 @@ class AsyncRawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1390,9 +1394,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1412,9 +1416,9 @@ class AsyncRawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1423,9 +1427,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1434,9 +1438,9 @@ class AsyncRawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1591,9 +1595,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1613,9 +1617,9 @@ class AsyncRawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1624,9 +1628,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1635,9 +1639,9 @@ class AsyncRawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1786,9 +1790,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1808,9 +1812,9 @@ class AsyncRawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1819,9 +1823,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1830,9 +1834,9 @@ class AsyncRawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1984,9 +1988,9 @@ class AsyncRawReportsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2006,9 +2010,9 @@ class AsyncRawReportsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2017,9 +2021,9 @@ class AsyncRawReportsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2028,9 +2032,9 @@ class AsyncRawReportsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

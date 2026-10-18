@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "supabase-api-v1",
   "corpus_spec_ref": "36371de15127206280d2d40786e8578dfe1b681a",
   "corpus_spec_url": "https://raw.githubusercontent.com/supabase/supabase/36371de15127206280d2d40786e8578dfe1b681a/apps/docs/spec/api_v1_openapi.json"

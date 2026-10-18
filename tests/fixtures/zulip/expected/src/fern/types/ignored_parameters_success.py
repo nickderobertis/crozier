@@ -25,8 +25,8 @@ class IgnoredParametersSuccess(UniversalBaseModel):
     [ignored_params]: /api/rest-error-handling#ignored-parameters
     """
 
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
 
     if IS_PYDANTIC_V2:

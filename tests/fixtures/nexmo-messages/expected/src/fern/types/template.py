@@ -10,7 +10,7 @@ from .template_template import TemplateTemplate
 
 
 class Template(BaseMessageType):
-    message_type: typing.Optional[TemplateMessageType] = pydantic.Field(default=None)
+    message_type: TemplateMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `template` in this field
     """

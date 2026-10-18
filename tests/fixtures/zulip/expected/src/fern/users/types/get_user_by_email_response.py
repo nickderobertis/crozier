@@ -8,8 +8,8 @@ from ...types.user import User
 
 
 class GetUserByEmailResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     user: typing.Optional[User] = None
 

@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "langchain-agent-server",
   "corpus_spec_ref": "264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e",
   "corpus_spec_url": "https://raw.githubusercontent.com/langchain-ai/docs/264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e/src/langsmith/agent-server-openapi.json"

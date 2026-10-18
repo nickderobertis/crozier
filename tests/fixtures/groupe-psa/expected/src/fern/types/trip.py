@@ -7,7 +7,6 @@ import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.serialization import FieldMetadata
-from .created_at_field import CreatedAtField
 from .energy_consumption import EnergyConsumption
 from .lite_energy import LiteEnergy
 from .position import Position
@@ -19,7 +18,16 @@ from .updated_at_field import UpdatedAtField
 from .vin import Vin
 
 
-class Trip(CreatedAtField, UpdatedAtField):
+class Trip(UpdatedAtField):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     links: typing_extensions.Annotated[TripLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     id: str = pydantic.Field()
     """

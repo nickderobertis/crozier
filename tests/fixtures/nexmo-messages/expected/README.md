@@ -35,7 +35,7 @@ A full reference for this library is available [here](./reference.md).
 Instantiate and use the client with the following:
 
 ```python
-from fern import FernApi, SendMessageRequestZero
+from fern import FernApi, SendMessageRequestZero, ChannelOptionsSmsChannel, TextMessageType
 
 client = FernApi(
     username="<username>",
@@ -43,7 +43,13 @@ client = FernApi(
 )
 
 client.send_message(
-    request=SendMessageRequestZero(),
+    request=SendMessageRequestZero(
+        to="apricot",
+        from_="from",
+        channel=ChannelOptionsSmsChannel.SMS,
+        text={"key": "value"},
+        message_type=TextMessageType.TEXT,
+    ),
 )
 ```
 
@@ -77,7 +83,13 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.send_message(
-        request=SendMessageRequestZero(),
+        request=SendMessageRequestZero(
+            to="apricot",
+            from_="from",
+            channel=ChannelOptionsSmsChannel.SMS,
+            text={"key": "value"},
+            message_type=TextMessageType.TEXT,
+        ),
     )
 
 

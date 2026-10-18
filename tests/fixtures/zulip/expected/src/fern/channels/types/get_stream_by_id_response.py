@@ -8,8 +8,8 @@ from ...types.basic_channel import BasicChannel
 
 
 class GetStreamByIdResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     stream: typing.Optional[BasicChannel] = None
 

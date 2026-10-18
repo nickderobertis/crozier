@@ -145,7 +145,7 @@ class AsyncTurnsClient:
 
 
         async def main() -> None:
-            response = await client.turns.create_turn(
+            response = client.turns.create_turn(
                 session_id="session_id",
                 idempotency_key="Idempotency-Key",
                 text="text",

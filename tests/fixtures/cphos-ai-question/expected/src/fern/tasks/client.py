@@ -1295,7 +1295,7 @@ class AsyncTasksClient:
 
 
         async def main() -> None:
-            response = await client.tasks.stream_task_events(
+            response = client.tasks.stream_task_events(
                 task_id="task_id",
             )
             async for chunk in response:

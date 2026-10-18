@@ -8,8 +8,8 @@ from .get_user_presence_response_presence import GetUserPresenceResponsePresence
 
 
 class GetUserPresenceResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     server_timestamp: typing.Optional[float] = pydantic.Field(default=None)
     """

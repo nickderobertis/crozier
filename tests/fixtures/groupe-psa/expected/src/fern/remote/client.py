@@ -115,10 +115,10 @@ class RemoteClient:
         self,
         fid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CallbackRef:
@@ -130,14 +130,14 @@ class RemoteClient:
         fid : str
             Resource is related to this fleet ID only.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -156,7 +156,12 @@ class RemoteClient:
 
         Examples
         --------
-        from fern import FernApi, RemoteType
+        from fern import (
+            FernApi,
+            RemoteCallbackSubscribeCallback,
+            RemoteCallbackSubscribeCallbackWebhook,
+            RemoteType,
+        )
 
         client = FernApi(
             username="YOUR_USERNAME",
@@ -164,18 +169,21 @@ class RemoteClient:
         )
         client.remote.set_fleet_vehicle_remote(
             fid="fid",
-            remote_types=[
-                RemoteType.THERMAL_PRECONDITIONING,
-                RemoteType.THERMAL_PRECONDITIONING,
-            ],
+            callback=RemoteCallbackSubscribeCallback(
+                webhook=RemoteCallbackSubscribeCallbackWebhook(
+                    target="http://example.com",
+                    name="name",
+                ),
+            ),
+            remote_types=[RemoteType.THERMAL_PRECONDITIONING],
         )
         """
         _response = self._raw_client.set_fleet_vehicle_remote(
             fid,
+            callback=callback,
             remote_types=remote_types,
             label=label,
             retry_policy=retry_policy,
-            callback=callback,
             batch_notify=batch_notify,
             request_options=request_options,
         )
@@ -224,10 +232,10 @@ class RemoteClient:
         fid: str,
         cbid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CallbackRef:
@@ -243,14 +251,14 @@ class RemoteClient:
         cbid : str
             The remote callback ID.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -269,7 +277,12 @@ class RemoteClient:
 
         Examples
         --------
-        from fern import FernApi, RemoteType
+        from fern import (
+            FernApi,
+            RemoteCallbackSubscribeCallback,
+            RemoteCallbackSubscribeCallbackWebhook,
+            RemoteType,
+        )
 
         client = FernApi(
             username="YOUR_USERNAME",
@@ -278,19 +291,22 @@ class RemoteClient:
         client.remote.set_fleet_vehicle_remote_by_id(
             fid="fid",
             cbid="cbid",
-            remote_types=[
-                RemoteType.THERMAL_PRECONDITIONING,
-                RemoteType.THERMAL_PRECONDITIONING,
-            ],
+            callback=RemoteCallbackSubscribeCallback(
+                webhook=RemoteCallbackSubscribeCallbackWebhook(
+                    target="http://example.com",
+                    name="name",
+                ),
+            ),
+            remote_types=[RemoteType.THERMAL_PRECONDITIONING],
         )
         """
         _response = self._raw_client.set_fleet_vehicle_remote_by_id(
             fid,
             cbid,
+            callback=callback,
             remote_types=remote_types,
             label=label,
             retry_policy=retry_policy,
-            callback=callback,
             batch_notify=batch_notify,
             request_options=request_options,
         )
@@ -686,10 +702,10 @@ class AsyncRemoteClient:
         self,
         fid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CallbackRef:
@@ -701,14 +717,14 @@ class AsyncRemoteClient:
         fid : str
             Resource is related to this fleet ID only.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -729,7 +745,12 @@ class AsyncRemoteClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi, RemoteType
+        from fern import (
+            AsyncFernApi,
+            RemoteCallbackSubscribeCallback,
+            RemoteCallbackSubscribeCallbackWebhook,
+            RemoteType,
+        )
 
         client = AsyncFernApi(
             username="YOUR_USERNAME",
@@ -740,10 +761,13 @@ class AsyncRemoteClient:
         async def main() -> None:
             await client.remote.set_fleet_vehicle_remote(
                 fid="fid",
-                remote_types=[
-                    RemoteType.THERMAL_PRECONDITIONING,
-                    RemoteType.THERMAL_PRECONDITIONING,
-                ],
+                callback=RemoteCallbackSubscribeCallback(
+                    webhook=RemoteCallbackSubscribeCallbackWebhook(
+                        target="http://example.com",
+                        name="name",
+                    ),
+                ),
+                remote_types=[RemoteType.THERMAL_PRECONDITIONING],
             )
 
 
@@ -751,10 +775,10 @@ class AsyncRemoteClient:
         """
         _response = await self._raw_client.set_fleet_vehicle_remote(
             fid,
+            callback=callback,
             remote_types=remote_types,
             label=label,
             retry_policy=retry_policy,
-            callback=callback,
             batch_notify=batch_notify,
             request_options=request_options,
         )
@@ -811,10 +835,10 @@ class AsyncRemoteClient:
         fid: str,
         cbid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> CallbackRef:
@@ -830,14 +854,14 @@ class AsyncRemoteClient:
         cbid : str
             The remote callback ID.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -858,7 +882,12 @@ class AsyncRemoteClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi, RemoteType
+        from fern import (
+            AsyncFernApi,
+            RemoteCallbackSubscribeCallback,
+            RemoteCallbackSubscribeCallbackWebhook,
+            RemoteType,
+        )
 
         client = AsyncFernApi(
             username="YOUR_USERNAME",
@@ -870,10 +899,13 @@ class AsyncRemoteClient:
             await client.remote.set_fleet_vehicle_remote_by_id(
                 fid="fid",
                 cbid="cbid",
-                remote_types=[
-                    RemoteType.THERMAL_PRECONDITIONING,
-                    RemoteType.THERMAL_PRECONDITIONING,
-                ],
+                callback=RemoteCallbackSubscribeCallback(
+                    webhook=RemoteCallbackSubscribeCallbackWebhook(
+                        target="http://example.com",
+                        name="name",
+                    ),
+                ),
+                remote_types=[RemoteType.THERMAL_PRECONDITIONING],
             )
 
 
@@ -882,10 +914,10 @@ class AsyncRemoteClient:
         _response = await self._raw_client.set_fleet_vehicle_remote_by_id(
             fid,
             cbid,
+            callback=callback,
             remote_types=remote_types,
             label=label,
             retry_policy=retry_policy,
-            callback=callback,
             batch_notify=batch_notify,
             request_options=request_options,
         )

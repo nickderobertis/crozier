@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "waylay-queries",
+  "corpus_spec_ref": "8ab6c18e10f96c3665dbb849ebe2193c16a1659c",
+  "corpus_spec_url": "https://raw.githubusercontent.com/waylayio/waylay-sdk-queries-py/8ab6c18e10f96c3665dbb849ebe2193c16a1659c/openapi/queries.openapi.yaml"
+}

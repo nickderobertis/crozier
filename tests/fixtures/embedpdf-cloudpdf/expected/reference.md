@@ -335,7 +335,7 @@ client.doc.render(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -419,7 +419,7 @@ client.doc.text(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -2575,7 +2575,7 @@ client.doc.annotations.list(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -2676,7 +2676,7 @@ client.doc.annotations.create(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -2769,7 +2769,7 @@ client.doc.annotations.delete(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -2865,7 +2865,7 @@ client.doc.annotations.update(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -2968,7 +2968,7 @@ client.doc.annotations.export_appearance(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -3063,7 +3063,7 @@ client.doc.annotations.flatten(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -3624,6 +3624,7 @@ client.doc.pages.set_scale(
     doc_id="docId",
     layer_name="layerName",
     page_key="pageKey",
+    measure=None,
 )
 
 ```
@@ -3656,7 +3657,7 @@ client.doc.pages.set_scale(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>
@@ -3748,7 +3749,7 @@ client.doc.pages.viewports(
 <dl>
 <dd>
 
-**page_key:** `str` 
+**page_key:** `str` — The page's address, `obj:N`: the page's indirect object number, the durable identity every `PageLayout.ref` carries. Mirrors `annotKey` and `fieldKey`.
     
 </dd>
 </dl>

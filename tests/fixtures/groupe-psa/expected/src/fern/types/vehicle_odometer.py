@@ -1,13 +1,24 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
-from .created_at_field import CreatedAtField
+import typing_extensions
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from ..core.serialization import FieldMetadata
 
 
-class VehicleOdometer(CreatedAtField):
+class VehicleOdometer(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     mileage: typing.Optional[float] = pydantic.Field(default=None)
     """
     Vehicle mileage expressed in KM.

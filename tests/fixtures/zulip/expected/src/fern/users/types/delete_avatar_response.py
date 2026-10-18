@@ -8,8 +8,8 @@ from ...types.ignored_parameters_unsupported import IgnoredParametersUnsupported
 
 
 class DeleteAvatarResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     avatar_url: typing.Optional[str] = pydantic.Field(default=None)
     """
     The URL of the current user's profile picture, which

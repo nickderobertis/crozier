@@ -17,6 +17,10 @@ from ...errors.internal_server_error import InternalServerError
 from ...errors.not_found_error import NotFoundError
 from ...errors.too_many_requests_error import TooManyRequestsError
 from ...errors.unauthorized_error import UnauthorizedError
+from ...types.internal_server_error_body import InternalServerErrorBody
+from ...types.not_found_error_body import NotFoundErrorBody
+from ...types.too_many_requests_error_body import TooManyRequestsErrorBody
+from ...types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.get_custom_code_scripts_response import GetCustomCodeScriptsResponse
 from .types.upsert_custom_code_scripts_request_scripts_item import UpsertCustomCodeScriptsRequestScriptsItem
 from .types.upsert_custom_code_scripts_response import UpsertCustomCodeScriptsResponse
@@ -84,9 +88,9 @@ class RawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -95,9 +99,9 @@ class RawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -106,9 +110,9 @@ class RawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -117,9 +121,9 @@ class RawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -209,9 +213,9 @@ class RawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -220,9 +224,9 @@ class RawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -242,9 +246,9 @@ class RawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -253,9 +257,9 @@ class RawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -317,9 +321,9 @@ class RawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -328,9 +332,9 @@ class RawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -339,9 +343,9 @@ class RawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -350,9 +354,9 @@ class RawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -425,9 +429,9 @@ class AsyncRawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -436,9 +440,9 @@ class AsyncRawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -447,9 +451,9 @@ class AsyncRawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -458,9 +462,9 @@ class AsyncRawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -550,9 +554,9 @@ class AsyncRawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -561,9 +565,9 @@ class AsyncRawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -583,9 +587,9 @@ class AsyncRawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -594,9 +598,9 @@ class AsyncRawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -658,9 +662,9 @@ class AsyncRawScriptsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -669,9 +673,9 @@ class AsyncRawScriptsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -680,9 +684,9 @@ class AsyncRawScriptsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -691,9 +695,9 @@ class AsyncRawScriptsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

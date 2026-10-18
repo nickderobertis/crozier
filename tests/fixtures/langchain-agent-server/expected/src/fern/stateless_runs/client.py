@@ -530,7 +530,7 @@ class AsyncStatelessRunsClient:
 
 
         async def main() -> None:
-            response = await client.stateless_runs.stream_run_stateless(
+            response = client.stateless_runs.stream_run_stateless(
                 assistant_id="assistant_id",
             )
             async for chunk in response:

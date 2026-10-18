@@ -102,6 +102,7 @@ class AlarmsClient:
         Parameters
         ----------
         alarm_id : int
+            The ID of the alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -232,6 +233,7 @@ class AsyncAlarmsClient:
         Parameters
         ----------
         alarm_id : int
+            The ID of the alarm
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

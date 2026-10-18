@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "rta-in-japan-twitter",
   "corpus_spec_ref": "b5b30318e41647d44795f85dbfc428da8e93739a",
   "corpus_spec_url": "https://raw.githubusercontent.com/RTAinJapan/rta-in-japan-twitter-api-docs/b5b30318e41647d44795f85dbfc428da8e93739a/openapi.yaml"

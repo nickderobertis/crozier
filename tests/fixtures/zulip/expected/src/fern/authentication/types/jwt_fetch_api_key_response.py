@@ -8,8 +8,8 @@ from .jwt_fetch_api_key_response_user import JwtFetchApiKeyResponseUser
 
 
 class JwtFetchApiKeyResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     api_key: str = pydantic.Field()
     """

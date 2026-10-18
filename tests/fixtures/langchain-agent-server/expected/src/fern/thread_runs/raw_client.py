@@ -30,7 +30,6 @@ from ..types.run_create_stateful_interrupt_before import RunCreateStatefulInterr
 from ..types.run_create_stateful_multitask_strategy import RunCreateStatefulMultitaskStrategy
 from ..types.run_create_stateful_stream_mode import RunCreateStatefulStreamMode
 from ..types.run_create_streaming_stateful_on_disconnect import RunCreateStreamingStatefulOnDisconnect
-from ..types.runs_cancel import RunsCancel
 from .types.cancel_run_http_threads_thread_id_runs_run_id_cancel_post_request_action import (
     CancelRunHttpThreadsThreadIdRunsRunIdCancelPostRequestAction,
 )
@@ -41,6 +40,7 @@ from .types.list_runs_http_threads_thread_id_runs_get_request_select_item import
 from .types.list_runs_http_threads_thread_id_runs_get_request_status import (
     ListRunsHttpThreadsThreadIdRunsGetRequestStatus,
 )
+from .types.runs_cancel_status import RunsCancelStatus
 from pydantic import ValidationError
 
 
@@ -81,6 +81,7 @@ class RawThreadRunsClient:
         status : typing.Optional[ListRunsHttpThreadsThreadIdRunsGetRequestStatus]
 
         select : typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]
+            Specify which fields to return. If not provided, all fields are returned.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -500,6 +501,8 @@ class RawThreadRunsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -933,6 +936,7 @@ class RawThreadRunsClient:
             The ID of the run.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1016,10 +1020,13 @@ class RawThreadRunsClient:
             The ID of the run.
 
         stream_mode : typing.Optional[str]
+            The mode to stream the run in. If not provided, the default mode will be used.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Set to -1 if you want to stream all events. Requires `stream_resumable=true` to be set when creating the run.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1051,6 +1058,8 @@ class RawThreadRunsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -1197,8 +1206,10 @@ class RawThreadRunsClient:
     def cancel_runs_post(
         self,
         *,
-        request: RunsCancel,
         action: typing.Optional[CancelRunsPostRequestAction] = None,
+        status: typing.Optional[RunsCancelStatus] = OMIT,
+        thread_id: typing.Optional[str] = OMIT,
+        run_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[None]:
         """
@@ -1206,10 +1217,17 @@ class RawThreadRunsClient:
 
         Parameters
         ----------
-        request : RunsCancel
-
         action : typing.Optional[CancelRunsPostRequestAction]
             Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
+
+        status : typing.Optional[RunsCancelStatus]
+            Filter runs by status to cancel. Must be one of 'pending', 'running', or 'all'.
+
+        thread_id : typing.Optional[str]
+            The ID of the thread containing runs to cancel.
+
+        run_ids : typing.Optional[typing.Sequence[str]]
+            List of run IDs to cancel.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1224,7 +1242,11 @@ class RawThreadRunsClient:
             params={
                 "action": action,
             },
-            json=convert_and_respect_annotation_metadata(object_=request, annotation=RunsCancel, direction="write"),
+            json={
+                "status": status,
+                "thread_id": thread_id,
+                "run_ids": run_ids,
+            },
             headers={
                 "content-type": "application/json",
             },
@@ -1300,6 +1322,7 @@ class AsyncRawThreadRunsClient:
         status : typing.Optional[ListRunsHttpThreadsThreadIdRunsGetRequestStatus]
 
         select : typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]
+            Specify which fields to return. If not provided, all fields are returned.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1719,6 +1742,8 @@ class AsyncRawThreadRunsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -2152,6 +2177,7 @@ class AsyncRawThreadRunsClient:
             The ID of the run.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -2235,10 +2261,13 @@ class AsyncRawThreadRunsClient:
             The ID of the run.
 
         stream_mode : typing.Optional[str]
+            The mode to stream the run in. If not provided, the default mode will be used.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Set to -1 if you want to stream all events. Requires `stream_resumable=true` to be set when creating the run.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -2270,6 +2299,8 @@ class AsyncRawThreadRunsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -2416,8 +2447,10 @@ class AsyncRawThreadRunsClient:
     async def cancel_runs_post(
         self,
         *,
-        request: RunsCancel,
         action: typing.Optional[CancelRunsPostRequestAction] = None,
+        status: typing.Optional[RunsCancelStatus] = OMIT,
+        thread_id: typing.Optional[str] = OMIT,
+        run_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[None]:
         """
@@ -2425,10 +2458,17 @@ class AsyncRawThreadRunsClient:
 
         Parameters
         ----------
-        request : RunsCancel
-
         action : typing.Optional[CancelRunsPostRequestAction]
             Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
+
+        status : typing.Optional[RunsCancelStatus]
+            Filter runs by status to cancel. Must be one of 'pending', 'running', or 'all'.
+
+        thread_id : typing.Optional[str]
+            The ID of the thread containing runs to cancel.
+
+        run_ids : typing.Optional[typing.Sequence[str]]
+            List of run IDs to cancel.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -2443,7 +2483,11 @@ class AsyncRawThreadRunsClient:
             params={
                 "action": action,
             },
-            json=convert_and_respect_annotation_metadata(object_=request, annotation=RunsCancel, direction="write"),
+            json={
+                "status": status,
+                "thread_id": thread_id,
+                "run_ids": run_ids,
+            },
             headers={
                 "content-type": "application/json",
             },

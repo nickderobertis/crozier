@@ -159,8 +159,6 @@ if typing.TYPE_CHECKING:
     from .scheduled_message_base import ScheduledMessageBase
     from .scheduled_message_base_to import ScheduledMessageBaseTo
     from .scheduled_message_base_type import ScheduledMessageBaseType
-    from .scheduled_message_to import ScheduledMessageTo
-    from .scheduled_message_type import ScheduledMessageType
     from .send_new_subscription_messages import SendNewSubscriptionMessages
     from .subscription import Subscription
     from .subscription_property import SubscriptionProperty
@@ -344,8 +342,6 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ScheduledMessageBase": ".scheduled_message_base",
     "ScheduledMessageBaseTo": ".scheduled_message_base_to",
     "ScheduledMessageBaseType": ".scheduled_message_base_type",
-    "ScheduledMessageTo": ".scheduled_message_to",
-    "ScheduledMessageType": ".scheduled_message_type",
     "SendNewSubscriptionMessages": ".send_new_subscription_messages",
     "Subscription": ".subscription",
     "SubscriptionProperty": ".subscription_property",
@@ -553,8 +549,6 @@ __all__ = [
     "ScheduledMessageBase",
     "ScheduledMessageBaseTo",
     "ScheduledMessageBaseType",
-    "ScheduledMessageTo",
-    "ScheduledMessageType",
     "SendNewSubscriptionMessages",
     "Subscription",
     "SubscriptionProperty",

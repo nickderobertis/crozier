@@ -1232,7 +1232,7 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            response = await client.sessions.create_turn_stream(
+            response = client.sessions.create_turn_stream(
                 session_id="session_id",
             )
             async for chunk in response:
@@ -1516,7 +1516,7 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            response = await client.sessions.subscribe_to_turn(
+            response = client.sessions.subscribe_to_turn(
                 session_id="session_id",
                 turn_id="turn_id",
             )

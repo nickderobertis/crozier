@@ -15,6 +15,10 @@ from ...errors.internal_server_error import InternalServerError
 from ...errors.not_found_error import NotFoundError
 from ...errors.too_many_requests_error import TooManyRequestsError
 from ...errors.unauthorized_error import UnauthorizedError
+from ...types.internal_server_error_body import InternalServerErrorBody
+from ...types.not_found_error_body import NotFoundErrorBody
+from ...types.too_many_requests_error_body import TooManyRequestsErrorBody
+from ...types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.put_well_known_request_content_type import PutWellKnownRequestContentType
 from pydantic import ValidationError
 
@@ -105,9 +109,9 @@ class RawWellKnownClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -116,9 +120,9 @@ class RawWellKnownClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -127,9 +131,9 @@ class RawWellKnownClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -138,9 +142,9 @@ class RawWellKnownClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -214,9 +218,9 @@ class RawWellKnownClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -225,9 +229,9 @@ class RawWellKnownClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -236,9 +240,9 @@ class RawWellKnownClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -247,9 +251,9 @@ class RawWellKnownClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -347,9 +351,9 @@ class AsyncRawWellKnownClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -358,9 +362,9 @@ class AsyncRawWellKnownClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -369,9 +373,9 @@ class AsyncRawWellKnownClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -380,9 +384,9 @@ class AsyncRawWellKnownClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -456,9 +460,9 @@ class AsyncRawWellKnownClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -467,9 +471,9 @@ class AsyncRawWellKnownClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -478,9 +482,9 @@ class AsyncRawWellKnownClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -489,9 +493,9 @@ class AsyncRawWellKnownClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

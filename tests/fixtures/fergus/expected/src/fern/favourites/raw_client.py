@@ -10,6 +10,9 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
+from ..errors.client_request_error import ClientRequestError
+from ..errors.server_error import ServerError
+from ..types.error_response import ErrorResponse
 from ..types.favourites_response import FavouritesResponse
 from ..types.favourites_section import FavouritesSection
 from .types.get_favourites_request_representation import GetFavouritesRequestRepresentation
@@ -98,6 +101,30 @@ class RawFavouritesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -140,6 +167,30 @@ class RawFavouritesClient:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -230,6 +281,30 @@ class AsyncRawFavouritesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -272,6 +347,30 @@ class AsyncRawFavouritesClient:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

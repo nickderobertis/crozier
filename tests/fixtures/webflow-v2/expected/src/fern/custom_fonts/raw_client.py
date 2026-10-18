@@ -19,6 +19,11 @@ from ..errors.not_found_error import NotFoundError
 from ..errors.service_unavailable_error import ServiceUnavailableError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
+from ..types.internal_server_error_body import InternalServerErrorBody
+from ..types.not_found_error_body import NotFoundErrorBody
+from ..types.service_unavailable_error_body import ServiceUnavailableErrorBody
+from ..types.too_many_requests_error_body import TooManyRequestsErrorBody
+from ..types.unauthorized_error_body import UnauthorizedErrorBody
 from .types.batch_create_custom_fonts_request_items_item import BatchCreateCustomFontsRequestItemsItem
 from .types.batch_create_custom_fonts_response import BatchCreateCustomFontsResponse
 from .types.batch_delete_custom_fonts_request_items_item import BatchDeleteCustomFontsRequestItemsItem
@@ -109,9 +114,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -131,9 +136,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -142,9 +147,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -153,9 +158,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -273,9 +278,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -295,9 +300,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -317,9 +322,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -328,9 +333,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -339,9 +344,9 @@ class RawCustomFontsClient:
                 raise ServiceUnavailableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ServiceUnavailableErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ServiceUnavailableErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -410,9 +415,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -432,9 +437,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -443,9 +448,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -454,9 +459,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -517,9 +522,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -539,9 +544,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -550,9 +555,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -561,9 +566,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -665,9 +670,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -687,9 +692,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -698,9 +703,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -709,9 +714,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -812,9 +817,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -834,9 +839,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -845,9 +850,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -856,9 +861,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -954,9 +959,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -976,9 +981,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -987,9 +992,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -998,9 +1003,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1009,9 +1014,9 @@ class RawCustomFontsClient:
                 raise ServiceUnavailableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ServiceUnavailableErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ServiceUnavailableErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1097,9 +1102,9 @@ class RawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1119,9 +1124,9 @@ class RawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1130,9 +1135,9 @@ class RawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1141,9 +1146,9 @@ class RawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1229,9 +1234,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1251,9 +1256,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1262,9 +1267,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1273,9 +1278,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1393,9 +1398,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1415,9 +1420,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1437,9 +1442,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1448,9 +1453,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1459,9 +1464,9 @@ class AsyncRawCustomFontsClient:
                 raise ServiceUnavailableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ServiceUnavailableErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ServiceUnavailableErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1530,9 +1535,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1552,9 +1557,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1563,9 +1568,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1574,9 +1579,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1637,9 +1642,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1659,9 +1664,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1670,9 +1675,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1681,9 +1686,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1785,9 +1790,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1807,9 +1812,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1818,9 +1823,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1829,9 +1834,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1932,9 +1937,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1954,9 +1959,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1965,9 +1970,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1976,9 +1981,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2074,9 +2079,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2096,9 +2101,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2107,9 +2112,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2118,9 +2123,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2129,9 +2134,9 @@ class AsyncRawCustomFontsClient:
                 raise ServiceUnavailableError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ServiceUnavailableErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ServiceUnavailableErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2217,9 +2222,9 @@ class AsyncRawCustomFontsClient:
                 raise UnauthorizedError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnauthorizedErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnauthorizedErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2239,9 +2244,9 @@ class AsyncRawCustomFontsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2250,9 +2255,9 @@ class AsyncRawCustomFontsClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2261,9 +2266,9 @@ class AsyncRawCustomFontsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

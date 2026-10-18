@@ -41,9 +41,7 @@ client = FernApi(
     api_key="<value>",
 )
 
-client.person_endpoints.person_search(
-    request={"key": "value"},
-)
+client.person_endpoints.person_search()
 ```
 
 ## Environments
@@ -74,9 +72,7 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.person_endpoints.person_search(
-        request={"key": "value"},
-    )
+    await client.person_endpoints.person_search()
 
 
 asyncio.run(main())

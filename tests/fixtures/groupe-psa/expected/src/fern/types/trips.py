@@ -11,19 +11,15 @@ from .trips_embedded import TripsEmbedded
 
 
 class Trips(UniversalBaseModel):
-    links: typing_extensions.Annotated[
-        typing.Optional[TabLinks], FieldMetadata(alias="_links"), pydantic.Field(alias="_links")
-    ] = None
-    total: typing.Optional[int] = None
-    total_page: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="totalPage"), pydantic.Field(alias="totalPage")
-    ] = None
-    current_page: typing_extensions.Annotated[
-        typing.Optional[int], FieldMetadata(alias="currentPage"), pydantic.Field(alias="currentPage")
-    ] = None
     embedded: typing_extensions.Annotated[
-        typing.Optional[TripsEmbedded], FieldMetadata(alias="_embedded"), pydantic.Field(alias="_embedded")
-    ] = None
+        TripsEmbedded, FieldMetadata(alias="_embedded"), pydantic.Field(alias="_embedded")
+    ]
+    links: typing_extensions.Annotated[TabLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
+    total: int
+    total_page: typing_extensions.Annotated[int, FieldMetadata(alias="totalPage"), pydantic.Field(alias="totalPage")]
+    current_page: typing_extensions.Annotated[
+        int, FieldMetadata(alias="currentPage"), pydantic.Field(alias="currentPage")
+    ]
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

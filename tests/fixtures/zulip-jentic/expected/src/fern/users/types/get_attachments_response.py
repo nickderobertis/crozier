@@ -8,8 +8,8 @@ from ...types.attachment import Attachment
 
 
 class GetAttachmentsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     attachments: typing.Optional[typing.List[Attachment]] = pydantic.Field(default=None)
     """

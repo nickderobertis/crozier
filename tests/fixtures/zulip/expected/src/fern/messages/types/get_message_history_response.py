@@ -8,8 +8,8 @@ from .get_message_history_response_message_history_item import GetMessageHistory
 
 
 class GetMessageHistoryResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     message_history: typing.Optional[typing.List[GetMessageHistoryResponseMessageHistoryItem]] = pydantic.Field(
         default=None

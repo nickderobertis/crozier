@@ -11,12 +11,14 @@ if typing.TYPE_CHECKING:
         CancelRunsPostRequestAction,
         ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem,
         ListRunsHttpThreadsThreadIdRunsGetRequestStatus,
+        RunsCancelStatus,
     )
 _dynamic_imports: typing.Dict[str, str] = {
     "CancelRunHttpThreadsThreadIdRunsRunIdCancelPostRequestAction": ".types",
     "CancelRunsPostRequestAction": ".types",
     "ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem": ".types",
     "ListRunsHttpThreadsThreadIdRunsGetRequestStatus": ".types",
+    "RunsCancelStatus": ".types",
 }
 
 
@@ -46,4 +48,5 @@ __all__ = [
     "CancelRunsPostRequestAction",
     "ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem",
     "ListRunsHttpThreadsThreadIdRunsGetRequestStatus",
+    "RunsCancelStatus",
 ]

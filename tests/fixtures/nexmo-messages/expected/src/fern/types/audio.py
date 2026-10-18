@@ -11,7 +11,7 @@ from .base_message_type import BaseMessageType
 
 class Audio(BaseMessageType):
     audio: AudioAudio
-    message_type: typing.Optional[AudioMessageType] = pydantic.Field(default=None)
+    message_type: AudioMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `audio` in this field
     """

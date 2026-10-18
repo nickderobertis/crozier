@@ -420,9 +420,15 @@ client.analysis_snapshots.create_analysis_snapshot(
     line_moves=[
         "lineMoves"
     ],
+    analysis_settings=None,
     entries=[
         AnalysisSnapshotEntry(
             ply=1,
+            eval_cp=None,
+            eval_mate=None,
+            depth=None,
+            pv=None,
+            multi_pv=None,
         )
     ],
 )
@@ -1216,6 +1222,7 @@ client = FernApi(
 
 client.user_settings.put_user_settings(
     document_key=UserSettingsDocumentKey.MATCH_TIME_SETTINGS,
+    value=None,
 )
 
 ```
@@ -1294,6 +1301,8 @@ client.rooms.create_room(
         time_control=TimeControlSettings_Byoyomi(
             initial_ms=1,
         ),
+        pass_rights=None,
+        ai_support=None,
         takeback=True,
     ),
 )

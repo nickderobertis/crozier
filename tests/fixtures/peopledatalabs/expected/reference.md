@@ -537,9 +537,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.person_endpoints.person_search(
-    request={"key": "value"},
-)
+client.person_endpoints.person_search()
 
 ```
 </dd>
@@ -555,7 +553,71 @@ client.person_endpoints.person_search(
 <dl>
 <dd>
 
-**request:** `PostV5PersonSearchRequest` 
+**query:** `typing.Optional[str]` — An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sql:** `typing.Optional[str]` — A SQL query of the format: SELECT * FROM person WHERE XXX, where XXX is a standard SQL boolean query involving our person fields
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**size:** `typing.Optional[int]` — The number of matched records to return for this query if they exist*. Must be between 1 and 100
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `typing.Optional[int]` — An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scroll_token:** `typing.Optional[str]` — Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**dataset:** `typing.Optional[str]` — Specifies which dataset(s) the API should search against
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**titlecase:** `typing.Optional[bool]` — Setting titlecase to true will titlecase any records returned
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**data_include:** `typing.Optional[str]` — A comma-separated string of fields that you would like the response to include. Begin the string with a - if you would instead like to exclude the specified fields. If you would like to exclude all data from being returned, use data_include=""
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**pretty:** `typing.Optional[bool]` — Whether the output should have human-readable indentation.
     
 </dd>
 </dl>
@@ -1136,9 +1198,7 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.company_endpoints.company_search(
-    request={"key": "value"},
-)
+client.company_endpoints.company_search()
 
 ```
 </dd>
@@ -1154,7 +1214,55 @@ client.company_endpoints.company_search(
 <dl>
 <dd>
 
-**request:** `PostV5CompanySearchRequest` 
+**query:** `typing.Optional[str]` — An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**sql:** `typing.Optional[str]` — A SQL query of the format: SELECT * FROM company WHERE XXX, where XXX is a standard SQL boolean query involving our company fields
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**size:** `typing.Optional[int]` — The number of matched records to return for this query if they exist*. Must be between 1 and 100
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**from:** `typing.Optional[int]` — An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**scroll_token:** `typing.Optional[str]` — Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**titlecase:** `typing.Optional[bool]` — Setting titlecase to true will titlecase any records returned
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**pretty:** `typing.Optional[bool]` — Whether the output should have human-readable indentation
     
 </dd>
 </dl>

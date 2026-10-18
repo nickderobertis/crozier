@@ -13,7 +13,10 @@ from ..errors.bad_request_error import BadRequestError
 from ..errors.forbidden_error import ForbiddenError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.battle_accepted_response_dto_output import BattleAcceptedResponseDtoOutput
+from ..types.forbidden_error_body import ForbiddenErrorBody
+from ..types.too_many_requests_error_body import TooManyRequestsErrorBody
 from pydantic import ValidationError
 
 
@@ -75,9 +78,9 @@ class RawInternalClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -97,9 +100,9 @@ class RawInternalClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -108,9 +111,9 @@ class RawInternalClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -180,9 +183,9 @@ class AsyncRawInternalClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -202,9 +205,9 @@ class AsyncRawInternalClient:
                 raise ForbiddenError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ForbiddenErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ForbiddenErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -213,9 +216,9 @@ class AsyncRawInternalClient:
                 raise TooManyRequestsError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        TooManyRequestsErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=TooManyRequestsErrorBody,
                             object_=_response.json(),
                         ),
                     ),

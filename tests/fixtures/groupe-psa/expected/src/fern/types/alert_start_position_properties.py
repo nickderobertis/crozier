@@ -1,18 +1,27 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
 from .alert_start_position_properties_fix_status import AlertStartPositionPropertiesFixStatus
 from .alert_start_position_properties_type import AlertStartPositionPropertiesType
-from .created_at_field import CreatedAtField
 from .vin import Vin
 
 
-class AlertStartPositionProperties(CreatedAtField):
+class AlertStartPositionProperties(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     vin: typing.Optional[Vin] = None
     heading: typing.Optional[int] = pydantic.Field(default=None)
     """

@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "folio-mod-authtoken",
   "corpus_spec_ref": "172586c71fe936ac0b4d104b95acd508e88e43d3",
   "corpus_spec_url": "https://raw.githubusercontent.com/folio-org/mod-authtoken/172586c71fe936ac0b4d104b95acd508e88e43d3/src/main/resources/openapi/token-1.0.yaml",

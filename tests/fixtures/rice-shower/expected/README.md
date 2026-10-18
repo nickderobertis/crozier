@@ -49,11 +49,13 @@ client.systems.create_system(
     thermos=[
         CreateSystemRequestThermosItem(
             channel=1.1,
+            label=None,
         )
     ],
     heaters=[
         CreateSystemRequestHeatersItem(
             channel=1.1,
+            label=None,
         )
     ],
 )
@@ -83,11 +85,13 @@ async def main() -> None:
         thermos=[
             CreateSystemRequestThermosItem(
                 channel=1.1,
+                label=None,
             )
         ],
         heaters=[
             CreateSystemRequestHeatersItem(
                 channel=1.1,
+                label=None,
             )
         ],
     )

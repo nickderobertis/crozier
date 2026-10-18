@@ -8,8 +8,8 @@ from ...types.ignored_parameters_unsupported import IgnoredParametersUnsupported
 
 
 class AddNavigationViewResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[IgnoredParametersUnsupported] = None
 
     if IS_PYDANTIC_V2:

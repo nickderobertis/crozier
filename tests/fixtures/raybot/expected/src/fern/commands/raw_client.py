@@ -37,6 +37,7 @@ class RawCommandsClient:
         Parameters
         ----------
         command_id : int
+            The ID of the command
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -90,6 +91,7 @@ class RawCommandsClient:
         Parameters
         ----------
         command_id : int
+            The ID of the command
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -387,6 +389,7 @@ class AsyncRawCommandsClient:
         Parameters
         ----------
         command_id : int
+            The ID of the command
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -440,6 +443,7 @@ class AsyncRawCommandsClient:
         Parameters
         ----------
         command_id : int
+            The ID of the command
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

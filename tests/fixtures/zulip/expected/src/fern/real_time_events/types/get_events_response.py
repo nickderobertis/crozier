@@ -8,8 +8,8 @@ from .get_events_response_events_item import GetEventsResponseEventsItem
 
 
 class GetEventsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     events: typing.Optional[typing.List[GetEventsResponseEventsItem]] = pydantic.Field(default=None)
     """

@@ -8,8 +8,8 @@ from ...types.realm_emoji import RealmEmoji
 
 
 class GetCustomEmojiResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     emoji: typing.Optional[typing.Dict[str, RealmEmoji]] = pydantic.Field(default=None)
     """

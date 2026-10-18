@@ -8,8 +8,8 @@ from .point_type import PointType
 
 
 class Point(UniversalBaseModel):
-    type: typing.Optional[PointType] = None
-    coordinates: typing.Optional[typing.List[float]] = pydantic.Field(default=None)
+    type: PointType
+    coordinates: typing.List[float] = pydantic.Field()
     """
     This is a simple 2 (or more) numbers vector used to define Geometry Point objects.
     """

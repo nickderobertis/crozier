@@ -1327,7 +1327,11 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.background_runs.create_run()
+client.background_runs.create_run(
+    metadata={
+        "key": "value"
+    },
+)
 
 ```
 </dd>
@@ -1397,7 +1401,11 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.runs.create_and_stream_run()
+client.runs.create_and_stream_run(
+    metadata={
+        "key": "value"
+    },
+)
 
 ```
 </dd>

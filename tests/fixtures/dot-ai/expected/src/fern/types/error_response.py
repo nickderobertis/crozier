@@ -9,12 +9,12 @@ from .rest_api_response_meta import RestApiResponseMeta
 
 
 class ErrorResponse(UniversalBaseModel):
-    success: typing.Optional[bool] = pydantic.Field(default=None)
+    error: ErrorResponseError
+    success: bool = pydantic.Field()
     """
     Whether the request was successful
     """
 
-    error: ErrorResponseError
     data: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
     """
     Response data

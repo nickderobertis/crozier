@@ -16,11 +16,13 @@ if typing.TYPE_CHECKING:
     from .list_runs_http_threads_thread_id_runs_get_request_status import (
         ListRunsHttpThreadsThreadIdRunsGetRequestStatus,
     )
+    from .runs_cancel_status import RunsCancelStatus
 _dynamic_imports: typing.Dict[str, str] = {
     "CancelRunHttpThreadsThreadIdRunsRunIdCancelPostRequestAction": ".cancel_run_http_threads_thread_id_runs_run_id_cancel_post_request_action",
     "CancelRunsPostRequestAction": ".cancel_runs_post_request_action",
     "ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem": ".list_runs_http_threads_thread_id_runs_get_request_select_item",
     "ListRunsHttpThreadsThreadIdRunsGetRequestStatus": ".list_runs_http_threads_thread_id_runs_get_request_status",
+    "RunsCancelStatus": ".runs_cancel_status",
 }
 
 
@@ -50,4 +52,5 @@ __all__ = [
     "CancelRunsPostRequestAction",
     "ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem",
     "ListRunsHttpThreadsThreadIdRunsGetRequestStatus",
+    "RunsCancelStatus",
 ]

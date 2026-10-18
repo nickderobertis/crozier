@@ -103,7 +103,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if subdomain is not None:
             _subdomain = subdomain if subdomain is not None else "example"
-            base_url = "https://{subdomain}.zulipchat.com/api/v1".format(subdomain=_subdomain)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{subdomain}.zulipchat.com/api/v1",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{subdomain}.zulipchat.com/api/v1")
+            if base_url is None:
+                base_url = _url_template.format(subdomain=_subdomain)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             username=username,
@@ -335,7 +340,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if subdomain is not None:
             _subdomain = subdomain if subdomain is not None else "example"
-            base_url = "https://{subdomain}.zulipchat.com/api/v1".format(subdomain=_subdomain)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{subdomain}.zulipchat.com/api/v1",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{subdomain}.zulipchat.com/api/v1")
+            if base_url is None:
+                base_url = _url_template.format(subdomain=_subdomain)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             username=username,

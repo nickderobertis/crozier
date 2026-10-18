@@ -4,12 +4,19 @@ import typing
 
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from .scheduled_message_to import ScheduledMessageTo
-from .scheduled_message_type import ScheduledMessageType
+from .scheduled_message_base_to import ScheduledMessageBaseTo
+from .scheduled_message_base_type import ScheduledMessageBaseType
 
 
 class ScheduledMessage(UniversalBaseModel):
-    scheduled_message_id: typing.Optional[int] = pydantic.Field(default=None)
+    topic: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Only present if `type` is `"stream"`.
+    
+    The topic for the channel message.
+    """
+
+    scheduled_message_id: int = pydantic.Field()
     """
     The unique ID of the scheduled message, which can be used to
     modify or delete the scheduled message.
@@ -18,12 +25,12 @@ class ScheduledMessage(UniversalBaseModel):
     after it is sent.
     """
 
-    type: typing.Optional[ScheduledMessageType] = pydantic.Field(default=None)
+    type: ScheduledMessageBaseType = pydantic.Field()
     """
     The type of the scheduled message. Either `"stream"` or `"private"`.
     """
 
-    to: typing.Optional[ScheduledMessageTo] = pydantic.Field(default=None)
+    to: ScheduledMessageBaseTo = pydantic.Field()
     """
     The scheduled message's tentative target audience.
     
@@ -32,32 +39,25 @@ class ScheduledMessage(UniversalBaseModel):
     target users' IDs.
     """
 
-    topic: typing.Optional[str] = pydantic.Field(default=None)
-    """
-    Only present if `type` is `"stream"`.
-    
-    The topic for the channel message.
-    """
-
-    content: typing.Optional[str] = pydantic.Field(default=None)
+    content: str = pydantic.Field()
     """
     The content/body of the scheduled message, in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format.
     
     See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
     """
 
-    rendered_content: typing.Optional[str] = pydantic.Field(default=None)
+    rendered_content: str = pydantic.Field()
     """
     The content/body of the scheduled message rendered in HTML.
     """
 
-    scheduled_delivery_timestamp: typing.Optional[int] = pydantic.Field(default=None)
+    scheduled_delivery_timestamp: int = pydantic.Field()
     """
     The UNIX timestamp for when the message will be sent
     by the server, in UTC seconds.
     """
 
-    failed: typing.Optional[bool] = pydantic.Field(default=None)
+    failed: bool = pydantic.Field()
     """
     Whether the server has tried to send the scheduled message
     and it failed to successfully send.

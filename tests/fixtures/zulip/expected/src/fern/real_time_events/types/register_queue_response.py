@@ -109,8 +109,8 @@ from .register_queue_response_user_topics_item import RegisterQueueResponseUserT
 
 
 class RegisterQueueResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     queue_id: typing.Optional[str] = pydantic.Field(default=None)
     """

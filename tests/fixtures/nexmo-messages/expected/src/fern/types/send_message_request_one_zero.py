@@ -3,16 +3,27 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.serialization import FieldMetadata
 from .base_message_type import BaseMessageType
-from .channel_options_mms import ChannelOptionsMms
+from .channel_options_mms_channel import ChannelOptionsMmsChannel
+from .from_number import FromNumber
 from .image_message_type import ImageMessageType
 from .send_message_request_one_zero_image import SendMessageRequestOneZeroImage
+from .to_number import ToNumber
 
 
-class SendMessageRequestOneZero(ChannelOptionsMms, BaseMessageType):
-    image: typing.Optional[SendMessageRequestOneZeroImage] = None
-    message_type: typing.Optional[ImageMessageType] = pydantic.Field(default=None)
+class SendMessageRequestOneZero(BaseMessageType):
+    to: ToNumber
+    from_: typing_extensions.Annotated[FromNumber, FieldMetadata(alias="from"), pydantic.Field(alias="from")]
+    channel: ChannelOptionsMmsChannel = pydantic.Field()
+    """
+    The channel to send to. You must provide `mms` in this field
+    """
+
+    image: SendMessageRequestOneZeroImage
+    message_type: ImageMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `image` in this field
     """

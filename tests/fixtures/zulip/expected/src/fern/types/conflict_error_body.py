@@ -12,9 +12,9 @@ class ConflictErrorBody(UniversalBaseModel):
     name already exists.
     """
 
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
-    code: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
+    code: typing.Any
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

@@ -3,16 +3,27 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.serialization import FieldMetadata
 from .base_message_type import BaseMessageType
-from .channel_options_whatsapp import ChannelOptionsWhatsapp
+from .channel_options_whatsapp_channel import ChannelOptionsWhatsappChannel
+from .from_number import FromNumber
 from .send_message_request_two_four_video import SendMessageRequestTwoFourVideo
+from .to_number import ToNumber
 from .video_message_type import VideoMessageType
 
 
-class SendMessageRequestTwoFour(ChannelOptionsWhatsapp, BaseMessageType):
-    video: typing.Optional[SendMessageRequestTwoFourVideo] = None
-    message_type: typing.Optional[VideoMessageType] = pydantic.Field(default=None)
+class SendMessageRequestTwoFour(BaseMessageType):
+    to: ToNumber
+    from_: typing_extensions.Annotated[FromNumber, FieldMetadata(alias="from"), pydantic.Field(alias="from")]
+    channel: ChannelOptionsWhatsappChannel = pydantic.Field()
+    """
+    The channel to send to. You must provide `whatsapp` in this field
+    """
+
+    video: SendMessageRequestTwoFourVideo
+    message_type: VideoMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `video` in this field
     """
