@@ -1702,6 +1702,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             endpoint.pagination.is_some() || endpoint.extensions.pagination_declared
         }),
         ir.enum_type,
+        &ir.auth,
     ));
     // Fern's flat tree has no publishing identity, so its wrapper sends no
     // `SDK-Name`/`SDK-Version` headers.
@@ -3645,7 +3646,7 @@ fn scaffolding_files(pkg: &str, project_name: &str, layout: Layout) -> Vec<Gener
 /// [`client_wrapper_file`]) because Fern shapes it from the auth model. Fern
 /// ships `core/enum.py` (the `StrEnum` base) only when enums render as classes,
 /// so a literals SDK omits it.
-fn core_files(pkg: &str, paginated: bool, enum_type: EnumType) -> Vec<GeneratedFile> {
+fn core_files(pkg: &str, paginated: bool, enum_type: EnumType, auth: &Auth) -> Vec<GeneratedFile> {
     let mut files: Vec<GeneratedFile> = CORE_ASSETS
         .iter()
         .filter(|(rel, _)| *rel != "enum.py" || enum_type == EnumType::PythonEnums)
@@ -3653,6 +3654,8 @@ fn core_files(pkg: &str, paginated: bool, enum_type: EnumType) -> Vec<GeneratedF
             path: PathBuf::from(format!("src/{pkg}/core/{rel}")),
             contents: if paginated && *rel == "__init__.py" {
                 core_init_with_pagination(content)
+            } else if *rel == "http_client.py" {
+                http_client_with_auth_headers(content, auth)
             } else {
                 (*content).to_string()
             },
@@ -3668,6 +3671,33 @@ fn core_files(pkg: &str, paginated: bool, enum_type: EnumType) -> Vec<GeneratedF
         });
     }
     files
+}
+
+/// The empty `_AUTH_HEADERS` set the vendored `core/http_client.py` declares.
+const EMPTY_AUTH_HEADERS: &str = "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset()\n";
+
+/// `core/http_client.py` with `_AUTH_HEADERS` naming the header the SDK's
+/// credential travels in, lower-cased, so its logged requests redact it: an
+/// `apiKey` scheme's own header, `authorization` for a bearer or basic
+/// credential, and none for an unauthenticated API.
+fn http_client_with_auth_headers(asset: &str, auth: &Auth) -> String {
+    let header = match auth {
+        Auth::ApiKey { header, .. } => Some(header.to_ascii_lowercase()),
+        Auth::Bearer { .. } | Auth::Basic { .. } => Some("authorization".to_owned()),
+        Auth::None => None,
+    };
+    debug_assert!(
+        asset.contains(EMPTY_AUTH_HEADERS),
+        "core/http_client.py asset no longer carries {EMPTY_AUTH_HEADERS:?}"
+    );
+    match header {
+        Some(header) => asset.replacen(
+            EMPTY_AUTH_HEADERS,
+            &format!("_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({{{}}})\n", literal_enum_value(&header)),
+            1,
+        ),
+        None => asset.to_owned(),
+    }
 }
 
 /// `core/__init__.py` with the two pager names spliced into its three sorted
