@@ -6718,6 +6718,17 @@ class FernApi:
         -------
         typing.Iterator[bytes]
             200 response for get_guild_widget_png
+
+        Examples
+        --------
+        from fern import FernApi
+
+        client = FernApi(
+            api_key="YOUR_API_KEY",
+        )
+        client.get_guild_widget_png(
+            guild_id="guild_id",
+        )
         """
         with self._raw_client.get_guild_widget_png(guild_id, style=style, request_options=request_options) as r:
             yield from r.data
@@ -17298,6 +17309,25 @@ class AsyncFernApi:
         -------
         typing.AsyncIterator[bytes]
             200 response for get_guild_widget_png
+
+        Examples
+        --------
+        import asyncio
+
+        from fern import AsyncFernApi
+
+        client = AsyncFernApi(
+            api_key="YOUR_API_KEY",
+        )
+
+
+        async def main() -> None:
+            await client.get_guild_widget_png(
+                guild_id="guild_id",
+            )
+
+
+        asyncio.run(main())
         """
         async with self._raw_client.get_guild_widget_png(guild_id, style=style, request_options=request_options) as r:
             async for _chunk in r.data:

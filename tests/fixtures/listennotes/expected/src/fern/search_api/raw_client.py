@@ -10,6 +10,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.bad_request_error import BadRequestError
+from ..errors.server_error import ServerError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.related_searches_response import RelatedSearchesResponse
@@ -94,6 +95,18 @@ class RawSearchApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -285,6 +298,18 @@ class RawSearchApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -364,6 +389,18 @@ class RawSearchApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -436,6 +473,18 @@ class RawSearchApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -534,6 +583,18 @@ class RawSearchApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -617,6 +678,18 @@ class AsyncRawSearchApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -808,6 +881,18 @@ class AsyncRawSearchApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -887,6 +972,18 @@ class AsyncRawSearchApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -959,6 +1056,18 @@ class AsyncRawSearchApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -1056,6 +1165,18 @@ class AsyncRawSearchApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:

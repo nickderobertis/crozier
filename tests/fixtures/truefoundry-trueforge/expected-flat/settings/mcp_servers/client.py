@@ -3,7 +3,9 @@
 import typing
 
 from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ...core.pagination import AsyncPager, SyncPager
 from ...core.request_options import RequestOptions
+from ...types.configured_mcp_server import ConfiguredMcpServer
 from ...types.get_mcp_server_response import GetMcpServerResponse
 from ...types.list_mcp_servers_response import ListMcpServersResponse
 from ...types.mcp_server_manifest import McpServerManifest
@@ -34,7 +36,7 @@ class McpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListMcpServersResponse:
+    ) -> SyncPager[ConfiguredMcpServer, ListMcpServersResponse]:
         """
         Paginated MCP servers with auth_status. Header secrets are redacted.
 
@@ -51,7 +53,7 @@ class McpServersClient:
 
         Returns
         -------
-        ListMcpServersResponse
+        SyncPager[ConfiguredMcpServer, ListMcpServersResponse]
             Paginated MCP servers
 
         Examples
@@ -62,10 +64,14 @@ class McpServersClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.settings.mcp_servers.list()
+        response = client.settings.mcp_servers.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
-        return _response.data
+        return self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
 
     def create(
         self, *, manifest: McpServerManifest, request_options: typing.Optional[RequestOptions] = None
@@ -197,7 +203,7 @@ class AsyncMcpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListMcpServersResponse:
+    ) -> AsyncPager[ConfiguredMcpServer, ListMcpServersResponse]:
         """
         Paginated MCP servers with auth_status. Header secrets are redacted.
 
@@ -214,7 +220,7 @@ class AsyncMcpServersClient:
 
         Returns
         -------
-        ListMcpServersResponse
+        AsyncPager[ConfiguredMcpServer, ListMcpServersResponse]
             Paginated MCP servers
 
         Examples
@@ -230,13 +236,18 @@ class AsyncMcpServersClient:
 
 
         async def main() -> None:
-            await client.settings.mcp_servers.list()
+            response = await client.settings.mcp_servers.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
-        return _response.data
+        return await self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
 
     async def create(
         self, *, manifest: McpServerManifest, request_options: typing.Optional[RequestOptions] = None
