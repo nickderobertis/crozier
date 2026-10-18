@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "e8cd8196fa4524d1f7a295c27e33d3aa1a126344438fd293521513e3694243af"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "4c76c2e568636a846794be43b0ef0af7ae7476a911231e3f410693b6f4f34112"
 
 [[covers]]
 key = "patch-inline-nullable-unrequired-props-omit"

@@ -72,8 +72,8 @@ class FernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("VAULT_KEEPER"),
-        pass_phrase: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("VAULT_PASS_PHRASE"),
+        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+        pass_phrase: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -85,8 +85,10 @@ class FernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        username = username if username is not None else os.getenv("VAULT_KEEPER")
         if username is None:
             raise ApiError(body="The client must be instantiated be either passing in username or setting VAULT_KEEPER")
+        pass_phrase = pass_phrase if pass_phrase is not None else os.getenv("VAULT_PASS_PHRASE")
         if pass_phrase is None:
             raise ApiError(
                 body="The client must be instantiated be either passing in pass_phrase or setting VAULT_PASS_PHRASE"
@@ -227,8 +229,8 @@ class AsyncFernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("VAULT_KEEPER"),
-        pass_phrase: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("VAULT_PASS_PHRASE"),
+        username: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
+        pass_phrase: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -240,8 +242,10 @@ class AsyncFernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        username = username if username is not None else os.getenv("VAULT_KEEPER")
         if username is None:
             raise ApiError(body="The client must be instantiated be either passing in username or setting VAULT_KEEPER")
+        pass_phrase = pass_phrase if pass_phrase is not None else os.getenv("VAULT_PASS_PHRASE")
         if pass_phrase is None:
             raise ApiError(
                 body="The client must be instantiated be either passing in pass_phrase or setting VAULT_PASS_PHRASE"

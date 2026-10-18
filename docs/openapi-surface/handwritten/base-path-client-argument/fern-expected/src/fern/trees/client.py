@@ -45,7 +45,7 @@ class TreesClient:
         from fern import FernApi
 
         client = FernApi(
-            "spring",
+            season="spring",
         )
         client.trees.plant_tree(
             variety="variety",
@@ -91,7 +91,7 @@ class AsyncTreesClient:
         from fern import AsyncFernApi
 
         client = AsyncFernApi(
-            "spring",
+            season="spring",
         )
 
 

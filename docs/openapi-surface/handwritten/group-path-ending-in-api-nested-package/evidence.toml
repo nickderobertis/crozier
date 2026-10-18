@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "7faffd6b5701f8a6945ef502737710d81bd52f1eaec95e447ac789ee2e333ee6"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "9d6dc52ddb1d42729c6b754cffe83858b27347fa8a71595977f707068975f0d6"
 
 [[covers]]
 key = "group-path-ending-in-api-nested-package"

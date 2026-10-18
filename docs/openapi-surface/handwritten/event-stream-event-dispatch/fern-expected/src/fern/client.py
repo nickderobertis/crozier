@@ -288,7 +288,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.watch_movements(
+            response = client.watch_movements(
                 route_id="routeId",
             )
             async for chunk in response:
@@ -329,7 +329,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.watch_gangway(
+            response = client.watch_gangway(
                 terminal_id="terminalId",
             )
             async for chunk in response:

@@ -253,7 +253,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.tail_logs()
+            response = client.tail_logs()
             async for chunk in response:
                 yield chunk
 

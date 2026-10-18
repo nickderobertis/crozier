@@ -91,7 +91,7 @@ class AsyncSailsClient:
 
 
         async def main() -> None:
-            response = await client.sails.stream_rotations()
+            response = client.sails.stream_rotations()
             async for chunk in response:
                 yield chunk
 

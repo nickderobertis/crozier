@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "7b2ad56c263999b4c21931165889fe3850c894b4833a7fb94858e0d0e5b119e9"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "ecb272c7d3d601e238d24ac6e89e37a4ac37aba0784153db2893b136279b72cc"
 
 [[covers]]
 key = "fern-streaming-condition-union-body"

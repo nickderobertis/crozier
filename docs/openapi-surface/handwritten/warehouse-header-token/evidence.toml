@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "26474d9ef1a83e6382b478286d89fac24854202b47730b9c13f632261b8d8895"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "9ea3d5305dfbbf9769c6fc59badce167c470e6737a024ab1ec0e078c68f12cd6"
 
 [[covers]]
 key = "global-headers-extension"

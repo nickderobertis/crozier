@@ -99,7 +99,7 @@ class AsyncStationsClient:
 
 
         async def main() -> None:
-            response = await client.stations.follow_levels(
+            response = client.stations.follow_levels(
                 station_id="stationId",
             )
             async for chunk in response:

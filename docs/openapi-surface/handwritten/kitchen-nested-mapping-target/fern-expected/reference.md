@@ -19,9 +19,7 @@ client = FernApi(
 )
 
 client.fire_ticket(
-    request=Course_Grill(
-        grill=,
-    ),
+    request=Course_Grill(),
 )
 
 ```

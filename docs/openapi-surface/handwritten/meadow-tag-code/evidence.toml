@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "115d31be83b1dc590015ae4c5bcdcb423526d3794715303ad8acf5e1644c0862"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "4211b745c34394fb5eca3a1dafe9cdd0579a416d37195b9ddf44cd3fbf9d9f66"
 
 [[covers]]
 key = "format-uuid"

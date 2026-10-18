@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "63e11d8c1ba20e9ff86db4db5bfe86ffab66d7450add51f7749b0f7f1dbf6139"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "00db43b83e941051329a6672475c9baa772b9ca1b82d851575a9e8b993bd2b38"
 
 [[covers]]
 key = "parameter-style-form-query-object"

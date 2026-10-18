@@ -58,7 +58,7 @@ class FernApi:
     from fern import FernApi
 
     client = FernApi(
-        "night",
+        cycle="night",
     )
     """
 
@@ -124,7 +124,7 @@ class FernApi:
         from fern import FernApi
 
         client = FernApi(
-            "night",
+            cycle="night",
         )
         client.list_signals()
         """
@@ -198,7 +198,7 @@ class AsyncFernApi:
     from fern import AsyncFernApi
 
     client = AsyncFernApi(
-        "night",
+        cycle="night",
     )
     """
 
@@ -264,7 +264,7 @@ class AsyncFernApi:
         from fern import AsyncFernApi
 
         client = AsyncFernApi(
-            "night",
+            cycle="night",
         )
 
 

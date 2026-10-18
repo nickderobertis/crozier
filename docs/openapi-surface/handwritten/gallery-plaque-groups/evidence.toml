@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "8813c6cc01d87bce3b5b479e9fdccf4e0285313656adc54f998ecbad45420ed8"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "47e8dac3ee4d09ed66c6b7cc0fa4c050b745a851567c78ed1f0efa4c880d52ff"
 
 [[covers]]
 key = "camel-case-tag-group-and-prefix"

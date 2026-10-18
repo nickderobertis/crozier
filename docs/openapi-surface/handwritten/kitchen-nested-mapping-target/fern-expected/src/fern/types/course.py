@@ -7,20 +7,21 @@ import typing
 import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
-from .grill_course import GrillCourse
 
 
 class Course_Grill(UniversalBaseModel):
-    value: GrillCourse
     station: typing.Literal["grill"] = "grill"
+    doneness: typing.Optional[str] = None
+    count: typing.Optional[int] = None
 
     if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(frozen=True)
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
     else:
 
         class Config:
             frozen = True
             smart_union = True
+            extra = pydantic.Extra.allow
 
 
 class Course_Pastry(UniversalBaseModel):

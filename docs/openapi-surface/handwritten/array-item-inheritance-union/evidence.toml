@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "164f364baae25692b0a697685ef1e4a5d0d50ebe0e0d6c140cbac7ea5fd6722a"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "34bf26586257494fbc9740f0246855ad3e664b0a5c8c857d1f1a26a7aea662e9"
 
 [[covers]]
 key = "array-item-inheritance-union"

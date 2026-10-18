@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "3a6a6885257eb77175f0cd9f60f8f8cf4997eeb646aa9c4db1cc2bdc5287ccce"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "ffe1e2614d77e04ad52cc38aec7687a30d45e3bb2452c76fcfa6e9717e23c3bc"
 
 [[covers]]
 key = "oneof-duplicate-members-collapsed"

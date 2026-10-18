@@ -8,6 +8,7 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .types import (
         Course,
+        CourseGrill,
         Course_Grill,
         Course_Pastry,
         GrillCourse,
@@ -23,6 +24,7 @@ if typing.TYPE_CHECKING:
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
     "Course": ".types",
+    "CourseGrill": ".types",
     "Course_Grill": ".types",
     "Course_Pastry": ".types",
     "DefaultAioHttpClient": "._default_clients",
@@ -62,6 +64,7 @@ def __dir__():
 __all__ = [
     "AsyncFernApi",
     "Course",
+    "CourseGrill",
     "Course_Grill",
     "Course_Pastry",
     "DefaultAioHttpClient",

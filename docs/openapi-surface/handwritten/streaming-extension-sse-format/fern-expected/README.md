@@ -61,9 +61,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.subscribe_readings(
-        sensor_id="sensorId",
-    )
+    async for chunk in client.subscribe_readings(...):
+        print(chunk)
 
 
 asyncio.run(main())

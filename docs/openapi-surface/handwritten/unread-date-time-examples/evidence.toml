@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "7e2cbe7025786dc8d1cb6daaf171eb8b9837241c08cc19ae9ec6227913675021"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "00bca12cc969e2ca25ce0cc5105002171d5be1075a67f90eb65cb1d8ee2bb08b"
 
 [[covers]]
 key = "unread-date-time-example"

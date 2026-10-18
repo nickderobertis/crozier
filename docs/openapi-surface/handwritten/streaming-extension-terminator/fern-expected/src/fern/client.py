@@ -255,7 +255,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.follow_build_log(
+            response = client.follow_build_log(
                 build_id="buildId",
             )
             async for chunk in response:

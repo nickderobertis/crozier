@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "99828329ae21ffe96af0bd406f8a89e3f1b4071f2c246d46ca1321d492375736"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "a39ac9420e7125c491cbfa7ba96e8d9b678a06424e89876b08fa5a35540aad1e"
 
 [[covers]]
 key = "operation-id-all-caps-tag-split-prefix"
