@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.122](https://github.com/nickderobertis/crozier/compare/v0.0.121...v0.0.122) - 2026-10-18
+
+### Fixed
+
+- *(parity)* match Fern's documentation examples and record crozier's richer ones ([#533](https://github.com/nickderobertis/crozier/pull/533))
+
 ## [0.0.121](https://github.com/nickderobertis/crozier/compare/v0.0.120...v0.0.121) - 2026-10-17
 
 ### Fixed
