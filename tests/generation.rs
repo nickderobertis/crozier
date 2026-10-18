@@ -15910,3 +15910,98 @@ fn parameter_lifting_controls_render_through_the_public_boundary() {
         }
     }
 }
+
+/// Every `marina-*` examples-docs case, rendered in-process and compared whole
+/// with its certified Fern tree through the departure engine, the source
+/// document given: the component, empty-array, union-item and map examples, the
+/// flattened and nullable-member parameter docs and the omitted query arrays
+/// match byte for byte, and each catalogued departure applies only where its
+/// case declares it. One unexplained byte beside each still fails.
+#[test]
+fn examples_docs_cases_render_to_their_certified_trees() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("docs/fern-measurements/examples-docs");
+    let mut cases: Vec<String> = std::fs::read_dir(&root)
+        .unwrap()
+        .filter_map(Result::ok)
+        .map(|entry| entry.file_name().to_string_lossy().into_owned())
+        .filter(|name| name.starts_with("marina-"))
+        .collect();
+    cases.sort();
+    assert_eq!(cases.len(), 12, "{cases:?}");
+    let mut departures: Vec<String> = Vec::new();
+    for case in &cases {
+        let (document, enum_type) = match case.strip_suffix("-literals") {
+            Some(base) => (base, crozier::settings::EnumType::Literals),
+            None => (case.as_str(), crozier::settings::EnumType::PythonEnums),
+        };
+        let spec = root.join(document).join("openapi.yml");
+        let rendered: HashMap<String, String> = render_files(GenerateArgs {
+            spec: spec.clone(),
+            output: PathBuf::from("unused"),
+            package_name: Some("fern".to_string()),
+            project_name: Some("default_package_name".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: false,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+            layout: crozier::settings::Layout::Packaged,
+        })
+        .expect("render succeeds")
+        .into_iter()
+        .map(|f| (f.path.to_string_lossy().replace('\\', "/"), f.contents))
+        .collect();
+        let golden = root.join(case).join("fern-expected");
+        let out = tempfile::tempdir().expect("rendered tree");
+        for (rel, text) in &rendered {
+            let path = out.path().join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, text).unwrap();
+        }
+        let context = crozier::departures::Context::from_trees(&golden, out.path())
+            .with_source_document(crozier::openapi::load(&spec).unwrap());
+        let expected: std::collections::BTreeSet<String> = crozier::parity::walk_files(&golden)
+            .unwrap()
+            .into_iter()
+            .collect();
+        let generated: std::collections::BTreeSet<String> = rendered.keys().cloned().collect();
+        assert_eq!(expected, generated, "{case}: the file sets differ");
+        for rel in &expected {
+            let reference = std::fs::read_to_string(golden.join(rel)).unwrap();
+            let compared =
+                crozier::parity::compare_file(&context, rel, &rendered[rel], &reference).unwrap();
+            assert!(compared.matches(), "{case} {rel}: {:?}", compared.diff());
+            departures.extend(compared.departures.iter().map(|d| d.id.to_string()));
+            // One unexplained byte on Fern's side of a line that differs, or
+            // of the first example line where none does, still fails.
+            if let Some(line) = reference
+                .lines()
+                .find(|line| line.contains("=\"") && line.trim_end().ends_with(','))
+            {
+                let perturbed = reference.replacen(line, &line.replacen("=\"", "=\"x", 1), 1);
+                assert!(
+                    !crozier::parity::compare_file(&context, rel, &rendered[rel], &perturbed)
+                        .unwrap()
+                        .matches(),
+                    "{case} {rel}: a perturbed `{line}` still matched"
+                );
+            }
+        }
+    }
+    departures.sort();
+    departures.dedup();
+    for id in [
+        "anyof-path-param-schema-example",
+        "collapsed-anyof-property-description",
+        "emoji-tag-reference-identifiers",
+        "optional-lowered-required-query-array-example",
+        "text-response-optional-query-examples",
+    ] {
+        assert!(
+            departures.iter().any(|applied| applied == id),
+            "{id}: {departures:?}"
+        );
+    }
+}

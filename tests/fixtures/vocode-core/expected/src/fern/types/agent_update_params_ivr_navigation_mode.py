@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .agent_update_params_ivr_navigation_mode_zero import AgentUpdateParamsIvrNavigationModeZero
+from .undefined import Undefined
+
+AgentUpdateParamsIvrNavigationMode = typing.Union[AgentUpdateParamsIvrNavigationModeZero, Undefined]

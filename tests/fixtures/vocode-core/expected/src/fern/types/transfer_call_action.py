@@ -1,0 +1,24 @@
+
+
+import typing
+
+import pydantic
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
+from .transfer_call_action_action_trigger import TransferCallActionActionTrigger
+from .transfer_call_config import TransferCallConfig
+
+
+class TransferCallAction(UniversalBaseModel):
+    id: str
+    user_id: str
+    config: TransferCallConfig
+    action_trigger: typing.Optional[TransferCallActionActionTrigger] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow

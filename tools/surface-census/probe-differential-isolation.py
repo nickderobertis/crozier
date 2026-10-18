@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import io
 import re
 import sys
 from pathlib import Path
@@ -180,4 +181,8 @@ def main(argv: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     sys.exit(main(sys.argv[1:]))

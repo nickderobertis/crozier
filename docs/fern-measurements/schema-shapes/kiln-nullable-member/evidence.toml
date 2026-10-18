@@ -1,0 +1,7 @@
+fern_cli_version = "5.67.1"
+fern_python_sdk_version = "5.20.0"
+digest = "772d4951497a55c24d5424fc0ecbe1b508a5e4c9ecd13c3b8d78c03cbfe1c25b"
+
+source_digest = "78d2d77b77651154a0f7a5de48426949d1eef557ff3a2699236bd5a0a959db0b"
+reason = "Registered goldens reach the nullable arm `src/ir.rs::Builder::variant_ref`; this fixture no longer claims a handwritten coverage gap."
+regression = "A union member that is a nullable composition, complete bidirectional SDK comparison in both enum modes, and adjacent unexplained mismatch rejection."

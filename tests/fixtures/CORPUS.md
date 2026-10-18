@@ -1731,3 +1731,137 @@ golden this row adds. The witness search that found both is
 The repairs: `openapi::normalize_comment_close_descriptions` breaks every `*/`
 in a description as Fern does, and `emit::generate` writes no `README.md` in a
 flat tree whose document has no call to demonstrate.
+
+## Row 2800 — a publisher's hosted-API document whose comparison now matches
+
+Vocode's Hosted API, the document its publisher ships in `vocodedev/vocode-core`,
+was screened as a blocked witness and compared again on the finished generator:
+every certified public client method and resource accessor is exposed, including
+`buy_number`, and its flattened request types, their exports and the flattened
+variants' `action_trigger` references match Fern's output with only catalogued
+departures. Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#vocode).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2800 | `vocode-core` | github-raw | https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json | `e054c33a72787b6a4920f91eb8598ad0bafb4240` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | Vocode's Hosted API: account connections, actions, agents, calls, numbers, prompts, usage, vector databases, voices and webhooks, with flattened request bodies whose variants reference shared `action_trigger` schemas |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2800 | `vocode-core` | flattened request types and their variants' `action_trigger` references | ✅ byte-matched with no repair of its own |
+
+## Row 2801 — a storefront document with an emoji-bearing tag
+
+The Lunar storefront API its publisher ships in `dystcz/dystore-api` tags a
+group of operations `⚠️ Not supported yet`. Fern's `reference.md` spells that
+group with the raw emoji in its calls, links and imports, which no Python
+identifier admits, while crozier documents the identifier-safe
+`not_supported_yet` its code defines: the catalogued
+`emoji-tag-reference-identifiers` departure. Every other file matches Fern's
+output byte for byte.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#dystore).
+The document declares no `info.license`; the repository's `LICENSE.md` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2801 | `dystore-api` | github-raw | https://raw.githubusercontent.com/dystcz/dystore-api/ffd4d907e6909b0e2b137a490765e144e8d537e7/openapi.yaml | `ffd4d907e6909b0e2b137a490765e144e8d537e7` | MIT (the publisher repository's own `LICENSE.md`; the document declares no `info.license`) | committed | The Lunar storefront API (accounts, addresses, carts, collections, customers, media, orders, products, shipping options), whose `⚠️ Not supported yet` tag groups operations under an emoji-bearing name |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2801 | `dystore-api` | an emoji-bearing tag documented by its identifier-safe client attribute (`emoji-tag-reference-identifiers`) | ✅ byte-matched; its one difference is the catalogued departure |
+
+## Row 2802 — an agent-server document with union-item examples
+
+The LangSmith Deployment agent-server API its publisher ships in
+`langchain-ai/docs`. Its `POST /a2a/{assistant_id}` example holds items of an
+inline `oneOf` of titled objects each tagged by a one-value `kind` enum, which
+crozier now renders, as Fern does, as the union's variant constructors. The
+required `assistant_id` property, an `anyOf` of two strings that both collapse
+to `str`, keeps its declared description in crozier's docstrings and
+`reference.md` where Fern writes none: the catalogued
+`collapsed-anyof-property-description` departure. Its streaming methods' `reference.md`
+headings take the catalogued `stream-reference-return-type` correction.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#langchain).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2802 | `langchain-agent-server` | github-raw | https://raw.githubusercontent.com/langchain-ai/docs/264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e/src/langsmith/agent-server-openapi.json | `264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The LangSmith Deployment agent-server API (assistants, threads, thread and stateless runs, crons, store, streaming, system, A2A, MCP), whose A2A request example holds `kind`-tagged union items and whose run and cron bodies declare `assistant_id` as a two-string `anyOf` |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2802 | `langchain-agent-server` | union-item request examples rendered as variant constructors; a collapsed two-string `anyOf` property keeping its description (`collapsed-anyof-property-description`) | ✅ byte-matched after this node's repair; its other differences are catalogued departures |
+
+## Row 2803 — a lab-control document with nullable and query-array parameters
+
+The Rice Shower low-temperature control API its publisher ships in
+`Q2TM/low-temperature-control`. `createSystem`'s inline body property
+`location` is a nullable `anyOf` whose string member carries the description;
+crozier now writes that description in the docstrings and `reference.md`, as
+Fern does. The metrics queries' required `channels` array is lowered to an
+optional parameter and left out of the usage examples on both sides.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#rice-shower).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2803 | `rice-shower` | github-raw | https://raw.githubusercontent.com/Q2TM/low-temperature-control/b100b3633a68a41ba63181379455e98b4814da19/apps/rice-shower/docs/openapi.yaml | `b100b3633a68a41ba63181379455e98b4814da19` | MIT (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The Rice Shower low-temperature control API (experiments, query, scrape, systems), whose `createSystem` body declares a nullable described `anyOf` property and whose metrics queries require a number-array `channels` parameter |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2803 | `rice-shower` | a nullable `anyOf` member's description documented on its property; a required query array lowered to an optional parameter | ✅ byte-matched after this node's repairs |
+
+## Row 2804 — a management API with component-level body examples
+
+The Supabase Management API v1 its publisher ships in `supabase/supabase`.
+Its request-body components carry component-level `example`s (object,
+top-level array and form-urlencoded bodies, and a map of objects), which
+crozier now writes into its snippets as Fern does; `reference.md` documents the
+JSON function bodies offered beside a binary media type by their inlined
+properties, as the generated signatures take them. Two documentation
+differences remain, each a catalogued departure: the `anyOf` path parameter
+`branch_id_or_ref` keeps its schema-level example
+(`anyof-path-param-schema-example`), and the text-only branch diff operation
+keeps its optional query parameters' examples
+(`text-response-optional-query-examples`). The function-deploy docstrings take
+the catalogued `multipart-object-required-file-example` correction.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#supabase).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2804 | `supabase-api-v1` | github-raw | https://raw.githubusercontent.com/supabase/supabase/36371de15127206280d2d40786e8578dfe1b681a/apps/docs/spec/api_v1_openapi.json | `36371de15127206280d2d40786e8578dfe1b681a` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The Supabase Management API v1 (projects, branches and environments, auth, database, edge functions, secrets, OAuth, organizations, billing and more), whose request-body components carry component-level examples and whose function bodies offer JSON beside a binary media type |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2804 | `supabase-api-v1` | component-level request-body examples; JSON-beside-binary body parameters in `reference.md`; map-of-objects examples; an `anyOf` path parameter's schema example (`anyof-path-param-schema-example`); a text-response operation's optional query examples (`text-response-optional-query-examples`) | ✅ byte-matched after this node's repairs; its other differences are catalogued departures |
+
+## Row 2805 — a posting API whose first named example holds an empty array
+
+The RTA in Japan Twitter API its publisher ships in
+`RTAinJapan/rta-in-japan-twitter-api-docs`. The first named request example of
+`POST /statuses/update` holds an empty `media_ids` array while the property's
+schema declares an example; crozier now fills it from that schema example, as
+Fern does.
+Its screening record is
+[`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#twitter).
+The document declares no `info.license`; the repository's `LICENSE` at the
+pinned revision is the redistribution grant.
+
+| # | name | method | source | pinned ref | license | decision | shapes |
+|---:|---|---|---|---|---|---|---|
+| 2805 | `rta-in-japan-twitter` | github-raw | https://raw.githubusercontent.com/RTAinJapan/rta-in-japan-twitter-api-docs/b5b30318e41647d44795f85dbfc428da8e93739a/openapi.yaml | `b5b30318e41647d44795f85dbfc428da8e93739a` | Apache-2.0 (the publisher repository's own `LICENSE`; the document declares no `info.license`) | committed | The RTA in Japan Twitter API (statuses, media), whose `statuses/update` named request examples open with an empty `media_ids` array beside a property-level schema example |
+
+| # | name | the shape it witnesses | status |
+|---:|---|---|---|
+| 2805 | `rta-in-japan-twitter` | an empty array in the first named request example filled from the property's schema example | ✅ byte-matched after this node's repair |

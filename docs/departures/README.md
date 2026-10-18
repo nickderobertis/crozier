@@ -28,6 +28,18 @@ A departure of kind `fern-defect` is a place crozier corrects a defect under thi
 rule. Its entry says why Fern's output is wrong under it, and its evidence note
 shows it.
 
+## Richer documentation
+
+Where Fern's output is valid but documents less of the specification than
+crozier's, crozier may keep its own: a departure of kind `richer-documentation`.
+It admits only output where **both sides are valid** — every documented call
+binds to the generated signature, every value is valid for its schema — and
+**crozier's documents more of what the specification declares**: an example or
+description the document itself states, never a value crozier synthesizes.
+Where crozier's only addition would be a placeholder, it matches Fern instead.
+The entry's evidence note shows the specification's own declared example or
+description and its validity for the schema it documents.
+
 ## What an entry holds
 
 | Key | Holds |
@@ -44,7 +56,9 @@ Each entry's **rule** is the function of the same id in
 [`src/departures.rs`](../../src/departures.rs). It recognises exactly Fern's
 construct and crozier's replacement in a pair of files, in one of three shapes:
 a region of the pair found from the files' structure, an aligned pair of lines,
-or a line only crozier writes. An entry without a rule, or a rule without an
+or a line only crozier writes — recognised from its text alone, or from its
+position among crozier's lines where its meaning depends on its neighbours (an
+item of a wrapped list argument, a line of a docstring). An entry without a rule, or a rule without an
 entry, fails the catalog's validation, as does an id out of order or repeated,
 an empty field, or evidence outside `docs/departures/evidence/`.
 
@@ -169,11 +183,21 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 20 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 21 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
+| `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
+
+### `anyof-path-param-schema-example`
+
+- **Kind:** `richer-documentation`
+- **Trigger:** A path parameter whose schema is an inline anyOf or oneOf composition declaring a string schema-level example: the worked examples of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The parameter's own name as its placeholder value (branch_id_or_ref="branch_id_or_ref").
+- **crozier writes:** The composition's declared example (branch_id_or_ref="abcdefghijklmnopqrst"). Every other argument and line is retained.
+- **Why:** Both calls bind and are valid strings for the parameter's str annotation; crozier's passes the value the specification itself declares as the parameter's example, which its composition admits, where Fern's passes a placeholder the specification never declares.
+- **Evidence:** [`docs/departures/evidence/anyof-path-param-schema-example.md`](../../docs/departures/evidence/anyof-path-param-schema-example.md)
 
 ### `binary-json-body-example`
 
@@ -202,6 +226,15 @@ when the two differ.
 - **Why:** An example value invalid for its own schema: such an object admits no key holding the string `"value"`, so validating `{"key": "value"}` against it fails, and a snippet sending it sends a body the API's own schema rejects.
 - **Evidence:** [`docs/departures/evidence/closed-empty-object-example.md`](../../docs/departures/evidence/closed-empty-object-example.md)
 
+### `collapsed-anyof-property-description`
+
+- **Kind:** `richer-documentation`
+- **Trigger:** An object property declaring a description beside an anyOf or oneOf of two or more inline non-null scalar alternatives, the first undescribed, which both sides type as the one scalar they share: its model field, its client.py and raw_client.py docstring parameter entry, and its reference.md row.
+- **Fern writes:** The property undocumented: the bare model field (assistant_id: str), a docstring entry with no description, and a reference.md row with no text after its type.
+- **crozier writes:** The property's description: the model field declared with pydantic.Field() and a docstring holding it, the docstring entry's description line, and the reference.md row's em-dash description. The type, the field's requiredness and every other line are retained.
+- **Why:** Both outputs type and validate the field identically; crozier's documents the description the specification declares on the property itself, where Fern's documents nothing about it.
+- **Evidence:** [`docs/departures/evidence/collapsed-anyof-property-description.md`](../../docs/departures/evidence/collapsed-anyof-property-description.md)
+
 ### `constant-header-docs-arguments`
 
 - **Kind:** `fern-defect`
@@ -228,6 +261,15 @@ when the two differ.
 - **crozier writes:** The const's own value, `"$PS1"`, as Fern's README and reference.md write it. Every other docstring line, the annotation and the request are retained.
 - **Why:** Evaluating the documented example yields `\$PS1`, a value the const does not admit, and the docstring contradicts Fern's own Markdown examples. The correction passes the only value the schema admits.
 - **Evidence:** [`docs/departures/evidence/docstring-literal-dollar-escape.md`](../../docs/departures/evidence/docstring-literal-dollar-escape.md)
+
+### `emoji-tag-reference-identifiers`
+
+- **Kind:** `fern-defect`
+- **Trigger:** A tag whose name holds a character no Python identifier admits, such as an emoji (⚠️ Not supported yet), which both sides' generated packages name by an identifier-safe module (not_supported_yet): the client calls, source links and imports of README.md and reference.md.
+- **Fern writes:** The tag's raw spelling in each (client.⚠️_not_supported_yet.get_orders(...), src/fern/⚠️_not_supported_yet/client.py, from fern.⚠️_not_supported_yet import ...), although its own package names the module not_supported_yet.
+- **crozier writes:** The identifier the generated package defines (client.not_supported_yet, src/fern/not_supported_yet/client.py, from fern.not_supported_yet import ...), with every other character of each line retained.
+- **Why:** The examples contradict the generated code: Python rejects the documented call with a SyntaxError for the invalid character before anything runs, the linked file does not exist, and no such module can be imported.
+- **Evidence:** [`docs/departures/evidence/emoji-tag-reference-identifiers.md`](../../docs/departures/evidence/emoji-tag-reference-identifiers.md)
 
 ### `empty-namespace-package`
 
@@ -310,6 +352,15 @@ when the two differ.
 - **Why:** The docs contradict the generated code: `reference.md` documents a type the method's signature does not have, and the documented call passes `None` items that the signature's `Sequence[T]` rejects.
 - **Evidence:** [`docs/departures/evidence/nullable-items-docs.md`](../../docs/departures/evidence/nullable-items-docs.md)
 
+### `optional-lowered-required-query-array-example`
+
+- **Kind:** `richer-documentation`
+- **Trigger:** A required query array parameter, which both signatures take as an optional argument, whose parameter or schema declares an array example, on an operation whose worked example Fern writes without required query arrays (a text/* success body, or a required query parameter exampled as an object or map): the worked examples of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The call without the parameter.
+- **crozier writes:** The call passing the declared example (channels=[1.0, 2.0] in a docstring, wrapped one item per line in reference.md). A parameter declaring no example is left out, as Fern leaves it.
+- **Why:** Both calls bind, since the argument is optional in both signatures; crozier's passes the value the specification declares for a parameter it marks required, and that value is valid for the array schema, where Fern's leaves the required input out of the example.
+- **Evidence:** [`docs/departures/evidence/optional-lowered-required-query-array-example.md`](../../docs/departures/evidence/optional-lowered-required-query-array-example.md)
+
 ### `pattern-narrowed-enum-example`
 
 - **Kind:** `fern-defect`
@@ -381,6 +432,15 @@ when the two differ.
 - **crozier writes:** The annotation the sync method declares, `-> typing.Iterator[T]` for its chunk type `T`.
 - **Why:** The docs contradict the generated code: `reference.md` documents a return type the method does not have, since iterating it yields parsed `T` chunks, never `bytes`.
 - **Evidence:** [`docs/departures/evidence/stream-reference-return-type.md`](../../docs/departures/evidence/stream-reference-return-type.md)
+
+### `text-response-optional-query-examples`
+
+- **Kind:** `richer-documentation`
+- **Trigger:** An operation whose successful responses answer only text/* content, with an optional query parameter whose parameter or schema declares an example: the worked examples of README.md, reference.md and each client.py docstring.
+- **Fern writes:** The call passing only the required arguments, since Fern builds no example from the document for a text/* success body.
+- **crozier writes:** The same call also passing each such optional parameter's declared example (included_schemas="public,auth", pgdelta="true"), as it and Fern both do for a JSON success body.
+- **Why:** Both calls bind; crozier's documents the values the specification declares for the operation's optional parameters, each valid for its schema, where Fern's drops them only because the success body is text.
+- **Evidence:** [`docs/departures/evidence/text-response-optional-query-examples.md`](../../docs/departures/evidence/text-response-optional-query-examples.md)
 
 ### `union-value-wrapper-docs-example`
 

@@ -120,20 +120,20 @@ split four ways:
 497 + 66 + 145 + 9 = 717.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 498 `golden` rows declare 1009 handling sites in
+same way. The 498 `golden` rows declare 1020 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`8c59295a6` over all 250 golden tests, with the records it links splits them
+`0dd7f9c77` over all 256 golden tests, with the records it links splits them
 three ways:
 
-- **883 are reached by a registered real specification.** A golden-only
+- **897 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
-- **118 are reached only by a hand-written fixture.** An arm-level cover
+- **115 are reached only by a hand-written fixture.** An arm-level cover
   in [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
   the arm, and crozier byte-matches the tree Fern generated from it. That is the
-  same weaker proof as the `handwritten` rows, so each of the 118 is still
-  one of the 126 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 49 read `exhausted`, 68 read `search-incomplete`
+  same weaker proof as the `handwritten` rows, so each of the 115 is still
+  one of the 123 [unreached arms](#every-unreached-arm-and-its-search-verdict).
+  The cited records of 49 read `exhausted`, 65 read `search-incomplete`
   and 1 read `config-gated`. The bounded replacement searches preserve their
   limits. The config-gated `discriminator-mapping` arm runs only under an
   audience filter, which no search probe sets.
@@ -154,14 +154,14 @@ three ways:
   ([Unproven arms, named](#unproven-arms-named)). `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-883 + 118 + 5 + 3 = 1009. Fourteen sites left the table with the two functions
+897 + 115 + 5 + 3 = 1020. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 118. Corpus row 223
+`composition-index-pointer` and is one of the 115. Corpus row 223
 (`nexmo-conversation`) rested on the same aggregation-only grant and is
 withdrawn too
 ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
@@ -194,8 +194,8 @@ gaps above.
 **Every remaining unproven scenario, named.** Nothing below counts as a
 real-specification match.
 
-- **Features no proof covers (10):** the 8 `FIXTURE` gaps and the 2 residual-only
-  `golden` rows above, each `not searched` or unattributable as stated there.
+- **Features no proof covers (9):** the 8 `FIXTURE` gaps and the 1 residual-only
+  `golden` row above, each `not searched` or unattributable as stated there.
 - **Output of a proven row that lands in an `unmatched` file (1):**
   `format-idn-hostname`'s `reference.md`. Its `client.py` and `raw_client.py`
   output is byte-matched on `short-io` and proven; the `reference.md` part is
@@ -203,21 +203,15 @@ real-specification match.
   ([the attribution](#golden-rows-resting-only-on-residual-goldens)).
 - **Arms no proof covers (3):** the 3 named gaps above, each `not searched`. No
   arm reads `search-incomplete`.
-- **Generator residuals the handed-off publisher witnesses still show:** every
-  hunk of their committed comparison diffs, attributed in
-  [`residuals.tsv`](fern-measurements/blocked-witnesses/residuals.tsv) to the
-  scenario shape whose construct it is, or to `unowned` where no scenario of the
-  plan covers it ([counts](#scenario-proof-index),
-  [causes](fern-measurements/blocked-witnesses/README.md)). No witness is
+- **Generator residuals the handed-off publisher witnesses still show:** none.
+  Every handed-off witness is registered with a byte-matching golden, so
+  [`residuals.tsv`](fern-measurements/blocked-witnesses/residuals.tsv) holds no
+  hunk ([counts](#scenario-proof-index),
+  [records](fern-measurements/blocked-witnesses/README.md)). No witness is
   registered while any hunk remains.
 - **Scenarios closed on their fixture with a real-witness residual on their
-  own trigger (2):** `text-response-drops-request-example` (Supabase's
-  text-only diff operation keeps optional query examples; owned by
-  `parity-examples-docs` as `text-response-optional-query-examples`) and
-  `union-member-nullability-dropped` (Supabase's nested hoisted nullable member
-  loses `Optional`; owned by `parity-schema-shapes` as
-  `nullable-nested-anyof-union-member`). Neither counts as fully closed; the
-  [index summary](#scenario-proof-index) names their `residuals.tsv` rows.
+  own trigger:** none; every scenario of the index is fully closed
+  ([the summary](#scenario-proof-index)).
 - **The two enum-mode measurements are closed in both modes:**
   `enum-header-params-stringified` sends each Python enum member's `.value`,
   and `enum-extension-names-dropped-under-literals` retains member descriptions
@@ -1671,10 +1665,10 @@ table, with this header and this column order:
 
 ## Parity repair proof index
 
-These 39 rows are the 27 generator categories, the base-path and string-map
-example gaps, the six additional scenarios the parameter fix closed, the union
-scenario whose Markdown example the union fix corrects, and the three
-clients-and-extensions scenarios whose correction is a Fern defect. Other
+These 44 rows are the 27 generator categories and the 17 scenarios later
+parity repairs closed: the base-path and string-map example gaps, the
+parameter fix's additional scenarios, and every scenario whose correction is a
+Fern defect. Other
 scenarios are not proof claims here. Each path is committed output from Fern CLI **5.67.1** with
 `fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
@@ -1732,6 +1726,7 @@ corrections the shared comparison engine applies. All other bytes must match.
 | allof-enum-ref-narrowed-by-scalar-member | Enum and scalar allOf alias rendering; pattern-invalid generated example corrected | Fern behaviour + Fern defect | `models-refs` | docs/openapi-surface/handwritten/measurement-phase/fern-expected; docs/fern-measurements/models-refs-literals/measurement-phase/fern-expected | `handwritten_fixtures_match_fern_goldens; remaining_model_shapes_match_the_certified_fern_trees` | `pattern-narrowed-enum-example` |
 | integer-example-beyond-double-precision | Integer examples beyond 2^53 written as their nearest double; an int64 example rounded past the format's range corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/odometer-reading/fern-expected; docs/fern-measurements/literals-mode/odometer-reading/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::int64_example_correction_explains_only_the_out_of_range_rounding` | `int64-example-rounded-out-of-range` |
 | literal-example-dollar-escaped-in-docstring | A `$`-holding const lowered to a one-value literal; the docstring example's added backslash corrected | Fern behaviour + Fern defect | `examples-docs` | docs/openapi-surface/handwritten/prompt-variable/fern-expected; docs/fern-measurements/literals-mode/prompt-variable/fern-expected | `handwritten_fixtures_match_fern_goldens; literals_mode_measurements_match_fern; examples_docs::dollar_docstring_correction_explains_only_the_declared_const` | `docstring-literal-dollar-escape` |
+| tag-name-not-an-identifier | Tag whose name holds a character no Python identifier admits, such as an emoji, packaged under an identifier-safe module; raw-character README and reference.md calls, links and imports corrected | Fern behaviour + Fern defect | `examples-docs` | docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected; tests/fixtures/dystore-api/expected | `examples_docs_measurements_match_fern; dystore_api_matches_fern_output` | `emoji-tag-reference-identifiers` |
 
 Additional boundaries of these rows are held by the same gate: the
 `empty-body-guard` row also uses
@@ -1830,11 +1825,10 @@ shapes: 160
 by kind: handwritten 139, measurement 2, real 14, refusal 5
 by owner: bodies-responses 20, clients-extensions 29, examples-docs 16, models-refs 21, parameters 16, prove-matches 30, streaming 13, unions 15
 by outcome: default=refuse;strict=refuse 5, departure 48, match 107
-closed with no open residual: 159
-closed on their proof with a residual open: 1
-  text-response-drops-request-example: supabase reference.md -647,0 +647,2; supabase src/fern/environments/client.py -396,0 +396,2, -1257,0 +1259,2 -> parity-examples-docs:text-response-optional-query-examples
-witnesses: differs 5
-witness hunks by owner: text-response-drops-request-example 3, unowned 151
+closed with no open residual: 160
+closed on their proof with a residual open: 0
+witnesses: registered 6
+witness hunks by owner: —
 ```
 
 ## The category rules
@@ -1958,7 +1952,7 @@ The six region files, read as one body of work. Two measurements feed it:
   acquires 265 sources (corpus rows through 332 and rows 1200, 1201, 1600, 2200,
   2201 and 2400, after the withdrawals of rows 224 and 223, with the
   `crozier-property-name` feature target), and the walk reads the
-  **250** registered sources, of which **250** carry a committed golden; the 17
+  **256** registered sources, of which **256** carry a committed golden; the 17
   others carry none and are acquisition
   evidence only.
   `document-paths`'s evidence cells are all re-transcribed from that walk. In
@@ -2447,33 +2441,33 @@ unreached by any Fern-accepted document.
 
 | rank | key | region | unreached sites | unreached regions | golden-only witnesses | boundary |
 |---|---|---|---|---|---|---|
-| 1 | `request-body-content` | `bodies-media` | **7** | **59** | **210** | open — real-specification witness search remains open |
-| 2 | `parameter-schema` | `parameters` | **5** | **100** | **205** | open — real-specification witness search remains open |
-| 3 | `allof` | `schemas` | **5** | **34** | **82** | open — real-specification witness search remains open |
-| 4 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
-| 5 | `discriminator-mapping` | `schemas` | **3** | **130** | **29** | open — real-specification witness search remains open |
+| 1 | `request-body-content` | `bodies-media` | **7** | **57** | **216** | open — real-specification witness search remains open |
+| 2 | `parameter-schema` | `parameters` | **4** | **78** | **211** | open — real-specification witness search remains open |
+| 3 | `ref-pointer-composition-index` | `schemas` | **4** | **52** | **2** | owned — first-pass search record below |
+| 4 | `allof` | `schemas` | **4** | **32** | **84** | open — real-specification witness search remains open |
+| 5 | `discriminator-mapping` | `schemas` | **3** | **130** | **30** | open — real-specification witness search remains open |
 | 6 | `oneof-anyof-variant` | `schemas` | **3** | **76** | **3** | open — real-specification witness search remains open |
-| 7 | `parameter-in-header` | `parameters` | **3** | **20** | **64** | open — real-specification witness search remains open |
+| 7 | `parameter-in-header` | `parameters` | **3** | **20** | **67** | open — real-specification witness search remains open |
 | 8 | `media-type-multipart` | `bodies-media` | **3** | **12** | **28** | open — real-specification witness search remains open |
-| 9 | `nullable` | `schemas` | **3** | **7** | **70** | open — real-specification witness search remains open |
-| 10 | `format-binary` | `schemas` | **3** | **5** | **41** | open — real-specification witness search remains open |
-| 11 | `oneof` | `schemas` | **2** | **142** | **83** | open — real-specification witness search remains open |
-| 12 | `media-type-event-stream` | `bodies-media` | **2** | **121** | **18** | open — real-specification witness search remains open |
-| 13 | `oneof-discriminated-union` | `schemas` | **2** | **119** | **39** | owned — first-pass search record below |
-| 14 | `anyof-discriminated-union` | `schemas` | **2** | **118** | **14** | owned — first-pass search record below |
+| 9 | `format-binary` | `schemas` | **3** | **5** | **44** | open — real-specification witness search remains open |
+| 10 | `oneof` | `schemas` | **2** | **122** | **86** | open — real-specification witness search remains open |
+| 11 | `media-type-event-stream` | `bodies-media` | **2** | **121** | **18** | open — real-specification witness search remains open |
+| 12 | `oneof-discriminated-union` | `schemas` | **2** | **119** | **42** | owned — first-pass search record below |
+| 13 | `anyof-discriminated-union` | `schemas` | **2** | **118** | **15** | owned — first-pass search record below |
+| 14 | `items-oneof-element` | `schemas` | **2** | **58** | **26** | owned — first-pass search record below |
 | 15 | `fern-streaming-extension` | `oas31-extensions` | **2** | **53** | **5** | open — real-specification witness search remains open |
-| 16 | `items-oneof-element` | `schemas` | **2** | **41** | **23** | owned — first-pass search record below |
-| 17 | `parameter-in-path` | `parameters` | **2** | **28** | **172** | open — real-specification witness search remains open |
-| 18 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **28** | **13** | open — real-specification witness search remains open |
-| 19 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
-| 20 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
+| 16 | `parameter-in-path` | `parameters` | **2** | **28** | **176** | open — real-specification witness search remains open |
+| 17 | `ref-pointer-undeclared-component-head` | `schemas` | **2** | **28** | **13** | open — real-specification witness search remains open |
+| 18 | `ref-pointer-nested-properties` | `schemas` | **2** | **10** | **3** | open — real-specification witness search remains open |
+| 19 | `ref-pointer-nested-items` | `schemas` | **2** | **6** | **2** | open — real-specification witness search remains open |
+| 20 | `nullable` | `schemas` | **2** | **5** | **74** | open — real-specification witness search remains open |
 | 21 | `format-byte` | `schemas` | **2** | **4** | **13** | open — real-specification witness search remains open |
-| 22 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **103** | **11** | open — real-specification witness search remains open |
-| 23 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **94** | **9** | open — real-specification witness search remains open |
-| 24 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **6** | owned — first-pass search record below |
-| 25 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **3** | open — real-specification witness search remains open |
-| 26 | `additional-properties-schema` | `schemas` | **1** | **47** | **139** | open — real-specification witness search remains open |
-| 27 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **44** | **3** | open — real-specification witness search remains open |
+| 22 | `array-item-oneof-discriminated-union` | `schemas` | **1** | **103** | **14** | open — real-specification witness search remains open |
+| 23 | `array-item-anyof-discriminated-union` | `schemas` | **1** | **94** | **10** | open — real-specification witness search remains open |
+| 24 | `anyof-oneof-variant` | `schemas` | **1** | **64** | **7** | owned — first-pass search record below |
+| 25 | `oneof-sole-non-null-member` | `schemas` | **1** | **59** | **4** | open — real-specification witness search remains open |
+| 26 | `additional-properties-schema` | `schemas` | **1** | **47** | **142** | open — real-specification witness search remains open |
+| 27 | `anyof-map-variant-anyof-value` | `schemas` | **1** | **44** | **4** | open — real-specification witness search remains open |
 | 28 | `anyof-map-variant-oneof-value` | `schemas` | **1** | **44** | **1** | open — real-specification witness search remains open |
 | 29 | `oneof-map-variant-oneof-value` | `schemas` | **1** | **44** | **1** | open — real-specification witness search remains open |
 | 30 | `oneof-array-variant-anyof-item` | `schemas` | **1** | **41** | **1** | open — real-specification witness search remains open |
@@ -2483,14 +2477,14 @@ unreached by any Fern-accepted document.
 | 34 | `anyof-array-variant-annotated-ref-item` | `schemas` | **1** | **17** | **1** | owned — first-pass search record below |
 | 35 | `anyof-array-variant-composed-item` | `schemas` | **1** | **17** | **1** | owned — first-pass search record below |
 | 36 | `oneof-array-variant-closed-object-item` | `schemas` | **1** | **17** | **4** | open — real-specification witness search remains open |
-| 37 | `type-single` | `schemas` | **1** | **14** | **247** | open — real-specification witness search remains open |
+| 37 | `type-single` | `schemas` | **1** | **14** | **253** | open — real-specification witness search remains open |
 | 38 | `anyof-array-variant-closed-object-item` | `schemas` | **1** | **13** | **5** | open — real-specification witness search remains open |
 | 39 | `anyof-allof-variant` | `schemas` | **1** | **12** | **2** | owned — first-pass search record below |
 | 40 | `array-item-empty-object` | `schemas` | **1** | **12** | **4** | open — real-specification witness search remains open |
 | 41 | `oneof-closed-empty-object-variant` | `schemas` | **1** | **12** | **1** | open — real-specification witness search remains open |
 | 42 | `array-item-pointer-walk-allof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
 | 43 | `array-item-pointer-walk-anyof` | `schemas` | **1** | **11** | **1** | open — real-specification witness search remains open |
-| 44 | `parameter-in-query` | `parameters` | **1** | **9** | **167** | open — real-specification witness search remains open |
+| 44 | `parameter-in-query` | `parameters` | **1** | **9** | **172** | open — real-specification witness search remains open |
 | 45 | `annotated-ref-target-anyof` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
 | 46 | `anyof-array-variant-anyof-nullable-item` | `schemas` | **1** | **8** | **2** | open — real-specification witness search remains open |
 | 47 | `anyof-array-variant-oneof-nullable-item` | `schemas` | **1** | **8** | **1** | open — real-specification witness search remains open |
@@ -2505,34 +2499,34 @@ unreached by any Fern-accepted document.
 | 56 | `schema-example-empty-object` | `schemas` | **1** | **5** | **3** | open — real-specification witness search remains open |
 | 57 | `media-type-malformed-key` | `bodies-media` | **1** | **4** | **5** | open — real-specification witness search remains open |
 | 58 | `array-item-pointer-walk-items` | `schemas` | **1** | **3** | **2** | open — real-specification witness search remains open |
-| 59 | `description` | `schemas` | **1** | **3** | **192** | open — real-specification witness search remains open |
-| 60 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **5** | open — real-specification witness search remains open |
-| 61 | `format-int64` | `schemas` | **1** | **3** | **44** | open — real-specification witness search remains open |
-| 62 | `format-uuid` | `schemas` | **1** | **3** | **42** | open — real-specification witness search remains open |
-| 63 | `enum` | `schemas` | **1** | **2** | **179** | open — real-specification witness search remains open |
-| 64 | `example` | `schemas` | **1** | **2** | **109** | open — real-specification witness search remains open |
-| 65 | `format-date` | `schemas` | **1** | **2** | **35** | open — real-specification witness search remains open |
-| 66 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **222** | open — real-specification witness search remains open |
-| 67 | `recursive-graph` | `schemas` | **1** | **2** | **222** | open — real-specification witness search remains open |
-| 68 | `response-description` | `bodies-media` | **1** | **2** | **246** | open — real-specification witness search remains open |
+| 59 | `description` | `schemas` | **1** | **3** | **196** | open — real-specification witness search remains open |
+| 60 | `enum-leading-zero-member` | `schemas` | **1** | **3** | **6** | open — real-specification witness search remains open |
+| 61 | `format-int64` | `schemas` | **1** | **3** | **45** | open — real-specification witness search remains open |
+| 62 | `format-uuid` | `schemas` | **1** | **3** | **46** | open — real-specification witness search remains open |
+| 63 | `enum` | `schemas` | **1** | **2** | **184** | open — real-specification witness search remains open |
+| 64 | `example` | `schemas` | **1** | **2** | **112** | open — real-specification witness search remains open |
+| 65 | `format-date` | `schemas` | **1** | **2** | **36** | open — real-specification witness search remains open |
+| 66 | `mutually-recursive-graph` | `schemas` | **1** | **2** | **226** | open — real-specification witness search remains open |
+| 67 | `recursive-graph` | `schemas` | **1** | **2** | **226** | open — real-specification witness search remains open |
+| 68 | `response-description` | `bodies-media` | **1** | **2** | **252** | open — real-specification witness search remains open |
 | 69 | `schema-example-object-on-map` | `schemas` | **1** | **2** | **11** | open — real-specification witness search remains open |
 | 70 | `schema-example-outside-enum` | `schemas` | **1** | **2** | **3** | open — real-specification witness search remains open |
 | 71 | `x-fern-or-crozier-ignore` | `oas31-extensions` | **1** | **2** | **2** | owned — first-pass search record below |
 | 72 | `enum-empty-identifier-member` | `schemas` | **1** | **1** | **3** | open — real-specification witness search remains open |
 | 73 | `enum-leading-digit-identifier` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 74 | `format-email` | `schemas` | **1** | **1** | **37** | open — real-specification witness search remains open |
+| 74 | `format-email` | `schemas` | **1** | **1** | **38** | open — real-specification witness search remains open |
 | 75 | `format-hostname` | `schemas` | **1** | **1** | **2** | open — real-specification witness search remains open |
 | 76 | `format-idn-hostname` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 77 | `format-ipv4` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
+| 77 | `format-ipv4` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
 | 78 | `format-iri` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
 | 79 | `format-json-pointer` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
 | 80 | `format-password` | `schemas` | **1** | **1** | **8** | open — real-specification witness search remains open |
 | 81 | `format-regex` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
 | 82 | `format-time` | `schemas` | **1** | **1** | **1** | open — real-specification witness search remains open |
-| 83 | `format-uri` | `schemas` | **1** | **1** | **59** | open — real-specification witness search remains open |
-| 84 | `format-uri-reference` | `schemas` | **1** | **1** | **4** | open — real-specification witness search remains open |
+| 83 | `format-uri` | `schemas` | **1** | **1** | **60** | open — real-specification witness search remains open |
+| 84 | `format-uri-reference` | `schemas` | **1** | **1** | **5** | open — real-specification witness search remains open |
 | 85 | `format-uri-template` | `schemas` | **1** | **1** | **1** | owned — first-pass search record below |
-| 86 | `property-oneof-residual` | `schemas` | **1** | **1** | **31** | open — real-specification witness search remains open |
+| 86 | `property-oneof-residual` | `schemas` | **1** | **1** | **32** | open — real-specification witness search remains open |
 
 
 #### The rows this measurement's first pass owned
@@ -2634,7 +2628,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
 The golden rows split in two. **412** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 126 unreached arms in all. By the verdict each arm's linked record states, 57 read `exhausted`, 30 read `search-incomplete`, 1 read `config-gated`, and 38 have no arm search.
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 123 unreached arms in all. By the verdict each arm's linked record states, 57 read `exhausted`, 28 read `search-incomplete`, 1 read `config-gated`, and 37 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources, or `not searched` where no arm
@@ -2747,20 +2741,18 @@ why. The changes that took the arm off:
 | 1 | `request-body-content` | `src/name_refusals.rs::validate_ir[=body\.content\.len\(\) == 1]` | 1 | `not searched` — no arm search has run | `multipart-request-name` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `not searched` — no arm search has run | `request-alias` |
 | 1 | `request-body-content` | `src/ir.rs::resolve_request_body[if let Some\(own\) = fields$]` | 5 | `not searched` — no arm search has run | `inline-body-readonly-own-overlap` |
-| 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_composition[if let Some\(\(items, values\)\) = enum_item \{]` | 21 | `search-incomplete` | `query-union-array-enum-member` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if let Some\(\(item, members\)\) = schema]` | 26 | `search-incomplete` | `query-array-items-union` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*TypeRef::Optional\(element\) => \*element,]` | 2 | `search-incomplete` | `nullable-query-union-items` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[=^\s*element => element,]` | 2 | `search-incomplete` | `query-array-items-union` |
 | 2 | `parameter-schema` | `src/ir.rs::InlineHoister::hoist_param_enum[if composition_admits_null\(item, members\) \{]` | 2 | `search-incomplete` | `sensor-batch-query` |
-| 3 | `allof` | `src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]` | 2 | `not searched` — no arm search has run | `nullable-store` |
-| 3 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `not searched` — no arm search has run | `union-sample` |
-| 3 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
-| 3 | `allof` | `src/openapi.rs::collapse_sole_composition_member[=Some\(member\) => \(member\x2c true\)]` | 2 | `not searched` — no arm search has run | `kiln-annotated-body` |
-| 3 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
-| 4 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
-| 4 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 4 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 4 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 3 | `ref-pointer-composition-index` | `src/ir.rs::ref_to_class[while index < parts.len\(\) \{]` | 19 | `exhausted` | `composition-index-pointer` |
+| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
+| 4 | `allof` | `src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]` | 2 | `not searched` — no arm search has run | `nullable-store` |
+| 4 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `not searched` — no arm search has run | `union-sample` |
+| 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
+| 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
 | 5 | `discriminator-mapping` | `src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]` | 9 | `config-gated` | `discriminator-mapping-audience` |
 | 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
 | 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
@@ -2773,32 +2765,31 @@ why. The changes that took the arm off:
 | 8 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `not searched` — no arm search has run | `multipart-alias-object` |
 | 8 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `not searched` — no arm search has run | `multipart-json-module` |
 | 8 | `media-type-multipart` | `src/ir.rs::nullable_enum_part[    member$]` | 6 | `not searched` — no arm search has run | `transcript-format-part` |
-| 9 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
-| 9 | `nullable` | `src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | 1 | `search-incomplete` | `pharmacy-nullable-scalar-unions` |
-| 9 | `nullable` | `src/ir.rs::Builder::variant_ref[=optional_type_ref\(composed\)]` | 2 | `search-incomplete` | `kiln-nullable-member` |
-| 10 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
-| 10 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
-| 10 | `format-binary` | `src/ir.rs::hoist_form_object[if nullable_binary]` | 1 | `not searched` — no arm search has run | `multipart-nullable-array` |
-| 11 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
-| 11 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
-| 12 | `media-type-event-stream` | `src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]` | 9 | `not searched` — no arm search has run | `event-stream-event-dispatch` |
-| 12 | `media-type-event-stream` | `src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]` | 41 | `not searched` — no arm search has run | `event-stream-event-dispatch` |
-| 13 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
-| 13 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
-| 14 | `anyof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]` | 9 | `exhausted` | `nested-array-discriminated-unions` |
-| 14 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 9 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
+| 9 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
+| 9 | `format-binary` | `src/ir.rs::hoist_form_object[if nullable_binary]` | 1 | `not searched` — no arm search has run | `multipart-nullable-array` |
+| 10 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
+| 10 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
+| 11 | `media-type-event-stream` | `src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]` | 9 | `not searched` — no arm search has run | `event-stream-event-dispatch` |
+| 11 | `media-type-event-stream` | `src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]` | 41 | `not searched` — no arm search has run | `event-stream-event-dispatch` |
+| 12 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
+| 12 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
+| 13 | `anyof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]` | 9 | `exhausted` | `nested-array-discriminated-unions` |
+| 13 | `anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
+| 14 | `items-oneof-element` | `src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]` | 21 | `search-incomplete` | `nested-array-elements` |
+| 14 | `items-oneof-element` | `src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]` | 6 | `search-incomplete` | `museum-titled-array-items` |
 | 15 | `fern-streaming-extension` | `src/emit.rs::sse_end[=\x7cend\x7c format!]` | 3 | `not searched` — no arm search has run | `streaming-extension-terminator` |
 | 15 | `fern-streaming-extension` | `src/ir.rs::declare_split_union_body[=tag_types\.push\(TagTypeDecl \{]` | 3 | `not searched` — no arm search has run | `stream-condition-union-body` |
-| 16 | `items-oneof-element` | `src/ir.rs::Builder::nested_array_element[if let Some\(members\) = items.one_of]` | 21 | `search-incomplete` | `nested-array-elements` |
-| 16 | `items-oneof-element` | `src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]` | 6 | `search-incomplete` | `museum-titled-array-items` |
-| 17 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
-| 17 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
-| 18 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
-| 18 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 27 | `search-incomplete` | `ferry-mapping-outside-schemas` |
-| 19 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
-| 19 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
-| 20 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
-| 20 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 16 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[\.map\(\x7cparameter\x7c ClientPathParameter \{]` | 4 | `search-incomplete` | `base-path-client-argument` |
+| 16 | `parameter-in-path` | `src/ir.rs::lifted_client_path_parameters[if let Some\(variable\) = parameter\.sdk_variable]` | 7 | `search-incomplete` | `observatory-client-variable` |
+| 17 | `ref-pointer-undeclared-component-head` | `src/ir.rs::resolve_schema_pointer[=(?<=schemas\.get\(parts\.next\(\)\?\))\?;$]` | 1 | `search-incomplete` | `ref-pointer-ignored-head` |
+| 17 | `ref-pointer-undeclared-component-head` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | 27 | `search-incomplete` | `ferry-mapping-outside-schemas` |
+| 18 | `ref-pointer-nested-properties` | `src/ir.rs::ref_to_class["properties" if index]` | 4 | `exhausted` | `ref-pointer-walk` |
+| 18 | `ref-pointer-nested-properties` | `src/ir.rs::resolve_schema_pointer[^\s*"properties" => \{]` | 6 | `exhausted` | `ref-pointer-walk` |
+| 19 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 19 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
+| 20 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
+| 20 | `nullable` | `src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | 1 | `search-incomplete` | `pharmacy-nullable-scalar-unions` |
 | 21 | `format-byte` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `not searched` — no arm search has run | `sonar-packet-envelope` |
 | 21 | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `byte-text-response`, `byte-text-response-controls` |
 | 22 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
@@ -3005,13 +2996,15 @@ reaches its other five sites; the fixture's feature-level cover of
 
 #### Rows resting on one document
 
-**60** golden rows rest on one document: a single golden-only witness declares
+**57** golden rows rest on one document: a single golden-only witness declares
 the feature, so withdrawing that one corpus row would leave the row without a
 golden while no line of `src/` changed. The gate recomputes this list from the
 ledger, so a registration that adds a second witness removes the row here.
 
 | key | region | only golden-only witness |
 |---|---|---|
+| `anyof-map-variant-oneof-value` | `schemas` | `hasura-metadata` |
+| `oneof-map-variant-oneof-value` | `schemas` | `subsloth` |
 | `oneof-array-variant-anyof-item` | `schemas` | `langchain-agent-protocol` |
 | `anyof-array-variant-annotated-ref-item` | `schemas` | `braintrust-dev` |
 | `anyof-array-variant-composed-item` | `schemas` | `braintrust-dev` |
@@ -3030,12 +3023,11 @@ ledger, so a registration that adds a second witness removes the row here.
 | `format-regex` | `schemas` | `eozilla` |
 | `format-time` | `schemas` | `maif.local-otoroshi` |
 | `format-uri-template` | `schemas` | `openlinksw-osdb` |
+| `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |
 | `request-body-string-map` | `bodies-media` | `confluent-kafka-connect` |
 | `parameter-style-pipedelimited-query-scalar` | `parameters` | `loris-dataquery` |
 | `single-operation-required-header` | `parameters` | `aws-mobileanalytics` |
-| `property-oneof-nullable-pair` | `schemas` | `discord-com` |
 | `parameter-style-label-path-scalar` | `parameters` | `slurmdb-rest` |
-| `oneof-array-variant-oneof-discriminated-union-item` | `schemas` | `letta` |
 | `enum-digit-word-member` | `schemas` | `reverb.com` |
 | `oneof-array-variant-composed-item` | `schemas` | `hse` |
 | `schema-example-null` | `schemas` | `webflow-v2` |
@@ -3054,7 +3046,6 @@ ledger, so a registration that adds a second witness removes the row here.
 | `dollar-id` | `schemas` | `sigstore-rekor` |
 | `enum-alphanumeric-join-member` | `schemas` | `netbox.dev` |
 | `extension-components` | `oas31-extensions` | `hse` |
-| `extension-server` | `oas31-extensions` | `webflow-v2` |
 | `header-allow-empty-value` | `parameters` | `ndw-accessibility-map` |
 | `header-content` | `parameters` | `vtex-pricing` |
 | `header-examples` | `parameters` | `microcks.local` |
@@ -3062,7 +3053,6 @@ ledger, so a registration that adds a second witness removes the row here.
 | `link-description` | `bodies-media` | `listennotes` |
 | `link-operation-ref` | `bodies-media` | `gambitcomm.local-mimic` |
 | `multiple-of` | `schemas` | `fergus` |
-| `openapi31-titled-array-body-content-type` | `bodies-media` | `tamoss` |
 | `operation-external-docs` | `document-paths` | `ideaconsult-enanomapper` |
 | `property-sole-oneof-closed-object-member` | `schemas` | `mistle-control-plane` |
 | `range-3XX` | `bodies-media` | `osparc-simcore-webserver` |
@@ -3070,8 +3060,6 @@ ledger, so a registration that adds a second witness removes the row here.
 | `request-media-named-beside-example` | `bodies-media` | `mockserver` |
 | `unevaluated-properties` | `schemas` | `tamoss` |
 | `xml-wrapped` | `schemas` | `swagger-petstore` |
-| `oneof-map-variant-oneof-value` | `schemas` | `subsloth` |
-| `anyof-map-variant-oneof-value` | `schemas` | `hasura-metadata` |
 
 #### Golden rows with no golden-only witness
 
@@ -3099,14 +3087,14 @@ sits in a byte-matched file, so
 [`residual-attribution.py`](../tools/surface-census/residual-attribution.py) (`just
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
-splits the files that move by whether the golden test compares them. Five rows
-rest on those three alone. Four land in byte-matched files and stay proven,
-and two of them also move files their golden does not byte-match:
-`format-idn-hostname` moves `short-io`'s `reference.md`, and `extension-server`
-moves `webflow-v2`'s `reference.md` beside its byte-matched `README.md`,
-`src/fern/client.py` and `src/fern/environment.py`. Those parts are
-open gaps of their own, and each row's disposition is `split` — proven where its
-code lands in byte-matched files, unproven in the `unmatched` ones named. One
+splits the files that move by whether the golden test compares them. Four rows
+rest on those three alone. Three land in byte-matched files and stay proven,
+and one of them also moves a file its golden does not byte-match:
+`format-idn-hostname` moves `short-io`'s `reference.md`. That part is an open
+gap of its own, and the row's disposition is `split` — proven where its code
+lands in byte-matched files, unproven in the `unmatched` one named.
+`extension-server` rested on `webflow-v2` alone until corpus row 2800,
+`vocode-core`, gave it a byte-matched golden-only witness. One
 moves no generated file at all, so no byte-matched file vouches for it; it is an
 open gap, counted among the unproven, while the
 [category rules](#the-category-rules) still classify them `golden` because a
@@ -3118,7 +3106,6 @@ registered golden source declares them.
 | `format-iri` | `short-io` | `src/fern/domains/types/get_api_domains_response_item.py`, `src/fern/domains/types/get_domains_domain_id_response.py`, `src/fern/domains/types/post_domains_response.py`, `src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py` | `byte-matched` |
 | `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
 | `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
-| `extension-server` | `webflow-v2` | `README.md`, `src/fern/client.py`, `src/fern/environment.py`; open gap: `reference.md`, which is `unmatched` | `split` |
 
 ### The ranked `FIXTURE` backlog
 
@@ -3800,12 +3787,12 @@ functions named in each verdict are counted from that union.
 | `src/settings.rs` | 1312 | all-e2e 654, non-e2e 658 | none | **Neither.** Generator settings and source precedence are held by configuration journeys, outside the OpenAPI feature census. Measured union: 678 regions. Largest function contributions: `explain` 233, `merge` 46, `resolve` 44. |
 | `src/departures.rs` | 1304 | all-e2e 567, non-e2e 737 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 743 regions. Largest function contributions: `union_value_wrapper_docs_example` 133, `nullable_items_docs` 96, `crozier_classes` 50, `from_sources` 50. |
 | `src/document_refusals/examples.rs` | 1242 | all-e2e 619, non-e2e 623 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 623 regions. Largest function contributions: `validate` 97, `fern_examples` 85, `merged_member_enum` 57. |
-| `src/ir.rs` | 1238 | all-e2e 573, non-e2e 665 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 753 regions. Largest function contributions: `hoist_union_variant` 121, `discriminated_union` 76, `resolve_schema_pointer` 49. 107 of [the 126 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/ir.rs` | 1238 | all-e2e 573, non-e2e 665 | none | **Still blind, and why: schema lowering combinations and refusal paths.** Real-specification parity reaches the implemented cases; the unreached arms below retain their separate proof level. Measured union: 753 regions. Largest function contributions: `hoist_union_variant` 121, `discriminated_union` 76, `resolve_schema_pointer` 49. 105 of [the 123 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/document_refusals.rs` | 1238 | all-e2e 603, non-e2e 635 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 637 regions. Largest function contributions: `example_without_discriminant` 66, `check_sdk` 66, `imported_reference_scheme` 55. |
 | `src/compare/mod.rs` | 1206 | all-e2e 568, non-e2e 638 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 639 regions. Largest function contributions: `check_generator` 242, `run` 100, `check_config` 53. |
-| `src/emit.rs` | 912 | all-e2e 355, non-e2e 557 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 573 regions. Largest function contributions: `build_example_inner` 83, `clean_flat_tree` 43, `path_object_value` 39. 11 of [the 126 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/openapi.rs` | 742 | all-e2e 335, non-e2e 407 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 410 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 4 of [the 126 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
-| `src/name_refusals.rs` | 674 | all-e2e 347, non-e2e 327 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. 1 of [the 126 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. Measured union: 347 regions. Largest function contributions: `source_refusals` 121, `validate_ir` 46, `source_request_properties` 44. |
+| `src/emit.rs` | 912 | all-e2e 355, non-e2e 557 | 7 (the example `FIXTURE` gaps) | **Still blind, and why: example and serialization combinations.** Seven named example gaps point here; the arm inventory distinguishes their missing real-specification proof. Measured union: 573 regions. Largest function contributions: `build_example_inner` 83, `clean_flat_tree` 43, `path_object_value` 39. 11 of [the 123 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/openapi.rs` | 742 | all-e2e 335, non-e2e 407 | none | **Still blind, and why: document validation, pruning and malformed input.** Successful corpus generation cannot exercise every rejection and configuration path. Measured union: 410 regions. Largest function contributions: `properties_reference_target` 69, `degrade_unresolved_pointers` 58, `parameters` 44. 3 of [the 123 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/name_refusals.rs` | 674 | all-e2e 347, non-e2e 327 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. 1 of [the 123 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. Measured union: 347 regions. Largest function contributions: `source_refusals` 121, `validate_ir` 46, `source_request_properties` 44. |
 | `src/document_refusals/type_not_defined.rs` | 601 | all-e2e 296, non-e2e 305 | none | **Still blind, and why: refusal and malformed-document paths.** Successful goldens cannot reach all rejected shapes; certified refusal measurements and boundary tests hold those paths separately. Measured union: 305 regions. Largest function contributions: `api_file_reference` 125, `declares_type` 53, `body_declares_type` 39. |
 | `src/compare/report.rs` | 596 | all-e2e 260, non-e2e 336 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 336 regions. Largest function contributions: `render_result` 95, `render` 77, `nullable` 44. |
 | `src/parity.rs` | 422 | all-e2e 199, non-e2e 223 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 223 regions. Largest function contributions: `unified_diff` 83, `compare_trees` 79, `file_difference` 47. |
@@ -3816,7 +3803,7 @@ functions named in each verdict are counted from that union.
 | `src/lib.rs` | 138 | all-e2e 38, non-e2e 100 | none | **Neither.** Filesystem output and rendering failures are held by generator journeys. Measured union: 107 regions. Largest function contributions: `render_files` 64, `resolved_names` 30, `generate` 13. |
 | `src/compare/color.rs` | 110 | all-e2e 55, non-e2e 55 | none | **Neither.** SDK comparison, catalog validation and mismatch diagnostics are held by migration journeys and departure tests; they are not an OpenAPI declaration shape. Measured union: 55 regions. Largest function contributions: `color_enabled` 18, `status` 11, `exit` 11. |
 | `src/schema.rs` | 66 | all-e2e 23, non-e2e 43 | none | **Neither.** The configuration JSON Schema is held by its derivation and drift tests. Measured union: 43 regions. Largest function contributions: `compare_report` 20, `build` 20, `modeline` 3. |
-| `src/naming.rs` | 42 | all-e2e 12, non-e2e 30 | 1 (`operation-id-digit-leading-method`) | **Still blind, and why: identifier token shapes.** The digit-leading operation gap points here, and some enum-name refusal arms cannot be reached by a successful golden. Measured union: 30 regions. Largest function contributions: `digit_word` 10, `enum_words` 9, `whole_value_enum_words` 7. 3 of [the 126 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
+| `src/naming.rs` | 42 | all-e2e 12, non-e2e 30 | 1 (`operation-id-digit-leading-method`) | **Still blind, and why: identifier token shapes.** The digit-leading operation gap points here, and some enum-name refusal arms cannot be reached by a successful golden. Measured union: 30 regions. Largest function contributions: `digit_word` 10, `enum_words` 9, `whole_value_enum_words` 7. 3 of [the 123 unreached arms](#every-unreached-arm-and-its-search-verdict) are in this file. |
 | `src/pyfmt.rs` | 38 | all-e2e 14, non-e2e 24 | none | **Neither.** Formatter invocation and failures are held by subprocess journeys. Measured union: 24 regions. Largest function contributions: `format_source` 24. |
 | `src/config.rs` | 27 | all-e2e 11, non-e2e 16 | none | **Neither.** Generator configuration defaults are held by configuration tests. Measured union: 16 regions. Largest function contributions: `default_package_name` 10, `new` 4, `new` 2. |
 | `src/main.rs` | 6 | all-e2e 6, non-e2e 0 | none | **Neither.** The binary entry point is reached by subprocesses; the coverage gate holds this boundary. Measured union: 6 regions. Largest function contributions: `main` 6. |

@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Marina Component Examples
+  version: 1.0.0
+paths:
+  /berths/{berth_id}/hull:
+    post:
+      operationId: setHull
+      tags: [berths]
+      parameters:
+        - name: berth_id
+          in: path
+          required: true
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HullRequest'
+      responses:
+        '204':
+          description: Hull recorded
+  /permits:
+    post:
+      operationId: issuePermits
+      tags: [permits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermitBatch'
+      responses:
+        '204':
+          description: Permits issued
+    delete:
+      operationId: revokePermits
+      tags: [permits]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PermitCodes'
+      responses:
+        '204':
+          description: Permits revoked
+  /session:
+    post:
+      operationId: openSession
+      tags: [session]
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SessionForm'
+      responses:
+        '204':
+          description: Session opened
+components:
+  schemas:
+    HullRequest:
+      type: object
+      properties:
+        hull:
+          oneOf:
+            - type: object
+              properties:
+                length_m: {type: integer}
+                beam_m: {type: integer}
+                draft_cm: {type: integer}
+                material: {type: string, enum: [steel]}
+              required: [length_m, beam_m, material]
+            - type: object
+              properties:
+                length_m: {type: integer}
+                beam_m: {type: integer}
+                material: {type: string, enum: [timber]}
+              required: [length_m, beam_m, material]
+      required: [hull]
+      example:
+        hull: {material: steel, beam_m: 6, length_m: 24, draft_cm: 180}
+    PermitBatch:
+      type: array
+      items:
+        type: object
+        properties:
+          vessel: {type: string}
+          zone: {type: string}
+        required: [vessel, zone]
+      example:
+        - {vessel: Sea Lark, zone: north-basin}
+        - {vessel: Tern, zone: fuel-dock}
+    PermitCodes:
+      type: array
+      items: {type: string}
+      example: [PRM-0042]
+    SessionForm:
+      type: object
+      properties:
+        grant:
+          type: string
+          enum: [harbour_pass, refresh]
+        skipper_id: {type: string}
+        pin: {type: string}
+      example: {grant: harbour_pass, skipper_id: SK-118, pin: '4471'}

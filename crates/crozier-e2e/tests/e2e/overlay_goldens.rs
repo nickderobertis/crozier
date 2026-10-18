@@ -66,6 +66,17 @@ const KINDS: &[Kind] = &[
     // - `googleapis-youtubeanalytics-v1`: a document with no operation, so no
     //   enum reaches its tree and its literals tree differs only in the
     //   generator record and the absent `core/enum.py`, its `README.md` empty.
+    // - `vocode-core`: inline and referenced property enums of flattened
+    //   request types and their action variants in a publisher's document.
+    // - `dystore-api`: no enum reaches its tree, so its literals tree differs
+    //   only in the generator record and the absent `core/enum.py`.
+    // - `langchain-agent-server`: inline array-item and property enums of an agent
+    //   server's run, stream and protocol models.
+    // - `rice-shower`: nested const-only and inline enums of an experiment
+    //   API's stop reasons and statuses.
+    // - `supabase-api-v1`: inline property and query enums across a large
+    //   management API's request and response models.
+    // - `rta-in-japan-twitter`: a posting API's one media-type enum.
     Kind {
         dir: "expected-literals",
         fern_setting: ("enum_type", "\"literals\""),
@@ -83,6 +94,14 @@ const KINDS: &[Kind] = &[
             "aws-mobileanalytics",
             "googleapis-speech-v2beta1",
             "googleapis-youtubeanalytics-v1",
+            // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] The six registered real witnesses join the corpora this overlay setting is proven on. Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+            "vocode-core",
+            "dystore-api",
+            "langchain-agent-server",
+            "rice-shower",
+            "supabase-api-v1",
+            "rta-in-japan-twitter",
+            // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
         ],
     },
     // `default-max-retries: 0` against Fern's `default_max_retries: 0`, which

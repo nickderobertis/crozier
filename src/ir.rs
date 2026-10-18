@@ -2726,10 +2726,18 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                     .map(|(_, operation)| operation)
             })
             .and_then(|operation| operation.request_body.as_ref())
+            // The schema the method sends is the selected JSON media's, wherever
+            // the document lists it: Supabase's function deploy offers an
+            // `application/vnd.denoland.eszip` binary ahead of its JSON `$ref`,
+            // and Fern's reference documents that body's flattened arguments.
             .and_then(|body| {
-                body.content
-                    .values()
-                    .find_map(|media| media.schema.as_ref())
+                selected_json_request_media(body)
+                    .and_then(|(_, media)| media.schema.as_ref())
+                    .or_else(|| {
+                        body.content
+                            .values()
+                            .find_map(|media| media.schema.as_ref())
+                    })
             });
         endpoint.body_schema_dropped = body_schema
             .and_then(|schema| schema.reference.as_deref())
@@ -6161,6 +6169,12 @@ fn resolve_request_body(
                 multipart,
                 component.as_deref(),
             );
+            // So does a urlencoded component's own example, beneath the media
+            // type's: Supabase's `OAuthTokenBody` declares one, and Fern's
+            // snippet passes its seven values.
+            if component.is_some() {
+                apply_body_example(&mut fields, schema_example(obj), false);
+            }
             apply_body_example(&mut fields, media_example(doc, media), true);
             return Some(RequestBody::Form(FormBody { fields, multipart }));
         }
@@ -6309,8 +6323,13 @@ fn resolve_request_body(
             let type_ref = TypeRef::Named(class);
             let convert = type_needs_convert(&type_ref, types);
             let mut body = single(type_ref, required, convert, target.title.is_some());
+            // Without a media example the component's own is the worked one:
+            // Supabase's `CreateSecretBody` and `BulkUpdateFunctionBody` carry
+            // theirs on the schema, and Fern's snippets construct every item.
             if let RequestBody::Single(single) = &mut body {
-                single.example = media_example(doc, media).and_then(example_literal);
+                single.example = media_example(doc, media)
+                    .or_else(|| schema_example(target))
+                    .and_then(example_literal);
             }
             return Some(body);
         }
@@ -6736,7 +6755,14 @@ fn apply_body_example(
     };
     for field in fields {
         if let Some(value) = values.get(&field.wire_name) {
-            field.example = Some(value.to_string());
+            // An empty array names the field but carries no value: Fern passes
+            // the property's own example, else its synthesized one. The
+            // RTA in Japan Twitter API's first `statuses/update` example sends
+            // `media_ids: []`, and Fern's snippet passes the schema's
+            // `["710511363345354753"]`.
+            if !value.as_array().is_some_and(Vec::is_empty) {
+                field.example = Some(value.to_string());
+            }
             field.media_example = true;
             field.schema_body_example = !media_example;
         }
@@ -6918,10 +6944,23 @@ fn hoist_inline_object(
             }),
             media_example: false,
             schema_body_example: false,
-            docstring: declared_doc(prop_schema.description.as_deref().or_else(|| {
-                scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
-                    .and_then(|(_, member)| member.description.as_deref())
-            })),
+            docstring: declared_doc(
+                prop_schema
+                    .description
+                    .as_deref()
+                    .or_else(|| {
+                        scalar_narrowed_enum_ref(prop_schema, hoister.schemas?)
+                            .and_then(|(_, member)| member.description.as_deref())
+                    })
+                    // The lone alternative to `null` documents the argument, as
+                    // it documents a model field: rice-shower's `createSystem`
+                    // body declares `location: anyOf: [{type: string,
+                    // description: Physical location}, {type: 'null'}]`.
+                    .or_else(|| {
+                        sole_non_null_member(prop_schema)
+                            .and_then(|member| member.description.as_deref())
+                    }),
+            ),
             is_file: false,
             form_json: false,
             form_content_type: None,

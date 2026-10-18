@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .set_hold_action_update_params_action_trigger_zero import SetHoldActionUpdateParamsActionTriggerZero
+from .undefined import Undefined
+
+SetHoldActionUpdateParamsActionTrigger = typing.Union[SetHoldActionUpdateParamsActionTriggerZero, Undefined]

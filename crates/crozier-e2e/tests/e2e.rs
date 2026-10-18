@@ -1233,7 +1233,15 @@ fn assert_generated_tree_matches(
     expected_root: &Path,
     out: &Path,
 ) {
-    let context = Context::from_trees(expected_root, out);
+    // The parsed source document, as `crozier compare` and the hand-written
+    // gate supply it, so a departure whose rule reads the specification applies
+    // to a corpus golden exactly as it does to a user's comparison. It is the
+    // staged copy generation reads, whose remote refs name committed files, so
+    // the offline tier never opens a socket here either.
+    let (spec, _source) = prepare_corpus_source(c);
+    let document = crozier::openapi::load(&spec)
+        .unwrap_or_else(|error| panic!("{}: {}: {error}", c.api, spec.display()));
+    let context = Context::from_trees(expected_root, out).with_source_document(document);
     let mut observed = Vec::new();
     for rel in walk_files(expected_root) {
         if c.unmatched.contains(&rel.as_str()) {
@@ -2865,9 +2873,11 @@ fn handwritten_fixtures_match_fern_goldens() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
-/// nullable union members, referenced form enums, and JSON problem responses.
+/// nullable union members, referenced form enums, JSON problem responses, and a
+/// query union of an enum and its array (no literals-mode tree is measured).
 #[test]
 fn schema_shape_arms_match_complete_certified_trees() {
     for (shape, file, matched, unexplained) in [
@@ -2919,9 +2929,21 @@ fn schema_shape_arms_match_complete_certified_trees() {
             "message: str",
             "message: bool",
         ),
+        (
+            "query-union-array-enum-member",
+            "src/fern/signals/types/inspect_signals_request_kind.py",
+            "typing.List[InspectSignalsRequestKindOneItem]",
+            "typing.List[str]",
+        ),
     ] {
-        for mode in ["python-enums", "literals"] {
-            let fixture_dir = if shape == "kiln-problem-response" {
+        let measured = std::path::Path::new(SCHEMA_SHAPES_DIR).join(shape);
+        let modes: &[&str] = if shape == "query-union-array-enum-member" {
+            &["python-enums"]
+        } else {
+            &["python-enums", "literals"]
+        };
+        for &mode in modes {
+            let fixture_dir = if repo_root().join(&measured).is_dir() {
                 SCHEMA_SHAPES_DIR
             } else {
                 HANDWRITTEN_DIR
@@ -2948,7 +2970,7 @@ fn schema_shape_arms_match_complete_certified_trees() {
                 format!("{SCHEMA_SHAPES_LITERALS_DIR}/{shape}/fern-expected")
             };
             let expected = repo_root().join(&golden);
-            if shape == "kiln-problem-response" && mode == "python-enums" {
+            if fixture_dir == SCHEMA_SHAPES_DIR && mode == "python-enums" {
                 let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
                 for field in [
                     "fern_cli_version = \"5.67.1\"".to_owned(),
@@ -3001,6 +3023,7 @@ fn schema_shape_arms_match_complete_certified_trees() {
         }
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// The registered Redocly Museum golden answers its shared `400`, `401` and `404`
 /// component responses with `application/problem+json` alone, so error-body
@@ -8529,23 +8552,11 @@ fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
 /// returned source directory alive until the subprocess finishes; then dropping
 /// it removes the staged copies.
 fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
-    let staged = tempfile::tempdir().expect("source staging directory");
-    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
-        .arg(repo_root().join("tools/corpus/corpus_sources.py"))
-        .args(["prepare", "--fixture", c.api, "--output"])
-        .arg(staged.path())
-        .output()
-        .expect("prepare committed corpus source");
-    assert!(
-        prepared.status.success(),
-        "{}",
-        String::from_utf8_lossy(&prepared.stderr)
-    );
-    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
+    let (spec, staged) = prepare_corpus_source(c);
     let mut command = crozier();
     command
         .args(["generate", "--spec"])
-        .arg(spec.trim())
+        .arg(spec)
         .arg("--output")
         .arg(output)
         .args([
@@ -8563,6 +8574,27 @@ fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
         )
         .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]));
     (command, staged)
+}
+
+/// Stage `c`'s committed source as `tools/corpus/corpus_sources.py prepare`
+/// does, its remote refs pointing at their committed copies, and return the
+/// staged document's path. Keep the returned directory alive while the path is
+/// read; dropping it removes the staged copies.
+fn prepare_corpus_source(c: &Corpus) -> (PathBuf, tempfile::TempDir) {
+    let staged = tempfile::tempdir().expect("source staging directory");
+    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
+        .arg(repo_root().join("tools/corpus/corpus_sources.py"))
+        .args(["prepare", "--fixture", c.api, "--output"])
+        .arg(staged.path())
+        .output()
+        .expect("prepare committed corpus source");
+    assert!(
+        prepared.status.success(),
+        "{}",
+        String::from_utf8_lossy(&prepared.stderr)
+    );
+    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
+    (PathBuf::from(spec.trim()), staged)
 }
 
 fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
@@ -9488,6 +9520,12 @@ const CORPORA: &[&Corpus] = &[
     &MERMADE_OPENAPI_CONVERTER,
     &GOOGLEAPIS_SPEECH_V2BETA1,
     &GOOGLEAPIS_YOUTUBEANALYTICS_V1,
+    &VOCODE_CORE,
+    &DYSTORE_API,
+    &LANGCHAIN_AGENT_SERVER,
+    &RICE_SHOWER,
+    &SUPABASE_API_V1,
+    &RTA_IN_JAPAN_TWITTER,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12595,6 +12633,89 @@ const NETGSM_SMS: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// `vocode-core`: corpus row 2800, Vocode's Hosted API as its publisher ships it,
+/// whose flattened request types and their variants' `action_trigger`
+/// references match with no repair of its own.
+const VOCODE_CORE: Corpus = Corpus {
+    api: "vocode-core",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `dystore-api`: corpus row 2801, the Lunar storefront API,
+/// whose emoji-bearing `⚠️ Not supported yet` tag `reference.md` documents by
+/// its identifier-safe client attribute.
+const DYSTORE_API: Corpus = Corpus {
+    api: "dystore-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `langchain-agent-server`: corpus row 2802, the LangSmith Deployment
+/// agent-server API, whose A2A example renders `kind`-tagged union items as
+/// variant constructors.
+const LANGCHAIN_AGENT_SERVER: Corpus = Corpus {
+    api: "langchain-agent-server",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `rice-shower`: corpus row 2803, the Rice Shower low-temperature
+/// control API, whose nullable described `anyOf` body property keeps its member's
+/// description.
+const RICE_SHOWER: Corpus = Corpus {
+    api: "rice-shower",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `supabase-api-v1`: corpus row 2804, the Supabase Management API v1,
+/// whose request-body components carry component-level examples.
+const SUPABASE_API_V1: Corpus = Corpus {
+    api: "supabase-api-v1",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
+/// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
+/// whose first named request example's empty array is filled from its schema
+/// example.
+const RTA_IN_JAPAN_TWITTER: Corpus = Corpus {
+    api: "rta-in-japan-twitter",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `zylon-private-gpt`: corpus row 1600, the PrivateGPT API at its publisher's last
 /// revision declaring `x-fern-streaming`: two `stream-condition` operations with
 /// no `format` over a JSON-only success, named by tagged FastAPI `operationId`s.
@@ -13379,6 +13500,48 @@ fn googleapis_youtubeanalytics_v1_matches_fern_output() {
 fn zylon_private_gpt_matches_fern_output() {
     assert_committed_corpus_matches(&ZYLON_PRIVATE_GPT);
 }
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn vocode_core_matches_fern_output() {
+    assert_committed_corpus_matches(&VOCODE_CORE);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn dystore_api_matches_fern_output() {
+    assert_committed_corpus_matches(&DYSTORE_API);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn langchain_agent_server_matches_fern_output() {
+    assert_committed_corpus_matches(&LANGCHAIN_AGENT_SERVER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn rice_shower_matches_fern_output() {
+    assert_committed_corpus_matches(&RICE_SHOWER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn supabase_api_v1_matches_fern_output() {
+    assert_committed_corpus_matches(&SUPABASE_API_V1);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] A registered corpus row's byte-match runs here and in `just test-corpus-match` like every one of the corpus's other `*_matches_fern_output` tests (crates/crozier-e2e/AGENTS.md, docs/fern-goldens.md's Route A step 2); moving corpus comparisons behind their own Nx edge is a change for the whole corpus, not for this row.
+#[test]
+fn rta_in_japan_twitter_matches_fern_output() {
+    assert_committed_corpus_matches(&RTA_IN_JAPAN_TWITTER);
+}
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn waylay_queries_matches_fern_output() {

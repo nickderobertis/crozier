@@ -1,0 +1,7 @@
+
+
+import typing
+
+from .v1list_migrations_response_output_item import V1ListMigrationsResponseOutputItem
+
+V1ListMigrationsResponseOutput = typing.List[V1ListMigrationsResponseOutputItem]

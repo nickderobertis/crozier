@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Marina Beacons
+  version: 1.0.0
+paths:
+  /beacons/firmware:
+    post:
+      operationId: uploadFirmware
+      tags: [beacons]
+      parameters:
+        - name: version
+          in: query
+          required: false
+          schema: {type: string, example: 2.4.1}
+        - name: signed
+          in: query
+          required: false
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/vnd.marina.firmware:
+            schema: {type: string, format: binary}
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirmwareManifest'
+      responses:
+        '204':
+          description: Uploaded
+  /beacons/firmware/{beacon_id}:
+    patch:
+      operationId: updateFirmware
+      tags: [beacons]
+      parameters:
+        - name: beacon_id
+          in: path
+          required: true
+          schema: {type: string}
+        - name: channel
+          in: query
+          required: false
+          schema: {type: string}
+      requestBody:
+        required: true
+        content:
+          application/vnd.marina.firmware:
+            schema: {type: string, format: binary}
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FirmwarePatch'
+      responses:
+        '204':
+          description: Updated
+components:
+  schemas:
+    FirmwareManifest:
+      type: object
+      properties:
+        version: {type: string}
+        image: {type: string}
+        signed: {type: boolean}
+      required: [version, image]
+    FirmwarePatch:
+      type: object
+      properties:
+        channel: {type: string}
+        image: {type: string}

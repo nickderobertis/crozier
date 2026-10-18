@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .open_ai_credentials import OpenAiCredentials
+from .undefined import Undefined
+
+OpenAiAccountConnectionUpdateParamsCredentials = typing.Union[OpenAiCredentials, Undefined]

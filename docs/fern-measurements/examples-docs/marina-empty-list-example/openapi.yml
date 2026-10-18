@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Marina Notices
+  version: 1.0.0
+paths:
+  /notices:
+    post:
+      operationId: postNotice
+      tags: [notices]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NoticeRequest'
+            examples:
+              textOnly:
+                summary: Text only
+                value:
+                  text: Fuel dock closed until noon
+                  photo_ids: []
+                  berths: []
+                  reply_to: null
+              withPhoto:
+                summary: With a photo
+                value:
+                  text: New pontoon lights
+                  photo_ids: ['5520193']
+                  berths: [B12]
+                  reply_to: null
+      responses:
+        '204':
+          description: Posted
+components:
+  schemas:
+    NoticeRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          example: Harbour office opens at eight
+        photo_ids:
+          type: array
+          items: {type: string}
+          example: ['8801723']
+        berths:
+          type: array
+          items: {type: string}
+        reply_to:
+          type: string
+          example: ''

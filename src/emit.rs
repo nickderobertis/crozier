@@ -716,6 +716,14 @@ fn natural_cmp(left: &str, right: &str) -> Ordering {
 fn example_import_cmp(left: &str, right: &str) -> Ordering {
     let left_prefix = left.split_once('_').map(|(prefix, _)| prefix);
     let right_prefix = right.split_once('_').map(|(prefix, _)| prefix);
+    // Two wrappers of one union (`PartsItem_Text`, `PartsItem_Data`) are
+    // ordered by isort below, as LangChain's `post_a2a` docstring imports them.
+    if left_prefix.is_some() && left_prefix == right_prefix {
+        return left
+            .to_ascii_lowercase()
+            .cmp(&right.to_ascii_lowercase())
+            .then_with(|| left.cmp(right));
+    }
     if left_prefix.is_some_and(|prefix| right.starts_with(prefix)) {
         return Ordering::Less;
     }
@@ -8272,11 +8280,18 @@ impl Example {
                 // Like a list, a wrapped dict of one entry takes no trailing
                 // comma: MockServer's `{"spec": "asyncapi: …"}` wraps bare.
                 let last_comma = !matches!(self, Example::DocDict(_)) && pairs.len() > 1;
+                // A dict a constructor value breaks separates its entries as a
+                // Python literal must: Supabase's `attribute_mapping.keys` maps
+                // names to models, and Fern's docstring ends every
+                // `CreateProviderBodyAttributeMappingKeysValue(…)` with a comma,
+                // where its Markdown writers leave the last one bare. One entry
+                // ends bare in either, as a length-wrapped one does.
+                let separated = wraps_for_length || self.forces_multiline();
                 let body = pairs
                     .iter()
                     .enumerate()
                     .map(|(index, (k, v))| {
-                        let comma = if wraps_for_length && (last_comma || index + 1 < pairs.len()) {
+                        let comma = if separated && (last_comma || index + 1 < pairs.len()) {
                             ","
                         } else {
                             ""
@@ -8609,83 +8624,7 @@ impl<'a> ExampleCtx<'a> {
                 let values = parse_example_value(example)?;
                 let values = values.as_object()?;
                 self.record_ref(name);
-                let documentation = self.documentation;
-                let args = fields
-                    .into_iter()
-                    // An example value of `{}` selects nothing: Fern renders no
-                    // argument for an optional model field the example leaves
-                    // empty (`mosip-esignet`'s `claims.id_token: {}`).
-                    // Nor does `null`, but in the Markdown writers, which write a
-                    // required nullable field's `null` as `None`; and an optional
-                    // field whose schema is deprecated is left out even where the
-                    // example names it.
-                    .filter(|field| {
-                        let value = values.get(&field.wire_name);
-                        field.requirement == Requirement::Required
-                            || field.requirement == Requirement::RequiredNullable
-                                && documentation
-                                && value.is_some_and(serde_json::Value::is_null)
-                            || !field.deprecated
-                                && value.is_some_and(|value| {
-                                    !value.is_null()
-                                        && !value.as_object().is_some_and(serde_json::Map::is_empty)
-                                })
-                    })
-                    .map(
-                        |ExampleField {
-                             py_name,
-                             wire_name,
-                             type_ref,
-                             requirement,
-                             ..
-                         }| {
-                            let rendered = match values.get(&wire_name) {
-                                Some(serde_json::Value::Null)
-                                    if self.documentation
-                                        && requirement == Requirement::RequiredNullable =>
-                                {
-                                    Example::Atom("None".to_string())
-                                }
-                                Some(serde_json::Value::Null) => {
-                                    self.value(&type_ref, Slot::Named(&wire_name))
-                                }
-                                Some(serde_json::Value::String(value))
-                                    if self.example_is_temporal(&type_ref)
-                                        && value.starts_with("2000-01-23T04:56:07") =>
-                                {
-                                    self.value(&type_ref, Slot::Named(&wire_name))
-                                }
-                                // A YAML timestamp is a date to Fern's parser, so it
-                                // is no example for a field that is not temporal; see
-                                // [`yaml_resolves_as_timestamp`].
-                                Some(serde_json::Value::String(value))
-                                    if self
-                                        .yaml_unquoted_timestamps
-                                        .is_some_and(|unquoted| unquoted.contains(value))
-                                        && !self.example_is_temporal(&type_ref)
-                                        && yaml_resolves_as_timestamp(value) =>
-                                {
-                                    self.value(&type_ref, Slot::Named(&wire_name))
-                                }
-                                // An empty array carries no example value, so Fern
-                                // synthesizes one from the field name rather than
-                                // rendering `[]` (`mosip-esignet`'s
-                                // `permittedAuthorizeScopes: []`).
-                                Some(serde_json::Value::Array(items)) if items.is_empty() => {
-                                    self.value(&type_ref, Slot::Named(&wire_name))
-                                }
-                                Some(value) => {
-                                    let literal = value.to_string();
-                                    self.value_from_example(&type_ref, &literal).unwrap_or_else(
-                                        || example_from_json_as(value.clone(), !self.documentation),
-                                    )
-                                }
-                                _ => self.value(&type_ref, Slot::Named(&wire_name)),
-                            };
-                            (Some(py_name), rendered)
-                        },
-                    )
-                    .collect();
+                let args = self.example_call_args(fields, values);
                 return Some(Example::Call(name.clone(), args));
             }
         }
@@ -8782,8 +8721,159 @@ impl<'a> ExampleCtx<'a> {
                 self.record_ref(name);
                 Some(Example::Atom(format!("{name}.{member_name}")))
             }
-            TypeDecl::DiscriminatedUnion(_) => None,
+            TypeDecl::DiscriminatedUnion(union) => {
+                let union = union.clone();
+                self.union_value_from_example(&union, example)
+            }
         }
+    }
+
+    /// A discriminated union's example: the wrapper of the member the example's
+    /// discriminant value selects, constructed from the example's values as a
+    /// model is. Supabase's `DiskRequestBody` example `{attributes: {type: gp3,
+    /// size_gb: 100, iops: 3000, throughput_mibps: 125}}` is
+    /// `DiskRequestBodyAttributes_Gp3(iops=3000, size_gb=100,
+    /// throughput_mibps=125)` in Fern's example, and LangChain's `post_a2a` parts
+    /// construct `…PartsItem_Text(text=…)` and `…PartsItem_Data(data=…)`. Both
+    /// are unions of inline alternatives; a member flattened from a `$ref`
+    /// keeps the synthesized example, as HelixDB's `QueryRequest_Read` does
+    /// beside a declared request example. So do a wrapper holding a union
+    /// whole, a union with a shared base, and a member whose tag is an enum of
+    /// its own.
+    fn union_value_from_example(
+        &mut self,
+        union: &crate::ir::DiscriminatedUnion,
+        example: &str,
+    ) -> Option<Example> {
+        if !union.base_fields.is_empty() {
+            return None;
+        }
+        let values = parse_example_value(example)?;
+        let values = values.as_object()?;
+        let discriminant = values.get(&union.discriminant_property)?.as_str()?;
+        let member = union
+            .members
+            .iter()
+            .find(|member| member.discriminant == discriminant)?;
+        // A tag the synthesized example writes back (see `value`) is not
+        // measured from an example, so that member keeps the synthesized one.
+        let writes_tag = member.discriminant_index.is_some()
+            && member
+                .source
+                .as_deref()
+                .map(|source| naming::child_class_name(source, &union.discriminant_property))
+                .is_some_and(|enum_name| matches!(self.find(&enum_name), Some(TypeDecl::Enum(_))));
+        if member.wrapped || writes_tag || member.source.is_some() {
+            return None;
+        }
+        let fields = member
+            .fields
+            .iter()
+            .map(|field| ExampleField {
+                py_name: field.py_name.clone(),
+                wire_name: field.wire_name.clone(),
+                type_ref: field.type_ref.clone(),
+                requirement: match (field.spec_required, field.optional) {
+                    (true, false) => Requirement::Required,
+                    (true, true) => Requirement::RequiredNullable,
+                    (false, _) => Requirement::Optional,
+                },
+                example: field.example.clone(),
+                parent_example: false,
+                deprecated: field.deprecated,
+            })
+            .collect();
+        self.record_ref(&member.class_name);
+        let args = self.example_call_args(fields, values);
+        Some(Example::Call(member.class_name.clone(), args))
+    }
+
+    /// The keyword arguments of a model constructor built from an example's
+    /// `values`, one per field Fern's example writers pass: a required field
+    /// whatever the example holds, and an optional one the example gives a value.
+    fn example_call_args(
+        &mut self,
+        fields: Vec<ExampleField>,
+        values: &serde_json::Map<String, serde_json::Value>,
+    ) -> Vec<(Option<String>, Example)> {
+        let documentation = self.documentation;
+        fields
+            .into_iter()
+            // An example value of `{}` selects nothing: Fern renders no
+            // argument for an optional model field the example leaves
+            // empty (`mosip-esignet`'s `claims.id_token: {}`).
+            // Nor does `null`, but in the Markdown writers, which write a
+            // required nullable field's `null` as `None`; and an optional
+            // field whose schema is deprecated is left out even where the
+            // example names it.
+            .filter(|field| {
+                let value = values.get(&field.wire_name);
+                field.requirement == Requirement::Required
+                    || field.requirement == Requirement::RequiredNullable
+                        && documentation
+                        && value.is_some_and(serde_json::Value::is_null)
+                    || !field.deprecated
+                        && value.is_some_and(|value| {
+                            !value.is_null()
+                                && !value.as_object().is_some_and(serde_json::Map::is_empty)
+                        })
+            })
+            .map(
+                |ExampleField {
+                     py_name,
+                     wire_name,
+                     type_ref,
+                     requirement,
+                     ..
+                 }| {
+                    let rendered = match values.get(&wire_name) {
+                        Some(serde_json::Value::Null)
+                            if self.documentation
+                                && requirement == Requirement::RequiredNullable =>
+                        {
+                            Example::Atom("None".to_string())
+                        }
+                        Some(serde_json::Value::Null) => {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        Some(serde_json::Value::String(value))
+                            if self.example_is_temporal(&type_ref)
+                                && value.starts_with("2000-01-23T04:56:07") =>
+                        {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        // A YAML timestamp is a date to Fern's parser, so it
+                        // is no example for a field that is not temporal; see
+                        // [`yaml_resolves_as_timestamp`].
+                        Some(serde_json::Value::String(value))
+                            if self
+                                .yaml_unquoted_timestamps
+                                .is_some_and(|unquoted| unquoted.contains(value))
+                                && !self.example_is_temporal(&type_ref)
+                                && yaml_resolves_as_timestamp(value) =>
+                        {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        // An empty array carries no example value, so Fern
+                        // synthesizes one from the field name rather than
+                        // rendering `[]` (`mosip-esignet`'s
+                        // `permittedAuthorizeScopes: []`).
+                        Some(serde_json::Value::Array(items)) if items.is_empty() => {
+                            self.value(&type_ref, Slot::Named(&wire_name))
+                        }
+                        Some(value) => {
+                            let literal = value.to_string();
+                            self.value_from_example(&type_ref, &literal)
+                                .unwrap_or_else(|| {
+                                    example_from_json_as(value.clone(), !self.documentation)
+                                })
+                        }
+                        _ => self.value(&type_ref, Slot::Named(&wire_name)),
+                    };
+                    (Some(py_name), rendered)
+                },
+            )
+            .collect()
     }
 
     /// Whether `t` leads, through aliases alone, back into an alias this example
@@ -9178,6 +9268,23 @@ impl<'a> ExampleCtx<'a> {
             }
             TypeRef::Named(name) => match self.find(name) {
                 Some(TypeDecl::Alias(alias)) => self.resolves_to_unknown_union(&alias.target),
+                _ => false,
+            },
+            _ => false,
+        }
+    }
+
+    /// Whether the type is, after alias resolution, a union whose first
+    /// alternative is unknown, so that its example is the unknown's placeholder.
+    fn resolves_to_union_led_by_unknown(&self, t: &TypeRef) -> bool {
+        match t {
+            TypeRef::Union(variants) => variants
+                .first()
+                .is_some_and(|first| matches!(first, TypeRef::Primitive(Prim::Any))),
+            TypeRef::Named(name) => match self.find(name) {
+                Some(TypeDecl::Alias(alias)) => {
+                    self.resolves_to_union_led_by_unknown(&alias.target)
+                }
                 _ => false,
             },
             _ => false,
@@ -10218,11 +10325,29 @@ fn build_example_inner(
         .as_ref()
         .is_some_and(|body| body.is_wildcard_media() || matches!(body, RequestBody::Form(_)));
     let parameters_start = args.len();
-    let omits_required_query_arrays = ep.text_response
+    let mut omits_required_query_arrays = ep.text_response
         || ep.query_params.iter().any(|qp| {
             qp.required
                 && (matches!(qp.type_ref, TypeRef::Dict(..)) || ctx.example_is_object(&qp.type_ref))
         });
+    // So does one whose synthesized value is the unknown map placeholder
+    // `{"key": "value"}`: rice-shower's `time_start` is an `anyOf` led by an
+    // untyped `type: Date` member, and Fern leaves `channels` out beside it.
+    for qp in ep.query_params.iter().filter(|qp| {
+        qp.required
+            && qp.example.is_none()
+            && !matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+    }) {
+        if omits_required_query_arrays {
+            break;
+        }
+        let value =
+            ctx.without_recording(|ctx| ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name)));
+        omits_required_query_arrays = matches!(
+            value,
+            Example::Dict(_) | Example::DocDict(_) | Example::ReferenceDict(_)
+        );
+    }
     for qp in ep
         .query_params
         .iter()
@@ -10235,7 +10360,13 @@ fn build_example_inner(
         // of one operation: `application/xml`, `+json`, `204` and error-only
         // responses all show it, as does an optional map beside it. The
         // signature makes every query array optional, so either call runs.
-        if omits_required_query_arrays && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+        // A declared example is kept where Fern drops it (the
+        // `optional-lowered-required-query-array-example` departure): the
+        // specification's own value documents the argument the operation
+        // requires. A synthesized one is left out, as Fern leaves it.
+        if omits_required_query_arrays
+            && matches!(qp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+            && !(qp.example.is_some() && qp.example_is_scalar)
         {
             continue;
         }
@@ -10273,6 +10404,12 @@ fn build_example_inner(
                 Example::Dict(pairs)
             }
         } else {
+            // A union led by an unknown takes that unknown's placeholder, which
+            // the Markdown writers keep on its line as they keep any untyped
+            // value's: rice-shower's `time_start={"key": "value"}`.
+            if ctx.resolves_to_union_led_by_unknown(&qp.type_ref) {
+                ctx.untyped_arguments.insert(qp.py_name.clone());
+            }
             ctx.value(&qp.type_ref, Slot::Named(&qp.wire_name))
         };
         args.push((Some(qp.py_name.clone()), v));
@@ -10556,10 +10693,20 @@ fn build_example_inner(
                     .is_some_and(serde_json::Value::is_null),
                 None => f.media_example && f.example.as_deref() == Some("null"),
             };
+            let named_present = |f: &BodyField| {
+                reference_fields
+                    .and_then(|values| values.get(&f.wire_name))
+                    .is_some_and(|value| !value.is_null())
+            };
+            // An empty array names the field without a value, as in the
+            // docstring's example (see `apply_body_example`): the field is
+            // passed its own example or a synthesized one.
             let named_value = |f: &BodyField| {
                 reference_fields
                     .and_then(|values| values.get(&f.wire_name))
-                    .filter(|value| !value.is_null())
+                    .filter(|value| {
+                        !value.is_null() && !value.as_array().is_some_and(Vec::is_empty)
+                    })
             };
             // A required field is shown whatever its marks; an optional one whose
             // schema is deprecated is left out even where the example names it.
@@ -10570,7 +10717,7 @@ fn build_example_inner(
                 }
                 f.spec_required && (!f.optional || is_any_type(&f.type_ref))
                     || !f.deprecated
-                        && (named_value(f).is_some()
+                        && (named_present(f)
                             || reference_fields.is_none() && f.media_example && !fallback)
             };
             let composed_request_media_example = ep.body_composition.is_all_of()
@@ -10638,7 +10785,11 @@ fn build_example_inner(
                 let supplied_example = f
                     .example
                     .as_deref()
-                    .filter(|_| reference_fields.is_none() && !example_null(f) && !fallback)
+                    .filter(|_| {
+                        (reference_fields.is_none() || named_present(f) && named_value(f).is_none())
+                            && !example_null(f)
+                            && !fallback
+                    })
                     // A binary download's inline body drops its media example:
                     // MockServer's file retrieval shows Fern's `name="name"`.
                     .filter(|_| !(ep.binary_response && f.media_example && !f.schema_body_example))

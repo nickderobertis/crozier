@@ -48,6 +48,7 @@ from __future__ import annotations
 import argparse
 import functools
 import importlib.util
+import io
 import json
 import re
 import sys
@@ -1031,7 +1032,7 @@ def summary(root: Path) -> tuple[list[str], list[str]]:
         hunks[residual.owner or UNOWNED] += len(residual.hunks)
 
     def spelled(counts: Counter[str]) -> str:
-        return ", ".join(f"{name} {count}" for name, count in sorted(counts.items()))
+        return ", ".join(f"{name} {count}" for name, count in sorted(counts.items())) or NONE
 
     def rows(proof: Proof, residual: str) -> str:
         """The committed rows behind one open residual: its `residuals.tsv` hunks, or its python_enums diff."""
@@ -1099,4 +1100,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":
+    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     sys.exit(main())

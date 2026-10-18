@@ -1334,9 +1334,11 @@ fn ruff_is_installed_at_its_pinned_version_only_when_absent() {
         "pipx",
         "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$RECORD\"\n",
     );
-    // PATH without any `ruff`, the stand-in pipx first.
+    // PATH without any `ruff`, the stand-in pipx first. A relative entry
+    // (`.venv/bin`) resolves against the step's own working directory, not
+    // this test's, so it is dropped rather than checked from here.
     let without_ruff = std::env::split_paths(&std::env::var("PATH").unwrap())
-        .filter(|dir| !dir.join("ruff").exists())
+        .filter(|dir| dir.is_absolute() && !dir.join("ruff").exists())
         .collect::<Vec<_>>();
     let path =
         std::env::join_paths(std::iter::once(stubs.path().to_path_buf()).chain(without_ruff))

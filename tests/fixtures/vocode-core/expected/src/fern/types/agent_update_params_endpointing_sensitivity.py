@@ -1,0 +1,8 @@
+
+
+import typing
+
+from .agent_update_params_endpointing_sensitivity_zero import AgentUpdateParamsEndpointingSensitivityZero
+from .undefined import Undefined
+
+AgentUpdateParamsEndpointingSensitivity = typing.Union[AgentUpdateParamsEndpointingSensitivityZero, Undefined]

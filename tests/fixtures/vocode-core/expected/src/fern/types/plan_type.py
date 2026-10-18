@@ -1,0 +1,30 @@
+
+
+import typing
+
+from ..core import enum
+
+T_Result = typing.TypeVar("T_Result")
+
+
+class PlanType(enum.StrEnum):
+    PLAN_FREE = "plan_free"
+    PLAN_DEVELOPER = "plan_developer"
+    PLAN_ENTERPRISE = "plan_enterprise"
+    PLAN_UNLIMITED = "plan_unlimited"
+
+    def visit(
+        self,
+        plan_free: typing.Callable[[], T_Result],
+        plan_developer: typing.Callable[[], T_Result],
+        plan_enterprise: typing.Callable[[], T_Result],
+        plan_unlimited: typing.Callable[[], T_Result],
+    ) -> T_Result:
+        if self is PlanType.PLAN_FREE:
+            return plan_free()
+        if self is PlanType.PLAN_DEVELOPER:
+            return plan_developer()
+        if self is PlanType.PLAN_ENTERPRISE:
+            return plan_enterprise()
+        if self is PlanType.PLAN_UNLIMITED:
+            return plan_unlimited()

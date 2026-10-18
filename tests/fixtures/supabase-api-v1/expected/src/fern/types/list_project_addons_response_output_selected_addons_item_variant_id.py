@@ -1,0 +1,39 @@
+
+
+import typing
+
+from .list_project_addons_response_output_selected_addons_item_variant_id_five import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdFive,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_four import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdFour,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_one import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdOne,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_seven import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdSeven,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_six import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdSix,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_three import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdThree,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_two import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdTwo,
+)
+from .list_project_addons_response_output_selected_addons_item_variant_id_zero import (
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdZero,
+)
+
+ListProjectAddonsResponseOutputSelectedAddonsItemVariantId = typing.Union[
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdZero,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdOne,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdTwo,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdThree,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdFour,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdFive,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdSix,
+    ListProjectAddonsResponseOutputSelectedAddonsItemVariantIdSeven,
+]

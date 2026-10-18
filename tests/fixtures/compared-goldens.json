@@ -49,6 +49,18 @@
     "docs/fern-measurements/clients-extensions/weather-buoy-feeds/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules-literals/fern-expected": {},
     "docs/fern-measurements/examples-docs/archive-glob-rules/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-component-examples-literals/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-component-examples/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-crew-roles/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-dock-log/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-dock-refs/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-emoji-tag/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-empty-list-example/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-firmware-upload/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-nullable-note/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-radio-parts/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-skipper-refs/fern-expected": {},
+    "docs/fern-measurements/examples-docs/marina-tide-channels/fern-expected": {},
     "docs/fern-measurements/literals-mode/avionics-booking/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -350,8 +362,11 @@
     "docs/fern-measurements/schema-shapes-literals/kiln-nested-reason/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes-literals/kiln-variant-trigger/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-annotated-body/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/kiln-nullable-member/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response-literals/fern-expected": {},
     "docs/fern-measurements/schema-shapes/kiln-problem-response/fern-expected": {},
+    "docs/fern-measurements/schema-shapes/query-union-array-enum-member/fern-expected": {},
     "docs/fern-measurements/union-literals/atlas-untagged-inline-discriminator/fern-expected": {
       "excluded": [
         ".crozier-overlay.json"
@@ -512,12 +527,10 @@
     "docs/openapi-surface/handwritten/invoice-renderer/fern-expected": {},
     "docs/openapi-surface/handwritten/json-binary-path/fern-expected": {},
     "docs/openapi-surface/handwritten/json-request-shapes/fern-expected": {},
-    "docs/openapi-surface/handwritten/kiln-annotated-body/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-array-variants/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-form-mode/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-nested-reason/fern-expected": {},
-    "docs/openapi-surface/handwritten/kiln-nullable-member/fern-expected": {},
     "docs/openapi-surface/handwritten/kiln-variant-trigger/fern-expected": {},
     "docs/openapi-surface/handwritten/kitchen-nested-mapping-target/fern-expected": {},
     "docs/openapi-surface/handwritten/lamp-room-log/fern-expected": {},
@@ -571,7 +584,6 @@
     "docs/openapi-surface/handwritten/property-sole-oneof-empty-object-member/fern-expected": {},
     "docs/openapi-surface/handwritten/query-array-items-union/fern-expected": {},
     "docs/openapi-surface/handwritten/query-param-ref-to-enum-or-array-union-converted/fern-expected": {},
-    "docs/openapi-surface/handwritten/query-union-array-enum-member/fern-expected": {},
     "docs/openapi-surface/handwritten/quiz-nullable-response-union/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-ignored-head/fern-expected": {},
     "docs/openapi-surface/handwritten/ref-pointer-walk/fern-expected": {},
@@ -843,6 +855,12 @@
     "tests/fixtures/dnd5eapi.co/expected": {},
     "tests/fixtures/docu-goapiserver/expected": {},
     "tests/fixtures/dot-ai/expected": {},
+    "tests/fixtures/dystore-api/expected": {},
+    "tests/fixtures/dystore-api/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/ego-microservices/expected": {},
     "tests/fixtures/electric-sql/expected": {},
     "tests/fixtures/embedpdf-cloudpdf/expected": {},
@@ -950,6 +968,12 @@
     },
     "tests/fixtures/kytos-sdntrace-cp/expected": {},
     "tests/fixtures/langchain-agent-protocol/expected": {},
+    "tests/fixtures/langchain-agent-server/expected": {},
+    "tests/fixtures/langchain-agent-server/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/letta/expected": {},
     "tests/fixtures/listennotes/expected": {},
     "tests/fixtures/livepeer-ai-runner/expected": {},
@@ -1037,6 +1061,18 @@
     "tests/fixtures/redhat.com-catalog_inventory/expected": {},
     "tests/fixtures/redocly.com-museum/expected": {},
     "tests/fixtures/reverb.com/expected": {},
+    "tests/fixtures/rice-shower/expected": {},
+    "tests/fixtures/rice-shower/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
+    "tests/fixtures/rta-in-japan-twitter/expected": {},
+    "tests/fixtures/rta-in-japan-twitter/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/sac-backend/expected": {},
     "tests/fixtures/schema-constraints/expected": {},
     "tests/fixtures/servers-webhooks/expected": {},
@@ -1125,6 +1161,12 @@
         ".crozier-overlay.json"
       ]
     },
+    "tests/fixtures/supabase-api-v1/expected": {},
+    "tests/fixtures/supabase-api-v1/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/svix-webhooks/expected": {},
     "tests/fixtures/swagger-petstore-distribution/expected-flat": {},
     "tests/fixtures/swagger-petstore-organization/expected-flat": {},
@@ -1147,6 +1189,12 @@
     "tests/fixtures/typescript-service-template/expected": {},
     "tests/fixtures/vellum-gateway/expected": {},
     "tests/fixtures/viskit-studio/expected": {},
+    "tests/fixtures/vocode-core/expected": {},
+    "tests/fixtures/vocode-core/expected-literals": {
+      "excluded": [
+        ".crozier-overlay.json"
+      ]
+    },
     "tests/fixtures/volview-backend-contract/expected": {},
     "tests/fixtures/vtex-pricing/expected": {},
     "tests/fixtures/waylay-queries/expected": {},

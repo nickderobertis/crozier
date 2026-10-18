@@ -577,3 +577,41 @@ Additional examples and documentation specifications:
     Attribution 3.0 redistribution, inside the aggregation's CC0-1.0 LICENSE;
     corpus row 2201 records the immutable reference. The unmodified source and
     Fern-generated output are vendored, with Python comments stripped as above.
+
+Additional hosted-API specifications:
+
+  * Vocode Hosted API: the publisher's own description at
+    https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2800 records the immutable reference. The unmodified source
+    and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Lunar API (dystore): the publisher's own description at
+    https://raw.githubusercontent.com/dystcz/dystore-api/ffd4d907e6909b0e2b137a490765e144e8d537e7/openapi.yaml.
+    The repository's LICENSE.md at that revision permits redistribution under
+    MIT; corpus row 2801 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * LangSmith Deployment (Agent Server) API: the publisher's own description at
+    https://raw.githubusercontent.com/langchain-ai/docs/264fdf88d3fc53d5d2397fadf3b6dba36b95dd0e/src/langsmith/agent-server-openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2802 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Rice Shower (LT Capstone) API: the publisher's own description at
+    https://raw.githubusercontent.com/Q2TM/low-temperature-control/b100b3633a68a41ba63181379455e98b4814da19/apps/rice-shower/docs/openapi.yaml.
+    The repository's LICENSE at that revision permits redistribution under
+    MIT; corpus row 2803 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * Supabase Management API (v1): the publisher's own description at
+    https://raw.githubusercontent.com/supabase/supabase/36371de15127206280d2d40786e8578dfe1b681a/apps/docs/spec/api_v1_openapi.json.
+    The repository's LICENSE at that revision permits redistribution under
+    Apache-2.0; corpus row 2804 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
+
+  * RTA in Japan Twitter API: the publisher's own description at
+    https://raw.githubusercontent.com/RTAinJapan/rta-in-japan-twitter-api-docs/b5b30318e41647d44795f85dbfc428da8e93739a/openapi.yaml.
+    The repository's LICENSE at that revision permits redistribution under
+    Apache-2.0; corpus row 2805 records the immutable reference. The unmodified
+    source and Fern-generated output are vendored, with Python comments stripped as above.
