@@ -2676,6 +2676,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
+    normalize_sibling_one_of_constraints(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_unresolved_schema_pointers(&mut doc);
     normalize_error_class_schema_names(&mut doc);
@@ -2967,6 +2968,140 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
             }
         });
     });
+}
+
+/// Read a `oneOf` whose branches only constrain the schema's own sibling
+/// `properties` as that constraint, not a union: the node becomes its object,
+/// requiring every property all branches require. Fern's importer (measured at
+/// CLI 5.163.1) converts such a schema as an object, so sigstore-rekor's
+/// `DSSESchema` branch — `properties: {proposedContent, signatures, …}` with
+/// `oneOf: [{required: [proposedContent]}, {required: [signatures, …]}]` — and
+/// free5gc's `GlobalRanNodeId` (`oneOf: [{required: [n3IwfId]}, {required:
+/// [gNbId]}, …]` beside `plmnId` and the three ids) are object models. A
+/// branch qualifies only when it is an inline object declaring nothing but
+/// `type`, `properties` and `required` (annotations aside), names something,
+/// and names only sibling properties it does not re-type; an `allOf` beside the
+/// `oneOf`, an `anyOf`, or `x-crozier-discriminated: true` keeps the union.
+fn normalize_sibling_one_of_constraints(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let Some(branches) = node.one_of.as_deref() else {
+                return;
+            };
+            if node.any_of.is_some()
+                || node.all_of.is_some()
+                || node.properties.is_empty()
+                || node.required.is_unlisted()
+                || node.discriminated() == Some(true)
+                || !node.ty.as_ref().is_none_or(is_object_type_field)
+                || !branches
+                    .iter()
+                    .all(|branch| constrains_siblings(branch, &node.properties))
+            {
+                return;
+            }
+            let lists: Vec<Vec<String>> = branches
+                .iter()
+                .map(|branch| match &branch.required {
+                    RequiredNames::Listed(names) => names.clone(),
+                    RequiredNames::Unlisted => Vec::new(),
+                })
+                .collect();
+            let (first, rest) = lists.split_first().expect("a non-empty oneOf");
+            for name in first {
+                let shared = rest.iter().all(|names| names.contains(name));
+                let listed =
+                    matches!(&node.required, RequiredNames::Listed(names) if names.contains(name));
+                if shared && !listed {
+                    node.required.push(name.clone());
+                }
+            }
+            node.one_of = None;
+        });
+    });
+}
+
+/// `type: object`, or a 3.1 list of `object` and `null`.
+fn is_object_type_field(ty: &TypeField) -> bool {
+    match ty {
+        TypeField::Single(name) => name == "object",
+        TypeField::Multiple(names) => {
+            let mut named = names.iter().filter(|name| *name != "null");
+            named.next().is_some_and(|name| name == "object") && named.next().is_none()
+        }
+    }
+}
+
+/// Whether a `oneOf` branch only constrains `siblings`, the schema's own
+/// properties (see [`normalize_sibling_one_of_constraints`]).
+fn constrains_siblings(branch: &Schema, siblings: &SchemaProperties) -> bool {
+    let mut rest = annotations_cleared(branch);
+    let ty = rest.ty.take();
+    let properties = std::mem::take(&mut rest.properties);
+    let required = std::mem::take(&mut rest.required);
+    let RequiredNames::Listed(required) = required else {
+        return false;
+    };
+    if rest != Schema::default() || !ty.as_ref().is_none_or(is_object_type_field) {
+        return false;
+    }
+    if properties.is_empty() && required.is_empty() {
+        return false;
+    }
+    required.iter().all(|name| siblings.contains_key(name))
+        && properties.iter().all(|(name, restated)| {
+            siblings
+                .get(name)
+                .is_some_and(|sibling| restates_sibling(restated, sibling))
+        })
+}
+
+/// Whether every keyword a branch's property writes, annotations aside, is the
+/// sibling property's own value for it: Fern accepts a restatement only as a
+/// subset of what the sibling already says.
+fn restates_sibling(restated: &Schema, sibling: &Schema) -> bool {
+    let mut rest = annotations_cleared(restated);
+    let sibling = annotations_cleared(sibling);
+    macro_rules! same {
+        ($($field:ident),*) => {
+            $(
+                if rest.$field.is_some() {
+                    if rest.$field != sibling.$field {
+                        return false;
+                    }
+                    rest.$field = None;
+                }
+            )*
+        };
+    }
+    same!(
+        reference,
+        ty,
+        format,
+        enum_values,
+        const_value,
+        pattern,
+        min_length,
+        max_length,
+        minimum,
+        items,
+        nullable
+    );
+    rest == Schema::default()
+}
+
+/// `schema` without the annotation keywords that never constrain a value.
+fn annotations_cleared(schema: &Schema) -> Schema {
+    Schema {
+        title: None,
+        description: None,
+        default: None,
+        deprecated: false,
+        example: None,
+        examples: Vec::new(),
+        read_only: None,
+        ..schema.clone()
+    }
 }
 
 /// Preserve the response component's identity when its inline media schema is
@@ -5997,6 +6132,84 @@ components:
         );
         let nested = &doc.components.schemas["Wrapper"].properties["handler"];
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
+    }
+
+    /// free5gc's `GlobalRanNodeId` and sigstore-rekor's DSSE branch (measured at
+    /// Fern CLI 5.163.1): a `oneOf` of branches that only constrain sibling
+    /// properties is that constraint, so the node is its object, requiring what
+    /// every branch requires.
+    #[test]
+    fn normalize_sibling_one_of_constraints_reads_the_constraint_as_an_object() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    RanNode:
+      type: object
+      required: [plmn]
+      properties:
+        plmn: { type: string }
+        gnb: { type: string, pattern: "^[0-9]+$" }
+        ngeNb: { type: string }
+      oneOf:
+        - required: [gnb, plmn]
+        - { required: [ngeNb, plmn], properties: { ngeNb: { type: string, description: Restated. } } }
+    Wrapper:
+      type: object
+      properties:
+        envelope:
+          properties:
+            content: { type: string }
+            hash: { type: string }
+          oneOf:
+            - required: [content, hash]
+            - required: [hash]
+    UnknownSibling:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }, { required: [b] }]
+    Retyped:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ properties: { a: { type: integer } } }, { required: [a] }]
+    Referenced:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ $ref: '#/components/schemas/RanNode' }, { required: [a] }]
+    Discriminated:
+      type: object
+      x-crozier-discriminated: true
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }]
+    Scalar:
+      type: string
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }]
+    Bare:
+      oneOf: [{ required: [a] }]
+"##,
+        );
+        normalize_sibling_one_of_constraints(&mut doc);
+        let schemas = &doc.components.schemas;
+        let node = &schemas["RanNode"];
+        assert!(node.one_of.is_none());
+        assert_eq!(node.required.iter().collect::<Vec<_>>(), ["plmn"]);
+        let envelope = &schemas["Wrapper"].properties["envelope"];
+        assert!(envelope.one_of.is_none());
+        assert_eq!(envelope.required.iter().collect::<Vec<_>>(), ["hash"]);
+        for kept in [
+            "UnknownSibling",
+            "Retyped",
+            "Referenced",
+            "Discriminated",
+            "Scalar",
+            "Bare",
+        ] {
+            assert!(schemas[kept].one_of.is_some(), "{kept} stays a union");
+        }
     }
 
     #[test]
