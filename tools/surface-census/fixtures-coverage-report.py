@@ -30,6 +30,7 @@ credits macro-expansion segments; regions are the headline number either way.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import re
 import sys
@@ -526,4 +527,8 @@ def main(argv: list[str] | None = None) -> int:
 
 
 if __name__ == "__main__":  # pragma: no cover - exercised through the recipe
+    # The CLI emits UTF-8 even when a Windows pipe defaults to a legacy codec.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(encoding="utf-8", errors="backslashreplace")
     raise SystemExit(main())

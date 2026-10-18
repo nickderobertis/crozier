@@ -16141,13 +16141,16 @@ class ScenarioProofIndexTests(unittest.TestCase):
         failures = self.index_script.check(root)
         self.assertTrue(any(message in failure for failure in failures), failures)
 
-    def run_script(self, *args: str, root: Path = REPO) -> subprocess.CompletedProcess[str]:
+    def run_script(
+        self, *args: str, root: Path = REPO, env: dict[str, str] | None = None
+    ) -> subprocess.CompletedProcess[str]:
         script = REPO / "tools/surface-census/scenario-proof-index.py"
         return subprocess.run(
             [sys.executable, str(script), "--repo-root", str(root), *args],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
             check=False,
+            env=env,
         )
 
     def test_the_committed_index_and_witnesses_reconcile(self) -> None:
@@ -16843,6 +16846,13 @@ class ScenarioProofIndexTests(unittest.TestCase):
         section = report.split("## Scenario proof index", 1)[1].split("\n## ", 1)[0]
         quoted = section.split("```text\n", 1)[1].split("```", 1)[0]
         self.assertEqual(run.stdout, quoted, "re-run `scenario-proof-index.py summary` and quote it")
+
+    def test_the_summary_is_utf8_under_a_legacy_locale_encoding(self) -> None:
+        """A Windows pipe defaults to the locale's code page; the em dash still arrives as UTF-8."""
+        legacy = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+        run = self.run_script("summary", env=legacy)
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertIn("witness hunks by owner: \u2014", run.stdout.splitlines())
 
     def test_repository_paths_are_spelled_with_slashes_under_windows_path_semantics(self) -> None:
         """On Windows `str()` of a `Path` uses backslashes; every path the tooling renders still uses `/`."""
