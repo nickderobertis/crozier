@@ -3544,6 +3544,35 @@ pub(crate) const DEFAULT_SDK_VERSION: &str = "0.0.0";
 /// the `fern-metadata-generator-config` departure recognises exactly this record.
 pub(crate) const FERN_METADATA_RECORD: &str = include_str!("../assets/scaffolding/metadata.json");
 
+/// The Fern pair crozier is certified against: a Fern CLI version and the
+/// `fernapi/fern-python-sdk` generator version it drives.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FernPair {
+    /// The Fern CLI version (`cliVersion`).
+    pub cli: &'static str,
+    /// The `fernapi/fern-python-sdk` version (`generatorVersion`).
+    pub python_sdk: &'static str,
+}
+
+/// The certified Fern pair, read from `assets/scaffolding/metadata.json` — the
+/// one declaration of it. Tests and tools derive every spelling of the pair from
+/// that file rather than restating it.
+pub fn certified_fern_pair() -> FernPair {
+    #[derive(serde::Deserialize)]
+    #[serde(rename_all = "camelCase")]
+    struct Record {
+        cli_version: &'static str,
+        generator_version: &'static str,
+    }
+    // The record is compiled in; a malformed one fails every test that reads it.
+    let record: Record = serde_json::from_str(FERN_METADATA_RECORD)
+        .expect("assets/scaffolding/metadata.json names cliVersion and generatorVersion");
+    FernPair {
+        cli: record.cli_version,
+        python_sdk: record.generator_version,
+    }
+}
+
 /// Project scaffolding Fern emits verbatim apart from project/package names and
 /// the SDK version. The Python test/default-client templates carry the same
 /// substitutions so non-`fern` package names remain importable. Vendored under

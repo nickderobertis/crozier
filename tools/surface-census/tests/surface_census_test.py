@@ -54,6 +54,8 @@ os.environ["PYTHONUTF8"] = "1"
 
 REPO = Path(__file__).resolve().parents[3]
 FIXTURES = REPO / "tests" / "fixtures"
+# The certified Fern pair, from its one declaration.
+CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 
 # The vendored sources these cases assert against, and what each one is here for:
 # a 3.1 document with webhooks and a callback whose only `name:` line is a schema
@@ -16260,8 +16262,9 @@ class ScenarioProofIndexTests(unittest.TestCase):
         golden = row["goldens"].split(";")[0]
         root = self.mirror()
         metadata = root / golden / ".fern/metadata.json"
-        self.rewrite(metadata, '"5.20.0"', '"5.21.0"')
-        self.assert_fails(root, f"golden {golden} is not output of Fern CLI 5.67.1 with fern-python-sdk 5.20.0")
+        cli, generator = CERTIFIED["cliVersion"], CERTIFIED["generatorVersion"]
+        self.rewrite(metadata, f'"{generator}"', '"0.0.0"')
+        self.assert_fails(root, f"golden {golden} is not output of Fern CLI {cli} with fern-python-sdk {generator}")
         self.rewrite(metadata, '"python_enums"', '"literals"')
         self.assert_fails(root, f"{row['shape']}: settings {row['settings']} disagree")
         metadata.write_text("{", encoding="utf-8")

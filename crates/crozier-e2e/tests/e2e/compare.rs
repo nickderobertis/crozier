@@ -1965,6 +1965,7 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
         "",
     );
     write(root, &format!("refs/unpackaged/{wrapper}"), &unpackaged);
+    let sdk = crozier::emit::certified_fern_pair().python_sdk;
     let braced = edited_golden(
         metadata,
         "\"client_class_name\": \"AcmeClient\"",
@@ -1981,8 +1982,8 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
         &format!("refs/shared-line/{metadata}"),
         &edited_golden(
             metadata,
-            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
-            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+            &format!("\"generatorVersion\": \"{sdk}\",\n  \"generatorConfig\""),
+            &format!("\"generatorVersion\": \"{sdk}\", \"generatorConfig\""),
         ),
     );
 

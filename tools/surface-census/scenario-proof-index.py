@@ -131,7 +131,13 @@ class FernPair(NamedTuple):
     generator: str
 
 
-PIN = FernPair(cli="5.67.1", generator="5.20.0")
+def certified_pair(metadata: Path) -> FernPair:
+    """The certified pair `metadata` (`assets/scaffolding/metadata.json`, its one declaration) records."""
+    record = json.loads(metadata.read_text(encoding="utf-8"))
+    return FernPair(cli=record["cliVersion"], generator=record["generatorVersion"])
+
+
+PIN = certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
 
 
 class EnumType(StrEnum):

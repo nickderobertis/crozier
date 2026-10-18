@@ -1272,13 +1272,14 @@ class FernRescreenVerdictTests(unittest.TestCase):
     def test_the_screen_workspace_is_generate_fern_fixtures_at_the_corpus_pins(self) -> None:
         """The pins come from the goldens' provenance; the workspace is the fixture script's own."""
         script = (REPO / "tools" / "fern-goldens" / "generate-fern-fixture.sh").read_text(encoding="utf-8")
+        certified = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
         cli, name, version, _config = golden_reach_search.corpus_fern_pins()
-        self.assertEqual(("5.67.1", "fernapi/fern-python-sdk", "5.20.0"), (cli, name, version))
-        self.assertEqual("Fern CLI 5.67.1 / python-sdk 5.20.0", golden_reach_search.fern_label())
-        default = re.search(r'FERN_CLI_VERSION="\$\{FERN_CLI_VERSION:-([^}]+)\}"', script)
-        self.assertIsNotNone(default, "generate-fern-fixture.sh no longer defaults its Fern CLI version")
-        assert default is not None
-        self.assertEqual(cli, default.group(1))
+        self.assertEqual(
+            (certified["cliVersion"], certified["generatorName"], certified["generatorVersion"]), (cli, name, version)
+        )
+        self.assertEqual(f"Fern CLI {cli} / python-sdk {version}", golden_reach_search.fern_label())
+        # The script's CLI default is the certified pair's, read from the same record.
+        self.assertIn('FERN_CLI_VERSION="$(certified_fern_pair_field cliVersion "$repo_root")"', script)
         heredoc = re.search(r'cat > "\$workdir/fern/generators\.yml" <<YAML\n(.*?)\nYAML\n', script, re.S)
         self.assertIsNotNone(heredoc, "generate-fern-fixture.sh no longer writes generators.yml from a heredoc")
         assert heredoc is not None

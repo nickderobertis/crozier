@@ -171,7 +171,8 @@ fn the_inline_copies_of_the_recipe_equal_the_docs_page() {
         }
     }
     // The comparison can fail: an altered copy is told apart.
-    assert!(first_difference(&script.replace("5.67.1", "5.67.2"), &script).is_some());
+    let cli = crozier::emit::certified_fern_pair().cli;
+    assert!(first_difference(&script.replace(cli, "0.0.0-altered"), &script).is_some());
 }
 
 /// The example workflow states, installs and pre-pulls the pair crozier
@@ -402,13 +403,14 @@ fn packaged_builds_the_workspace_and_generates_in_preview_mode() {
     assert!(run.status.success(), "{}", run.stderr);
     let recorded = run.recorded.expect("fern ran");
     // The certified pair, and the organization that reproduces package `fern`.
+    let pair = crozier::emit::certified_fern_pair();
     assert_eq!(
         recorded.config,
-        serde_json::json!({"organization": "fern", "version": "5.67.1"})
+        serde_json::json!({"organization": "fern", "version": pair.cli})
     );
     let generator = generator(&recorded);
     assert_eq!(generator["name"], "fernapi/fern-python-sdk");
-    assert_eq!(generator["version"], "5.20.0");
+    assert_eq!(generator["version"], pair.python_sdk);
     let config = &generator["config"];
     assert_eq!(config["client_class_name"], "AcmeClient");
     assert_eq!(config["pydantic_config"]["enum_type"], "python_enums");
@@ -520,9 +522,10 @@ fn flat_writes_a_local_file_system_output_and_generates_without_preview() {
     assert!(run.status.success(), "{}", run.stderr);
     let recorded = run.recorded.expect("fern ran");
     assert_eq!(recorded.config["organization"], "my_api2");
-    assert_eq!(recorded.config["version"], "5.67.1");
+    let pair = crozier::emit::certified_fern_pair();
+    assert_eq!(recorded.config["version"], pair.cli);
     let generator = generator(&recorded);
-    assert_eq!(generator["version"], "5.20.0");
+    assert_eq!(generator["version"], pair.python_sdk);
     assert_eq!(generator["config"]["client_class_name"], "MyApi2Api");
     assert_eq!(
         generator["config"]["pydantic_config"]["enum_type"],

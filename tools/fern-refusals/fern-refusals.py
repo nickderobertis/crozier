@@ -2,8 +2,8 @@
 """Build the refused-document population of `docs/fern-refusals/`.
 
 The registry's population is every document crozier's committed records name as
-refused, crashed on, or falsely reported successful by Fern (CLI 5.67.1,
-`fernapi/fern-python-sdk` 5.20.0):
+refused, crashed on, or falsely reported successful by Fern (the certified CLI
+and `fernapi/fern-python-sdk` pair `assets/scaffolding/metadata.json` declares):
 
 * the `DROPPED` rows of `tests/fixtures/CORPUS.md` whose reason is a Fern
   failure — a reason that names Fern; rows dropped for redundancy never do —
@@ -126,8 +126,10 @@ MEASUREMENT_GRAMMAR = {
     "generate_files": _COUNT,
     "crozier_files": _COUNT,
 }
-FERN_CLI = "5.67.1"
-FERN_PYTHON_SDK = "5.20.0"
+# The certified pair, read from its one declaration.
+_CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
+FERN_CLI: str = _CERTIFIED["cliVersion"]
+FERN_PYTHON_SDK: str = _CERTIFIED["generatorVersion"]
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.

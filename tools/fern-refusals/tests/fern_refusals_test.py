@@ -38,8 +38,12 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
+# The script and the record it reads the certified pair from, as a scratch root mirrors them.
+SCRIPT_LOADS = ("tools/fern-refusals/fern-refusals.py", "assets/scaffolding/metadata.json")
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
+# The certified Fern pair, from its one declaration.
+CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
 
 
@@ -388,7 +392,7 @@ class MissingInputs(unittest.TestCase):
     def assert_select_names_missing(self, missing: str) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
+            for relative in (*SCRIPT_LOADS, *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 if relative != missing:
                     shutil.copy(REPO / relative, root / relative)
@@ -414,7 +418,7 @@ class MissingInputs(unittest.TestCase):
         """`select` from a scratch checkout whose `source` enumeration is `text`."""
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
+            for relative in (*SCRIPT_LOADS, *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             with gzip.open(root / self.enumeration(source), "wt", encoding="utf-8") as handle:
@@ -479,7 +483,7 @@ class MalformedInputs(unittest.TestCase):
     def select_over(self, edit: tuple[str, str]) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *MissingInputs.INPUTS, *self.CANDIDATES):
+            for relative in (*SCRIPT_LOADS, *MissingInputs.INPUTS, *self.CANDIDATES):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             relative, line = edit
@@ -687,7 +691,9 @@ class FernRuns(unittest.TestCase):
         self.scratch = tempfile.TemporaryDirectory()
         self.root = root = Path(self.scratch.name)
         (root / "tools" / "fern-refusals").mkdir(parents=True)
-        shutil.copy(SCRIPT, root / "tools" / "fern-refusals" / "fern-refusals.py")
+        for relative in SCRIPT_LOADS:
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(REPO / relative, root / relative)
         self.registry = root / "docs" / "fern-refusals"
         self.evidence = root / "docs" / "openapi-surface" / "fern-refusals"
         (self.registry / self.CLASS).mkdir(parents=True)
@@ -750,8 +756,8 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in calls], ["check", "generate"])
         self.assertTrue(
             all(
-                call["cli"] == "5.67.1"
-                and "version: 5.20.0" in call["generators"]
+                call["cli"] == CERTIFIED["cliVersion"]
+                and f"version: {CERTIFIED['generatorVersion']}" in call["generators"]
                 and call["node_options"] == "--max-old-space-size=16384"
                 for call in calls
             )

@@ -18,6 +18,7 @@
       "cache": true,
       "inputs": [
         "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
         "{workspaceRoot}/docs/fern-refusals/**/*",
         "{workspaceRoot}/docs/openapi-surface/**/*",
         "{workspaceRoot}/tests/fixtures/CORPUS.md",

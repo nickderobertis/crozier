@@ -15092,8 +15092,9 @@ fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> 
     )
     .unwrap();
     assert_eq!(manifest["enum_type"], "literals", "{}", overlay.display());
-    assert_eq!(manifest["fern_cli_version"], "5.67.1");
-    assert_eq!(manifest["fern_python_sdk_version"], "5.20.0");
+    let pair = crozier::emit::certified_fern_pair();
+    assert_eq!(manifest["fern_cli_version"], pair.cli);
+    assert_eq!(manifest["fern_python_sdk_version"], pair.python_sdk);
     let removed: Vec<&str> = manifest["removed"]
         .as_array()
         .unwrap()
