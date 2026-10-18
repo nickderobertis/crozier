@@ -223,6 +223,12 @@ pub struct Environment {
     pub url_template: String,
     /// Server URL variables exposed as optional root-client constructor parameters.
     pub variables: Vec<ServerUrlVariable>,
+    /// Each member whose server declares variables, `(member, URL template)` in
+    /// member order: the entries of the root client's
+    /// `_environment_url_templates`, from which a variable override formats the
+    /// URL of the environment the caller chose (Fern's IR sets a server's
+    /// `urlTemplate` exactly when it declares variables).
+    pub url_templates: Vec<(String, String)>,
     /// The URLs operations reach beside the document's own, `(field, url)` in
     /// first-appearance order: one per distinct `x-fern-server-name` an
     /// operation-level server carries. Empty for a one-URL environment, the
@@ -315,12 +321,21 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
         }
     }
     let mut named = named.into_iter();
-    let (default_name, default) = named.next().unwrap_or(("DEFAULT".to_string(), first));
+    let default = named.next().unwrap_or(("DEFAULT".to_string(), first));
+    let members: Vec<(String, &crate::openapi::Server)> =
+        std::iter::once(default.clone()).chain(named).collect();
+    let (default_name, default) = default;
     Some(Environment {
         enum_name: format!("{client_name}Environment"),
         default: (default_name, resolve_server_url(default)),
-        others: named
-            .map(|(name, server)| (name, resolve_server_url(server)))
+        others: members[1..]
+            .iter()
+            .map(|(name, server)| (name.clone(), resolve_server_url(server)))
+            .collect(),
+        url_templates: members
+            .iter()
+            .filter(|(_, server)| !server.variables.is_empty())
+            .map(|(name, server)| (name.clone(), server.url.clone()))
             .collect(),
         url_template: default.url.clone(),
         variables: default
