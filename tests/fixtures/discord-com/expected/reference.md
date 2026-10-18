@@ -11273,7 +11273,18 @@ client.list_guild_audit_log_entries(
 <dd>
 
 ```python
-client.get_guild_widget_png(...)
+from fern import FernApi
+from fern.environment import FernApiEnvironment
+
+client = FernApi(
+    api_key="<value>",
+    environment=FernApiEnvironment.DEFAULT,
+)
+
+client.get_guild_widget_png(
+    guild_id="guild_id",
+)
+
 ```
 </dd>
 </dl>

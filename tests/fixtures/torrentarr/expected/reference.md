@@ -2197,7 +2197,7 @@ client.web_ui.api_process_restart(
 <dl>
 <dd>
 
-**kind:** `str` 
+**kind:** `str` — search, torrent, category, or all
     
 </dd>
 </dl>
@@ -4639,7 +4639,7 @@ client.web_ui.web_process_restart(
 <dl>
 <dd>
 
-**kind:** `str` 
+**kind:** `str` — search, torrent, category, or all
     
 </dd>
 </dl>

@@ -540,6 +540,7 @@ if typing.TYPE_CHECKING:
         WidgetSettingsResponse,
         WidgetUserDiscriminator,
     )
+    from .errors import ClientRequestError
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -656,6 +657,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChannelSelectDefaultValueResponseType": ".types",
     "ChannelSelectDefaultValueType": ".types",
     "ChannelTypes": ".types",
+    "ClientRequestError": ".errors",
     "CommandPermissionResponse": ".types",
     "CommandPermissionsResponse": ".types",
     "ComponentEmojiForMessageRequest": ".types",
@@ -1219,6 +1221,7 @@ __all__ = [
     "ChannelSelectDefaultValueResponseType",
     "ChannelSelectDefaultValueType",
     "ChannelTypes",
+    "ClientRequestError",
     "CommandPermissionResponse",
     "CommandPermissionsResponse",
     "ComponentEmojiForMessageRequest",
