@@ -11,11 +11,11 @@ Vendored runtime (shipped and redistributed as product):
     pydantic utilities, serialization, SSE, request options). crozier embeds it
     and emits it verbatim into every generated SDK, exactly as Fern ships it into
     its own output. It is generator boilerplate, not derived from any OpenAPI
-    document. The runtime is from fernapi/fern-python-sdk:5.20.0. Provenance and
+    document. The runtime is from fernapi/fern-python-sdk:5.41.3. Provenance and
     the statement of changes are in assets/README.md; the Python assets are
     comment-stripped as with the fixtures below.
 
-  * assets/scaffolding/ is Fern 5.20.0's project scaffolding, including packaging,
+  * assets/scaffolding/ is Fern 5.41.3's project scaffolding, including packaging,
     documentation, contribution guidance, default async clients, and generated
     tests. Project/package names, the SDK version, and worked examples use @@...@@
     placeholders that the emitter fills in. See assets/README.md.

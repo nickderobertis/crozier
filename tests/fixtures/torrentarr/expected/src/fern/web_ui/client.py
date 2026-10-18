@@ -915,6 +915,7 @@ class WebUiClient:
         category : str
 
         kind : str
+            search, torrent, category, or all
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -2199,6 +2200,7 @@ class WebUiClient:
         category : str
 
         kind : str
+            search, torrent, category, or all
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -3631,7 +3633,7 @@ class AsyncWebUiClient:
 
 
         async def main() -> None:
-            response = await client.web_ui.api_log_stream(
+            response = client.web_ui.api_log_stream(
                 name="name",
             )
             async for chunk in response:
@@ -3759,6 +3761,7 @@ class AsyncWebUiClient:
         category : str
 
         kind : str
+            search, torrent, category, or all
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -5250,7 +5253,7 @@ class AsyncWebUiClient:
 
 
         async def main() -> None:
-            response = await client.web_ui.web_log_stream(
+            response = client.web_ui.web_log_stream(
                 name="name",
             )
             async for chunk in response:
@@ -5342,6 +5345,7 @@ class AsyncWebUiClient:
         category : str
 
         kind : str
+            search, torrent, category, or all
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

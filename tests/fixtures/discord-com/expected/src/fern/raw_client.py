@@ -14,6 +14,7 @@ from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
 from .core.serialization import convert_and_respect_annotation_metadata
+from .errors.client_request_error import ClientRequestError
 from .types.action_row_component_for_message_request import ActionRowComponentForMessageRequest
 from .types.activities_attachment_response import ActivitiesAttachmentResponse
 from .types.add_group_dm_user_response import AddGroupDmUserResponse
@@ -65,6 +66,7 @@ from .types.embedded_activity_instance import EmbeddedActivityInstance
 from .types.emoji_response import EmojiResponse
 from .types.entitlement_owner_types import EntitlementOwnerTypes
 from .types.entitlement_response import EntitlementResponse
+from .types.error_response import ErrorResponse
 from .types.execute_webhook_request_body import ExecuteWebhookRequestBody
 from .types.forum_layout import ForumLayout
 from .types.gateway_bot_response import GatewayBotResponse
@@ -239,6 +241,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -277,6 +291,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -317,6 +343,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -375,6 +413,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -435,6 +485,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -473,6 +535,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -588,6 +662,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -650,6 +736,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -688,6 +786,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -726,6 +836,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -764,6 +886,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -802,6 +936,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -842,6 +988,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -878,6 +1036,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -936,6 +1106,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -974,6 +1156,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1040,6 +1234,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1078,6 +1284,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1114,6 +1332,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1174,6 +1404,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1236,6 +1478,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1346,6 +1600,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1399,6 +1665,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1445,6 +1723,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1494,6 +1784,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1557,6 +1859,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1598,6 +1912,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1639,6 +1965,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1692,6 +2030,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1745,6 +2095,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1785,6 +2147,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1846,6 +2220,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1878,6 +2264,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1918,6 +2316,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1960,6 +2370,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2017,6 +2439,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2055,6 +2489,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2104,6 +2550,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2145,6 +2603,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2244,6 +2714,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2298,6 +2780,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2398,6 +2892,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2458,6 +2964,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2490,6 +3008,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2522,6 +3052,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2567,6 +3109,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2611,6 +3165,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2674,6 +3240,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2715,6 +3293,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2753,6 +3343,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2799,6 +3401,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2863,6 +3477,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2954,6 +3580,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3013,6 +3651,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3059,6 +3709,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3111,6 +3773,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3155,6 +3829,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3261,6 +3947,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3293,6 +3991,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3359,6 +4069,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3405,6 +4127,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3443,6 +4177,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3499,6 +4245,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3541,6 +4299,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3594,6 +4364,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3634,6 +4416,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3687,6 +4481,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3740,6 +4546,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3780,6 +4598,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3833,6 +4663,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3874,6 +4716,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3915,6 +4769,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3947,6 +4813,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -3993,6 +4871,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4039,6 +4929,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4077,6 +4979,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4160,6 +5074,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4221,6 +5147,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4269,6 +5207,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4315,6 +5265,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4353,6 +5315,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4449,6 +5423,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4500,6 +5486,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4597,6 +5595,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4654,6 +5664,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4700,6 +5722,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4738,6 +5772,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4794,6 +5840,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4834,6 +5892,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4891,6 +5961,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -4955,6 +6037,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5004,6 +6098,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5056,6 +6162,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5094,6 +6212,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5132,6 +6262,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5189,6 +6331,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5245,6 +6399,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5283,6 +6449,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5345,6 +6523,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5383,6 +6573,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5436,6 +6638,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5482,6 +6696,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5520,6 +6746,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5614,6 +6852,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5677,6 +6927,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5800,6 +7062,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5842,6 +7116,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5899,6 +7185,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5941,6 +7239,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -5996,6 +7306,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6049,6 +7371,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6091,6 +7425,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6129,6 +7475,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6167,6 +7525,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6209,6 +7579,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6264,6 +7646,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6311,6 +7705,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6420,6 +7826,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6584,6 +8002,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6668,6 +8098,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6721,6 +8163,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6844,6 +8298,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6904,6 +8370,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6942,6 +8420,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -6982,6 +8472,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7039,6 +8541,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7081,6 +8595,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7127,6 +8653,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7165,6 +8703,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7233,6 +8783,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7273,6 +8835,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7342,6 +8916,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7394,6 +8980,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7432,6 +9030,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7488,6 +9098,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7539,6 +9161,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7592,6 +9226,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7632,6 +9278,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7697,6 +9355,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7743,6 +9413,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7795,6 +9477,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7833,6 +9527,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7875,6 +9581,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7915,6 +9633,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -7955,6 +9685,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8024,6 +9766,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8064,6 +9818,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8133,6 +9899,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8182,6 +9960,18 @@ class RawFernApi:
                             response=_response, data=(_chunk for _chunk in _response.iter_bytes(chunk_size=_chunk_size))
                         )
                     _response.read()
+                    if 400 <= _response.status_code < 500:
+                        raise ClientRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                ErrorResponse,
+                                parse_obj_as(
+                                    type_=ErrorResponse,
+                                    object_=_response.json(),
+                                ),
+                            ),
+                            status_code=_response.status_code,
+                        )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -8231,6 +10021,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8273,6 +10075,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8333,6 +10147,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8375,6 +10201,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8432,6 +10270,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8478,6 +10328,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8516,6 +10378,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8580,6 +10454,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8637,6 +10523,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8677,6 +10575,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8741,6 +10651,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8783,6 +10705,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8825,6 +10759,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -8958,6 +10904,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9003,6 +10961,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9049,6 +11019,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9127,6 +11109,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9165,6 +11159,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9247,6 +11253,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9300,6 +11318,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9340,6 +11370,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9382,6 +11424,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9424,6 +11478,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9470,6 +11536,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9508,6 +11586,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9568,6 +11658,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9610,6 +11712,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9671,6 +11785,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9711,6 +11837,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9768,6 +11906,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9814,6 +11964,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9852,6 +12014,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9932,6 +12106,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -9972,6 +12158,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10049,6 +12247,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10102,6 +12312,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10157,6 +12379,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10220,6 +12454,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10266,6 +12512,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10318,6 +12576,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10356,6 +12626,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10415,6 +12697,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10464,6 +12758,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10504,6 +12810,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10536,6 +12854,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10593,6 +12923,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10633,6 +12975,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10673,6 +13027,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10794,6 +13160,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10836,6 +13214,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10908,6 +13298,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -10942,6 +13344,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11002,6 +13416,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11042,6 +13468,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11082,6 +13520,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11114,6 +13564,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11175,6 +13637,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11215,6 +13689,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11255,6 +13741,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11308,6 +13806,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11361,6 +13871,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11401,6 +13923,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11441,6 +13975,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11504,6 +14050,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11553,6 +14111,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11585,6 +14155,18 @@ class RawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return HttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11722,6 +14304,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11762,6 +14356,18 @@ class RawFernApi:
                     ),
                 )
                 return HttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11821,6 +14427,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11859,6 +14477,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11899,6 +14529,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -11957,6 +14599,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12017,6 +14671,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12055,6 +14721,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12170,6 +14848,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12232,6 +14922,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12270,6 +14972,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12308,6 +15022,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12346,6 +15072,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12384,6 +15122,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12424,6 +15174,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12462,6 +15224,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12520,6 +15294,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12558,6 +15344,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12624,6 +15422,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12662,6 +15472,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12700,6 +15522,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12760,6 +15594,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12822,6 +15668,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12932,6 +15790,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -12985,6 +15855,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13031,6 +15913,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13080,6 +15974,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13143,6 +16049,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13184,6 +16102,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13225,6 +16155,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13278,6 +16220,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13331,6 +16285,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13371,6 +16337,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13432,6 +16410,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13464,6 +16454,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13504,6 +16506,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13546,6 +16560,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13603,6 +16629,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13641,6 +16679,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13690,6 +16740,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13731,6 +16793,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13830,6 +16904,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13884,6 +16970,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -13984,6 +17082,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14044,6 +17154,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14076,6 +17198,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14108,6 +17242,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14153,6 +17299,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14197,6 +17355,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14260,6 +17430,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14301,6 +17483,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14339,6 +17533,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14385,6 +17591,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14449,6 +17667,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14540,6 +17770,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14599,6 +17841,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14645,6 +17899,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14697,6 +17963,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14741,6 +18019,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14847,6 +18137,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14879,6 +18181,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14945,6 +18259,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -14991,6 +18317,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15029,6 +18367,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15085,6 +18435,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15127,6 +18489,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15180,6 +18554,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15220,6 +18606,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15273,6 +18671,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15326,6 +18736,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15366,6 +18788,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15419,6 +18853,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15460,6 +18906,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15501,6 +18959,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15533,6 +19003,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15579,6 +19061,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15625,6 +19119,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15663,6 +19169,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15746,6 +19264,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15807,6 +19337,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15855,6 +19397,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15901,6 +19455,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -15939,6 +19505,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16035,6 +19613,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16086,6 +19676,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16183,6 +19785,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16240,6 +19854,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16286,6 +19912,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16324,6 +19962,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16380,6 +20030,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16420,6 +20082,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16477,6 +20151,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16541,6 +20227,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16590,6 +20288,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16642,6 +20352,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16680,6 +20402,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16718,6 +20452,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16775,6 +20521,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16831,6 +20589,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16869,6 +20639,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16931,6 +20713,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -16969,6 +20763,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17022,6 +20828,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17068,6 +20886,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17106,6 +20936,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17200,6 +21042,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17263,6 +21117,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17386,6 +21252,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17428,6 +21306,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17485,6 +21375,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17527,6 +21429,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17582,6 +21496,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17635,6 +21561,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17677,6 +21615,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17715,6 +21665,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17753,6 +21715,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17795,6 +21769,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17850,6 +21836,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -17897,6 +21895,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18006,6 +22016,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18170,6 +22192,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18254,6 +22288,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18307,6 +22353,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18430,6 +22488,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18490,6 +22560,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18528,6 +22610,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18568,6 +22662,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18625,6 +22731,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18667,6 +22785,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18713,6 +22843,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18751,6 +22893,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18819,6 +22973,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18859,6 +23025,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18928,6 +23106,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -18980,6 +23170,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19018,6 +23220,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19074,6 +23288,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19125,6 +23351,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19178,6 +23416,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19218,6 +23468,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19283,6 +23545,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19329,6 +23603,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19381,6 +23667,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19419,6 +23717,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19461,6 +23771,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19501,6 +23823,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19541,6 +23875,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19610,6 +23956,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19650,6 +24008,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19719,6 +24089,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19769,6 +24151,18 @@ class AsyncRawFernApi:
                             data=(_chunk async for _chunk in _response.aiter_bytes(chunk_size=_chunk_size)),
                         )
                     await _response.aread()
+                    if 400 <= _response.status_code < 500:
+                        raise ClientRequestError(
+                            headers=dict(_response.headers),
+                            body=typing.cast(
+                                ErrorResponse,
+                                parse_obj_as(
+                                    type_=ErrorResponse,
+                                    object_=_response.json(),
+                                ),
+                            ),
+                            status_code=_response.status_code,
+                        )
                     _response_json = _response.json()
                 except JSONDecodeError:
                     raise ApiError(
@@ -19818,6 +24212,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19860,6 +24266,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19920,6 +24338,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -19962,6 +24392,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20019,6 +24461,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20065,6 +24519,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20103,6 +24569,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20167,6 +24645,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20224,6 +24714,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20264,6 +24766,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20328,6 +24842,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20370,6 +24896,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20412,6 +24950,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20545,6 +25095,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20590,6 +25152,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20636,6 +25210,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20714,6 +25300,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20752,6 +25350,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20834,6 +25444,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20887,6 +25509,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20927,6 +25561,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -20969,6 +25615,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21011,6 +25669,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21057,6 +25727,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21095,6 +25777,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21155,6 +25849,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21197,6 +25903,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21258,6 +25976,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21298,6 +26028,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21355,6 +26097,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21401,6 +26155,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21439,6 +26205,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21519,6 +26297,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21559,6 +26349,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21636,6 +26438,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21689,6 +26503,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21744,6 +26570,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21807,6 +26645,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21853,6 +26703,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21905,6 +26767,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -21943,6 +26817,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22002,6 +26888,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22051,6 +26949,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22091,6 +27001,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22123,6 +27045,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22180,6 +27114,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22220,6 +27166,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22260,6 +27218,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22381,6 +27351,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22423,6 +27405,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22495,6 +27489,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22529,6 +27535,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22589,6 +27607,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22629,6 +27659,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22669,6 +27711,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22701,6 +27755,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22762,6 +27828,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22802,6 +27880,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22842,6 +27932,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22895,6 +27997,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22948,6 +28062,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -22988,6 +28114,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23028,6 +28166,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23091,6 +28241,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23140,6 +28302,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23172,6 +28346,18 @@ class AsyncRawFernApi:
         try:
             if 200 <= _response.status_code < 300:
                 return AsyncHttpResponse(response=_response, data=None)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23309,6 +28495,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -23349,6 +28547,18 @@ class AsyncRawFernApi:
                     ),
                 )
                 return AsyncHttpResponse(response=_response, data=_data)
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        ErrorResponse,
+                        parse_obj_as(
+                            type_=ErrorResponse,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)

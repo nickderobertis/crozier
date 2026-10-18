@@ -12,6 +12,7 @@ from ..core.datetime_utils import serialize_datetime
 from ..core.http_response import AsyncHttpResponse, HttpResponse
 from ..core.http_sse._api import EventSource
 from ..core.jsonable_encoder import encode_path_param
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as, parse_sse_obj
 from ..core.request_options import RequestOptions
@@ -37,8 +38,12 @@ from ..types.list_turn_events_response import ListTurnEventsResponse
 from ..types.list_turns_response import ListTurnsResponse
 from ..types.previous_turn_id_input import PreviousTurnIdInput
 from ..types.request_error_response import RequestErrorResponse
+from ..types.session import Session
 from ..types.session_agent_spec_body import SessionAgentSpecBody
+from ..types.session_event import SessionEvent
+from ..types.session_event_item import SessionEventItem
 from ..types.session_metadata import SessionMetadata
+from ..types.turn import Turn
 from ..types.turn_input_item import TurnInputItem
 from ..types.turn_streaming_event import TurnStreamingEvent
 from pydantic import ValidationError
@@ -61,7 +66,7 @@ class RawSessionsClient:
         end_timestamp: typing.Optional[dt.datetime] = None,
         agent_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListSessionsResponse]:
+    ) -> SyncPager[Session, ListSessionsResponse]:
         """
         List the caller's sessions (newest first by default), token-paginated. Results are scoped to the authenticated identity via the session store's `created_by_subject.subject_id` filter (not a client query param). Optional `agent_id` filters to sessions bound to that named agent. Pass `page_token` to fetch the next page, keeping the other query params constant.
 
@@ -90,7 +95,7 @@ class RawSessionsClient:
 
         Returns
         -------
-        HttpResponse[ListSessionsResponse]
+        SyncPager[Session, ListSessionsResponse]
             Paginated sessions.
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -108,14 +113,29 @@ class RawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListSessionsResponse,
                     parse_obj_as(
                         type_=ListSessionsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+                    _get_next = lambda: self.list(
+                        limit=limit,
+                        order=order,
+                        page_token=_parsed_next,
+                        start_timestamp=start_timestamp,
+                        end_timestamp=end_timestamp,
+                        agent_id=agent_id,
+                        request_options=request_options,
+                    )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -531,7 +551,7 @@ class RawSessionsClient:
         last_turn_id: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListSessionEventsResponse]:
+    ) -> SyncPager[SessionEventItem, ListSessionEventsResponse]:
         """
         List session events as `{ turn_id, event }` across the active turn branch (newest first), including persisted events from a running tip. Each turn contributes turn.created, content events (model.message, tool.call, …), and turn.done when terminal; streaming deltas are not included. Use `page_token` to paginate backward toward older events while retaining the original branch anchor. Only the session creator may list events.
 
@@ -554,7 +574,7 @@ class RawSessionsClient:
 
         Returns
         -------
-        HttpResponse[ListSessionEventsResponse]
+        SyncPager[SessionEventItem, ListSessionEventsResponse]
             Paginated session events.
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -569,14 +589,27 @@ class RawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListSessionEventsResponse,
                     parse_obj_as(
                         type_=ListSessionEventsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+                    _get_next = lambda: self.list_events(
+                        session_id,
+                        page_token=_parsed_next,
+                        last_turn_id=last_turn_id,
+                        limit=limit,
+                        request_options=request_options,
+                    )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -626,7 +659,7 @@ class RawSessionsClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListTurnsResponse]:
+    ) -> SyncPager[Turn, ListTurnsResponse]:
         """
         List turns for a session (newest first by default), token-paginated. Only the session creator may list turns.
 
@@ -646,7 +679,7 @@ class RawSessionsClient:
 
         Returns
         -------
-        HttpResponse[ListTurnsResponse]
+        SyncPager[Turn, ListTurnsResponse]
             Paginated turns.
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -660,14 +693,26 @@ class RawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTurnsResponse,
                     parse_obj_as(
                         type_=ListTurnsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+                    _get_next = lambda: self.list_turns(
+                        session_id,
+                        limit=limit,
+                        page_token=_parsed_next,
+                        request_options=request_options,
+                    )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -772,6 +817,8 @@ class RawSessionsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         TurnStreamingEvent,
@@ -1247,7 +1294,7 @@ class RawSessionsClient:
         page_token: typing.Optional[str] = None,
         order: typing.Optional[ListTurnEventsOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListTurnEventsResponse]:
+    ) -> SyncPager[SessionEvent, ListTurnEventsResponse]:
         """
         Paginated persisted events for a turn (insertion order by default). Only the session creator may list events.
 
@@ -1273,7 +1320,7 @@ class RawSessionsClient:
 
         Returns
         -------
-        HttpResponse[ListTurnEventsResponse]
+        SyncPager[SessionEvent, ListTurnEventsResponse]
             Paginated turn events.
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -1288,14 +1335,28 @@ class RawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTurnEventsResponse,
                     parse_obj_as(
                         type_=ListTurnEventsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+                    _get_next = lambda: self.list_turn_events(
+                        session_id,
+                        turn_id,
+                        limit=limit,
+                        page_token=_parsed_next,
+                        order=order,
+                        request_options=request_options,
+                    )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -1387,6 +1448,8 @@ class RawSessionsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         TurnStreamingEvent,
@@ -1484,7 +1547,7 @@ class AsyncRawSessionsClient:
         end_timestamp: typing.Optional[dt.datetime] = None,
         agent_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListSessionsResponse]:
+    ) -> AsyncPager[Session, ListSessionsResponse]:
         """
         List the caller's sessions (newest first by default), token-paginated. Results are scoped to the authenticated identity via the session store's `created_by_subject.subject_id` filter (not a client query param). Optional `agent_id` filters to sessions bound to that named agent. Pass `page_token` to fetch the next page, keeping the other query params constant.
 
@@ -1513,7 +1576,7 @@ class AsyncRawSessionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListSessionsResponse]
+        AsyncPager[Session, ListSessionsResponse]
             Paginated sessions.
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1531,14 +1594,32 @@ class AsyncRawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListSessionsResponse,
                     parse_obj_as(
                         type_=ListSessionsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+
+                    async def _get_next():
+                        return await self.list(
+                            limit=limit,
+                            order=order,
+                            page_token=_parsed_next,
+                            start_timestamp=start_timestamp,
+                            end_timestamp=end_timestamp,
+                            agent_id=agent_id,
+                            request_options=request_options,
+                        )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -1956,7 +2037,7 @@ class AsyncRawSessionsClient:
         last_turn_id: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListSessionEventsResponse]:
+    ) -> AsyncPager[SessionEventItem, ListSessionEventsResponse]:
         """
         List session events as `{ turn_id, event }` across the active turn branch (newest first), including persisted events from a running tip. Each turn contributes turn.created, content events (model.message, tool.call, …), and turn.done when terminal; streaming deltas are not included. Use `page_token` to paginate backward toward older events while retaining the original branch anchor. Only the session creator may list events.
 
@@ -1979,7 +2060,7 @@ class AsyncRawSessionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListSessionEventsResponse]
+        AsyncPager[SessionEventItem, ListSessionEventsResponse]
             Paginated session events.
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -1994,14 +2075,30 @@ class AsyncRawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListSessionEventsResponse,
                     parse_obj_as(
                         type_=ListSessionEventsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+
+                    async def _get_next():
+                        return await self.list_events(
+                            session_id,
+                            page_token=_parsed_next,
+                            last_turn_id=last_turn_id,
+                            limit=limit,
+                            request_options=request_options,
+                        )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -2051,7 +2148,7 @@ class AsyncRawSessionsClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListTurnsResponse]:
+    ) -> AsyncPager[Turn, ListTurnsResponse]:
         """
         List turns for a session (newest first by default), token-paginated. Only the session creator may list turns.
 
@@ -2071,7 +2168,7 @@ class AsyncRawSessionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListTurnsResponse]
+        AsyncPager[Turn, ListTurnsResponse]
             Paginated turns.
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -2085,14 +2182,29 @@ class AsyncRawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTurnsResponse,
                     parse_obj_as(
                         type_=ListTurnsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+
+                    async def _get_next():
+                        return await self.list_turns(
+                            session_id,
+                            limit=limit,
+                            page_token=_parsed_next,
+                            request_options=request_options,
+                        )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -2197,6 +2309,8 @@ class AsyncRawSessionsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         TurnStreamingEvent,
@@ -2673,7 +2787,7 @@ class AsyncRawSessionsClient:
         page_token: typing.Optional[str] = None,
         order: typing.Optional[ListTurnEventsOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListTurnEventsResponse]:
+    ) -> AsyncPager[SessionEvent, ListTurnEventsResponse]:
         """
         Paginated persisted events for a turn (insertion order by default). Only the session creator may list events.
 
@@ -2699,7 +2813,7 @@ class AsyncRawSessionsClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListTurnEventsResponse]
+        AsyncPager[SessionEvent, ListTurnEventsResponse]
             Paginated turn events.
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -2714,14 +2828,31 @@ class AsyncRawSessionsClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListTurnEventsResponse,
                     parse_obj_as(
                         type_=ListTurnEventsResponse,
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+
+                    async def _get_next():
+                        return await self.list_turn_events(
+                            session_id,
+                            turn_id,
+                            limit=limit,
+                            page_token=_parsed_next,
+                            order=order,
+                            request_options=request_options,
+                        )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -2813,6 +2944,8 @@ class AsyncRawSessionsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         TurnStreamingEvent,

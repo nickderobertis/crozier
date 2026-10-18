@@ -3,7 +3,9 @@
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
+from ..types.available_mcp_server import AvailableMcpServer
 from ..types.get_mcp_server_response import GetMcpServerResponse
 from ..types.list_available_mcp_servers_response import ListAvailableMcpServersResponse
 from ..types.list_mcp_server_tools_response import ListMcpServerToolsResponse
@@ -32,7 +34,7 @@ class McpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListAvailableMcpServersResponse:
+    ) -> SyncPager[AvailableMcpServer, ListAvailableMcpServersResponse]:
         """
         Paginated MCP servers as a slim name/url list for the composer.
 
@@ -49,7 +51,7 @@ class McpServersClient:
 
         Returns
         -------
-        ListAvailableMcpServersResponse
+        SyncPager[AvailableMcpServer, ListAvailableMcpServersResponse]
             Paginated MCP servers (chat projection).
 
         Examples
@@ -60,10 +62,14 @@ class McpServersClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.mcp_servers.list()
+        response = client.mcp_servers.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
-        return _response.data
+        return self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
 
     def authorize(
         self,
@@ -196,7 +202,7 @@ class AsyncMcpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListAvailableMcpServersResponse:
+    ) -> AsyncPager[AvailableMcpServer, ListAvailableMcpServersResponse]:
         """
         Paginated MCP servers as a slim name/url list for the composer.
 
@@ -213,7 +219,7 @@ class AsyncMcpServersClient:
 
         Returns
         -------
-        ListAvailableMcpServersResponse
+        AsyncPager[AvailableMcpServer, ListAvailableMcpServersResponse]
             Paginated MCP servers (chat projection).
 
         Examples
@@ -229,13 +235,18 @@ class AsyncMcpServersClient:
 
 
         async def main() -> None:
-            await client.mcp_servers.list()
+            response = await client.mcp_servers.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
-        return _response.data
+        return await self._raw_client.list(limit=limit, page_token=page_token, request_options=request_options)
 
     async def authorize(
         self,

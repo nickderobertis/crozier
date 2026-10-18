@@ -42,6 +42,7 @@ class RawEnvironmentsClient:
         Parameters
         ----------
         ids : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Filter by environment IDs. Supports a single ID or multiple values.
 
         name : typing.Optional[str]
 
@@ -591,6 +592,7 @@ class AsyncRawEnvironmentsClient:
         Parameters
         ----------
         ids : typing.Optional[typing.Union[str, typing.Sequence[str]]]
+            Filter by environment IDs. Supports a single ID or multiple values.
 
         name : typing.Optional[str]
 
