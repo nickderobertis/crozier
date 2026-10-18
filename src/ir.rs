@@ -7235,6 +7235,10 @@ impl InlineHoister<'_> {
         // flattening it the way Fern's parent-conflict rule does: every Zulip
         // response restates `JsonSuccessBase`'s `result` and `msg` untyped, and
         // Fern flattens each into a plain model.
+        let promoted = self
+            .schemas
+            .and_then(|schemas| promote_required_parent_properties(schemas, schema));
+        let schema = promoted.as_ref().unwrap_or(schema);
         if let Some(schemas) = self.schemas {
             if restates_a_base_property(schemas, schema) {
                 let mut builder = Builder {
@@ -7257,19 +7261,11 @@ impl InlineHoister<'_> {
                 return;
             }
         }
-        let required: Vec<&str> = schema
-            .required
-            .iter()
-            .chain(
-                schema
-                    .all_of
-                    .iter()
-                    .flatten()
-                    .filter(|member| !member.properties.is_empty())
-                    .flat_map(|member| &member.required),
-            )
-            .map(String::as_str)
-            .collect();
+        let all_required = match self.schemas {
+            Some(schemas) => all_of_required(schemas, schema),
+            None => all_of_required(&IndexMap::new(), schema),
+        };
+        let required: Vec<&str> = all_required.iter().map(String::as_str).collect();
         let mut bases: Vec<String> = schema
             .all_of
             .iter()
@@ -7353,12 +7349,11 @@ impl InlineHoister<'_> {
             for field in base_fields {
                 match local.iter().find(|own| own.wire_name == field.wire_name) {
                     Some(own)
-                        if own.type_ref == field.type_ref
-                            && own.spec_required
-                            && !own.optional
-                            && !own.nullable
-                            && !field.nullable
-                            && own.docstring == field.docstring =>
+                        if restates_without_conflict(
+                            own,
+                            &field,
+                            base_requires(schemas, base, &field.wire_name),
+                        ) =>
                     {
                         restated.insert(field.wire_name.clone());
                         inherited.push(field);
@@ -11176,17 +11171,22 @@ impl Builder<'_> {
                         reach_refs.push(self.field_type_ref(name, prop, prop_schema));
                     }
                 }
+                // A lone inline member is the schema itself: Fern's importer
+                // converts `oneOf: [member]` as `member`, so it is a model, or
+                // whatever union the member composes itself. sigstore-rekor's
+                // `DSSESchema` is `oneOf` one object that constrains its
+                // properties with a `oneOf` of `required` lists; that member was
+                // a union, and the component `Union[Any]`, until Fern's CLI
+                // (measured at 5.163.1) began reading such a `oneOf` as the
+                // constraint it is (see `normalize_sibling_one_of_constraints`),
+                // and `DsseSchema` is now an object model.
                 if variants.len() == 1 && is_inline_object(&variants[0]) {
-                    if variants[0].required.is_empty() {
-                        for (prop, prop_schema) in &variants[0].properties {
-                            self.field_type_ref(name, prop, prop_schema);
+                    if variants[0].one_of.is_some() || variants[0].any_of.is_some() {
+                        let mut member = variants[0].clone();
+                        if member.description.is_none() {
+                            member.description.clone_from(&schema.description);
                         }
-                        self.push_alias(
-                            name,
-                            module,
-                            TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)]),
-                            docstring,
-                        );
+                        self.add_named(name, &member);
                     } else {
                         self.add_object(
                             name,
@@ -11686,23 +11686,15 @@ impl Builder<'_> {
         }
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
+        let promoted = promote_required_parent_properties(self.schemas, schema);
+        let schema = promoted.as_ref().unwrap_or(schema);
         let inherited = merge_restated_parent_properties(schema, self.schemas);
         let schema = inherited.as_ref().unwrap_or(schema);
         // `allOf` merges members: `$ref`s become base classes, inline members
-        // contribute properties, and `required` applies across the whole set.
-        let required: Vec<&str> = schema
-            .required
-            .iter()
-            .chain(
-                schema
-                    .all_of
-                    .iter()
-                    .flatten()
-                    .filter(|member| !member.properties.is_empty())
-                    .flat_map(|member| &member.required),
-            )
-            .map(String::as_str)
-            .collect();
+        // contribute properties, and `required` applies across the whole set,
+        // the `$ref` parents' own lists included (see [`all_of_required`]).
+        let all_required = all_of_required(self.schemas, schema);
+        let required: Vec<&str> = all_required.iter().map(String::as_str).collect();
         let declared_fields: std::collections::HashSet<&str> = schema
             .properties
             .keys()
@@ -11886,7 +11878,8 @@ impl Builder<'_> {
                     else {
                         continue;
                     };
-                    if restates_without_conflict(local, field) {
+                    let requires = base_required.contains(&field.wire_name.as_str());
+                    if restates_without_conflict(local, field, requires) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
@@ -12071,7 +12064,10 @@ impl Builder<'_> {
             local
                 .iter()
                 .find(|own| own.wire_name == field.wire_name)
-                .is_some_and(|own| !restates_without_conflict(own, field))
+                .is_some_and(|own| {
+                    let requires = required.contains(&field.wire_name.as_str());
+                    !restates_without_conflict(own, field, requires)
+                })
         })
     }
 
@@ -14279,17 +14275,20 @@ fn restates_a_base_property(schemas: &IndexMap<String, Schema>, schema: &Schema)
         })
 }
 
-/// Whether a model's own field `own` merely restates a base's `field`. Fern
-/// compares the child's property, wrapped optional unless required and nullable
-/// where declared so, against the base's unwrapped one, so only a property the
-/// child requires and does not make nullable can restate it, whatever the base
-/// requires: Groupe PSA's `RemoteAction` restates `RemoteRef`'s optional
-/// `remoteActionId` and `status` unchanged, and Fern flattens it; Zulip's
-/// `BasicChannel` requires `stream_id`, which `BasicChannelBase` leaves
-/// optional, and Fern keeps the base's field.
-fn restates_without_conflict(own: &Field, field: &Field) -> bool {
+/// Whether a model's own field `own` merely restates a base's `field`, the base
+/// requiring it when `base_requires`. Fern compares the child's property,
+/// wrapped optional unless required and nullable where declared so, against the
+/// base's unwrapped one, so only a property the child requires and does not
+/// make nullable can restate it: Groupe PSA's `RemoteAction` restates
+/// `RemoteRef`'s optional `remoteActionId` and `status` unchanged, and Fern
+/// flattens it. And since Fern's CLI 5.163.1 (measured) a required restatement
+/// of a property the base leaves optional conflicts too: TAMS's `FlowAudio`
+/// requires `FlowCore`'s optional `codec` and flattens `FlowCore`, where its
+/// sibling `FlowMulti` still extends it.
+fn restates_without_conflict(own: &Field, field: &Field, base_requires: bool) -> bool {
     own.type_ref == field.type_ref
         && own.spec_required
+        && base_requires
         && !own.optional
         && !own.nullable
         && !field.nullable
@@ -14512,6 +14511,192 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
     merged.properties = properties;
     merged.required = required.into();
     merged
+}
+
+/// Every name an `allOf` composition requires: what each member requires —
+/// a `$ref` member read through its own `allOf` chain, each component once —
+/// and then what the schema itself requires. Fern's importer (measured at CLI
+/// 5.163.1) requires a property any part of the composition requires, a `$ref`
+/// parent included: NDW's `MunicipalityFeature` restates `Feature.id` without
+/// requiring it, `Feature` requires it, and the golden field is a required
+/// `id: str`.
+fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
+    fn walk<'a>(
+        schemas: &'a IndexMap<String, Schema>,
+        members: &'a [Schema],
+        visited: &mut std::collections::HashSet<&'a str>,
+        out: &mut Vec<String>,
+    ) {
+        for member in members {
+            let node = match member.reference.as_deref() {
+                Some(reference) => {
+                    if !visited.insert(reference) {
+                        continue;
+                    }
+                    let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                        continue;
+                    };
+                    node
+                }
+                None => member,
+            };
+            for name in node.required.iter() {
+                if !out.contains(name) {
+                    out.push(name.clone());
+                }
+            }
+            if let Some(inner) = node.all_of.as_deref() {
+                walk(schemas, inner, visited, out);
+            }
+        }
+    }
+    let mut required = Vec::new();
+    if let Some(members) = schema.all_of.as_deref() {
+        walk(
+            schemas,
+            members,
+            &mut std::collections::HashSet::new(),
+            &mut required,
+        );
+    }
+    for name in schema.required.iter() {
+        if !required.contains(name) {
+            required.push(name.clone());
+        }
+    }
+    required
+}
+
+/// Whether `base`, read with its whole `allOf` chain, requires `key`.
+fn base_requires(schemas: &IndexMap<String, Schema>, base: &Schema, key: &str) -> bool {
+    all_of_required(schemas, base)
+        .iter()
+        .any(|name| name == key)
+}
+
+/// A property `key` that `schema` or a member of its `allOf` chain declares,
+/// with whether that path requires it and whether it is `readOnly`.
+fn parent_property<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    schema: &'a Schema,
+    key: &str,
+    visited: &mut std::collections::HashSet<&'a str>,
+) -> Option<(&'a Schema, bool, bool)> {
+    let node = match schema.reference.as_deref() {
+        Some(reference) => {
+            if !visited.insert(reference) {
+                return None;
+            }
+            resolve_ref_from_schemas(schemas, reference)?
+        }
+        None => schema,
+    };
+    let required = node.required.iter().any(|name| name == key)
+        || all_of_required(
+            schemas,
+            &Schema {
+                all_of: node.all_of.clone(),
+                ..Schema::default()
+            },
+        )
+        .iter()
+        .any(|name| name == key);
+    if let Some(property) = node.properties.get(key) {
+        let read_only = property.read_only == Some(true)
+            || property
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .is_some_and(|target| target.read_only == Some(true));
+        return Some((property, required, read_only));
+    }
+    node.all_of.iter().flatten().find_map(|member| {
+        parent_property(schemas, member, key, visited)
+            .map(|(property, inner, read_only)| (property, inner || required, read_only))
+    })
+}
+
+/// `schema` with each property it requires but declares nowhere itself, and
+/// that a `$ref` parent declares without requiring, redeclared as its own
+/// required property, or `None` when there is none. Fern's importer (measured
+/// at CLI 5.163.1) adds such a property to the child with the parent's schema,
+/// and the stricter child then conflicts with its parent, which it flattens:
+/// TAMS's `FlowAudio` is `allOf: [$ref FlowCore, {required: [format,
+/// essence_parameters, codec], properties: {format, essence_parameters}}]`,
+/// `FlowCore` declares an optional `codec`, and the golden `FlowAudio` is a
+/// plain model whose required `codec` comes first, before `format`, with
+/// `FlowCore`'s other fields after its own. `FlowMulti`, requiring only its own
+/// `format`, still extends `FlowCore`. The redeclarations lead the composition,
+/// as an inline member of their own.
+fn promote_required_parent_properties(
+    schemas: &IndexMap<String, Schema>,
+    schema: &Schema,
+) -> Option<Schema> {
+    let members = schema.all_of.as_deref()?;
+    let parents: Vec<&Schema> = members
+        .iter()
+        .filter(|member| {
+            member
+                .reference
+                .as_deref()
+                .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
+                .is_some_and(|parent| {
+                    parent.one_of.is_none()
+                        && parent.any_of.is_none()
+                        && parent
+                            .discriminator
+                            .as_ref()
+                            .is_none_or(|discriminator| discriminator.mapping.is_empty())
+                })
+        })
+        .collect();
+    if parents.is_empty() {
+        return None;
+    }
+    let declared = |key: &str| {
+        schema.properties.contains_key(key)
+            || members
+                .iter()
+                .filter(|member| member.reference.is_none())
+                .any(|member| {
+                    member.properties.contains_key(key)
+                        || member
+                            .one_of
+                            .iter()
+                            .chain(member.any_of.iter())
+                            .flatten()
+                            .any(|branch| branch.properties.contains_key(key))
+                })
+    };
+    let mut promoted = Schema::default();
+    for key in all_of_required(schemas, schema) {
+        if declared(&key) {
+            continue;
+        }
+        for parent in &parents {
+            let Some((property, required, read_only)) =
+                parent_property(schemas, parent, &key, &mut std::collections::HashSet::new())
+            else {
+                continue;
+            };
+            if !required && !read_only {
+                promoted.properties.insert(key.clone(), property.clone());
+                promoted.required.push(key.clone());
+            }
+            break;
+        }
+    }
+    if promoted.properties.is_empty() {
+        return None;
+    }
+    promoted.ty = Some(TypeField::Single("object".to_string()));
+    let mut rewritten = schema.clone();
+    rewritten.all_of = Some(
+        std::iter::once(promoted)
+            .chain(members.iter().cloned())
+            .collect(),
+    );
+    Some(rewritten)
 }
 
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
@@ -18653,6 +18838,9 @@ mod tests {
                     && object.fields[0].wire_name == "value"
         )));
 
+        // A lone member requiring nothing is still the model itself (Fern's
+        // importer converts `oneOf: [member]` as `member`, measured at CLI
+        // 5.163.1 on sigstore-rekor's `DSSESchema`).
         let optional_only = schema(serde_json::json!({
             "oneOf": [{
                 "type": "object",
@@ -18665,13 +18853,42 @@ mod tests {
         builder.add_named("OptionalOnly", &optional_only);
         assert!(builder.types.iter().any(|declaration| matches!(
             declaration,
-            TypeDecl::Alias(alias)
-                if alias.name == "OptionalOnly"
-                    && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
+            TypeDecl::Object(object)
+                if object.name == "OptionalOnly"
+                    && object.fields.len() == 1
+                    && object.fields[0].optional
+                    && object.fields[0].type_ref == TypeRef::Named("OptionalOnlyValue".to_string())
         )));
         assert!(builder.types.iter().any(|declaration| matches!(
             declaration,
             TypeDecl::Object(object) if object.name == "OptionalOnlyValue"
+        )));
+
+        // A lone member that is a union of its own is that union: here one whose
+        // `required`-only branches name a property it does not declare, so they
+        // are no sibling constraint and the union is Fern's unknown.
+        let union_member = schema(serde_json::json!({
+            "description": "A union member.",
+            "oneOf": [{
+                "type": "object",
+                "properties": {"value": {
+                    "type": "object",
+                    "properties": {"id": {"type": "string"}}
+                }},
+                "oneOf": [{"required": ["value"]}, {"required": ["other"]}]
+            }]
+        }));
+        builder.add_named("UnionMember", &union_member);
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Alias(alias)
+                if alias.name == "UnionMember"
+                    && alias.docstring.as_deref() == Some("A union member.")
+                    && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
+        )));
+        assert!(builder.types.iter().any(|declaration| matches!(
+            declaration,
+            TypeDecl::Object(object) if object.name == "UnionMemberValue"
         )));
     }
 
@@ -24033,6 +24250,163 @@ mod tests {
             .map(|field| field.wire_name.as_str())
             .collect();
         assert_eq!(wires, ["station", "lane"]);
+    }
+
+    fn object_decl<'a>(ir: &'a super::Ir, name: &str) -> &'a ObjectType {
+        ir.types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == name => Some(object),
+                _ => None,
+            })
+            .unwrap_or_else(|| panic!("{name} is an object model"))
+    }
+
+    fn field_shape(object: &ObjectType) -> Vec<(&str, bool)> {
+        object
+            .fields
+            .iter()
+            .map(|field| (field.wire_name.as_str(), field.optional))
+            .collect()
+    }
+
+    /// The shape of TAMS's flows (measured at Fern CLI 5.163.1): a child that
+    /// requires a property its parent declares optional, without declaring it,
+    /// takes the parent's property as its own required one, conflicts with the
+    /// parent and flattens it; a sibling requiring only its own property still
+    /// extends the parent.
+    #[test]
+    fn a_child_requiring_an_optional_parent_property_flattens_the_parent() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {
+                "Gauge": {"type": "string", "description": "A gauge name."},
+                "LockCore": {
+                    "type": "object", "required": ["id"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "label": {"type": "string"},
+                        "gauge": {"$ref": "#/components/schemas/Gauge"},
+                        "depth": {"type": "integer"}
+                    }
+                },
+                "FloodLock": {
+                    "type": "object",
+                    "allOf": [
+                        {"$ref": "#/components/schemas/LockCore"},
+                        {
+                            "type": "object", "required": ["chamber", "gauge"],
+                            "properties": {"chamber": {"type": "string"}}
+                        }
+                    ]
+                },
+                "PlainLock": {
+                    "type": "object",
+                    "allOf": [
+                        {"$ref": "#/components/schemas/LockCore"},
+                        {
+                            "type": "object", "required": ["chamber"],
+                            "properties": {"chamber": {"type": "string"}}
+                        }
+                    ]
+                },
+                "IdLock": {
+                    "type": "object",
+                    "allOf": [
+                        {"$ref": "#/components/schemas/LockCore"},
+                        {
+                            "type": "object", "required": ["chamber", "id"],
+                            "properties": {"chamber": {"type": "string"}}
+                        }
+                    ]
+                }
+            }}
+        }));
+        let flood = object_decl(&ir, "FloodLock");
+        assert!(flood.bases.is_empty(), "FloodLock flattens LockCore");
+        assert_eq!(
+            field_shape(flood),
+            [
+                ("gauge", false),
+                ("chamber", false),
+                ("id", false),
+                ("label", true),
+                ("depth", true)
+            ]
+        );
+        assert_eq!(
+            flood.fields[0].type_ref,
+            TypeRef::Named("Gauge".to_string())
+        );
+        let plain = object_decl(&ir, "PlainLock");
+        assert_eq!(plain.bases, ["LockCore"]);
+        assert_eq!(field_shape(plain), [("chamber", false)]);
+        // A property the parent already requires is the parent's, not redeclared.
+        let id_lock = object_decl(&ir, "IdLock");
+        assert_eq!(id_lock.bases, ["LockCore"]);
+        assert_eq!(field_shape(id_lock), [("chamber", false)]);
+    }
+
+    /// The shape of NDW's `MunicipalityFeature` (measured at Fern CLI 5.163.1):
+    /// a `$ref` parent's `required` list requires the child's restatement of
+    /// that property too, and a required restatement of a property the parent
+    /// leaves optional is a conflict that flattens the parent.
+    #[test]
+    fn a_parent_required_list_requires_the_childs_restatement() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {
+                "Feature": {
+                    "type": "object", "required": ["id"],
+                    "properties": {
+                        "id": {"type": "string"},
+                        "kind": {"type": "string"}
+                    }
+                },
+                "Narrowed": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Feature"},
+                        {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "description": "The lock id."}
+                            }
+                        }
+                    ]
+                },
+                "Stricter": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Feature"},
+                        {
+                            "type": "object", "required": ["kind"],
+                            "properties": {"kind": {"type": "string"}}
+                        }
+                    ]
+                },
+                "Restated": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Feature"},
+                        {
+                            "type": "object",
+                            "properties": {"id": {"type": "string"}}
+                        }
+                    ]
+                }
+            }}
+        }));
+        let narrowed = object_decl(&ir, "Narrowed");
+        assert!(narrowed.bases.is_empty());
+        assert_eq!(field_shape(narrowed), [("id", false), ("kind", true)]);
+        let stricter = object_decl(&ir, "Stricter");
+        assert!(stricter.bases.is_empty());
+        assert_eq!(field_shape(stricter), [("kind", false), ("id", false)]);
+        // Required by the parent's list and declared alike, `id` restates the
+        // parent's and the child extends it.
+        let restated = object_decl(&ir, "Restated");
+        assert_eq!(restated.bases, ["Feature"]);
+        assert!(restated.fields.is_empty());
     }
 }
 
