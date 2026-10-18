@@ -1,6 +1,5 @@
 
 
-import json
 import typing
 from json.decoder import JSONDecodeError
 
@@ -117,7 +116,7 @@ class RawUsersClient:
             "users/invites",
             method="POST",
             data={
-                "emails[]": json.dumps(jsonable_encoder(emails)) if emails is not OMIT else OMIT,
+                "emails[]": jsonable_encoder(emails) if emails is not OMIT else OMIT,
             },
             files={
                 **({"csv": csv} if csv is not None else {}),
@@ -193,17 +192,11 @@ class RawUsersClient:
             data={
                 "limit": limit,
                 "metadata_0_key": metadata0key,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "offset": offset,
             },
             files={},
@@ -451,7 +444,7 @@ class RawUsersClient:
             method="POST",
             data={
                 "active_within_x_days": active_within_x_days,
-                "audience_ids[]": json.dumps(jsonable_encoder(audience_ids)) if audience_ids is not OMIT else OMIT,
+                "audience_ids[]": jsonable_encoder(audience_ids) if audience_ids is not OMIT else OMIT,
                 "bubbled": bubbled,
                 "exclude_connections": exclude_connections,
                 "exclude_matches": exclude_matches,
@@ -724,19 +717,13 @@ class RawUsersClient:
                 "bubbled": bubbled,
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "text_emoticons": text_emoticons,
                 "text_raw": text_raw,
             },
@@ -873,19 +860,13 @@ class RawUsersClient:
             data={
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,
@@ -1170,16 +1151,16 @@ class RawUsersClient:
                 "company": company,
                 "company_size": company_size,
                 "first_name": first_name,
-                "goals[]": json.dumps(jsonable_encoder(goals)) if goals is not OMIT else OMIT,
+                "goals[]": jsonable_encoder(goals) if goals is not OMIT else OMIT,
                 "headline": headline,
                 "industry": industry,
                 "introduction": introduction,
                 "job_position": job_position,
                 "last_name": last_name,
                 "location_importance": location_importance,
-                "match_tags[]": json.dumps(jsonable_encoder(match_tags)) if match_tags is not OMIT else OMIT,
+                "match_tags[]": jsonable_encoder(match_tags) if match_tags is not OMIT else OMIT,
                 "pitch": pitch,
-                "tags[]": json.dumps(jsonable_encoder(tags)) if tags is not OMIT else OMIT,
+                "tags[]": jsonable_encoder(tags) if tags is not OMIT else OMIT,
                 "targeted_industry": targeted_industry,
                 "url": url,
             },
@@ -1281,7 +1262,7 @@ class AsyncRawUsersClient:
             "users/invites",
             method="POST",
             data={
-                "emails[]": json.dumps(jsonable_encoder(emails)) if emails is not OMIT else OMIT,
+                "emails[]": jsonable_encoder(emails) if emails is not OMIT else OMIT,
             },
             files={
                 **({"csv": csv} if csv is not None else {}),
@@ -1357,17 +1338,11 @@ class AsyncRawUsersClient:
             data={
                 "limit": limit,
                 "metadata_0_key": metadata0key,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "offset": offset,
             },
             files={},
@@ -1615,7 +1590,7 @@ class AsyncRawUsersClient:
             method="POST",
             data={
                 "active_within_x_days": active_within_x_days,
-                "audience_ids[]": json.dumps(jsonable_encoder(audience_ids)) if audience_ids is not OMIT else OMIT,
+                "audience_ids[]": jsonable_encoder(audience_ids) if audience_ids is not OMIT else OMIT,
                 "bubbled": bubbled,
                 "exclude_connections": exclude_connections,
                 "exclude_matches": exclude_matches,
@@ -1888,19 +1863,13 @@ class AsyncRawUsersClient:
                 "bubbled": bubbled,
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "text_emoticons": text_emoticons,
                 "text_raw": text_raw,
             },
@@ -2037,19 +2006,13 @@ class AsyncRawUsersClient:
             data={
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,
@@ -2334,16 +2297,16 @@ class AsyncRawUsersClient:
                 "company": company,
                 "company_size": company_size,
                 "first_name": first_name,
-                "goals[]": json.dumps(jsonable_encoder(goals)) if goals is not OMIT else OMIT,
+                "goals[]": jsonable_encoder(goals) if goals is not OMIT else OMIT,
                 "headline": headline,
                 "industry": industry,
                 "introduction": introduction,
                 "job_position": job_position,
                 "last_name": last_name,
                 "location_importance": location_importance,
-                "match_tags[]": json.dumps(jsonable_encoder(match_tags)) if match_tags is not OMIT else OMIT,
+                "match_tags[]": jsonable_encoder(match_tags) if match_tags is not OMIT else OMIT,
                 "pitch": pitch,
-                "tags[]": json.dumps(jsonable_encoder(tags)) if tags is not OMIT else OMIT,
+                "tags[]": jsonable_encoder(tags) if tags is not OMIT else OMIT,
                 "targeted_industry": targeted_industry,
                 "url": url,
             },

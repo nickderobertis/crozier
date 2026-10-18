@@ -122,7 +122,7 @@ if typing.TYPE_CHECKING:
         UpdateFrequencyHoursField,
         WebsiteField,
     )
-    from .errors import BadRequestError, NotFoundError, TooManyRequestsError, UnauthorizedError
+    from .errors import BadRequestError, NotFoundError, ServerError, TooManyRequestsError, UnauthorizedError
     from . import directory_api, insights_api, playlist_api, podcaster_api, search_api
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
@@ -247,6 +247,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SearchRequestType": ".search_api",
     "SearchResponse": ".types",
     "SearchResponseResultsItem": ".types",
+    "ServerError": ".errors",
     "SpellCheckResponse": ".types",
     "SpellCheckResponseTokensItem": ".types",
     "SubmitPodcastForm": ".types",
@@ -407,6 +408,7 @@ __all__ = [
     "SearchRequestType",
     "SearchResponse",
     "SearchResponseResultsItem",
+    "ServerError",
     "SpellCheckResponse",
     "SpellCheckResponseTokensItem",
     "SubmitPodcastForm",

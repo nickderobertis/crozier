@@ -85,7 +85,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if server_url_base_url is not None:
             _server_url_base_url = server_url_base_url if server_url_base_url is not None else "/"
-            base_url = "{baseUrl}".format(baseUrl=_server_url_base_url)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "{baseUrl}",
+            }
+            _url_template = _environment_url_templates.get(environment, "{baseUrl}")
+            if base_url is None:
+                base_url = _url_template.format(baseUrl=_server_url_base_url)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             headers=headers,
@@ -209,7 +214,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if server_url_base_url is not None:
             _server_url_base_url = server_url_base_url if server_url_base_url is not None else "/"
-            base_url = "{baseUrl}".format(baseUrl=_server_url_base_url)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "{baseUrl}",
+            }
+            _url_template = _environment_url_templates.get(environment, "{baseUrl}")
+            if base_url is None:
+                base_url = _url_template.format(baseUrl=_server_url_base_url)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             headers=headers,

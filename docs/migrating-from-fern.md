@@ -10,8 +10,8 @@ itself.
 
 ### Upgrade the Fern generator first
 
-crozier certifies one pair, **Fern CLI 5.67.1** with **`fernapi/fern-python-sdk`
-5.20.0** (the pair recorded in
+crozier certifies one pair, **Fern CLI 5.163.1** with **`fernapi/fern-python-sdk`
+5.41.3** (the pair recorded in
 [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)), under
 either enum form: `pydantic_config.enum_type: python_enums`, which crozier's
 default `enum-type: python-enums` matches, or `enum_type` unset — Fern's
@@ -25,13 +25,13 @@ change:
 ```yaml
 # fern/generators.yml
       - name: fernapi/fern-python-sdk
-        version: 5.20.0
+        version: 5.41.3
         config:
           pydantic_config:
             enum_type: python_enums
 ```
 
-and set `"version": "5.67.1"` in `fern.config.json`. A generator that relies on
+and set `"version": "5.163.1"` in `fern.config.json`. A generator that relies on
 Fern's literal enums keeps `enum_type` unset instead, and its crozier generator
 sets `enum-type: literals`. Regenerate with Fern and
 review that diff on its own; only then compare against crozier, so the
@@ -50,7 +50,7 @@ expect differences, at least in `.fern/metadata.json`, which records the version
 The `fern` launcher runs the CLI version a workspace's `fern.config.json` names
 ([What you need](fern-reference.md#what-you-need)), and only the certified pair is
 known to match ([Certified versions](fern-reference.md#certified-versions)).
-The recipe writes the certified `5.67.1` into the workspace it builds. A team that adapts it to run in
+The recipe writes the certified `5.163.1` into the workspace it builds. A team that adapts it to run in
 its own Fern workspace pins that file's `version` to the same release, never
 `*` or a range, so the reference does not move under it.
 
@@ -167,7 +167,7 @@ counts the generator image download. Pull it before the comparison, as the
 Action's example workflow does:
 
 ```sh
-docker pull fernapi/fern-python-sdk:5.20.0
+docker pull fernapi/fern-python-sdk:5.41.3
 ```
 
 The report's per-generator reference and crozier times, speed-up and time saved

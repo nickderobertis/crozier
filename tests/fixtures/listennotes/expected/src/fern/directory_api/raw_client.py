@@ -11,6 +11,7 @@ from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
 from ..errors.not_found_error import NotFoundError
+from ..errors.server_error import ServerError
 from ..errors.too_many_requests_error import TooManyRequestsError
 from ..errors.unauthorized_error import UnauthorizedError
 from ..types.best_podcasts_response import BestPodcastsResponse
@@ -159,6 +160,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -226,6 +239,18 @@ class RawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -304,6 +329,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -375,6 +412,18 @@ class RawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -462,6 +511,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -548,6 +609,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -619,6 +692,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -678,6 +763,18 @@ class RawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -740,6 +837,18 @@ class RawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -844,6 +953,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -936,6 +1057,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1022,6 +1155,18 @@ class RawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1083,6 +1228,18 @@ class RawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -1219,6 +1376,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1286,6 +1455,18 @@ class AsyncRawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -1364,6 +1545,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1435,6 +1628,18 @@ class AsyncRawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -1522,6 +1727,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1608,6 +1825,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1679,6 +1908,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1741,6 +1982,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1802,6 +2055,18 @@ class AsyncRawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -1906,6 +2171,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -1998,6 +2275,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2084,6 +2373,18 @@ class AsyncRawDirectoryApiClient:
                         ),
                     ),
                 )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -2145,6 +2446,18 @@ class AsyncRawDirectoryApiClient:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:

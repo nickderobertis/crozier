@@ -5897,6 +5897,7 @@ client.users.pre_register_user_account(
     first_name="firstName",
     last_name="lastName",
     email="email",
+    phone=None,
     address="address",
     city="city",
     postal_code="postalCode",
@@ -6269,6 +6270,7 @@ client = FernApi(
 client.wallets.update_wallet(
     wallet_id=1,
     name="name",
+    description=None,
     status=WalletStatus.ACTIVE,
 )
 
@@ -7121,6 +7123,7 @@ client.wallets.replace_wallet_autorecharge(
     enabled=True,
     payment_method_id="paymentMethodId",
     top_up_amount_in_usd=1.1,
+    monthly_limit_in_usd=None,
 )
 
 ```
@@ -14522,6 +14525,7 @@ client.functions.register_function(
     request=RegisterFunctionRequest_Project(
         input_schema=ProjectFunctionToRegisterInputSchema_ApplicationSchemaJson(),
         output_schema=ProjectFunctionToRegisterOutputSchema_ApplicationSchemaJson(),
+        default_inputs=None,
         project_id="projectId",
     ),
 )

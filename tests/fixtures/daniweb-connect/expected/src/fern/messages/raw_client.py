@@ -1,6 +1,5 @@
 
 
-import json
 import typing
 from json.decoder import JSONDecodeError
 
@@ -77,17 +76,11 @@ class RawMessagesClient:
             data={
                 "limit": limit,
                 "metadata_0_key": metadata0key,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "offset": offset,
             },
             files={},
@@ -265,19 +258,13 @@ class RawMessagesClient:
             data={
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,
@@ -398,17 +385,11 @@ class AsyncRawMessagesClient:
             data={
                 "limit": limit,
                 "metadata_0_key": metadata0key,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
                 "offset": offset,
             },
             files={},
@@ -586,19 +567,13 @@ class AsyncRawMessagesClient:
             data={
                 "metadata_0_key": metadata0key,
                 "metadata_0_privacy": metadata0privacy,
-                "metadata_0_values[]": json.dumps(jsonable_encoder(metadata0values))
-                if metadata0values is not OMIT
-                else OMIT,
+                "metadata_0_values[]": jsonable_encoder(metadata0values) if metadata0values is not OMIT else OMIT,
                 "metadata_1_key": metadata1key,
                 "metadata_1_privacy": metadata1privacy,
-                "metadata_1_values[]": json.dumps(jsonable_encoder(metadata1values))
-                if metadata1values is not OMIT
-                else OMIT,
+                "metadata_1_values[]": jsonable_encoder(metadata1values) if metadata1values is not OMIT else OMIT,
                 "metadata_2_key": metadata2key,
                 "metadata_2_privacy": metadata2privacy,
-                "metadata_2_values[]": json.dumps(jsonable_encoder(metadata2values))
-                if metadata2values is not OMIT
-                else OMIT,
+                "metadata_2_values[]": jsonable_encoder(metadata2values) if metadata2values is not OMIT else OMIT,
             },
             files={},
             request_options=request_options,
