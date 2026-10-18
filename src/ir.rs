@@ -2267,6 +2267,48 @@ pub struct ObjectType {
     pub example_fields: std::collections::HashSet<String>,
     /// Optional class docstring.
     pub docstring: Option<String>,
+    /// The schema's OpenAPI XML Object, when it declares one: the model then
+    /// also reads and writes itself as an XML element (`to_xml`/`from_xml`).
+    pub xml: Option<XmlEncoding>,
+}
+
+/// An XML model's element: what an object schema's `xml` declares.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct XmlEncoding {
+    /// The element name: the XML Object's `name`, else the type's own name.
+    pub name: String,
+    /// The XML Object's `namespace`.
+    pub namespace: Option<String>,
+    /// The XML Object's `prefix`.
+    pub prefix: Option<String>,
+}
+
+/// Where a property of an XML model sits in its element.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum XmlKind {
+    /// A child element (the default).
+    Element,
+    /// An attribute (`xml.attribute: true`).
+    Attribute,
+    /// The element's text content (`x-crozier-xml-text` / `x-fern-xml-text`).
+    Text,
+}
+
+/// How one property of an XML model is encoded.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct XmlProperty {
+    /// Element, attribute or text.
+    pub kind: XmlKind,
+    /// The XML name, when the property (or the schema it references) names
+    /// one; the wire name otherwise.
+    pub name: Option<String>,
+    /// A list rendered inside a wrapper element named after the property.
+    pub wrapped: bool,
+    /// The delimiter a list-valued attribute or text is joined with.
+    pub list_separator: Option<String>,
+    /// The (item) schema is a string whose `format` Fern types as something
+    /// other than a string (`uuid`, `byte`), so no sample string stands for it.
+    pub opaque_string: bool,
 }
 
 /// One model field.
@@ -2303,6 +2345,8 @@ pub struct Field {
     /// reaches through a `$ref` or an `allOf`). Fern's worked examples leave such
     /// a property out unless it is required.
     pub deprecated: bool,
+    /// The property's XML encoding; set on every field of an XML model.
+    pub xml: Option<XmlProperty>,
 }
 
 impl Field {
@@ -7251,6 +7295,10 @@ impl InlineHoister<'_> {
             bases.clear();
             fields.extend(inherited);
         }
+        let xml = xml_encoding(schema, name);
+        if xml.is_some() {
+            annotate_xml_fields(schema, &mut fields, self.schemas);
+        }
         self.out.push(TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
             name: name.to_string(),
@@ -7262,6 +7310,7 @@ impl InlineHoister<'_> {
                 .map(|example| example.keys().cloned().collect())
                 .unwrap_or_default(),
             docstring,
+            xml,
         }));
     }
 
@@ -7582,6 +7631,7 @@ impl InlineHoister<'_> {
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
                 deprecated: own_deprecated(prop_schema),
+                xml: None,
                 type_ref: self.field_type_ref(owner, prop, prop_schema),
                 optional,
                 nullable: referenced_nullable
@@ -10893,6 +10943,7 @@ fn append_member_fields(
             py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
             declared_name: prop_schema.property_name().map(str::to_owned),
             deprecated: own_deprecated(prop_schema),
+            xml: None,
             type_ref,
             optional: is_optional(prop_schema) || !spec_required,
             nullable: is_optional(prop_schema) && prop_schema.read_only == Some(true),
@@ -11044,6 +11095,7 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         example: None,
         declared_name: None,
         deprecated: false,
+        xml: None,
         admits_only_empty_object: false,
     }
 }
@@ -11925,6 +11977,10 @@ impl Builder<'_> {
                 index += 1;
             }
         }
+        let xml = xml_encoding(schema, name);
+        if xml.is_some() {
+            annotate_xml_fields(schema, &mut fields, Some(schemas));
+        }
         self.types.push(TypeDecl::Object(ObjectType {
             reach_refs: base_refs
                 .iter()
@@ -11941,6 +11997,7 @@ impl Builder<'_> {
                 .map(|example| example.keys().cloned().collect())
                 .unwrap_or_default(),
             docstring,
+            xml,
         }));
         self.building_types.remove(name);
     }
@@ -12067,6 +12124,7 @@ impl Builder<'_> {
                 py_name: naming::model_field_name(prop_schema.property_name().unwrap_or(prop)),
                 declared_name: prop_schema.property_name().map(str::to_owned),
                 deprecated: own_deprecated(prop_schema),
+                xml: None,
                 type_ref,
                 optional,
                 nullable: referenced_nullable
@@ -12455,6 +12513,7 @@ impl Builder<'_> {
                         example: None,
                         declared_name: None,
                         deprecated: false,
+                        xml: None,
                         admits_only_empty_object: false,
                     }],
                     discriminant_index: None,
@@ -14266,6 +14325,156 @@ fn schema_reaches_type<'a>(
     false
 }
 
+/// The XML element an object schema declares through its `xml` object, named
+/// after the type itself when the object gives no `name` — what Fern's importer
+/// records as the type's XML encoding. `None` for a schema without one.
+fn xml_encoding(schema: &Schema, type_name: &str) -> Option<XmlEncoding> {
+    schema.xml.as_ref().filter(|xml| !xml.is_null())?;
+    let text = |key: &str| {
+        schema
+            .xml_object()
+            .and_then(|xml| xml.get(key))
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_string)
+    };
+    Some(XmlEncoding {
+        name: text("name").unwrap_or_else(|| type_name.to_string()),
+        namespace: text("namespace"),
+        prefix: text("prefix"),
+    })
+}
+
+/// Fern's XML encoding of one property: the property's own XML object, else
+/// the one on the schema it references, with the XML-text and list-separator
+/// extensions read the same way. A property naming none of them is a plain child
+/// element named after its wire name.
+fn property_xml(property: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> XmlProperty {
+    let resolved = property
+        .reference
+        .as_deref()
+        .and_then(|reference| {
+            schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+        })
+        .unwrap_or(property);
+    let xml = property
+        .xml_object()
+        .filter(|_| property.xml.is_some())
+        .or_else(|| resolved.xml_object());
+    let flag = |key: &str| {
+        xml.and_then(|xml| xml.get(key))
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
+    };
+    let text = property.xml_text().or_else(|| resolved.xml_text()) == Some(true);
+    let kind = if text {
+        XmlKind::Text
+    } else if flag("attribute") {
+        XmlKind::Attribute
+    } else {
+        XmlKind::Element
+    };
+    XmlProperty {
+        kind,
+        name: xml
+            .and_then(|xml| xml.get("name"))
+            .and_then(serde_json::Value::as_str)
+            .map(str::to_string),
+        wrapped: flag("wrapped"),
+        list_separator: property
+            .xml_list_separator()
+            .or_else(|| resolved.xml_list_separator())
+            .map(str::to_string),
+        opaque_string: opaque_string(resolved, schemas),
+    }
+}
+
+/// A property of an XML model whose own schema says nothing about XML: a child
+/// element under its wire name.
+fn plain_xml_property(
+    property: &Schema,
+    schemas: Option<&IndexMap<String, Schema>>,
+) -> XmlProperty {
+    XmlProperty {
+        kind: XmlKind::Element,
+        name: None,
+        wrapped: false,
+        list_separator: None,
+        opaque_string: opaque_string(property, schemas),
+    }
+}
+
+/// Whether a (list item) string schema carries a `format` Fern types as a
+/// non-string primitive (`uuid`, base64 `byte`).
+fn opaque_string(schema: &Schema, schemas: Option<&IndexMap<String, Schema>>) -> bool {
+    let item = match (
+        &schema.items,
+        schema.ty.as_ref().and_then(TypeField::primary),
+    ) {
+        (Some(items), Some("array")) => items
+            .reference
+            .as_deref()
+            .and_then(|reference| {
+                schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+            })
+            .unwrap_or(items),
+        _ => schema,
+    };
+    item.ty.as_ref().and_then(TypeField::primary) == Some("string")
+        && matches!(item.format.as_deref(), Some("uuid" | "byte"))
+}
+
+/// Encode every field of an XML model the way Fern's importer does: a property
+/// the schema declares itself takes its own (or its reference's) XML object; one
+/// it takes from an `allOf` member or an inlined parent does so only when that
+/// member is itself an XML element, and is otherwise a plain child element.
+fn annotate_xml_fields(
+    schema: &Schema,
+    fields: &mut [Field],
+    schemas: Option<&IndexMap<String, Schema>>,
+) {
+    for field in fields {
+        let wire = field.wire_name.as_str();
+        let xml = if let Some(property) = schema.properties.get(wire) {
+            property_xml(property, schemas)
+        } else {
+            let mut found = None;
+            for member in schema.all_of.iter().flatten() {
+                let holder = match member.reference.as_deref() {
+                    Some(reference) => {
+                        match schemas
+                            .and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+                        {
+                            Some(target) => target,
+                            None => continue,
+                        }
+                    }
+                    None => member,
+                };
+                let merged = schemas.map(|schemas| all_properties_of(schemas, holder, 0));
+                let properties = merged
+                    .as_ref()
+                    .map_or(&holder.properties, |merged| &merged.properties);
+                if let Some(property) = properties.get(wire) {
+                    found = Some(if holder.xml.is_some() {
+                        property_xml(property, schemas)
+                    } else {
+                        plain_xml_property(property, schemas)
+                    });
+                    break;
+                }
+            }
+            found.unwrap_or(XmlProperty {
+                kind: XmlKind::Element,
+                name: None,
+                wrapped: false,
+                list_separator: None,
+                opaque_string: false,
+            })
+        };
+        field.xml = Some(xml);
+    }
+}
+
 /// `schema` with the properties and `required` of its whole `allOf` chain merged
 /// into its own, `$ref`s resolved, and the `allOf` itself dropped. A schema with
 /// no `allOf` comes back unchanged.
@@ -15880,6 +16089,7 @@ mod tests {
             declared_name: None,
             deprecated: false,
             admits_only_empty_object: false,
+            xml: None,
         }
     }
 
@@ -15979,6 +16189,7 @@ mod tests {
                 ],
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
+                xml: None,
             }),
             TypeDecl::Object(ObjectType {
                 reach_refs: Vec::new(),
@@ -15991,6 +16202,7 @@ mod tests {
                 ],
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
+                xml: None,
             }),
             TypeDecl::Object(ObjectType {
                 reach_refs: Vec::new(),
@@ -16000,6 +16212,7 @@ mod tests {
                 fields: vec![object_field("child", true, primitive)],
                 example_fields: std::collections::HashSet::new(),
                 docstring: None,
+                xml: None,
             }),
         ];
 
@@ -23795,5 +24008,141 @@ mod tests {
             .map(|field| field.wire_name.as_str())
             .collect();
         assert_eq!(wires, ["station", "lane"]);
+    }
+}
+
+#[cfg(test)]
+mod xml_encoding_tests {
+    use super::{build, TypeDecl, XmlEncoding, XmlKind, XmlProperty};
+
+    /// The object `name` lowers to from `schemas`, with its fields' XML encodings.
+    fn object(
+        schemas: serde_json::Value,
+        name: &str,
+    ) -> (Option<XmlEncoding>, Vec<(String, Option<XmlProperty>)>) {
+        let doc: crate::openapi::OpenApi = serde_json::from_value(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Zoo", "version": "1"},
+            "paths": {},
+            "components": {"schemas": schemas}
+        }))
+        .expect("document deserializes");
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("zoo".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Zoo",
+        )
+        .expect("the config is well formed");
+        let ir = build(&doc, &config);
+        let Some(TypeDecl::Object(obj)) = ir.types.iter().find(|decl| decl.name() == name) else {
+            panic!("no object {name} in {:?}", ir.types);
+        };
+        (
+            obj.xml.clone(),
+            obj.fields
+                .iter()
+                .map(|field| (field.wire_name.clone(), field.xml.clone()))
+                .collect(),
+        )
+    }
+
+    fn element(name: Option<&str>) -> Option<XmlProperty> {
+        Some(XmlProperty {
+            kind: XmlKind::Element,
+            name: name.map(str::to_string),
+            wrapped: false,
+            list_separator: None,
+            opaque_string: false,
+        })
+    }
+
+    #[test]
+    fn an_object_without_an_xml_object_is_no_xml_model() {
+        let (xml, fields) = object(
+            serde_json::json!({"Pet": {"type": "object", "properties": {"name": {"type": "string"}}}}),
+            "Pet",
+        );
+        assert_eq!(xml, None);
+        assert_eq!(fields, [("name".to_string(), None)]);
+    }
+
+    #[test]
+    fn an_unnamed_xml_object_names_the_element_after_the_type() {
+        let (xml, _) = object(
+            serde_json::json!({"Pet": {"type": "object", "xml": {"namespace": "urn:zoo"},
+                "properties": {"name": {"type": "string"}}}}),
+            "Pet",
+        );
+        assert_eq!(
+            xml,
+            Some(XmlEncoding {
+                name: "Pet".to_string(),
+                namespace: Some("urn:zoo".to_string()),
+                prefix: None,
+            })
+        );
+    }
+
+    #[test]
+    fn every_property_of_an_xml_model_is_encoded() {
+        let (_, fields) = object(
+            serde_json::json!({
+                "Owner": {"type": "object", "xml": {"name": "keeper"},
+                    "properties": {"id": {"type": "string"}}},
+                "Base": {"type": "object", "properties": {"born": {"type": "string"}}},
+                "Pet": {"type": "object", "xml": {"name": "pet"}, "allOf": [
+                    {"type": "object", "properties": {"mixed": {"type": "string",
+                        "xml": {"attribute": true}}}}
+                ], "properties": {
+                    "id": {"type": "string", "format": "uuid", "xml": {"attribute": true}},
+                    "note": {"type": "string", "x-crozier-xml-text": true},
+                    "owner": {"$ref": "#/components/schemas/Owner"},
+                    "renamed": {"$ref": "#/components/schemas/Owner", "xml": {"name": "boss"}},
+                    "codes": {"type": "array", "items": {"type": "string", "format": "byte"},
+                        "xml": {"wrapped": true}, "x-crozier-xml-list-separator": ";",
+                        "x-fern-xml-list-separator": ","},
+                    "plain": {"type": "string"}
+                }}
+            }),
+            "Pet",
+        );
+        let by_wire: std::collections::BTreeMap<String, Option<XmlProperty>> =
+            fields.into_iter().collect();
+        assert_eq!(
+            by_wire["id"],
+            Some(XmlProperty {
+                kind: XmlKind::Attribute,
+                name: None,
+                wrapped: false,
+                list_separator: None,
+                opaque_string: true,
+            })
+        );
+        assert_eq!(
+            by_wire["note"].as_ref().map(|xml| xml.kind),
+            Some(XmlKind::Text)
+        );
+        // A reference takes the element name its target declares, unless the
+        // property names its own.
+        assert_eq!(by_wire["owner"], element(Some("keeper")));
+        assert_eq!(by_wire["renamed"], element(Some("boss")));
+        assert_eq!(
+            by_wire["codes"],
+            Some(XmlProperty {
+                kind: XmlKind::Element,
+                name: None,
+                wrapped: true,
+                list_separator: Some(";".to_string()),
+                opaque_string: true,
+            })
+        );
+        assert_eq!(by_wire["plain"], element(None));
+        // An inline `allOf` member that is no XML element itself contributes a
+        // plain child element, whatever its property says.
+        assert_eq!(by_wire["mixed"], element(None));
     }
 }

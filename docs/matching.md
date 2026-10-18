@@ -1350,7 +1350,8 @@ The precedence lives in the field accessors (`Operation::audiences`,
 `Operation::ignored`, `Operation::sdk_group_name`, `Operation::sdk_method_name`,
 `Operation::pagination`, `Operation::streaming`, `Schema::ignored`,
 `Schema::enum_member_names`, `Schema::declared_type_name`,
-`Schema::property_name`); any future extension inherits the policy by default.
+`Schema::property_name`, `Schema::xml_text`, `Schema::xml_list_separator`); any
+future extension inherits the policy by default.
 The `crozier-property-name` feature target pins `property-name` against Fern:
 a real-world overlay renames request body properties clear of a same-named path
 parameter (the specification it was observed on is held privately), and the
@@ -1456,6 +1457,27 @@ they agree on every enum's shape. A targeted set of corpora reaching every enum
 shape carries the literals golden it is held to (`expected-literals/`, an
 overlay of `expected/`), compared by `crates/crozier-e2e/tests/e2e/overlay_goldens.rs`. Fern's third mode, `forward_compatible_python_enums`,
 has no crozier counterpart.
+
+## XML models
+
+From fern-python-sdk 5.41 an object schema carrying an OpenAPI `xml` object is
+an **XML model** (`src/emit/xml.rs`, after Fern's own generator source): its
+pydantic class gains `to_xml`/`from_xml`, `__str__`, private ordered-content
+fields, `add_child`/`add_text`/the comment methods, a fluent builder per XML
+model its child lists hold, and `copy_on_model_validation = "none"`; the SDK
+gains `core/xml_utilities.py` and a `tests/xml/test_<model>.py` round trip per
+model. What Fern reads, and so what crozier reads:
+
+- the element is the `xml.name`, else the type name, with `namespace`/`prefix`;
+- each property of the model is a child element unless its `xml` (or, for a
+  `$ref`, its target's) says `attribute`, or `x-crozier-xml-text` /
+  `x-fern-xml-text` makes it the text; its XML name likewise; `wrapped` and
+  `x-crozier-xml-list-separator` / `x-fern-xml-list-separator` are read the same
+  way. A property an inline `allOf` member contributes takes that member's XML
+  reading only if the member is an XML element itself.
+
+The generated tests are Fern's own: a model whose required child element the
+sample document leaves out fails its round trip in Fern's SDK too.
 
 ## Enum name sanitization (issue #50)
 

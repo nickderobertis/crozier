@@ -22,6 +22,9 @@ version.
   SDK type-checks clean under its pinned `mypy`. The auth-shaped
   `client_wrapper.py` is assembled by Crozier and is not one of the verbatim
   runtime assets.
+- **Conditional files:** `pagination.py` ships only with an SDK that has a
+  paginated endpoint and `xml_utilities.py` (from `fernapi/fern-python-sdk:5.41.3`)
+  only with one that has an XML model, as Fern ships them.
 - **Judged lint:** the verbatim runtime files here, and the three Python
   scaffolding copies below, are excluded from `llmlint` in `llmlint.yml` as
   vendored Fern output, as `tests/fixtures/**` is; the byte-match and the

@@ -25,6 +25,8 @@ use crate::naming;
 use crate::settings::{EnumType, ExtraFields, Layout};
 use crate::wrap::Doc;
 
+mod xml;
+
 /// The header comment crozier writes atop every generated file. It differs from
 /// Fern's by design; the comment-stripping normalizer removes it before any
 /// comparison, so the wording is free.
@@ -842,6 +844,13 @@ struct ObjectView {
     /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member (`allow`/`ignore`/
     /// `forbid`).
     extra_kind: &'static str,
+    /// Whether the module opens with `from __future__ import annotations` (an
+    /// XML model names its own class in its method signatures).
+    future: bool,
+    /// Methods rendered after the fields (an XML model's), class-body indented.
+    members: Option<String>,
+    /// Whether the v1 `Config` sets `copy_on_model_validation = "none"`.
+    copy_on_model_validation: bool,
 }
 
 /// One field as the object template consumes it: the flat declaration line
@@ -1635,6 +1644,7 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     let decl_settings = DeclSettings {
         extra: ir.extra_fields,
         enum_type: ir.enum_type,
+        xml_types: xml::XmlTypes::new(&ir.types, &ir.tag_types),
     };
     for decl in &ir.types {
         let forward = forward_map.get(decl.name()).unwrap_or(&empty_forward);
@@ -1704,6 +1714,16 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
         ir.enum_type,
         &ir.auth,
     ));
+    // An XML model reads and writes itself through `core/xml_utilities.py`, which
+    // Fern ships (unexported) only with an SDK that has one, together with a
+    // round-trip test module per model.
+    if decl_settings.xml_types.any() {
+        files.push(GeneratedFile {
+            path: PathBuf::from(format!("src/{pkg}/core/xml_utilities.py")),
+            contents: xml::XML_UTILITIES.to_string(),
+        });
+        files.extend(xml::test_files(pkg, decl_settings.xml_types));
+    }
     // Fern's flat tree has no publishing identity, so its wrapper sends no
     // `SDK-Name`/`SDK-Version` headers.
     files.push(client_wrapper_file(
@@ -3722,7 +3742,10 @@ fn http_client_with_auth_headers(asset: &str, auth: &Auth) -> String {
     match header {
         Some(header) => asset.replacen(
             EMPTY_AUTH_HEADERS,
-            &format!("_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({{{}}})\n", literal_enum_value(&header)),
+            &format!(
+                "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset({{{}}})\n",
+                literal_enum_value(&header)
+            ),
             1,
         ),
         None => asset.to_owned(),
@@ -4344,6 +4367,10 @@ struct ClassBodyView {
     /// The v1 `Config`'s `pydantic.Extra.<extra_kind>` member, or `None` for a
     /// class whose config declares no extra-fields behaviour at all.
     extra_kind: Option<&'static str>,
+    /// Methods rendered after the fields (an XML model's), class-body indented.
+    members: Option<String>,
+    /// Whether the v1 `Config` sets `copy_on_model_validation = "none"`.
+    copy_on_model_validation: bool,
 }
 
 /// The two `extra`-fields fragments a pydantic model body needs: the v2
@@ -4376,6 +4403,18 @@ fn render_class_body(
     fields: Vec<FieldView>,
     extra: Option<ExtraFields>,
 ) -> Result<String> {
+    render_class_body_with(env, docstring, fields, extra, xml::XmlMembers::default())
+}
+
+/// [`render_class_body`] for a model that also carries methods: an XML model's
+/// (see [`xml::XmlMembers`]).
+fn render_class_body_with(
+    env: &Environment<'static>,
+    docstring: Option<String>,
+    fields: Vec<FieldView>,
+    extra: Option<ExtraFields>,
+    members: xml::XmlMembers,
+) -> Result<String> {
     // `None` is the value-wrapper form: `frozen=True` alone under v2, and a v1
     // `Config` that stops after `smart_union`.
     let (config_dict_args, extra_kind) = match extra {
@@ -4390,6 +4429,8 @@ fn render_class_body(
         fields,
         config_dict_args,
         extra_kind,
+        members: members.methods,
+        copy_on_model_validation: members.preserve_child_identity,
     };
     render(
         env,
@@ -4410,11 +4451,14 @@ fn update_forward_refs_call(target: &str, repair: &ForwardRepair) -> String {
 /// The generator settings a declaration's rendered shape reads, bundled to keep
 /// [`render_type_decl`] within the argument limit.
 #[derive(Debug, Clone, Copy, Default)]
-struct DeclSettings {
+struct DeclSettings<'a> {
     /// Fern's `pydantic_config.extra_fields`: every model's `extra` config.
     extra: ExtraFields,
     /// Fern's `pydantic_config.enum_type`: an enum's class or literal form.
     enum_type: EnumType,
+    /// Every declaration in the SDK, which an XML model reads to type its child
+    /// elements (see [`xml::XmlTypes`]).
+    xml_types: xml::XmlTypes<'a>,
 }
 
 /// Render one type declaration to a file body. `loc` is the file's location
@@ -4425,7 +4469,7 @@ fn render_type_decl(
     decl: &TypeDecl,
     loc: RefLoc,
     tag_types: &BTreeMap<String, String>,
-    settings: DeclSettings,
+    settings: DeclSettings<'_>,
     forward: &std::collections::HashSet<String>,
     repair: Option<&ForwardRepair>,
 ) -> Result<String> {
@@ -4434,7 +4478,11 @@ fn render_type_decl(
     let needs_forward = repair.is_some();
     let empty_repair = ForwardRepair::default();
     let repair = repair.unwrap_or(&empty_repair);
-    let DeclSettings { extra, enum_type } = settings;
+    let DeclSettings {
+        extra,
+        enum_type,
+        xml_types,
+    } = settings;
     match decl {
         TypeDecl::Object(obj) => {
             let mut imports = Imports::at(loc, tag_types);
@@ -4469,8 +4517,14 @@ fn render_type_decl(
                 }
                 obj.bases.join(", ")
             };
-            let fields: Vec<FieldView> = obj
-                .fields
+            let xml_model = obj
+                .xml
+                .as_ref()
+                .map(|encoding| xml::XmlModel::new(obj, encoding, xml_types));
+            let own_fields = xml_model
+                .as_ref()
+                .map_or_else(|| obj.fields.clone(), xml::XmlModel::declared_fields);
+            let mut fields: Vec<FieldView> = own_fields
                 .iter()
                 .map(|f| {
                     let rf = render_field(f, &mut imports);
@@ -4480,6 +4534,10 @@ fn render_type_decl(
                     }
                 })
                 .collect();
+            let members = match &xml_model {
+                Some(model) => model.members(&mut imports, &mut fields),
+                None => xml::XmlMembers::default(),
+            };
             for name in &repair.import_order {
                 imports.add_type(name);
             }
@@ -4493,7 +4551,13 @@ fn render_type_decl(
                 if repairs {
                     imports.add_core("pydantic_utilities", "update_forward_refs");
                 }
-                let body = render_class_body(env, obj.docstring.clone(), fields, Some(extra))?;
+                let body = render_class_body_with(
+                    env,
+                    obj.docstring.clone(),
+                    fields,
+                    Some(extra),
+                    members,
+                )?;
                 let mut file = format!(
                     "{HEADER}\n\nfrom __future__ import annotations\n\n{}\n\n\nclass {}({}):\n{}",
                     imports.render(),
@@ -4540,6 +4604,9 @@ fn render_type_decl(
                 fields,
                 config_dict_args,
                 extra_kind,
+                future: xml_model.is_some(),
+                copy_on_model_validation: members.preserve_child_identity,
+                members: members.methods,
             };
             render(
                 env,
@@ -4812,6 +4879,7 @@ fn render_discriminated_union(
                 example: None,
                 declared_name: None,
                 deprecated: false,
+                xml: None,
                 admits_only_empty_object: false,
             },
             &mut imports,
@@ -13846,6 +13914,7 @@ mod tests {
             declared_name: None,
             deprecated: false,
             admits_only_empty_object: false,
+            xml: None,
         }
     }
 
@@ -13861,6 +13930,7 @@ mod tests {
                 .collect(),
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         })
     }
 
@@ -14257,6 +14327,7 @@ mod tests {
             ],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let types = vec![
             payload,
@@ -14271,6 +14342,7 @@ mod tests {
                 ],
                 example_fields: Default::default(),
                 docstring: None,
+                xml: None,
             }),
             TypeDecl::Alias(AliasType {
                 reach_refs: Vec::new(),
@@ -14584,6 +14656,7 @@ mod tests {
             fields: vec![model_field("label", TypeRef::Primitive(Prim::Str), true)],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let kind = TypeDecl::Enum(EnumType {
             name: "Kind".to_string(),
@@ -14612,6 +14685,7 @@ mod tests {
             fields: vec![model_field("role", TypeRef::Primitive(Prim::Str), true)],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let probe = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -14640,6 +14714,7 @@ mod tests {
             ],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let types = vec![inner, kind, alias, base, probe];
         let auth = Auth::None;
@@ -14669,6 +14744,7 @@ mod tests {
             )],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let mut with_nested = types.clone();
         with_nested.push(nested);
@@ -14704,6 +14780,7 @@ mod tests {
             fields: vec![model_field("label", TypeRef::Primitive(Prim::Str), true)],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let renderable = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -14713,6 +14790,7 @@ mod tests {
             fields: vec![model_field("role", TypeRef::Primitive(Prim::Str), true)],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let unrenderable = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -14726,6 +14804,7 @@ mod tests {
             )],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let types = vec![inner, renderable, unrenderable];
         let path_param = |type_ref: TypeRef| PathParam {
@@ -14773,6 +14852,7 @@ mod tests {
             )],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let types = vec![probe];
         let auth = Auth::None;
@@ -14807,6 +14887,7 @@ mod tests {
             fields: vec![base_id],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let mut metadata = model_field("metadata", TypeRef::Primitive(Prim::Any), true);
         metadata.example = Some(r#"{"active":true}"#.to_string());
@@ -14826,6 +14907,7 @@ mod tests {
             fields: vec![metadata, invalid, recursive, children],
             example_fields: Default::default(),
             docstring: None,
+            xml: None,
         });
         let empty_enum = TypeDecl::Enum(EnumType {
             name: "EmptyEnum".to_string(),

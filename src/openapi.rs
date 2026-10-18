@@ -1821,6 +1821,39 @@ pub struct Schema {
     pub(crate) dynamic_ref: bool,
     #[serde(rename = "$recursiveRef", default, deserialize_with = "de_present")]
     pub(crate) recursive_ref: bool,
+    /// The OpenAPI XML Object (`name`, `namespace`, `prefix`, `attribute`,
+    /// `wrapped`), kept as written and read through [`Schema::xml_object`]: an
+    /// object schema carrying one is an XML model (see [`crate::ir::XmlEncoding`]).
+    #[serde(default)]
+    pub(crate) xml: Option<serde_json::Value>,
+    /// `x-crozier-xml-text`: the property is its element's text content
+    /// (canonical spelling). Read via [`Schema::xml_text`], which also honours
+    /// `x-fern-xml-text` per the [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-xml-text", default)]
+    pub(crate) xml_text_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-xml-text", default)]
+    pub(crate) xml_text_fern: Option<serde_json::Value>,
+    /// `x-crozier-xml-list-separator`: the delimiter a list-valued XML attribute
+    /// or text is joined with (canonical spelling). Read via
+    /// [`Schema::xml_list_separator`], which also honours
+    /// `x-fern-xml-list-separator`.
+    #[serde(rename = "x-crozier-xml-list-separator", default)]
+    pub(crate) xml_list_separator_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-xml-list-separator", default)]
+    pub(crate) xml_list_separator_fern: Option<serde_json::Value>,
+}
+
+/// A JSON value's truth as JavaScript reads it — the test Fern's importer
+/// applies to the XML Object's flags and `x-fern-xml-text`.
+#[must_use]
+pub fn json_truthy(value: &serde_json::Value) -> bool {
+    match value {
+        serde_json::Value::Null => false,
+        serde_json::Value::Bool(flag) => *flag,
+        serde_json::Value::Number(number) => number.as_f64().is_some_and(|n| n != 0.0),
+        serde_json::Value::String(text) => !text.is_empty(),
+        serde_json::Value::Array(_) | serde_json::Value::Object(_) => true,
+    }
 }
 
 /// Record only that a keyword is present, whatever its value.
@@ -1876,6 +1909,35 @@ impl Schema {
             .or(self.property_name_fern.as_deref())
             .map(str::trim)
             .filter(|name| !name.is_empty())
+    }
+
+    /// The XML Object, when the node carries one as a JSON object.
+    #[must_use]
+    pub fn xml_object(&self) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.xml.as_ref().and_then(serde_json::Value::as_object)
+    }
+
+    /// The `x-crozier-xml-text` / `x-fern-xml-text` flag, canonicalizing on the
+    /// crozier spelling. `None` when neither is written; a written value is read
+    /// for its truth, as Fern's importer reads it.
+    #[must_use]
+    pub fn xml_text(&self) -> Option<bool> {
+        self.xml_text_crozier
+            .as_ref()
+            .or(self.xml_text_fern.as_ref())
+            .filter(|value| !value.is_null())
+            .map(json_truthy)
+    }
+
+    /// The `x-crozier-xml-list-separator` / `x-fern-xml-list-separator` string,
+    /// canonicalizing on the crozier spelling.
+    #[must_use]
+    pub fn xml_list_separator(&self) -> Option<&str> {
+        self.xml_list_separator_crozier
+            .as_ref()
+            .filter(|value| !value.is_null())
+            .or(self.xml_list_separator_fern.as_ref())
+            .and_then(serde_json::Value::as_str)
     }
 
     /// Whether this `oneOf`/`anyOf` declares itself a discriminated union,
