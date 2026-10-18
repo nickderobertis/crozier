@@ -1235,13 +1235,13 @@ fn assert_generated_tree_matches(
 ) {
     // The parsed source document, as `crozier compare` and the hand-written
     // gate supply it, so a departure whose rule reads the specification applies
-    // to a corpus golden exactly as it does to a user's comparison.
-    let mut context = Context::from_trees(expected_root, out);
-    if let Some(spec) = corpus_spec(c.api).filter(|spec| spec.is_file()) {
-        let document = crozier::openapi::load(&spec)
-            .unwrap_or_else(|error| panic!("{}: {}: {error}", c.api, spec.display()));
-        context = context.with_source_document(document);
-    }
+    // to a corpus golden exactly as it does to a user's comparison. It is the
+    // staged copy generation reads, whose remote refs name committed files, so
+    // the offline tier never opens a socket here either.
+    let (spec, _source) = prepare_corpus_source(c);
+    let document = crozier::openapi::load(&spec)
+        .unwrap_or_else(|error| panic!("{}: {}: {error}", c.api, spec.display()));
+    let context = Context::from_trees(expected_root, out).with_source_document(document);
     let mut observed = Vec::new();
     for rel in walk_files(expected_root) {
         if c.unmatched.contains(&rel.as_str()) {
@@ -8552,23 +8552,11 @@ fn generate_corpus_with(c: &Corpus, extra: &[&str]) -> tempfile::TempDir {
 /// returned source directory alive until the subprocess finishes; then dropping
 /// it removes the staged copies.
 fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
-    let staged = tempfile::tempdir().expect("source staging directory");
-    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
-        .arg(repo_root().join("tools/corpus/corpus_sources.py"))
-        .args(["prepare", "--fixture", c.api, "--output"])
-        .arg(staged.path())
-        .output()
-        .expect("prepare committed corpus source");
-    assert!(
-        prepared.status.success(),
-        "{}",
-        String::from_utf8_lossy(&prepared.stderr)
-    );
-    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
+    let (spec, staged) = prepare_corpus_source(c);
     let mut command = crozier();
     command
         .args(["generate", "--spec"])
-        .arg(spec.trim())
+        .arg(spec)
         .arg("--output")
         .arg(output)
         .args([
@@ -8586,6 +8574,27 @@ fn corpus_command(c: &Corpus, output: &Path) -> (Command, tempfile::TempDir) {
         )
         .args(c.extra_fields.iter().flat_map(|e| ["--extra-fields", e]));
     (command, staged)
+}
+
+/// Stage `c`'s committed source as `tools/corpus/corpus_sources.py prepare`
+/// does, its remote refs pointing at their committed copies, and return the
+/// staged document's path. Keep the returned directory alive while the path is
+/// read; dropping it removes the staged copies.
+fn prepare_corpus_source(c: &Corpus) -> (PathBuf, tempfile::TempDir) {
+    let staged = tempfile::tempdir().expect("source staging directory");
+    let prepared = std::process::Command::new(if cfg!(windows) { "python" } else { "python3" })
+        .arg(repo_root().join("tools/corpus/corpus_sources.py"))
+        .args(["prepare", "--fixture", c.api, "--output"])
+        .arg(staged.path())
+        .output()
+        .expect("prepare committed corpus source");
+    assert!(
+        prepared.status.success(),
+        "{}",
+        String::from_utf8_lossy(&prepared.stderr)
+    );
+    let spec = String::from_utf8(prepared.stdout).expect("source path is UTF-8");
+    (PathBuf::from(spec.trim()), staged)
 }
 
 fn try_generate_corpus(c: &Corpus) -> Result<tempfile::TempDir, String> {
