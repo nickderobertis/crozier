@@ -1,11 +1,27 @@
 
 
+from __future__ import annotations
+
 import typing
 
 import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from ..core.xml_utilities import (
+    XmlChild,
+    XmlComment,
+    XmlContent,
+    XmlElement,
+    XmlNode,
+    build_xml_model,
+    extra_xml_attributes,
+    order_xml_content,
+    parse_xml,
+    serialize_xml_element,
+    xml_child,
+    xml_content,
+)
 from .allowed_methods import AllowedMethods
 from .list_distributions_by_web_acl_id_result_distribution_list_items_item_cache_behaviors_items_item_forwarded_values import (
     ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItemForwardedValues,
@@ -163,6 +179,133 @@ class ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsIt
     A complex type that contains zero or more Lambda function associations for a cache behavior.
     """
 
+    _content: typing.List[XmlContent] = pydantic.PrivateAttr(default_factory=list)
+    _comments_before: typing.List[XmlComment] = pydantic.PrivateAttr(default_factory=list)
+    _comments_after: typing.List[XmlComment] = pydantic.PrivateAttr(default_factory=list)
+
+    def to_xml(self, *, xml_declaration: bool = True) -> str:
+        """
+        Serializes this object as a `<CacheBehavior>` XML element, prefixed with the XML declaration unless `xml_declaration` is False.
+        """
+        return serialize_xml_element(
+            name="CacheBehavior",
+            attributes=[
+                *extra_xml_attributes(self),
+            ],
+            children=[
+                XmlChild(name="PathPattern", value=self.path_pattern),
+                XmlChild(name="TargetOriginId", value=self.target_origin_id),
+                XmlChild(name="ForwardedValues", value=self.forwarded_values),
+                XmlChild(name="TrustedSigners", value=self.trusted_signers),
+                XmlChild(name="ViewerProtocolPolicy", value=self.viewer_protocol_policy),
+                XmlChild(name="MinTTL", value=self.min_ttl),
+                XmlChild(name="AllowedMethods", value=self.allowed_methods),
+                XmlChild(name="SmoothStreaming", value=self.smooth_streaming),
+                XmlChild(name="DefaultTTL", value=self.default_ttl),
+                XmlChild(name="MaxTTL", value=self.max_ttl),
+                XmlChild(name="Compress", value=self.compress),
+                XmlChild(name="LambdaFunctionAssociations", value=self.lambda_function_associations),
+            ],
+            content=order_xml_content(self._content),
+            comments_before=self._comments_before,
+            comments_after=self._comments_after,
+            xml_declaration=xml_declaration,
+        )
+
+    def __str__(self) -> str:
+        return self.to_xml()
+
+    @classmethod
+    def from_xml(
+        cls, xml: typing.Union[str, XmlNode]
+    ) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Parses a `<CacheBehavior>` XML element from a document string or a parsed node.
+
+        Raises `ValueError` for malformed XML, an unexpected root element or invalid values. Unknown attributes are kept as extra attributes; text segments and child elements (declared or not) are preserved in document order.
+        """
+        node = parse_xml(xml, "CacheBehavior")
+        content = xml_content(
+            node,
+            {},
+            skip={
+                "PathPattern",
+                "TargetOriginId",
+                "ForwardedValues",
+                "TrustedSigners",
+                "ViewerProtocolPolicy",
+                "MinTTL",
+                "AllowedMethods",
+                "SmoothStreaming",
+                "DefaultTTL",
+                "MaxTTL",
+                "Compress",
+                "LambdaFunctionAssociations",
+            },
+        )
+        model = build_xml_model(
+            cls,
+            dict(
+                path_pattern=xml_child(node, {"PathPattern": str}),
+                target_origin_id=xml_child(node, {"TargetOriginId": str}),
+                forwarded_values=xml_child(node, {"ForwardedValues": str}),
+                trusted_signers=xml_child(node, {"TrustedSigners": str}),
+                viewer_protocol_policy=xml_child(node, {"ViewerProtocolPolicy": str}),
+                min_ttl=xml_child(node, {"MinTTL": str}),
+                allowed_methods=xml_child(node, {"AllowedMethods": str}),
+                smooth_streaming=xml_child(node, {"SmoothStreaming": str}),
+                default_ttl=xml_child(node, {"DefaultTTL": str}),
+                max_ttl=xml_child(node, {"MaxTTL": str}),
+                compress=xml_child(node, {"Compress": str}),
+                lambda_function_associations=xml_child(node, {"LambdaFunctionAssociations": str}),
+            ),
+            node,
+            (),
+        )
+        model._content[:] = content
+        return model
+
+    def add_child(
+        self, child: XmlElement
+    ) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Appends an arbitrary child element (one the schema does not define) after the content added so far and returns this element.
+        """
+        self._content.append(child)
+        return self
+
+    def add_text(self, text: str) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Appends a text segment after the children added so far and returns this element, so text and child elements can be interleaved.
+        """
+        self._content.append(text)
+        return self
+
+    def comment(self, text: str) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Appends an XML comment (`<!--text-->`) inside this element, after the content added so far, and returns this element.
+        """
+        self._content.append(XmlComment(text))
+        return self
+
+    def comment_before(
+        self, text: str
+    ) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Adds an XML comment rendered immediately before this element (as a sibling in its parent, or before the root element) and returns this element.
+        """
+        self._comments_before.append(XmlComment(text))
+        return self
+
+    def comment_after(
+        self, text: str
+    ) -> ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsItemsItem:
+        """
+        Adds an XML comment rendered immediately after this element (as a sibling in its parent, or after the root element) and returns this element.
+        """
+        self._comments_after.append(XmlComment(text))
+        return self
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
     else:
@@ -170,4 +313,5 @@ class ListDistributionsByWebAclIdResultDistributionListItemsItemCacheBehaviorsIt
         class Config:
             frozen = True
             smart_union = True
+            copy_on_model_validation = "none"
             extra = pydantic.Extra.allow

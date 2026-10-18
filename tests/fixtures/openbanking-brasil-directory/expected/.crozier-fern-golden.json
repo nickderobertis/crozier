@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "openbanking-brasil-directory",
+  "corpus_spec_ref": "37423cbc93982e05eac255db6226ed599a5baace",
+  "corpus_spec_url": "https://raw.githubusercontent.com/OpenBanking-Brasil/specs-directory/37423cbc93982e05eac255db6226ed599a5baace/openapi.yaml"
+}

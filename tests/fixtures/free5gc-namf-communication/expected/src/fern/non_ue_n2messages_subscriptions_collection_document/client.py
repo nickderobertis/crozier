@@ -68,25 +68,44 @@ class NonUeN2MessagesSubscriptionsCollectionDocumentClient:
 
         Examples
         --------
-        from fern import AccessType, FernApi, N2InformationClass
+        from fern import (
+            AccessType,
+            FernApi,
+            GlobalRanNodeId,
+            GNbId,
+            N2InformationClass,
+            PlmnId,
+        )
 
         client = FernApi(
             token="YOUR_TOKEN",
         )
         client.non_ue_n2messages_subscriptions_collection_document.non_ue_n2info_subscribe(
             global_ran_node_list=[
-                {
-                    "gNbId": {"bitLength": 24, "gNBValue": "gNBValue"},
-                    "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                    "n3IwfId": "n3IwfId",
-                    "ngeNbId": "ngeNbId",
-                },
-                {
-                    "gNbId": {"bitLength": 24, "gNBValue": "gNBValue"},
-                    "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                    "n3IwfId": "n3IwfId",
-                    "ngeNbId": "ngeNbId",
-                },
+                GlobalRanNodeId(
+                    plmn_id=PlmnId(
+                        mcc="mcc",
+                        mnc="mnc",
+                    ),
+                    n3iwf_id="n3IwfId",
+                    g_nb_id=GNbId(
+                        bit_length=24,
+                        g_nb_value="gNBValue",
+                    ),
+                    nge_nb_id="ngeNbId",
+                ),
+                GlobalRanNodeId(
+                    plmn_id=PlmnId(
+                        mcc="mcc",
+                        mnc="mnc",
+                    ),
+                    n3iwf_id="n3IwfId",
+                    g_nb_id=GNbId(
+                        bit_length=24,
+                        g_nb_value="gNBValue",
+                    ),
+                    nge_nb_id="ngeNbId",
+                ),
             ],
             an_type_list=[AccessType.THREE_GPP_ACCESS, AccessType.THREE_GPP_ACCESS],
             n2information_class=N2InformationClass.SM,
@@ -160,7 +179,14 @@ class AsyncNonUeN2MessagesSubscriptionsCollectionDocumentClient:
         --------
         import asyncio
 
-        from fern import AccessType, AsyncFernApi, N2InformationClass
+        from fern import (
+            AccessType,
+            AsyncFernApi,
+            GlobalRanNodeId,
+            GNbId,
+            N2InformationClass,
+            PlmnId,
+        )
 
         client = AsyncFernApi(
             token="YOUR_TOKEN",
@@ -170,18 +196,30 @@ class AsyncNonUeN2MessagesSubscriptionsCollectionDocumentClient:
         async def main() -> None:
             await client.non_ue_n2messages_subscriptions_collection_document.non_ue_n2info_subscribe(
                 global_ran_node_list=[
-                    {
-                        "gNbId": {"bitLength": 24, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
-                    {
-                        "gNbId": {"bitLength": 24, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=24,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
+                    GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=24,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ],
                 an_type_list=[AccessType.THREE_GPP_ACCESS, AccessType.THREE_GPP_ACCESS],
                 n2information_class=N2InformationClass.SM,

@@ -3,8 +3,9 @@
 import typing
 
 from ..core.api_error import ApiError
+from ..types.payment_required_error_body import PaymentRequiredErrorBody
 
 
 class PaymentRequiredError(ApiError):
-    def __init__(self, body: typing.Any, headers: typing.Optional[typing.Dict[str, str]] = None):
+    def __init__(self, body: PaymentRequiredErrorBody, headers: typing.Optional[typing.Dict[str, str]] = None):
         super().__init__(status_code=402, headers=headers, body=body)

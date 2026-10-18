@@ -17,6 +17,8 @@ from ..errors.internal_server_error import InternalServerError
 from ..errors.not_found_error import NotFoundError
 from ..errors.payment_required_error import PaymentRequiredError
 from ..types.conflict_error_body import ConflictErrorBody
+from ..types.internal_server_error_body import InternalServerErrorBody
+from ..types.payment_required_error_body import PaymentRequiredErrorBody
 from ..types.templates_list_template_versions_request_offset import TemplatesListTemplateVersionsRequestOffset
 from ..types.templates_list_templates_request_offset import TemplatesListTemplatesRequestOffset
 from .types.templates_create_agents_from_template_no_project_request_initial_message_sequence_item import (
@@ -143,9 +145,9 @@ class RawTemplatesClient:
                 raise PaymentRequiredError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        PaymentRequiredErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=PaymentRequiredErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -244,9 +246,9 @@ class RawTemplatesClient:
                 raise PaymentRequiredError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        PaymentRequiredErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=PaymentRequiredErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -691,9 +693,9 @@ class RawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -989,9 +991,9 @@ class RawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1355,9 +1357,9 @@ class RawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1459,9 +1461,9 @@ class RawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1629,9 +1631,9 @@ class AsyncRawTemplatesClient:
                 raise PaymentRequiredError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        PaymentRequiredErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=PaymentRequiredErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1730,9 +1732,9 @@ class AsyncRawTemplatesClient:
                 raise PaymentRequiredError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        PaymentRequiredErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=PaymentRequiredErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2177,9 +2179,9 @@ class AsyncRawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2475,9 +2477,9 @@ class AsyncRawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2841,9 +2843,9 @@ class AsyncRawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -2945,9 +2947,9 @@ class AsyncRawTemplatesClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),

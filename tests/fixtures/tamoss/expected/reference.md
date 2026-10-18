@@ -3297,13 +3297,14 @@ client = FernApi(
 client.flows.put_flows_flow_id(
     flow_id="flowId",
     request=FlowVideo(
-        id="id",
-        source_id="source_id",
+        codec="codec",
         format=FlowVideoFormat.URN_X_NMOS_FORMAT_VIDEO,
         essence_parameters=FlowVideoEssenceParameters(
             frame_width=1,
             frame_height=1,
         ),
+        id="id",
+        source_id="source_id",
     ),
 )
 

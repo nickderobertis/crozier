@@ -7,6 +7,7 @@ from ...core.api_error import ApiError
 from ...core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ...core.http_response import AsyncHttpResponse, HttpResponse
 from ...core.jsonable_encoder import encode_path_param
+from ...core.pagination import AsyncPager, SyncPager
 from ...core.parse_error import ParsingError
 from ...core.pydantic_utilities import parse_obj_as
 from ...core.request_options import RequestOptions
@@ -18,6 +19,7 @@ from ...errors.forbidden_error import ForbiddenError
 from ...errors.not_found_error import NotFoundError
 from ...errors.unauthorized_error import UnauthorizedError
 from ...errors.unprocessable_entity_error import UnprocessableEntityError
+from ...types.configured_mcp_server import ConfiguredMcpServer
 from ...types.get_mcp_server_response import GetMcpServerResponse
 from ...types.list_mcp_servers_response import ListMcpServersResponse
 from ...types.mcp_server_manifest import McpServerManifest
@@ -38,7 +40,7 @@ class RawMcpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> HttpResponse[ListMcpServersResponse]:
+    ) -> SyncPager[ConfiguredMcpServer, ListMcpServersResponse]:
         """
         Paginated MCP servers with auth_status. Header secrets are redacted.
 
@@ -55,7 +57,7 @@ class RawMcpServersClient:
 
         Returns
         -------
-        HttpResponse[ListMcpServersResponse]
+        SyncPager[ConfiguredMcpServer, ListMcpServersResponse]
             Paginated MCP servers
         """
         _response = self._client_wrapper.httpx_client.request(
@@ -69,14 +71,25 @@ class RawMcpServersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListMcpServersResponse,
                     parse_obj_as(
                         type_=ListMcpServersResponse,
                         object_=_response.json(),
                     ),
                 )
-                return HttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+                    _get_next = lambda: self.list(
+                        limit=limit,
+                        page_token=_parsed_next,
+                        request_options=request_options,
+                    )
+                return SyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),
@@ -363,7 +376,7 @@ class AsyncRawMcpServersClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> AsyncHttpResponse[ListMcpServersResponse]:
+    ) -> AsyncPager[ConfiguredMcpServer, ListMcpServersResponse]:
         """
         Paginated MCP servers with auth_status. Header secrets are redacted.
 
@@ -380,7 +393,7 @@ class AsyncRawMcpServersClient:
 
         Returns
         -------
-        AsyncHttpResponse[ListMcpServersResponse]
+        AsyncPager[ConfiguredMcpServer, ListMcpServersResponse]
             Paginated MCP servers
         """
         _response = await self._client_wrapper.httpx_client.request(
@@ -394,14 +407,28 @@ class AsyncRawMcpServersClient:
         )
         try:
             if 200 <= _response.status_code < 300:
-                _data = typing.cast(
+                _parsed_response = typing.cast(
                     ListMcpServersResponse,
                     parse_obj_as(
                         type_=ListMcpServersResponse,
                         object_=_response.json(),
                     ),
                 )
-                return AsyncHttpResponse(response=_response, data=_data)
+                _items = _parsed_response.data
+                _has_next = False
+                _get_next = None
+                if _parsed_response.pagination is not None:
+                    _parsed_next = _parsed_response.pagination.next_page_token
+                    _has_next = _parsed_next is not None and _parsed_next != ""
+
+                    async def _get_next():
+                        return await self.list(
+                            limit=limit,
+                            page_token=_parsed_next,
+                            request_options=request_options,
+                        )
+
+                return AsyncPager(has_next=_has_next, items=_items, get_next=_get_next, response=_parsed_response)
             if _response.status_code == 400:
                 raise BadRequestError(
                     headers=dict(_response.headers),

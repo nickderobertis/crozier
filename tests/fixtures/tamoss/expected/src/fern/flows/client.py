@@ -328,6 +328,7 @@ class FlowsClient:
             request=FlowVideo(
                 id="id",
                 source_id="source_id",
+                codec="codec",
                 format=FlowVideoFormat.URN_X_NMOS_FORMAT_VIDEO,
                 essence_parameters=FlowVideoEssenceParameters(
                     frame_width=1,
@@ -1804,6 +1805,7 @@ class AsyncFlowsClient:
                 request=FlowVideo(
                     id="id",
                     source_id="source_id",
+                    codec="codec",
                     format=FlowVideoFormat.URN_X_NMOS_FORMAT_VIDEO,
                     essence_parameters=FlowVideoEssenceParameters(
                         frame_width=1,

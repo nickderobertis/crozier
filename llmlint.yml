@@ -78,7 +78,7 @@ files:
     # The reach ledger is `just golden-reach` output; golden_reach_test and
     # surface_census_test gate its drift, and a re-measure outgrows the judge prompt.
     - "docs/openapi-surface/golden-reach.tsv"
-    # Vendored Fern runtime — Fern 5.20.0's own SDK support code, emitted verbatim
+    # Vendored Fern runtime — Fern 5.41.3's own SDK support code, emitted verbatim
     # into every generated SDK (assets/README.md says which files and how they
     # were changed), not crozier's own code, so it is never LLM-judged; the
     # byte-match and the zero-error mypy test gate it. Its `# type: ignore`
