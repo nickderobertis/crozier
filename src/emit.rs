@@ -3795,6 +3795,13 @@ struct AuthWrapper {
     assign: String,
     header_block: String,
     token_method: String,
+    /// Whether the credential is a bearer token sent in a header — Fern's
+    /// `_has_flat_token_header`. Such a wrapper's `get_headers` takes an
+    /// `include_token` flag, and `async_get_headers` turns it off when an async
+    /// token supplier is set, so a blocking token callable never runs on the event
+    /// loop (`airbyte.local-config`, `squareup.com`, `xero.com-xero-payroll-au`;
+    /// measured at fern-python-sdk 5.41.3).
+    flat_token: bool,
 }
 
 impl AuthWrapper {
@@ -3861,6 +3868,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 assign: format!("        self.{p} = {p}\n"),
                 header_block,
                 token_method: String::new(),
+                flat_token: false,
             }
         }
         Auth::Bearer {
@@ -3868,10 +3876,12 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
             credential,
         } => {
             let p = &credential.param;
+            // The token is written under the `include_token` flag (see
+            // [`AuthWrapper::flat_token`]).
             let header_block = if *required {
-                format!("        headers[\"Authorization\"] = f\"Bearer {{self._get_{p}()}}\"\n")
+                format!("        if include_token:\n            headers[\"Authorization\"] = f\"Bearer {{self._get_{p}()}}\"\n")
             } else {
-                format!("        {p} = self._get_{p}()\n        if {p} is not None:\n            headers[\"Authorization\"] = f\"Bearer {{{p}}}\"\n")
+                format!("        if include_token:\n            {p} = self._get_{p}()\n            if {p} is not None:\n                headers[\"Authorization\"] = f\"Bearer {{{p}}}\"\n")
             };
             AuthWrapper {
                 params: vec![(
@@ -3881,6 +3891,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 assign: format!("        self._{p} = {p}\n"),
                 header_block,
                 token_method: getter(p, *required),
+                flat_token: true,
             }
         }
         Auth::Basic {
@@ -3908,6 +3919,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
                 assign: format!("        self._{u} = {u}\n        self._{w} = {w}\n"),
                 header_block,
                 token_method: getter(u, *required) + &getter(w, *required),
+                flat_token: false,
             }
         }
         // No auth: no credential parameter, assignment, header, or token helper.
@@ -3916,6 +3928,7 @@ fn auth_wrapper_parts(auth: &Auth) -> AuthWrapper {
             assign: String::new(),
             header_block: String::new(),
             token_method: String::new(),
+            flat_token: false,
         },
     }
 }
@@ -4235,8 +4248,13 @@ fn client_wrapper_file(
             "            \"X-Crozier-SDK-Name\": \"{name}\",\n            \"X-Crozier-SDK-Version\": \"{DEFAULT_SDK_VERSION}\",\n"
         )
     });
+    let include_token_param = if a.flat_token {
+        ", *, include_token: bool = True"
+    } else {
+        ""
+    };
     let get_headers_head = format!(
-        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n{tr_assign}\n    def get_headers(self) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n{sdk_identity}            **(self.get_custom_headers() or {{}}),\n        }}\n"
+        "        self._headers = headers\n        self._base_url = base_url\n        self._timeout = timeout\n        self._max_retries = max_retries\n        self._stream_reconnection_enabled = stream_reconnection_enabled\n        self._max_stream_reconnection_attempts = max_stream_reconnection_attempts\n        self._logging = logging\n{tr_assign}\n    def get_headers(self{include_token_param}) -> typing.Dict[str, str]:\n        import platform\n\n        headers: typing.Dict[str, str] = {{\n            \"X-Crozier-Language\": \"Python\",\n            \"X-Crozier-Runtime\": f\"python/{{platform.python_version()}}\",\n            \"X-Crozier-Platform\": f\"{{platform.system().lower()}}/{{platform.release()}}\",\n{sdk_identity}            **(self.get_custom_headers() or {{}}),\n        }}\n"
     );
     let mut c = String::new();
     // Lead with the generated-file header (like every other emitted module): it
@@ -4292,7 +4310,11 @@ fn client_wrapper_file(
     c.push_str(&a.super_arg(&taken));
     c.push_str("headers=headers,\n            base_url=base_url,\n            timeout=timeout,\n            max_retries=max_retries,\n            stream_reconnection_enabled=stream_reconnection_enabled,\n            max_stream_reconnection_attempts=max_stream_reconnection_attempts,\n            logging=logging,\n");
     c.push_str(&tr_super);
-    c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers()\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
+    c.push_str("        )\n        self._async_token = async_token\n        self.httpx_client = AsyncHttpClient(\n            httpx_client=httpx_client,\n            base_headers=self.get_headers,\n            base_timeout=self.get_timeout,\n            base_url=self.get_base_url,\n            base_max_retries=self.get_max_retries(),\n            async_base_headers=self.async_get_headers,\n            logging_config=self._logging,\n        )\n\n    async def async_get_headers(self) -> typing.Dict[str, str]:\n        headers = self.get_headers(");
+    if a.flat_token {
+        c.push_str("include_token=self._async_token is None");
+    }
+    c.push_str(")\n        if self._async_token is not None:\n            token = await self._async_token()\n            headers[\"Authorization\"] = f\"Bearer {token}\"\n        return headers\n");
     // A multi-URL environment replaces the single `base_url` throughout: the
     // wrapper is built from, keeps and serves the environment, each request
     // naming its field's URL.
@@ -7536,9 +7558,28 @@ impl EnvClientParts {
                     )
                 })
                 .collect();
+            // The override formats the template of the environment the caller
+            // chose, the first templated one when it has none, and never replaces
+            // a `base_url` the caller passed (`openfigi.com`,
+            // `amazonaws.com-cloudformation`, `free5gc-pdu-session`; measured at
+            // fern-python-sdk 5.41.3).
+            let first = e
+                .url_templates
+                .first()
+                .map_or(e.url_template.as_str(), |(_, template)| template.as_str());
+            let templates: String = e
+                .url_templates
+                .iter()
+                .map(|(member, template)| {
+                    format!(
+                        "                {enum_name}.{member}: \"{}\",\n",
+                        escape_py_str(template)
+                    )
+                })
+                .collect();
             format!(
-                "        if {condition}:\n{defaults}            base_url = \"{url}\".format({format_args})\n",
-                url = escape_py_str(&e.url_template),
+                "        if {condition}:\n{defaults}            _environment_url_templates = {{\n{templates}            }}\n            _url_template = _environment_url_templates.get(environment, \"{first}\")\n            if base_url is None:\n                base_url = _url_template.format({format_args})\n",
+                first = escape_py_str(first),
             )
         };
         // A multi-URL environment replaces `base_url`.
@@ -12101,6 +12142,115 @@ mod tests {
                 "_AUTH_HEADERS: typing.FrozenSet[str] = frozenset()"
             );
         }
+    }
+
+    /// The `src/api/{path}` file emitted for a document whose only security scheme
+    /// is `scheme`, required on every operation when `required` is set.
+    fn emitted_for_scheme(
+        scheme: serde_json::Value,
+        required: bool,
+        servers: serde_json::Value,
+        path: &str,
+    ) -> String {
+        let security = if required {
+            serde_json::json!([{"credential": []}])
+        } else {
+            serde_json::json!([])
+        };
+        files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "servers": servers,
+            "components": {"securitySchemes": {"credential": scheme}},
+            "security": security,
+            "paths": {"/probe": {"get": {"operationId": "probe",
+                "responses": {"204": {"description": "OK"}}}}}
+        }))
+        .into_iter()
+        .find(|(emitted, _)| *emitted == format!("src/api/{path}"))
+        .map(|(_, contents)| contents)
+        .unwrap_or_else(|| panic!("{path} is emitted"))
+    }
+
+    #[test]
+    fn a_bearer_wrapper_skips_the_sync_token_when_an_async_one_is_set() {
+        let bearer = serde_json::json!({"type": "http", "scheme": "bearer"});
+        for required in [true, false] {
+            let wrapper = emitted_for_scheme(
+                bearer.clone(),
+                required,
+                serde_json::json!([]),
+                "core/client_wrapper.py",
+            );
+            assert!(
+                wrapper.contains(
+                    "    def get_headers(self, *, include_token: bool = True) -> typing.Dict[str, str]:\n"
+                ),
+                "{wrapper}"
+            );
+            let token_write = if required {
+                "        if include_token:\n            headers[\"Authorization\"] = f\"Bearer {self._get_token()}\"\n"
+            } else {
+                "        if include_token:\n            token = self._get_token()\n            if token is not None:\n                headers[\"Authorization\"] = f\"Bearer {token}\"\n"
+            };
+            assert!(wrapper.contains(token_write), "{wrapper}");
+            assert!(
+                wrapper.contains(
+                    "        headers = self.get_headers(include_token=self._async_token is None)\n"
+                ),
+                "{wrapper}"
+            );
+        }
+        // Any other credential keeps the flag-free `get_headers`.
+        for scheme in [
+            serde_json::json!({"type": "apiKey", "in": "header", "name": "X-Api-Key"}),
+            serde_json::json!({"type": "http", "scheme": "basic"}),
+        ] {
+            let wrapper = emitted_for_scheme(
+                scheme,
+                true,
+                serde_json::json!([]),
+                "core/client_wrapper.py",
+            );
+            assert!(
+                wrapper.contains("    def get_headers(self) -> typing.Dict[str, str]:\n"),
+                "{wrapper}"
+            );
+            assert!(!wrapper.contains("include_token"), "{wrapper}");
+            assert!(
+                wrapper.contains("        headers = self.get_headers()\n"),
+                "{wrapper}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_server_variable_override_formats_the_chosen_environments_template() {
+        let client = emitted_for_scheme(
+            serde_json::json!({"type": "apiKey", "in": "header", "name": "X-Api-Key"}),
+            true,
+            serde_json::json!([
+                {"url": "https://{region}.example.com", "description": "Production",
+                    "variables": {"region": {"default": "eu"}}},
+                {"url": "https://sandbox.example.com", "description": "Sandbox"},
+            ]),
+            "client.py",
+        );
+        // Only the server declaring variables has a template, and a caller's
+        // `base_url` wins over the formatted one.
+        assert!(
+            client.contains(concat!(
+                "        if region is not None:\n",
+                "            _region = region if region is not None else \"eu\"\n",
+                "            _environment_url_templates = {\n",
+                "                ApiApiEnvironment.PRODUCTION: \"https://{region}.example.com\",\n",
+                "            }\n",
+                "            _url_template = _environment_url_templates.get(environment, \"https://{region}.example.com\")\n",
+                "            if base_url is None:\n",
+                "                base_url = _url_template.format(region=_region)\n",
+            )),
+            "{client}"
+        );
     }
 
     #[test]
