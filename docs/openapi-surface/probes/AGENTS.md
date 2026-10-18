@@ -27,8 +27,9 @@ unreached-arm table's hand-written column and in `handwritten-reach.tsv`. A
 
 ## Re-running one
 
-The workspace is the one `tools/fern-goldens/generate-fern-fixture.sh` scaffolds — Fern CLI
-`5.67.1` in `fern.config.json`, `fernapi/fern-python-sdk` at the corpus pin,
+The workspace is the one `tools/fern-goldens/generate-fern-fixture.sh` scaffolds — the
+certified pair's Fern CLI (`cliVersion` in `assets/scaffolding/metadata.json`) in
+`fern.config.json`, `fernapi/fern-python-sdk` at its `generatorVersion`,
 `pydantic_config.enum_type: python_enums`, `CI=true`/`GITHUB_ACTIONS=true` —
 with `openapi/openapi.yml` copied from here. Build it under `mktemp -d` rather
 than inside a checkout: Fern stamps `originGitCommit` into `.fern/metadata.json`
@@ -40,6 +41,9 @@ normalized, `__init__.py` import order canonicalized with `ruff` isort,
 `.fern/metadata.json`'s `generatorConfig` dropped — which is what `crates/crozier-e2e/tests/e2e.rs`
 does to a corpus golden. A divergence is repaired in `src/`, never written down
 as a Fern limitation.
+
+`just fern-references probes [<name>…]` re-runs every committed probe, or the
+named ones, this way.
 
 Keep a clean generation's complete comment-stripped output in the sibling
 `probe-expected/<key>/` directory. When Fern refuses a probe, preserve the

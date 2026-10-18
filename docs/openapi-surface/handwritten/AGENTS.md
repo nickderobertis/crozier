@@ -21,7 +21,9 @@ three entries:
 - `openapi.yml`: the hand-written OpenAPI document.
 <!-- llmlint: ignore[no_redundant_instruction_pointers] The contract fixes that this tree is built the way probes/AGENTS.md prescribes; linking that one procedure keeps a single copy of the pinned Fern workspace recipe, and this folder file is loaded without the index. -->
 - `fern-expected/`: the complete comment-stripped tree Fern generated from it at
-  Fern CLI 5.67.1 and `fernapi/fern-python-sdk` 5.20.0, the corpus pin, built
+  the certified pair (`cliVersion` and `generatorVersion` in
+  [`assets/scaffolding/metadata.json`](../../../assets/scaffolding/metadata.json),
+  today Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3), built
   the way [`../probes/AGENTS.md`](../probes/AGENTS.md#re-running-one) prescribes.
   A document Fern refuses cannot be a fixture.
 - `evidence.toml`, below.
@@ -36,8 +38,9 @@ tree and its `../probes/` document, so each tree is committed once.
 
 These keys, and nothing else:
 
-- `fern_cli_version` (string, `"5.67.1"`) and `fern_python_sdk_version` (string,
-  `"5.20.0"`).
+- `fern_cli_version` (string, `"5.163.1"`) and `fern_python_sdk_version` (string,
+  `"5.41.3"`): the certified pair. `just fern-references handwritten <fixture>`
+  regenerates the tree and restates these two keys and `digest`.
 <!-- llmlint: ignore[no_redundant_instruction_pointers] The contract defines the digest as Contract A's tree digest; linking Contract A keeps one definition of the canonical stream instead of restating it, and this folder file is loaded without the index. -->
 - `digest` (string): the lower-case hex SHA-256 of `fern-expected/`'s canonical
   stream, computed exactly as
@@ -72,8 +75,8 @@ These keys, and nothing else:
     first cell is the key and one of whose cells reads `none-registrable`.
 
 ```toml
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
 digest = "<64 lower-case hex digits>"
 
 [[covers]]
