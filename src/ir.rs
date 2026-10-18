@@ -7538,6 +7538,12 @@ impl InlineHoister<'_> {
                             own,
                             &field,
                             base_requires(schemas, base, &field.wire_name),
+                            own.type_ref == field.type_ref
+                                || own_property(schema, &field.wire_name)
+                                    .zip(base.properties.get(&field.wire_name))
+                                    .is_some_and(|(own, inherited)| {
+                                        same_shape(own, inherited, schemas)
+                                    }),
                         ) =>
                     {
                         restated.insert(field.wire_name.clone());
@@ -11919,6 +11925,7 @@ impl Builder<'_> {
                     .keys()
                     .any(|field| declared_fields.contains(field.as_str()))
             });
+        let own_from = self.types.len();
         let mut fields = Vec::new();
         for member in schema.all_of.iter().flatten() {
             if member.reference.is_none() {
@@ -12020,6 +12027,7 @@ impl Builder<'_> {
         let mut overridden = false;
         let mut overridden_by_base = vec![false; base_refs.len()];
         let lowered_from = self.types.len();
+        let mut restated_from = None;
         if collides {
             let mut restated = std::collections::HashSet::new();
             for (index, (base_name, base)) in base_refs.iter().enumerate() {
@@ -12034,7 +12042,11 @@ impl Builder<'_> {
                         continue;
                     };
                     let requires = base_required.contains(&field.wire_name.as_str());
-                    if restates_without_conflict(local, field, requires) {
+                    let same_shape = local.type_ref == field.type_ref
+                        || own_property(schema, &field.wire_name)
+                            .zip(base.properties.get(&field.wire_name))
+                            .is_some_and(|(own, inherited)| same_shape(own, inherited, schemas));
+                    if restates_without_conflict(local, field, requires, same_shape) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
@@ -12045,6 +12057,9 @@ impl Builder<'_> {
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
             overridden |= flatten_all;
+            if !restated.is_empty() {
+                restated_from = Some(own_from..lowered_from);
+            }
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -12124,6 +12139,43 @@ impl Builder<'_> {
                 self.types.remove(index);
             } else {
                 index += 1;
+            }
+        }
+        // An own property dropped as a restatement takes the types it hoisted
+        // with it: TimelyApp's `V1.Hour.state` restates `V1.State.permissions`
+        // with the same inline item object, and the golden declares no
+        // `V1HourStatePermissionsItem`, only the base's `V1StatePermissionsItem`.
+        if let Some(range) = restated_from {
+            let mut reachable = std::collections::HashSet::new();
+            for field in &fields {
+                collect_named(&field.type_ref, &mut reachable);
+            }
+            for decl in self.types[..range.start]
+                .iter()
+                .chain(&self.types[range.end..])
+            {
+                reachable.extend(crate::emit::decl_refs(decl));
+            }
+            loop {
+                let before = reachable.len();
+                for decl in &self.types[range.clone()] {
+                    if reachable.contains(decl.name()) {
+                        reachable.extend(crate::emit::decl_refs(decl));
+                    }
+                }
+                if reachable.len() == before {
+                    break;
+                }
+            }
+            let mut index = range.start;
+            let mut end = range.end;
+            while index < end {
+                if reachable.contains(self.types[index].name()) {
+                    index += 1;
+                } else {
+                    self.types.remove(index);
+                    end -= 1;
+                }
             }
         }
         let xml = xml_encoding(schema, name);
@@ -12221,7 +12273,7 @@ impl Builder<'_> {
                 .find(|own| own.wire_name == field.wire_name)
                 .is_some_and(|own| {
                     let requires = required.contains(&field.wire_name.as_str());
-                    !restates_without_conflict(own, field, requires)
+                    !restates_without_conflict(own, field, requires, own.type_ref == field.type_ref)
                 })
         })
     }
@@ -14440,14 +14492,130 @@ fn restates_a_base_property(schemas: &IndexMap<String, Schema>, schema: &Schema)
 /// of a property the base leaves optional conflicts too: TAMS's `FlowAudio`
 /// requires `FlowCore`'s optional `codec` and flattens `FlowCore`, where its
 /// sibling `FlowMulti` still extends it.
-fn restates_without_conflict(own: &Field, field: &Field, base_requires: bool) -> bool {
-    own.type_ref == field.type_ref
+fn restates_without_conflict(
+    own: &Field,
+    field: &Field,
+    base_requires: bool,
+    same_shape: bool,
+) -> bool {
+    same_shape
         && own.spec_required
         && base_requires
         && !own.optional
         && !own.nullable
         && !field.nullable
-        && own.docstring == field.docstring
+}
+
+/// The schema `schema` declares for its own property `key`, itself or in an
+/// inline `allOf` member.
+fn own_property<'a>(schema: &'a Schema, key: &str) -> Option<&'a Schema> {
+    schema.properties.get(key).or_else(|| {
+        schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .find_map(|member| member.properties.get(key))
+    })
+}
+
+/// Whether two property schemas convert to the same shape by Fern's
+/// structural comparison (measured at CLI 5.163.1), which reads no names and no
+/// descriptions: references by target, enums by their value sets, primitives by
+/// type and format, and objects, arrays, maps and unions member by member, each
+/// object property with whether it is required and nullable.
+fn same_shape(a: &Schema, b: &Schema, schemas: &IndexMap<String, Schema>) -> bool {
+    fn depth_shape(
+        a: &Schema,
+        b: &Schema,
+        schemas: &IndexMap<String, Schema>,
+        depth: usize,
+    ) -> bool {
+        if depth > 8 {
+            return false;
+        }
+        match (a.reference.as_deref(), b.reference.as_deref()) {
+            (Some(left), Some(right)) => return ref_to_class(left) == ref_to_class(right),
+            (None, None) => {}
+            _ => return false,
+        }
+        if let (Some(left), Some(right)) = (&a.enum_values, &b.enum_values) {
+            let left: std::collections::HashSet<String> =
+                left.iter().map(ToString::to_string).collect();
+            let right: std::collections::HashSet<String> =
+                right.iter().map(ToString::to_string).collect();
+            return left == right;
+        }
+        if a.enum_values.is_some() != b.enum_values.is_some()
+            || a.const_value != b.const_value
+            || a.all_of.is_some()
+            || b.all_of.is_some()
+        {
+            return false;
+        }
+        for (left, right) in [(&a.one_of, &b.one_of), (&a.any_of, &b.any_of)] {
+            match (left, right) {
+                (Some(left), Some(right)) => {
+                    if left.len() != right.len()
+                        || !left
+                            .iter()
+                            .zip(right)
+                            .all(|(l, r)| depth_shape(l, r, schemas, depth + 1))
+                    {
+                        return false;
+                    }
+                }
+                (None, None) => {}
+                _ => return false,
+            }
+        }
+        let ty = |schema: &Schema| {
+            schema
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary)
+                .map(str::to_string)
+        };
+        if ty(a) != ty(b) || a.format != b.format {
+            return false;
+        }
+        match (&a.items, &b.items) {
+            (Some(left), Some(right)) => {
+                if !depth_shape(left, right, schemas, depth + 1) {
+                    return false;
+                }
+            }
+            (None, None) => {}
+            _ => return false,
+        }
+        match (&a.additional_properties, &b.additional_properties) {
+            (
+                Some(AdditionalProperties::Schema(left)),
+                Some(AdditionalProperties::Schema(right)),
+            ) => {
+                if !depth_shape(left, right, schemas, depth + 1) {
+                    return false;
+                }
+            }
+            (Some(AdditionalProperties::Schema(_)), _)
+            | (_, Some(AdditionalProperties::Schema(_))) => {
+                return false;
+            }
+            _ => {}
+        }
+        if a.properties.len() != b.properties.len() {
+            return false;
+        }
+        let requires = |schema: &Schema, key: &str| schema.required.iter().any(|name| name == key);
+        a.properties.iter().all(|(key, left)| {
+            b.properties.get(key).is_some_and(|right| {
+                requires(a, key) == requires(b, key)
+                    && left.nullable == right.nullable
+                    && depth_shape(left, right, schemas, depth + 1)
+            })
+        })
+    }
+    depth_shape(a, b, schemas, 0)
 }
 
 /// A base reaching its prospective child cannot be imported as a superclass:
@@ -14676,40 +14844,16 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
 /// requiring it, `Feature` requires it, and the golden field is a required
 /// `id: str`.
 fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
-    fn walk<'a>(
-        schemas: &'a IndexMap<String, Schema>,
-        members: &'a [Schema],
-        visited: &mut std::collections::HashSet<&'a str>,
-        out: &mut Vec<String>,
-    ) {
-        for member in members {
-            let node = match member.reference.as_deref() {
-                Some(reference) => {
-                    if !visited.insert(reference) {
-                        continue;
-                    }
-                    let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
-                        continue;
-                    };
-                    node
-                }
-                None => member,
-            };
-            for name in node.required.iter() {
-                if !out.contains(name) {
-                    out.push(name.clone());
-                }
-            }
-            if let Some(inner) = node.all_of.as_deref() {
-                walk(schemas, inner, visited, out);
-            }
-        }
-    }
     let mut required = Vec::new();
     if let Some(members) = schema.all_of.as_deref() {
-        walk(
+        let objects: Vec<Schema> = members
+            .iter()
+            .filter(|member| is_object_all_of_member(member))
+            .cloned()
+            .collect();
+        required_through(
             schemas,
-            members,
+            &objects,
             &mut std::collections::HashSet::new(),
             &mut required,
         );
@@ -14722,11 +14866,73 @@ fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<S
     required
 }
 
+/// Whether Fern's importer keeps an `allOf` member when it converts the
+/// composition as an object (measured at CLI 5.163.1): a `$ref`, or a member
+/// that is an object by `type` or by declaring `properties` (or composes only
+/// such members). Any other member — a bare `{required: [...]}` — is skipped,
+/// its `required` with it: TAMS's `StorageBackendsList` items are `allOf:
+/// [$ref StorageBackend, {required: [store_type, provider, store_product,
+/// id]}, {properties: {id, label, default_storage}}]`, and the golden
+/// `StorageBackendsListItem` extends `StorageBackend` with an optional `id`.
+fn is_object_all_of_member(member: &Schema) -> bool {
+    member.reference.is_some()
+        || member.ty.as_ref().and_then(TypeField::primary) == Some("object")
+        || member.properties.declared()
+        || [&member.all_of, &member.one_of, &member.any_of]
+            .into_iter()
+            .find_map(Option::as_ref)
+            .is_some_and(|inner| inner.iter().all(is_object_all_of_member))
+}
+
+/// Append what `members` require to `out`, each `$ref` read through its own
+/// `allOf` chain and each component once.
+fn required_through<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    members: &'a [Schema],
+    visited: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    for member in members {
+        let node = match member.reference.as_deref() {
+            Some(reference) => {
+                if !visited.insert(reference.to_string()) {
+                    continue;
+                }
+                let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                    continue;
+                };
+                node
+            }
+            None => member,
+        };
+        for name in node.required.iter() {
+            if !out.contains(name) {
+                out.push(name.clone());
+            }
+        }
+        if let Some(inner) = node.all_of.as_deref() {
+            required_through(schemas, inner, visited, out);
+        }
+    }
+}
+
+/// Every name `schema` requires itself or anywhere in its `allOf` chain.
+fn chain_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
+    let mut required: Vec<String> = schema.required.iter().cloned().collect();
+    if let Some(members) = schema.all_of.as_deref() {
+        required_through(
+            schemas,
+            members,
+            &mut std::collections::HashSet::new(),
+            &mut required,
+        );
+    }
+    required
+}
+
 /// Whether `base`, read with its whole `allOf` chain, requires `key`.
 fn base_requires(schemas: &IndexMap<String, Schema>, base: &Schema, key: &str) -> bool {
-    all_of_required(schemas, base)
-        .iter()
-        .any(|name| name == key)
+    chain_required(schemas, base).iter().any(|name| name == key)
 }
 
 /// A property `key` that `schema` or a member of its `allOf` chain declares,
@@ -14746,16 +14952,7 @@ fn parent_property<'a>(
         }
         None => schema,
     };
-    let required = node.required.iter().any(|name| name == key)
-        || all_of_required(
-            schemas,
-            &Schema {
-                all_of: node.all_of.clone(),
-                ..Schema::default()
-            },
-        )
-        .iter()
-        .any(|name| name == key);
+    let required = chain_required(schemas, node).iter().any(|name| name == key);
     if let Some(property) = node.properties.get(key) {
         let read_only = property.read_only == Some(true)
             || property
@@ -15061,7 +15258,7 @@ fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Sc
         let Some(target) = resolve_ref_from_schemas(schemas, reference) else {
             return false;
         };
-        if is_explicitly_nullable(target) {
+        if target.nullable_at_references() {
             return true;
         }
         current = target;

@@ -2105,6 +2105,27 @@ impl Schema {
                         })
                     })
     }
+
+    /// Whether a `$ref` to this schema is nullable at the reference. Fern's
+    /// importer (measured at CLI 5.163.1) reads the target's `nullable`, a 3.1
+    /// `type` list of two or more naming `null`, or a `type: null` alternative
+    /// in its `oneOf`/`anyOf` — the last now even beside an open map, which
+    /// [`Self::explicitly_nullable`] leaves unread for the declaration itself:
+    /// Hasura's `GraphQLValue_Name` stays a bare `Dict[str, Any]`, and the
+    /// `RemoteArguments` map naming it is `Dict[str, Optional[GraphQlValueName]]`.
+    #[must_use]
+    pub fn nullable_at_references(&self) -> bool {
+        self.explicitly_nullable()
+            || self
+                .one_of
+                .iter()
+                .chain(self.any_of.iter())
+                .flatten()
+                .any(|member| {
+                    member.reference.is_none()
+                        && matches!(&member.ty, Some(TypeField::Single(ty)) if ty == "null")
+                })
+    }
 }
 
 /// An object schema's ordered properties plus whether the source explicitly
@@ -3921,7 +3942,7 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
         // marimo-plugins' `marimo-chatbot.cancel_prompt.output` answers
         // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
         .filter(|(_, schema)| {
-            schema.explicitly_nullable()
+            schema.nullable_at_references()
                 || matches!(&schema.ty, Some(TypeField::Single(ty)) if ty == "null")
         })
         .map(|(name, _)| name.clone())
