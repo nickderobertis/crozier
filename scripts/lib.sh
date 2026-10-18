@@ -20,6 +20,19 @@ valid_fern_version() {
   [[ "${1:-}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]
 }
 
+# certified_fern_pair_field FIELD [ROOT] — print `cliVersion` or
+# `generatorVersion` from assets/scaffolding/metadata.json, the one declaration
+# of the Fern pair crozier is certified against. Fails (status 1, nothing
+# printed) when the file or field is missing or the value is not an exact
+# version, so a caller can name the file in its own message.
+certified_fern_pair_field() {
+  local field="$1" root="${2:-${repo_root:-.}}" value
+  value="$(sed -n "s/^[[:space:]]*\"$field\":[[:space:]]*\"\([^\"]*\)\".*/\1/p" \
+    "$root/assets/scaffolding/metadata.json" 2>/dev/null | head -n 1)"
+  valid_fern_version "$value" || return 1
+  printf '%s\n' "$value"
+}
+
 # report_failures TOOL ACTION — under `set -e`, a command that fails unhandled
 # ends the script with only its own words (`mkdir: Permission denied`). From
 # here on, such a failure also prints the line, the command and the action that

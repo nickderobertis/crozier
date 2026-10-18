@@ -121,20 +121,27 @@ valid_fixture_name "$FIXTURE" || {
 # calls use that tool's identical Docker Hub resolver instead of a second pin.
 FERN_PYTHON_VERSION="${2:-}"
 [ -z "$FERN_PYTHON_VERSION" ] || valid_fern_version "$FERN_PYTHON_VERSION" || {
-  echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as 5.20.0" >&2
+  echo "generate-fern-fixture: invalid Fern version '$FERN_PYTHON_VERSION' — use an exact semantic version such as assets/scaffolding/metadata.json's generatorVersion" >&2
   exit 1
 }
 SPEC_OVERRIDE="${3:-}"
 # The Fern CLI version, pinned via fern.config.json's `version` (the `fern` npm
-# package is only a launcher; this field selects the actual CLI it runs). Matches
-# the corpus's `.fern/metadata.json` cliVersion so regenerated output stays
-# consistent; a `*` here would float to the latest CLI and can drift the output.
-FERN_CLI_VERSION="${FERN_CLI_VERSION:-5.67.1}"
+# package is only a launcher; this field selects the actual CLI it runs). Defaults
+# to the certified pair's `cliVersion` in assets/scaffolding/metadata.json, so
+# regenerated output stays consistent; a `*` here would float to the latest CLI
+# and can drift the output.
+if [ -z "${FERN_CLI_VERSION:-}" ]; then
+  FERN_CLI_VERSION="$(certified_fern_pair_field cliVersion "$repo_root")" || {
+    echo "generate-fern-fixture: cannot read cliVersion from $repo_root/assets/scaffolding/metadata.json —" \
+         "restore it with git checkout -- assets/scaffolding/metadata.json, or set FERN_CLI_VERSION, then re-run" >&2
+    exit 1
+  }
+fi
 # Interpolated into fern.config.json and the provenance record, so held to the
 # same exact-version grammar as the generator's.
 valid_fern_version "$FERN_CLI_VERSION" || {
   echo "generate-fern-fixture: invalid FERN_CLI_VERSION '$FERN_CLI_VERSION' — use an exact semantic version" \
-       "such as 5.67.1 (the corpus's .fern/metadata.json cliVersion), then re-run" >&2
+       "such as assets/scaffolding/metadata.json's cliVersion, then re-run" >&2
   exit 1
 }
 
