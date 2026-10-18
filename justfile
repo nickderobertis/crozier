@@ -210,6 +210,16 @@ fern-goldens *args:
 fern-goldens-generate *args:
     ./tools/fern-goldens/fern-goldens generate "$@"
 
+# Needs Docker and the Fern CLI; see docs/fern-goldens.md. `--version` and
+# `--cli-version` name a pair other than assets/scaffolding/metadata.json's.
+# Regenerate a Fern reference family (all items, or the named ones), one Fern run at a time.
+fern-references *args:
+    python3 tools/fern-goldens/fern-references.py generate "$@"
+
+# Print one Fern reference family's item names, one per line.
+fern-references-list family:
+    python3 tools/fern-goldens/fern-references.py list "$1"
+
 fern-goldens-compare:
     ./tools/fern-goldens/fern-goldens compare
 
