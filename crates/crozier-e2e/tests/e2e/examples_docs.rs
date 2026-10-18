@@ -21,6 +21,7 @@ pub(super) const EXAMPLES_DOCS_DIR: &str = "docs/fern-measurements/examples-docs
 
 /// Every measurement case: its directory, the document crozier generates from,
 /// and the flags matching the setting Fern ran under.
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
 const CASES: &[(&str, &str, &[&str])] = &[
     (
         "archive-glob-rules",
@@ -93,6 +94,7 @@ const CASES: &[(&str, &str, &[&str])] = &[
         &[],
     ),
 ];
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 /// Crozier's output over `spec` with `flags`, compared whole with the Fern
 /// tree `expected`, every departure held to `golden`'s ledger rows.
@@ -279,6 +281,7 @@ fn plain_multipart_file_correction_explains_only_the_placeholder() {
     );
 }
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
 /// Each isolating case of a component, empty-array, union-item, map,
 /// parameter-list or description match, and of a catalogued departure, fails
 /// on one unexplained byte beside what it pins: the match is byte for byte, and
@@ -386,3 +389,4 @@ fn examples_docs_cases_fail_on_an_adjacent_unexplained_byte() {
         );
     }
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
