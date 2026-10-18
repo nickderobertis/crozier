@@ -143,9 +143,10 @@ fn unevaluated_record_failures(root: &Path, id: &str) -> Vec<String> {
     }
     match std::fs::read_to_string(dir.join("fern-refusal.txt")) {
         Ok(record) => {
+            let pair = crozier::emit::certified_fern_pair();
             for field in [
-                "fern_cli_version: 5.67.1",
-                "fern_python_sdk_version: 5.20.0",
+                format!("fern_cli_version: {}", pair.cli),
+                format!("fern_python_sdk_version: {}", pair.python_sdk),
             ] {
                 if !record.lines().any(|line| line == field) {
                     failures.push(format!("{id}: fern-refusal.txt lacks `{field}`"));
@@ -170,7 +171,11 @@ fn unevaluated_records_require_the_probe_and_pinned_diagnostic() {
     std::fs::create_dir(&dir).unwrap();
     std::fs::write(
         dir.join("fern-refusal.txt"),
-        "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ndiagnostic: measured refusal\n",
+        format!(
+            "fern_cli_version: {}\nfern_python_sdk_version: {}\ndiagnostic: measured refusal\n",
+            crozier::emit::certified_fern_pair().cli,
+            crozier::emit::certified_fern_pair().python_sdk
+        ),
     )
     .unwrap();
     assert_eq!(

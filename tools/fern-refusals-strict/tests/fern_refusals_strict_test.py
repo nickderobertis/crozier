@@ -37,6 +37,7 @@ from fern_refusals_test import (
 
 MEASURE_LOADS = (
     "tools/fern-refusals/fern-refusals.py",
+    "assets/scaffolding/metadata.json",
     "tools/witness-search/witness-search-github.py",
     "tools/witness-search/witness-search-github-index.py",
     "tools/witness-search/witness_screen.py",

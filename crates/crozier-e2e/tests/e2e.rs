@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
 use crozier::departures::Context;
+use crozier::emit::certified_fern_pair as certified_pair;
 use crozier::parity::{self, Difference};
 use predicates::prelude::*;
 
@@ -1043,7 +1044,10 @@ fn validate_known_fern_failure(
     let exact_values = [
         ("schema_version", serde_json::json!(1)),
         ("generator", serde_json::json!("fernapi/fern-python-sdk")),
-        ("generator_version", serde_json::json!("5.20.0")),
+        (
+            "generator_version",
+            serde_json::json!(certified_pair().python_sdk),
+        ),
         ("corpus_spec_name", serde_json::json!(api)),
         ("corpus_spec_ref", serde_json::json!("1.0.0")),
         (
@@ -2402,9 +2406,9 @@ fn naming_authored_probes_match_pinned_fern() {
         let evidence = root.join(FERN_REFUSALS_DIR).join(class).join("evidence");
         let log = std::fs::read_to_string(evidence.join(format!("{stem}.pinned-fern.log")))
             .unwrap_or_default();
-        if !log.starts_with("Fern CLI 5.67.1, python-sdk 5.20.0\n")
-            || !log.contains("\ngenerate exit: 1\n")
-        {
+        let pair = certified_pair();
+        let header = format!("Fern CLI {}, python-sdk {}\n", pair.cli, pair.python_sdk);
+        if !log.starts_with(&header) || !log.contains("\ngenerate exit: 1\n") {
             failures.push(format!(
                 "{stem}: its pinned-fern.log is no refusal measured at the pin"
             ));
@@ -2973,8 +2977,11 @@ fn schema_shape_arms_match_complete_certified_trees() {
             if fixture_dir == SCHEMA_SHAPES_DIR && mode == "python-enums" {
                 let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
                 for field in [
-                    "fern_cli_version = \"5.67.1\"".to_owned(),
-                    "fern_python_sdk_version = \"5.20.0\"".to_owned(),
+                    format!("fern_cli_version = \"{}\"", certified_pair().cli),
+                    format!(
+                        "fern_python_sdk_version = \"{}\"",
+                        certified_pair().python_sdk
+                    ),
                     format!("digest = \"{}\"", probe_artifact_digest(&expected).unwrap()),
                     format!(
                         "source_digest = \"{}\"",
@@ -8467,14 +8474,21 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
         openapi.join("openapi.yml"),
     )
     .expect("copy refused probe into Fern workspace");
+    let pair = certified_pair();
     std::fs::write(
         fern_root.join("fern.config.json"),
-        "{ \"organization\": \"fern\", \"version\": \"5.67.1\" }\n",
+        format!(
+            "{{ \"organization\": \"fern\", \"version\": \"{}\" }}\n",
+            pair.cli
+        ),
     )
     .expect("write pinned Fern CLI configuration");
     std::fs::write(
         fern_root.join("generators.yml"),
-        "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: 5.20.0\n        config:\n          pydantic_config:\n            enum_type: python_enums\n        output:\n          location: local-file-system\n          path: ../generated/python\n",
+        format!(
+            "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: {}\n        config:\n          pydantic_config:\n            enum_type: python_enums\n        output:\n          location: local-file-system\n          path: ../generated/python\n",
+            pair.python_sdk
+        ),
     )
     .expect("write pinned Fern generator configuration");
 
@@ -8511,7 +8525,10 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
         "Fern must not write an SDK output tree for a refused probe"
     );
 
-    let observed = "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n";
+    let observed = format!(
+        "fern_cli_version: {}\nfern_python_sdk_version: {}\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n",
+        pair.cli, pair.python_sdk
+    );
     let expected =
         std::fs::read_to_string(root.join(
             "docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt",
@@ -9940,7 +9957,10 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     );
     assert_eq!(
         known_fern_failure_marker(&CALORIENINJAS, &known),
-        "KNOWN UPSTREAM FERN FAILURE: calorieninjas.com at fernapi/fern-python-sdk:5.20.0; Crozier generation succeeded."
+        format!(
+            "KNOWN UPSTREAM FERN FAILURE: calorieninjas.com at fernapi/fern-python-sdk:{}; Crozier generation succeeded.",
+            certified_pair().python_sdk
+        )
     );
 }
 
@@ -14030,7 +14050,8 @@ fn flat_goldens_are_the_declared_set() {
             golden.fixture
         );
         assert_eq!(
-            state["fern_python_sdk_version"], "5.20.0",
+            state["fern_python_sdk_version"],
+            certified_pair().python_sdk,
             "{}",
             golden.fixture
         );

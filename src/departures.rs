@@ -6060,9 +6060,10 @@ mod tests {
         assert_eq!(region(record), None);
         // Fern's member sharing a line with another member, or a document
         // that is not JSON.
+        let sdk = crate::emit::certified_fern_pair().python_sdk;
         let shared = literals.replace(
-            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
-            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+            &format!("\"generatorVersion\": \"{sdk}\",\n  \"generatorConfig\""),
+            &format!("\"generatorVersion\": \"{sdk}\", \"generatorConfig\""),
         );
         assert_ne!(shared, literals);
         assert_eq!(region(&shared), None);

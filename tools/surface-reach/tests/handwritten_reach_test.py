@@ -12,12 +12,18 @@ naming an arm the site table does not list, refused before anything is written.
 from __future__ import annotations
 
 import csv
+import json
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[3]
+# The certified Fern pair, from its one declaration: the pair a fixture's evidence names.
+CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
+PAIR_EVIDENCE = (
+    f'fern_cli_version = "{CERTIFIED["cliVersion"]}"\nfern_python_sdk_version = "{CERTIFIED["generatorVersion"]}"\n'
+)
 HEADER = ["fixture", "key", "site", "regions_executed", "regions"]
 ARM = r'src/ir.rs::scalar_body[Some\("email" \x7c "hostname" \x7c "ipv4"]'
 DOCUMENT = """openapi: 3.0.3
@@ -38,9 +44,9 @@ paths:
         "200":
           description: ok
 """
-EVIDENCE = """fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "{zero}"
+EVIDENCE = (
+    PAIR_EVIDENCE
+    + """digest = "{zero}"
 
 [[covers]]
 key = "format-email"
@@ -48,6 +54,7 @@ arm = '{arm}'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/format-email.md#witness-search-exhaustive"
 verdict = "exhausted"
 """
+)
 # `collect_schema_refs` walks a schema only inside the audience filter's closure,
 # so its discriminator arm runs only when the fixture is generated for an audience.
 AUDIENCE_ARM = r"src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]"
@@ -83,9 +90,9 @@ components:
       allOf:
         - $ref: "#/components/schemas/Pet"
 """
-AUDIENCE_EVIDENCE = """fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "{zero}"
+AUDIENCE_EVIDENCE = (
+    PAIR_EVIDENCE
+    + """digest = "{zero}"
 {audiences}
 [[covers]]
 key = "discriminator-mapping"
@@ -93,6 +100,7 @@ arm = '{arm}'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md#configuration-gate"
 verdict = "config-gated"
 """
+)
 
 
 class HandwrittenReachRecipeTest(unittest.TestCase):

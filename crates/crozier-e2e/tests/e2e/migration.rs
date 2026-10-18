@@ -90,11 +90,14 @@ fn in_repo(repo: &Path, configured: &str) -> PathBuf {
 /// A Fern `generators.yml` with the Python generator still on Fern beside a
 /// TypeScript one; `with_python: false` is it after step 4.
 fn generators_yml(with_python: bool) -> String {
-    let python = "  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: 5.20.0\n        output:\n          location: local-file-system\n          path: ../sdks/python\n";
+    let python = format!(
+        "  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: {}\n        output:\n          location: local-file-system\n          path: ../sdks/python\n",
+        crozier::emit::certified_fern_pair().python_sdk
+    );
     let typescript = "  ts-sdk:\n    generators:\n      - name: fernapi/fern-typescript-sdk\n        version: 3.0.0\n        output:\n          location: local-file-system\n          path: ../sdks/ts\n";
     format!(
         "api:\n  path: openapi/openapi.yml\ngroups:\n{}{typescript}",
-        if with_python { python } else { "" }
+        if with_python { python.as_str() } else { "" }
     )
 }
 
