@@ -3372,33 +3372,86 @@ pub(crate) fn normalize_undiscriminated_unions(doc: &mut OpenApi) {
     });
 }
 
-/// Rename a component schema whose class name is an error class the document
-/// raises, to `{Name}Body`, rewriting every reference to it.
+/// Every name Fern's OpenAPI importer can give an error: one per status it
+/// names, then `ClientRequestError` and `ServerError` for the `4XX` and `5XX`
+/// ranges. Spelled as the importer spells them (`URITooLongError`), since a
+/// component schema is matched against them by its exact key.
+const FERN_ERROR_NAMES: &[&str] = &[
+    "BadRequestError",
+    "UnauthorizedError",
+    "PaymentRequiredError",
+    "ForbiddenError",
+    "NotFoundError",
+    "MethodNotAllowedError",
+    "NotAcceptableError",
+    "ProxyAuthenticationRequiredError",
+    "RequestTimeoutError",
+    "ConflictError",
+    "GoneError",
+    "LengthRequiredError",
+    "PreconditionFailedError",
+    "ContentTooLargeError",
+    "URITooLongError",
+    "UnsupportedMediaTypeError",
+    "RangeNotSatisfiableError",
+    "ExpectationFailedError",
+    "ImATeapotError",
+    "AuthenticationTimeoutError",
+    "MethodFailureError",
+    "MisdirectedRequestError",
+    "UnprocessableEntityError",
+    "LockedError",
+    "FailedDependencyError",
+    "TooEarlyError",
+    "UpgradeRequiredError",
+    "PreconditionError",
+    "TooManyRequestsError",
+    "RequestHeaderFieldsTooLargeError",
+    "NoResponseError",
+    "RetryWithError",
+    "BlockedByWindowsParentalControlsError",
+    "UnavailableForLegalReasonsError",
+    "InvalidTokenError",
+    "ClientClosedRequestError",
+    "InternalServerError",
+    "NotImplementedError",
+    "BadGatewayError",
+    "ServiceUnavailableError",
+    "GatewayTimeoutError",
+    "HTTPVersionNotSupportedError",
+    "VariantAlsoNegotiatesError",
+    "InsufficientStorageError",
+    "LoopDetectedError",
+    "BandwidthLimitExceededError",
+    "NotExtendedError",
+    "NetworkAuthenticationRequiredError",
+    "ClientRequestError",
+    "ServerError",
+];
+
+/// Rename a component schema whose key is a name Fern can give an error, to
+/// `{Name}Body`, rewriting every reference to it.
 ///
-/// Fern's error class and the model it would generate for the schema would share
-/// one Python name, and Fern keeps the error class: OpenCodeUI declares
-/// `BadRequestError` and `NotFoundError` schemas as the bodies of its `400` and
-/// `404` responses, and its golden generates `errors/bad_request_error.py`'s
-/// `BadRequestError` over `types/bad_request_error_body.py`'s
-/// `BadRequestErrorBody`, the renamed schema's own hoisted members following it
-/// (`NotFoundErrorBodyData`). A schema named for an error class no response of the
-/// document raises collides with nothing and keeps its name.
+/// Fern's importer renames such a schema before it reads a single response, so
+/// the model can never share a Python name with an error class: OpenCodeUI
+/// declares `BadRequestError` and `NotFoundError` schemas as the bodies of its
+/// `400` and `404` responses, and its golden generates
+/// `errors/bad_request_error.py`'s `BadRequestError` over
+/// `types/bad_request_error_body.py`'s `BadRequestErrorBody`, the renamed
+/// schema's own hoisted members following it (`NotFoundErrorBodyData`). Whether
+/// the document raises that error does not matter: bunq's `ServerError` schema
+/// is only a request body, and no response of it is a `5XX` range, yet it is
+/// `ServerErrorBody` — measured at Fern CLI 5.163.1, the first to name the
+/// `5XX` range `ServerError`. A schema that is itself a `$ref` keeps its key.
 fn normalize_error_class_schema_names(doc: &mut OpenApi) {
-    let raised: std::collections::BTreeSet<&str> = doc
-        .paths
-        .values()
-        .flat_map(PathItem::operations)
-        .flat_map(|(_, operation)| operation.responses.keys())
-        .filter(|code| !code.starts_with('2'))
-        .filter_map(|code| crate::ir::response_key_status(code))
-        .filter_map(crate::ir::error_class_name)
-        .collect();
     let renames: IndexMap<String, String> = doc
         .components
         .schemas
-        .keys()
-        .filter(|name| raised.contains(crate::naming::class_name(name).as_str()))
-        .map(|name| (name.clone(), format!("{name}Body")))
+        .iter()
+        .filter(|(name, schema)| {
+            schema.reference.is_none() && FERN_ERROR_NAMES.contains(&name.as_str())
+        })
+        .map(|(name, _)| (name.clone(), format!("{name}Body")))
         .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
         .collect();
     rename_component_schemas(doc, &renames);

@@ -4,5 +4,10 @@
 
 
 class {{ class_name }}({{ base }}):
+{% if wildcard %}
+    def __init__(self, body: {{ body_type }}, headers: typing.Optional[typing.Dict[str, str]] = None, status_code: typing.Optional[int] = None):
+        super().__init__(status_code=status_code if status_code is not None else {{ status_code }}, headers=headers, body=body)
+{% else %}
     def __init__(self, body: {{ body_type }}, headers: typing.Optional[typing.Dict[str, str]] = None):
         super().__init__(status_code={{ status_code }}, headers=headers, body=body)
+{% endif %}

@@ -10740,6 +10740,73 @@ components:
     );
 }
 
+/// A `4XX`/`5XX` range response is an error class of its own, raised for any
+/// status in the range after every concrete status, and carrying the actual
+/// status; a component schema named for a range's class is renamed whether or
+/// not the document declares that range (bunq's `ServerError` request body is
+/// `ServerErrorBody`). Measured at Fern CLI 5.163.1 with fern-python-sdk 5.41.3.
+#[test]
+fn a_status_range_raises_its_own_error_class_with_the_actual_status() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Acme, version: 1.0.0 }
+paths:
+  /widgets:
+    post:
+      operationId: createWidget
+      tags: [widgets]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ServerError' } } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: string } } } }
+        4xx:
+          description: rejected
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+        '404': { description: missing }
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { detail: { type: string } }
+    ServerError:
+      type: object
+"##,
+    );
+    let range = &files["src/acme/errors/client_request_error.py"];
+    assert!(
+        range.contains("class ClientRequestError(ApiError):"),
+        "{range}"
+    );
+    assert!(
+        range.contains("status_code: typing.Optional[int] = None"),
+        "{range}"
+    );
+    assert!(
+        range.contains(
+            "super().__init__(status_code=status_code if status_code is not None else 400, headers=headers, body=body)"
+        ),
+        "{range}"
+    );
+    let concrete = &files["src/acme/errors/not_found_error.py"];
+    assert!(!concrete.contains("status_code: typing"), "{concrete}");
+
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    let missing = raw.find("if _response.status_code == 404:").expect(raw);
+    let rejected = raw
+        .find("if 400 <= _response.status_code < 500:\n                raise ClientRequestError(")
+        .expect(raw);
+    assert!(missing < rejected, "{raw}");
+    assert!(
+        raw.contains("                    status_code=_response.status_code,\n                )"),
+        "{raw}"
+    );
+    assert!(raw.contains("request: ServerErrorBody"), "{raw}");
+    assert!(files.contains_key("src/acme/types/server_error_body.py"));
+    assert!(!files.contains_key("src/acme/types/server_error.py"));
+    assert!(!files.contains_key("src/acme/errors/server_error.py"));
+}
+
 /// Three TrueForge shapes in one document: a package that owns endpoints *and*
 /// nests a sub-client, a one-member `oneOf` tagged by a single-valued `enum`,
 /// and an ignored operation whose body schema nothing else references.
