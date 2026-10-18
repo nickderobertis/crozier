@@ -1749,9 +1749,6 @@ pub struct Endpoint {
     pub stream_protocol: Option<StreamProtocol>,
     /// Whether the selected success response uses `text/plain` media.
     pub text_response: bool,
-    /// Whether the success body is Markdown text. Fern types it as `str` but
-    /// omits path arguments from the generated worked example.
-    pub markdown_response: bool,
     /// Whether the success response is a binary download (`format: binary`).
     /// Fern emits these as context-managed byte streams instead of buffering.
     pub binary_response: bool,
@@ -1762,8 +1759,8 @@ pub struct Endpoint {
     /// Whether the success schema itself declares `format: binary` (as opposed
     /// to merely using an `image/*` media type with a plain string schema).
     pub binary_schema_response: bool,
-    /// Whether a binary download uses wildcard (`*/*`) media. Fern omits all
-    /// method arguments from these generated worked examples.
+    /// Whether a binary download uses wildcard (`*/*`) media. Fern's worked
+    /// examples pass none of its optional parameters' declared examples.
     pub wildcard_binary_response: bool,
     /// Whether crozier can emit this operation's raw client today. A module is
     /// only emitted when every one of its operations is emittable.
@@ -3498,7 +3495,7 @@ fn build_endpoint(
                 convert: hoister.needs_convert(&type_ref)
                     && !hoister.reaches_url_as_scalars(&type_ref),
                 type_ref,
-                docstring: declared_doc(p.description.as_deref()),
+                docstring: parameter_doc(p),
                 // Without an importer example Fern's IR fallback reads no declared
                 // example: Zulip's `PATCH /navigation_views/{fragment}` declares
                 // `narrow/is/alerted`, and the golden passes `fragment="fragment"`.
@@ -3718,7 +3715,7 @@ fn build_endpoint(
                 example,
                 example_is_scalar,
                 aliased_datetime,
-                docstring: declared_doc(p.description.as_deref()),
+                docstring: parameter_doc(p),
             }
         })
         .collect();
@@ -3778,7 +3775,7 @@ fn build_endpoint(
                 py_name: naming::field_name(header_param_stem(&p.name)),
                 type_ref,
                 required: p.required == Some(true),
-                docstring: declared_doc(p.description.as_deref()),
+                docstring: parameter_doc(p),
                 example: parameter_example(doc, p),
                 // A `$ref` to a string-enum component serializes by `.value` as
                 // an inline enum does (the measured `enum-header-params-stringified`
@@ -4534,15 +4531,10 @@ fn build_endpoint(
         stream_chunk,
         stream_protocol: streaming.then(|| stream_protocol(doc, op)),
         text_response: has_text_response(op),
-        // A Markdown media type beside a download listed before it is not the
-        // body: the method streams the download and documents its path
-        // arguments, as CPHOS's `download_artifact` (`application/pdf` first,
-        // `text/markdown` third) does at Fern 5.20.0.
-        markdown_response: has_markdown_response(op) && !is_binary_response(doc, op),
         binary_response: is_binary_response(doc, op),
         importer_example_missing: fern_imports_no_endpoint_example(doc, op),
         binary_schema_response: has_binary_schema_response(doc, op),
-        wildcard_binary_response: has_wildcard_binary_response(doc, op),
+        wildcard_binary_response: has_wildcard_binary_response(op),
         emittable,
     }
 }
@@ -5518,7 +5510,7 @@ fn has_binary_schema_response(doc: &OpenApi, op: &Operation) -> bool {
     })
 }
 
-fn has_wildcard_binary_response(_doc: &OpenApi, op: &Operation) -> bool {
+fn has_wildcard_binary_response(op: &Operation) -> bool {
     success_response_entry(op)
         .and_then(|response| response.content.get("*/*"))
         .and_then(|media| media.schema.as_ref())
@@ -9113,11 +9105,6 @@ fn has_text_response(op: &Operation) -> bool {
                 .keys()
                 .any(|media_type| is_text_response_media(media_type))
     })
-}
-
-fn has_markdown_response(op: &Operation) -> bool {
-    success_response_entry(op)
-        .is_some_and(|response| response.content.contains_key("text/markdown"))
 }
 
 fn has_bodyless_success(op: &Operation) -> bool {
@@ -15740,6 +15727,23 @@ fn reference_description_suffix(description: &str) -> String {
 /// Fern's output for path parameters (a blank docstring slot vs none) and for model
 /// fields (a `pydantic.Field(default=None)` + empty docstring vs a bare `= None`).
 /// bunq declares `description: ""` on many nodes.
+/// A parameter's documentation: its own `description`, or, where it declares
+/// none, the description of the inline schema it carries. braintrust's
+/// `GET /environment` documents its `ids` query parameter by the description
+/// written beside the schema's `anyOf`, and torrentarr its `kind` path parameter
+/// by the one inside its string schema (measured at Fern CLI 5.163.1 with
+/// fern-python-sdk 5.41.3). An empty `description: ''` is still the parameter's
+/// own — amazonaws.com-cloudformation's `LoggingConfig` documents nothing — and
+/// a `$ref`'d schema lends none: tlon-notes' `requestId` stays undocumented.
+fn parameter_doc(p: &crate::openapi::Parameter) -> Option<String> {
+    declared_doc(p.description.as_deref().or_else(|| {
+        p.schema
+            .as_ref()
+            .filter(|schema| schema.reference.is_none())
+            .and_then(|schema| schema.description.as_deref())
+    }))
+}
+
 fn declared_doc(desc: Option<&str>) -> Option<String> {
     // Preserve the description verbatim (Fern does not trim it — a trailing space in
     // `"The URL to visit to "` survives into the docstring), but terminal line breaks
@@ -22398,21 +22402,15 @@ mod tests {
                     "responses": { "200": { "description": "the artifact", "content": content } }
                 } } }
             }));
-            let endpoint = &ir.endpoints[0];
-            (endpoint.binary_response, endpoint.markdown_response)
+            ir.endpoints[0].binary_response
         };
-        assert_eq!(
-            endpoint(serde_json::json!({ "application/pdf": {}, "text/markdown": {} })),
-            (true, false)
-        );
-        assert_eq!(
-            endpoint(serde_json::json!({ "text/markdown": {}, "application/pdf": {} })),
-            (false, true)
-        );
-        assert_eq!(
-            endpoint(serde_json::json!({ "text/markdown": {} })),
-            (false, true)
-        );
+        assert!(endpoint(
+            serde_json::json!({ "application/pdf": {}, "text/markdown": {} })
+        ));
+        assert!(!endpoint(
+            serde_json::json!({ "text/markdown": {}, "application/pdf": {} })
+        ));
+        assert!(!endpoint(serde_json::json!({ "text/markdown": {} })));
     }
 
     #[test]
@@ -23795,5 +23793,60 @@ mod tests {
             .map(|field| field.wire_name.as_str())
             .collect();
         assert_eq!(wires, ["station", "lane"]);
+    }
+
+    #[test]
+    fn a_parameter_without_a_description_is_documented_by_its_inline_schema() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Shelf", "version": "1" },
+            "paths": { "/shelves/{kind}": { "get": {
+                "operationId": "listShelves",
+                "parameters": [
+                    { "name": "kind", "in": "path", "required": true,
+                      "schema": { "type": "string", "description": "search or all" } },
+                    { "name": "ids", "in": "query", "schema": {
+                        "anyOf": [ { "type": "string" },
+                                   { "type": "array", "items": { "type": "string" } } ],
+                        "description": "One ID or many." } },
+                    { "name": "blank", "in": "query", "description": "",
+                      "schema": { "type": "string", "description": "Never shown." } },
+                    { "name": "label", "in": "query",
+                      "schema": { "$ref": "#/components/schemas/Label" } },
+                    { "name": "X-Trace", "in": "header",
+                      "schema": { "type": "string", "description": "Trace token." } }
+                ],
+                "responses": { "204": { "description": "Listed" } }
+            } },
+            // A second operation keeps `X-Trace` a per-call header rather than a
+            // client-wide one.
+            "/health": { "get": {
+                "operationId": "health",
+                "responses": { "204": { "description": "Healthy" } }
+            } } },
+            "components": { "schemas": {
+                "Label": { "type": "string", "description": "A label." }
+            } }
+        }));
+        let endpoint = &ir.endpoints[0];
+        assert_eq!(
+            endpoint.path_params[0].docstring.as_deref(),
+            Some("search or all")
+        );
+        let query_doc = |wire: &str| {
+            endpoint
+                .query_params
+                .iter()
+                .find(|param| param.wire_name == wire)
+                .and_then(|param| param.docstring.as_deref())
+        };
+        assert_eq!(query_doc("ids"), Some("One ID or many."));
+        // The parameter's own empty description stands, and a `$ref` lends none.
+        assert_eq!(query_doc("blank"), Some(""));
+        assert_eq!(query_doc("label"), None);
+        assert_eq!(
+            endpoint.header_params[0].docstring.as_deref(),
+            Some("Trace token.")
+        );
     }
 }

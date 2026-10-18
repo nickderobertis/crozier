@@ -3245,21 +3245,12 @@ fn reference_entry(
             .header_params
             .iter()
             .any(|header| header.py_name == dp.name);
+        // An inline wildcard (`*/*`) binary body is documented as the `bytes` its
+        // signature takes: apideck-file-storage's `files.upload` and
+        // `upload_sessions.upload` (measured at fern-python-sdk 5.41.3; 5.20.0's
+        // reference writer wrote the OpenAPI source type `str`).
         let annotation = if is_body || query_is_list || is_header {
-            let annotation = reference_list_annotation(&dp.annotation);
-            if annotation == "bytes"
-                && ep
-                    .request_body
-                    .as_ref()
-                    .is_some_and(RequestBody::is_wildcard_media)
-            {
-                // Fern 5.20's reference writer documents an inline wildcard
-                // binary body as its OpenAPI source type even though both Python
-                // clients correctly accept `bytes` at runtime.
-                "str".to_string()
-            } else {
-                annotation
-            }
+            reference_list_annotation(&dp.annotation)
         } else {
             dp.annotation.clone()
         };
@@ -9629,21 +9620,37 @@ impl<'a> ExampleCtx<'a> {
                 // Include inherited fields (pydantic construction takes them too),
                 // base classes first, then the object's own fields.
                 let fields = self.object_fields(obj);
+                // A required-but-nullable field is shown as a top-level body
+                // field is (see `build_example_inner`): by its declared example,
+                // else as `None` in the Markdown writers alone.
+                let documentation = self.documentation;
+                let fallback = self.field_examples_ignored;
+                let nullable_shown = |field: &ExampleField| {
+                    field.requirement == Requirement::RequiredNullable
+                        && !fallback
+                        && !is_any_type(&field.type_ref)
+                        && (field.example.is_some() || documentation)
+                };
                 let args = fields
                     .into_iter()
                     .filter(|field| {
                         field.requirement == Requirement::Required
+                            || nullable_shown(field)
                             || field.parent_example && !field.deprecated
                     })
                     .map(|field| {
                         if is_any_type(&field.type_ref) {
                             self.untyped_arguments.insert(field.py_name.clone());
                         }
-                        let value = self.field_example(
-                            &field.type_ref,
-                            &field.wire_name,
-                            field.example.as_deref(),
-                        );
+                        let value = if nullable_shown(&field) && field.example.is_none() {
+                            Example::Atom("None".to_string())
+                        } else {
+                            self.field_example(
+                                &field.type_ref,
+                                &field.wire_name,
+                                field.example.as_deref(),
+                            )
+                        };
                         (Some(field.py_name), value)
                     })
                     .collect::<Vec<_>>();
@@ -9699,11 +9706,25 @@ impl<'a> ExampleCtx<'a> {
                     // four `type` values, so `MutableOa1TwoLeggedClientType` exists
                     // and the example passes it, back in the schema position the
                     // model moved the tag out of.
+                    // A required-but-nullable field is shown as a top-level body
+                    // field is (see `build_example_inner`): by its declared
+                    // example, else as `None` in the Markdown writers alone —
+                    // osparc-simcore-webserver's `RegisterFunctionRequest_Project`
+                    // passes `default_inputs=None` in `reference.md` only.
+                    let documentation = self.documentation;
+                    let fallback = self.field_examples_ignored;
+                    let shown = |f: &Field| {
+                        f.spec_required
+                            && (!f.optional
+                                || !fallback
+                                    && !is_any_type(&f.type_ref)
+                                    && (f.example.is_some() || documentation))
+                    };
                     let mut args = Vec::new();
-                    for (py_name, wire_name, ty, example, empty_only) in m
+                    for (py_name, wire_name, ty, example, empty_only, null) in m
                         .fields
                         .iter()
-                        .filter(|f| f.spec_required && !f.optional)
+                        .filter(|f| shown(f))
                         .map(|f| {
                             (
                                 f.py_name.clone(),
@@ -9711,11 +9732,14 @@ impl<'a> ExampleCtx<'a> {
                                 f.type_ref.clone(),
                                 f.example.clone(),
                                 f.admits_only_empty_object,
+                                f.optional && f.example.is_none(),
                             )
                         })
                         .collect::<Vec<_>>()
                     {
-                        let value = if empty_only {
+                        let value = if null {
+                            Example::Atom("None".to_string())
+                        } else if empty_only {
                             self.empty_object()
                         } else {
                             self.field_example(&ty, &wire_name, example.as_deref())
@@ -9753,11 +9777,7 @@ impl<'a> ExampleCtx<'a> {
                             let at = if self.documentation {
                                 args.len()
                             } else {
-                                m.fields
-                                    .iter()
-                                    .take(index)
-                                    .filter(|f| f.spec_required && !f.optional)
-                                    .count()
+                                m.fields.iter().take(index).filter(|f| shown(f)).count()
                             };
                             if imported {
                                 self.record_ref(&enum_name);
@@ -10277,20 +10297,13 @@ fn build_example_inner(
     }
     ctx.reference = reference;
     ctx.field_examples_ignored = ep.importer_example_missing;
-    // A `*/*` binary download whose parameters carry a DECLARED example documents
-    // no arguments at all. Measured on the corpus's only two such endpoints:
-    // apideck's `filesDownload` takes a required `id` beside an optional `fields`
-    // exampled `id,updated_at`, and its golden is a bare `client.files.download()`,
-    // while SFTPGo's `get_share`, `download_share_file` and `download_user_file`
-    // declare no parameter example anywhere and document `id="id"`,
-    // `id="id", path="path"` and `path="path"`. A binary download ignores a
-    // declared example when it names a parameter (the `!ep.binary_response` filter
-    // on the path-parameter arm below), and where there is one to ignore Fern
-    // emits nothing rather than the substituted name.
-    let suppressed = ep.wildcard_binary_response
-        && (ep.path_params.iter().any(|param| param.example.is_some())
-            || ep.query_params.iter().any(|param| param.example.is_some())
-            || ep.header_params.iter().any(|param| param.example.is_some()));
+    // A `*/*` binary download documents its required arguments only: an optional
+    // parameter is shown by its declared example, and Fern reads none for it.
+    // apideck-file-storage's `filesDownload` takes a required `id` beside an
+    // optional `fields` exampled `id,updated_at`, and documents
+    // `download(id="id")` (measured at fern-python-sdk 5.41.3, where 5.20.0
+    // documented no argument at all).
+    let declared_examples = !ep.wildcard_binary_response;
     // A path parameter whose schema declares no type is one Fern's example
     // generator cannot sample, and the endpoint is then exampled by its other
     // writer: the parameter by its own name, and a free-form map body as one
@@ -10319,61 +10332,56 @@ fn build_example_inner(
             wire.to_string()
         }
     };
-    if !ep.markdown_response && !suppressed {
-        for pp in &ep.path_params {
-            if (reference || documentation)
-                && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
-            {
-                continue;
-            }
-            let v = if matches!(
-                pp.type_ref,
-                TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Primitive(Prim::Any)
-            ) {
-                // Fern's path placeholder stays a string even for the unusual array
-                // path parameters accepted by its OpenAPI importer, and for an
-                // untyped one (see `untyped_path_parameter` above).
-                Example::Atom(format!("{:?}", pp.wire_name))
-            } else if path_object_decl(&pp.type_ref, ctx.types, ctx.tag_decls).is_some() {
-                // An object-typed path parameter is documented two different ways
-                // by Fern's two example writers, and the difference is measured on
-                // `parameter-style-simple-path-object.yml`: the Markdown writers
-                // construct the model, while the docstring writer keeps the plain
-                // name placeholder a scalar parameter would take. Where the model
-                // cannot be constructed at all the endpoint documents nothing, in
-                // either writer — see [`ExampleCtx::path_object_value`].
-                if documentation {
-                    ctx.path_object_value(&pp.type_ref)?
-                } else {
-                    // The value is rendered and discarded: what the docstring
-                    // takes from it is only whether Fern documents the endpoint
-                    // at all, so the imports it would register are rolled back.
-                    ctx.without_recording(|ctx| ctx.path_object_value(&pp.type_ref))?;
-                    Example::Atom(format!("{:?}", pp.wire_name))
-                }
-            } else {
-                pp.example
-                    .as_ref()
-                    // Fern's example generator substitutes the parameter's own
-                    // name for a declared example on any endpoint whose success
-                    // body is not JSON — a binary download, and equally a
-                    // `text/*` one. Audiobookshelf declares one `id` parameter on
-                    // `/api/authors/{id}` and Fern splits its own path item on
-                    // this: `getAuthorById` and `updateAuthorById` answer
-                    // `application/json` and document
-                    // `id="e4bb1afb-4a4f-4dd6-8be0-e615d233185b"`, while
-                    // `deleteAuthorById` answers `text/plain` and documents
-                    // `id="id"`.
-                    .filter(|_| {
-                        !ep.binary_response
-                            && !ep.text_response
-                            && ctx.example_is_scalar(&pp.type_ref)
-                    })
-                    .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
-                    .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Path(&pp.wire_name)))
-            };
-            args.push((Some(pp.py_name.clone()), v));
+    for pp in &ep.path_params {
+        if (reference || documentation) && matches!(pp.type_ref, TypeRef::List(_) | TypeRef::Set(_))
+        {
+            continue;
         }
+        let v = if matches!(
+            pp.type_ref,
+            TypeRef::List(_) | TypeRef::Set(_) | TypeRef::Primitive(Prim::Any)
+        ) {
+            // Fern's path placeholder stays a string even for the unusual array
+            // path parameters accepted by its OpenAPI importer, and for an
+            // untyped one (see `untyped_path_parameter` above).
+            Example::Atom(format!("{:?}", pp.wire_name))
+        } else if path_object_decl(&pp.type_ref, ctx.types, ctx.tag_decls).is_some() {
+            // An object-typed path parameter is documented two different ways
+            // by Fern's two example writers, and the difference is measured on
+            // `parameter-style-simple-path-object.yml`: the Markdown writers
+            // construct the model, while the docstring writer keeps the plain
+            // name placeholder a scalar parameter would take. Where the model
+            // cannot be constructed at all the endpoint documents nothing, in
+            // either writer — see [`ExampleCtx::path_object_value`].
+            if documentation {
+                ctx.path_object_value(&pp.type_ref)?
+            } else {
+                // The value is rendered and discarded: what the docstring
+                // takes from it is only whether Fern documents the endpoint
+                // at all, so the imports it would register are rolled back.
+                ctx.without_recording(|ctx| ctx.path_object_value(&pp.type_ref))?;
+                Example::Atom(format!("{:?}", pp.wire_name))
+            }
+        } else {
+            pp.example
+                .as_ref()
+                // Fern's example generator substitutes the parameter's own
+                // name for a declared example on any endpoint whose success
+                // body is not JSON — a binary download, and equally a
+                // `text/*` one. Audiobookshelf declares one `id` parameter on
+                // `/api/authors/{id}` and Fern splits its own path item on
+                // this: `getAuthorById` and `updateAuthorById` answer
+                // `application/json` and document
+                // `id="e4bb1afb-4a4f-4dd6-8be0-e615d233185b"`, while
+                // `deleteAuthorById` answers `text/plain` and documents
+                // `id="id"`.
+                .filter(|_| {
+                    !ep.binary_response && !ep.text_response && ctx.example_is_scalar(&pp.type_ref)
+                })
+                .and_then(|example| ctx.value_from_example(&pp.type_ref, example))
+                .unwrap_or_else(|| ctx.value(&pp.type_ref, Slot::Path(&pp.wire_name)))
+        };
+        args.push((Some(pp.py_name.clone()), v));
     }
     // Fern normally follows required/optional grouping for parameters. Two request
     // bodies are imported with header examples before query examples instead: a
@@ -10413,7 +10421,7 @@ fn build_example_inner(
     for qp in ep
         .query_params
         .iter()
-        .filter(|qp| !suppressed && !header_first_request && qp.required)
+        .filter(|qp| !header_first_request && qp.required)
     {
         // A required array is shown with one sampled item, whatever its item
         // type (`colors=[Color.RED]`, `spots=[Spot()]`), except that Fern leaves
@@ -10479,7 +10487,7 @@ fn build_example_inner(
     for hp in ep
         .header_params
         .iter()
-        .filter(|header| !suppressed && header.required && !reference)
+        .filter(|header| header.required && !reference)
     {
         let v = hp
             .example
@@ -10496,7 +10504,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !suppressed && !header.required && header.example.is_some())
+            .filter(|header| !header.required && header.example.is_some() && declared_examples)
         {
             let value = hp
                 .example
@@ -10509,11 +10517,7 @@ fn build_example_inner(
                 });
             args.push((Some(hp.py_name.clone()), value));
         }
-        for qp in ep
-            .query_params
-            .iter()
-            .filter(|qp| !suppressed && qp.required)
-        {
+        for qp in ep.query_params.iter().filter(|qp| qp.required) {
             args.push((
                 Some(qp.py_name.clone()),
                 header_first_query_example(ctx, qp),
@@ -10521,21 +10525,13 @@ fn build_example_inner(
         }
     }
     if header_first_request && reference {
-        for qp in ep
-            .query_params
-            .iter()
-            .filter(|qp| !suppressed && qp.required)
-        {
+        for qp in ep.query_params.iter().filter(|qp| qp.required) {
             args.push((
                 Some(qp.py_name.clone()),
                 header_first_query_example(ctx, qp),
             ));
         }
-        for hp in ep
-            .header_params
-            .iter()
-            .filter(|header| !suppressed && header.required)
-        {
+        for hp in ep.header_params.iter().filter(|header| header.required) {
             let value = hp
                 .example
                 .as_ref()
@@ -10550,7 +10546,7 @@ fn build_example_inner(
         for hp in ep
             .header_params
             .iter()
-            .filter(|header| !suppressed && !header.required && header.example.is_some())
+            .filter(|header| !header.required && header.example.is_some() && declared_examples)
         {
             let value = hp
                 .example
@@ -10564,12 +10560,8 @@ fn build_example_inner(
             args.push((Some(hp.py_name.clone()), value));
         }
     }
-    for qp in ep
-        .query_params
-        .iter()
-        .filter(|qp| !suppressed && !qp.required)
-    {
-        if qp.example.is_none() || !qp.example_is_scalar {
+    for qp in ep.query_params.iter().filter(|qp| !qp.required) {
+        if qp.example.is_none() || !qp.example_is_scalar || !declared_examples {
             continue;
         }
         let example = qp.example.as_deref().unwrap_or_default();
@@ -10596,11 +10588,7 @@ fn build_example_inner(
         ));
     }
     if reference && !header_first_request {
-        for hp in ep
-            .header_params
-            .iter()
-            .filter(|header| !suppressed && header.required)
-        {
+        for hp in ep.header_params.iter().filter(|header| header.required) {
             let value = hp
                 .example
                 .as_ref()
@@ -10614,7 +10602,7 @@ fn build_example_inner(
         }
     }
     for hp in ep.header_params.iter().filter(|header| {
-        !suppressed && !header_first_request && !header.required && header.example.is_some()
+        !header_first_request && !header.required && header.example.is_some() && declared_examples
     }) {
         let value = hp
             .example
@@ -10733,14 +10721,18 @@ fn build_example_inner(
             }
         }
         Some(RequestBody::Inline(fields)) => {
-            // Fern's worked example shows a required field unless it is *nullable*
-            // (a required-but-nullable field like apideck's `company_name` is
-            // omitted). A required field with an unknown (`Any`) type is still shown,
-            // so the exclusion keys on nullability — an
-            // `optional` field with a concrete (non-`Any`) type — not `optional` alone.
+            // Fern's importer example gives a required-but-nullable field (one
+            // whose signature is still `Optional[...] = OMIT`) its own example
+            // where it declares one, and `null` where it does not (measured at
+            // Fern CLI 5.163.1 with fern-python-sdk 5.41.3; the 5.20.0 pair left
+            // every such field out). apideck's `Lead.company_name` declares
+            // `Spacex`, which apideck-lead's `add`/`update` examples pass in every
+            // writer; osparc-simcore-webserver's `phone` declares none, so its
+            // docstring leaves it out and `reference.md` writes `phone=None` —
+            // the same as an example's explicit `null` below.
             // Without an importer example, Fern's IR fallback reads no example the
             // request media or its fields declare: a `text/plain` answer leaves
-            // only the required fields' placeholders.
+            // only the required fields' placeholders, and no nullable one.
             let fallback = ep.importer_example_missing;
             let reference_fields = body_example
                 .filter(|_| !fallback)
@@ -10749,11 +10741,16 @@ fn build_example_inner(
             // out, or synthesizes it where the signature requires it; its
             // Markdown writers do the same but write a required nullable
             // field's `null` as `None`.
+            let required_nullable =
+                |f: &BodyField| f.spec_required && f.optional && !is_any_type(&f.type_ref);
             let example_null = |f: &BodyField| match reference_fields {
                 Some(values) => values
                     .get(&f.wire_name)
                     .is_some_and(serde_json::Value::is_null),
-                None => f.media_example && f.example.as_deref() == Some("null"),
+                None => {
+                    f.media_example && f.example.as_deref() == Some("null")
+                        || !fallback && required_nullable(f) && f.example.is_none()
+                }
             };
             let named_present = |f: &BodyField| {
                 reference_fields
@@ -10777,7 +10774,8 @@ fn build_example_inner(
                     return f.spec_required
                         && (!f.optional || is_any_type(&f.type_ref) || documentation);
                 }
-                f.spec_required && (!f.optional || is_any_type(&f.type_ref))
+                f.spec_required
+                    && !(required_nullable(f) && (fallback || reference_fields.is_some()))
                     || !f.deprecated
                         && (named_present(f)
                             || reference_fields.is_none() && f.media_example && !fallback)
@@ -11054,19 +11052,17 @@ fn build_example_inner(
     } else {
         &ep.method_name
     };
+    // An async streaming method is an async generator function, which cannot be
+    // awaited, so its docstring iterates the call directly: exa-gate's
+    // `get_proxy_events` documents `response = client.get_proxy_events()` inside
+    // `async def main()` (measured at fern-python-sdk 5.41.3; 5.20.0 wrote
+    // `await`). The Markdown writers show no `async for` and keep theirs.
+    let awaited = is_async && (documentation || !ep.streaming);
+    let await_kw = if awaited { "await " } else { "" };
     let receiver = if module.is_empty() {
-        format!(
-            "{}client.{}",
-            if is_async { "await " } else { "" },
-            method_name
-        )
+        format!("{await_kw}client.{method_name}")
     } else {
-        format!(
-            "{}client.{}.{}",
-            if is_async { "await " } else { "" },
-            module_path(module),
-            method_name
-        )
+        format!("{await_kw}client.{}.{method_name}", module_path(module))
     };
     // `render` positions continuation lines but leaves the first line for the
     // caller to place, so prepend the base indent to it.
@@ -13008,7 +13004,6 @@ mod tests {
             stream_chunk: None,
             stream_protocol: None,
             text_response: false,
-            markdown_response: false,
             binary_response: false,
             importer_example_missing: false,
             binary_schema_response: false,
@@ -15749,6 +15744,216 @@ mod tests {
             raw.contains("params={\n                \"voltage\": voltage,"),
             "{raw}"
         );
+    }
+
+    /// A 3.0 document posting `body` to `/leads` and answering JSON.
+    fn lead_document(body: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/leads": {"post": {
+                "operationId": "leadsAdd",
+                "tags": ["Leads"],
+                "requestBody": {"required": true,
+                    "content": {"application/json": {"schema": body}}},
+                "responses": {"200": {"description": "OK", "content": {"application/json":
+                    {"schema": {"type": "object", "properties": {"id": {"type": "string"}}}}}}}
+            }}}
+        })
+    }
+
+    #[test]
+    fn a_required_nullable_body_field_is_shown_by_its_example_or_as_none_in_markdown() {
+        let files = files_for(lead_document(serde_json::json!({
+            "type": "object",
+            "required": ["name", "company_name", "phone"],
+            "properties": {
+                "name": {"type": "string", "example": "Elon Musk"},
+                "company_name": {"type": "string", "nullable": true, "example": "Spacex"},
+                "phone": {"type": "string", "nullable": true}
+            }
+        })));
+        let client = file(&files, "leads/client.py");
+        // The signature still defaults both nullable fields.
+        assert!(
+            client.contains("company_name: typing.Optional[str] = OMIT"),
+            "{client}"
+        );
+        assert!(
+            client.contains(
+                "client.leads.add(\n            name=\"Elon Musk\",\n            company_name=\"Spacex\",\n        )"
+            ),
+            "{client}"
+        );
+        let reference = file(&files, "reference.md");
+        assert!(
+            reference.contains(
+                "client.leads.add(\n    name=\"Elon Musk\",\n    company_name=\"Spacex\",\n    phone=None,\n)"
+            ),
+            "{reference}"
+        );
+    }
+
+    #[test]
+    fn a_union_variants_required_nullable_field_is_none_in_markdown_only() {
+        let files = files_for({
+            let mut document = lead_document(serde_json::json!({
+                "oneOf": [{"$ref": "#/components/schemas/Project"},
+                          {"$ref": "#/components/schemas/Solver"}],
+                "discriminator": {"propertyName": "kind", "mapping": {
+                    "PROJECT": "#/components/schemas/Project",
+                    "SOLVER": "#/components/schemas/Solver"}}
+            }));
+            document["components"] = serde_json::json!({"schemas": {
+                "Project": {"type": "object", "required": ["kind", "projectId", "defaults"],
+                    "properties": {
+                        "kind": {"type": "string", "enum": ["PROJECT"]},
+                        "projectId": {"type": "string"},
+                        "defaults": {"type": "string", "nullable": true}
+                    }},
+                "Solver": {"type": "object", "required": ["kind", "solverKey"],
+                    "properties": {
+                        "kind": {"type": "string", "enum": ["SOLVER"]},
+                        "solverKey": {"type": "string"}
+                    }}
+            }});
+            document
+        });
+        let client = file(&files, "leads/client.py");
+        let docstring_call = client
+            .split("client.leads.add(")
+            .nth(1)
+            .and_then(|rest| rest.split("\"\"\"").next())
+            .expect("the docstring has a worked example");
+        assert!(
+            docstring_call.contains("project_id=\"projectId\""),
+            "{docstring_call}"
+        );
+        assert!(!docstring_call.contains("defaults"), "{docstring_call}");
+        let reference = file(&files, "reference.md");
+        assert!(
+            reference.contains("        defaults=None,\n"),
+            "{reference}"
+        );
+    }
+
+    /// `GET /files/{id}/download` answering `media` with a binary string, its
+    /// path parameter and optional `fields` query both declaring examples.
+    fn download_document(media: &str) -> serde_json::Value {
+        serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/files/{id}/download": {"get": {
+                "operationId": "filesDownload",
+                "tags": ["Files"],
+                "parameters": [
+                    {"name": "id", "in": "path", "required": true,
+                     "schema": {"type": "string", "example": "12345"}},
+                    {"name": "fields", "in": "query", "required": false,
+                     "schema": {"type": "string", "example": "id,updated_at"}}
+                ],
+                "responses": {
+                    "200": {"description": "OK", "content": {media:
+                        {"schema": {"type": "string", "format": "binary"}}}},
+                    "404": {"description": "Missing", "content": {"application/json":
+                        {"schema": {"type": "object",
+                            "properties": {"message": {"type": "string"}}}}}}
+                }
+            }}}
+        })
+    }
+
+    #[test]
+    fn a_wildcard_download_documents_its_required_arguments_by_name() {
+        let files = files_for(download_document("*/*"));
+        let client = file(&files, "files/client.py");
+        assert!(
+            client.contains("client.files.download(\n            id=\"id\",\n        )"),
+            "{client}"
+        );
+        // Any other binary media keeps the optional parameter's example.
+        let files = files_for(download_document("application/octet-stream"));
+        let client = file(&files, "files/client.py");
+        assert!(client.contains("fields=\"id,updated_at\""), "{client}");
+    }
+
+    #[test]
+    fn a_markdown_answer_documents_its_path_arguments() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/connectors/{id}/docs/{doc_id}": {"get": {
+                "operationId": "connectorDocsOne",
+                "tags": ["Docs"],
+                "parameters": [
+                    {"name": "id", "in": "path", "required": true, "schema": {"type": "string"}},
+                    {"name": "doc_id", "in": "path", "required": true, "schema": {"type": "string"}}
+                ],
+                "responses": {"200": {"description": "OK", "content": {"text/markdown":
+                    {"schema": {"type": "string", "format": "markdown"}}}}}
+            }}}
+        }));
+        let client = file(&files, "docs/client.py");
+        assert!(
+            client.contains(
+                "client.docs.connector_docs_one(\n            id=\"id\",\n            doc_id=\"doc_id\",\n        )"
+            ),
+            "{client}"
+        );
+        let reference = file(&files, "reference.md");
+        assert!(
+            reference.contains("    doc_id=\"doc_id\",\n"),
+            "{reference}"
+        );
+    }
+
+    #[test]
+    fn an_async_stream_is_iterated_without_await_in_the_docstring() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/events": {"get": {
+                "operationId": "getEvents",
+                "tags": ["Events"],
+                "responses": {"200": {"description": "OK", "content": {"text/event-stream":
+                    {"schema": {"type": "string"}}}}}
+            }}}
+        }));
+        let client = file(&files, "events/client.py");
+        assert!(
+            client.contains(
+                "        async def main() -> None:\n            response = client.events.get_events()\n            async for chunk in response:"
+            ),
+            "{client}"
+        );
+        assert!(
+            client.contains(
+                "        response = client.events.get_events()\n        for chunk in response:"
+            ),
+            "{client}"
+        );
+        assert!(
+            !client.contains("await client.events.get_events()"),
+            "{client}"
+        );
+    }
+
+    #[test]
+    fn a_wildcard_binary_body_is_documented_as_bytes() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/files": {"post": {
+                "operationId": "filesUpload",
+                "tags": ["Files"],
+                "requestBody": {"required": true, "content": {"*/*":
+                    {"schema": {"type": "string", "format": "binary"}}}},
+                "responses": {"200": {"description": "OK", "content": {"application/json":
+                    {"schema": {"type": "object", "properties": {"id": {"type": "string"}}}}}}}
+            }}}
+        }));
+        let reference = file(&files, "reference.md");
+        assert!(reference.contains("**request:** `bytes` "), "{reference}");
     }
 }
 
