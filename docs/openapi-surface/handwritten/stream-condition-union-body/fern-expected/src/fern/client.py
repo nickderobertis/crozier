@@ -290,7 +290,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.estimate_stream(
+            response = client.estimate_stream(
                 request="string",
             )
             async for chunk in response:

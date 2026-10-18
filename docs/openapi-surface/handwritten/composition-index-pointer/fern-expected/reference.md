@@ -38,7 +38,7 @@ client.accounts.get_account(
 <dl>
 <dd>
 
-**company_id:** `str` 
+**company_id:** `str` — Unique identifier for a company.
     
 </dd>
 </dl>
@@ -103,7 +103,7 @@ client.accounts.list_categorised_accounts(
 <dl>
 <dd>
 
-**company_id:** `str` 
+**company_id:** `str` — Unique identifier for a company.
     
 </dd>
 </dl>
@@ -161,7 +161,7 @@ client.drawings.get_drawing(
 <dl>
 <dd>
 
-**company_id:** `str` 
+**company_id:** `str` — Unique identifier for a company.
     
 </dd>
 </dl>
@@ -210,7 +210,7 @@ client.reports.get_report(...)
 <dl>
 <dd>
 
-**company_id:** `str` 
+**company_id:** `str` — Unique identifier for a company.
     
 </dd>
 </dl>
@@ -267,7 +267,7 @@ client.reports.download_report(
 <dl>
 <dd>
 
-**company_id:** `str` 
+**company_id:** `str` — Unique identifier for a company.
     
 </dd>
 </dl>

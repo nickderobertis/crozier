@@ -6,13 +6,17 @@ import typing
 from importlib import import_module
 
 if typing.TYPE_CHECKING:
+    from .client_request_error import ClientRequestError
     from .gone_error import GoneError
     from .locked_error import LockedError
+    from .server_error import ServerError
     from .service_unavailable_error import ServiceUnavailableError
     from .too_many_requests_error import TooManyRequestsError
 _dynamic_imports: typing.Dict[str, str] = {
+    "ClientRequestError": ".client_request_error",
     "GoneError": ".gone_error",
     "LockedError": ".locked_error",
+    "ServerError": ".server_error",
     "ServiceUnavailableError": ".service_unavailable_error",
     "TooManyRequestsError": ".too_many_requests_error",
 }
@@ -39,4 +43,11 @@ def __dir__():
     return sorted(lazy_attrs)
 
 
-__all__ = ["GoneError", "LockedError", "ServiceUnavailableError", "TooManyRequestsError"]
+__all__ = [
+    "ClientRequestError",
+    "GoneError",
+    "LockedError",
+    "ServerError",
+    "ServiceUnavailableError",
+    "TooManyRequestsError",
+]

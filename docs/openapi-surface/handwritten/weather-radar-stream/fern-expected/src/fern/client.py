@@ -261,7 +261,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.stream_sweep(
+            response = client.stream_sweep(
                 sector=Sector(
                     bearing=1,
                 ),

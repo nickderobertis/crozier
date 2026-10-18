@@ -1439,7 +1439,11 @@ struct TestProperty<'f> {
 }
 
 /// The `tests/xml/test_<module>.py` round-trip suite of every XML model.
-pub(super) fn test_files(pkg: &str, types: XmlTypes<'_>) -> Vec<GeneratedFile> {
+/// `first_party` says whether Fern's import sort files the SDK's own import in a
+/// section of its own (see `scaffolding_files`): always in the packaged tree, and
+/// in the flat tree only for a package named `fern`; otherwise it joins
+/// `import pytest` with no blank line.
+pub(super) fn test_files(pkg: &str, types: XmlTypes<'_>, first_party: bool) -> Vec<GeneratedFile> {
     types
         .all()
         .filter_map(|(decl, tag)| match decl {
@@ -1456,7 +1460,7 @@ pub(super) fn test_files(pkg: &str, types: XmlTypes<'_>) -> Vec<GeneratedFile> {
             let suite = TestSuite::new(obj, xml, types);
             GeneratedFile {
                 path: PathBuf::from(format!("tests/xml/test_{}.py", obj.module)),
-                contents: suite.render(&module),
+                contents: suite.render(&module, first_party),
             }
         })
         .collect()
@@ -1489,15 +1493,17 @@ impl<'a> TestSuite<'a> {
         self.fields.iter().map(describe).collect()
     }
 
-    fn render(&self, module: &str) -> String {
+    fn render(&self, module: &str, first_party: bool) -> String {
         let mut body: Vec<String> = vec![
             HEADER.to_string(),
             String::new(),
             "import pytest".to_string(),
-            String::new(),
-            format!("from {module} import {}", self.class),
-            String::new(),
         ];
+        if first_party {
+            body.push(String::new());
+        }
+        body.push(format!("from {module} import {}", self.class));
+        body.push(String::new());
         body.extend(self.round_trip_test());
         body.extend(self.unknown_content_test());
         body.extend(self.escaping_test());

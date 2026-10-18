@@ -63,11 +63,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.stream_sweep(
-        sector=Sector(
-            bearing=1,
-        ),
-    )
+    async for chunk in client.stream_sweep(...):
+        print(chunk)
 
 
 asyncio.run(main())

@@ -112,18 +112,13 @@ class FernApi:
 
         Examples
         --------
-        from fern import Course_Grill, FernApi, SteakOrder, SteakOrderStation
+        from fern import Course_Grill, FernApi
 
         client = FernApi(
             base_url="https://yourhost.com/path/to/api",
         )
         client.fire_ticket(
-            request=Course_Grill(
-                value=SteakOrder(
-                    station=SteakOrderStation.GRILL,
-                    doneness="doneness",
-                )
-            ),
+            request=Course_Grill(),
         )
         """
         _response = self._raw_client.fire_ticket(request=request, request_options=request_options)
@@ -247,7 +242,7 @@ class AsyncFernApi:
         --------
         import asyncio
 
-        from fern import AsyncFernApi, Course_Grill, SteakOrder, SteakOrderStation
+        from fern import AsyncFernApi, Course_Grill
 
         client = AsyncFernApi(
             base_url="https://yourhost.com/path/to/api",
@@ -256,12 +251,7 @@ class AsyncFernApi:
 
         async def main() -> None:
             await client.fire_ticket(
-                request=Course_Grill(
-                    value=SteakOrder(
-                        station=SteakOrderStation.GRILL,
-                        doneness="doneness",
-                    )
-                ),
+                request=Course_Grill(),
             )
 
 

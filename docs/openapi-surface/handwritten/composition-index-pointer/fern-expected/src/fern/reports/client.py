@@ -29,6 +29,7 @@ class ReportsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -48,6 +49,7 @@ class ReportsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -94,6 +96,7 @@ class AsyncReportsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.
@@ -114,6 +117,7 @@ class AsyncReportsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration. You can pass in configuration such as `chunk_size`, and more to customize the request and response.

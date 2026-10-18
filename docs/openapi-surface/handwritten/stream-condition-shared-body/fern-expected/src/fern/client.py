@@ -341,7 +341,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.plan_stream()
+            response = client.plan_stream()
             async for chunk in response:
                 yield chunk
 

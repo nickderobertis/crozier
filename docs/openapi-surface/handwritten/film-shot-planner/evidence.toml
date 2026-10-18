@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "9f2661209e9a4ecb8b02bf83737aa20ee15bab4d07fea112fd9ce16a4ca849f2"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "3714a4caccb07884f3b02a4d153ec04bf1af685eb69f2809f77408c5cf9630b7"
 
 [[covers]]
 key = "schema-type-name-inline-property"

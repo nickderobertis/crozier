@@ -504,7 +504,7 @@ client.vault.deposit_bundle(
 <dl>
 <dd>
 
-**request:** `str` 
+**request:** `bytes` 
     
 </dd>
 </dl>

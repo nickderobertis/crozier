@@ -61,9 +61,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.stream_samples(
-        balloon_id="balloonId",
-    )
+    async for chunk in client.stream_samples(...):
+        print(chunk)
 
 
 asyncio.run(main())

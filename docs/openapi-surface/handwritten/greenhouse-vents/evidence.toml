@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "395b1282126418f38a6127da8b39b0496f6db5d8f883cf2dc8e319e3b3646859"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "aecde2e06e88d90e3d87406d7e979a31437cc4dabd36d32a65a04e991d62ec90"
 
 [[covers]]
 key = "readme-endpoint-prefers-argless-non-get"

@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "8d03413cf38e2bbb3156dee650e31ba7ff605b4e75c0034941cb8e1f847b3b88"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "1380c7f2d28ffa23423e25bdfa9864389fc86be27a3653e6bfea3d189f560450"
 
 [[covers]]
 key = "media-type-event-stream-item-schema"

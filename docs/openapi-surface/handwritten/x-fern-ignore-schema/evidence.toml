@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "9c8131cba3e4865f05063c71b4eebe871a255bdd002076e4d8e988b6fe11d3ca"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "a75376de529239f037f9de5b9067e349d50adf76a14875838aaa8a712559b2c4"
 
 [[covers]]
 key = "x-fern-or-crozier-ignore"

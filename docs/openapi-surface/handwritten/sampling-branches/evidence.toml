@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "90ae3415f8e0a32b59516e88d0c938679608883889164e5f9027e724fab9c3f7"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "c40b7f875945f43097f2147f2b00b5f68b03fe0f95ac48a7d0b718656bff7f2a"
 
 [[covers]]
 key = "allof-union-branch-not-schema-overrides-property"

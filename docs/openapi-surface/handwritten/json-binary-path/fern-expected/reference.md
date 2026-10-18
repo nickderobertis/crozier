@@ -46,7 +46,7 @@ client.depository.deposit_parcel(
 <dl>
 <dd>
 
-**request:** `str` 
+**request:** `bytes` 
     
 </dd>
 </dl>

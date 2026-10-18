@@ -1722,7 +1722,11 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
             path: PathBuf::from(format!("src/{pkg}/core/xml_utilities.py")),
             contents: xml::XML_UTILITIES.to_string(),
         });
-        files.extend(xml::test_files(pkg, decl_settings.xml_types));
+        files.extend(xml::test_files(
+            pkg,
+            decl_settings.xml_types,
+            ir.layout == Layout::Packaged || pkg == "fern",
+        ));
     }
     // Fern's flat tree has no publishing identity, so its wrapper sends no
     // `SDK-Name`/`SDK-Version` headers.

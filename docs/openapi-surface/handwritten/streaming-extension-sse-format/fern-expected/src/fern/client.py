@@ -255,7 +255,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.subscribe_readings(
+            response = client.subscribe_readings(
                 sensor_id="sensorId",
             )
             async for chunk in response:

@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "81673cbaad61f49b86f7585db7cde05db5e869341788a1abc866ba8d8d975462"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "6423eaa1c0486a1b9475f11f2130fabe3d45bee9a5e3daa59543571e2f46d456"
 
 [[covers]]
 key = "union-of-two-enum-refs-alias"

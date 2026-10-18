@@ -61,9 +61,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.follow_build_log(
-        build_id="buildId",
-    )
+    async for chunk in client.follow_build_log(...):
+        print(chunk)
 
 
 asyncio.run(main())

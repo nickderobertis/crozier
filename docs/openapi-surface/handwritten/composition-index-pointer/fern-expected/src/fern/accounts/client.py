@@ -31,6 +31,7 @@ class AccountsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         account_id : str
 
@@ -64,6 +65,7 @@ class AccountsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -110,6 +112,7 @@ class AsyncAccountsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         account_id : str
 
@@ -151,6 +154,7 @@ class AsyncAccountsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

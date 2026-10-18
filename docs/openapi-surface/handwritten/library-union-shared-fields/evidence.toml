@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "d101c1976c64c8eecfabc8ae39e07f50a81b65fa7c5cb2ddca83154b921312de"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "0082ee0223a76709800831a72411437c6c0013f8eb49158f769ac5db90751b5d"
 
 [[covers]]
 key = "oneof-discriminated-union"

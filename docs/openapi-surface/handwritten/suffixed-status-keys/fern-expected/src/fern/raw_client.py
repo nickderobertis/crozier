@@ -10,8 +10,10 @@ from .core.jsonable_encoder import encode_path_param
 from .core.parse_error import ParsingError
 from .core.pydantic_utilities import parse_obj_as
 from .core.request_options import RequestOptions
+from .errors.client_request_error import ClientRequestError
 from .errors.gone_error import GoneError
 from .errors.locked_error import LockedError
+from .errors.server_error import ServerError
 from .errors.service_unavailable_error import ServiceUnavailableError
 from .errors.too_many_requests_error import TooManyRequestsError
 from .types.reservation import Reservation
@@ -77,6 +79,18 @@ class RawFernApi:
                         ),
                     ),
                 )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -138,6 +152,18 @@ class RawFernApi:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:
@@ -206,6 +232,18 @@ class AsyncRawFernApi:
                         ),
                     ),
                 )
+            if 400 <= _response.status_code < 500:
+                raise ClientRequestError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
+                )
             _response_json = _response.json()
         except JSONDecodeError:
             raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response.text)
@@ -267,6 +305,18 @@ class AsyncRawFernApi:
                             object_=_response.json(),
                         ),
                     ),
+                )
+            if 500 <= _response.status_code < 600:
+                raise ServerError(
+                    headers=dict(_response.headers),
+                    body=typing.cast(
+                        typing.Any,
+                        parse_obj_as(
+                            type_=typing.Any,
+                            object_=_response.json(),
+                        ),
+                    ),
+                    status_code=_response.status_code,
                 )
             _response_json = _response.json()
         except JSONDecodeError:

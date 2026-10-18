@@ -41,9 +41,7 @@ client = FernApi(
 )
 
 client.fire_ticket(
-    request=Course_Grill(
-        grill=,
-    ),
+    request=Course_Grill(),
 )
 ```
 
@@ -63,9 +61,7 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.fire_ticket(
-        request=Course_Grill(
-            grill=,
-        ),
+        request=Course_Grill(),
     )
 
 
