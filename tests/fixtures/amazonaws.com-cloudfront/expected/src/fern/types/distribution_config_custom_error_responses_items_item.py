@@ -1,11 +1,27 @@
 
 
+from __future__ import annotations
+
 import typing
 
 import pydantic
 import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
+from ..core.xml_utilities import (
+    XmlChild,
+    XmlComment,
+    XmlContent,
+    XmlElement,
+    XmlNode,
+    build_xml_model,
+    extra_xml_attributes,
+    order_xml_content,
+    parse_xml,
+    serialize_xml_element,
+    xml_child,
+    xml_content,
+)
 
 
 class DistributionConfigCustomErrorResponsesItemsItem(UniversalBaseModel):
@@ -61,6 +77,92 @@ class DistributionConfigCustomErrorResponsesItemsItem(UniversalBaseModel):
     <p>The minimum amount of time, in seconds, that you want CloudFront to cache the HTTP status code specified in <code>ErrorCode</code>. When this time period has elapsed, CloudFront queries your origin to see whether the problem that caused the error has been resolved and the requested object is now available.</p> <p>If you don't want to specify a value, include an empty element, <code>&lt;ErrorCachingMinTTL&gt;</code>, in the XML document.</p> <p>For more information, see <a href="http://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/custom-error-pages.html">Customizing Error Responses</a> in the <i>Amazon CloudFront Developer Guide</i>.</p>
     """
 
+    _content: typing.List[XmlContent] = pydantic.PrivateAttr(default_factory=list)
+    _comments_before: typing.List[XmlComment] = pydantic.PrivateAttr(default_factory=list)
+    _comments_after: typing.List[XmlComment] = pydantic.PrivateAttr(default_factory=list)
+
+    def to_xml(self, *, xml_declaration: bool = True) -> str:
+        """
+        Serializes this object as a `<CustomErrorResponse>` XML element, prefixed with the XML declaration unless `xml_declaration` is False.
+        """
+        return serialize_xml_element(
+            name="CustomErrorResponse",
+            attributes=[
+                *extra_xml_attributes(self),
+            ],
+            children=[
+                XmlChild(name="ErrorCode", value=self.error_code),
+                XmlChild(name="ResponsePagePath", value=self.response_page_path),
+                XmlChild(name="ResponseCode", value=self.response_code),
+                XmlChild(name="ErrorCachingMinTTL", value=self.error_caching_min_ttl),
+            ],
+            content=order_xml_content(self._content),
+            comments_before=self._comments_before,
+            comments_after=self._comments_after,
+            xml_declaration=xml_declaration,
+        )
+
+    def __str__(self) -> str:
+        return self.to_xml()
+
+    @classmethod
+    def from_xml(cls, xml: typing.Union[str, XmlNode]) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Parses a `<CustomErrorResponse>` XML element from a document string or a parsed node.
+
+        Raises `ValueError` for malformed XML, an unexpected root element or invalid values. Unknown attributes are kept as extra attributes; text segments and child elements (declared or not) are preserved in document order.
+        """
+        node = parse_xml(xml, "CustomErrorResponse")
+        content = xml_content(node, {}, skip={"ErrorCode", "ResponsePagePath", "ResponseCode", "ErrorCachingMinTTL"})
+        model = build_xml_model(
+            cls,
+            dict(
+                error_code=xml_child(node, {"ErrorCode": str}),
+                response_page_path=xml_child(node, {"ResponsePagePath": str}),
+                response_code=xml_child(node, {"ResponseCode": str}),
+                error_caching_min_ttl=xml_child(node, {"ErrorCachingMinTTL": str}),
+            ),
+            node,
+            (),
+        )
+        model._content[:] = content
+        return model
+
+    def add_child(self, child: XmlElement) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Appends an arbitrary child element (one the schema does not define) after the content added so far and returns this element.
+        """
+        self._content.append(child)
+        return self
+
+    def add_text(self, text: str) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Appends a text segment after the children added so far and returns this element, so text and child elements can be interleaved.
+        """
+        self._content.append(text)
+        return self
+
+    def comment(self, text: str) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Appends an XML comment (`<!--text-->`) inside this element, after the content added so far, and returns this element.
+        """
+        self._content.append(XmlComment(text))
+        return self
+
+    def comment_before(self, text: str) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Adds an XML comment rendered immediately before this element (as a sibling in its parent, or before the root element) and returns this element.
+        """
+        self._comments_before.append(XmlComment(text))
+        return self
+
+    def comment_after(self, text: str) -> DistributionConfigCustomErrorResponsesItemsItem:
+        """
+        Adds an XML comment rendered immediately after this element (as a sibling in its parent, or after the root element) and returns this element.
+        """
+        self._comments_after.append(XmlComment(text))
+        return self
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)
     else:
@@ -68,4 +170,5 @@ class DistributionConfigCustomErrorResponsesItemsItem(UniversalBaseModel):
         class Config:
             frozen = True
             smart_union = True
+            copy_on_model_validation = "none"
             extra = pydantic.Extra.allow

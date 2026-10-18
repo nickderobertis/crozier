@@ -9,7 +9,7 @@ from .municipality_properties import MunicipalityProperties
 
 
 class MunicipalityFeature(UniversalBaseModel):
-    id: typing.Optional[str] = pydantic.Field(default=None)
+    id: str = pydantic.Field()
     """
     Identifier of the municipality in the municipality registry
     """
