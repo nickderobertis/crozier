@@ -24706,6 +24706,61 @@ mod tests {
         assert_eq!(restated.bases, ["Feature"]);
         assert!(restated.fields.is_empty());
     }
+
+    #[test]
+    fn a_parameter_without_a_description_is_documented_by_its_inline_schema() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": { "title": "Shelf", "version": "1" },
+            "paths": { "/shelves/{kind}": { "get": {
+                "operationId": "listShelves",
+                "parameters": [
+                    { "name": "kind", "in": "path", "required": true,
+                      "schema": { "type": "string", "description": "search or all" } },
+                    { "name": "ids", "in": "query", "schema": {
+                        "anyOf": [ { "type": "string" },
+                                   { "type": "array", "items": { "type": "string" } } ],
+                        "description": "One ID or many." } },
+                    { "name": "blank", "in": "query", "description": "",
+                      "schema": { "type": "string", "description": "Never shown." } },
+                    { "name": "label", "in": "query",
+                      "schema": { "$ref": "#/components/schemas/Label" } },
+                    { "name": "X-Trace", "in": "header",
+                      "schema": { "type": "string", "description": "Trace token." } }
+                ],
+                "responses": { "204": { "description": "Listed" } }
+            } },
+            // A second operation keeps `X-Trace` a per-call header rather than a
+            // client-wide one.
+            "/health": { "get": {
+                "operationId": "health",
+                "responses": { "204": { "description": "Healthy" } }
+            } } },
+            "components": { "schemas": {
+                "Label": { "type": "string", "description": "A label." }
+            } }
+        }));
+        let endpoint = &ir.endpoints[0];
+        assert_eq!(
+            endpoint.path_params[0].docstring.as_deref(),
+            Some("search or all")
+        );
+        let query_doc = |wire: &str| {
+            endpoint
+                .query_params
+                .iter()
+                .find(|param| param.wire_name == wire)
+                .and_then(|param| param.docstring.as_deref())
+        };
+        assert_eq!(query_doc("ids"), Some("One ID or many."));
+        // The parameter's own empty description stands, and a `$ref` lends none.
+        assert_eq!(query_doc("blank"), Some(""));
+        assert_eq!(query_doc("label"), None);
+        assert_eq!(
+            endpoint.header_params[0].docstring.as_deref(),
+            Some("Trace token.")
+        );
+    }
 }
 
 #[cfg(test)]
@@ -24878,60 +24933,5 @@ mod xml_encoding_tests {
         // An inline `allOf` member that is no XML element itself contributes a
         // plain child element, whatever its property says.
         assert_eq!(by_wire["mixed"], element(None));
-    }
-
-    #[test]
-    fn a_parameter_without_a_description_is_documented_by_its_inline_schema() {
-        let ir = build_document(serde_json::json!({
-            "openapi": "3.0.3",
-            "info": { "title": "Shelf", "version": "1" },
-            "paths": { "/shelves/{kind}": { "get": {
-                "operationId": "listShelves",
-                "parameters": [
-                    { "name": "kind", "in": "path", "required": true,
-                      "schema": { "type": "string", "description": "search or all" } },
-                    { "name": "ids", "in": "query", "schema": {
-                        "anyOf": [ { "type": "string" },
-                                   { "type": "array", "items": { "type": "string" } } ],
-                        "description": "One ID or many." } },
-                    { "name": "blank", "in": "query", "description": "",
-                      "schema": { "type": "string", "description": "Never shown." } },
-                    { "name": "label", "in": "query",
-                      "schema": { "$ref": "#/components/schemas/Label" } },
-                    { "name": "X-Trace", "in": "header",
-                      "schema": { "type": "string", "description": "Trace token." } }
-                ],
-                "responses": { "204": { "description": "Listed" } }
-            } },
-            // A second operation keeps `X-Trace` a per-call header rather than a
-            // client-wide one.
-            "/health": { "get": {
-                "operationId": "health",
-                "responses": { "204": { "description": "Healthy" } }
-            } } },
-            "components": { "schemas": {
-                "Label": { "type": "string", "description": "A label." }
-            } }
-        }));
-        let endpoint = &ir.endpoints[0];
-        assert_eq!(
-            endpoint.path_params[0].docstring.as_deref(),
-            Some("search or all")
-        );
-        let query_doc = |wire: &str| {
-            endpoint
-                .query_params
-                .iter()
-                .find(|param| param.wire_name == wire)
-                .and_then(|param| param.docstring.as_deref())
-        };
-        assert_eq!(query_doc("ids"), Some("One ID or many."));
-        // The parameter's own empty description stands, and a `$ref` lends none.
-        assert_eq!(query_doc("blank"), Some(""));
-        assert_eq!(query_doc("label"), None);
-        assert_eq!(
-            endpoint.header_params[0].docstring.as_deref(),
-            Some("Trace token.")
-        );
     }
 }
