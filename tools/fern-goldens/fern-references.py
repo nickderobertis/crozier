@@ -201,6 +201,18 @@ class FernCommand(NamedTuple):
     log: str
 
 
+# Spellings YAML reads as a boolean or null rather than a string, refused as a
+# class or audience name because generators.yml writes both as plain scalars —
+# exactly the set `generate-fern-fixture.sh`'s `yaml_keyword` refuses, so the two
+# workspaces stay byte-identical (a test reconciles the lists).
+YAML_KEYWORDS = frozenset(("true", "false", "yes", "no", "on", "off", "y", "n", "null"))
+
+
+def plain_yaml_name(name: object, pattern: str) -> bool:
+    """Whether `name` is a string matching `pattern` that YAML reads back as that string."""
+    return isinstance(name, str) and re.fullmatch(pattern, name) is not None and name.lower() not in YAML_KEYWORDS
+
+
 def fern(argv: list[str], workspace: Path, env: dict[str, str]) -> FernCommand:
     if shutil.which(argv[0]) is None:
         raise ReferenceError(f"`{argv[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI)")
@@ -235,16 +247,12 @@ def run_fern(
             (workspace / "fern.config.json").write_text(
                 json.dumps({"organization": organization, "version": pair.cli}) + "\n", encoding="utf-8"
             )
-            # Every name is written as a quoted scalar, so YAML reads it as the
-            # string it is (an audience `null` or a class `True` included).
-            audiences_block = "".join(f"      - {json.dumps(name)}\n" for name in audiences)
+            audiences_block = "".join(f"      - {name}\n" for name in audiences)
             pydantic_lines = ("            enum_type: python_enums\n" if enum_type == "python-enums" else "") + (
                 f"            extra_fields: {extra_fields}\n" if extra_fields else ""
             )
             pydantic = f"          pydantic_config:\n{pydantic_lines}" if pydantic_lines else ""
-            client_class = (
-                f"          client_class_name: {json.dumps(client_class_name)}\n" if client_class_name else ""
-            )
+            client_class = f"          client_class_name: {client_class_name}\n" if client_class_name else ""
             (workspace / "generators.yml").write_text(
                 "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n"
                 + (f"    audiences:\n{audiences_block}" if audiences else "")
@@ -348,11 +356,11 @@ def recorded_generator_config(tree: Path) -> GeneratorSettings:
     client_class_name = config.get("client_class_name")
     extra_fields = pydantic.get("extra_fields")
     if client_class_name is not None and not (
-        isinstance(client_class_name, str)
-        and client_class_name.isidentifier()
-        and not keyword.iskeyword(client_class_name)
+        plain_yaml_name(client_class_name, r"[A-Za-z_][A-Za-z0-9_]*") and not keyword.iskeyword(client_class_name)
     ):
-        raise ReferenceError(f"{rel(path)}: client_class_name {client_class_name!r} is no Python class name")
+        raise ReferenceError(
+            f"{rel(path)}: client_class_name {client_class_name!r} is no Python class name YAML reads as a string"
+        )
     if extra_fields is not None and extra_fields not in EXTRA_FIELDS:
         raise ReferenceError(f"{rel(path)}: extra_fields {extra_fields!r} is none of {', '.join(EXTRA_FIELDS)}")
     return GeneratorSettings(client_class_name=client_class_name, extra_fields=extra_fields)
@@ -596,9 +604,12 @@ def generate_handwritten(item: str, pair: Pair) -> None:
     except tomllib.TOMLDecodeError as error:
         raise ReferenceError(f"cannot read {rel(evidence)} ({error}); repair its TOML") from None
     if not isinstance(declared, list) or not all(
-        isinstance(name, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9._-]*", name) for name in declared
+        plain_yaml_name(name, r"[A-Za-z][A-Za-z0-9._-]*") for name in declared
     ):
-        raise ReferenceError(f"{rel(evidence)}: audiences must be a list of audience labels, not {declared!r}")
+        raise ReferenceError(
+            f"{rel(evidence)}: audiences must be a list of audience labels, none of {sorted(YAML_KEYWORDS)}, "
+            f"not {declared!r}"
+        )
     audiences = tuple(declared)
     check_evidence(evidence)
     # A fixture generated under a non-default setting keeps it: the committed

@@ -14,6 +14,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -81,7 +82,7 @@ if "enum_type: python_enums" in generators:
     (package / "core" / "enum.py").write_text("ENUM = 1\n")
 else:
     (package / "literal.py").write_text("LITERAL = 1\n")
-for audience in re.findall(r'^      - "(\w+)"$', generators, re.M):
+for audience in re.findall(r"^      - (\w+)$", generators, re.M):
     (package / f"audience_{audience}.py").write_text("AUDIENCE = 1\n")
 for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
     # llmlint: ignore[async_typed_clients_at_boundaries] This stands in for Fern's own resolver fetching a remote $ref, inside an executable stub script; it reads one loopback URL the tool under test serves and has no client boundary to type.
@@ -237,28 +238,44 @@ class FernReferencesTests(unittest.TestCase):
         result = self.run_tool("generate", "handwritten", "delta")
         self.assertEqual(result.returncode, 0, result.stderr)
         (call,) = self.calls()
-        self.assertIn('client_class_name: "FernApi"', call["generators"])
+        self.assertIn("client_class_name: FernApi", call["generators"])
         self.assertIn("enum_type: python_enums\n            extra_fields: allow", call["generators"])
 
-    def test_a_class_or_audience_name_yaml_reserves_is_written_as_the_string_it_is(self) -> None:
-        reserved = EVIDENCE.format("0" * 64).replace(
-            "\n[[covers]]", 'audiences = ["null", "true", "Off"]\n\n[[covers]]'
-        )
-        self.handwritten("omicron", evidence=reserved)
-        self.write(
-            "docs/openapi-surface/handwritten/omicron/fern-expected/.fern/metadata.json",
-            json.dumps({"generatorConfig": {"client_class_name": "null"}}),
-        )
-        result = self.run_tool("generate", "handwritten", "omicron")
-        self.assertEqual(result.returncode, 0, result.stderr)
-        (call,) = self.calls()
-        self.assertIn('client_class_name: "null"\n', call["generators"])
-        self.assertIn('    audiences:\n      - "null"\n      - "true"\n      - "Off"\n', call["generators"])
-        tree = self.root / "docs/openapi-surface/handwritten/omicron/fern-expected/src/fern"
-        self.assertEqual(
-            ["audience_Off.py", "audience_null.py", "audience_true.py"],
-            sorted(path.name for path in tree.glob("audience_*.py")),
-        )
+    def test_a_class_or_audience_name_yaml_reads_as_no_string_is_refused_before_fern_runs(self) -> None:
+        for label, audiences, metadata, message in (
+            ("audience null", '["public", "null"]', None, "audiences must be a list of audience labels"),
+            ("audience Off", '["Off"]', None, "audiences must be a list of audience labels"),
+            ("class True", "[]", {"client_class_name": "True"}, "is no Python class name YAML reads as a string"),
+            ("class yes", "[]", {"client_class_name": "yes"}, "is no Python class name YAML reads as a string"),
+        ):
+            with self.subTest(label):
+                evidence = EVIDENCE.format("0" * 64).replace("\n[[covers]]", f"audiences = {audiences}\n\n[[covers]]")
+                fixture = self.handwritten("omicron", evidence=evidence)
+                (fixture / "fern-expected/.fern/metadata.json").unlink(missing_ok=True)
+                if metadata is not None:
+                    self.write(
+                        "docs/openapi-surface/handwritten/omicron/fern-expected/.fern/metadata.json",
+                        json.dumps({"generatorConfig": metadata}),
+                    )
+                result = self.run_tool("generate", "handwritten", "omicron")
+                self.assertEqual(result.returncode, 1, result.stderr)
+                self.assertIn(message, result.stderr)
+                self.assertEqual(self.calls(), [])
+                self.assertTrue((fixture / "fern-expected/src/fern/stale.py").is_file())
+
+    def test_the_reserved_names_are_the_fixture_script_s(self) -> None:
+        """The workspace both scripts write must be the same, so they refuse the same spellings."""
+        script = (REPO / "tools/fern-goldens/generate-fern-fixture.sh").read_text(encoding="utf-8")
+        body = re.search(r"yaml_keyword\(\) \{.*?\n    ([a-z|]+)\) return 0 ;;", script, re.S)
+        assert body is not None, "generate-fern-fixture.sh's yaml_keyword lost its case list"
+        spec = importlib.util.spec_from_file_location("fern_references_keywords", TOOL)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        # Its dataclasses resolve their module by name while it loads.
+        sys.modules[spec.name] = module
+        self.addCleanup(sys.modules.pop, spec.name, None)
+        spec.loader.exec_module(module)
+        self.assertEqual(set(body.group(1).split("|")), set(module.YAML_KEYWORDS))
 
     def test_an_explicit_version_overrides_the_certified_pair(self) -> None:
         self.handwritten("alpha")
@@ -893,7 +910,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertNotEqual(digests["holds"], "0" * 64)
         self.assertEqual(digests["broken"], "0" * 64)
         generators = self.calls()[0]["generators"]
-        self.assertIn('client_class_name: "FernApi"', generators)
+        self.assertIn("client_class_name: FernApi", generators)
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
 
