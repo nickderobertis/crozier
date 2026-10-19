@@ -20,6 +20,8 @@ here through the script that owns one item of it:
                     refusal record, with MANIFEST.tsv's digest
   authored-probes   docs/openapi-surface/authored-probes/<case>/ fern.log and
                     fern-expected/
+  departure-evidence  docs/departures/evidence/<id>/fern-reference/, a departure
+                    note's own Fern tree, under its fern-reference.json settings
   refusals          docs/fern-refusals/<class>/fern-refusal.txt and
                     findings.tsv through `fern-refusals.py probe|finding --jobs 1`,
                     and each `<class>/evidence/<stem>.pinned-fern.log` beside its
@@ -74,7 +76,17 @@ PINNED_LOG = ".pinned-fern.log"
 DOCUMENT_SUFFIXES = (".yml", ".yaml", ".json")
 REMOTE_URL = "@REMOTE_URL@"
 LOGS = Path(".local/fern-references")
-FAMILIES = ("corpus", "overlays", "handwritten", "measurements", "probes", "authored-probes", "refusals")
+FAMILIES = (
+    "corpus",
+    "overlays",
+    "handwritten",
+    "measurements",
+    "probes",
+    "authored-probes",
+    "refusals",
+    "departure-evidence",
+)
+DEPARTURE_EVIDENCE = Path("docs/departures/evidence")
 OVERLAY_KINDS = {"expected-literals": ("--enum-type", "literals"), "expected-default-max-retries": None}
 
 
@@ -174,6 +186,7 @@ def run_fern(
     check: bool = False,
     client_class_name: str | None = None,
     extra_fields: str | None = None,
+    organization: str = "fern",
 ) -> Generator[FernRun]:
     """`fern generate` (after `fern check` when asked) over one document in the
     workspace `generate-fern-fixture.sh` scaffolds, yielding the raw output tree."""
@@ -187,7 +200,7 @@ def run_fern(
                 text.replace(REMOTE_URL, url) if url else text, encoding="utf-8"
             )
             (workspace / "fern.config.json").write_text(
-                json.dumps({"organization": "fern", "version": pair.cli}) + "\n", encoding="utf-8"
+                json.dumps({"organization": organization, "version": pair.cli}) + "\n", encoding="utf-8"
             )
             audiences_block = "".join(f"      - {name}\n" for name in audiences)
             pydantic_lines = ("            enum_type: python_enums\n" if enum_type == "python-enums" else "") + (
@@ -721,6 +734,34 @@ def generate_refusal(item: str, pair: Pair) -> None:
         run_script(["python3", tool, "probe", "--jobs", "1", item], logs / f"probe.{item}.log", pair)
 
 
+def list_departure_evidence() -> list[str]:
+    return sorted(path.parent.name for path in (ROOT / DEPARTURE_EVIDENCE).glob("*/fern-reference.json"))
+
+
+def generate_departure_evidence(item: str, pair: Pair) -> None:
+    """A departure's evidence tree: Fern's output for the note's own document,
+    under the settings its `fern-reference.json` records."""
+    case = ROOT / DEPARTURE_EVIDENCE / item
+    settings_path = case / "fern-reference.json"
+    if not settings_path.is_file():
+        raise ReferenceError(f"{item} has no fern-reference.json; `list departure-evidence` names the family")
+    settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    run_kwargs = {
+        "enum_type": settings.get("enum_type", "python-enums"),
+        "layout": settings.get("layout", "packaged"),
+        "organization": settings.get("organization", "fern"),
+    }
+    with run_fern(case / "openapi.yml", pair, **run_kwargs) as run:
+        if run.generate_exit != "0" or run.tree is None:
+            raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
+        stage = Path(tempfile.mkdtemp(prefix=".fern-references.", dir=case))
+        try:
+            strip_into(run.tree, stage / "fern-reference")
+            install(stage / "fern-reference", case / "fern-reference")
+        finally:
+            shutil.rmtree(stage, ignore_errors=True)
+
+
 FAMILY: dict[str, tuple[Callable[[], list[str]], Callable[[str, Pair], None]]] = {
     "corpus": (list_corpus, generate_corpus),
     "overlays": (list_overlays, generate_overlay),
@@ -729,6 +770,7 @@ FAMILY: dict[str, tuple[Callable[[], list[str]], Callable[[str, Pair], None]]] =
     "probes": (list_probes, generate_probe),
     "authored-probes": (list_authored, generate_authored),
     "refusals": (list_refusals, generate_refusal),
+    "departure-evidence": (list_departure_evidence, generate_departure_evidence),
 }
 
 

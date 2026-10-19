@@ -287,6 +287,26 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
 
+    def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
+        self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/departures/evidence/casing/fern-reference.json",
+            json.dumps({"layout": "flat", "organization": "LanternHarbor"}),
+        )
+        self.write("docs/departures/evidence/casing/fern-reference/stale.py", "STALE = 1\n")
+        self.write("docs/departures/evidence/notree.md", "prose\n")
+        self.assertEqual(self.run_tool("list", "departure-evidence").stdout, "casing\n")
+
+        result = self.run_tool("generate", "departure-evidence")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        tree = self.root / "docs/departures/evidence/casing/fern-reference"
+        self.assertTrue((tree / "client.py").is_file())
+        self.assertFalse((tree / "stale.py").exists())
+        (call,) = self.calls()
+        self.assertEqual(call["config"], {"organization": "LanternHarbor", "version": CLI})
+        self.assertNotIn("--preview", call["argv"])
+
     def manifest(self, *rows: str) -> None:
         self.write(
             "docs/openapi-surface/probe-expected/MANIFEST.tsv",

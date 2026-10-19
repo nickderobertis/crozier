@@ -372,6 +372,7 @@ just fern-references <family> --version V --cli-version C [<item>...]   # anothe
 | `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a hand-written fixture's literals tree is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
 | `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
 | `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
+| `departure-evidence` | `docs/departures/evidence/<id>/fern-reference/`, a departure note's own Fern tree, under the settings its `fern-reference.json` records | the probe workspace below |
 | `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |
 
 The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
