@@ -2,6 +2,12 @@
   "cliVersion": "5.163.1",
   "generatorName": "fernapi/fern-python-sdk",
   "generatorVersion": "5.41.3",
+  "generatorConfig": {
+    "client_class_name": "FernApi",
+    "pydantic_config": {
+      "extra_fields": "allow"
+    }
+  },
   "invokedBy": "ci",
   "ciProvider": "github"
 }
