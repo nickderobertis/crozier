@@ -2895,16 +2895,6 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         }
     }
 
-    // Fern's flat tree is its token-less local run, which writes the pagination
-    // runtime and its exports but returns each paginated method's page model
-    // rather than a pager: the operation keeps only the mark that it declared a
-    // contract.
-    if config.layout == crate::settings::Layout::Flat {
-        for ep in &mut endpoints {
-            ep.extensions.pagination_declared = ep.pagination.take().is_some();
-        }
-    }
-
     // A literal enum is a plain string at runtime: Fern serializes an enum
     // header with `str(..)` rather than `.value`, and examples an enum value as
     // its string rather than a member access.
@@ -20116,6 +20106,38 @@ mod tests {
             declaration,
             TypeDecl::DiscriminatedUnion(union) if union.name == "MessagesResponseItem"
         )));
+    }
+
+    /// Fern's flat tree pages a paginated operation as its packaged tree does
+    /// (`beacon-registry-pages-flat`, `crane-hire-cursor-flat`,
+    /// `ledger-records-offset-flat`; measured at Fern CLI 5.163.1 with
+    /// fern-python-sdk 5.41.3).
+    #[test]
+    fn the_flat_layout_keeps_an_operations_pagination() {
+        let doc = crate::openapi::load(
+            &std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("docs/openapi-surface/handwritten/beacon-registry-pages/openapi.yml"),
+        )
+        .unwrap();
+        let mut config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Beacons",
+        )
+        .unwrap();
+        config.layout = crate::settings::Layout::Flat;
+        let ir = super::build(&doc, &config);
+        let endpoint = ir
+            .endpoints
+            .iter()
+            .find(|endpoint| endpoint.method_name == "list_beacons")
+            .expect("the paginated operation is an endpoint");
+        assert!(endpoint.pagination.is_some());
+        assert!(!endpoint.extensions.pagination_declared);
     }
 
     #[test]
