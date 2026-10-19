@@ -20998,6 +20998,88 @@ fn sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
     );
 }
 
+/// Each generated `tests/xml` module's outcomes for an SDK tree, run under the
+/// SDK's own pins: `(test id, PASSED|FAILED)`, sorted.
+fn xml_suite_outcomes(py: &Path, sdk: &Path) -> Vec<(String, String)> {
+    let output = std::process::Command::new(py)
+        .args([
+            "-m",
+            "pytest",
+            "-q",
+            "-rA",
+            "-p",
+            "no:cacheprovider",
+            "tests/xml",
+        ])
+        .current_dir(sdk)
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the SDK's generated XML suite");
+    let report = String::from_utf8_lossy(&output.stdout);
+    let mut outcomes: Vec<(String, String)> = report
+        .lines()
+        .filter_map(|line| {
+            let (outcome, rest) = line.split_once(' ')?;
+            matches!(outcome, "PASSED" | "FAILED").then(|| {
+                (
+                    rest.split(" - ").next().unwrap_or(rest).to_string(),
+                    outcome.to_string(),
+                )
+            })
+        })
+        .collect();
+    outcomes.sort();
+    assert!(
+        !outcomes.is_empty(),
+        "the XML suite under {} ran no test:\n{report}{}",
+        sdk.display(),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    outcomes
+}
+
+/// The XML models crozier generates behave at run time as Fern's do: over
+/// corpus row `swagger-petstore`, whose models declare `xml` objects, each test
+/// of the generated `tests/xml` suite — round trips, unknown attributes and
+/// children kept, a wrong root and malformed XML refused — has the outcome it
+/// has in Fern's committed golden, under exactly the dependencies the SDK's
+/// `pyproject.toml` declares. Fern's own suite fails the round trip of a model
+/// whose required child its sample leaves out (`docs/matching.md`'s *XML
+/// models*), and crozier matches that too.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_generated_xml_models_behave_as_fern_s_own() {
+    let spec = corpus_spec("swagger-petstore").expect("the committed swagger-petstore source");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the XML suite needs the SDK's Python env: {reason}"));
+    let crozier = xml_suite_outcomes(&py, &sdk);
+    let fern = xml_suite_outcomes(&py, &fixture_dir("swagger-petstore").join("expected"));
+    assert_eq!(
+        crozier, fern,
+        "crozier's XML suite outcomes differ from Fern's"
+    );
+    assert!(
+        crozier.iter().any(|(_, outcome)| outcome == "PASSED"),
+        "no generated XML test passes: {crozier:?}"
+    );
+}
+
 /// The pyright a consumer's editor runs, pinned with its own Node.js so the
 /// journey needs no system `node`.
 const PYRIGHT_REQUIREMENT: &str = "pyright[nodejs]==1.1.414";
