@@ -16,7 +16,9 @@ here through the script that owns one item of it:
   measurements      docs/fern-measurements/<group>/<case>/fern-expected/, or
                     the case's Contract A fern-refusal.txt where Fern refuses
                     it, each case's document and setting declared in
-                    docs/fern-measurements/cases.tsv
+                    docs/fern-measurements/cases.tsv; a `<stem>.fern.log`
+                    beside its `<stem>.openapi.*` document; and a case's
+                    pinned run its measurement.json records
   probes            docs/openapi-surface/probe-expected/<name>/ or its Contract A
                     refusal record, with MANIFEST.tsv's digest
   authored-probes   docs/openapi-surface/authored-probes/<case>/ fern.log and
@@ -517,13 +519,87 @@ def parameter_literal_cases() -> list[str]:
     return sorted(json.loads((ROOT / PARAMETER_LITERALS / "certified-trees.json").read_text(encoding="utf-8")))
 
 
+REFUSAL_LOG = ".fern.log"
+PINNED_RUN = "measurement.json"
+
+
+def refusal_logs() -> dict[str, tuple[Path, Path]]:
+    """`<group>/<case>/<stem>` -> (its `<stem>.fern.log`, the `<stem>.openapi.*`
+    document beside it): a measurement whose committed reference is Fern's
+    refusal of that document, as Fern printed it."""
+    found = {}
+    for log in sorted((ROOT / MEASUREMENTS).glob(f"*/*/*{REFUSAL_LOG}")):
+        stem = log.name[: -len(REFUSAL_LOG)]
+        document = next(
+            (
+                log.with_name(f"{stem}.openapi{suffix}")
+                for suffix in DOCUMENT_SUFFIXES
+                if log.with_name(f"{stem}.openapi{suffix}").is_file()
+            ),
+            None,
+        )
+        if document is not None:
+            found[rel(log.parent / stem)[len(str(MEASUREMENTS)) + 1 :]] = (log, document)
+    return found
+
+
+def pinned_runs() -> dict[str, Path]:
+    """`<case>` -> its directory: a measurement recording one pinned run over its
+    own probe in `measurement.json`, with the run's log and Fern's raw client."""
+    return {
+        rel(record.parent)[len(str(MEASUREMENTS)) + 1 :]: record.parent
+        for record in sorted((ROOT / MEASUREMENTS).glob(f"*/{PINNED_RUN}"))
+        if "probe" in json.loads(record.read_text(encoding="utf-8"))
+    }
+
+
 def list_measurements() -> list[str]:
     extra = (
         [f"parameter-literals/{case}" for case in parameter_literal_cases()]
         if (ROOT / PARAMETER_LITERALS / "certified-trees.json").is_file()
         else []
     )
-    return sorted([*cases(), *extra])
+    return sorted([*cases(), *extra, *refusal_logs(), *pinned_runs()])
+
+
+def remeasure_refusal_log(item: str, log: Path, document: Path, pair: Pair) -> None:
+    """Rewrite a refusal measurement's log at `pair`; fail where Fern now generates."""
+    with run_fern(document, pair, check=True) as run:
+        log.write_text(fern_log(pair, run), encoding="utf-8", newline="\n")
+        if run.generate_exit == "0" and run.tree is not None:
+            raise ReferenceError(
+                f"Fern now generates {item}; its log is written, so restate the evidence that cites the refusal"
+            )
+
+
+def remeasure_pinned_run(case: Path, pair: Pair) -> None:
+    """Re-take a pinned run over the case's probe: its log, Fern's raw
+    `src/fern/raw_client.py` (kept as text, bytes unedited) and the record of
+    both exits and each log's digest."""
+    record_path = case / PINNED_RUN
+    record = json.loads(record_path.read_text(encoding="utf-8"))
+    probe = case / record["probe"]
+    with run_fern(probe, pair, check=True) as run:
+        if run.generate_exit != "0" or run.tree is None:
+            raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
+        (case / "fern.log").write_text(fern_log(pair, run), encoding="utf-8", newline="\n")
+        shutil.copyfile(run.tree / "src" / "fern" / "raw_client.py", case / "fern-raw_client.py.txt")
+        python_files = sum(1 for path in run.tree.rglob("*.py") if path.is_file())
+        record.update(
+            {
+                "check_diagnostic": first_diagnostic(run.check_log) or "All checks passed",
+                "check_exit": run.check_exit,
+                "check_log_sha256": hashlib.sha256(run.check_log.encode("utf-8")).hexdigest(),
+                "fern_cli": pair.cli,
+                "generate_exit": run.generate_exit,
+                "generate_log_sha256": hashlib.sha256(run.generate_log.encode("utf-8")).hexdigest(),
+                "generate_python_files": python_files,
+                "generator": pair.generator,
+                "sha256": hashlib.sha256(probe.read_bytes()).hexdigest(),
+            }
+        )
+        record.pop("generate_diagnostic", None)
+        record_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
 
 
 def generate_parameter_literal(case: str, pair: Pair) -> None:
@@ -598,6 +674,12 @@ def refused_measurement(item: str, row: dict[str, str], record: Path, pair: Pair
 def generate_measurement(item: str, pair: Pair) -> None:
     if item.startswith("parameter-literals/"):
         generate_parameter_literal(item.removeprefix("parameter-literals/"), pair)
+        return
+    if item in (logs := refusal_logs()):
+        remeasure_refusal_log(item, *logs[item], pair)
+        return
+    if item in (runs := pinned_runs()):
+        remeasure_pinned_run(runs[item], pair)
         return
     row = cases().get(item)
     if row is None:

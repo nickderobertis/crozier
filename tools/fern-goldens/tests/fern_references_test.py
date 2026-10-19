@@ -55,6 +55,8 @@ else:
 version = re.search(r"version: (\S+)", generators).group(1)
 package.mkdir(parents=True)
 (package / "client.py").write_text("# a comment Fern writes\nCLIENT = 1\n")
+if "x-stub-raw-client" in document:
+    (package / "raw_client.py").write_text("# a comment Fern writes\nRAW = 1\n")
 (package / "core").mkdir()
 if "enum_type: python_enums" in generators:
     (package / "core" / "enum.py").write_text("ENUM = 1\n")
@@ -289,6 +291,48 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("Fern now generates lowering/zeta", result.stderr)
         self.assertFalse(record.exists())
         self.assertTrue((record.parent / "fern-expected" / "src" / "fern" / "client.py").is_file())
+
+    def test_a_refusal_log_beside_its_document_is_rewritten_at_the_pair(self) -> None:
+        self.write("docs/fern-measurements/bodies/overlap/station.openapi.yml", "openapi: 3.0.3\nx-stub-refuse: true\n")
+        log = self.write("docs/fern-measurements/bodies/overlap/station.fern.log", f"Fern CLI {OLD}\n")
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.assertIn("bodies/overlap/station\n", self.run_tool("list", "measurements").stdout)
+        result = self.run_tool("generate", "measurements", "bodies/overlap/station")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        text = log.read_text(encoding="utf-8")
+        self.assertTrue(text.startswith(f"Fern CLI {CLI}, python-sdk {SDK}\ncheck exit: 1\n"), text)
+        self.assertIn("generate exit: 1", text)
+        self.assertIn("Stub refused the document", text)
+
+    def test_a_refusal_log_fern_now_generates_from_fails_naming_it(self) -> None:
+        self.write("docs/fern-measurements/bodies/overlap/station.openapi.yml", "openapi: 3.0.3\n")
+        log = self.write("docs/fern-measurements/bodies/overlap/station.fern.log", f"Fern CLI {OLD}\n")
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        result = self.run_tool("generate", "measurements", "bodies/overlap/station")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Fern now generates bodies/overlap/station", result.stderr)
+        self.assertIn("generate exit: 0", log.read_text(encoding="utf-8"))
+
+    def test_a_pinned_run_rewrites_its_log_raw_client_and_record(self) -> None:
+        probe = self.write("docs/fern-measurements/repairs/probe.yaml", "openapi: 3.0.3\nx-stub-raw-client: true\n")
+        record = self.write(
+            "docs/fern-measurements/repairs/measurement.json",
+            json.dumps({"probe": "probe.yaml", "fern_cli": OLD, "generator": OLD, "generate_diagnostic": "old"}),
+        )
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.assertIn("repairs\n", self.run_tool("list", "measurements").stdout)
+        result = self.run_tool("generate", "measurements", "repairs")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        case = record.parent
+        self.assertEqual(
+            (case / "fern-raw_client.py.txt").read_text(encoding="utf-8"), "# a comment Fern writes\nRAW = 1\n"
+        )
+        measured = json.loads(record.read_text(encoding="utf-8"))
+        self.assertEqual((measured["fern_cli"], measured["generator"]), (CLI, SDK))
+        self.assertEqual((measured["check_exit"], measured["generate_exit"]), ("0", "0"))
+        self.assertEqual(measured["sha256"], hashlib.sha256(probe.read_bytes()).hexdigest())
+        self.assertNotIn("generate_diagnostic", measured)
+        self.assertTrue((case / "fern.log").read_text(encoding="utf-8").startswith(f"Fern CLI {CLI}, python-sdk {SDK}"))
 
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
         self.write(
