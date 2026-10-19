@@ -63,7 +63,7 @@ import tempfile
 import threading
 import tomllib
 from collections.abc import Callable, Generator
-from dataclasses import astuple, dataclass, fields
+from dataclasses import asdict, astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
 from typing import NamedTuple
@@ -87,7 +87,23 @@ DOCUMENT_SUFFIXES = (".yml", ".yaml", ".json")
 REMOTE_URL = "@REMOTE_URL@"
 LOGS = Path(".local/fern-references")
 DEPARTURE_EVIDENCE = Path("docs/departures/evidence")
-OVERLAY_KINDS = {"expected-literals": ("--enum-type", "literals"), "expected-default-max-retries": None}
+
+
+@dataclass(frozen=True)
+class OverlayKind:
+    """The setting one overlay golden differs from the python-enums golden by,
+    as `fern-overlay-goldens.sh` takes it: a fixed value, or the count the
+    golden's own `.crozier-overlay.json` records under `recorded`."""
+
+    flag: str
+    value: str | None = None
+    recorded: str | None = None
+
+
+OVERLAY_KINDS = {
+    "expected-literals": OverlayKind("--enum-type", value="literals"),
+    "expected-default-max-retries": OverlayKind("--default-max-retries", recorded="default_max_retries"),
+}
 
 
 class ReferenceError(RuntimeError):
@@ -536,17 +552,20 @@ def generate_overlay(item: str, pair: Pair) -> None:
     golden = ROOT / FIXTURES / fixture / kind
     if kind not in OVERLAY_KINDS or not (golden / OVERLAY_MANIFEST).is_file():
         raise ReferenceError(f"{item} is no committed overlay; `list overlays` names the family")
-    setting = OVERLAY_KINDS[kind]
-    if setting is None:
+    overlay = OVERLAY_KINDS[kind]
+    value = overlay.value
+    if overlay.recorded is not None:
         manifest = json.loads((golden / OVERLAY_MANIFEST).read_text(encoding="utf-8"))
-        retries = manifest.get("default_max_retries") if isinstance(manifest, dict) else None
-        if not isinstance(retries, int) or isinstance(retries, bool) or retries < 0:
+        count = manifest.get(overlay.recorded) if isinstance(manifest, dict) else None
+        if not isinstance(count, int) or isinstance(count, bool) or count < 0:
             raise ReferenceError(
-                f"{rel(golden / OVERLAY_MANIFEST)}: default_max_retries must be a non-negative integer, not {retries!r}"
+                f"{rel(golden / OVERLAY_MANIFEST)}: {overlay.recorded} must be a non-negative integer, not {count!r}"
             )
-        setting = ("--default-max-retries", str(retries))
+        value = str(count)
+    if value is None:
+        raise ReferenceError(f"overlay kind {kind} names no value; fix OVERLAY_KINDS")
     run_script(
-        [str(ROOT / "tools/fern-goldens/fern-overlay-goldens.sh"), "--jobs", "1", *setting, fixture],
+        [str(ROOT / "tools/fern-goldens/fern-overlay-goldens.sh"), "--jobs", "1", overlay.flag, value, fixture],
         ROOT / LOGS / "overlays" / f"{fixture}.{kind}.log",
         pair,
     )
@@ -706,12 +725,30 @@ def refusal_logs() -> dict[str, RefusalLog]:
 
 
 @dataclass(frozen=True)
+class PinnedRecord:
+    """A `measurement.json`: the probe a pinned run read, the pair it ran at,
+    both exit statuses, the check's diagnostic, each log's digest, the number of
+    Python files Fern wrote and the probe's digest."""
+
+    probe: str
+    fern_cli: str = ""
+    generator: str = ""
+    check_exit: str = ""
+    check_diagnostic: str = ""
+    check_log_sha256: str = ""
+    generate_exit: str = ""
+    generate_log_sha256: str = ""
+    generate_python_files: int = 0
+    sha256: str = ""
+
+
+@dataclass(frozen=True)
 class PinnedRun:
     """A measurement recording one pinned run over its own probe: the case
     directory, its `measurement.json` and the probe that record names."""
 
     case: Path
-    record: dict[str, object]
+    record: PinnedRecord
     probe: Path
 
 
@@ -734,7 +771,8 @@ def pinned_run(record_path: Path) -> PinnedRun:
         raise ReferenceError(
             f"{rel(record_path)} must be an object whose `probe` names a file in {rel(case)}, not {probe!r}"
         )
-    return PinnedRun(case, record, target)
+    known = {field.name for field in fields(PinnedRecord)}
+    return PinnedRun(case, PinnedRecord(**{key: value for key, value in record.items() if key in known}), target)
 
 
 def pinned_runs() -> dict[str, Path]:
@@ -770,28 +808,28 @@ def remeasure_pinned_run(record_path: Path, pair: Pair) -> None:
     `src/fern/raw_client.py` (kept as text, bytes unedited) and the record of
     both exits and each log's digest."""
     run_record = pinned_run(record_path)
-    case, record, probe = run_record.case, dict(run_record.record), run_record.probe
+    case, probe = run_record.case, run_record.probe
     with run_fern(probe, pair, check=True) as run:
         if run.generate_exit != "0" or run.tree is None:
             raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
         (case / "fern.log").write_text(fern_log(pair, run), encoding="utf-8", newline="\n")
         shutil.copyfile(run.tree / "src" / "fern" / "raw_client.py", case / "fern-raw_client.py.txt")
         python_files = sum(1 for path in run.tree.rglob("*.py") if path.is_file())
-        record.update(
-            {
-                "check_diagnostic": preferred_diagnostic(run.check_log) or "All checks passed",
-                "check_exit": run.check_exit,
-                "check_log_sha256": hashlib.sha256(run.check_log.encode("utf-8")).hexdigest(),
-                "fern_cli": pair.cli,
-                "generate_exit": run.generate_exit,
-                "generate_log_sha256": hashlib.sha256(run.generate_log.encode("utf-8")).hexdigest(),
-                "generate_python_files": python_files,
-                "generator": pair.generator,
-                "sha256": hashlib.sha256(probe.read_bytes()).hexdigest(),
-            }
+        record = PinnedRecord(
+            probe=run_record.record.probe,
+            fern_cli=pair.cli,
+            generator=pair.generator,
+            check_exit=run.check_exit,
+            check_diagnostic=preferred_diagnostic(run.check_log) or "All checks passed",
+            check_log_sha256=hashlib.sha256(run.check_log.encode("utf-8")).hexdigest(),
+            generate_exit=run.generate_exit,
+            generate_log_sha256=hashlib.sha256(run.generate_log.encode("utf-8")).hexdigest(),
+            generate_python_files=python_files,
+            sha256=hashlib.sha256(probe.read_bytes()).hexdigest(),
         )
-        record.pop("generate_diagnostic", None)
-        record_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        record_path.write_text(
+            json.dumps(asdict(record), indent=2, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+        )
 
 
 def generate_parameter_literal(case: str, pair: Pair) -> None:
