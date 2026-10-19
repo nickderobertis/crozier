@@ -1203,8 +1203,9 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
 /// The member Fern names for an enum value that starts with a zero-led digit
 /// run: the run is spelled and the rest collapses, so `01_00_AM` is `ONE00AM`.
 /// `FERN` is the module Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0
-/// generated from this probe, comment-stripped (the control of
-/// `docs/fern-limitations.md`'s *Arms only a refused document reaches*).
+/// generated from this probe (not re-measured at the certified pair),
+/// comment-stripped (the control of `docs/fern-limitations.md`'s *Arms only a
+/// refused document reaches*).
 #[test]
 fn zero_led_enum_value_names_its_member_as_fern_does() {
     const FERN: &str = r#"
@@ -8858,7 +8859,7 @@ const CALORIENINJAS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    // Fern 5.20 cannot produce a valid tree for this spec. Its exact registered
+    // Fern cannot produce a valid tree for this spec. Its exact registered
     // upstream failure is covered at the process boundary, with no golden.
     unmatched: &[],
 };
@@ -9753,7 +9754,7 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     }
     let known = known_fern_failure(&CALORIENINJAS)
         .expect("known Fern failure contract must be valid")
-        .expect("CalorieNinjas must register its Fern 5.20 failure");
+        .expect("CalorieNinjas must register its Fern failure");
     let out = generate_corpus(&CALORIENINJAS);
     let client = std::fs::read_to_string(out.path().join("src/fern/client.py"))
         .expect("Crozier generated a valid CalorieNinjas client");
@@ -14925,11 +14926,11 @@ fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
 
 #[test]
 fn a_security_scheme_reference_emits_the_credential_it_names() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 on
-    // docs/openapi-surface/probes/securityscheme-ref.yml and its control: a
+    // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the certified
+    // pair) on docs/openapi-surface/probes/securityscheme-ref.yml and its control: a
     // Reference Object in the `components.securitySchemes` position is resolved
-    // in-document, and the referenced scheme is imported under the REFERENCING key
-    // — so a document whose map holds a reference beside its target takes two
+    // in-document, and the referenced scheme is imported under the REFERENCING key —
+    // so a document whose map holds a reference beside its target takes two
     // credentials, where the control's single inline scheme takes one. crozier used
     // to deserialize the reference to the default scheme and drop it, which diverged
     // from Fern in `client.py`, `core/client_wrapper.py`, `reference.md` and
@@ -14958,16 +14959,16 @@ fn a_security_scheme_reference_emits_the_credential_it_names() {
 
 #[test]
 fn a_pure_ref_component_names_the_response_it_types() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 while probing the documents under
-    // docs/openapi-surface/probes/: a component schema that is nothing but a LOCAL
-    // `$ref` types an operation response under its OWN name, not its target's.
-    // crozier used to follow every such alias, which diverged from Fern on all
-    // four spellings probed — the bare `$ref`, and the same `$ref` beside a
-    // `title`, a `description` or an `unevaluatedProperties`. The rewrite is now
-    // confined to an alias of a *remotely* declared schema, which is the form
-    // helios-verifiable-api's `BlockResponse` over its fetched `Block` carries and
-    // the only form Fern was measured to follow (openapi.rs's
-    // `normalize_fetched_response_alias_refs`).
+    // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the certified
+    // pair) while probing the documents under docs/openapi-surface/probes/: a
+    // component schema that is nothing but a LOCAL `$ref` types an operation
+    // response under its OWN name, not its target's. crozier used to follow every
+    // such alias, which diverged from Fern on all four spellings probed — the bare
+    // `$ref`, and the same `$ref` beside a `title`, a `description` or an
+    // `unevaluatedProperties`. The rewrite is now confined to an alias of a
+    // *remotely* declared schema, which is the form helios-verifiable-api's
+    // `BlockResponse` over its fetched `Block` carries and the only form Fern was
+    // measured to follow (openapi.rs's `normalize_fetched_response_alias_refs`).
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /a:\n    \
          get:\n      operationId: getA\n      responses:\n        '200': { description: OK, \
@@ -14999,7 +15000,7 @@ fn a_pure_ref_component_names_the_response_it_types() {
 
 #[test]
 fn an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 on
+    // Measured at fernapi/fern-python-sdk:5.41.3 on
     // docs/openapi-surface/probes/parameter-style-simple-path-object.yml, the
     // probe that settles the `parameter-style-simple-path-object` row: no
     // registered corpus source declares a path parameter over an object schema,
@@ -15331,7 +15332,7 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
     );
     assert!(
         widget.contains("target: typing.Dict[str, typing.Any]"),
-        "Fern 5.20 keeps an unconstrained open-map value bare: {widget}"
+        "Fern keeps an unconstrained open-map value bare: {widget}"
     );
     assert!(
         widget.contains("extra: typing.Optional[typing.Any] = None"),
@@ -15351,7 +15352,7 @@ fn unknown_metadata_fields_are_single_optional() {
         std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
     assert!(
         widget.contains("metadata: typing.Optional[typing.Any] = None"),
-        "Fern 5.20 models field absence once around unknown metadata: {widget}"
+        "Fern models field absence once around unknown metadata: {widget}"
     );
     assert!(
         widget.contains("unknown: typing.Optional[typing.Any] = None"),
@@ -15477,7 +15478,7 @@ fn unknown_array_items_are_bare_any_elements() {
         .expect("Widget model is generated");
     assert!(
         widget.contains("values: typing.Optional[typing.List[typing.Any]] = None"),
-        "Fern 5.20 keeps unknown array elements intrinsically non-nullable: {widget}"
+        "Fern keeps unknown array elements intrinsically non-nullable: {widget}"
     );
 }
 
@@ -15525,7 +15526,7 @@ fn array_item_enums_hoist_to_tag_types() {
         reference.contains(
             "**status:** `typing.Optional[typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]]`"
         ),
-        "reference tables should preserve Fern 5.20's flat scalar-or-sequence annotation: {reference}"
+        "reference tables should preserve Fern's flat scalar-or-sequence annotation: {reference}"
     );
 }
 
@@ -15676,7 +15677,7 @@ fn openapi_31_null_only_array_items_collapse_to_bare_any() {
         .expect("inline response model is generated");
     assert!(
         model.contains("values: typing.List[typing.Any]"),
-        "Fern 5.20 collapses null-only array elements to bare unknowns: {model}"
+        "Fern collapses null-only array elements to bare unknowns: {model}"
     );
 }
 
@@ -15689,7 +15690,7 @@ fn arrays_without_items_use_bare_any_elements() {
         .expect("inline response model is generated");
     assert!(
         model.contains("values: typing.List[typing.Any]"),
-        "Fern 5.20 keeps unconstrained array elements as bare unknowns: {model}"
+        "Fern keeps unconstrained array elements as bare unknowns: {model}"
     );
 }
 
@@ -16011,7 +16012,7 @@ fn binary_success_responses_stream_bytes() {
         reference.contains(
             "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration."
         ),
-        "binary response reference docs should use Fern 5.20's standard request_options prose: {reference}"
+        "binary response reference docs should use Fern's standard request_options prose: {reference}"
     );
 }
 
@@ -16266,7 +16267,8 @@ fn all_of_request_bodies_flatten_inherited_fields() {
 /// A single-use `allOf` body Fern drops from the type layer is flattened into the
 /// method like any dropped `$ref` body, and keeps the JSON content-type header
 /// that a surviving schema's body leaves to httpx: measured at Fern 5.20.0 on this
-/// document, with the `$ref` member first, last, or under a `type: object`.
+/// document (not re-measured at the certified pair), with the `$ref` member first,
+/// last, or under a `type: object`.
 #[test]
 fn pathless_single_use_all_of_bodies_send_the_content_type() {
     let (_dir, out) = generate_ok(
@@ -16814,7 +16816,7 @@ fn nested_nullability_is_preserved_and_a_nullable_scalar_union_stays_bare() {
     assert!(
         model.contains("typing.List[typing.Optional[str]]")
             && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
-            // A nullable union of plain scalars stays bare in Fern 5.20, as the
+            // A nullable union of plain scalars stays bare in Fern, as the
             // `pharmacy-nullable-scalar-unions` golden measures.
             && alias.contains("Schedule = typing.Union[int, str]"),
         "nested nullability should be retained at the schema node that declares it: {model}\n{alias}"

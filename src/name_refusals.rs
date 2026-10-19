@@ -663,8 +663,9 @@ fn check_schema_names(
                 "{location} discriminant {discriminant:?}; use a letter-led identifier containing letters, numbers and underscores"
             )));
     }
-    // Measured at Fern 5.67.1: invalid overrides warn and fall back to the
-    // original value, so they cannot rescue a value Fern cannot name.
+    // Measured at Fern CLI 5.67.1 (not re-measured at the certified pair):
+    // invalid overrides warn and fall back to the original value, so they
+    // cannot rescue a value Fern cannot name.
     let names: std::collections::BTreeMap<_, _> = schema
         .enum_member_names()
         .filter(|(_, name)| usable_name(name))
@@ -846,7 +847,7 @@ pub(crate) fn validate_ir(
             // A `stream-condition` operation's two halves each take a request
             // type Fern synthesizes: `{Ctx}Request` and `{Ctx}StreamRequest`. A
             // component schema of either name, the body's own or any other, is
-            // "already declared in this file" to pinned Fern 5.67.1, which
+            // "already declared in this file" to pinned Fern, which
             // refuses rather than renames:
             // docs/fern-refusals/type-name-collision/evidence/stream-split-*.
             if op.request_body.is_some()
@@ -926,7 +927,7 @@ pub(crate) fn validate_ir(
             }
         }
     }
-    // Pinned Fern 5.67.1 accepts a header parameter's enum named like a root
+    // Pinned Fern accepts a header parameter's enum named like a root
     // schema (it checks and generates), while a query parameter's is "already
     // declared": docs/fern-refusals/type-name-collision/evidence/
     // namespaced-header-enum-*.pinned-fern.log.

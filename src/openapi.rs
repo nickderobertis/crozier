@@ -109,7 +109,7 @@ pub struct OpenApi {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GlobalHeaderExtension {
     /// The header name sent on the wire.
-    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
+    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.163.1/SDK 5.41.3): docs/fern-measurements/header-token-alias/README.md.
     /// The client constructor argument name.
     pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
@@ -1096,7 +1096,9 @@ impl Streaming {
     /// Whether the stream is Server-Sent Events rather than newline-delimited
     /// JSON. Measured at Fern 5.20.0, only `format: sse` is SSE: `format: json`,
     /// a `stream-condition` naming no format and the boolean `true` all stream
-    /// JSON lines, whatever media types the response declares.
+    /// JSON lines, whatever media types the response declares. The hand-written
+    /// `streaming-extension-*` fixtures re-verify the boolean and `format: sse`
+    /// forms at the certified pair; the others are not re-measured.
     #[must_use]
     pub fn is_sse(&self) -> bool {
         self.mapping()
@@ -2955,14 +2957,14 @@ fn media_schemas<F: FnMut(&mut Schema)>(content: &mut IndexMap<String, MediaType
     }
 }
 
-/// Break every `*/` in a description into `* /`, as Fern does before writing
-/// any description: the broken spelling is what its docstrings, raw clients,
-/// model fields and `reference.md` all show. Measured at Fern 5.20.0 on schema,
-/// property, operation, parameter (operation, path-level and component),
-/// response (inline and component) and binary request body (inline and
-/// component) descriptions alike: each location is a `*/` in
-/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held
-/// whole to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
+/// Break every `*/` in a description into `* /`, as Fern does before writing any
+/// description: the broken spelling is what its docstrings, raw clients, model fields
+/// and `reference.md` all show. Measured at fern-python-sdk 5.41.3 on schema,
+/// property, operation, parameter (operation, path-level and component), response
+/// (inline and component) and binary request body (inline and component) descriptions
+/// alike: each location is a `*/` in
+/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held whole
+/// to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
 fn normalize_comment_close_descriptions(doc: &mut OpenApi) {
     fn split(description: &mut Option<String>) {
         if let Some(text) = description.as_mut().filter(|text| text.contains("*/")) {
@@ -3708,13 +3710,13 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
 
 /// A component schema whose `oneOf`/`anyOf` alternatives all convert to one
 /// primitive is that primitive under its LAST alternative's name, as Fern
-/// declares it: `ShelfCode: anyOf: [two pattern strings]` is `ShelfCodeOne =
-/// str`, which every use site names and a request body sends unconverted. So
-/// the component is renamed `{name} {Ordinal}` (a space is a word break to
-/// [`crate::naming::class_name`]) and becomes that alternative. Measured at
-/// 5.20.0 on the hand-written `same-primitive-union-components` fixture; a
-/// `null` alternative, or alternatives converting to different types, leave
-/// the component its name.
+/// declares it: `ShelfCode: anyOf: [two pattern strings]` is
+/// `ShelfCodeOne = str`, which every use site names and a request body sends
+/// unconverted. So the component is renamed `{name} {Ordinal}` (a space is a
+/// word break to [`crate::naming::class_name`]) and becomes that alternative.
+/// Measured at fern-python-sdk 5.41.3 on the hand-written
+/// `same-primitive-union-components` fixture; a `null` alternative, or
+/// alternatives converting to different types, leave the component its name.
 fn normalize_same_primitive_unions(doc: &mut OpenApi) {
     let mut renames = IndexMap::new();
     for (name, schema) in &doc.components.schemas {
@@ -4007,11 +4009,12 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
 ///
 /// **The remote origin is the whole of the rule, and it was measured.** A local
 /// alias to an ordinary local schema is *not* followed. Probed at
-/// `fernapi/fern-python-sdk:5.20.0` on four spellings — `AliasOfThing: {$ref:
-/// Thing}` bare, and the same `$ref` beside a `title`, a `description` and an
-/// `unevaluatedProperties` — with the alias declared before and after its target
-/// and with the target referenced elsewhere as well: every one exits 0 at both
-/// stages and returns `AliasOfThing`. So the rewrite is confined to the names
+/// `fernapi/fern-python-sdk:5.20.0` (not re-measured at the certified pair) on
+/// four spellings — `AliasOfThing: {$ref: Thing}` bare, and the same `$ref`
+/// beside a `title`, a `description` and an `unevaluatedProperties` — with the
+/// alias declared before and after its target and with the target referenced
+/// elsewhere as well: every one exits 0 at both stages and returns
+/// `AliasOfThing`. So the rewrite is confined to the names
 /// [`crate::refs::resolve`] reports as remotely declared. A reference from inside
 /// another schema keeps the alias name in either case (Airbyte's
 /// `DestinationAuthSpecification` stays itself on the property that carries it),
@@ -4463,9 +4466,10 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
 ///
 /// A one-member `allOf` naming a component is that component the same way:
 /// FastAPI writes `{allOf: [$ref: SSMLParams], title: Params, description: …}`
-/// for an annotated body parameter, and Fern 5.20.0 flattens `SSMLParams`'s
+/// for an annotated body parameter, and Fern 5.20.0 flattened `SSMLParams`'s
 /// properties into the method's arguments, exactly as for `$ref: SSMLParams`,
-/// whatever `title`, `description` or `default` sits beside it. A nullable
+/// whatever `title`, `description` or `default` sits beside it (not re-measured
+/// at the certified pair). A nullable
 /// wrapper is left to the request-body resolver, which reads the nullability,
 /// and a form body's wrapper is left alone: no measurement reaches it.
 fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
@@ -4529,7 +4533,7 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
 }
 
 /// Type a `text/event-stream` response declaring only an `itemSchema` from that
-/// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
+/// item schema, as Fern types each streamed event; a `schema` beside it
 /// wins, and any other media type's `itemSchema` is not read at all.
 fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
     let fold = |response: &mut Response| {
@@ -4691,7 +4695,7 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 /// `/api/internal/import/*` operations, and Fern's golden still declares
 /// `ImportAgentsRequest`, `ImportSessionRequest` and every schema they reach,
 /// though nothing else references them. Removing a schema keeps the schemas it
-/// referenced the same way: Fern 5.20.0 still declares `LegacyPart` when its one
+/// referenced the same way: Fern still declares `LegacyPart` when its one
 /// referrer `LegacyWidget` is ignored (the hand-written fixture
 /// `x-fern-ignore-schema`). So the ignore is inert on a spec with no markers and
 /// never changes a full, unfiltered generation.
@@ -5137,7 +5141,8 @@ mod tests {
                 },
             ]
         );
-        // A list of Parameter Objects names no default, measured at Fern 5.20.0.
+        // A list of Parameter Objects names no default, measured at
+        // fern-python-sdk 5.41.3 (`docs/fern-measurements/parameter-lowering/`).
         let list: BasePath = serde_json::from_value(serde_json::json!({
             "path": "/{edition}",
             "parameters": [{"name": "edition", "in": "path", "schema": {"default": "v2"}}]
@@ -5643,7 +5648,7 @@ components:
 
     #[test]
     fn schema_level_ignore_keeps_the_schemas_only_it_referenced() {
-        // Fern 5.20.0 keeps `LegacyPart`, whose one referrer is the ignored
+        // Fern keeps `LegacyPart`, whose one referrer is the ignored
         // `LegacyWidget` (the hand-written fixture `x-fern-ignore-schema`).
         let mut doc = parse(
             r##"
@@ -6527,21 +6532,21 @@ components:
     /// A component schema that is nothing but a *local* `$ref` keeps its own name
     /// everywhere, including where an operation response names it.
     ///
-    /// Probed directly at `fernapi/fern-python-sdk:5.20.0`: on a document
-    /// declaring `AliasOfThing: {$ref: Thing}` and a response naming
-    /// `AliasOfThing`, Fern generates `-> AliasOfThing` at exit 0 — with a
-    /// sibling `title`, `description` or `unevaluatedProperties` on the alias
-    /// too, with the alias declared either side of its target, and with the
+    /// Probed directly at `fernapi/fern-python-sdk:5.20.0` (not re-measured at the
+    /// certified pair): on a document declaring `AliasOfThing: {$ref: Thing}` and
+    /// a response naming `AliasOfThing`, Fern generates `-> AliasOfThing` at exit
+    /// 0 — with a sibling `title`, `description` or `unevaluatedProperties` on the
+    /// alias too, with the alias declared either side of its target, and with the
     /// target referenced elsewhere as well. The response-alias rewrite is
     /// therefore confined to aliases of a *remotely* declared schema, which
     /// `a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name` covers.
     #[test]
     fn an_in_document_security_scheme_ref_resolves_to_the_scheme_it_names() {
-        // Measured at fernapi/fern-python-sdk:5.20.0 on
-        // docs/openapi-surface/probes/securityscheme-ref.yml: Fern follows a
-        // `#/components/securitySchemes/…` reference and imports the referenced
-        // scheme under the REFERENCING key, so the probe's two map entries emit two
-        // credentials where its control's one entry emits one.
+        // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the
+        // certified pair) on docs/openapi-surface/probes/securityscheme-ref.yml:
+        // Fern follows a `#/components/securitySchemes/…` reference and imports the
+        // referenced scheme under the REFERENCING key, so the probe's two map
+        // entries emit two credentials where its control's one entry emits one.
         let mut doc = parse(
             r##"
 openapi: 3.0.3
