@@ -3,8 +3,10 @@
   "generatorName": "fernapi/fern-python-sdk",
   "generatorVersion": "5.41.3",
   "generatorConfig": {
+    "client_class_name": "FernApi",
     "pydantic_config": {
-      "enum_type": "python_enums"
+      "enum_type": "python_enums",
+      "extra_fields": "allow"
     }
   },
   "invokedBy": "ci",

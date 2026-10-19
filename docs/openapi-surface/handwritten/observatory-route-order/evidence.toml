@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "b34cf5b2d0c18132462d5d6c188b3b9bac7082424b18c5b8d5753d1a8d4bc3f9"
+digest = "900fa29dce53f69f96b1cce545e3380dfcb534b9cc0ff362b3554d82fb9a0255"
 
 [[covers]]
 key = "path-parameters-template-order-31"

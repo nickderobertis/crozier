@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "ce4e8b71d6fbdc1e2c9bb18e40e73773a8ee7c2b4333ae95b2c56daff69899ce"
+digest = "e67b6d40fc3e7f2539cf3d2747e0eda93882dd7a5b76d793669dee673077d34e"
 
 [[covers]]
 key = "base-path-extension"
