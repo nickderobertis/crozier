@@ -53,6 +53,7 @@ HISTORY_FILES = ("CHANGELOG.md",)
 # `boundaries`), so each `--within` run reconciles its own project's wiring
 # (`wiring_failures`); a project whose target is dropped together with its
 # `lint` dependency is beyond any check this project may run.
+# llmlint: ignore-block[contracts_have_one_source_or_a_drift_gate] Each delegated project's own lint reconciles its wiring to this tuple (`wiring_failures`), and the tuple to the tracked tree is tested; a gate catching a target removed together with its lint dependency would have to read the promoted tiers' and the workspace aggregate's project definitions, an edge nx.json's `boundaries` forbid this tooling project and every project those definitions may be read from.
 DELEGATED = (
     "tests/census_fallback/",
     "tests/corpus_match/",
@@ -63,6 +64,7 @@ DELEGATED = (
     "tools/release-packaging/",
     "tools/workspace/",
 )
+# llmlint: ignore-end[contracts_have_one_source_or_a_drift_gate]
 MARKER = "certified-pair: stand-in"
 COMMENT = ("//", "#", "/*", "* ")
 
