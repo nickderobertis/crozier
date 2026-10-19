@@ -21138,6 +21138,87 @@ fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
     );
 }
 
+/// No child builder shadows pydantic: over the installed pydantic's every
+/// public `BaseModel` attribute, a document whose XML model holds a list child
+/// tagged with each name generates an SDK in which each child's builder is
+/// `add_<name>`, and the name itself still resolves to pydantic rather than to a
+/// method crozier wrote. The names are read from the SDK's own environment, so
+/// a pydantic release that adds an attribute fails here until crozier reserves it.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_no_xml_child_builder_shadows_a_pydantic_attribute() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let base = dir.path().join("base");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(repo_root().join("crates/crozier-e2e/tests/e2e/xml_builder_collisions.yml"))
+        .arg("--output")
+        .arg(&base)
+        .args(["--package-name", "dock"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&base.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let listed = std::process::Command::new(&py)
+        .args(["-c", "import pydantic\nprint('\\n'.join(n for n in dir(pydantic.BaseModel) if not n.startswith('_')))"])
+        .output()
+        .expect("list pydantic.BaseModel's attributes");
+    let names: Vec<String> = String::from_utf8_lossy(&listed.stdout)
+        .lines()
+        .map(str::to_owned)
+        .collect();
+    assert!(
+        listed.status.success() && !names.is_empty(),
+        "pydantic lists no attribute"
+    );
+    let properties: serde_json::Map<String, serde_json::Value> = names
+        .iter()
+        .map(|name| {
+            (
+                format!("{name}_items"),
+                serde_json::json!({"type": "array", "items": {"type": "object", "xml": {"name": name},
+                    "properties": {"mark": {"type": "string", "xml": {"attribute": true}}}}}),
+            )
+        })
+        .collect();
+    let document = serde_json::json!({
+        "openapi": "3.0.3",
+        "info": {"title": "Holders", "version": "1"},
+        "paths": {"/holder": {"get": {"operationId": "getHolder", "responses": {"200": {
+            "description": "The holder.",
+            "content": {"application/xml": {"schema": {"$ref": "#/components/schemas/Holder"}}}
+        }}}}},
+        "components": {"schemas": {"Holder": {"type": "object", "xml": {"name": "holder"}, "properties": properties}}}
+    });
+    let spec = dir.path().join("holders.json");
+    std::fs::write(&spec, serde_json::to_vec(&document).expect("serialize"))
+        .expect("write the document");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "holders"])
+        .assert()
+        .success();
+    let check = "import sys\nfrom holders.types.holder import Holder\nbad = []\nfor name in sys.argv[1:]:\n    own = Holder.__dict__.get(name)\n    if own is not None and getattr(own, '__qualname__', '').startswith('Holder.'):\n        bad.append(name)\n    builder = getattr(Holder(), 'add_' + name, None)\n    if builder is None or builder(mark='m').mark != 'm':\n        bad.append('add_' + name)\nprint(bad)\nsys.exit(1 if bad else 0)";
+    let output = std::process::Command::new(&py)
+        .arg("-c")
+        .arg(check)
+        .args(&names)
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("check the generated builders");
+    assert!(
+        output.status.success(),
+        "a child builder shadows pydantic or is missing:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
 /// The pyright a consumer's editor runs, pinned with its own Node.js so the
 /// journey needs no system `node`.
 const PYRIGHT_REQUIREMENT: &str = "pyright[nodejs]==1.1.414";
