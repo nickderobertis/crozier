@@ -69,10 +69,12 @@ exactly, except:
 
 ## Parity status and the residual manifest
 
-**Every registered corpus reproduces its whole committed Fern golden
+**Every registered corpus but two reproduces its whole committed Fern golden
 byte-for-byte at `fernapi/fern-python-sdk:5.41.3`.** Every `Corpus` in
-`crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list; that file is the measured
-truth, and this document holds the judgment about *why* each shape generates the
+`crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list except `komga` and
+`webflow-v2`, which are registered with a measured residual
+([`tests/fixtures/AGENTS.md`](../tests/fixtures/AGENTS.md#shrinking-unmatched--dont-diff-by-hand));
+that file is the measured truth, and this document holds the judgment about *why* each shape generates the
 way it does. Per-corpus file counts deliberately live only next to the data they
 describe, so prose here cannot drift away from them.
 

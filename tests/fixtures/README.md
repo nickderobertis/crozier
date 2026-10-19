@@ -65,9 +65,10 @@ Declared fixtures also carry a flat golden (`FLAT_GOLDENS` in `crates/crozier-e2
 `*_flat_matches_fern` test each), chosen so that between them they exercise every
 setting that changes the flat tree.
 
-Every `Corpus` in `crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` residual list: the
-whole corpus reproduces its Fern goldens byte-for-byte, apart from the one
-accepted upstream exception (`calorieninjas.com`, which has no golden because
+Every `Corpus` in `crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` residual list
+except `komga` and `webflow-v2`, registered with a measured residual (see
+[`AGENTS.md`](AGENTS.md)): the rest of the corpus reproduces its Fern goldens
+byte-for-byte, apart from the one accepted upstream exception (`calorieninjas.com`, which has no golden because
 Fern cannot produce one). Every file in every golden tree is gated in both
 directions, including newly emitted files. See [`AGENTS.md`](AGENTS.md);
 `just fixtures-gaps` re-measures the census.

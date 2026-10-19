@@ -193,9 +193,13 @@ config, and the Action's `paths` input does the same.
   or its `x-crozier-*` alias, so an annotated document or overlay needs no
   change. Among them is `x-fern-property-name` (alias `x-crozier-property-name`),
   which renames a property's model field and request keyword argument while its
-  JSON key stays the same. Use it to rename a request body property clear of a
-  path parameter of the same name, which crozier otherwise refuses as
-  `request-property-name-collision`, as Fern does.
+  JSON key stays the same. A request body property that shares its name with a
+  path parameter needs no rename: as Fern CLI 5.163.1 with fern-python-sdk
+  5.41.3 does, crozier keeps the property's name and renames the path
+  parameter's argument `{name}_path_param`. A path parameter that declares a
+  name of its own beside such a property, like the other request property
+  collisions, is still refused as `request-property-name-collision`; rename one
+  side with the extension.
 - **Bracketed property names.** Properties such as `filter[name]` generate valid
   Python parameter names since crozier 0.0.22
   ([#74](https://github.com/nickderobertis/crozier/issues/74)).
