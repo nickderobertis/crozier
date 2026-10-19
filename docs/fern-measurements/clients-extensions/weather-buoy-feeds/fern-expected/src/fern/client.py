@@ -331,7 +331,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.stream_readings(
+            response = client.stream_readings(
                 buoy_id="buoyId",
             )
             async for chunk in response:

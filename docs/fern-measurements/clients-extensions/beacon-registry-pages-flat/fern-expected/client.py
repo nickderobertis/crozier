@@ -5,6 +5,7 @@ import typing
 import httpx
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
+from .core.pagination import AsyncPager, SyncPager
 from .core.request_options import RequestOptions
 from .environment import FernApiEnvironment
 from .raw_client import AsyncRawFernApi, RawFernApi
@@ -105,7 +106,7 @@ class FernApi:
 
     def list_beacons(
         self, *, page: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None
-    ) -> BeaconPage:
+    ) -> SyncPager[str, BeaconPage]:
         """
         Parameters
         ----------
@@ -116,7 +117,7 @@ class FernApi:
 
         Returns
         -------
-        BeaconPage
+        SyncPager[str, BeaconPage]
             One page of beacons.
 
         Examples
@@ -124,10 +125,14 @@ class FernApi:
         from fern import FernApi
 
         client = FernApi()
-        client.list_beacons()
+        response = client.list_beacons()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_beacons(page=page, request_options=request_options)
-        return _response.data
+        return self._raw_client.list_beacons(page=page, request_options=request_options)
 
 
 def _make_default_async_client(
@@ -240,7 +245,7 @@ class AsyncFernApi:
 
     async def list_beacons(
         self, *, page: typing.Optional[int] = None, request_options: typing.Optional[RequestOptions] = None
-    ) -> BeaconPage:
+    ) -> AsyncPager[str, BeaconPage]:
         """
         Parameters
         ----------
@@ -251,7 +256,7 @@ class AsyncFernApi:
 
         Returns
         -------
-        BeaconPage
+        AsyncPager[str, BeaconPage]
             One page of beacons.
 
         Examples
@@ -264,13 +269,18 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            await client.list_beacons()
+            response = await client.list_beacons()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_beacons(page=page, request_options=request_options)
-        return _response.data
+        return await self._raw_client.list_beacons(page=page, request_options=request_options)
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: FernApiEnvironment) -> str:

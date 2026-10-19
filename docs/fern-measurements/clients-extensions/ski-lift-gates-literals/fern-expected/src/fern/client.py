@@ -73,7 +73,7 @@ class FernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("LIFT_PASS"),
+        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
         max_retries: typing.Optional[int] = None,
@@ -85,6 +85,7 @@ class FernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        lift_pass = lift_pass if lift_pass is not None else os.getenv("LIFT_PASS")
         if lift_pass is None:
             raise ApiError(body="The client must be instantiated be either passing in lift_pass or setting LIFT_PASS")
         self._client_wrapper = SyncClientWrapper(
@@ -227,7 +228,7 @@ class AsyncFernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv("LIFT_PASS"),
+        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         async_token: typing.Optional[typing.Callable[[], typing.Awaitable[str]]] = None,
         timeout: typing.Optional[float] = None,
@@ -240,6 +241,7 @@ class AsyncFernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        lift_pass = lift_pass if lift_pass is not None else os.getenv("LIFT_PASS")
         if lift_pass is None:
             raise ApiError(body="The client must be instantiated be either passing in lift_pass or setting LIFT_PASS")
         self._client_wrapper = AsyncClientWrapper(

@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "f3436bae481fdf5be9a622dee08eddc7d617f27e30c58ce18e5d71b23a155637"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "741b7e5a905988e06e42ef029367e8a7ea87163f28c374b24841b551493f1b16"
 
 source_digest = "af79d98feeb2d89201a0aac3c6a7b8858414e1b7a67c0ee5687bb0bb607b2e5e"
 reason = "Registered goldens reach the parameter-schema arm `src/ir.rs::InlineHoister::hoist_param_composition`; this fixture no longer claims a handwritten coverage gap."
