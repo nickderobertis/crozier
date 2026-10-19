@@ -9122,7 +9122,7 @@ fn hoist_form_object(
                 // An annotated `$ref` documents the field with its annotation, as
                 // a JSON body's does: Zulip's urlencoded `PATCH /streams/{stream_id}`
                 // `can_add_subscribers_group` is `allOf: [{description}, $ref …]`.
-                docstring: clean_doc(collapsed_doc.unwrap_or_else(|| {
+                docstring: clean_doc(collapsed_doc.or_else(|| {
                     prop_schema.description.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema)
                             .and_then(|(_, description)| description)
@@ -12855,7 +12855,7 @@ impl Builder<'_> {
                 // `AlertFilterSuggestion` annotates `FilterSuggestion` with
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
-                docstring: declared_doc(collapsed_doc.unwrap_or_else(|| {
+                docstring: declared_doc(collapsed_doc.or_else(|| {
                     annotation_lost_description(prop_schema, self.schemas)
                         .unwrap_or_else(|| property_description(prop_schema, optional))
                         .or_else(|| {
@@ -16391,17 +16391,13 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
 /// description and all, in place of the union. LiveBuildings' required `id` is
 /// an `anyOf` of two string shapes each described `Property. Identifier format
 /// of any NGSI entity` beside its own `Unique identifier of the entity`, and its
-/// golden field reads the alternative's. The outer `None` is a property this
-/// does not apply to; `Some(None)` is a collapsed one whose first alternative
-/// carries no description, which leaves the field undocumented however the
-/// property itself is described: langchain-agent-server's required
-/// `assistant_id` is an `anyOf` of a uuid and a plain string, titled but not
-/// described, and its golden documents neither the model field nor the request
-/// argument (measured at fern-python-sdk 5.41.3).
-fn collapsed_member_description<'a>(
-    schema: &'a Schema,
-    type_ref: &TypeRef,
-) -> Option<Option<&'a str>> {
+/// golden field reads the alternative's. A first alternative with no
+/// description of its own leaves the property's description in place, where
+/// Fern documents nothing: langchain-agent-server's required `assistant_id`, an
+/// `anyOf` of a uuid and a plain string described on the property, is the
+/// `collapsed-anyof-property-description` departure (crozier documents what the
+/// specification declares).
+fn collapsed_member_description<'a>(schema: &'a Schema, type_ref: &TypeRef) -> Option<&'a str> {
     if schema.reference.is_some() {
         return None;
     }
@@ -16416,14 +16412,7 @@ fn collapsed_member_description<'a>(
     if matches!(inner, TypeRef::Named(_) | TypeRef::Union(_)) {
         return None;
     }
-    // Only an inline typed alternative stands in for the property this way: a
-    // `$ref` first alternative (hasura-metadata's `function`) or an untyped one
-    // (waylay-queries' `rows`) leaves the property's own description in place.
-    match first.description.as_deref() {
-        Some(description) => Some(Some(description)),
-        None if first.reference.is_none() && first.ty.is_some() => Some(None),
-        None => None,
-    }
+    first.description.as_deref()
 }
 
 fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
@@ -26292,7 +26281,8 @@ mod tests {
     }
 
     #[test]
-    fn a_collapsed_required_composition_is_documented_by_its_first_alternative() {
+    fn a_collapsed_required_composition_keeps_the_property_description_unless_its_first_alternative_has_one(
+    ) {
         let ir = build_document(serde_json::json!({
             "openapi": "3.1.0",
             "info": { "title": "Runs", "version": "1" },
@@ -26304,14 +26294,18 @@ mod tests {
                     "application/json": { "schema": { "$ref": "#/components/schemas/Run" } } } } }
             } } },
             "components": { "schemas": {
-                "RunCreate": { "type": "object", "required": ["assistant", "parent"],
+                "RunCreate": { "type": "object",
+                    "required": ["assistant", "parent", "graph"],
                     "properties": {
                         "assistant": { "description": "The assistant ID or graph name.",
                             "anyOf": [ { "type": "string", "format": "uuid", "title": "Id" },
                                        { "type": "string", "title": "Graph" } ] },
                         "parent": { "description": "The parent run.",
                             "anyOf": [ { "$ref": "#/components/schemas/Name" },
-                                       { "type": "string" } ] }
+                                       { "type": "string" } ] },
+                        "graph": { "description": "The graph to run.",
+                            "anyOf": [ { "type": "string", "description": "A graph ID." },
+                                       { "type": "string", "format": "uuid" } ] }
                     } },
                 "Run": { "type": "object", "properties": { "id": { "type": "string" } } },
                 "Name": { "type": "string" }
@@ -26326,10 +26320,17 @@ mod tests {
                 .find(|field| field.wire_name == wire)
                 .and_then(|field| field.docstring.clone())
         };
-        // The undescribed inline first alternative stands in for the property.
-        assert_eq!(field("assistant"), None);
+        // An undescribed inline first alternative leaves the property's own
+        // description in place (the `collapsed-anyof-property-description`
+        // departure: Fern documents nothing there).
+        assert_eq!(
+            field("assistant").as_deref(),
+            Some("The assistant ID or graph name.")
+        );
         // A `$ref` first alternative leaves the property's own description.
         assert_eq!(field("parent").as_deref(), Some("The parent run."));
+        // A described first alternative documents the property, as Fern's does.
+        assert_eq!(field("graph").as_deref(), Some("A graph ID."));
     }
 }
 

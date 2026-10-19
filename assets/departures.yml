@@ -81,6 +81,28 @@
     fails, and a snippet sending it sends a body the API's own schema rejects.
   evidence: docs/departures/evidence/closed-empty-object-example.md
 
+- id: collapsed-anyof-property-description
+  kind: richer-documentation
+  trigger: >-
+    An object property declaring a description beside an anyOf or oneOf of two
+    or more inline non-null scalar alternatives, the first undescribed, which
+    both sides type as the one scalar they share: its model field, its client.py
+    and raw_client.py docstring parameter entry, and its reference.md row.
+  fern: >-
+    The property undocumented: the bare model field (assistant_id: str), a
+    docstring entry with no description, and a reference.md row with no text
+    after its type.
+  crozier: >-
+    The property's description: the model field declared with pydantic.Field()
+    and a docstring holding it, the docstring entry's description line, and the
+    reference.md row's em-dash description. The type, the field's requiredness
+    and every other line are retained.
+  reason: >-
+    Both outputs type and validate the field identically; crozier's documents
+    the description the specification declares on the property itself, where
+    Fern's documents nothing about it.
+  evidence: docs/departures/evidence/collapsed-anyof-property-description.md
+
 - id: constant-header-docs-arguments
   kind: fern-defect
   trigger: >-

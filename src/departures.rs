@@ -1707,11 +1707,12 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 25] = [
+pub const RULE_IDS: [&str; 26] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
     "closed-empty-object-example",
+    "collapsed-anyof-property-description",
     "constant-header-docs-arguments",
     "date-header-constructor-example",
     "docstring-literal-dollar-escape",
@@ -1746,6 +1747,11 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "body-query-parameter-value" => Rule {
             region: Some(body_query_parameter_value),
+            ..none
+        },
+        "collapsed-anyof-property-description" => Rule {
+            line: Some(collapsed_anyof_property_description),
+            added_at: Some(collapsed_anyof_property_description_line),
             ..none
         },
         "emoji-tag-reference-identifiers" => Rule {
@@ -3715,6 +3721,163 @@ fn optional_lowered_required_query_array_example(pair: &Pair<'_>, at: usize) -> 
                 })
         })
     })
+}
+
+/// The descriptions of every source property that is an `anyOf`/`oneOf` of two
+/// or more non-null inline alternatives, the first of them undescribed, with a
+/// description of its own: keyed by the property's wire name.
+fn collapsed_property_descriptions(source: &crate::openapi::OpenApi) -> Vec<(String, String)> {
+    let mut found = Vec::new();
+    let mut visit = |schema: &crate::openapi::Schema| {
+        for (name, property) in &schema.properties {
+            let Some(members) = property.any_of.as_ref().or(property.one_of.as_ref()) else {
+                continue;
+            };
+            let alternatives: Vec<_> = members
+                .iter()
+                .filter(|member| member.ty.as_ref().and_then(|ty| ty.primary()) != Some("null"))
+                .collect();
+            let Some(description) = property.description.as_deref() else {
+                continue;
+            };
+            if property.reference.is_none()
+                && alternatives.len() >= 2
+                && alternatives.iter().all(|member| {
+                    member.reference.is_none()
+                        && member.properties.is_empty()
+                        && member.items.is_none()
+                })
+                && alternatives[0].description.is_none()
+            {
+                found.push((
+                    name.clone(),
+                    description.trim_end_matches(['\r', '\n']).to_string(),
+                ));
+            }
+        }
+    };
+    visit_source_schemas(Some(source), &mut visit);
+    found
+}
+
+/// `collapsed-anyof-property-description`, on an aligned pair of lines: the
+/// `reference.md` parameter row Fern writes bare, `**<name>:** `<type>` `, that
+/// crozier ends with the property's description, and the model field Fern
+/// declares bare, `<name>: <type>`, that crozier declares
+/// `<name>: <type> = pydantic.Field()` to carry it.
+fn collapsed_anyof_property_description(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let properties = collapsed_property_descriptions(source);
+    if pair.rel == "reference.md" {
+        let Some(head) = fern.strip_suffix(' ') else {
+            return false;
+        };
+        let Some(name) = head
+            .strip_prefix("**")
+            .and_then(|rest| rest.split_once(":** `"))
+            .map(|(name, _)| name)
+        else {
+            return false;
+        };
+        return properties.iter().any(|(wire, description)| {
+            argument_names(wire, name)
+                && crozier
+                    == format!(
+                        "{head}{}",
+                        crate::emit::reference_param_suffix(Some(description))
+                    )
+        });
+    }
+    pair.rel.ends_with(".py")
+        && crozier.strip_suffix(" = pydantic.Field()") == Some(fern)
+        && fern.trim_start().split_once(": ").is_some_and(|(name, _)| {
+            fern.starts_with("    ")
+                && properties
+                    .iter()
+                    .any(|(wire, _)| argument_names(wire, name))
+        })
+}
+
+/// `collapsed-anyof-property-description`, on a line only crozier writes: a
+/// line of the description a `client.py`/`raw_client.py` docstring documents
+/// under `<name> : <type>`, or of the docstring block (with the blank line
+/// after it) that follows a model's `<name>: <type> = pydantic.Field()`. The
+/// block's text must be the property's description.
+fn collapsed_anyof_property_description_line(pair: &Pair<'_>, at: usize) -> bool {
+    if !pair.rel.ends_with(".py") {
+        return false;
+    }
+    let Some(source) = pair.context.source_document.as_ref() else {
+        return false;
+    };
+    let lines = pair.crozier;
+    let described = |name: &str, text: &str| {
+        collapsed_property_descriptions(source)
+            .iter()
+            .any(|(wire, description)| argument_names(wire, name) && description.trim() == text)
+    };
+    // A model field's docstring block: `"""`, the description, `"""`, blank.
+    if let Some(field) = (at.saturating_sub(64)..=at).rev().find(|&index| {
+        lines[index].starts_with("    ")
+            && !lines[index].starts_with("     ")
+            && lines[index].ends_with(" = pydantic.Field()")
+    }) {
+        let open = field + 1;
+        if lines.get(open) == Some(&"    \"\"\"") {
+            if let Some(close) = (open + 1..lines.len()).find(|&index| lines[index] == "    \"\"\"")
+            {
+                let blank = close + 1;
+                let text = lines[open + 1..close]
+                    .iter()
+                    .map(|line| line.strip_prefix("    ").unwrap_or(line))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                let name = lines[field]
+                    .trim_start()
+                    .split_once(": ")
+                    .map_or("", |(name, _)| name);
+                if (open..=blank).contains(&at)
+                    && lines.get(blank).is_some_and(|line| line.is_empty())
+                    && described(name, text.trim())
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    // A method docstring's parameter description, indented one level under
+    // `<name> : <type>`.
+    let indent = lines[at].len() - lines[at].trim_start().len();
+    if lines[at].trim().is_empty() || indent < 4 {
+        return false;
+    }
+    let Some(header) = (0..at).rev().find(|&index| {
+        let line = lines[index];
+        line.trim().is_empty() || line.len() - line.trim_start().len() < indent
+    }) else {
+        return false;
+    };
+    let header_line = lines[header];
+    if header_line.len() - header_line.trim_start().len() + 4 != indent {
+        return false;
+    }
+    let Some((name, _)) = header_line.trim_start().split_once(" : ") else {
+        return false;
+    };
+    let end = (header + 1..lines.len())
+        .find(|&index| {
+            lines[index].trim().is_empty()
+                || lines[index].len() - lines[index].trim_start().len() < indent
+        })
+        .unwrap_or(lines.len());
+    let text = lines[header + 1..end]
+        .iter()
+        .map(|line| &line[indent..])
+        .collect::<Vec<_>>()
+        .join("\n");
+    described(name, text.trim())
 }
 
 /// The module directories crozier's package holds, each the directory of a
@@ -5931,6 +6094,115 @@ mod tests {
         assert!(item_is_value("\"a\"", &serde_json::json!("a")));
         assert!(item_is_value("True", &serde_json::json!(true)));
         assert!(!item_is_value("{}", &serde_json::json!({})));
+    }
+
+    #[test]
+    fn collapsed_anyof_property_description_admits_only_the_property_description() {
+        let property = |first: serde_json::Value| {
+            serde_json::json!({"openapi": "3.0.3", "paths": {}, "components": {"schemas": {
+                "Charter": {"type": "object", "required": ["skipper"], "properties": {
+                    "skipper": {"description": "The skipper's ID.", "anyOf": [first, {"type": "string"}]}
+                }}
+            }}})
+        };
+        let context = source_context(
+            property(serde_json::json!({"type": "string", "format": "uuid"})),
+            &[],
+        );
+        let rule: LineRule = collapsed_anyof_property_description;
+        let row = "**skipper:** `str` ";
+        assert!(line_holds(
+            rule,
+            "reference.md",
+            &context,
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            row,
+            "**skipper:** `str` — Another."
+        ));
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &context,
+            "**guests:** `int` ",
+            "**guests:** `int` — The skipper's ID."
+        ));
+        let field = "    skipper: str";
+        assert!(line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            field,
+            "    skipper: str = pydantic.Field()"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            field,
+            "    skipper: str = pydantic.Field(alias=\"s\")"
+        ));
+        assert!(!line_holds(
+            rule,
+            "src/fern/types/charter.py",
+            &context,
+            "    guests: int",
+            "    guests: int = pydantic.Field()"
+        ));
+        let added: AddedAtRule = collapsed_anyof_property_description_line;
+        let model = "class Charter(UniversalBaseModel):\n    skipper: str = pydantic.Field()\n    \"\"\"\n    The skipper's ID.\n    \"\"\"\n\n    vessel: str";
+        assert_eq!(
+            added_at_holds(added, "src/fern/types/charter.py", &context, model),
+            [false, false, true, true, true, true, false]
+        );
+        let docstring = "        Parameters\n        ----------\n        skipper : str\n            The skipper's ID.\n\n        guests : int";
+        assert_eq!(
+            added_at_holds(added, "src/fern/charters/client.py", &context, docstring),
+            [false, false, false, true, false, false]
+        );
+        for text in [
+            model.replace("The skipper's ID.", "Another."),
+            docstring.replace("The skipper's ID.", "Another."),
+        ] {
+            assert!(
+                !added_at_holds(added, "src/fern/charters/client.py", &context, &text)
+                    .iter()
+                    .any(|holds| *holds)
+            );
+        }
+        assert!(!added_at_holds(added, "reference.md", &context, docstring)
+            .iter()
+            .any(|holds| *holds));
+        // A first alternative carrying its own description is the one Fern
+        // keeps, and the rule does not apply; nor without the document.
+        let described = source_context(
+            property(serde_json::json!({"type": "string", "description": "Own."})),
+            &[],
+        );
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &described,
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
+        assert!(
+            !added_at_holds(added, "src/fern/charters/client.py", &described, docstring)
+                .iter()
+                .any(|holds| *holds)
+        );
+        assert!(!line_holds(
+            rule,
+            "reference.md",
+            &Context::default(),
+            row,
+            "**skipper:** `str` — The skipper's ID."
+        ));
     }
 
     #[test]

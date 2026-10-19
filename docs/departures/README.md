@@ -188,7 +188,7 @@ when the two differ.
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
 | `ordering` | 1 | crozier writes statements whose order has no effect in its own deterministic order. |
-| `richer-documentation` | 3 | Both outputs are valid; crozier's documents more of what the specification declares. |
+| `richer-documentation` | 4 | Both outputs are valid; crozier's documents more of what the specification declares. |
 
 ### `anyof-path-param-schema-example`
 
@@ -225,6 +225,15 @@ when the two differ.
 - **crozier writes:** `{}`, on one line, which the schema admits.
 - **Why:** An example value invalid for its own schema: such an object admits no key holding the string `"value"`, so validating `{"key": "value"}` against it fails, and a snippet sending it sends a body the API's own schema rejects.
 - **Evidence:** [`docs/departures/evidence/closed-empty-object-example.md`](../../docs/departures/evidence/closed-empty-object-example.md)
+
+### `collapsed-anyof-property-description`
+
+- **Kind:** `richer-documentation`
+- **Trigger:** An object property declaring a description beside an anyOf or oneOf of two or more inline non-null scalar alternatives, the first undescribed, which both sides type as the one scalar they share: its model field, its client.py and raw_client.py docstring parameter entry, and its reference.md row.
+- **Fern writes:** The property undocumented: the bare model field (assistant_id: str), a docstring entry with no description, and a reference.md row with no text after its type.
+- **crozier writes:** The property's description: the model field declared with pydantic.Field() and a docstring holding it, the docstring entry's description line, and the reference.md row's em-dash description. The type, the field's requiredness and every other line are retained.
+- **Why:** Both outputs type and validate the field identically; crozier's documents the description the specification declares on the property itself, where Fern's documents nothing about it.
+- **Evidence:** [`docs/departures/evidence/collapsed-anyof-property-description.md`](../../docs/departures/evidence/collapsed-anyof-property-description.md)
 
 ### `constant-header-docs-arguments`
 
