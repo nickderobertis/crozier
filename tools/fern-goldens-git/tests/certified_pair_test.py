@@ -312,6 +312,28 @@ class CheckTests(unittest.TestCase):
             covered |= set(within)
         self.assertEqual(sorted(tracked), sorted(covered))
 
+    def test_a_tracked_path_it_cannot_read_as_text_is_skipped_and_the_rest_still_checked(self) -> None:
+        root = self.tree(
+            {
+                "tools/probe/drift.py": f'FERN_CLI = "{OTHER_CLI}"\n',
+                "tools/probe/deleted.py": f'FERN_CLI = "{OTHER_CLI}"\n',
+                "tools/probe/now-a-directory.py": f'FERN_CLI = "{OTHER_CLI}"\n',
+            }
+        )
+        # A binary file, a tracked file deleted in the worktree, and one replaced by a directory.
+        (root / "tools/probe/image.bin").write_bytes(b"\xff\xfe fern-api@" + OTHER_CLI.encode() + b"\x00")
+        subprocess.run(["git", "-C", str(root), "add", "tools/probe/image.bin"], check=True, capture_output=True)
+        (root / "tools/probe/deleted.py").unlink()
+        (root / "tools/probe/now-a-directory.py").unlink()
+        (root / "tools/probe/now-a-directory.py").mkdir()
+        result = run_check(root)
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(
+            [f'tools/probe/drift.py:1: states Fern CLI {OTHER_CLI}: FERN_CLI = "{OTHER_CLI}"'],
+            result.stderr.splitlines()[:-1],
+        )
+
     def test_moving_the_declaration_moves_what_passes(self) -> None:
         statement = {"tools/probe/probe.py": f'FERN_CLI = "{OTHER_CLI}"\n'}
         root = self.tree(statement)

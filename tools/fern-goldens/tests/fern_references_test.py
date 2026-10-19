@@ -943,11 +943,23 @@ class FernReferencesTests(unittest.TestCase):
             "case\tdocument\tenum_type\tlayout\toverlay\n"
             "clients/mu\tdocs/fern-measurements/clients/mu/openapi.yml\tpython-enums\tpackaged\t-\n",
         )
-        self.write("docs/fern-measurements/clients/mu/evidence.md", "Measured some time ago.\n")
-        result = self.run_tool("generate", "measurements", "clients/mu")
-        self.assertEqual(result.returncode, 1)
-        self.assertIn("states no Fern CLI and fern-python-sdk version to restate", result.stderr)
-        self.assertEqual(self.calls(), [])
+        reference = self.write("docs/fern-measurements/clients/mu/fern-expected/client.py", "KEPT = 1\n")
+        for label, note, message in (
+            ("no pair", "Measured some time ago.\n", "states no Fern CLI and fern-python-sdk version to restate"),
+            (
+                "a malformed digest",
+                f"Fern CLI {CLI} with `fernapi/fern-python-sdk` {SDK}.\n\nCanonical tree SHA-256: `abc123`.\n",
+                "names a canonical tree SHA-256 that is no 64-digit digest",
+            ),
+        ):
+            with self.subTest(label):
+                path = self.write("docs/fern-measurements/clients/mu/evidence.md", note)
+                result = self.run_tool("generate", "measurements", "clients/mu")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(message, result.stderr)
+                self.assertEqual(self.calls(), [])
+                self.assertEqual(path.read_text(encoding="utf-8"), note)
+                self.assertEqual(reference.read_text(encoding="utf-8"), "KEPT = 1\n")
 
     def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
         self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")
