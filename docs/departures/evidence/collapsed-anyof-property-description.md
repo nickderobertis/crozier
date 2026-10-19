@@ -17,13 +17,26 @@ declares the same shape on `assistant_id` of `RunCreateStateful`,
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds, exits 0; the
-comment-stripped tree is the case's `fern-expected/`. `types/charter.py`
+comment-stripped tree is the case's `fern-expected/`. `types/charter.py:10`
 declares `skipper: str`, both `book_charter` docstrings list `skipper : str`
-with no description, and `reference.md` reads ``**skipper:** `str` `` .
+with no description (`charters/client.py:39`, `:119`), and `reference.md:40`
+reads ``**skipper:** `str` ``. The new pair documents this property exactly as
+the previous one (Fern CLI 5.67.1, fern-python-sdk 5.20.0) did: the departure
+holds unchanged.
+
+The registered `langchain-agent-server` golden, regenerated at this pair, does
+the same for `assistant_id`, which its source declares as `{"anyOf": [{"type":
+"string", "format": "uuid", "title": "Assistant Id"}, {"type": "string",
+"title": "Graph Id"}], "description": "The assistant ID or graph name to run.
+…"}`: `types/run_create_stateful.py:24` and `types/run_create_stateless.py:20`
+declare a bare `assistant_id: str`, and `reference.md` lines 3574 and 3774 read
+``**assistant_id:** `str` `` with no text after the type.
 
 ## Both sides are valid; crozier's documents the declared description
+
+Re-run at this pair over `marina-skipper-refs`:
 
 ```text
 fern     types/charter.py:10   skipper: str
@@ -31,6 +44,7 @@ crozier  types/charter.py:10   skipper: str = pydantic.Field()
 crozier  types/charter.py:12   The skipper's ID or licence number.
 fern     reference.md:40       **skipper:** `str`
 crozier  reference.md:40       **skipper:** `str` — The skipper's ID or licence number.
+crozier  charters/client.py:40     The skipper's ID or licence number.
 ```
 
 The source declares the description on the property, not on its first
@@ -40,10 +54,17 @@ alternative:
 Charter skipper description: "The skipper's ID or licence number." | first member description: None
 ```
 
-Validating with each tree's own model (`Charter.model_validate`), both accept
-`{"skipper": "LIC-2231", "vessel": "Tern"}` as a `str` and both reject a body
-without `skipper` (`ValidationError`): the type and requiredness are identical,
-and crozier's adds only the specification's text.
+Validating with each tree's own model (`Charter.model_validate`, Python 3.12,
+pydantic 2.14.1), both accept `{"skipper": "LIC-2231", "vessel": "Tern"}` as a
+`str` and both reject a body without `skipper` (`ValidationError`): the type and
+requiredness are identical, and crozier's adds only the specification's text.
+
+```text
+fern accepts 'LIC-2231' str
+fern rejects a body without skipper: ValidationError
+crozier accepts 'LIC-2231' str
+crozier rejects a body without skipper: ValidationError
+```
 
 ## The parity rule
 
@@ -58,5 +79,6 @@ declare such a property: an `anyOf`/`oneOf` of two or more inline non-null
 scalar alternatives, the first undescribed, with the description on the
 property. `examples_docs_measurements_match_fern` and
 `examples_docs_cases_fail_on_an_adjacent_unexplained_byte` in
-`crates/crozier-e2e/tests/e2e/examples_docs.rs` hold the case; the line ledger
+`crates/crozier-e2e/tests/e2e/examples_docs.rs` hold the case, and
+`langchain_agent_server_matches_fern_output` holds the registered golden; the line ledger
 is recorded from `src/parity.rs`, never hand-edited.

@@ -1,8 +1,7 @@
 //! The union shapes the hand-written union fixtures prove, driven through the
 //! real binary: each fixture's complete certified tree in both enum modes, the
-//! two union extensions under both spellings and with conflicting values, the
-//! `union-value-wrapper-docs-example` departure's scope, and the refusals
-//! beside the shapes that now generate.
+//! two union extensions under both spellings and with conflicting values, and
+//! the refusals beside the shapes that now generate.
 
 use std::path::{Path, PathBuf};
 

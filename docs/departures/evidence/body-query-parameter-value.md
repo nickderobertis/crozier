@@ -8,17 +8,17 @@ sends the query value under the body's key; the body argument is ignored.
 
 The Waylay query API, corpus row 329, at immutable commit
 `8ab6c18e10f96c3665dbb849ebe2193c16a1659c`. The publisher's `LICENSE.txt`
-at that same commit grants redistribution. Route A generated the complete
-comment-stripped golden at Fern CLI 5.67.1 and Python SDK generator 5.20.0;
-`fern generate --group python-sdk --local --preview --force` exited 0 and
-reported `All checks passed` and `Finished`, writing 174 files.
+at that same commit grants redistribution. The manually dispatched **Fern
+goldens** workflow generated the complete comment-stripped golden,
+`tests/fixtures/waylay-queries/expected/`, at Fern CLI 5.163.1 with
+`fernapi/fern-python-sdk` 5.41.3 (its `.fern/metadata.json` records both):
+174 files beside the `.crozier-fern-golden.json` provenance record, which pins
+the source URL at that commit. No Fern artifact was edited.
 
-Generation used `TMPDIR` outside the crozier tree, with
-`GIT_CEILING_DIRECTORIES` pointing to that directory so an enclosing repository
-could not stamp its commit into Fern's metadata. No Fern artifact was edited.
-
-`execute_query` accepts both `resource` and `query_input_resource`. Its query
-mapping uses `resource`; its JSON mapping also uses `resource`. The correct
+`execute_query` accepts both `resource` and `query_input_resource`
+(`src/fern/execute/raw_client.py` line 50). Its query mapping uses `resource`
+(line 165); its JSON mapping also uses `resource` (line 177, the golden's
+`body-query-parameter-value` row). The correct
 body mapping uses `query_input_resource`. Converted colliding properties have
 the same substitution inside their converter, whose annotation stays unchanged.
 

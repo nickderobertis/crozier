@@ -8,23 +8,36 @@ from its own settings.
 crozier's packaged client wrapper always sends `X-Crozier-SDK-Name` (its project
 name) and `X-Crozier-SDK-Version`, the fixed packaged version `0.0.0`
 (`DEFAULT_SDK_VERSION` in `src/emit.rs`). Fern's value is the version the SDK is
-released under. Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, the
-organization `fern` and the generators file of
-[`readme-client-class-casing.md`](readme-client-class-casing.md), run as
-`FERN_TOKEN=preview-only-no-publish fern generate --group python-sdk --local
---preview --output preview --force --version 2.3.1`:
+released under. At the certified pair, Fern CLI 5.163.1 with
+`fernapi/fern-python-sdk` 5.41.3, every packaged golden is generated without
+`--version` and its wrapper sends the pair with `0.0.0`
+(`tests/fixtures/alma-france/expected/src/fern/core/client_wrapper.py` lines
+39–40); the golden's `.fern/metadata.json` records `"cliVersion": "5.163.1"` and
+`"generatorVersion": "5.41.3"`. crozier, over the document of
+[`readme-client-class-casing.md`](readme-client-class-casing.md):
 
 ```text
-$ grep -n SDK- preview/fern-python-sdk/src/fern/core/client_wrapper.py
-37:            "X-Fern-SDK-Name": "default_package_name",
-38:            "X-Fern-SDK-Version": "2.3.1",
-$ crozier generate python --spec openapi.yml --output cz --package-name fern --project-name default_package_name
+$ crozier generate python --spec docs/departures/evidence/readme-client-class-casing/openapi.yml --output cz --package-name fern --project-name default_package_name
 $ grep -n SDK- cz/src/fern/core/client_wrapper.py
 37:            "X-Crozier-SDK-Name": "default_package_name",
 38:            "X-Crozier-SDK-Version": "0.0.0",
 ```
 
-Line 38 is this departure; line 37, with equal values, is
+A reference released under another version carries it in that header: run
+with `--version 2.3.1` (`FERN_TOKEN=preview-only-no-publish fern generate
+--group python-sdk --local --preview --output preview --force --version
+2.3.1`, organization `fern`), Fern's wrapper reads `"X-Fern-SDK-Version":
+"2.3.1"` beside `"X-Fern-SDK-Name": "default_package_name"`. That run was
+measured at the previous certified pair (Fern CLI 5.67.1 with
+`fernapi/fern-python-sdk` 5.20.0) and has not been repeated at the new one,
+since no committed golden is released under a version; the comparison is held
+on the new pair's packaged golden by
+`compare_applies_the_packaging_and_metadata_departures_exactly` in
+`crates/crozier-e2e/tests/e2e/compare.rs`, which edits that golden's header to
+`2.3.1` (and drops the pair altogether) and checks the comparison reports this
+departure.
+
+The version line is this departure; the name line, with equal values, is
 `sdk-identity-header-prefix`. A reference whose wrapper sends no such pair (one
 generated without publishing metadata) makes both of crozier's lines this
 departure.

@@ -15,13 +15,15 @@ second. The real dystore API tags its unsupported operations
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds, exits 0; the
 comment-stripped tree is the case's `fern-expected/`. The package's module is
-`src/fern/legacy_endpoints/`, and its client exposes `legacy_endpoints`. Yet
-`README.md` calls `client.🚧_legacy_endpoints.list_legacy_moorings(...)`, and
-`reference.md` writes `client.🚧_legacy_endpoints.` with the link
-`src/fern/🚧_legacy_endpoints/client.py` for both operations.
+`src/fern/legacy_endpoints/`, and its client exposes `legacy_endpoints`
+(`src/fern/client.py` line 91). Yet `README.md` calls
+`client.🚧_legacy_endpoints.list_legacy_moorings(...)` (lines 43, 63, 80, 97,
+128 and 143), and `reference.md` writes `client.🚧_legacy_endpoints.` with the
+link `src/fern/🚧_legacy_endpoints/client.py` for both operations (lines 3 and
+60) and in both calls (lines 22 and 79).
 
 ## Why it is a defect
 
@@ -46,10 +48,13 @@ fern     src/fern/🚧_legacy_endpoints/client.py   missing
 crozier  src/fern/legacy_endpoints/client.py      exists
 ```
 
-The docs contradict the generated code, a defect under the defect rule. The
-same execution against the certified tree generated from a document tagged
-`⚠️ Not supported yet` fails with `SyntaxError: invalid character '⚠'
-(U+26A0)`.
+The docs contradict the generated code, a defect under the defect rule. In the
+dystore golden (`tests/fixtures/dystore-api/expected/`), generated from a
+document tagged `⚠️ Not supported yet`, the README's snippets name no such
+operation at this pair, but `reference.md` writes the raw spelling in 13 usage
+blocks (the first at line 5544, `client.⚠️_not_supported_yet.get_user_orders(`)
+and their links (line 5509 onward); compiling the first fails with
+`SyntaxError: invalid character '⚠' (U+26A0)`.
 
 ## crozier's output
 

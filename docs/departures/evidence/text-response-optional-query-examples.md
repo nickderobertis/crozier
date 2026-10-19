@@ -16,17 +16,23 @@ optional query parameters whose schemas declare examples: `columns`
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds, exits 0; the
 comment-stripped tree is the case's `fern-expected/`. Fern builds no example
 from the document for a `text/*` success body, so `README.md`, `reference.md`
 and both `export_dock_log` docstrings pass `dock_id="dock_id"` alone; for a JSON
-success body both Fern and crozier pass the same optional examples.
+success body both Fern and crozier pass the same optional examples. crozier's
+tree adds `columns="vessel,arrival",` and `compact="true",` after it: lines
+45–46 and 67–68 of `README.md`, 24–25 of `reference.md`, and 59–60 and 123–124
+of `src/fern/docks/client.py`. The supabase-api-v1 golden shows the same at
+the new pair (`reference.md` lines 647–648 and two docstrings of
+`src/fern/environments/client.py`).
 
 ## Both sides are valid; crozier's documents the declared examples
 
 Binding every worked call of `export_dock_log` in each tree's client docstrings
-and `reference.md` to the package's own method:
+and `reference.md` (three per tree) to the package's own method, re-run at the
+new pair:
 
 ```text
 fern     {"dock_id": "'dock_id'"}                                                  binds

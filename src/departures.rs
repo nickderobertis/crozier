@@ -299,7 +299,6 @@ pub struct Context {
     crozier_constant_headers: OnceLock<BTreeSet<(String, String)>>,
     reference_nullable_items: OnceLock<BTreeSet<String>>,
     crozier_project: OnceLock<Option<String>>,
-    crozier_value_wrappers: OnceLock<std::collections::BTreeMap<String, String>>,
     crozier_returns: OnceLock<BTreeMap<(String, String), String>>,
     request_examples: OnceLock<RequestExampleContext>,
     empty_namespace: OnceLock<EmptyNamespace>,
@@ -347,7 +346,6 @@ impl Context {
                     .map(|(_, text)| *text),
             )),
             crozier_project: OnceLock::from(project),
-            crozier_value_wrappers: OnceLock::from(value_wrappers(crozier.iter().copied())),
             empty_namespace: OnceLock::from(EmptyNamespace::default()),
             crozier_returns: OnceLock::from(method_returns(crozier.iter().copied())),
             request_examples: OnceLock::from(request_example_context(crozier.iter().copied())),
@@ -466,22 +464,6 @@ impl Context {
                 project_name(&std::fs::read_to_string(crozier.join("pyproject.toml")).ok()?)
             })
             .as_deref()
-    }
-
-    /// The discriminated-union wrappers crozier's modules declare holding their
-    /// payload whole, each class name mapped to its discriminant value.
-    pub fn crozier_value_wrappers(&self) -> &std::collections::BTreeMap<String, String> {
-        self.crozier_value_wrappers.get_or_init(|| {
-            let Some((_, root)) = self.roots.as_ref() else {
-                return std::collections::BTreeMap::new();
-            };
-            let sources = python_sources(root);
-            value_wrappers(
-                sources
-                    .iter()
-                    .map(|(rel, text)| (rel.as_str(), text.as_str())),
-            )
-        })
     }
 
     /// The relative path of every file crozier's tree holds.
@@ -1517,46 +1499,6 @@ fn lifted_parameters<'a>(
         .collect()
 }
 
-/// Every class among `sources` whose body opens with a `value` field followed
-/// by a `Literal` tag with its default, `    <tag>: typing.Literal["<v>"] =
-/// "<v>"`: a discriminated-union wrapper holding its payload whole, mapped to
-/// its discriminant value `<v>`.
-fn value_wrappers<'a>(
-    sources: impl IntoIterator<Item = (&'a str, &'a str)>,
-) -> std::collections::BTreeMap<String, String> {
-    let mut found = std::collections::BTreeMap::new();
-    for (path, text) in sources {
-        if !path.ends_with(".py") {
-            continue;
-        }
-        let lines: Vec<&str> = text.lines().collect();
-        for (index, line) in lines.iter().enumerate() {
-            let Some(name) = line
-                .strip_prefix("class ")
-                .and_then(|rest| rest.split_once('('))
-                .map(|(name, _)| name)
-            else {
-                continue;
-            };
-            let (Some(value), Some(tag)) = (lines.get(index + 1), lines.get(index + 2)) else {
-                continue;
-            };
-            if !value.starts_with("    value: ") {
-                continue;
-            }
-            let literal = tag
-                .split_once(": typing.Literal[\"")
-                .and_then(|(_, rest)| rest.split_once("\"] = \""))
-                .filter(|(value, default)| default.strip_suffix('"') == Some(*value))
-                .map(|(value, _)| value.to_string());
-            if let Some(literal) = literal {
-                found.insert(name.to_string(), literal);
-            }
-        }
-    }
-    found
-}
-
 /// The `(wire name, value)` of every `"<wire>": "<value>",` line inside a
 /// `headers={` dict of the raw clients among `sources`.
 fn constant_headers<'a>(
@@ -1765,7 +1707,7 @@ pub struct Rule {
 }
 
 /// Every rule's id, in catalog order — the order the engine tries them in.
-pub const RULE_IDS: [&str; 29] = [
+pub const RULE_IDS: [&str; 26] = [
     "anyof-path-param-schema-example",
     "binary-json-body-example",
     "body-query-parameter-value",
@@ -1777,11 +1719,9 @@ pub const RULE_IDS: [&str; 29] = [
     "emoji-tag-reference-identifiers",
     "empty-namespace-package",
     "fern-metadata-generator-config",
-    "flat-pagination-pager-docs",
     "init-type-checking-import-order",
     "int64-example-rounded-out-of-range",
     "lifted-base-path-docs-examples",
-    "lifted-base-path-positional-example",
     "multipart-object-required-file-example",
     "nullable-items-docs",
     "optional-lowered-required-query-array-example",
@@ -1794,7 +1734,6 @@ pub const RULE_IDS: [&str; 29] = [
     "sdk-variable-docs-examples",
     "stream-reference-return-type",
     "text-response-optional-query-examples",
-    "union-value-wrapper-docs-example",
 ];
 
 /// The rule of the catalog entry `id`, if crozier has one.
@@ -1857,10 +1796,6 @@ pub fn rule(id: &str) -> Option<Rule> {
             region: Some(metadata_generator_config),
             ..none
         },
-        "flat-pagination-pager-docs" => Rule {
-            region: Some(flat_pagination_pager_docs),
-            ..none
-        },
         "binary-json-body-example" => Rule {
             region: Some(binary_json_body_example),
             ..Rule::default()
@@ -1879,10 +1814,6 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "lifted-base-path-docs-examples" => Rule {
             region: Some(lifted_base_path_docs_examples),
-            ..none
-        },
-        "lifted-base-path-positional-example" => Rule {
-            line: Some(lifted_base_path_positional_example),
             ..none
         },
         "nullable-items-docs" => Rule {
@@ -1916,10 +1847,6 @@ pub fn rule(id: &str) -> Option<Rule> {
         },
         "sdk-variable-docs-examples" => Rule {
             region: Some(sdk_variable_docs_examples),
-            ..none
-        },
-        "union-value-wrapper-docs-example" => Rule {
-            region: Some(union_value_wrapper_docs_example),
             ..none
         },
         _ => return None,
@@ -3036,92 +2963,6 @@ fn empty_namespace_package_file(context: &Context, rel: &str, side: Side) -> boo
     }
 }
 
-/// The seven lines Fern's README raw-response snippet walks its `pager` with.
-const PAGER_WALK: [&str; 7] = [
-    "print(pager.response)  # access the typed response for the first page",
-    "for item in pager:",
-    "    print(item)  # access the underlying object(s)",
-    "for page in pager.iter_pages():",
-    "    print(page.response)  # access the typed response for each page",
-    "    for item in page:",
-    "        print(item)  # access the underlying object(s)",
-];
-
-/// `flat-pagination-pager-docs`: in `README.md`, Fern's file is crozier's once
-/// its pager documentation is undone — the `Pagination` table-of-contents entry,
-/// the `## Pagination` section, and the raw-response snippet walking a `pager`
-/// written back as the raw client's call — where crozier's tree has no pager to
-/// document (Fern's flat tree, whose paginated methods return the page model).
-/// The region is the two files' differing window.
-fn flat_pagination_pager_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if pair.rel != "README.md" || pair.crozier.contains(&"## Pagination") {
-        return Ok(None);
-    }
-    let lines = pair.fern;
-    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
-    let mut removed = false;
-    let mut index = 0;
-    while index < lines.len() {
-        let line = lines[index];
-        if line == "- [Pagination](#pagination)" {
-            removed = true;
-            index += 1;
-            continue;
-        }
-        if line == "## Pagination" {
-            removed = true;
-            index += 1;
-            while index < lines.len() && !lines[index].starts_with("## ") {
-                index += 1;
-            }
-            continue;
-        }
-        // `client = X(` / `    ...,` / `)` / `pager = client.…(...)` and the
-        // seven lines walking it are the raw client's five.
-        if let (Some(class), Some(&"    ...,"), Some(&")"), Some(call)) = (
-            line.strip_prefix("client = ")
-                .and_then(|rest| rest.strip_suffix('(')),
-            lines.get(index + 1),
-            lines.get(index + 2),
-            lines
-                .get(index + 3)
-                .and_then(|call| call.strip_prefix("pager = client.")),
-        ) {
-            let walked = lines.get(index + 4..index + 11) == Some(&PAGER_WALK[..]);
-            if let (true, Some((callee, arguments))) = (walked, call.split_once('(')) {
-                let (path, method) = callee.rsplit_once('.').unwrap_or(("", callee));
-                let raw = if path.is_empty() {
-                    format!("response = client.with_raw_response.{method}({arguments}")
-                } else {
-                    format!("response = client.{path}.with_raw_response.{method}({arguments}")
-                };
-                kept.push(format!("client = {class}(...)"));
-                kept.push(raw);
-                kept.push("print(response.headers)  # access the response headers".to_string());
-                kept.push(
-                    "print(response.status_code)  # access the response status code".to_string(),
-                );
-                kept.push("print(response.data)  # access the underlying object".to_string());
-                removed = true;
-                index += 11;
-                continue;
-            }
-        }
-        kept.push(line.to_string());
-        index += 1;
-    }
-    if !removed
-        || kept.len() != pair.crozier.len()
-        || kept
-            .iter()
-            .zip(pair.crozier)
-            .any(|(left, right)| left != right)
-    {
-        return Ok(None);
-    }
-    Ok(differing_window(pair.fern, pair.crozier))
-}
-
 /// The line opening the call whose argument list holds line `index`: the
 /// nearest line above it ending in `(`.
 fn call_opener<'l>(lines: &[&'l str], index: usize) -> Option<&'l str> {
@@ -3447,30 +3288,27 @@ fn header_doc_names(wire: &str) -> [String; 2] {
     ]
 }
 
-/// `constant-header-docs-arguments`: in `README.md` or `reference.md`, Fern's
-/// file is crozier's but for the headers crozier's raw clients send as
-/// constants: every method call line passing one its constant,
-/// `<indent>NAME="<value>",`, and every `reference.md` block documenting one as
-/// `**NAME:** \`typing.Literal\``. Both are set aside, and the rest must equal
-/// crozier's file; the region is the two files' differing window.
+/// `constant-header-docs-arguments`: in `reference.md`, Fern's file is
+/// crozier's but for the headers crozier's raw clients send as constants:
+/// every block documenting one under a method as `**NAME:** \`typing.Literal\``.
+/// Those blocks are set aside, and the rest must equal crozier's file; the
+/// region is the two files' differing window. Fern's worked calls leave the
+/// constants out at fern-python-sdk 5.41.3, as crozier's do, so a call still
+/// passing one is no part of this departure.
 fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if !DOCS_FILES.contains(&pair.rel) {
+    if pair.rel != "reference.md" {
         return Ok(None);
     }
     let constants = pair.context.crozier_constant_headers();
     if constants.is_empty() {
         return Ok(None);
     }
-    let passed: BTreeSet<String> = constants
-        .iter()
-        .flat_map(|(wire, value)| header_doc_names(wire).map(|name| format!("{name}=\"{value}\",")))
-        .collect();
     let documented: BTreeSet<String> = constants
         .iter()
         .flat_map(|(wire, _)| header_doc_names(wire))
         .collect();
     let lines = pair.fern;
-    let mut kept: Vec<String> = Vec::with_capacity(lines.len());
+    let mut kept: Vec<&str> = Vec::with_capacity(lines.len());
     let mut removed = false;
     let mut index = 0;
     while index < lines.len() {
@@ -3486,36 +3324,10 @@ fn constant_header_docs_arguments(pair: &Pair<'_>) -> Result<Option<Region>, Str
             removed = true;
             continue;
         }
-        let passes_constant = passed.contains(lines[index].trim_start())
-            && lines[index].len() > lines[index].trim_start().len()
-            && call_opener(lines, index).is_some_and(opens_method_call);
-        if passes_constant {
-            removed = true;
-        } else {
-            // A method call the constants were the only arguments of closes on
-            // its opening line, as crozier writes it.
-            let line = lines[index];
-            let indent = &line[..line.len() - line.trim_start().len()];
-            let closes_empty = line.trim_start() == ")"
-                && kept.last().is_some_and(|opener| {
-                    opener.ends_with('(')
-                        && opener.starts_with(indent)
-                        && opens_method_call(opener.trim_start())
-                });
-            match kept.last_mut() {
-                Some(opener) if closes_empty => opener.push(')'),
-                _ => kept.push(line.to_string()),
-            }
-        }
+        kept.push(lines[index]);
         index += 1;
     }
-    if !removed
-        || kept.len() != pair.crozier.len()
-        || kept
-            .iter()
-            .zip(pair.crozier)
-            .any(|(left, right)| left != right)
-    {
+    if !removed || kept != pair.crozier {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
@@ -3582,110 +3394,6 @@ fn nullable_items_docs(pair: &Pair<'_>) -> Result<Option<Region>, String> {
         return Ok(None);
     }
     Ok(differing_window(pair.fern, pair.crozier))
-}
-
-/// `union-value-wrapper-docs-example`: in `README.md` or `reference.md`, every
-/// call of a wrapper that holds its payload whole (see
-/// [`Context::crozier_value_wrappers`]) passes it as `value=<payload>` in
-/// crozier's snippet, where Fern's writes the empty keyword argument
-/// `<discriminant value>=,` in its place, and the snippet's `from … import`
-/// line leaves out the names only the payload used. crozier's lines rewritten
-/// so must equal Fern's file exactly.
-fn union_value_wrapper_docs_example(pair: &Pair<'_>) -> Result<Option<Region>, String> {
-    if !DOCS_FILES.contains(&pair.rel) {
-        return Ok(None);
-    }
-    let wrappers = pair.context.crozier_value_wrappers();
-    if wrappers.is_empty() {
-        return Ok(None);
-    }
-    let mut fern_form: Vec<String> = Vec::with_capacity(pair.crozier.len());
-    let mut payload_names = BTreeSet::new();
-    let mut index = 0;
-    while index < pair.crozier.len() {
-        let line = pair.crozier[index];
-        fern_form.push(line.to_string());
-        index += 1;
-        let trimmed = line.trim_start();
-        let callee = trimmed
-            .strip_suffix('(')
-            .map(|call| call.rsplit_once('=').map_or(call, |(_, callee)| callee));
-        let Some(value) = callee.and_then(|callee| wrappers.get(callee)) else {
-            continue;
-        };
-        let inner = format!("{}    ", &line[..line.len() - trimmed.len()]);
-        let Some(payload) = pair
-            .crozier
-            .get(index)
-            .and_then(|next| next.strip_prefix(&format!("{inner}value=")))
-        else {
-            continue;
-        };
-        let mut end = index + 1;
-        if payload.ends_with('(') {
-            let close = format!("{inner})");
-            while end < pair.crozier.len() && pair.crozier[end] != close {
-                end += 1;
-            }
-            end += 1;
-        }
-        for payload_line in &pair.crozier[index..end.min(pair.crozier.len())] {
-            payload_names.extend(
-                tokens(payload_line)
-                    .into_iter()
-                    .filter(|token| token.starts_with(|c: char| c.is_ascii_uppercase())),
-            );
-        }
-        fern_form.push(format!("{inner}{value}=,"));
-        index = end;
-    }
-    let body: Vec<String> = fern_form
-        .iter()
-        .filter(|line| !line.starts_with("from "))
-        .cloned()
-        .collect();
-    let used = |name: &str| body.iter().any(|line| tokens(line).contains(&name));
-    let fern_form: Vec<String> = fern_form
-        .into_iter()
-        .map(|line| {
-            let Some((head, names)) = line.split_once(" import ") else {
-                return line;
-            };
-            if !head.starts_with("from ") {
-                return line;
-            }
-            let kept: Vec<&str> = names
-                .split(", ")
-                .filter(|name| !payload_names.contains(*name) || used(name))
-                .collect();
-            format!("{head} import {}", kept.join(", "))
-        })
-        .collect();
-    if fern_form.len() != pair.fern.len()
-        || fern_form
-            .iter()
-            .zip(pair.fern)
-            .any(|(left, right)| left != right)
-    {
-        return Ok(None);
-    }
-    Ok(differing_window(pair.fern, pair.crozier))
-}
-
-/// `lifted-base-path-positional-example`: in a `.py` file, Fern's line passes a
-/// string positionally, `<indent>"<value>",`, where crozier's line passes the
-/// same string by the keyword of a lifted base-path parameter,
-/// `<indent>NAME="<value>",`.
-fn lifted_base_path_positional_example(pair: &Pair<'_>, fern: &str, crozier: &str) -> bool {
-    if !pair.rel.ends_with(".py") {
-        return false;
-    }
-    let Some(name) = lifted_argument(crozier, pair.context.crozier_lifted_parameters()) else {
-        return false;
-    };
-    let indent = &crozier[..crozier.len() - crozier.trim_start().len()];
-    let value = &crozier.trim_start()[name.len() + 1..];
-    value.starts_with('"') && fern.strip_prefix(indent) == Some(value)
 }
 
 /// Whether `rel` is an SDK's client wrapper, where the identity headers are set.
@@ -5186,36 +4894,6 @@ mod tests {
         ));
     }
 
-    #[test]
-    fn the_positional_rule_takes_only_the_lifted_keyword_with_the_same_value() {
-        let context = lifted_context();
-        let lines: [&str; 0] = [];
-        let pair = Pair {
-            rel: "src/acme/client.py",
-            fern: &lines,
-            crozier: &lines,
-            context: &context,
-        };
-        let holds =
-            |fern: &str, crozier: &str| lifted_base_path_positional_example(&pair, fern, crozier);
-        assert!(holds("        \"v2\",", "        edition=\"v2\","));
-        assert!(!holds("        \"v3\",", "        edition=\"v2\","));
-        assert!(!holds("    \"v2\",", "        edition=\"v2\","));
-        assert!(!holds("        \"v2\",", "        tenant=\"v2\","));
-        assert!(!holds("        edition=\"v2\",", "        edition=\"v2\","));
-        assert!(!holds("        2,", "        edition=2,"));
-        assert!(!holds("\"v2\",", "edition=\"v2\","));
-        let readme = Pair {
-            rel: "README.md",
-            ..pair
-        };
-        assert!(!lifted_base_path_positional_example(
-            &readme,
-            "    \"v2\",",
-            "    edition=\"v2\","
-        ));
-    }
-
     fn region_of(
         rule: RegionRule,
         rel: &str,
@@ -5485,11 +5163,11 @@ mod tests {
         );
     }
 
-    const CONSTANT_FERN: &str = "client.beds.list_beds(\n    section=\"section\",\n    mist_mode=\"fine\",\n)\n\n<dl>\n<dd>\n\n**mist_mode:** `typing.Literal` — How fine.\n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**section:** `str` \n";
+    const CONSTANT_FERN: &str = "client.beds.list_beds(\n    section=\"section\",\n)\n\n<dl>\n<dd>\n\n**mist_mode:** `typing.Literal` — How fine.\n    \n</dd>\n</dl>\n\n<dl>\n<dd>\n\n**section:** `str` \n";
     const CONSTANT_CROZIER: &str = "client.beds.list_beds(\n    section=\"section\",\n)\n\n<dl>\n<dd>\n\n**section:** `str` \n";
 
     #[test]
-    fn the_constant_header_docs_rule_takes_only_the_constants_arguments_and_blocks() {
+    fn the_constant_header_docs_rule_takes_only_the_constants_reference_blocks() {
         let context = Context::from_sources(
             [],
             [(
@@ -5507,23 +5185,23 @@ mod tests {
         )
         .is_some());
         for (fern, crozier) in [
-            // Another value, another argument, one more difference, an
-            // argument to the constructor, a block typed otherwise.
-            (
-                CONSTANT_FERN.replace("=\"fine\"", "=\"coarse\""),
-                CONSTANT_CROZIER.to_string(),
-            ),
-            (
-                CONSTANT_FERN.replace("    mist_mode", "    fan_speed=3,\n    mist_mode"),
-                CONSTANT_CROZIER.to_string(),
-            ),
+            // One more difference, a block typed otherwise, a header crozier
+            // does not send as a constant, and a worked call still passing the
+            // constant (Fern 5.41.3 leaves it out, as crozier does).
             (format!("{CONSTANT_FERN}x"), format!("{CONSTANT_CROZIER}y")),
             (
-                CONSTANT_FERN.replace("client.beds.list_beds(", "client = FernApi("),
-                CONSTANT_CROZIER.replace("client.beds.list_beds(", "client = FernApi("),
+                CONSTANT_FERN.replace("`typing.Literal`", "`str`"),
+                CONSTANT_CROZIER.to_string(),
             ),
             (
-                CONSTANT_FERN.replace("`typing.Literal`", "`str`"),
+                CONSTANT_FERN.replace("**mist_mode:**", "**fan_speed:**"),
+                CONSTANT_CROZIER.to_string(),
+            ),
+            (
+                CONSTANT_FERN.replace(
+                    "    section=\"section\",\n",
+                    "    section=\"section\",\n    mist_mode=\"fine\",\n",
+                ),
                 CONSTANT_CROZIER.to_string(),
             ),
         ] {
@@ -5533,34 +5211,18 @@ mod tests {
                 "{fern}"
             );
         }
-        // A call the constant was the only argument of closes on its own line;
-        // a constructor never takes one.
-        assert!(region_of(
-            rule,
-            "README.md",
-            "client.beds.count_beds(\n    mist_mode=\"fine\",\n)",
-            "client.beds.count_beds()",
-            &context
-        )
-        .is_some());
+        // Only reference.md, only with a constant header, only where they differ.
+        for rel in ["README.md", "src/acme/beds/client.py"] {
+            assert_eq!(
+                region_of(rule, rel, CONSTANT_FERN, CONSTANT_CROZIER, &context),
+                None,
+                "{rel}"
+            );
+        }
         assert_eq!(
             region_of(
                 rule,
-                "README.md",
-                "client = FernApi(\n    mist_mode=\"fine\",\n)",
-                "client = FernApi()",
-                &context
-            ),
-            None
-        );
-        assert_eq!(
-            region_of(rule, "client.py", CONSTANT_FERN, CONSTANT_CROZIER, &context),
-            None
-        );
-        assert_eq!(
-            region_of(
-                rule,
-                "README.md",
+                "reference.md",
                 CONSTANT_FERN,
                 CONSTANT_CROZIER,
                 &Context::default()
@@ -5568,7 +5230,7 @@ mod tests {
             None
         );
         assert_eq!(
-            region_of(rule, "README.md", CONSTANT_FERN, CONSTANT_FERN, &context),
+            region_of(rule, "reference.md", CONSTANT_FERN, CONSTANT_FERN, &context),
             None
         );
     }
@@ -5727,76 +5389,6 @@ mod tests {
                 &["    profile={},"]
             )),
             Ok(None)
-        );
-    }
-
-    #[test]
-    fn the_flat_pager_docs_rule_takes_only_the_pager_documentation() {
-        let fern = [
-            "- [Exception Handling](#exception-handling)",
-            "- [Pagination](#pagination)",
-            "## Pagination",
-            "",
-            "```python",
-            "pager = client.list_entries(...)",
-            "```",
-            "",
-            "## Advanced",
-            "client = FernApi(",
-            "    ...,",
-            ")",
-            "pager = client.ledger.list_entries(...)",
-            "print(pager.response)  # access the typed response for the first page",
-            "for item in pager:",
-            "    print(item)  # access the underlying object(s)",
-            "for page in pager.iter_pages():",
-            "    print(page.response)  # access the typed response for each page",
-            "    for item in page:",
-            "        print(item)  # access the underlying object(s)",
-            "```",
-        ];
-        let crozier = [
-            "- [Exception Handling](#exception-handling)",
-            "## Advanced",
-            "client = FernApi(...)",
-            "response = client.ledger.with_raw_response.list_entries(...)",
-            "print(response.headers)  # access the response headers",
-            "print(response.status_code)  # access the response status code",
-            "print(response.data)  # access the underlying object",
-            "```",
-        ];
-        let found = flat_pagination_pager_docs(&pair("README.md", &fern, &crozier)).unwrap();
-        assert_eq!(
-            found,
-            Some(Region {
-                fern: 1..20,
-                crozier: 1..7
-            })
-        );
-        // Only the README, and only where crozier documents no pager itself.
-        assert!(
-            flat_pagination_pager_docs(&pair("reference.md", &fern, &crozier))
-                .unwrap()
-                .is_none()
-        );
-        assert!(flat_pagination_pager_docs(&pair("README.md", &fern, &fern))
-            .unwrap()
-            .is_none());
-        // One more changed line anywhere is not this departure.
-        let mut other = crozier;
-        other[0] = "- [Exceptions](#exceptions)";
-        assert!(
-            flat_pagination_pager_docs(&pair("README.md", &fern, &other))
-                .unwrap()
-                .is_none()
-        );
-        // Nor is a snippet whose walk is not Fern's pager walk.
-        let mut walked = fern;
-        walked[16] = "    print(page.headers)";
-        assert!(
-            flat_pagination_pager_docs(&pair("README.md", &walked, &crozier))
-                .unwrap()
-                .is_none()
         );
     }
 

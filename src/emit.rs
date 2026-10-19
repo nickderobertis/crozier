@@ -2520,10 +2520,8 @@ fn client_path_parameter_param(parameter: &ClientPathParameter, on_client: bool)
 }
 
 /// A lifted base-path parameter's example argument: its default by keyword, or
-/// the placeholder a required constructor argument takes. Fern writes the
-/// default positionally, `FernApi("v2")`, which a keyword-only constructor
-/// rejects with a `TypeError`; crozier names it by keyword instead (the
-/// `lifted-base-path-positional-example` departure).
+/// the placeholder a required constructor argument takes, as fern-python-sdk
+/// 5.41.3's docstrings write it (`FernApi(edition="v2")`).
 fn client_path_parameter_example(parameter: &ClientPathParameter) -> String {
     match &parameter.default {
         Some(value) => format!("{}=\"{}\"", parameter.py_name, escape_py_str(value)),
