@@ -21090,6 +21090,36 @@ fn sdk_env_generated_xml_models_behave_as_fern_s_own() {
         .success();
     let py = sdk_python_env(&sdk.join("pyproject.toml"))
         .unwrap_or_else(|reason| panic!("the XML suite needs the SDK's Python env: {reason}"));
+    // A child builder never takes a name pydantic's `BaseModel` already
+    // answers: every public attribute of the installed pydantic is reserved.
+    let emitter =
+        std::fs::read_to_string(repo_root().join("src/emit/xml.rs")).expect("read the XML emitter");
+    let reserved: std::collections::BTreeSet<&str> = emitter
+        .split("const RESERVED_METHOD_NAMES: &[&str] = &[")
+        .nth(1)
+        .and_then(|rest| rest.split("];").next())
+        .expect("the emitter declares RESERVED_METHOD_NAMES")
+        .split('"')
+        .skip(1)
+        .step_by(2)
+        .collect();
+    let attributes = std::process::Command::new(&py)
+        .args([
+            "-c",
+            "import pydantic\nprint('\\n'.join(n for n in dir(pydantic.BaseModel) if not n.startswith('_')))",
+        ])
+        .output()
+        .expect("list pydantic.BaseModel's attributes");
+    let listed = String::from_utf8_lossy(&attributes.stdout);
+    let unreserved: Vec<&str> = listed
+        .lines()
+        .filter(|name| !reserved.contains(name))
+        .collect();
+    assert!(
+        attributes.status.success() && !listed.trim().is_empty() && unreserved.is_empty(),
+        "pydantic.BaseModel attributes a child builder could take: {unreserved:?}{}",
+        String::from_utf8_lossy(&attributes.stderr)
+    );
     let crozier = xml_suite_outcomes(&py, &sdk);
     let fern = xml_suite_outcomes(&py, &fixture_dir("swagger-petstore").join("expected"));
     assert_eq!(

@@ -2329,6 +2329,48 @@ mod tests {
         );
     }
 
+    /// The reserved names are what the emitter writes: every public method a
+    /// generated XML model defines, apart from its child builders, is one a
+    /// builder must not take.
+    #[test]
+    fn every_method_an_xml_model_defines_is_reserved_from_its_builders() {
+        let files = generate(zoo());
+        let mut seen = std::collections::BTreeSet::new();
+        for (path, source) in files.iter().filter(|(path, source)| {
+            path.starts_with("src/zoo/types/") && source.contains("def to_xml(")
+        }) {
+            let lines: Vec<&str> = source.lines().collect();
+            for (index, line) in lines.iter().enumerate() {
+                let Some(name) = line
+                    .strip_prefix("    def ")
+                    .and_then(|rest| rest.split('(').next())
+                else {
+                    continue;
+                };
+                let docstring = lines[index..]
+                    .iter()
+                    .skip_while(|line| !line.trim_start().starts_with("\"\"\""))
+                    .nth(1)
+                    .map(|line| line.trim())
+                    .unwrap_or_default();
+                // A private helper's leading underscore keeps it clear of every
+                // builder, which is named after a child element.
+                if name.starts_with('_') || docstring.starts_with("Appends a `<") {
+                    continue;
+                }
+                assert!(
+                    super::RESERVED_METHOD_NAMES.contains(&name),
+                    "{path} defines `{name}`, which a child builder could take"
+                );
+                seen.insert(name.to_string());
+            }
+        }
+        assert!(
+            seen.contains("to_xml") && seen.contains("add_child"),
+            "{seen:?}"
+        );
+    }
+
     #[test]
     fn the_writer_indents_at_line_starts_and_breaks_lines_to_indent() {
         let mut w = Writer::new(1);
