@@ -1722,6 +1722,65 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         return root, root / "tools/fern-goldens/generate-fern-fixture.sh", environment
 
+    def test_the_fern_cli_defaults_to_the_declared_cli_version_and_an_override_recovers(self) -> None:
+        """With FERN_CLI_VERSION unset, the CLI the workspace selects is metadata.json's
+        cliVersion, read afresh each run; a declaration it cannot read stops the run
+        before Fern, and an explicit FERN_CLI_VERSION still runs."""
+        root, script, environment = self.generator_repo("cli default repo")
+        recorded = root / "configs.jsonl"
+        self.write_executable(
+            root / "fake bin" / "fern",
+            f"""
+            #!/usr/bin/env python3
+            import json, pathlib, sys
+            arguments = sys.argv[1:]
+            with open({str(recorded)!r}, "a") as log:
+                log.write((pathlib.Path.cwd() / "fern.config.json").read_text().strip() + "\\n")
+            generated = pathlib.Path(arguments[arguments.index("--output") + 1]) / "fern-python-sdk" / "src" / "fern"
+            generated.mkdir(parents=True)
+            (generated / "version.py").write_text("generated\\n", encoding="utf-8")
+            """,
+        )
+        environment.pop("FERN_CLI_VERSION", None)
+        metadata = root / "assets/scaffolding/metadata.json"
+        declared = json.loads(metadata.read_text(encoding="utf-8"))
+
+        def run(**updates: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                self.script_command(script, "beta", "6.5.4"),
+                cwd=root,
+                env={**environment, **updates},
+                text=True,
+                encoding="utf-8",
+                capture_output=True,
+                check=False,
+            )
+
+        def versions() -> list[str]:
+            if not recorded.is_file():
+                return []
+            return [json.loads(line)["version"] for line in recorded.read_text(encoding="utf-8").splitlines()]
+
+        first = run()
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertEqual([declared["cliVersion"]], versions())
+        # Written as the declaration is, one key per line, which is how the script reads it.
+        metadata.write_text(json.dumps({**declared, "cliVersion": "7.7.7"}, indent=2), encoding="utf-8")
+        moved = run()
+        self.assertEqual(moved.returncode, 0, moved.stderr)
+        self.assertEqual([declared["cliVersion"], "7.7.7"], versions())
+        for broken in ("{not json", json.dumps({**declared, "cliVersion": "latest"}, indent=2)):
+            with self.subTest(metadata=broken):
+                metadata.write_text(broken, encoding="utf-8")
+                refused = run()
+                self.assertEqual(refused.returncode, 1, refused.stderr)
+                self.assertIn("cannot read cliVersion from", refused.stderr)
+                self.assertIn("or set FERN_CLI_VERSION", refused.stderr)
+                self.assertEqual(2, len(versions()), "Fern ran under an unreadable declaration")
+        recovered = run(FERN_CLI_VERSION="8.8.8")
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual("8.8.8", versions()[-1])
+
     def test_the_reference_families_scaffold_the_workspace_the_fixture_script_does(self) -> None:
         """`fern-references.py` writes its own Fern workspace rather than calling
         `generate-fern-fixture.sh`, so the two are held to one contract here: for
