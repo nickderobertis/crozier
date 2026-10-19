@@ -491,7 +491,6 @@
     "docs/openapi-surface/handwritten/described-ref-oneof-alias-without-docstring/fern-expected": {},
     "docs/openapi-surface/handwritten/described-scalar-bodies/fern-expected": {},
     "docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected": {},
-    "docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected": {},
     "docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected": {},
     "docs/openapi-surface/handwritten/empty-path-segment-double-slash-kept/fern-expected": {},
     "docs/openapi-surface/handwritten/enum-union-body-example-first-member-value/fern-expected": {},
