@@ -1222,6 +1222,9 @@ def legacy_screen(args: argparse.Namespace) -> int:
     return 0
 
 
+LEDGER_PART = re.compile(r"screens(?:\.\d{3})?\.jsonl")
+
+
 def screen_fields(root: Path, screens: Path) -> dict[str, str]:
     """Each screen's outcome field in a ledger: a legacy `witness-search-*` ledger's
     spelling, as the index reads it, or the screen's own name elsewhere."""
@@ -1231,7 +1234,8 @@ def screen_fields(root: Path, screens: Path) -> dict[str, str]:
 
 
 def label_historical(root: Path) -> int:
-    """Label every committed screen measured at a pair other than the corpus's as history of that pair.
+    """Label every committed screen measured at a pair other than the corpus's as history of that pair,
+    in each ledger and in every numbered part of one.
 
     Only the rows it labels are rewritten, in the form `screen` files them; every
     other line stays byte for byte. Every ledger is read before any is written,
@@ -1243,7 +1247,9 @@ def label_historical(root: Path) -> int:
     pins = current_pins()
     rewrites: dict[Path, list[str]] = {}
     labelled = 0
-    for screens in sorted(root.glob("**/screens.jsonl")):
+    # A ledger and each numbered part the index reads after it (`screens.001.jsonl`, …).
+    ledgers = (path for path in root.glob("**/screens*.jsonl") if LEDGER_PART.fullmatch(path.name))
+    for screens in sorted(ledgers):
         # Read and written as bytes, so no line it leaves is touched, whatever its ending.
         lines = screens.read_bytes().decode("utf-8").splitlines(keepends=True)
         changed = False

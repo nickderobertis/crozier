@@ -1183,6 +1183,39 @@ class HistoricalPairTests(unittest.TestCase):
         self.assertEqual(1, refused.returncode, refused.stderr)
         self.assertIn("its licence 'failed: stated' is not the measured licence outcome", refused.stderr)
 
+    def test_a_numbered_ledger_part_is_labelled_as_the_index_reads_it(self) -> None:
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        filed = self.screens().read_bytes()
+        # The row moves to the ledger's first numbered part; its own file holds a pre-stage row.
+        part = self.evidence / "screens.001.jsonl"
+        part.write_bytes(filed)
+        self.screens().write_text(
+            json.dumps(
+                {
+                    "source": "sourcegraph",
+                    "repository": "acme/old",
+                    "path": "openapi.yaml",
+                    "commit": COMMIT,
+                    "keys": ["sample-shape"],
+                    "license": "passed",
+                    "ref": "passed",
+                    "fern": "passed",
+                    "disposition": "witness-found",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        refused = self.check(self.later)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 1 screen(s)", labelled.stdout)
+        self.assertIn(SCREEN.HISTORICAL_PAIR, json.loads(part.read_text(encoding="utf-8")))
+        passing = self.check(self.later)
+        self.assertEqual(0, passing.returncode, passing.stderr)
+
     def test_historical_refuses_a_root_or_a_line_it_cannot_read_and_writes_nothing(self) -> None:
         missing = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface / "absent"))
         self.assertEqual(1, missing.returncode)
