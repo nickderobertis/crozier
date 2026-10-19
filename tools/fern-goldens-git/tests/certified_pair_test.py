@@ -123,6 +123,16 @@ class FormTests(unittest.TestCase):
             with self.subTest(text=text):
                 self.assertEqual([], list(certified_pair.drifts("tool.py", text, self.pair)))
 
+    def test_a_version_sharing_the_pair_s_numbers_with_a_suffix_is_a_drift(self) -> None:
+        for suffix in ("-rc.1", "+build.7"):
+            for template, members in FORMS:
+                with self.subTest(form=template, suffix=suffix):
+                    text = template.format(cli=CLI + suffix, sdk=SDK + suffix)
+                    found = list(certified_pair.drifts("probe.py", text, certified_pair.Pair(cli=CLI, sdk=SDK)))
+                    self.assertEqual(sorted(members), sorted(drift.member for drift in found), text)
+                    stated = {CLI + suffix, SDK + suffix}
+                    self.assertTrue(all(drift.stated in stated for drift in found), found)
+
     def test_only_a_member_that_differs_is_reported(self) -> None:
         found = list(certified_pair.drifts("x.rs", f"Fern CLI {CLI}, python-sdk {OTHER_SDK}", self.pair))
         self.assertEqual([("sdk", OTHER_SDK)], [(drift.member, drift.stated) for drift in found])

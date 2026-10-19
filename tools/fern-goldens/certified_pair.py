@@ -68,7 +68,8 @@ DELEGATED = (
 MARKER = "certified-pair: stand-in"
 COMMENT = ("//", "#", "/*", "* ")
 
-V = r"(\d+\.\d+\.\d+)"
+# A whole version: a prerelease or build suffix is part of what it states.
+V = r"(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]*[0-9A-Za-z])?)"
 # An optional backslash, for the forms written inside a Rust or Python string.
 Q = r'\\?["\']'
 Member = Literal["cli", "sdk"]
