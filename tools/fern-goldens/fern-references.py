@@ -194,11 +194,18 @@ def scrub(log: str, workspace: Path) -> str:
     return re.sub(r"/tmp/[\w.-]+", "<tmp>", log)
 
 
-def fern(argv: list[str], workspace: Path, env: dict[str, str]) -> tuple[str, str]:
+class FernCommand(NamedTuple):
+    """One Fern command's exit status, as text, and its combined output."""
+
+    exit: str
+    log: str
+
+
+def fern(argv: list[str], workspace: Path, env: dict[str, str]) -> FernCommand:
     if shutil.which(argv[0]) is None:
         raise ReferenceError(f"`{argv[0]}` is not on PATH; run `just setup-fern` (it installs the Fern CLI)")
     run = subprocess.run(argv, cwd=workspace, env=env, capture_output=True, text=True, errors="replace", check=False)
-    return str(run.returncode), run.stdout + run.stderr
+    return FernCommand(str(run.returncode), run.stdout + run.stderr)
 
 
 @contextlib.contextmanager
@@ -228,12 +235,16 @@ def run_fern(
             (workspace / "fern.config.json").write_text(
                 json.dumps({"organization": organization, "version": pair.cli}) + "\n", encoding="utf-8"
             )
-            audiences_block = "".join(f"      - {name}\n" for name in audiences)
+            # Every name is written as a quoted scalar, so YAML reads it as the
+            # string it is (an audience `null` or a class `True` included).
+            audiences_block = "".join(f"      - {json.dumps(name)}\n" for name in audiences)
             pydantic_lines = ("            enum_type: python_enums\n" if enum_type == "python-enums" else "") + (
                 f"            extra_fields: {extra_fields}\n" if extra_fields else ""
             )
             pydantic = f"          pydantic_config:\n{pydantic_lines}" if pydantic_lines else ""
-            client_class = f"          client_class_name: {client_class_name}\n" if client_class_name else ""
+            client_class = (
+                f"          client_class_name: {json.dumps(client_class_name)}\n" if client_class_name else ""
+            )
             (workspace / "generators.yml").write_text(
                 "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n"
                 + (f"    audiences:\n{audiences_block}" if audiences else "")
@@ -626,15 +637,24 @@ OVERLAY_BASES = ("expected", "fern-expected")
 
 
 @dataclass(frozen=True)
+class CaseOverlay:
+    """The overlay a case reduces to: the tree kind it is a delta against
+    (`expected` or `fern-expected`), and that base tree, or None over no base."""
+
+    label: str
+    base: Path | None
+
+
+@dataclass(frozen=True)
 class MeasurementCase:
     """One `cases.tsv` row: the document a case generates from, its enum mode and
-    layout, and the overlay it reduces to (`-` for a complete tree)."""
+    layout, and the overlay it reduces to (None for a complete tree)."""
 
     name: str
     document: Path
     enum_type: EnumMode
     layout: Layout
-    overlay: str
+    overlay: CaseOverlay | None
 
 
 def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
@@ -666,8 +686,10 @@ def cases() -> dict[str, MeasurementCase]:
         failure = case_row_failure(row, set(found))
         if failure:
             raise ReferenceError(f"{CASES} row {row['case']!r}: {failure}")
+        label, _, base = row["overlay"].partition(":")
+        overlay = None if row["overlay"] == "-" else CaseOverlay(label, None if base == "-" else ROOT / base)
         found[row["case"]] = MeasurementCase(
-            row["case"], ROOT / row["document"], EnumMode(row["enum_type"]), Layout(row["layout"]), row["overlay"]
+            row["case"], ROOT / row["document"], EnumMode(row["enum_type"]), Layout(row["layout"]), overlay
         )
     return found
 
@@ -926,16 +948,15 @@ def generate_measurement(item: str, pair: Pair) -> None:
     if (destination.parent / "evidence.md").is_file():
         check_evidence_note(destination.parent / "evidence.md")
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
-    if row.overlay != "-":
-        label, _, base = row.overlay.partition(":")
+    if row.overlay is not None:
         provenance: dict[str, object] = {
             "fern_python_sdk_version": pair.generator,
             "fern_cli_version": pair.cli,
             "enum_type": row.enum_type,
-            "base": label,
+            "base": row.overlay.label,
         }
-        base_tree = None if base == "-" else ROOT / base
-        if label == "fern-expected":
+        base_tree = row.overlay.base
+        if row.overlay.label == "fern-expected":
             # The digest of the complete tree Fern wrote, which the gate rebuilds
             # from the base and the overlay before comparing.
             provenance["digest"] = contract_digest(destination)

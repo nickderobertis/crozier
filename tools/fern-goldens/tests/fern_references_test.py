@@ -59,6 +59,12 @@ if "x-stub-silent" in document:
 if "x-stub-refuse" in document:
     print(f"[api]: python-sdk Generator logs here: /tmp/tmp-stub-1\n[api]: python-sdk {workspace}\n                  [error] Stub refused the document")
     sys.exit(1)
+if "x-stub-partial" in document:
+    partial = Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk" / "src" / "fern" if "--preview" in sys.argv else workspace.parent / "generated" / "python"
+    partial.mkdir(parents=True)
+    (partial / "client.py").write_text("PARTIAL = 1\n")
+    print("[api]: python-sdk wrote some files\n                  [error] Stub refused the document")
+    sys.exit(1)
 if "--preview" in sys.argv:
     root = Path(sys.argv[sys.argv.index("--output") + 1]) / "fern-python-sdk"
     package = root / "src" / "fern"
@@ -75,7 +81,7 @@ if "enum_type: python_enums" in generators:
     (package / "core" / "enum.py").write_text("ENUM = 1\n")
 else:
     (package / "literal.py").write_text("LITERAL = 1\n")
-for audience in re.findall(r"^      - (\w+)$", generators, re.M):
+for audience in re.findall(r'^      - "(\w+)"$', generators, re.M):
     (package / f"audience_{audience}.py").write_text("AUDIENCE = 1\n")
 for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
     # llmlint: ignore[async_typed_clients_at_boundaries] This stands in for Fern's own resolver fetching a remote $ref, inside an executable stub script; it reads one loopback URL the tool under test serves and has no client boundary to type.
@@ -231,8 +237,28 @@ class FernReferencesTests(unittest.TestCase):
         result = self.run_tool("generate", "handwritten", "delta")
         self.assertEqual(result.returncode, 0, result.stderr)
         (call,) = self.calls()
-        self.assertIn("client_class_name: FernApi", call["generators"])
+        self.assertIn('client_class_name: "FernApi"', call["generators"])
         self.assertIn("enum_type: python_enums\n            extra_fields: allow", call["generators"])
+
+    def test_a_class_or_audience_name_yaml_reserves_is_written_as_the_string_it_is(self) -> None:
+        reserved = EVIDENCE.format("0" * 64).replace(
+            "\n[[covers]]", 'audiences = ["null", "true", "Off"]\n\n[[covers]]'
+        )
+        self.handwritten("omicron", evidence=reserved)
+        self.write(
+            "docs/openapi-surface/handwritten/omicron/fern-expected/.fern/metadata.json",
+            json.dumps({"generatorConfig": {"client_class_name": "null"}}),
+        )
+        result = self.run_tool("generate", "handwritten", "omicron")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        (call,) = self.calls()
+        self.assertIn('client_class_name: "null"\n', call["generators"])
+        self.assertIn('    audiences:\n      - "null"\n      - "true"\n      - "Off"\n', call["generators"])
+        tree = self.root / "docs/openapi-surface/handwritten/omicron/fern-expected/src/fern"
+        self.assertEqual(
+            ["audience_Off.py", "audience_null.py", "audience_true.py"],
+            sorted(path.name for path in tree.glob("audience_*.py")),
+        )
 
     def test_an_explicit_version_overrides_the_certified_pair(self) -> None:
         self.handwritten("alpha")
@@ -323,6 +349,42 @@ class FernReferencesTests(unittest.TestCase):
             "generate_exit: 1\ndiagnostic: Stub refused the document\noutput_tree: none\n",
         )
         self.assertFalse((record.parent / "fern-expected").exists())
+
+    def test_a_failed_generation_that_wrote_a_partial_tree_is_recorded_as_a_refusal(self) -> None:
+        """Fern exiting non-zero after writing some files is a refusal: the record says
+        so with no output tree, and no partial tree is installed as a reference."""
+        refusal = (
+            f"fern_cli_version: {CLI}\nfern_python_sdk_version: {SDK}\n"
+            "generate_exit: 1\ndiagnostic: Stub refused the document\noutput_tree: none\n"
+        )
+        self.write("docs/fern-measurements/lowering/eta/openapi.yml", "openapi: 3.0.3\nx-stub-partial: true\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "lowering/eta\tdocs/fern-measurements/lowering/eta/openapi.yml\tpython-enums\tpackaged\t-\n",
+        )
+        record = self.write("docs/fern-measurements/lowering/eta/fern-refusal.txt", f"fern CLI {OLD}: refused\n")
+        result = self.run_tool("generate", "measurements", "lowering/eta")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(record.read_text(encoding="utf-8"), refusal)
+        self.assertFalse((record.parent / "fern-expected").exists())
+
+        # A probe whose committed reference is a tree: the partial run replaces it with the record.
+        self.write("docs/openapi-surface/probes/half.yml", "openapi: 3.0.3\nx-stub-partial: true\n")
+        self.write("docs/openapi-surface/probe-expected/half/src/fern/client.py", "CLIENT = 1\n")
+        self.manifest(f"half\ttree\tgenerates\tdocs/openapi-surface/probe-expected/half\t—\t{'a' * 64}")
+        result = self.run_tool("generate", "probes", "half")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("changed form (refusal now)", result.stderr)
+        expected = self.root / "docs/openapi-surface/probe-expected"
+        self.assertFalse((expected / "half").exists())
+        written = (expected / "half.fern-refusal.txt").read_text(encoding="utf-8")
+        self.assertEqual(written, refusal)
+        [row] = (expected / "MANIFEST.tsv").read_text(encoding="utf-8").splitlines()[1:]
+        self.assertEqual(
+            ["docs/openapi-surface/probe-expected/half.fern-refusal.txt", hashlib.sha256(written.encode()).hexdigest()],
+            [row.split("\t")[3], row.split("\t")[5]],
+        )
 
     def test_a_refused_measurement_fern_now_generates_installs_its_tree_and_fails(self) -> None:
         self.write("docs/fern-measurements/lowering/zeta/openapi.yml", "openapi: 3.0.3\n")
@@ -831,7 +893,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertNotEqual(digests["holds"], "0" * 64)
         self.assertEqual(digests["broken"], "0" * 64)
         generators = self.calls()[0]["generators"]
-        self.assertIn("client_class_name: FernApi", generators)
+        self.assertIn('client_class_name: "FernApi"', generators)
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
 
