@@ -4911,6 +4911,8 @@ fn render_discriminated_union(
                 xml: None,
                 admits_only_empty_object: false,
                 inherited_from_flattened_parent: false,
+                min_length: None,
+                max_length: None,
             },
             &mut imports,
         );
@@ -8998,6 +9000,7 @@ impl<'a> ExampleCtx<'a> {
                 example: field.example.clone(),
                 parent_example: false,
                 deprecated: field.deprecated,
+                lengths: (field.min_length, field.max_length),
             })
             .collect();
         self.record_ref(&member.class_name);
@@ -9829,6 +9832,7 @@ impl<'a> ExampleCtx<'a> {
                                 &field.type_ref,
                                 &field.wire_name,
                                 field.example.as_deref(),
+                                field.lengths,
                             )
                         };
                         (Some(field.py_name), value)
@@ -9836,9 +9840,14 @@ impl<'a> ExampleCtx<'a> {
                     .collect::<Vec<_>>();
                 Example::Call(name.to_string(), args)
             }
+            // A string alias is sized by its own lengths in the IR fallback:
+            // nexmo-messages' `to` is typed by `ToNumber` (`minLength: 7`) and
+            // its fallback call passes `to="apricot"`.
             Some(TypeDecl::Alias(a)) => {
                 let target = a.target.clone();
-                self.value(&target, slot)
+                let lengths = (a.min_length, a.max_length);
+                self.sized_fallback(&target, lengths)
+                    .unwrap_or_else(|| self.value(&target, slot))
             }
             // A literal enum's example is its first value as a plain string, which
             // needs no import. The Markdown writers escape its `'` as they do a
@@ -9901,7 +9910,7 @@ impl<'a> ExampleCtx<'a> {
                                     && (f.example.is_some() || documentation))
                     };
                     let mut args = Vec::new();
-                    for (py_name, wire_name, ty, example, empty_only, null) in m
+                    for (py_name, wire_name, ty, example, empty_only, null, lengths) in m
                         .fields
                         .iter()
                         .filter(|f| shown(f))
@@ -9913,6 +9922,7 @@ impl<'a> ExampleCtx<'a> {
                                 f.example.clone(),
                                 f.admits_only_empty_object,
                                 f.optional && f.example.is_none(),
+                                (f.min_length, f.max_length),
                             )
                         })
                         .collect::<Vec<_>>()
@@ -9922,7 +9932,7 @@ impl<'a> ExampleCtx<'a> {
                         } else if empty_only {
                             self.empty_object()
                         } else {
-                            self.field_example(&ty, &wire_name, example.as_deref())
+                            self.field_example(&ty, &wire_name, example.as_deref(), lengths)
                         };
                         args.push((Some(py_name), value));
                     }
@@ -10067,7 +10077,24 @@ impl<'a> ExampleCtx<'a> {
     /// otherwise. A union wrapper's fields are exampled the same way an object's
     /// are — NDW's `AreaRequest_Municipality` opens with the `GM0344` its
     /// `MunicipalityAreaRequest.id` declares.
-    fn field_example(&mut self, ty: &TypeRef, wire: &str, example: Option<&str>) -> Example {
+    /// A string sized by its declared lengths, as Fern's IR fallback example
+    /// writes it, where that fallback writes the example and the lengths call
+    /// for one ([`crate::ir::fallback_string_sample`]); `None` elsewhere.
+    fn sized_fallback(&self, ty: &TypeRef, lengths: (Option<u64>, Option<u64>)) -> Option<Example> {
+        if !self.field_examples_ignored || *ty != TypeRef::Primitive(Prim::Str) {
+            return None;
+        }
+        crate::ir::fallback_string_sample(lengths.0, lengths.1)
+            .map(|sample| Example::Atom(format!("\"{sample}\"")))
+    }
+
+    fn field_example(
+        &mut self,
+        ty: &TypeRef,
+        wire: &str,
+        example: Option<&str>,
+        lengths: (Option<u64>, Option<u64>),
+    ) -> Example {
         // A field typed by a map to unknown (`Dict[str, Any]`) takes Fern's fixed
         // `{"key": "value"}` placeholder whatever the schema declares: HelixDB's
         // `OperationTree` is `type: object` + `additionalProperties: true` and
@@ -10096,7 +10123,9 @@ impl<'a> ExampleCtx<'a> {
             }
             _ => None,
         };
-        literal.unwrap_or_else(|| self.value(ty, Slot::Named(wire)))
+        literal
+            .or_else(|| self.sized_fallback(ty, lengths))
+            .unwrap_or_else(|| self.value(ty, Slot::Named(wire)))
     }
 
     /// An object's fields including those inherited from its base classes (bases
@@ -10145,6 +10174,7 @@ impl<'a> ExampleCtx<'a> {
                 example: f.example.clone(),
                 parent_example: obj.example_fields.contains(&f.wire_name),
                 deprecated: f.deprecated,
+                lengths: (f.min_length, f.max_length),
             });
         }
         out
@@ -10193,6 +10223,8 @@ struct ExampleField {
     parent_example: bool,
     /// [`crate::ir::Field::deprecated`].
     deprecated: bool,
+    /// [`crate::ir::Field::min_length`] and [`crate::ir::Field::max_length`].
+    lengths: (Option<u64>, Option<u64>),
 }
 
 /// How one required field of an **object-typed path parameter** renders inside
@@ -12195,6 +12227,51 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    #[test]
+    fn the_ir_fallback_example_sizes_strings_by_their_declared_lengths() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/": {"post": {
+                "operationId": "send",
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"type": "object", "required": ["message"], "properties": {
+                        "message": {"$ref": "#/components/schemas/Message"}
+                    }}
+                }}},
+                "responses": {"204": {"description": "OK"}}
+            }}},
+            "components": {"schemas": {
+                "ToNumber": {"type": "string", "minLength": 7, "maxLength": 15,
+                    "example": "447700900000"},
+                "FromNumber": {"type": "string", "example": "447700900001"},
+                "Message": {
+                    "type": "object", "required": ["to", "from", "code", "text"],
+                    "properties": {
+                        "to": {"$ref": "#/components/schemas/ToNumber"},
+                        "from": {"$ref": "#/components/schemas/FromNumber"},
+                        "code": {"type": "string", "maxLength": 4, "example": "ab12"},
+                        "text": {"description": "Untyped and unexampled."}
+                    }
+                }
+            }}
+        }));
+        let client = files
+            .iter()
+            .find(|(path, _)| path.ends_with("/client.py") && path.matches('/').count() == 2)
+            .map(|(_, contents)| contents)
+            .expect("the root client is generated");
+        // The untyped required `text` leaves Fern's importer no example, so its
+        // IR fallback writes the call, reading no declared example.
+        assert!(
+            client.contains("to=\"apricot\",")
+                && client.contains("from_=\"from\",")
+                && client.contains("code=\"buzz\",")
+                && !client.contains("447700900000"),
+            "{client}"
+        );
     }
 
     #[test]
@@ -14306,6 +14383,8 @@ mod tests {
             admits_only_empty_object: false,
             xml: None,
             inherited_from_flattened_parent: false,
+            min_length: None,
+            max_length: None,
         }
     }
 
@@ -14416,6 +14495,8 @@ mod tests {
                 module: "alpha".to_string(),
                 target: TypeRef::Union(vec![named("Knot"), TypeRef::Primitive(Prim::Str)]),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
         ];
         let map = forward_repair_map(&types, &[]);
@@ -14607,6 +14688,8 @@ mod tests {
                 module: "scalar_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
             TypeDecl::Alias(AliasType {
                 reach_refs: Vec::new(),
@@ -14614,6 +14697,8 @@ mod tests {
                 module: "any_alias".to_string(),
                 target: TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any))),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
             TypeDecl::Enum(EnumType {
                 name: "Color".to_string(),
@@ -14741,6 +14826,8 @@ mod tests {
                 module: "payload_alias".to_string(),
                 target: TypeRef::Named("Payload".to_string()),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
             TypeDecl::Alias(AliasType {
                 reach_refs: Vec::new(),
@@ -14751,6 +14838,8 @@ mod tests {
                     Box::new(TypeRef::Primitive(Prim::Bool)),
                 ),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
             TypeDecl::Alias(AliasType {
                 reach_refs: Vec::new(),
@@ -14758,6 +14847,8 @@ mod tests {
                 module: "bool_alias".to_string(),
                 target: TypeRef::Primitive(Prim::Bool),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
             TypeDecl::Enum(EnumType {
                 name: "Color".to_string(),
@@ -15067,6 +15158,8 @@ mod tests {
             module: "label".to_string(),
             target: TypeRef::Primitive(Prim::Str),
             docstring: None,
+            min_length: None,
+            max_length: None,
         });
         let base = TypeDecl::Object(ObjectType {
             reach_refs: Vec::new(),
@@ -15667,6 +15760,8 @@ mod tests {
             module: "eps_bearer_container".to_string(),
             target: TypeRef::Primitive(Prim::Str),
             docstring: None,
+            min_length: None,
+            max_length: None,
         });
         let mut ep = endpoint("/contexts", Vec::new(), Some(TypeRef::Primitive(Prim::Str)));
         ep.http_method = "POST";
@@ -15829,6 +15924,8 @@ mod tests {
                 module: "empty_result".to_string(),
                 target: TypeRef::Primitive(Prim::Str),
                 docstring: None,
+                min_length: None,
+                max_length: None,
             }),
         }];
         let files = generate(&ir).expect("root and empty namespaces generate");
@@ -16059,6 +16156,8 @@ mod tests {
             module: "node_list".to_string(),
             target: TypeRef::List(Box::new(TypeRef::Named("Node".to_string()))),
             docstring: None,
+            min_length: None,
+            max_length: None,
         });
         let rendered = render_type_decl(
             &environment(),
