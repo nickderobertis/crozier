@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import ProbeResult
+    from .errors import ServerError
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .environment import FernApiEnvironment
@@ -18,6 +19,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "FernApi": ".client",
     "FernApiEnvironment": ".environment",
     "ProbeResult": ".types",
+    "ServerError": ".errors",
     "__version__": ".version",
 }
 
@@ -50,5 +52,6 @@ __all__ = [
     "FernApi",
     "FernApiEnvironment",
     "ProbeResult",
+    "ServerError",
     "__version__",
 ]

@@ -520,7 +520,13 @@ def generate_probe(item: str, pair: Pair) -> None:
         else:
             diagnostic = first_diagnostic(run.generate_log)
             if not diagnostic:
-                raise ReferenceError(f"fern generate exited {run.generate_exit} printing no diagnostic")
+                log = ROOT / LOGS / "probes" / f"{item}.generate.log"
+                log.parent.mkdir(parents=True, exist_ok=True)
+                log.write_text(run.generate_log, encoding="utf-8", newline="\n")
+                raise ReferenceError(
+                    f"fern generate exited {run.generate_exit} printing no diagnostic this tool recognises; "
+                    f"read {rel(log)} and extend first_diagnostic"
+                )
             record.write_text(
                 f"fern_cli_version: {pair.cli}\nfern_python_sdk_version: {pair.generator}\n"
                 f"generate_exit: {run.generate_exit}\ndiagnostic: {diagnostic}\noutput_tree: none\n",

@@ -82,7 +82,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if region is not None:
             _region = region if region is not None else "us"
-            base_url = "https://{region}.probe.invalid".format(region=_region)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{region}.probe.invalid",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{region}.probe.invalid")
+            if base_url is None:
+                base_url = _url_template.format(region=_region)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             headers=headers,
@@ -222,7 +227,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if region is not None:
             _region = region if region is not None else "us"
-            base_url = "https://{region}.probe.invalid".format(region=_region)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{region}.probe.invalid",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{region}.probe.invalid")
+            if base_url is None:
+                base_url = _url_template.format(region=_region)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             headers=headers,
