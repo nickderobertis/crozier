@@ -11810,8 +11810,10 @@ const AWS_MOBILEANALYTICS: Corpus = Corpus {
     project_name: "default_package_name",
     audiences: &[],
     audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
+    // Its golden was generated with these spelled out (`fern-generator-config.txt`);
+    // each is the value crozier derives anyway.
+    client_class_name: Some("FernApi"),
+    extra_fields: Some("allow"),
     unmatched: &[],
 };
 
