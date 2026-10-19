@@ -1269,6 +1269,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             root,
             "tools/fern-goldens/generate-fern-fixture.sh",
             "scripts/lib.sh",
+            "assets/scaffolding/metadata.json",
             "tools/corpus/corpus_remote_ref_pins.py",
             "tools/surface-census/openapi-surface-census.py",
         )
@@ -1413,7 +1414,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (scripts, fixture, fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
             "beta|public|true|AcmeClient|ignore\n", encoding="utf-8", newline="\n"
@@ -1514,7 +1517,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (fixtures / "corpus-sources" / "zeta" / "openapi.yaml").write_text(
             "openapi: 3.0.3 # zeta\n", encoding="utf-8", newline="\n"
         )
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         for fixture in ("beta", "delta"):
             (fixtures / fixture / "openapi.yml").write_text(
                 f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8", newline="\n"
@@ -1669,7 +1674,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (root / "scripts", fixtures / "beta", fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         (fixtures / "beta" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
         self.write_executable(
             fake_bin / "fern",
