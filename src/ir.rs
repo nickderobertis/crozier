@@ -2300,8 +2300,9 @@ pub struct XmlEncoding {
 /// Where a property of an XML model sits in its element.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum XmlKind {
-    /// A child element (the default).
-    Element,
+    /// A child element (the default); a list one is `wrapped` in an element
+    /// named after the property when `xml.wrapped` says so.
+    Element { wrapped: bool },
     /// An attribute (`xml.attribute: true`).
     Attribute,
     /// The element's text content (`x-crozier-xml-text` / `x-fern-xml-text`).
@@ -2316,8 +2317,6 @@ pub struct XmlProperty {
     /// The XML name, when the property (or the schema it references) names
     /// one; the wire name otherwise.
     pub name: Option<String>,
-    /// A list rendered inside a wrapper element named after the property.
-    pub wrapped: bool,
     /// The delimiter a list-valued attribute or text is joined with.
     pub list_separator: Option<String>,
     /// The (item) schema is a string whose `format` Fern types as something
@@ -15513,7 +15512,9 @@ fn property_xml(property: &Schema, schemas: Option<&IndexMap<String, Schema>>) -
     } else if flag("attribute") {
         XmlKind::Attribute
     } else {
-        XmlKind::Element
+        XmlKind::Element {
+            wrapped: flag("wrapped"),
+        }
     };
     // llmlint: ignore[boundary_inputs_validated] The declared XML name is carried as written because Fern's importer does the same and crozier byte-matches its XML models (docs/matching.md, XML models): rejecting or rewriting a name Fern accepts would refuse or diverge from a document Fern generates from. It reaches generated source only through `py_repr` in src/emit/xml.rs, so it cannot inject code.
     XmlProperty {
@@ -15522,7 +15523,6 @@ fn property_xml(property: &Schema, schemas: Option<&IndexMap<String, Schema>>) -
             .and_then(|xml| xml.get("name"))
             .and_then(serde_json::Value::as_str)
             .map(str::to_string),
-        wrapped: flag("wrapped"),
         list_separator: property
             .xml_list_separator()
             .or_else(|| resolved.xml_list_separator())
@@ -15538,9 +15538,8 @@ fn plain_xml_property(
     schemas: Option<&IndexMap<String, Schema>>,
 ) -> XmlProperty {
     XmlProperty {
-        kind: XmlKind::Element,
+        kind: XmlKind::Element { wrapped: false },
         name: None,
-        wrapped: false,
         list_separator: None,
         opaque_string: opaque_string(property, schemas),
     }
@@ -15607,9 +15606,8 @@ fn annotate_xml_fields(
                 }
             }
             found.unwrap_or(XmlProperty {
-                kind: XmlKind::Element,
+                kind: XmlKind::Element { wrapped: false },
                 name: None,
-                wrapped: false,
                 list_separator: None,
                 opaque_string: false,
             })
@@ -26409,9 +26407,8 @@ mod xml_encoding_tests {
 
     fn element(name: Option<&str>) -> Option<XmlProperty> {
         Some(XmlProperty {
-            kind: XmlKind::Element,
+            kind: XmlKind::Element { wrapped: false },
             name: name.map(str::to_string),
-            wrapped: false,
             list_separator: None,
             opaque_string: false,
         })
@@ -26511,7 +26508,6 @@ mod xml_encoding_tests {
             Some(XmlProperty {
                 kind: XmlKind::Attribute,
                 name: None,
-                wrapped: false,
                 list_separator: None,
                 opaque_string: true,
             })
@@ -26527,9 +26523,8 @@ mod xml_encoding_tests {
         assert_eq!(
             by_wire["codes"],
             Some(XmlProperty {
-                kind: XmlKind::Element,
+                kind: XmlKind::Element { wrapped: true },
                 name: None,
-                wrapped: true,
                 list_separator: Some(";".to_string()),
                 opaque_string: true,
             })

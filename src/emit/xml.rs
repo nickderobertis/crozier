@@ -204,7 +204,10 @@ pub(super) struct XmlModel<'a> {
 }
 
 fn kind(field: &Field) -> XmlKind {
-    field.xml.as_ref().map_or(XmlKind::Element, |xml| xml.kind)
+    field
+        .xml
+        .as_ref()
+        .map_or(XmlKind::Element { wrapped: false }, |xml| xml.kind)
 }
 
 fn is_attribute(field: &Field) -> bool {
@@ -216,11 +219,11 @@ fn is_text(field: &Field) -> bool {
 }
 
 fn is_element(field: &Field) -> bool {
-    kind(field) == XmlKind::Element
+    matches!(kind(field), XmlKind::Element { .. })
 }
 
 fn is_wrapped(field: &Field) -> bool {
-    field.xml.as_ref().is_some_and(|xml| xml.wrapped)
+    kind(field) == XmlKind::Element { wrapped: true }
 }
 
 fn separator(field: &Field) -> Option<&str> {
@@ -1572,7 +1575,7 @@ impl<'a> TestSuite<'a> {
                     "    assert {} in serialized",
                     py_repr(&format!(">{}<", sample.xml))
                 )),
-                XmlKind::Element => {}
+                XmlKind::Element { .. } => {}
             }
         }
         lines.push(format!(
@@ -1785,7 +1788,7 @@ impl<'a> TestSuite<'a> {
             .unwrap_or_default();
         let children: String = properties
             .iter()
-            .filter(|property| kind(property.field) == XmlKind::Element)
+            .filter(|property| is_element(property.field))
             .map(|property| self.sample_child(property))
             .collect();
         let body = format!("{text}{children}");
@@ -1858,9 +1861,7 @@ impl<'a> TestSuite<'a> {
     fn content_child_names(&self, properties: &[TestProperty<'_>]) -> Vec<String> {
         let mut names: Vec<String> = Vec::new();
         for property in properties {
-            if kind(property.field) != XmlKind::Element
-                || (is_wrapped(property.field) && property.is_list)
-            {
+            if !is_element(property.field) || (is_wrapped(property.field) && property.is_list) {
                 continue;
             }
             for child in self.xml_children(property) {
