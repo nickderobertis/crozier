@@ -2702,7 +2702,34 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                     ));
                     name
                 }
-                _ => naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_"))),
+                // One with an `operationId` is `{OperationId}Payload`, placed in
+                // the package its tag groups it into, as an operation's inline
+                // body is (measured at Fern CLI 5.163.1): Webflow's
+                // `comment_created` webhook, tagged `Comments`, writes
+                // `comments/types/comment_created_payload.py`, with every type
+                // it hoists beside it.
+                _ => match operation
+                    .operation_id
+                    .as_deref()
+                    .map(str::trim)
+                    .filter(|id| !id.is_empty())
+                {
+                    Some(id) => {
+                        let module = endpoint_module(operation, event);
+                        let name = naming::class_name(&format!("{id}_payload"));
+                        let hoisted_from = builder.types.len();
+                        builder.add_named(&name, schema);
+                        if !module.is_empty() {
+                            for decl in &builder.types[hoisted_from..] {
+                                webhook_placements.push((decl.name().to_string(), module.clone()));
+                            }
+                        }
+                        continue;
+                    }
+                    None => {
+                        naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")))
+                    }
+                },
             };
             builder.add_named(&name, schema);
         }
@@ -7263,6 +7290,9 @@ impl InlineHoister<'_> {
                 self.schemas
                     .is_none_or(|schemas| !schemas.contains_key(key))
             })
+            // A declared name is a class name the way a component key is:
+            // Webflow's `Static Field` is `StaticField`.
+            .map(|key| naming::class_name(&key))
             .unwrap_or(derived)
     }
 
@@ -7589,6 +7619,24 @@ impl InlineHoister<'_> {
 
     /// Resolve an inline union variant, hoisting an object member to
     /// `{parent}{Ordinal}` in the operation's tag-scoped `types/` package.
+    /// A union member's class: the type name it declares, else its position's
+    /// name among its siblings. Fern names a member by its `x-fern-type-name`
+    /// (measured at CLI 5.163.1): Webflow's grouped `create-fields` body offers
+    /// `Static Field`, `Option Field` and `Reference Field`, and
+    /// `collections/fields/types/` declares `StaticField` and the others.
+    fn variant_name(
+        &self,
+        parent: &str,
+        index: usize,
+        variant: &Schema,
+        siblings: &[Schema],
+    ) -> String {
+        self.declared_or(
+            variant_class_name(parent, index, variant, siblings),
+            variant,
+        )
+    }
+
     fn hoist_union_variant(
         &mut self,
         parent: &str,
@@ -7621,7 +7669,7 @@ impl InlineHoister<'_> {
         // `{enum: [mobile]}`, and the golden declares
         // `RegisterQueueRequestIdleQueueTimeoutOne`.
         if let Some(values) = string_enum_values(variant) {
-            let name = variant_class_name(parent, index, variant, siblings);
+            let name = self.variant_name(parent, index, variant, siblings);
             self.out.push(TypeDecl::Enum(build_enum(
                 variant,
                 &name,
@@ -7646,13 +7694,13 @@ impl InlineHoister<'_> {
                 // An inline string enum element is the enum `{Variant}Item`, as
                 // a component union's is (`Builder::field_type_ref`).
                 if item.reference.is_none() && string_enum_values(item).is_some() {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     if let Some(list) = self.hoist_array_item_enum(&variant_name, variant) {
                         return list;
                     }
                 }
                 if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     if let Some(item) = self.hoist_discriminated_union(
                         &item_name,
@@ -7692,7 +7740,7 @@ impl InlineHoister<'_> {
                     .map(|(target, description)| (target.clone(), description))
                 {
                     observed_arm!("hoist_union_variant:6");
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     if let Some(element) =
                         self.hoist_annotated_copy(&item_name, &target, description)
@@ -7701,7 +7749,7 @@ impl InlineHoister<'_> {
                     }
                 }
                 if item.reference.is_none() && is_inline_struct(item) {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     self.hoist_object(&item_name, item);
                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
@@ -7728,7 +7776,7 @@ impl InlineHoister<'_> {
                     let inner = self.hoist_union_variant(parent, index, member, siblings);
                     return optional_type_ref(inner);
                 }
-                let name = variant_class_name(parent, index, variant, siblings);
+                let name = self.variant_name(parent, index, variant, siblings);
                 let docstring = clean_doc(variant.description.as_deref());
                 let discriminated =
                     self.hoist_discriminated_union(&name, variant, docstring.clone());
@@ -7758,7 +7806,7 @@ impl InlineHoister<'_> {
             // a member declaring structure is hoisted.
             || is_declared_empty_object(variant)
         {
-            let name = variant_class_name(parent, index, variant, siblings);
+            let name = self.variant_name(parent, index, variant, siblings);
             self.hoist_object(&name, variant);
             return TypeRef::Named(name);
         }
@@ -7788,7 +7836,7 @@ impl InlineHoister<'_> {
             if let Some(members) = union_value {
                 let value_name = format!(
                     "{}Value",
-                    variant_class_name(parent, index, variant, siblings)
+                    self.variant_name(parent, index, variant, siblings)
                 );
                 let nullable = members.iter().any(is_null_variant);
                 let target = TypeRef::Union(
@@ -14907,7 +14955,20 @@ fn same_shape(a: &Schema, b: &Schema) -> bool {
             | (_, Some(AdditionalProperties::Schema(_))) => {
                 return false;
             }
-            _ => {}
+            (left, right) => {
+                // A closed or declared-empty object is a model, a bare object
+                // an open map: the hand-written `inline-oneof-variants`
+                // fixture's `{type: object, properties: {},
+                // additionalProperties: false}` member stays beside its
+                // `{type: object}` one.
+                let open = |schema: &Schema, value: &Option<AdditionalProperties>| {
+                    !schema.properties.declared()
+                        && !matches!(value, Some(AdditionalProperties::Bool(false)))
+                };
+                if open(a, left) != open(b, right) {
+                    return false;
+                }
+            }
         }
         if a.properties.len() != b.properties.len() {
             return false;
@@ -25350,6 +25411,47 @@ mod tests {
             .expect("Vessel is a discriminated union");
         assert!(!union.members[0].wrapped);
         assert_eq!(union.members[0].fields.len(), 3);
+    }
+
+    /// Webflow's shapes at Fern CLI 5.163.1: a webhook with an `operationId`
+    /// names its payload `{OperationId}Payload` in its tag's package, hoisted
+    /// types and all, and a grouped operation's union member declaring a type
+    /// name is that class.
+    #[test]
+    fn webhook_payloads_and_declared_members_take_their_declared_names() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.1.0", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {"/gates": {"post": {
+                "operationId": "open-gate",
+                "tags": ["Gates"],
+                "requestBody": {"content": {"application/json": {"schema": {"oneOf": [
+                    {"x-fern-type-name": "Sluice Gate", "type": "object",
+                        "properties": {"depth": {"type": "integer"}}},
+                    {"type": "object", "properties": {"width": {"type": "integer"}}}
+                ]}}}},
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "webhooks": {"gate_opened": {"post": {
+                "operationId": "gate_opened",
+                "tags": ["Gates"],
+                "requestBody": {"content": {"application/json": {"schema": {
+                    "type": "object",
+                    "properties": {"payload": {"type": "object", "properties": {
+                        "gate": {"type": "string"}
+                    }}}
+                }}}},
+                "responses": {"200": {"description": "ok"}}
+            }}}
+        }));
+        let tagged: Vec<(&str, &str)> = ir
+            .tag_types
+            .iter()
+            .map(|tag| (tag.module.as_str(), tag.decl.name()))
+            .collect();
+        assert!(tagged.contains(&("gates", "GateOpenedPayload")));
+        assert!(tagged.contains(&("gates", "GateOpenedPayloadPayload")));
+        assert!(tagged.contains(&("gates", "SluiceGate")));
+        assert!(!has_decl(&ir, "PostGateOpenedPayload"));
     }
 
     /// Short.io and Hasura shapes at Fern CLI 5.163.1: a nested inline `allOf`
