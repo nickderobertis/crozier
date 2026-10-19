@@ -69,9 +69,9 @@ FORMS = (
 )
 
 
-def run_check(root: Path) -> subprocess.CompletedProcess[str]:
+def run_check(root: Path, *options: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [sys.executable, str(SCRIPT), "check", str(root)],
+        [sys.executable, str(SCRIPT), "check", str(root), *options],
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -165,8 +165,8 @@ class CheckTests(unittest.TestCase):
                 "docs/history.md": f"Measured with Fern CLI {OTHER_CLI}, python-sdk {OTHER_SDK}.\n",
                 "tests/fixtures/x/expected/.fern/metadata.json": f'{{"cliVersion": "{OTHER_CLI}"}}\n',
                 "CHANGELOG.md": f"- pin fern-api@{OTHER_CLI}\n",
-                # A tracked file outside the scanned set.
-                "README.md": f"fern-api@{OTHER_CLI}\n",
+                # A root file is no history.
+                "README.md": f"npm install -g fern-api@{OTHER_CLI}\n",
             }
         )
         result = run_check(root)
@@ -175,6 +175,7 @@ class CheckTests(unittest.TestCase):
         lines = result.stderr.splitlines()
         self.assertEqual(
             [
+                f"README.md:1: states Fern CLI {OTHER_CLI}: npm install -g fern-api@{OTHER_CLI}",
                 f"justfile:2: states fern-python-sdk {OTHER_SDK}: docker pull fernapi/fern-python-sdk:{OTHER_SDK}",
                 f'tests/recipe.rs:1: states Fern CLI {OTHER_CLI}: assert!(log.starts_with("Fern CLI {OTHER_CLI},'
                 f' python-sdk {SDK}\\n"));',
@@ -182,9 +183,60 @@ class CheckTests(unittest.TestCase):
             ],
             lines[:-1],
         )
-        self.assertIn("3 statement(s) disagree with assets/scaffolding/metadata.json", lines[-1])
+        self.assertIn("4 statement(s) disagree with assets/scaffolding/metadata.json", lines[-1])
         self.assertIn(f"Fern CLI {CLI}, fern-python-sdk {SDK}", lines[-1])
         self.assertIn("derive the version from that file", lines[-1])
+
+    def test_a_statement_in_any_tooling_or_test_path_fails_the_check_that_owns_it(self) -> None:
+        """No tracked tooling or test file escapes: one outside the delegated
+        roots fails the whole-tree check, and one inside a delegated root fails
+        the `--within` check that root's own project runs."""
+        statement = f'FERN_PYTHON_SDK = "{OTHER_SDK}"\n'
+        planted = {
+            "screenshots/capture.py": statement,
+            "pool-maintenance/measure.sh": f"FERN_CLI_VERSION=${{FERN_CLI_VERSION:-{OTHER_CLI}}}\n",
+            "templates/pin.j2": f"fern-api@{OTHER_CLI}\n",
+            **{f"{delegated}probe.py": statement for delegated in certified_pair.DELEGATED},
+        }
+        root = self.tree(planted)
+        result = run_check(root)
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertEqual(
+            ["pool-maintenance/measure.sh", "screenshots/capture.py", "templates/pin.j2"],
+            [line.split(":", 1)[0] for line in result.stderr.splitlines()[:-1]],
+        )
+        for delegated in certified_pair.DELEGATED:
+            with self.subTest(within=delegated):
+                result = run_check(root, "--within", delegated.rstrip("/"))
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertEqual(
+                    [f'{delegated}probe.py:1: states fern-python-sdk {OTHER_SDK}: FERN_PYTHON_SDK = "{OTHER_SDK}"'],
+                    result.stderr.splitlines()[:-1],
+                )
+        clean = self.tree(
+            {f"{delegated}probe.py": f'FERN_PYTHON_SDK = "{SDK}"\n' for delegated in certified_pair.DELEGATED}
+        )
+        for delegated in certified_pair.DELEGATED:
+            with self.subTest(clean=delegated):
+                self.assertEqual(0, run_check(clean, "--within", delegated).returncode)
+
+    def test_the_whole_tree_and_the_delegated_roots_cover_every_tracked_file_but_history(self) -> None:
+        listed = subprocess.run(
+            ["git", "-C", str(REPO), "ls-files", "-z"], capture_output=True, check=True, text=True, encoding="utf-8"
+        )
+        history = certified_pair.HISTORY_DIRS
+        tracked = {
+            path
+            for path in listed.stdout.split("\0")
+            if path and not path.startswith(history) and path not in certified_pair.HISTORY_FILES
+        }
+        covered = set(certified_pair.scanned(REPO))
+        for delegated in certified_pair.DELEGATED:
+            within = certified_pair.scanned(REPO, delegated)
+            self.assertTrue(within, f"{delegated} lists no tracked file; drop it from DELEGATED")
+            self.assertFalse(covered & set(within), delegated)
+            covered |= set(within)
+        self.assertEqual(sorted(tracked), sorted(covered))
 
     def test_moving_the_declaration_moves_what_passes(self) -> None:
         statement = {"tools/probe/probe.py": f'FERN_CLI = "{OTHER_CLI}"\n'}
@@ -232,6 +284,8 @@ class CheckTests(unittest.TestCase):
     def test_usage(self) -> None:
         self.assertEqual(2, certified_pair.main([]))
         self.assertEqual(2, certified_pair.main(["lint"]))
+        self.assertEqual(2, certified_pair.main(["check", "--within", "/"]))
+        self.assertEqual(2, certified_pair.main(["check", "a", "b", "--within", "tests"]))
 
 
 if __name__ == "__main__":

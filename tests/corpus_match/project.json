@@ -135,9 +135,22 @@
         "pythonTooling"
       ]
     },
+    "lint-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "python3 tools/fern-goldens/certified_pair.py check --within tests/corpus_match"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-goldens/certified_pair.py"
+      ]
+    },
     "lint": {
       "executor": "nx:noop",
       "dependsOn": [
+        "lint-certified-pair",
         "lint-boundaries",
         "lint-ruff"
       ]

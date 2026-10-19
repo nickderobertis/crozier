@@ -5,23 +5,25 @@
 against: `cliVersion` (the Fern CLI) and `generatorVersion`
 (`fernapi/fern-python-sdk`). Code, tools, recipes and tests derive the pair from
 that file; one that spells it out instead drifts the day the pair moves. This
-check scans the tracked files that may state the pair — `src/`, `crates/`,
-`tools/`, `scripts/`, `.github/`, `tests/`, `justfile`, `action.yml` — for the
-forms a pair statement takes in this repository, and fails on any that names a
-version other than the file's.
+check scans every tracked file for the forms a pair statement takes in this
+repository, and fails on any that names a version other than the file's.
 
 Committed Fern output and dated records (`tests/fixtures/`, `docs/`,
 `CHANGELOG.md`) are history, not statements of the current pair, and are never
 scanned; nor is a comment line, which is prose like `docs/` (often a dated
-measurement: "measured at fernapi/fern-python-sdk:X"). Nor are the promoted
-tiers, the release-packaging suite and the workspace aggregate: the project
-running this check (`fern-goldens-git`) may not take their files as inputs
-under nx.json's `boundaries`, and a file it scanned outside its inputs would
-never rerun it. None states a pair. Test data that deliberately names another version
-(a stand-in to prove a mismatch is caught) carries `certified-pair: stand-in`
-on the line the statement starts on; nothing else is exempt.
+measurement: "measured at fernapi/fern-python-sdk:X"). Test data that
+deliberately names another version (a stand-in to prove a mismatch is caught)
+carries `certified-pair: stand-in` on the line the statement starts on; nothing
+else is exempt.
 
-Usage: certified_pair.py check [ROOT]
+A target's inputs are its cache key and affected trigger, and nx.json's
+`boundaries` let the project running the whole-tree check (`fern-goldens-git`)
+take no input from the promoted tiers, the release-packaging suite or the
+workspace aggregate. So `check` scans every tracked file outside those
+`DELEGATED` roots, and each of those projects runs `check --within <its root>`
+as its own `lint-certified-pair` target: together they cover the tree.
+
+Usage: certified_pair.py check [ROOT] [--within DIR]
 
 Exit status: 0 when every statement names the declared pair; 1 when one names
 another (each printed on stderr) or the declaration is unreadable or malformed;
@@ -39,12 +41,12 @@ from pathlib import Path
 from typing import Literal, NamedTuple
 
 METADATA = Path("assets") / "scaffolding" / "metadata.json"
-SCANNED_DIRS = ("src/", "crates/", "tools/", "scripts/", ".github/", "tests/")
-SCANNED_FILES = ("justfile", "action.yml")
-EXCLUDED_DIRS = (
-    # Committed Fern output and its provenance records: history, not the pair.
-    "tests/fixtures/",
-    # Projects the checking project may not depend on (see the docstring).
+# Committed Fern output, its provenance records and dated prose: history, not
+# the pair.
+HISTORY_DIRS = ("tests/fixtures/", "docs/")
+HISTORY_FILES = ("CHANGELOG.md",)
+# Roots whose own project checks them with `--within` (see the docstring).
+DELEGATED = (
     "tests/census_fallback/",
     "tests/corpus_match/",
     "tests/corpus_match_selection/",
@@ -138,17 +140,22 @@ def certified(root: Path) -> Pair:
     return Pair(cli=cli, sdk=sdk)
 
 
-def scanned(root: Path) -> list[str]:
-    """The tracked files under `root` that may state the pair."""
+def scanned(root: Path, within: str | None = None) -> list[str]:
+    """The tracked files under `root` that may state the pair: those under
+    `within` when it is given, else every one outside the `DELEGATED` roots."""
     listed = subprocess.run(
         ["git", "-C", str(root), "ls-files", "-z"], capture_output=True, check=False, text=True, encoding="utf-8"
     )
     if listed.returncode != 0:
         raise SystemExit(f"certified-pair: git ls-files failed in {root}: {listed.stderr.strip()}; run it in a clone")
+    prefix = within.strip("/") + "/" if within is not None else None
     return [
         path
         for path in listed.stdout.split("\0")
-        if (path.startswith(SCANNED_DIRS) or path in SCANNED_FILES) and not path.startswith(EXCLUDED_DIRS)
+        if path
+        and not path.startswith(HISTORY_DIRS)
+        and path not in HISTORY_FILES
+        and (path.startswith(prefix) if prefix is not None else not path.startswith(DELEGATED))
     ]
 
 
@@ -167,10 +174,10 @@ def drifts(path: str, text: str, pair: Pair) -> Iterable[Drift]:
                     yield Drift(path, number, line.strip(), member, stated)
 
 
-def check(root: Path) -> list[Drift]:
+def check(root: Path, within: str | None = None) -> list[Drift]:
     pair = certified(root)
     found: list[Drift] = []
-    for path in scanned(root):
+    for path in scanned(root, within):
         try:
             text = (root / path).read_text(encoding="utf-8")
         except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
@@ -180,11 +187,14 @@ def check(root: Path) -> list[Drift]:
 
 
 def main(argv: list[str]) -> int:
-    if not argv or argv[0] != "check" or len(argv) > 2:
-        print("usage: certified_pair.py check [ROOT]", file=sys.stderr)
+    within = None
+    if len(argv) >= 2 and argv[-2] == "--within":
+        within, argv = argv[-1], argv[:-2]
+    if not argv or argv[0] != "check" or len(argv) > 2 or (within is not None and within.strip("/") == ""):
+        print("usage: certified_pair.py check [ROOT] [--within DIR]", file=sys.stderr)
         return 2
     root = Path(argv[1]) if len(argv) == 2 else Path(__file__).resolve().parents[2]
-    found = check(root)
+    found = check(root, within)
     if not found:
         return 0
     pair = certified(root)
