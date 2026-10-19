@@ -1167,8 +1167,19 @@ class HistoricalPairTests(unittest.TestCase):
                 self.assertNotIn("Traceback", refused.stderr)
                 # The readable ledger, sorted before it, is not labelled either.
                 self.assertEqual(before, self.screens().read_bytes())
-        # A label already there is held as `--check` holds it, never passed over.
         (other / "screens.jsonl").unlink()
+        # A record no longer whole is not labelled history: its committed log is gone.
+        [filed] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        log = self.evidence / filed["measured"]["fern"]["log"]
+        kept = log.read_bytes()
+        log.unlink()
+        before = self.screens().read_bytes()
+        broken = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(1, broken.returncode, broken.stderr)
+        self.assertIn("which is not committed", broken.stderr)
+        self.assertEqual(before, self.screens().read_bytes())
+        log.write_bytes(kept)
+        # A label already there is held as `--check` holds it, never passed over.
         [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
         for label, labelled_row, message in (
             ("on the current pair", {**row, SCREEN.HISTORICAL_PAIR: "measured at some pair"}, None),

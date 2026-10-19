@@ -1222,6 +1222,14 @@ def legacy_screen(args: argparse.Namespace) -> int:
     return 0
 
 
+def screen_fields(root: Path, screens: Path) -> dict[str, str]:
+    """Each screen's outcome field in a ledger: a legacy `witness-search-*` ledger's
+    spelling, as the index reads it, or the screen's own name elsewhere."""
+    if screens.relative_to(root).parts[0].startswith("witness-search-"):
+        return disposition_index().SCREEN_FIELDS
+    return {name: name for name in SCREENS}
+
+
 def label_historical(root: Path) -> int:
     """Label every committed screen measured at a pair other than the corpus's as history of that pair.
 
@@ -1246,19 +1254,18 @@ def label_historical(root: Path) -> int:
                 row = error
             if not isinstance(row, dict):
                 fail(f"{screens}:{number + 1} is no JSON object; restore it from git (`git checkout -- {screens}`)")
-            if HISTORICAL_PAIR in row:
-                if unmeasured(row):
-                    fail(
-                        f"{screens}:{number + 1} carries `{HISTORICAL_PAIR}` with no measured record; restore it from git"
-                    )
-                _held, wrong = historical_pair_failures(row)
-                if wrong:
-                    fail(f"{screens}:{number + 1}: " + "; ".join(wrong))
-                continue
             recorded = recorded_pins(row.get("measured"))
-            if recorded is None or recorded == pins:
+            if HISTORICAL_PAIR not in row and (recorded is None or recorded == pins):
                 continue
-            row[HISTORICAL_PAIR] = historical_pair_label(recorded)
+            fresh = HISTORICAL_PAIR not in row
+            if fresh and recorded is not None:
+                row[HISTORICAL_PAIR] = historical_pair_label(recorded)
+            # A label, found or written, stands only over a record whole at the pair it names.
+            wrong = row_failures(row, screens.parent, screen_fields(root, screens))
+            if wrong:
+                fail(f"{screens}:{number + 1}: " + "; ".join(wrong) + " — restore it from git, or re-screen it")
+            if not fresh:
+                continue
             ending = line[len(line.rstrip("\r\n")) :]
             lines[number] = json.dumps(row, sort_keys=True) + (ending or "\n")
             changed = True
