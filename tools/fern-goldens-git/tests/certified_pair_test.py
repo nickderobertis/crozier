@@ -366,7 +366,12 @@ class CheckTests(unittest.TestCase):
 
     def test_a_malformed_declaration_names_the_file_and_the_fix(self) -> None:
         root = self.tree({})
-        for record in ('["5.163.1"]', '{"cliVersion": null, "generatorVersion": "5.41.3"}', '{"cliVersion": 5}'):
+        for record in (
+            '["5.163.1"]',
+            '{"cliVersion": null, "generatorVersion": "5.41.3"}',
+            '{"cliVersion": 5}',
+            '{"cliVersion": "5.163.1-rc.1", "generatorVersion": "5.41.3"}',  # certified-pair: stand-in
+        ):
             with self.subTest(record=record):
                 (root / "assets/scaffolding/metadata.json").write_text(record, encoding="utf-8")
                 result = run_check(root)

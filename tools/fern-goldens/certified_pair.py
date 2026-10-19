@@ -68,8 +68,12 @@ DELEGATED = (
 MARKER = "certified-pair: stand-in"
 COMMENT = ("//", "#", "/*", "* ")
 
-# A whole version: a prerelease or build suffix is part of what it states.
-V = r"(\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]*[0-9A-Za-z])?)"
+# The declaration's grammar: an exact stable version, as every reader of
+# metadata.json takes it.
+STABLE = r"\d+\.\d+\.\d+"
+# A statement's whole version: a suffix is part of what it states, so one on the
+# declared numbers still differs from the declaration.
+V = r"(" + STABLE + r"(?:[-+][0-9A-Za-z.-]*[0-9A-Za-z])?)"
 # An optional backslash, for the forms written inside a Rust or Python string.
 Q = r'\\?["\']'
 Member = Literal["cli", "sdk"]
@@ -142,7 +146,7 @@ def certified(root: Path) -> Pair:
         ) from error
     cli = record.get("cliVersion") if isinstance(record, dict) else None
     sdk = record.get("generatorVersion") if isinstance(record, dict) else None
-    if not (isinstance(cli, str) and re.fullmatch(V, cli) and isinstance(sdk, str) and re.fullmatch(V, sdk)):
+    if not (isinstance(cli, str) and re.fullmatch(STABLE, cli) and isinstance(sdk, str) and re.fullmatch(STABLE, sdk)):
         raise SystemExit(
             f"certified-pair: {METADATA.as_posix()} must be an object whose cliVersion and generatorVersion "
             f"are exact versions, not {cli!r} and {sdk!r}; {fix}"
