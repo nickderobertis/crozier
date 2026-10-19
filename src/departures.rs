@@ -1203,16 +1203,9 @@ fn binary_json_example_lines(
                 }
             }
         } else {
-            if reference
-                && method.is_some()
-                && side == ExampleSide::Corrected
-                && line.trim() == "**request:** `bytes`"
-            {
-                kept.push(line.replace("**request:** `bytes`", "**request:** `str`"));
-                changed = true;
-            } else {
-                kept.push(line.to_string());
-            }
+            // Both sides document the parameter as `bytes` (fern-python-sdk
+            // 5.41.3; 5.20.0 wrote `str`), so only the example differs.
+            kept.push(line.to_string());
             index += 1;
         }
     }
@@ -5310,10 +5303,8 @@ mod tests {
         let corrected = fern.replace("request=\"string\"", "request=b\"string\"");
         let rule: RegionRule = binary_json_body_example;
         assert!(region_of(rule, "src/acme/vault/client.py", fern, &corrected, &context).is_some());
-        let reference = "<details><summary><code>client.vault.<a href=\"src/acme/vault/client.py\">ship</a>(...)</code></summary>\nclient.vault.ship(\n    request=\"string\",\n)\n**request:** `str` \n</details>\n";
-        let correct_reference = reference
-            .replace("request=\"string\"", "request=b\"string\"")
-            .replace("**request:** `str`", "**request:** `bytes`");
+        let reference = "<details><summary><code>client.vault.<a href=\"src/acme/vault/client.py\">ship</a>(...)</code></summary>\nclient.vault.ship(\n    request=\"string\",\n)\n**request:** `bytes` \n</details>\n";
+        let correct_reference = reference.replace("request=\"string\"", "request=b\"string\"");
         assert!(region_of(
             rule,
             "reference.md",

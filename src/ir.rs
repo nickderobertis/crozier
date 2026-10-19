@@ -1822,9 +1822,9 @@ pub struct PathParam {
     /// Example literal resolved from the parameter or its component schema.
     pub example: Option<String>,
     /// Whether the parameter's schema constrains its value with a `pattern`.
-    /// Fern's *binary-download* example generator substitutes the parameter's own
-    /// name as the placeholder and drops the whole example when the schema
-    /// rejects it, so this is what decides whether such an endpoint documents one.
+    /// fern-python-sdk 5.20.0 dropped a binary download's whole example when the
+    /// pattern rejected the parameter-name placeholder; 5.41.3 documents the
+    /// placeholder regardless, so no writer reads this today.
     pub pattern_constrained: bool,
     /// Whether the value serializes through `convert_and_respect_annotation_metadata`
     /// inside the URL f-string — true for an object/union type carrying field
@@ -4950,14 +4950,13 @@ fn request_declares_unlisted_required(doc: &OpenApi, op: &Operation) -> bool {
     found
 }
 
-/// Whether Fern's importer gives up on the operation's request example because a
-/// property the body's `$ref` parent requires is restated optional by an inline
-/// `allOf` member and nothing under the restatement carries an example: its
-/// object example treats the parent's `required` as binding, and an optional
-/// with no example reachable (`hasExample`) builds nothing for a request. Groupe
-/// PSA's `RemoteCallbackSubscribe` extends `CallbackSubscribe`, which requires
-/// `callback`, and restates `callback` without one; Fern logs *Failed to generate
-/// required request example* for both operations posting it.
+/// Whether Fern's importer gives up on the operation's request example.
+///
+/// fern-python-sdk 5.20.0 also gave up where an inline `allOf` member restated a
+/// property its `$ref` parent requires as optional with no example reachable;
+/// 5.41.3 keeps the parent's `required` and examples it (Groupe PSA's
+/// `RemoteCallbackSubscribe` documents `callback=…(target="http://example.com")`
+/// and a one-item `remote_types`), so only the composition case below remains.
 fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
     let Some(schema) = op.request_body.as_ref().and_then(|body| {
         body.content
@@ -4978,8 +4977,7 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
     // example: Fern logs *Failed to generate required request example* for Zulip's
     // `PATCH /navigation_views/{fragment}`, whose urlencoded body is
     // `anyOf: [{required: [is_pinned]}, {required: [name]}]`.
-    if op
-        .request_body
+    op.request_body
         .as_ref()
         .is_some_and(|body| body.required == Some(true))
         && schema
@@ -4987,114 +4985,6 @@ fn request_example_fails(doc: &OpenApi, op: &Operation) -> bool {
             .as_ref()
             .or(schema.any_of.as_ref())
             .is_some_and(|members| members.iter().all(is_unknown))
-    {
-        return true;
-    }
-    let Some(members) = schema.all_of.as_deref() else {
-        return false;
-    };
-    let mut parent_required = std::collections::HashSet::new();
-    for member in members {
-        if let Some(parent) = member
-            .reference
-            .as_deref()
-            .and_then(|r| resolve_ref(doc, r))
-        {
-            collect_required_through_all_of(doc, parent, &mut parent_required, 0);
-        }
-    }
-    let own_required: std::collections::HashSet<&str> = schema
-        .required
-        .iter()
-        .chain(
-            members
-                .iter()
-                .filter(|m| m.reference.is_none())
-                .flat_map(|m| &m.required),
-        )
-        .map(String::as_str)
-        .collect();
-    members
-        .iter()
-        .filter(|member| member.reference.is_none())
-        .flat_map(|member| &member.properties)
-        .any(|(key, restated)| {
-            parent_required.contains(key.as_str())
-                && !own_required.contains(key.as_str())
-                && !fern_has_example(doc, restated, 0, &mut Vec::new())
-        })
-}
-
-fn collect_required_through_all_of<'a>(
-    doc: &'a OpenApi,
-    schema: &'a Schema,
-    required: &mut std::collections::HashSet<&'a str>,
-    depth: usize,
-) {
-    if depth > 8 {
-        return;
-    }
-    required.extend(schema.required.iter().map(String::as_str));
-    for member in schema.all_of.iter().flatten() {
-        let member = member
-            .reference
-            .as_deref()
-            .and_then(|reference| resolve_ref(doc, reference))
-            .unwrap_or(member);
-        collect_required_through_all_of(doc, member, required, depth + 1);
-    }
-}
-
-/// Fern's `hasExample`: whether any example is reachable from `schema` within
-/// five levels, reading an object's own properties (not its `allOf` parents).
-fn fern_has_example<'a>(
-    doc: &'a OpenApi,
-    schema: &'a Schema,
-    depth: usize,
-    visited: &mut Vec<&'a str>,
-) -> bool {
-    if depth > 5 {
-        return false;
-    }
-    if let Some(reference) = schema.reference.as_deref() {
-        if visited.contains(&reference) {
-            return false;
-        }
-        let Some(target) = resolve_ref(doc, reference) else {
-            return false;
-        };
-        visited.push(reference);
-        let found = fern_has_example(doc, target, depth, visited);
-        visited.pop();
-        return found;
-    }
-    if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
-        return members
-            .iter()
-            .any(|member| fern_has_example(doc, member, depth, visited));
-    }
-    // An array answers for its items alone; its own `example` is not read.
-    if schema.ty.as_ref().and_then(TypeField::primary) == Some("array") {
-        return schema
-            .items
-            .as_deref()
-            .is_some_and(|items| fern_has_example(doc, items, depth + 1, visited));
-    }
-    if schema_example(schema).is_some() {
-        return true;
-    }
-    schema
-        .properties
-        .values()
-        .chain(
-            schema
-                .all_of
-                .iter()
-                .flatten()
-                .filter(|member| member.reference.is_none())
-                .flat_map(|member| member.properties.values()),
-        )
-        .any(|property| fern_has_example(doc, property, depth + 1, visited))
 }
 
 /// The value Fern's IR example generator gives a string query parameter with no
@@ -8707,6 +8597,11 @@ fn hoist_form_object(
                 hoister.copied_prop_type_ref(request_ctx, prop, prop_schema)
             };
             let convert = !is_file && hoister.needs_convert(&type_ref);
+            // A required collapsed composition is documented as its model field
+            // is (see `collapsed_member_description`).
+            let collapsed_doc = (spec_required && !is_optional(prop_schema))
+                .then(|| collapsed_member_description(prop_schema, &type_ref))
+                .flatten();
             BodyField {
                 wire_name: prop.clone(),
                 py_name: naming::request_field_name(prop_schema.property_name().unwrap_or(prop)),
@@ -8717,14 +8612,16 @@ fn hoist_form_object(
                 // An annotated `$ref` documents the field with its annotation, as
                 // a JSON body's does: Zulip's urlencoded `PATCH /streams/{stream_id}`
                 // `can_add_subscribers_group` is `allOf: [{description}, $ref …]`.
-                docstring: clean_doc(prop_schema.description.as_deref().or_else(|| {
-                    described_all_of_ref(prop_schema)
-                        .and_then(|(_, description)| description)
-                        .or_else(|| {
-                            (multipart && is_file)
-                                .then(|| prop_schema.items.as_deref()?.description.as_deref())
-                                .flatten()
-                        })
+                docstring: clean_doc(collapsed_doc.unwrap_or_else(|| {
+                    prop_schema.description.as_deref().or_else(|| {
+                        described_all_of_ref(prop_schema)
+                            .and_then(|(_, description)| description)
+                            .or_else(|| {
+                                (multipart && is_file)
+                                    .then(|| prop_schema.items.as_deref()?.description.as_deref())
+                                    .flatten()
+                            })
+                    })
                 })),
                 convert,
                 is_file,
@@ -12289,12 +12186,9 @@ impl Builder<'_> {
                 // `AlertFilterSuggestion` annotates `FilterSuggestion` with
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
-                docstring: declared_doc(
-                    collapsed_doc
-                        .or_else(|| {
-                            annotation_lost_description(prop_schema, self.schemas)
-                                .unwrap_or_else(|| property_description(prop_schema, optional))
-                        })
+                docstring: declared_doc(collapsed_doc.unwrap_or_else(|| {
+                    annotation_lost_description(prop_schema, self.schemas)
+                        .unwrap_or_else(|| property_description(prop_schema, optional))
                         .or_else(|| {
                             described_all_of_ref(prop_schema)
                                 .and_then(|(reference, _)| {
@@ -12306,8 +12200,8 @@ impl Builder<'_> {
                             scalar_narrowed_enum_ref(prop_schema, self.schemas)
                                 .and_then(|(_, member)| member.description.as_deref())
                         })
-                        .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas)),
-                ),
+                        .or_else(|| merged_all_of_ref_description(prop_schema, self.schemas))
+                })),
                 example: schema_example_literal(prop_schema)
                     .or_else(|| {
                         prop_schema
@@ -15390,8 +15284,17 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
 /// description and all, in place of the union. LiveBuildings' required `id` is
 /// an `anyOf` of two string shapes each described `Property. Identifier format
 /// of any NGSI entity` beside its own `Unique identifier of the entity`, and its
-/// golden field reads the alternative's.
-fn collapsed_member_description<'a>(schema: &'a Schema, type_ref: &TypeRef) -> Option<&'a str> {
+/// golden field reads the alternative's. The outer `None` is a property this
+/// does not apply to; `Some(None)` is a collapsed one whose first alternative
+/// carries no description, which leaves the field undocumented however the
+/// property itself is described: langchain-agent-server's required
+/// `assistant_id` is an `anyOf` of a uuid and a plain string, titled but not
+/// described, and its golden documents neither the model field nor the request
+/// argument (measured at fern-python-sdk 5.41.3).
+fn collapsed_member_description<'a>(
+    schema: &'a Schema,
+    type_ref: &TypeRef,
+) -> Option<Option<&'a str>> {
     if schema.reference.is_some() {
         return None;
     }
@@ -15406,7 +15309,14 @@ fn collapsed_member_description<'a>(schema: &'a Schema, type_ref: &TypeRef) -> O
     if matches!(inner, TypeRef::Named(_) | TypeRef::Union(_)) {
         return None;
     }
-    first.description.as_deref()
+    // Only an inline typed alternative stands in for the property this way: a
+    // `$ref` first alternative (hasura-metadata's `function`) or an untyped one
+    // (waylay-queries' `rows`) leaves the property's own description in place.
+    match first.description.as_deref() {
+        Some(description) => Some(Some(description)),
+        None if first.reference.is_none() && first.ty.is_some() => Some(None),
+        None => None,
+    }
 }
 
 fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
@@ -24760,6 +24670,47 @@ mod tests {
             endpoint.header_params[0].docstring.as_deref(),
             Some("Trace token.")
         );
+    }
+
+    #[test]
+    fn a_collapsed_required_composition_is_documented_by_its_first_alternative() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.1.0",
+            "info": { "title": "Runs", "version": "1" },
+            "paths": { "/runs": { "post": {
+                "operationId": "createRun",
+                "requestBody": { "required": true, "content": { "application/json": {
+                    "schema": { "$ref": "#/components/schemas/RunCreate" } } } },
+                "responses": { "200": { "description": "Run", "content": {
+                    "application/json": { "schema": { "$ref": "#/components/schemas/Run" } } } } }
+            } } },
+            "components": { "schemas": {
+                "RunCreate": { "type": "object", "required": ["assistant", "parent"],
+                    "properties": {
+                        "assistant": { "description": "The assistant ID or graph name.",
+                            "anyOf": [ { "type": "string", "format": "uuid", "title": "Id" },
+                                       { "type": "string", "title": "Graph" } ] },
+                        "parent": { "description": "The parent run.",
+                            "anyOf": [ { "$ref": "#/components/schemas/Name" },
+                                       { "type": "string" } ] }
+                    } },
+                "Run": { "type": "object", "properties": { "id": { "type": "string" } } },
+                "Name": { "type": "string" }
+            } }
+        }));
+        let field = |wire: &str| {
+            let body = match &ir.endpoints[0].request_body {
+                Some(super::RequestBody::Inline(fields)) => fields,
+                other => panic!("an inlined body, not {other:?}"),
+            };
+            body.iter()
+                .find(|field| field.wire_name == wire)
+                .and_then(|field| field.docstring.clone())
+        };
+        // The undescribed inline first alternative stands in for the property.
+        assert_eq!(field("assistant"), None);
+        // A `$ref` first alternative leaves the property's own description.
+        assert_eq!(field("parent").as_deref(), Some("The parent run."));
     }
 }
 

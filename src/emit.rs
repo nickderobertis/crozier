@@ -8987,7 +8987,7 @@ impl<'a> ExampleCtx<'a> {
                                 && !value.as_object().is_some_and(serde_json::Map::is_empty)
                         })
             })
-            .map(
+            .filter_map(
                 |ExampleField {
                      py_name,
                      wire_name,
@@ -8995,6 +8995,7 @@ impl<'a> ExampleCtx<'a> {
                      requirement,
                      ..
                  }| {
+                    let recorded = self.recorded();
                     let rendered = match values.get(&wire_name) {
                         Some(serde_json::Value::Null)
                             if self.documentation
@@ -9039,7 +9040,20 @@ impl<'a> ExampleCtx<'a> {
                         }
                         _ => self.value(&type_ref, Slot::Named(&wire_name)),
                     };
-                    (Some(py_name), rendered)
+                    // An optional field whose example narrows to an empty model
+                    // is no argument (measured at fern-python-sdk 5.41.3):
+                    // MockServer's baseline `Expectation` gives `httpRequest`
+                    // `{method, path}`, which its `RequestDefinition` union keeps
+                    // as an empty `OpenAPIDefinition`, and the golden passes only
+                    // `http_response`.
+                    if requirement == Requirement::Optional
+                        && matches!(&rendered, Example::Call(_, args) if args.is_empty())
+                    {
+                        // Nor does the model it would have constructed import.
+                        self.restore_recorded(recorded);
+                        return None;
+                    }
+                    Some((Some(py_name), rendered))
                 },
             )
             .collect()
@@ -9738,13 +9752,15 @@ impl<'a> ExampleCtx<'a> {
                 let fields = self.object_fields(obj);
                 // A required-but-nullable field is shown as a top-level body
                 // field is (see `build_example_inner`): by its declared example,
-                // else as `None` in the Markdown writers alone.
+                // else as `None` in the Markdown writers alone. An unknown-typed
+                // one too: marimo-plugins' chat message item documents
+                // `content=None` and `metadata=None` (`anyOf: [{}, null]`) in
+                // `reference.md`, and neither in the docstring.
                 let documentation = self.documentation;
                 let fallback = self.field_examples_ignored;
                 let nullable_shown = |field: &ExampleField| {
                     field.requirement == Requirement::RequiredNullable
                         && !fallback
-                        && !is_any_type(&field.type_ref)
                         && (field.example.is_some() || documentation)
                 };
                 let args = fields
@@ -9927,20 +9943,32 @@ impl<'a> ExampleCtx<'a> {
     /// this the discarded render still imports the model, and the docstring's
     /// `from fern import FernApi` gains a `ProbeParam` nothing in it names.
     fn without_recording<T>(&mut self, render: impl FnOnce(&mut Self) -> T) -> T {
-        let referenced = self.referenced.clone();
-        let referenced_doc_order = self.referenced_doc_order.clone();
-        let referenced_tag = self.referenced_tag.clone();
-        let referenced_tag_doc_order = self.referenced_tag_doc_order.clone();
-        let uses_datetime = self.uses_datetime;
-        let datetime_precedes_tag_import = self.datetime_precedes_tag_import;
+        let recorded = self.recorded();
         let out = render(self);
-        self.referenced = referenced;
-        self.referenced_doc_order = referenced_doc_order;
-        self.referenced_tag = referenced_tag;
-        self.referenced_tag_doc_order = referenced_tag_doc_order;
-        self.uses_datetime = uses_datetime;
-        self.datetime_precedes_tag_import = datetime_precedes_tag_import;
+        self.restore_recorded(recorded);
         out
+    }
+
+    /// Every import an example has registered so far, to roll back to.
+    fn recorded(&self) -> Recorded {
+        Recorded {
+            referenced: self.referenced.clone(),
+            referenced_doc_order: self.referenced_doc_order.clone(),
+            referenced_tag: self.referenced_tag.clone(),
+            referenced_tag_doc_order: self.referenced_tag_doc_order.clone(),
+            uses_datetime: self.uses_datetime,
+            datetime_precedes_tag_import: self.datetime_precedes_tag_import,
+        }
+    }
+
+    /// Forget every import registered since `recorded` was taken.
+    fn restore_recorded(&mut self, recorded: Recorded) {
+        self.referenced = recorded.referenced;
+        self.referenced_doc_order = recorded.referenced_doc_order;
+        self.referenced_tag = recorded.referenced_tag;
+        self.referenced_tag_doc_order = recorded.referenced_tag_doc_order;
+        self.uses_datetime = recorded.uses_datetime;
+        self.datetime_precedes_tag_import = recorded.datetime_precedes_tag_import;
     }
 
     /// The example Fern renders for an **object-typed path parameter**, or `None`
@@ -10057,6 +10085,17 @@ impl<'a> ExampleCtx<'a> {
         }
         out
     }
+}
+
+/// The imports an [`ExampleCtx`] has registered, as [`ExampleCtx::recorded`]
+/// captures them.
+struct Recorded {
+    referenced: BTreeSet<String>,
+    referenced_doc_order: Vec<String>,
+    referenced_tag: BTreeSet<(String, String)>,
+    referenced_tag_doc_order: Vec<(String, String)>,
+    uses_datetime: bool,
+    datetime_precedes_tag_import: bool,
 }
 
 /// Whether a model field's property is required, as example synthesis reads it.
@@ -10958,6 +10997,7 @@ fn build_example_inner(
                     .is_none_or(|(wire, _)| *wire != field.wire_name)
             });
             for f in example_fields {
+                let recorded = ctx.recorded();
                 let supplied_example = f
                     .example
                     .as_deref()
@@ -11064,6 +11104,12 @@ fn build_example_inner(
                 } else {
                     f.py_name.clone()
                 };
+                // An optional field whose example narrows to an empty model is
+                // no argument, as a nested one is (see `example_call_args`).
+                if !f.spec_required && matches!(&v, Example::Call(_, args) if args.is_empty()) {
+                    ctx.restore_recorded(recorded);
+                    continue;
+                }
                 args.push((Some(example_name), v));
             }
         }
@@ -11169,11 +11215,11 @@ fn build_example_inner(
         &ep.method_name
     };
     // An async streaming method is an async generator function, which cannot be
-    // awaited, so its docstring iterates the call directly: exa-gate's
-    // `get_proxy_events` documents `response = client.get_proxy_events()` inside
-    // `async def main()` (measured at fern-python-sdk 5.41.3; 5.20.0 wrote
-    // `await`). The Markdown writers show no `async for` and keep theirs.
-    let awaited = is_async && (documentation || !ep.streaming);
+    // awaited, so its async examples iterate the call directly (measured at
+    // fern-python-sdk 5.41.3; 5.20.0 wrote `await`): exa-gate's docstring
+    // documents `response = client.get_proxy_events()` inside `async def main()`,
+    // and the README's async client `async for chunk in …: print(chunk)`.
+    let awaited = is_async && !ep.streaming;
     let await_kw = if awaited { "await " } else { "" };
     let receiver = if module.is_empty() {
         format!("{await_kw}client.{method_name}")
@@ -11194,9 +11240,26 @@ fn build_example_inner(
         } else {
             args
         };
+        let readme_stream = ep.streaming && documentation && is_async;
+        if readme_stream {
+            // The README's async client elides the arguments: `(...)` wherever
+            // the method takes any (huatuo-node's `watch_events(...)`, beside a
+            // sync call passing none), `()` where it takes none (sse-streaming's
+            // `streammessages()`). Nothing an argument would import is written.
+            ctx.uses_datetime = false;
+            ctx.referenced_tag.clear();
+            ctx.referenced_tag_doc_order.clear();
+        }
+        let takes_arguments = !ep.path_params.is_empty()
+            || !ep.query_params.is_empty()
+            || !ep.header_params.is_empty()
+            || ep.request_body.is_some();
+        let stream_call = format!("{receiver}({})", if takes_arguments { "..." } else { "" });
         let example = Example::Call(receiver, args);
         let rendered = example.render(call_indent);
-        if ep.streaming && !documentation {
+        if readme_stream {
+            format!("{pad}async for chunk in {stream_call}:\n{pad}    print(chunk)")
+        } else if ep.streaming && !documentation {
             let for_kw = if is_async { "async for" } else { "for" };
             // Fern's snippet formatter (ruff at width 80) parenthesizes the
             // assignment's right-hand side when `response = <call>(` overflows
@@ -11679,14 +11742,10 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
         && ep.header_params.is_empty()
         && ep.request_body.is_none();
     // A binary download substitutes the parameter's own name for each path
-    // placeholder — it ignores the schema's declared example, see
-    // `build_example_inner` — so a `pattern` the name cannot satisfy costs the
-    // endpoint its whole example. discord's `get_guild_widget_png` takes
-    // `guild_id: SnowflakeType`, whose `^(0|[1-9][0-9]*)$` rejects `"guild_id"`,
-    // and Fern's golden documents no example; apicurio's `get_latest_artifact`
-    // takes two unconstrained named path parameters and keeps one.
-    let binary_path_placeholder_rejected =
-        ep.path_params.iter().any(|param| param.pattern_constrained);
+    // placeholder whatever `pattern` the schema declares: discord's
+    // `get_guild_widget_png` documents `guild_id="guild_id"` although its
+    // `SnowflakeType` is `^(0|[1-9][0-9]*)$` (measured at fern-python-sdk 5.41.3;
+    // 5.20.0 dropped the whole example).
     let opaque_multipart_example = ep.body_media_has_example
         && matches!(&ep.request_body, Some(RequestBody::Form(form)) if form.fields.iter().any(|field| field.is_file));
     // A list-typed path parameter beside a request body defeats Fern's example
@@ -11718,7 +11777,7 @@ fn endpoint_has_worked_example(ep: &Endpoint) -> bool {
     // lone `200` of `application/octet-stream` and its golden has no example.
     let binary_download_without_errors =
         ep.binary_response && ep.importer_example_missing && ep.errors.is_empty();
-    !(ep.binary_response && (binary_get_has_no_required_args || binary_path_placeholder_rejected)
+    !(ep.binary_response && binary_get_has_no_required_args
         || binary_download_without_errors
         || opaque_multipart_example
         || list_path_param_with_body)
@@ -16216,6 +16275,132 @@ mod tests {
         }));
         let reference = file(&files, "reference.md");
         assert!(reference.contains("**request:** `bytes` "), "{reference}");
+    }
+
+    #[test]
+    fn the_readme_iterates_an_async_stream_with_its_arguments_elided() {
+        let stream = |parameters: serde_json::Value| {
+            files_for(serde_json::json!({
+                "openapi": "3.0.3",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {"/events": {"get": {
+                    "operationId": "watchEvents",
+                    "tags": ["Events"],
+                    "parameters": parameters,
+                    "responses": {"200": {"description": "OK", "content": {"text/event-stream":
+                        {"schema": {"type": "string"}}}}}
+                }}}
+            }))
+        };
+        let files = stream(serde_json::json!([]));
+        let readme = file(&files, "README.md");
+        assert!(
+            readme.contains(
+                "async def main() -> None:\n    async for chunk in client.events.watch_events():\n        print(chunk)\n"
+            ),
+            "{readme}"
+        );
+        // An optional parameter the sync call leaves out is still elided as `...`.
+        let files = stream(serde_json::json!([
+            {"name": "since", "in": "query", "schema": {"type": "string"}}
+        ]));
+        let readme = file(&files, "README.md");
+        assert!(
+            readme.contains("client.events.watch_events()\n```"),
+            "{readme}"
+        );
+        assert!(
+            readme.contains("    async for chunk in client.events.watch_events(...):\n"),
+            "{readme}"
+        );
+    }
+
+    #[test]
+    fn a_patterned_path_parameter_keeps_a_downloads_worked_example() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/guilds/{guild_id}/widget.png": {"get": {
+                "operationId": "getGuildWidgetPng",
+                "tags": ["Guilds"],
+                "parameters": [{"name": "guild_id", "in": "path", "required": true,
+                    "schema": {"type": "string", "pattern": "^(0|[1-9][0-9]*)$"}}],
+                "responses": {
+                    "200": {"description": "OK", "content": {"image/png":
+                        {"schema": {"type": "string", "format": "binary"}}}},
+                    "404": {"description": "Missing", "content": {"application/json":
+                        {"schema": {"type": "object",
+                            "properties": {"message": {"type": "string"}}}}}}
+                }
+            }}}
+        }));
+        let client = file(&files, "guilds/client.py");
+        assert!(client.contains("guild_id=\"guild_id\","), "{client}");
+    }
+
+    #[test]
+    fn an_optional_field_narrowed_to_an_empty_model_is_no_argument_nor_import() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.0.3",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/expectations": {"put": {
+                "operationId": "putExpectation",
+                "tags": ["Expectations"],
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Expectation"},
+                    "example": {"matcher": {"method": "GET"}, "status": 200}
+                }}},
+                "responses": {"204": {"description": "Stored"}}
+            }}},
+            "components": {"schemas": {
+                "Expectation": {"type": "object", "properties": {
+                    "matcher": {"$ref": "#/components/schemas/Matcher"},
+                    "status": {"type": "integer"}
+                }},
+                "Matcher": {"oneOf": [
+                    {"$ref": "#/components/schemas/PathMatcher"},
+                    {"$ref": "#/components/schemas/SpecMatcher"}
+                ]},
+                "PathMatcher": {"type": "object", "additionalProperties": false,
+                    "properties": {"path": {"type": "string"}}},
+                "SpecMatcher": {"type": "object", "additionalProperties": false,
+                    "properties": {"operation": {"type": "string"}}}
+            }}
+        }));
+        let client = file(&files, "expectations/client.py");
+        let example = client
+            .split("Examples\n        --------\n")
+            .nth(1)
+            .and_then(|rest| rest.split("\"\"\"").next())
+            .expect("the docstring has a worked example");
+        assert!(example.contains("status=200"), "{example}");
+        assert!(!example.contains("matcher"), "{example}");
+        assert!(!example.contains("PathMatcher"), "{example}");
+        assert!(!example.contains("SpecMatcher"), "{example}");
+    }
+
+    #[test]
+    fn a_nested_required_unknown_nullable_field_is_none_in_markdown_only() {
+        let mut document = lead_document(serde_json::json!({
+            "type": "object",
+            "required": ["messages"],
+            "properties": {"messages": {"type": "array", "items": {
+                "$ref": "#/components/schemas/Message"}}}
+        }));
+        document["components"] = serde_json::json!({"schemas": {"Message": {
+            "type": "object",
+            "required": ["id", "metadata"],
+            "properties": {
+                "id": {"type": "string"},
+                "metadata": {"anyOf": [{}, {"type": "null"}]}
+            }
+        }}});
+        let files = files_for(document);
+        let client = file(&files, "leads/client.py");
+        assert!(client.contains("Message(\n"), "{client}");
+        assert!(!client.contains("metadata="), "{client}");
+        let reference = file(&files, "reference.md");
+        assert!(reference.contains("metadata=None,"), "{reference}");
     }
 }
 
