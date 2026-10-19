@@ -279,10 +279,65 @@ components:
       properties: {harbor_id: {type: string RENAME}, vessel_name: {type: string}}
 "#;
 
+/// The Python client's source for `body` in both modes: generated, and the
+/// same bytes with and without `fern-strict`.
+fn generated_client(body: &str) -> String {
+    let dir = tempfile::tempdir().expect("temp dir");
+    let spec = write(dir.path(), body);
+    let client = |strict: bool| {
+        crozier::render_files(GenerateArgs {
+            spec: spec.clone(),
+            output: PathBuf::from("unused"),
+            package_name: Some("acme".to_string()),
+            project_name: Some("acme".to_string()),
+            client_class_name: None,
+            audiences: Vec::new(),
+            audience_strict: false,
+            fern_strict: strict,
+            extra_fields: crozier::settings::ExtraFields::Allow,
+            enum_type: crozier::settings::EnumType::PythonEnums,
+            default_max_retries: crozier::settings::DEFAULT_MAX_RETRIES,
+            layout: crozier::settings::Layout::Packaged,
+        })
+        .unwrap_or_else(|error| panic!("refused (strict: {strict}): {error}"))
+        .into_iter()
+        .filter(|file| file.path.ends_with("raw_client.py"))
+        .map(|file| file.contents)
+        .collect::<Vec<_>>()
+        .join("\n")
+    };
+    let default = client(false);
+    assert_eq!(default, client(true), "fern-strict changed the SDK's bytes");
+    default
+}
+
 #[test]
-fn a_body_property_named_like_a_path_parameter_is_refused() {
+fn a_body_property_named_like_a_path_parameter_renames_the_path_parameter() {
+    // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: Fern's importer
+    // renames the path parameter `{name}PathParam`, so the pair no longer
+    // collides (authored probe 549-request-property-name-collision); 5.67.1
+    // refused it. A referenced body and an inline one alike.
+    let client = generated_client(&PATH_PARAMETER_BODY.replace(" RENAME", ""));
+    assert!(
+        client.contains("harbor_id_path_param: str,")
+            && client.contains(r#"f"harbor/{encode_path_param(harbor_id_path_param)}/voyages""#)
+            && client.contains(
+                r#"f"harbor/{encode_path_param(harbor_id_path_param)}/berth-assignments""#
+            ),
+        "{client}"
+    );
+}
+
+#[test]
+fn a_path_parameter_with_a_declared_name_still_collides_with_a_body_property() {
+    // Fern renames only a path parameter that declares no name of its own.
     assert_refused(
-        &PATH_PARAMETER_BODY.replace(" RENAME", ""),
+        &PATH_PARAMETER_BODY
+            .replace(" RENAME", "")
+            .replace(
+                "{name: harbor_id, in: path, required: true, schema: {type: string}}",
+                "{name: harbor_id, in: path, required: true, x-fern-parameter-name: harbor_id, schema: {type: string}}",
+            ),
         "request-property-name-collision",
         r#"POST /harbor/{harbor_id}/berth-assignments body property "harbor_id" collides with another request property"#,
     );
@@ -309,12 +364,12 @@ fn a_body_property_renamed_clear_of_a_path_parameter_generates() {
 }
 
 #[test]
-fn a_blank_property_name_leaves_the_collision_refused() {
-    assert_refused(
-        &PATH_PARAMETER_BODY.replace(" RENAME", ", x-fern-property-name: ' '"),
-        "request-property-name-collision",
-        r#"body property "harbor_id" collides with another request property"#,
-    );
+fn a_blank_property_name_leaves_the_path_parameter_renamed() {
+    // A blank declared name is no name, so the property keeps `harbor_id` and
+    // the path parameter is renamed clear of it.
+    let client =
+        generated_client(&PATH_PARAMETER_BODY.replace(" RENAME", ", x-fern-property-name: ' '"));
+    assert!(client.contains("harbor_id_path_param: str,"), "{client}");
 }
 
 /// The committed probe `docs/fern-refusals/type-name-collision/evidence/<name>.yml`.

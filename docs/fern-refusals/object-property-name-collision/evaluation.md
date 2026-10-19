@@ -1,5 +1,27 @@
 # object-property-name-collision
 
+## Retiring: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Fern generates from the probe: `fern check` and `fern generate` both exit 0
+([check](../../openapi-surface/fern-refusals/probe-logs/object-property-name-collision.check.log),
+[generate](../../openapi-surface/fern-refusals/probe-logs/object-property-name-collision.generate.log)).
+Its tree is the authored-probe case
+[`549-object-property-name-collision`](../../openapi-surface/authored-probes/549-object-property-name-collision/):
+`FileConflict` keeps one `sha1: typing.Optional[str]` field beside its nullable
+`FileMini` base.
+
+crozier generates too, in default mode and under `--fern-strict`, and
+byte-matches Fern's tree in both (`authored_probe_measurements_match_fern`,
+`nullable_inherited_property_redeclarations_generate_in_both_modes`). The
+`findings.tsv` row `object-property-name-collision-generates` names this
+class's probe, which makes the class **retiring**: `fern_refusal_failures`
+holds crozier to generating the probe in both modes, and `fern-refusal.txt`
+stays as the class's last refusal record (Fern CLI 5.67.1). The `classes.tsv`
+row (whose `status` still reads `refuse`) and its `documents.tsv` references
+stay until the population is measured again at the new pair.
+
+## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
 
