@@ -2016,27 +2016,12 @@ pub fn check_sdk(
                 &format!("server {template} variable {:?}", variable.wire_name),
             );
         }
-        // F524: a placeholder `str.format` is given no argument for.
-        if !variables.is_empty() {
-            let mut rest = template.as_str();
-            while let Some((_, after)) = rest.split_once('{') {
-                let Some((placeholder, after)) = after.split_once('}') else {
-                    break;
-                };
-                if !variables
-                    .iter()
-                    .any(|variable| variable.wire_name == placeholder)
-                {
-                    return refusal(
-                        path,
-                        strict,
-                        class,
-                        &format!("server {template} placeholder {placeholder:?}"),
-                    );
-                }
-                rest = after;
-            }
-        }
+        // A placeholder no variable binds is not refused: fern-python-sdk
+        // 5.41.3 formats the template through a variable
+        // (`_url_template = _environment_url_templates.get(environment, "…")`
+        // then `_url_template.format(…)`), which ruff's F524 cannot read, so
+        // Fern's own `ruff check` passes it. Only 5.20.0's literal
+        // `"…".format(…)` tripped F524.
     }
     Ok(())
 }
@@ -2887,6 +2872,35 @@ mod tests {
         for name in ["", "api-version", "api.version", "1st", "class", "None"] {
             assert!(!python_identifier(name), "{name}");
         }
+    }
+
+    #[test]
+    fn a_server_placeholder_no_variable_binds_is_not_refused() {
+        let check = |variable: &str| {
+            let mut doc: OpenApi = crate::yaml::from_str(&format!(
+                "openapi: 3.0.3\nservers:\n  - url: https://{{extra}}.example.com/{{version}}\n    variables:\n      {variable}: {{default: v1}}\npaths:\n{OP}\n"
+            ))
+            .unwrap();
+            let config = crate::config::GenerateConfig::new(
+                "api.yml".into(),
+                "sdk".into(),
+                Some("fern".into()),
+                None,
+                None,
+                crate::settings::ExtraFields::default(),
+                "Probe",
+            )
+            .unwrap();
+            let ir = crate::ir::build(&doc, &config);
+            assert!(ir.environment.is_some());
+            check_sdk(&mut doc, &ir, &config, Path::new("api.yml"), true)
+        };
+        // `{extra}` is formatted through `_url_template`, which ruff's F524
+        // cannot read, so Fern generates.
+        assert!(check("version").is_ok());
+        // A variable that is no keyword argument is still a syntax error.
+        let error = check("api-version").unwrap_err().to_string();
+        assert!(error.contains("variable \"api-version\""), "{error}");
     }
 
     fn example_name_refusal(document: &str) -> Option<String> {

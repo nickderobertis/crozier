@@ -13805,9 +13805,8 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
         }),
     },
     // A registered real document declaring cursor pagination: Fern's flat tree
-    // returns each paginated method's page model, the pagination runtime still
-    // shipped, and its README documents the pager the method does not return
-    // (the `flat-pagination-pager-docs` departure).
+    // returns a pager from each paginated method, as its packaged tree does
+    // (measured at fern-python-sdk 5.41.3; 5.20.0's returned the page model).
     FlatGolden {
         fixture: "truefoundry-trueforge",
         corpus: None,
@@ -24170,7 +24169,6 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         ("server-hyphen-probe.yml", "variable \"api-version\""),
         ("server-dot-probe.yml", "variable \"api.version\""),
         ("server-keyword-probe.yml", "variable \"class\""),
-        ("server-unbound-placeholder-probe.yml", "placeholder \"extra\""),
         ("slash-property-probe.yml", "type Result property \"/\""),
         ("empty-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
         ("null-only-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
@@ -24195,6 +24193,9 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         "server-identifier-control.yml",
         "server-secondary-hyphen-control.yml",
         "server-placeholder-without-variables-control.yml",
+        // fern-python-sdk 5.41.3 formats the server template through a
+        // variable, so the unbound placeholder no longer trips Fern's F524.
+        "server-unbound-placeholder-probe.yml",
         "slash-prefixed-property-control.yml",
         "null-and-value-enum-control.yml",
     ] {

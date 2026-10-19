@@ -4762,7 +4762,7 @@ fn expand_schema_closure(
 /// node (the node itself if it is a `$ref`, plus nested properties, array items,
 /// `additionalProperties`, `allOf`/`oneOf`/`anyOf` members, and discriminator
 /// mappings), inserting each target's schema key into `out`.
-fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<String>) {
+pub(crate) fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<String>) {
     const PREFIX: &str = "#/components/schemas/";
     if let Some(key) = schema
         .reference
