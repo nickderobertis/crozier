@@ -21007,6 +21007,9 @@ fn xml_suite_outcomes(py: &Path, sdk: &Path) -> Vec<(String, String)> {
             "pytest",
             "-q",
             "-rA",
+            // Plain text whatever the caller's colour settings (nx forces
+            // colour), so each outcome line and the summary parse as written.
+            "--color=no",
             "-p",
             "no:cacheprovider",
             "tests/xml",
@@ -21050,8 +21053,9 @@ fn xml_suite_outcomes(py: &Path, sdk: &Path) -> Vec<(String, String)> {
             && !report.lines().any(|line| line.starts_with("ERROR "))
             && !outcomes.is_empty()
             && counted("passed") + counted("failed") == outcomes.len(),
-        "the XML suite under {} did not complete with one outcome per test:\n{report}{}",
+        "the XML suite under {} did not complete with one outcome per test (exit {:?}):\n{report}{}",
         sdk.display(),
+        output.status.code(),
         String::from_utf8_lossy(&output.stderr)
     );
     outcomes
