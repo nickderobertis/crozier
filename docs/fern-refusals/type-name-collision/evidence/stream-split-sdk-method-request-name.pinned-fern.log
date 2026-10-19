@@ -1,4 +1,4 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+Fern CLI 5.163.1, python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
@@ -9,8 +9,8 @@ Warnings for generators.yml:
         path: __package__.yml -> service -> endpoints -> find
         issue: FindRequest is already declared in this file
 
-Found 1 error and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
-::error::Found 1 error and 2 warnings in 0.001 seconds. Run fern check --warnings to print out the warnings not shown.
+Found 1 error and 2 warnings in 0.005 seconds. Run fern check --warnings to print out the warnings not shown.
+::error::Found 1 error and 2 warnings in 0.005 seconds. Run fern check --warnings to print out the warnings not shown.
 
 generate exit: 1
 Warnings for generators.yml:
@@ -25,7 +25,7 @@ Warnings for generators.yml:
                   [error] FindRequest is already declared in this file
                   
 ::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> find%0A__package__.yml%0A[error] FindRequest is already declared in this file
-[api]: python-sdk Found 1 errors and 2 warnings in 0.735 seconds. Run fern check --warnings to print out the warnings not shown.
-::error title=[api]%3A python-sdk::Found 1 errors and 2 warnings in 0.735 seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Found 1 errors and 2 warnings in 0.337 seconds. Run fern check --warnings to print out the warnings not shown.
+::error title=[api]%3A python-sdk::Found 1 errors and 2 warnings in 0.337 seconds. Run fern check --warnings to print out the warnings not shown.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.

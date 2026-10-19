@@ -1,5 +1,7 @@
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Cat" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Dog" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
 [sdk] 1 error
     [error]
         path: __package__.yml -> service -> endpoints -> getPet -> examples[0] -> response
