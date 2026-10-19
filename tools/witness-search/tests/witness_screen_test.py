@@ -958,10 +958,10 @@ class HistoricalPairTests(unittest.TestCase):
             "CROZIER_RAW_GITHUB_URL": f"http://127.0.0.1:{server.server_port}",
         }
 
-    def run_stage(self, root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    def run_stage(self, root: Path, *args: str, env_stub: str = "pass") -> subprocess.CompletedProcess[str]:
         return subprocess.run(
             [sys.executable, str(root / "tools/witness-search/witness_screen.py"), *args],
-            env=self.env,
+            env={**self.env, "FERN_STUB": env_stub},
             capture_output=True,
             text=True,
             encoding="utf-8",
@@ -1079,6 +1079,90 @@ class HistoricalPairTests(unittest.TestCase):
         self.assertEqual(1, current.returncode, current.stderr)
         self.assertIn("a current measurement is never history", current.stderr)
 
+    def file(self, repository: str, stub: str, *args: str) -> None:
+        filed = self.run_stage(
+            REPO,
+            "screen",
+            "--source",
+            "sourcegraph",
+            "--key",
+            "sample-shape",
+            "--repository",
+            repository,
+            "--commit",
+            COMMIT,
+            "--path",
+            "openapi.yaml",
+            "--evidence-root",
+            str(self.surface),
+            "--timeout",
+            "60",
+            *args,
+            env_stub=stub,
+        )
+        self.assertEqual(0, filed.returncode, filed.stderr)
+
+    def test_a_mixed_ledger_labels_exactly_its_earlier_pair_runs_and_keeps_every_other_line(self) -> None:
+        # A row filed before the stage, with no record and no date: history already.
+        pre_stage = json.dumps(
+            {
+                "source": "sourcegraph",
+                "repository": "acme/old",
+                "path": "openapi.yaml",
+                "commit": COMMIT,
+                "keys": ["sample-shape"],
+                "license": "passed",
+                "ref": "passed",
+                "fern": "passed",
+                "disposition": "witness-found",
+            }
+        )
+        self.screens().write_text(pre_stage + "\n", encoding="utf-8", newline="\n")
+        self.file("acme/shop", "refuse")  # Fern refused it: measured, rejected
+        self.file("acme/eula", "pass")  # the licence failed: Fern never ran, no pins
+        self.file("acme/declared", "generate-fail")
+        before = self.screens().read_text(encoding="utf-8").splitlines(keepends=True)
+        self.assertEqual(4, len(before))
+
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 2 screen(s)", labelled.stdout)
+        after = self.screens().read_text(encoding="utf-8").splitlines(keepends=True)
+        # The pre-stage row and the row whose Fern screen never ran stay byte for byte.
+        self.assertEqual((before[0], before[2]), (after[0], after[2]))
+        for number in (1, 3):
+            row = json.loads(after[number])
+            self.assertIn(SCREEN.HISTORICAL_PAIR, row)
+            self.assertTrue(row["fern"].startswith(f"failed: {SCREEN.fern_label()} fern "), row["fern"])
+        # Each failed run is held whole at the pair it ran at, its outcome worded at that pair.
+        passing = self.check(self.later)
+        self.assertEqual(0, passing.returncode, passing.stderr)
+
+        # A label on the row whose Fern screen never ran names no pair it could be held to.
+        unpinned = {**json.loads(after[2]), SCREEN.HISTORICAL_PAIR: json.loads(after[1])[SCREEN.HISTORICAL_PAIR]}
+        self.screens().write_text(json.dumps(unpinned) + "\n", encoding="utf-8", newline="\n")
+        refused = self.check(self.later)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("ran no Fern screen at a pair", refused.stderr)
+
+    def test_historical_refuses_a_root_or_a_line_it_cannot_read_and_writes_nothing(self) -> None:
+        missing = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface / "absent"))
+        self.assertEqual(1, missing.returncode)
+        self.assertIn("is no directory", missing.stderr)
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        other = self.surface / "witness-search-jentic"
+        other.mkdir()
+        for label, text in (("not JSON", "{oops\n"), ("no object", "[1, 2]\n")):
+            with self.subTest(label):
+                (other / "screens.jsonl").write_text(text, encoding="utf-8", newline="\n")
+                before = self.screens().read_bytes()
+                refused = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("witness-search-jentic/screens.jsonl:1 is no JSON object", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                # The readable ledger, sorted before it, is not labelled either.
+                self.assertEqual(before, self.screens().read_bytes())
+
     def test_the_index_reads_a_labelled_screen_as_history_of_its_pair(self) -> None:
         row = {
             "source": "sourcegraph",
@@ -1112,6 +1196,16 @@ class HistoricalPairTests(unittest.TestCase):
             "candidates.jsonl:7; historical screen: measured at an earlier certified pair, Fern CLI 1.0.0 / g 2.0.0",
             result["evidence"],
         )
+        # A region's compact line counts the candidate among those resting on historical screens.
+        (self.evidence / "records.tsv").write_text(
+            "key\tdisposition\tevidence\n"
+            f"sample-shape\twitness-found\t{result['evidence']}\n"
+            "sample-shape\twitness-found\tcandidates.jsonl:8\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        counts = INDEX.disposition_counts(self.surface, "sourcegraph")["sample-shape"]
+        self.assertEqual((2, 1), (counts["witness-found"], counts[INDEX.HISTORICAL]))
 
 
 class WindowsNewlineTests(unittest.TestCase):

@@ -43,7 +43,10 @@ held whole, at the pair it names.
 0 says the screens were taken and recorded, not that they passed; 1 when it
 refused to file (an unknown key, a path outside the repository, a record that
 is not whole, a success claim the outcomes do not support, a Fern timeout); 2
-on a usage error.
+on a usage error. `historical` exits 0 when every committed screen it read is
+labelled where it owes one (printing how many it labelled, or nothing), 1 when
+the evidence root is no directory or a ledger line is no JSON object, writing
+nothing, and 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -65,7 +68,7 @@ from collections.abc import Callable
 from enum import Enum
 from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any, NoReturn
+from typing import Any, NamedTuple, NoReturn
 
 REPO = Path(__file__).resolve().parents[2]
 RULE = REPO / "docs" / "corpus-licensing.md"
@@ -187,13 +190,18 @@ def fern_workspace_files() -> tuple[str, str]:
     return json.dumps({"organization": "fern", "version": cli}) + "\n", "\n".join(generators) + "\n"
 
 
-Pins = tuple[str, str, str]
+class Pins(NamedTuple):
+    """The pair a Fern screen runs at, as its record's `fern.pins` names it."""
+
+    fern_cli: str
+    generator: str
+    generator_version: str
 
 
 def current_pins() -> Pins:
     """The Fern CLI, generator and generator version a live screen is held to: the corpus's."""
     cli, generator, version, _config = corpus_fern_pins()
-    return cli, generator, version
+    return Pins(cli, generator, version)
 
 
 def fern_label(pins: Pins | None = None) -> str:
@@ -1010,7 +1018,7 @@ def recorded_pins(record: Any) -> Pins | None:
         and generator
         and version
     ):
-        return cli, generator, version
+        return Pins(cli, generator, version)
     return None
 
 
@@ -1218,16 +1226,25 @@ def label_historical(root: Path) -> int:
     """Label every committed screen measured at a pair other than the corpus's as history of that pair.
 
     Only the rows it labels are rewritten, in the form `screen` files them; every
-    other line stays byte for byte. Re-screening a candidate at the current pins
-    is a separate measurement, filed through `screen`.
+    other line stays byte for byte. Every ledger is read before any is written,
+    so an unreadable line leaves the tree as it was. Re-screening a candidate at
+    the current pins is a separate measurement, filed through `screen`.
     """
+    if not root.is_dir():
+        fail(f"--evidence-root {root} is no directory; pass the tree holding the witness-search ledgers")
     pins = current_pins()
+    rewrites: dict[Path, list[str]] = {}
     labelled = 0
     for screens in sorted(root.glob("**/screens.jsonl")):
         lines = screens.read_text(encoding="utf-8").splitlines(keepends=True)
         changed = False
         for number, line in enumerate(lines):
-            row = json.loads(line)
+            try:
+                row = json.loads(line)
+            except ValueError as error:
+                row = error
+            if not isinstance(row, dict):
+                fail(f"{screens}:{number + 1} is no JSON object; restore it from git (`git checkout -- {screens}`)")
             recorded = recorded_pins(row.get("measured"))
             if HISTORICAL_PAIR in row or recorded is None or recorded == pins:
                 continue
@@ -1236,7 +1253,9 @@ def label_historical(root: Path) -> int:
             changed = True
             labelled += 1
         if changed:
-            screens.write_text("".join(lines), encoding="utf-8", newline="\n")
+            rewrites[screens] = lines
+    for screens, lines in rewrites.items():
+        screens.write_text("".join(lines), encoding="utf-8", newline="\n")
     if labelled:
         print(f"witness-screen: labelled {labelled} screen(s) measured at an earlier pair as historical")
     return 0
