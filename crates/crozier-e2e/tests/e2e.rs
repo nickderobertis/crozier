@@ -21090,36 +21090,6 @@ fn sdk_env_generated_xml_models_behave_as_fern_s_own() {
         .success();
     let py = sdk_python_env(&sdk.join("pyproject.toml"))
         .unwrap_or_else(|reason| panic!("the XML suite needs the SDK's Python env: {reason}"));
-    // A child builder never takes a name pydantic's `BaseModel` already
-    // answers: every public attribute of the installed pydantic is reserved.
-    let emitter =
-        std::fs::read_to_string(repo_root().join("src/emit/xml.rs")).expect("read the XML emitter");
-    let reserved: std::collections::BTreeSet<&str> = emitter
-        .split("const RESERVED_METHOD_NAMES: &[&str] = &[")
-        .nth(1)
-        .and_then(|rest| rest.split("];").next())
-        .expect("the emitter declares RESERVED_METHOD_NAMES")
-        .split('"')
-        .skip(1)
-        .step_by(2)
-        .collect();
-    let attributes = std::process::Command::new(&py)
-        .args([
-            "-c",
-            "import pydantic\nprint('\\n'.join(n for n in dir(pydantic.BaseModel) if not n.startswith('_')))",
-        ])
-        .output()
-        .expect("list pydantic.BaseModel's attributes");
-    let listed = String::from_utf8_lossy(&attributes.stdout);
-    let unreserved: Vec<&str> = listed
-        .lines()
-        .filter(|name| !reserved.contains(name))
-        .collect();
-    assert!(
-        attributes.status.success() && !listed.trim().is_empty() && unreserved.is_empty(),
-        "pydantic.BaseModel attributes a child builder could take: {unreserved:?}{}",
-        String::from_utf8_lossy(&attributes.stderr)
-    );
     let crozier = xml_suite_outcomes(&py, &sdk);
     let fern = xml_suite_outcomes(&py, &fixture_dir("swagger-petstore").join("expected"));
     assert_eq!(
@@ -21129,6 +21099,42 @@ fn sdk_env_generated_xml_models_behave_as_fern_s_own() {
     assert!(
         crozier.iter().any(|(_, outcome)| outcome == "PASSED"),
         "no generated XML test passes: {crozier:?}"
+    );
+}
+
+/// The names crozier gives colliding XML child builders hold at run time:
+/// a builder named after its tag moves a same-named text field to `note_`, two
+/// children sharing a tag fall back to their class names, a tag naming
+/// pydantic's `copy` gains `add_` (pydantic's own method still answers), and an
+/// inherited text field keeps its name while the builder yields. The document
+/// is authored for these four collisions; the SDK runs under its own pins.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
+    let journeys = repo_root().join("crates/crozier-e2e/tests/e2e");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(journeys.join("xml_builder_collisions.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "dock"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let output = std::process::Command::new(&py)
+        .arg(journeys.join("xml_builder_collisions.py"))
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the XML builder journey");
+    assert!(
+        output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "ok",
+        "the XML builder names do not hold at run time:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
     );
 }
 

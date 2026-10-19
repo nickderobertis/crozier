@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info: {title: Dock Manifests, version: '1'}
+paths:
+  /manifests/{id}:
+    get:
+      operationId: getManifest
+      parameters:
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: The manifest.
+          content:
+            application/xml:
+              schema: {$ref: '#/components/schemas/Manifest'}
+components:
+  schemas:
+    Note:
+      type: object
+      xml: {name: note}
+      properties:
+        author: {type: string, xml: {attribute: true}}
+    CrateEntry:
+      type: object
+      xml: {name: entry}
+      properties:
+        weight: {type: integer, xml: {attribute: true}}
+    PalletEntry:
+      type: object
+      xml: {name: entry}
+      properties:
+        height: {type: integer, xml: {attribute: true}}
+    Copy:
+      type: object
+      xml: {name: copy}
+      properties:
+        page: {type: integer, xml: {attribute: true}}
+    Labelled:
+      type: object
+      xml: {name: labelled}
+      properties:
+        label: {type: string, x-fern-xml-text: true}
+    Stamp:
+      xml: {name: stamp}
+      allOf:
+        - $ref: '#/components/schemas/Labelled'
+        - type: object
+          properties:
+            labels:
+              type: array
+              items:
+                type: object
+                xml: {name: label}
+                properties:
+                  ink: {type: string, xml: {attribute: true}}
+    Manifest:
+      type: object
+      xml: {name: manifest}
+      properties:
+        note: {type: string, x-fern-xml-text: true}
+        notes: {type: array, items: {$ref: '#/components/schemas/Note'}}
+        entries:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/CrateEntry'
+              - $ref: '#/components/schemas/PalletEntry'
+        copies: {type: array, items: {$ref: '#/components/schemas/Copy'}}
+        stamps: {type: array, items: {$ref: '#/components/schemas/Stamp'}}
