@@ -4,7 +4,7 @@ digest = "87a0c9cef823cee4e3b97319f077caffa829c791614e5f7f58b4d88300c9e9ee"
 
 [[covers]]
 key = "nullable"
-arm = 'src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]'
+arm = 'src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]'
 search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

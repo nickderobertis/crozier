@@ -2,7 +2,7 @@
 
 Union-repair sites not executed by the registered golden-only runs:
 
-- `src/ir.rs::Builder::add_named[if variants\.len\(\) > 1 && is_inline_object\(only\)]`
+- `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]`
 
 No arm-specific live query or registry walk ran under this directory's
 evidence. Each declared source still owes its search, so this record is
