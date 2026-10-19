@@ -13,8 +13,9 @@ here through the script that owns one item of it:
                     expected-default-max-retries/ through `fern-overlay-goldens.sh`
   handwritten       docs/openapi-surface/handwritten/<fixture>/fern-expected/,
                     with its evidence.toml versions and digest
-  measurements      docs/fern-measurements/<group>/<case>/fern-expected/, each
-                    case's document and setting declared in
+  measurements      docs/fern-measurements/<group>/<case>/fern-expected/, or
+                    the case's Contract A fern-refusal.txt where Fern refuses
+                    it, each case's document and setting declared in
                     docs/fern-measurements/cases.tsv
   probes            docs/openapi-surface/probe-expected/<name>/ or its Contract A
                     refusal record, with MANIFEST.tsv's digest
@@ -564,6 +565,36 @@ def generate_parameter_literal(case: str, pair: Pair) -> None:
             digests_path.write_text(json.dumps(digests, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
+MEASUREMENT_REFUSAL = "fern-refusal.txt"
+
+
+def refused_measurement(item: str, row: dict[str, str], record: Path, pair: Pair) -> None:
+    """Re-measure a case whose committed reference is Fern's refusal: rewrite its
+    Contract A record, or, where Fern now generates, install the tree in its place
+    and fail naming the case, whose evidence then states a refusal Fern no longer
+    makes."""
+    with run_fern(ROOT / row["document"], pair, enum_type=row["enum_type"], layout=row["layout"]) as run:
+        if run.generate_exit == "0" and run.tree is not None:
+            destination = record.with_name("fern-expected")
+            stage = Path(tempfile.mkdtemp(prefix=".fern-references.", dir=record.parent))
+            try:
+                strip_into(run.tree, stage / destination.name)
+                install(stage / destination.name, destination)
+            finally:
+                shutil.rmtree(stage, ignore_errors=True)
+            record.unlink()
+            raise ReferenceError(
+                f"Fern now generates {item}; its tree replaces {rel(record)}, so restate the evidence that cites the refusal"
+            )
+        diagnostic = first_diagnostic(run.generate_log)
+        if not diagnostic:
+            raise ReferenceError(
+                f"fern generate exited {run.generate_exit} printing no diagnostic this tool recognises:\n"
+                f"{run.generate_log.strip()[-2000:]}"
+            )
+        write_refusal_record(record, pair, run.generate_exit, diagnostic)
+
+
 def generate_measurement(item: str, pair: Pair) -> None:
     if item.startswith("parameter-literals/"):
         generate_parameter_literal(item.removeprefix("parameter-literals/"), pair)
@@ -574,6 +605,10 @@ def generate_measurement(item: str, pair: Pair) -> None:
     if row["enum_type"] not in ("python-enums", "literals") or row["layout"] not in ("packaged", "flat"):
         raise ReferenceError(f"{CASES} row {item}: enum_type python-enums|literals, layout packaged|flat")
     destination = ROOT / MEASUREMENTS / item / "fern-expected"
+    record = destination.with_name(MEASUREMENT_REFUSAL)
+    if record.is_file() and not destination.exists():
+        refused_measurement(item, row, record, pair)
+        return
     generated_tree(ROOT / row["document"], destination, pair, enum_type=row["enum_type"], layout=row["layout"])
     if row["overlay"] != "-":
         label, _, base = row["overlay"].partition(":")
@@ -627,6 +662,16 @@ def first_diagnostic(log: str) -> str:
     return ""
 
 
+def write_refusal_record(record: Path, pair: Pair, generate_exit: str, diagnostic: str) -> None:
+    """A Contract A refusal record: the pair, the exit status and Fern's first diagnostic."""
+    record.write_text(
+        f"fern_cli_version: {pair.cli}\nfern_python_sdk_version: {pair.generator}\n"
+        f"generate_exit: {generate_exit}\ndiagnostic: {diagnostic}\noutput_tree: none\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+
+
 def generate_probe(item: str, pair: Pair) -> None:
     document = ROOT / PROBES / f"{item}.yml"
     if not document.is_file():
@@ -653,12 +698,7 @@ def generate_probe(item: str, pair: Pair) -> None:
                     f"fern generate exited {run.generate_exit} printing no diagnostic this tool recognises; "
                     f"read {rel(log)} and extend first_diagnostic"
                 )
-            record.write_text(
-                f"fern_cli_version: {pair.cli}\nfern_python_sdk_version: {pair.generator}\n"
-                f"generate_exit: {run.generate_exit}\ndiagnostic: {diagnostic}\noutput_tree: none\n",
-                encoding="utf-8",
-                newline="\n",
-            )
+            write_refusal_record(record, pair, run.generate_exit, diagnostic)
             if tree.exists():
                 shutil.rmtree(tree)
             artifact, digest = record, hashlib.sha256(record.read_bytes()).hexdigest()

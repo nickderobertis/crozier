@@ -259,6 +259,37 @@ class FernReferencesTests(unittest.TestCase):
         (call,) = self.calls()
         self.assertNotIn("--preview", call["argv"])
 
+    def test_a_refused_measurement_rewrites_its_refusal_record_at_the_pair(self) -> None:
+        self.write("docs/fern-measurements/lowering/epsilon/openapi.yml", "openapi: 3.0.3\nx-stub-refuse: true\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "lowering/epsilon\tdocs/fern-measurements/lowering/epsilon/openapi.yml\tpython-enums\tpackaged\t-\n",
+        )
+        record = self.write("docs/fern-measurements/lowering/epsilon/fern-refusal.txt", f"fern CLI {OLD}: refused\n")
+        result = self.run_tool("generate", "measurements", "lowering/epsilon")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            record.read_text(encoding="utf-8"),
+            f"fern_cli_version: {CLI}\nfern_python_sdk_version: {SDK}\n"
+            "generate_exit: 1\ndiagnostic: Stub refused the document\noutput_tree: none\n",
+        )
+        self.assertFalse((record.parent / "fern-expected").exists())
+
+    def test_a_refused_measurement_fern_now_generates_installs_its_tree_and_fails(self) -> None:
+        self.write("docs/fern-measurements/lowering/zeta/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "lowering/zeta\tdocs/fern-measurements/lowering/zeta/openapi.yml\tpython-enums\tpackaged\t-\n",
+        )
+        record = self.write("docs/fern-measurements/lowering/zeta/fern-refusal.txt", f"fern CLI {OLD}: refused\n")
+        result = self.run_tool("generate", "measurements", "lowering/zeta")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Fern now generates lowering/zeta", result.stderr)
+        self.assertFalse(record.exists())
+        self.assertTrue((record.parent / "fern-expected" / "src" / "fern" / "client.py").is_file())
+
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
         self.write(
             "docs/fern-measurements/remote/case/documents/openapi.yml",
