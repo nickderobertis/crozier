@@ -63,7 +63,7 @@ client.tides.get_tides(
 <dl>
 <dd>
 
-**gauges:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` 
+**gauges:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` — Gauge numbers to read
     
 </dd>
 </dl>

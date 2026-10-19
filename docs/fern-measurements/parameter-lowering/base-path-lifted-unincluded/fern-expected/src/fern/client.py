@@ -61,7 +61,7 @@ class FernApi:
     from fern import FernApi
 
     client = FernApi(
-        "v2",
+        edition="v2",
     )
     """
 
@@ -174,7 +174,7 @@ class AsyncFernApi:
     from fern import AsyncFernApi
 
     client = AsyncFernApi(
-        "v2",
+        edition="v2",
     )
     """
 
