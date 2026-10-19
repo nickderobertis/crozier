@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "generator": "fernapi/fern-python-sdk",
-  "generator_version": "5.20.0",
+  "generator_version": "5.41.3",
   "corpus_spec_name": "calorieninjas.com",
   "corpus_spec_ref": "1.0.0",
   "corpus_spec_url": "https://api.apis.guru/v2/specs/calorieninjas.com/1.0.0/openapi.json",
