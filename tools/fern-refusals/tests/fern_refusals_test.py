@@ -255,6 +255,26 @@ class Drift(unittest.TestCase):
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming(f"classes.tsv {row[0]}: documents is {row[5]}")
 
+    def test_a_finding_naming_a_class_probe_holds_and_one_naming_no_class_fails(self) -> None:
+        # A `generates` finding whose probe is a class's own probe.yml retires
+        # that class; the class's rows stay until the population is re-measured.
+        table = rows(self.registry / "findings.tsv")
+        classes = [row[0] for row in rows(self.registry / "classes.tsv")[1:]]
+        retiring = [row for row in table[1:] if row[5] == f"docs/fern-refusals/{classes[0]}/probe.yml"]
+        if not retiring:
+            table.append(
+                [f"{classes[0]}-generates", "generates", "0", "0", "—", f"docs/fern-refusals/{classes[0]}/probe.yml"]
+            )
+            write_rows(self.registry / "findings.tsv", table)
+        result = run("check", registry=self.registry)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        table.append(["stray-generates", "generates", "0", "0", "—", "docs/fern-refusals/no-such-class/probe.yml"])
+        write_rows(self.registry / "findings.tsv", table)
+        self.assert_check_fails_naming(
+            "findings.tsv stray-generates: its probe docs/fern-refusals/no-such-class/probe.yml is inside the "
+            "registry but is no classes.tsv row's probe.yml"
+        )
+
     def test_unsorted_documents_fail(self) -> None:
         table = rows(self.registry / "documents.tsv")
         table[1], table[2] = table[2], table[1]
@@ -812,6 +832,18 @@ class FernRuns(unittest.TestCase):
         self.assertEqual("fern-refusals: 1 finding(s) recorded\n", result.stdout)
         [row] = rows(self.registry / "findings.tsv")[1:]
         self.assertEqual(row[2:4], ["1", "0"])
+
+    def test_finding_measures_a_class_probe_fern_now_generates_from(self) -> None:
+        # The retiring case: a `generates` finding whose probe is the class's own.
+        retiring = [f"{self.CLASS}-generates", "generates", "", "", "—", f"docs/fern-refusals/{self.CLASS}/probe.yml"]
+        header = rows(self.registry / "findings.tsv")[0]
+        write_rows(self.registry / "findings.tsv", [header, self.finding_row, retiring])
+        result = self.script("finding", retiring[0], generate_files="3")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(rows(self.registry / "findings.tsv")[2][2:4], ["0", "0"])
+        calls = self.calls_made()
+        probe = (self.registry / self.CLASS / "probe.yml").read_text(encoding="utf-8")
+        self.assertTrue(calls and all(call["spec"] == probe for call in calls), calls)
 
     def test_a_finding_fern_refuses_is_refused_as_a_class(self) -> None:
         result = self.script("finding", self.FINDING, check_exit="1", generate_exit="1")

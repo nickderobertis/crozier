@@ -191,16 +191,115 @@ fn unevaluated_records_require_the_probe_and_pinned_diagnostic() {
     );
 }
 
+/// The classes the registry is retiring: each whose own `probe.yml` a
+/// `generates` or `check-only` row of `findings.tsv` names, because Fern at the
+/// pin generates from it. Their rows stay until the population is measured
+/// again; meanwhile crozier generates their probes in both modes.
+fn retiring(root: &Path) -> std::collections::BTreeSet<String> {
+    let Ok(text) = std::fs::read_to_string(root.join("findings.tsv")) else {
+        return std::collections::BTreeSet::new();
+    };
+    let mut lines = text.lines();
+    let header: Vec<&str> = lines.next().unwrap_or_default().split('\t').collect();
+    let column = |name: &str| header.iter().position(|h| *h == name).expect(name);
+    let (kind, probe) = (column("kind"), column("probe"));
+    lines
+        .map(|line| line.split('\t').collect::<Vec<_>>())
+        .filter(|row| matches!(row.get(kind), Some(&"generates" | &"check-only")))
+        .filter_map(|row| {
+            row.get(probe)?
+                .strip_prefix(&format!("{REGISTRY}/"))?
+                .strip_suffix("/probe.yml")
+                .map(str::to_owned)
+        })
+        .collect()
+}
+
 #[test]
 fn every_class_probe_is_refused_as_its_registry_row_states() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
-    let registry = classes(&root);
-    assert!(!registry.is_empty());
+    assert!(!classes(&root).is_empty());
+    let failures = class_probe_failures(&root);
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// A retiring class whose probe crozier still refuses fails, naming it; one
+/// whose probe crozier generates holds; a `refuse` class no finding names is
+/// still held to refusing.
+#[test]
+fn a_retiring_class_probe_must_generate_in_both_modes() {
+    let committed = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
+    let root = tempfile::tempdir().unwrap();
+    let header = "class\tstatus\tcrozier_diagnostic\n";
+    let mut rows = String::new();
+    for (id, source) in [
+        ("retiring-generated", "object-property-name-collision"),
+        ("retiring-still-refused", "type-name-collision"),
+        ("type-name-collision", "type-name-collision"),
+    ] {
+        let dir = root.path().join(id);
+        std::fs::create_dir(&dir).unwrap();
+        std::fs::copy(
+            committed.join(source).join("probe.yml"),
+            dir.join("probe.yml"),
+        )
+        .unwrap();
+        rows.push_str(&format!("{id}\trefuse\ttype GetThingResponse\n"));
+    }
+    std::fs::write(root.path().join("classes.tsv"), format!("{header}{rows}")).unwrap();
+    std::fs::write(
+        root.path().join("findings.tsv"),
+        format!(
+            "finding\tkind\tprobe\n\
+             retiring-generated-generates\tgenerates\t{REGISTRY}/retiring-generated/probe.yml\n\
+             retiring-still-refused-generates\tgenerates\t{REGISTRY}/retiring-still-refused/probe.yml\n"
+        ),
+    )
+    .unwrap();
+    let failures = class_probe_failures(root.path());
+    let refused = "retiring, but crozier refused: type-name-collision: type GetThingResponse";
+    assert_eq!(failures.len(), 2, "{failures:#?}");
+    for mode in ["default", "strict"] {
+        assert!(
+            failures.iter().any(
+                |line| line.starts_with(&format!("retiring-still-refused ({mode}): {refused}"))
+            ),
+            "{failures:#?}"
+        );
+    }
+}
+
+/// Every class probe's outcome against its row: refused or generated as its
+/// `status` says, or — for a retiring class — generated in both modes with the
+/// same bytes.
+fn class_probe_failures(root: &Path) -> Vec<String> {
+    let registry = classes(root);
+    let retiring = retiring(root);
     let mut failures = Vec::new();
     for (id, class) in &registry {
         let probe = root.join(id).join("probe.yml");
         if class.status == "unevaluated" {
-            failures.extend(unevaluated_record_failures(&root, id));
+            failures.extend(unevaluated_record_failures(root, id));
+            continue;
+        }
+        if retiring.contains(id) {
+            let mut generated = Vec::new();
+            for strict in [false, true] {
+                let mode = if strict { "strict" } else { "default" };
+                match render(&probe, strict) {
+                    Ok(files) if !files.is_empty() => generated.push(files),
+                    Ok(_) => failures.push(format!("{id} ({mode}): generated no files")),
+                    Err(error) => failures.push(format!(
+                        "{id} ({mode}): retiring, but crozier refused: {}",
+                        diagnostic(&error, &probe)
+                    )),
+                }
+            }
+            if let [default, strict] = &generated[..] {
+                if default != strict {
+                    failures.push(format!("{id}: fern-strict changed the generated SDK"));
+                }
+            }
             continue;
         }
         if !matches!(class.status.as_str(), "generate" | "refuse") {
@@ -239,7 +338,7 @@ fn every_class_probe_is_refused_as_its_registry_row_states() {
             }
         }
     }
-    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    failures
 }
 
 fn document_contract_failures(root: &Path) -> Vec<String> {

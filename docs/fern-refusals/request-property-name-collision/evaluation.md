@@ -1,5 +1,40 @@
 # request-property-name-collision
 
+## Retiring: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Fern generates from the probe: `fern check` and `fern generate` both exit 0
+([check](../../openapi-surface/fern-refusals/probe-logs/request-property-name-collision.check.log),
+[generate](../../openapi-surface/fern-refusals/probe-logs/request-property-name-collision.generate.log)).
+Its tree is the authored-probe case
+[`549-request-property-name-collision`](../../openapi-surface/authored-probes/549-request-property-name-collision/):
+Fern's OpenAPI importer renames the path parameter `name` to `namePathParam`
+(`name_path_param` in Python, still sent at `/repos/{…}`) because the body
+property claims `name`, so no two request properties share a name.
+
+crozier generates too, in default mode and under `--fern-strict`, and
+byte-matches Fern's tree in both (`authored_probe_measurements_match_fern`,
+`body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes`).
+The `findings.tsv` row `request-property-name-collision-generates` names this
+class's probe, which makes the class **retiring**: `fern_refusal_failures`
+holds crozier to generating the probe in both modes, and `fern-refusal.txt`
+stays as the class's last refusal record (Fern CLI 5.67.1). The `classes.tsv`
+row (whose `status` still reads `refuse`) and its `documents.tsv` references
+stay until the population is measured again at the new pair.
+
+Only the probe's shape is measured at the new pair. The 5.163.1 bundle still
+carries the `no-conflicting-request-wrapper-properties` rule that prints this
+class's phrase, and its importer renames only a path parameter that declares no
+name of its own (no `x-fern-parameter-name`), reserving the query parameters'
+names, the headers' declared-or-wire names and the body's property names. So
+crozier still refuses, under this class id, the shapes the rename does not
+reach: a path parameter whose declared name a body property shares, differently
+spelled parameters in different locations with one declared name, a body
+property repeated through an inherited `allOf`, and an inline body's own
+property a `$ref` parent redeclares. Re-measuring the population decides
+whether those shapes keep a class of their own.
+
+## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
 

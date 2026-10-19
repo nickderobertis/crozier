@@ -1103,6 +1103,17 @@ def cross_reference_problems() -> list[str]:
                 f"classes.tsv {row['class']}: documents is {row['documents']}, but "
                 f"{carried.get(row['class'], 0)} documents.tsv row(s) carry it"
             )
+    # A finding may name a class's own probe: Fern now generates from it, so the
+    # class is retiring (the e2e gate then holds crozier to generating it). Any
+    # other probe inside the registry names no class.
+    class_probes = {f"docs/fern-refusals/{name}/probe.yml" for name in names}
+    for row in read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER):
+        if row["probe"].startswith("docs/fern-refusals/") and row["probe"] not in class_probes:
+            problems.append(
+                f"findings.tsv {row['finding']}: its probe {row['probe']} is inside the registry but is no "
+                "classes.tsv row's probe.yml; name a class's probe (retiring that class) or a probe under "
+                "docs/openapi-surface/fern-refusals/findings/"
+            )
     return problems
 
 
