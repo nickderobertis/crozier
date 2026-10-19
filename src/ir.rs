@@ -2021,10 +2021,9 @@ pub struct SingleBody {
 /// status code.
 #[derive(Debug, Clone)]
 pub struct ErrorResponse {
-    /// The HTTP status code that triggers this error; a range's lowest status.
-    pub status_code: u16,
-    /// Whether this is a `4XX`/`5XX` range, raised for any status in it.
-    pub wildcard: bool,
+    /// The status that triggers this error: one status, or a `4XX`/`5XX`
+    /// range raised for any status in it.
+    pub status: ErrorStatus,
     /// The generated exception class name (e.g. `BadRequestError`).
     pub class_name: String,
     /// The error body type parsed into the exception (`$ref` to a named type).
@@ -2034,11 +2033,10 @@ pub struct ErrorResponse {
 /// A generated exception class under `errors/`, one per distinct declared error.
 #[derive(Debug, Clone)]
 pub struct ErrorClass {
-    /// The HTTP status code passed to `ApiError`; a range's lowest status.
-    pub status_code: u16,
-    /// Whether this is a `4XX`/`5XX` range: its constructor also takes the
-    /// actual `status_code`, defaulting to the range's lowest.
-    pub wildcard: bool,
+    /// The status the class stands for. Its lowest status is the one passed to
+    /// `ApiError`; a `4XX`/`5XX` range's constructor also takes the actual
+    /// `status_code`, defaulting to that lowest one.
+    pub status: ErrorStatus,
     /// The exception class name (e.g. `BadRequestError`).
     pub class_name: String,
     /// The error body type accepted by the constructor.
@@ -3182,8 +3180,7 @@ fn error_classes(endpoints: &[Endpoint]) -> Vec<ErrorClass> {
         for err in &ep.errors {
             if !classes.iter().any(|c| c.class_name == err.class_name) {
                 classes.push(ErrorClass {
-                    status_code: err.status_code,
-                    wildcard: err.wildcard,
+                    status: err.status,
                     class_name: err.class_name.clone(),
                     body_type: err.body_type.clone(),
                 });
@@ -5699,13 +5696,13 @@ fn error_response_entries(op: &Operation) -> Vec<(ErrorStatus, &Response)> {
     };
     let mut winners: IndexMap<u16, (bool, usize)> = IndexMap::new();
     let mut entries = Vec::new();
-    let mut ranges: IndexMap<u16, &Response> = IndexMap::new();
+    let mut ranges: IndexMap<ErrorStatus, &Response> = IndexMap::new();
     for (index, (code, response)) in op.responses.iter().enumerate() {
         if code.starts_with('2') {
             continue;
         }
-        if let Some(status) = wildcard_key_status(code) {
-            ranges.insert(status, response);
+        if let Some(range) = range_key_status(code) {
+            ranges.insert(range, response);
             continue;
         }
         let Some(status) = response_key_status(code) else {
@@ -5725,20 +5722,8 @@ fn error_response_entries(op: &Operation) -> Vec<(ErrorStatus, &Response)> {
                 .get(status)
                 .is_some_and(|(_, winner)| winner == index)
         })
-        .map(|(_, code, response)| {
-            let status = ErrorStatus {
-                code,
-                wildcard: false,
-            };
-            (status, response)
-        })
-        .chain(ranges.into_iter().map(|(code, response)| {
-            let status = ErrorStatus {
-                code,
-                wildcard: true,
-            };
-            (status, response)
-        }))
+        .map(|(_, code, response)| (ErrorStatus::Exact(code), response))
+        .chain(ranges)
         .collect()
 }
 
@@ -5749,33 +5734,48 @@ fn error_response_entries(op: &Operation) -> Vec<(ErrorStatus, &Response)> {
 /// nothing; fern-python-sdk 5.41.3 raises it for any status in the range,
 /// after every concrete status the operation declares.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct ErrorStatus {
-    /// The status, or the range's lowest one (`400`, `500`).
-    pub code: u16,
-    /// Whether the key is a `4XX`/`5XX` range.
-    pub wildcard: bool,
+pub enum ErrorStatus {
+    /// One HTTP status.
+    Exact(u16),
+    /// The `4XX` range.
+    ClientRange,
+    /// The `5XX` range.
+    ServerRange,
 }
 
 impl ErrorStatus {
+    /// The status itself, or the range's lowest one (`400`, `500`).
+    pub fn code(self) -> u16 {
+        match self {
+            Self::Exact(code) => code,
+            Self::ClientRange => 400,
+            Self::ServerRange => 500,
+        }
+    }
+
+    /// Whether this is a `4XX`/`5XX` range, raised for any status in it.
+    pub fn is_range(self) -> bool {
+        !matches!(self, Self::Exact(_))
+    }
+
     /// The generated exception class name: Fern's name for a range, else the
     /// status's own (see [`error_class_name`]).
     pub(crate) fn class_name(self) -> Option<&'static str> {
-        match (self.wildcard, self.code) {
-            (true, 400) => Some("ClientRequestError"),
-            (true, 500) => Some("ServerError"),
-            (true, _) => None,
-            (false, code) => error_class_name(code),
+        match self {
+            Self::ClientRange => Some("ClientRequestError"),
+            Self::ServerRange => Some("ServerError"),
+            Self::Exact(code) => error_class_name(code),
         }
     }
 }
 
-/// The lowest status of a `4XX`/`5XX` range key, matched in any case and
-/// nothing else around it: `" 4XX"` is no range (and declares the status `4`,
-/// which no error is).
-fn wildcard_key_status(key: &str) -> Option<u16> {
+/// The range a `4XX`/`5XX` key names, matched in any case and nothing else
+/// around it: `" 4XX"` is no range (and declares the status `4`, which no
+/// error is).
+fn range_key_status(key: &str) -> Option<ErrorStatus> {
     match key.to_ascii_uppercase().as_str() {
-        "4XX" => Some(400),
-        "5XX" => Some(500),
+        "4XX" => Some(ErrorStatus::ClientRange),
+        "5XX" => Some(ErrorStatus::ServerRange),
         _ => None,
     }
 }
@@ -6329,8 +6329,7 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
             continue;
         };
         out.push(ErrorResponse {
-            status_code: status.code,
-            wildcard: status.wildcard,
+            status,
             class_name: class.to_string(),
             body_type: error_body_type(resp, class),
         });
@@ -6340,8 +6339,12 @@ fn resolve_errors(op: &Operation) -> Vec<ErrorResponse> {
     // and fern-python-sdk 5.41.3 tests every concrete status before a range.
     out.sort_by_key(|error| {
         (
-            error.wildcard,
-            if error.wildcard { 0 } else { error.status_code },
+            error.status.is_range(),
+            if error.status.is_range() {
+                0
+            } else {
+                error.status.code()
+            },
         )
     });
     out
@@ -15475,6 +15478,7 @@ fn xml_encoding(schema: &Schema, type_name: &str) -> Option<XmlEncoding> {
             .and_then(serde_json::Value::as_str)
             .map(str::to_string)
     };
+    // llmlint: ignore[boundary_inputs_validated] The declared XML name is carried as written because Fern's importer does the same and crozier byte-matches its XML models (docs/matching.md, XML models): rejecting or rewriting a name Fern accepts would refuse or diverge from a document Fern generates from. It reaches generated source only through `py_repr` in src/emit/xml.rs, so it cannot inject code.
     Some(XmlEncoding {
         name: text("name").unwrap_or_else(|| type_name.to_string()),
         namespace: text("namespace"),
@@ -15511,6 +15515,7 @@ fn property_xml(property: &Schema, schemas: Option<&IndexMap<String, Schema>>) -
     } else {
         XmlKind::Element
     };
+    // llmlint: ignore[boundary_inputs_validated] The declared XML name is carried as written because Fern's importer does the same and crozier byte-matches its XML models (docs/matching.md, XML models): rejecting or rewriting a name Fern accepts would refuse or diverge from a document Fern generates from. It reaches generated source only through `py_repr` in src/emit/xml.rs, so it cannot inject code.
     XmlProperty {
         kind,
         name: xml
@@ -23756,8 +23761,8 @@ mod tests {
                 .into_iter()
                 .map(|(status, response)| {
                     (
-                        status.code,
-                        status.wildcard,
+                        status.code(),
+                        status.is_range(),
                         response.description.clone().unwrap_or_default(),
                     )
                 })
@@ -23793,7 +23798,13 @@ mod tests {
         assert_eq!(
             errors
                 .iter()
-                .map(|error| (error.status_code, error.wildcard, error.class_name.as_str()))
+                .map(|error| {
+                    (
+                        error.status.code(),
+                        error.status.is_range(),
+                        error.class_name.as_str(),
+                    )
+                })
                 .collect::<Vec<_>>(),
             [
                 (429, false, "TooManyRequestsError"),
@@ -26007,10 +26018,6 @@ mod tests {
         assert_eq!(union.members[0].fields.len(), 3);
     }
 
-    /// Webflow's shapes at Fern CLI 5.163.1: a webhook with an `operationId`
-    /// names its payload `{OperationId}Payload` in its tag's package, hoisted
-    /// types and all, and a grouped operation's union member declaring a type
-    /// name is that class.
     #[test]
     fn error_union_members_alike_by_content_collapse_to_the_last() {
         // Zulip's shape at Fern CLI 5.163.1: annotated `$ref`s whose targets
@@ -26055,6 +26062,10 @@ mod tests {
         assert_eq!(one.docstring.as_deref(), Some("Coded two."));
     }
 
+    /// Webflow's shapes at Fern CLI 5.163.1: a webhook with an `operationId`
+    /// names its payload `{OperationId}Payload` in its tag's package, hoisted
+    /// types and all, and a grouped operation's union member declaring a type
+    /// name is that class.
     #[test]
     fn webhook_payloads_and_declared_members_take_their_declared_names() {
         let ir = build_document(serde_json::json!({

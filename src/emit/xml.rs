@@ -1321,22 +1321,29 @@ impl<'a> XmlModel<'a> {
                 .map(|(_, names)| names.clone())
                 .unwrap_or_default();
             for (class, method) in names {
-                self.write_child_builder(w, imports, &method, field, &class, inline, &append_child);
+                let append = ChildAppend {
+                    field,
+                    inline,
+                    append_child: &append_child,
+                };
+                self.write_child_builder(w, imports, &method, &class, &append);
             }
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
     fn write_child_builder(
         &self,
         w: &mut Writer,
         imports: &mut Imports,
         method: &str,
-        field: &Field,
         class: &str,
-        inline: &str,
-        append_child: &str,
+        append: &ChildAppend<'_>,
     ) {
+        let ChildAppend {
+            field,
+            inline,
+            append_child,
+        } = *append;
         let Some(child) = self.types.object(class) else {
             return;
         };
@@ -1577,7 +1584,7 @@ impl<'a> TestSuite<'a> {
         let Some(property) = properties.iter().find(|property| {
             matches!(kind(property.field), XmlKind::Attribute | XmlKind::Text)
                 && !property.is_list
-                && self.primitive(property) == Some("string")
+                && self.primitive(property) == Some(SamplePrimitive::String)
         }) else {
             return Vec::new();
         };
@@ -1642,7 +1649,8 @@ impl<'a> TestSuite<'a> {
         let properties = self.properties();
         let names = self.content_child_names(&properties);
         let has_text = properties.iter().any(|property| {
-            kind(property.field) == XmlKind::Text && self.primitive(property) == Some("string")
+            kind(property.field) == XmlKind::Text
+                && self.primitive(property) == Some(SamplePrimitive::String)
         });
         let body = if names.len() >= 2 {
             format!("<{0} /><{1} /><{0} />", names[0], names[1])
@@ -1869,17 +1877,17 @@ impl<'a> TestSuite<'a> {
         }
     }
 
-    fn primitive(&self, property: &TestProperty<'_>) -> Option<&'static str> {
+    fn primitive(&self, property: &TestProperty<'_>) -> Option<SamplePrimitive> {
         match self.sample_type(property)? {
             TypeRef::Primitive(Prim::Str) => (!property
                 .field
                 .xml
                 .as_ref()
                 .is_some_and(|xml| xml.opaque_string))
-            .then_some("string"),
-            TypeRef::Primitive(Prim::Int | Prim::Long) => Some("integer"),
-            TypeRef::Primitive(Prim::Float) => Some("double"),
-            TypeRef::Primitive(Prim::Bool) => Some("boolean"),
+            .then_some(SamplePrimitive::String),
+            TypeRef::Primitive(Prim::Int | Prim::Long) => Some(SamplePrimitive::Integer),
+            TypeRef::Primitive(Prim::Float) => Some(SamplePrimitive::Double),
+            TypeRef::Primitive(Prim::Bool) => Some(SamplePrimitive::Boolean),
             _ => None,
         }
     }
@@ -1913,7 +1921,7 @@ impl<'a> TestSuite<'a> {
         }
         let is_text = kind(property.field) == XmlKind::Text;
         match self.primitive(property)? {
-            "string" => {
+            SamplePrimitive::String => {
                 let stem = if is_text {
                     "text"
                 } else {
@@ -1929,11 +1937,11 @@ impl<'a> TestSuite<'a> {
                     xml: value,
                 })
             }
-            "integer" => Some(Sample {
+            SamplePrimitive::Integer => Some(Sample {
                 xml: (index + 1).to_string(),
                 python: (index + 1).to_string(),
             }),
-            "boolean" => Some(if index == 0 {
+            SamplePrimitive::Boolean => Some(if index == 0 {
                 Sample {
                     xml: "true".to_string(),
                     python: "True".to_string(),
@@ -1944,12 +1952,30 @@ impl<'a> TestSuite<'a> {
                     python: "False".to_string(),
                 }
             }),
-            _ => Some(Sample {
+            SamplePrimitive::Double => Some(Sample {
                 xml: format!("{}.5", index + 1),
                 python: format!("{}.5", index + 1),
             }),
         }
     }
+}
+
+/// How a child builder appends the element it builds: the list field it lands
+/// in, the call's trailing arguments, and the core helper that appends it.
+#[derive(Clone, Copy)]
+struct ChildAppend<'a> {
+    field: &'a Field,
+    inline: &'a str,
+    append_child: &'a str,
+}
+
+/// The primitive a generated XML test samples a value of.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum SamplePrimitive {
+    String,
+    Integer,
+    Double,
+    Boolean,
 }
 
 fn describe(field: &Field) -> TestProperty<'_> {

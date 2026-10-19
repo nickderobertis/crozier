@@ -2117,8 +2117,8 @@ fn error_files(
                 class_name => err.class_name,
                 base => base,
                 body_type => body_type,
-                status_code => err.status_code,
-                wildcard => err.wildcard,
+                status_code => err.status.code(),
+                wildcard => err.status.is_range(),
             },
         )?;
         files.push(GeneratedFile {
@@ -6892,14 +6892,11 @@ fn raw_error_branches(ep: &Endpoint, imports: &mut Imports) -> String {
 /// range and hands the exception the actual status, as fern-python-sdk 5.41.3
 /// writes it.
 fn error_raise_branch(err: &crate::ir::ErrorResponse, body: &str, indent: &str) -> Vec<String> {
-    let test = if err.wildcard {
-        format!(
-            "if {} <= _response.status_code < {}:",
-            err.status_code,
-            err.status_code + 100
-        )
+    let code = err.status.code();
+    let test = if err.status.is_range() {
+        format!("if {code} <= _response.status_code < {}:", code + 100)
     } else {
-        format!("if _response.status_code == {}:", err.status_code)
+        format!("if _response.status_code == {code}:")
     };
     let mut lines = vec![
         format!("{indent}{test}"),
@@ -6913,7 +6910,7 @@ fn error_raise_branch(err: &crate::ir::ErrorResponse, body: &str, indent: &str) 
         format!("{indent}            ),"),
         format!("{indent}        ),"),
     ];
-    if err.wildcard {
+    if err.status.is_range() {
         lines.push(format!(
             "{indent}        status_code=_response.status_code,"
         ));
@@ -14203,14 +14200,12 @@ mod tests {
         });
         ep.errors = vec![
             ErrorResponse {
-                status_code: 400,
-                wildcard: false,
+                status: crate::ir::ErrorStatus::Exact(400),
                 class_name: "BadRequestError".to_string(),
                 body_type: TypeRef::Named("BadInfo".to_string()),
             },
             ErrorResponse {
-                status_code: 500,
-                wildcard: true,
+                status: crate::ir::ErrorStatus::ServerRange,
                 class_name: "ServerError".to_string(),
                 body_type: TypeRef::Named("BadInfo".to_string()),
             },
