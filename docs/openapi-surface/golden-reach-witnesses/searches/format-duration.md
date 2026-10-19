@@ -7,7 +7,7 @@ A walked or fetched document declaring the row is a `document` row of the
 source's `records.tsv`; one whose instrumented `crozier generate` executes
 an unreached site above is a `candidate`, and only a candidate owes the
 licence, ref and fern screens. A probe counts only if it ran the instrumented
-build of commit `4828cc2b93f0`, the one the reach ledger is measured on,
+build of commit `4828cc2b93f0`, the one the reach ledger was measured on when these probes ran,
 with `src/` at that commit; a declarer with no such probe is unprobed and
 outstanding, and a re-probe needs `src/` at that commit (or a fresh
 `just golden-reach`). Probes run before that rule was enforced read shifted
@@ -15,6 +15,10 @@ spans and are not counted. The `outcome` column is this arm's search
 verdict: `exhausted` when nothing is outstanding, every declarer reaching
 the arm is screened, and none that passes every screen is left
 unregistered; `search-incomplete` otherwise.
+
+The arm this search looked for is now reached: a witness registered since
+reaches every handling site the ledger names for the row. The tables
+below record the search as it stood when the arm was still open.
 
 ### Witness search (exhaustive)
 
@@ -41,14 +45,23 @@ error, its version and the document's digest in the source's
 `census-refused.tsv`, it is not outstanding, and it never settles a
 search on its own.
 
+1 candidate(s) reaching the arm carry only a historical screen: one filed
+before the measured screening stage (`tools/witness-search/witness_screen.py`), with no exit
+status, pins or redacted log behind its outcomes. A historical screen is kept as
+it was filed and settles nothing, so each such candidate is outstanding — counted
+in `outstanding` below and listed in `outstanding.tsv` — until it is re-screened.
+
+When this record was rendered, `src/` had moved since that build (`86bcdf66`, `84dccba6`, `5df2d7b9`, `85ebe5c9`, `c0d5580d`, `9e71ea75`, `7d70e055`, `c9eca482`, `9f078a3a`, `bab32941`, `8f03f619`, `0fcaffeb`, `75485a8e`, `455ef432`, `2cfa50b1`, `a485e7a9`, `23f3d725`, `804fd166`, `1adeb38b`, `a000c515`, `7a16bbe5`, `0996fa2a`, `737847a3`, `c45a5ac5`, `39435456`, `12e3de2e`, `06d7dfd4`, `9f8efb3d`, `c7330ec4`, `c3bfb671`, `26cc4f70`, `570290c6`, `bc4f4976`, `e87a3e20`, `08324a59`, `37d30f61`, `a4ae8400`, `59220cb9`, `634aa17f`, `7c1cfd57`, `4bb5d7eb`, `52815405`, `5203dda0`, `e4e937c8`, `4453ab82`, `e52362d5`, `183a5540`, `64cc4ad2`, `419c2572`, `13391653`, `e13709a6`, `c29d4e3a`, `509917e7`, `022742a6`, `b85447c4`, `7616752c`, `7d75f369`, `5dd7cc5a`, `3681b9b0`, `53e5d94b`, `b9d5ae85`, `807f38ce`, `f6214cf8`, `92d9e4b1`, `ae77805b`, `3608fb5c`, `7a762004`, `ad3d0781`, `98efc152`, `fe12c05e`, `eb672a01`, `f6981b70`, `88d0b773`, `2b046a72`, `a13b88c7`, `ffe331be`, `bf52fdf8`, `162d2815`, `f238780f`, `4aa5fa7a`), so every probe counted here must be
+re-taken on a fresh `just golden-reach` measurement before it is reused.
+
 | source | declarers | unreadable | census-refused | probed | unprobed | timed out | crozier failed | reach an arm | screened | outstanding |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `apis.guru` | 5 | 0 | 0 | 5 | 0 | 0 | 1 | 0 | 0 | 0 |
 | `jentic` | 175 | 0 | 0 | 175 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `github-code-search` | 118 | 0 | 0 | 118 | 0 | 0 | 5 | 0 | 0 | 0 |
-| `github-publisher-trees` | 4 | 0 | 46 | 4 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `sourcegraph` | 133 | 0 | 0 | 133 | 0 | 0 | 7 | 1 | 1 | 0 |
-| `vendor-portals` | 2 | 0 | 161 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `github-publisher-trees` | 4 | 0 | 48 | 4 | 0 | 0 | 0 | 0 | 0 | 0 |
+| `sourcegraph` | 133 | 0 | 0 | 133 | 0 | 0 | 7 | 1 | 0 | 1 |
+| `vendor-portals` | 2 | 0 | 168 | 2 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ### Successor arm
 
