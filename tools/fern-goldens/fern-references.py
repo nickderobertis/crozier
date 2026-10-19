@@ -66,6 +66,7 @@ from collections.abc import Callable, Generator
 from dataclasses import astuple, dataclass, fields
 from enum import StrEnum
 from pathlib import Path
+from typing import NamedTuple
 
 ROOT = Path(os.environ.get("CROZIER_FERN_REFERENCES_ROOT") or Path(__file__).resolve().parents[2]).resolve()
 METADATA = Path("assets/scaffolding/metadata.json")
@@ -85,16 +86,6 @@ PINNED_LOG = ".pinned-fern.log"
 DOCUMENT_SUFFIXES = (".yml", ".yaml", ".json")
 REMOTE_URL = "@REMOTE_URL@"
 LOGS = Path(".local/fern-references")
-FAMILIES = (
-    "corpus",
-    "overlays",
-    "handwritten",
-    "measurements",
-    "probes",
-    "authored-probes",
-    "refusals",
-    "departure-evidence",
-)
 DEPARTURE_EVIDENCE = Path("docs/departures/evidence")
 OVERLAY_KINDS = {"expected-literals": ("--enum-type", "literals"), "expected-default-max-retries": None}
 
@@ -118,7 +109,9 @@ class FernRun:
     tree: Path | None
 
 
-VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+# `scripts/lib.sh`'s `valid_fern_version`, which the delegated scripts apply;
+# fern_references_test.py holds the two to the same verdicts.
+VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?")
 
 
 def certified_pair(root: Path = ROOT) -> Pair:
@@ -668,7 +661,14 @@ REFUSAL_LOG = ".fern.log"
 PINNED_RUN = "measurement.json"
 
 
-def refusal_logs() -> dict[str, tuple[Path, Path]]:
+class RefusalLog(NamedTuple):
+    """A measurement whose committed reference is Fern's log refusing a document."""
+
+    log: Path
+    document: Path
+
+
+def refusal_logs() -> dict[str, RefusalLog]:
     """`<group>/<case>/<stem>` -> (its `<stem>.fern.log`, the `<stem>.openapi.*`
     document beside it): a measurement whose committed reference is Fern's
     refusal of that document, as Fern printed it."""
@@ -684,7 +684,7 @@ def refusal_logs() -> dict[str, tuple[Path, Path]]:
             None,
         )
         if document is not None:
-            found[rel(log.parent / stem)[len(str(MEASUREMENTS)) + 1 :]] = (log, document)
+            found[rel(log.parent / stem)[len(str(MEASUREMENTS)) + 1 :]] = RefusalLog(log, document)
     return found
 
 
@@ -851,7 +851,7 @@ def generate_measurement(item: str, pair: Pair) -> None:
         generate_parameter_literal(item.removeprefix("parameter-literals/"), pair)
         return
     if item in (logs := refusal_logs()):
-        remeasure_refusal_log(item, *logs[item], pair)
+        remeasure_refusal_log(item, logs[item].log, logs[item].document, pair)
         return
     if item in (runs := pinned_runs()):
         remeasure_pinned_run(runs[item], pair)
@@ -1145,15 +1145,23 @@ def generate_departure_evidence(item: str, pair: Pair) -> None:
             shutil.rmtree(stage, ignore_errors=True)
 
 
-FAMILY: dict[str, tuple[Callable[[], list[str]], Callable[[str, Pair], None]]] = {
-    "corpus": (list_corpus, generate_corpus),
-    "overlays": (list_overlays, generate_overlay),
-    "handwritten": (list_handwritten, generate_handwritten),
-    "measurements": (list_measurements, generate_measurement),
-    "probes": (list_probes, generate_probe),
-    "authored-probes": (list_authored, generate_authored),
-    "refusals": (list_refusals, generate_refusal),
-    "departure-evidence": (list_departure_evidence, generate_departure_evidence),
+@dataclass(frozen=True)
+class Family:
+    """One reference family: what lists its item names, and what regenerates one."""
+
+    list: Callable[[], list[str]]
+    generate: Callable[[str, Pair], None]
+
+
+FAMILY: dict[str, Family] = {
+    "corpus": Family(list_corpus, generate_corpus),
+    "overlays": Family(list_overlays, generate_overlay),
+    "handwritten": Family(list_handwritten, generate_handwritten),
+    "measurements": Family(list_measurements, generate_measurement),
+    "probes": Family(list_probes, generate_probe),
+    "authored-probes": Family(list_authored, generate_authored),
+    "refusals": Family(list_refusals, generate_refusal),
+    "departure-evidence": Family(list_departure_evidence, generate_departure_evidence),
 }
 
 
@@ -1173,16 +1181,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="fern-references.py", description=__doc__.split("\n", 1)[0])
     commands = parser.add_subparsers(dest="command", required=True)
     listing = commands.add_parser("list", help="print the family's item names")
-    listing.add_argument("family", choices=FAMILIES)
+    listing.add_argument("family", choices=tuple(FAMILY))
     generate = commands.add_parser("generate", help="regenerate the named items, or the whole family")
-    generate.add_argument("family", choices=FAMILIES)
+    generate.add_argument("family", choices=tuple(FAMILY))
     generate.add_argument(
         "--version", help="fern-python-sdk version (default: the certified pair's; not for overlays or refusals)"
     )
     generate.add_argument("--cli-version", help="Fern CLI version (default: the certified pair's; not for refusals)")
     generate.add_argument("items", nargs="*")
     args = parser.parse_args(argv)
-    lister, generator = FAMILY[args.family]
+    family = FAMILY[args.family]
+    lister, generator = family.list, family.generate
     known = lister()
     if args.command == "list":
         sys.stdout.write("".join(f"{item}\n" for item in known))

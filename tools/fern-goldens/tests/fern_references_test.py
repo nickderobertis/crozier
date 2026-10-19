@@ -34,7 +34,7 @@ config = (workspace / "fern.config.json").read_text()
 generators = (workspace / "generators.yml").read_text()
 document = (workspace / "openapi" / "openapi.yml").read_text()
 with open(os.environ["FERN_STUB_LOG"], "a") as log:
-    log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(config), "generators": generators}) + "\n")
+    log.write(json.dumps({"argv": sys.argv[1:], "config": json.loads(config), "generators": generators, "token": os.environ.get("FERN_TOKEN")}) + "\n")
 if sys.argv[1] == "check":
     if "x-stub-refuse" in document:
         print("[sdk] 1 error\n    [error]\n        path: openapi\n        issue: Stub refused the document")
@@ -154,15 +154,14 @@ class FernReferencesTests(unittest.TestCase):
             check=False,
         )
 
-    def delegates(self, *scripts: str) -> list[dict]:
-        """Stand each named script in at its path, and return what was run, once called."""
-        log = self.root / "delegate-calls.jsonl"
-        self.env["DELEGATE_LOG"] = str(log)
+    def install_delegates(self, *scripts: str) -> None:
+        """Stand a recording stub in at each named script's path."""
+        self.env["DELEGATE_LOG"] = str(self.root / "delegate-calls.jsonl")
         for script in scripts:
             self.write(script, STUB_DELEGATE, executable=True)
-        return []
 
-    def delegated(self) -> list[dict]:
+    def delegate_calls(self) -> list[dict]:
+        """What each stand-in script was run with, in order."""
         log = self.root / "delegate-calls.jsonl"
         if not log.is_file():
             return []
@@ -379,7 +378,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertTrue((case / "fern.log").read_text(encoding="utf-8").startswith(f"Fern CLI {CLI}, python-sdk {SDK}"))
 
     def test_a_corpus_row_routes_through_fern_goldens_and_a_vendored_fixture_through_its_script(self) -> None:
-        self.delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
+        self.install_delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
         self.write("tests/fixtures/CORPUS.md", "| # | name |\n|---|---|\n| 1 | `alpha` |\n")
         self.write("tests/fixtures/alpha/expected/src/x.py", "X = 1\n")
         self.write("tests/fixtures/beta/openapi.yml", "openapi: 3.0.3\n")
@@ -392,7 +391,7 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            sorted((call["script"], tuple(call["argv"]), call["cli"]) for call in self.delegated()),
+            sorted((call["script"], tuple(call["argv"]), call["cli"]) for call in self.delegate_calls()),
             [
                 ("fern-goldens", ("generate", "--version", SDK, "--fixture", "alpha"), CLI),
                 ("generate-fern-fixture.sh", ("--layout", "flat", "gamma", SDK), CLI),
@@ -402,7 +401,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(self.calls(), [], "a delegated family runs no Fern of its own")
 
     def test_a_delegated_corpus_failure_names_its_log_and_the_rest_still_run(self) -> None:
-        self.delegates("tools/fern-goldens/generate-fern-fixture.sh")
+        self.install_delegates("tools/fern-goldens/generate-fern-fixture.sh")
         self.env["DELEGATE_EXIT"] = "3"
         for fixture in ("beta", "delta"):
             self.write(f"tests/fixtures/{fixture}/openapi.yml", "openapi: 3.0.3\n")
@@ -416,12 +415,12 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("corpus: 0 regenerated, 2 failed", result.stdout)
         self.assertIn("`generate-fern-fixture.sh beta", result.stderr)
         self.assertIn("exited 3; see .local/fern-references/corpus/beta.log", result.stderr)
-        self.assertEqual(len(self.delegated()), 2)
+        self.assertEqual(len(self.delegate_calls()), 2)
         log = self.root / ".local/fern-references/corpus/beta.log"
         self.assertEqual(log.read_text(encoding="utf-8"), "delegate ran\n")
 
     def test_each_overlay_kind_runs_the_overlay_script_with_its_setting_and_the_cli(self) -> None:
-        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        self.install_delegates("tools/fern-goldens/fern-overlay-goldens.sh")
         self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
         self.write(
             "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
@@ -432,7 +431,7 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            sorted((tuple(call["argv"]), call["cli"]) for call in self.delegated()),
+            sorted((tuple(call["argv"]), call["cli"]) for call in self.delegate_calls()),
             [
                 (("--jobs", "1", "--default-max-retries", "5", "alpha"), "8.0.0"),
                 (("--jobs", "1", "--enum-type", "literals", "alpha"), "8.0.0"),
@@ -440,7 +439,7 @@ class FernReferencesTests(unittest.TestCase):
         )
 
     def test_an_overlay_with_a_malformed_retry_count_is_refused_before_it_runs(self) -> None:
-        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        self.install_delegates("tools/fern-goldens/fern-overlay-goldens.sh")
         for retries in ("-1", '"5"', "true"):
             with self.subTest(retries=retries):
                 self.write(
@@ -450,10 +449,10 @@ class FernReferencesTests(unittest.TestCase):
                 result = self.run_tool("generate", "overlays")
                 self.assertEqual(result.returncode, 1)
                 self.assertIn("default_max_retries must be a non-negative integer", result.stderr)
-        self.assertEqual(self.delegated(), [])
+        self.assertEqual(self.delegate_calls(), [])
 
     def test_a_refusal_class_and_a_finding_run_fern_refusals_one_generation_at_a_time(self) -> None:
-        self.delegates("tools/fern-refusals/fern-refusals.py")
+        self.install_delegates("tools/fern-refusals/fern-refusals.py")
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
         self.write("docs/fern-refusals/findings.tsv", "finding\tkind\neta\tgenerates\n")
 
@@ -461,7 +460,7 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            sorted(tuple(call["argv"]) for call in self.delegated()),
+            sorted(tuple(call["argv"]) for call in self.delegate_calls()),
             [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "zeta")],
         )
         self.env["DELEGATE_EXIT"] = "4"
@@ -563,7 +562,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(self.calls(), [])
 
     def test_a_version_override_a_family_cannot_honour_is_refused(self) -> None:
-        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh", "tools/fern-refusals/fern-refusals.py")
+        self.install_delegates("tools/fern-goldens/fern-overlay-goldens.sh", "tools/fern-refusals/fern-refusals.py")
         self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
         self.write("docs/fern-refusals/findings.tsv", "finding\tkind\n")
@@ -572,10 +571,10 @@ class FernReferencesTests(unittest.TestCase):
                 result = self.run_tool("generate", family, flag, "7.0.0")
                 self.assertEqual(result.returncode, 2)
                 self.assertIn(f"{family} cannot take {flag}", result.stderr)
-        self.assertEqual(self.delegated(), [])
+        self.assertEqual(self.delegate_calls(), [])
 
     def test_an_aliased_row_a_known_failure_and_a_flat_golden_over_another_spec_route_by_row(self) -> None:
-        self.delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
+        self.install_delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
         self.write(
             "tests/fixtures/CORPUS.md",
             "| # | name |\n|---|---|\n| 1 | `museum.local` | | \n| 2 | `broken` |\n| 3 | `delta` |\n",
@@ -591,7 +590,7 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            sorted((call["script"], tuple(call["argv"])) for call in self.delegated()),
+            sorted((call["script"], tuple(call["argv"])) for call in self.delegate_calls()),
             [
                 ("fern-goldens", ("generate", "--version", SDK, "--fixture", "broken")),
                 ("fern-goldens", ("generate", "--version", SDK, "--fixture", "museum.local")),
@@ -744,6 +743,42 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("no plain file stem", listed.stderr)
         self.assertEqual(self.calls(), [])
 
+    def test_a_packaged_run_replaces_an_inherited_token_and_a_flat_run_drops_it(self) -> None:
+        self.env["FERN_TOKEN"] = "an-inherited-credential"
+        self.handwritten("alpha")
+        self.write("docs/fern-measurements/clients/delta/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "clients/delta-flat\tdocs/fern-measurements/clients/delta/openapi.yml\tpython-enums\tflat\t-\n",
+        )
+        self.assertEqual(self.run_tool("generate", "handwritten", "alpha").returncode, 0)
+        self.assertEqual(self.run_tool("generate", "measurements", "clients/delta-flat").returncode, 0)
+        packaged, flat = self.calls()
+        self.assertEqual(packaged["token"], "preview-only-no-publish")
+        self.assertIsNone(flat["token"])
+
+    def test_the_version_grammar_is_the_one_the_delegated_scripts_apply(self) -> None:
+        tool = self.load_tool()
+        samples = (
+            "5.41.3",
+            "10.0.12",
+            "1.2.3-rc.1",
+            "1.2.3-beta-2",
+            "1.2.3-",
+            "1.2.3-.",
+            "1.2.3-a..b",
+            "1.2",
+            "v1.2.3",
+        )
+        for sample in samples:
+            with self.subTest(sample=sample):
+                shell = subprocess.run(
+                    ["bash", "-c", 'source "$0" && valid_fern_version "$1"', str(REPO / "scripts/lib.sh"), sample],
+                    check=False,
+                )
+                self.assertEqual(shell.returncode == 0, bool(tool.VERSION.fullmatch(sample)))
+
     # llmlint: ignore[shell_test_tiers_stay_split] Serving a case's own documents on 127.0.0.1 is the behaviour under test (the tool hands Fern a loopback URL for a remote $ref); the socket never leaves the host, so this stays in the offline tier, which forbids external network rather than loopback.
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
         self.write(
@@ -840,7 +875,7 @@ class FernReferencesTests(unittest.TestCase):
 
     def test_evidence_missing_a_provenance_line_stops_before_the_tree_is_replaced(self) -> None:
         fixture = self.handwritten(
-            "lambda", evidence='fern_cli_version = "1.0.0"\ndigest = "x"\n\n[[covers]]\nkey = "k"\n'
+            "lambda", evidence=f'fern_cli_version = "{OLD}"\ndigest = "x"\n\n[[covers]]\nkey = "k"\n'
         )
 
         result = self.run_tool("generate", "handwritten", "lambda")
@@ -849,7 +884,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("has no single `fern_python_sdk_version` line to restate", result.stderr)
         self.assertEqual(self.calls(), [], "Fern never ran")
         self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
-        self.assertIn('fern_cli_version = "1.0.0"', (fixture / "evidence.toml").read_text(encoding="utf-8"))
+        self.assertIn(f'fern_cli_version = "{OLD}"', (fixture / "evidence.toml").read_text(encoding="utf-8"))
 
     def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
         self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")

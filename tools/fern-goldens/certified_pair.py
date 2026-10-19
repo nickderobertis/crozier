@@ -36,7 +36,7 @@ import subprocess
 import sys
 from collections.abc import Iterable
 from pathlib import Path
-from typing import NamedTuple
+from typing import Literal, NamedTuple
 
 METADATA = Path("assets") / "scaffolding" / "metadata.json"
 SCANNED_DIRS = ("src/", "crates/", "tools/", "scripts/", ".github/", "tests/")
@@ -60,37 +60,48 @@ COMMENT = ("//", "#", "/*", "* ")
 V = r"(\d+\.\d+\.\d+)"
 # An optional backslash, for the forms written inside a Rust or Python string.
 Q = r'\\?["\']'
-CLI, SDK = "cli", "sdk"
-# Each form, and the pair member(s) its version groups state, in group order.
-FORMS: tuple[tuple[re.Pattern[str], tuple[str, ...]], ...] = (
+Member = Literal["cli", "sdk"]
+CLI: Member = "cli"
+SDK: Member = "sdk"
+
+
+class Form(NamedTuple):
+    """One way the repository states the pair: its pattern, and the pair member
+    each of its version groups states, in group order."""
+
+    pattern: re.Pattern[str]
+    members: tuple[Member, ...]
+
+
+FORMS: tuple[Form, ...] = (
     # `.fern/metadata.json`'s keys.
-    (re.compile(Q + r"cliVersion" + Q + r"\s*:\s*" + Q + V), (CLI,)),
-    (re.compile(Q + r"generatorVersion" + Q + r"\s*:\s*" + Q + V), (SDK,)),
+    Form(re.compile(Q + r"cliVersion" + Q + r"\s*:\s*" + Q + V), (CLI,)),
+    Form(re.compile(Q + r"generatorVersion" + Q + r"\s*:\s*" + Q + V), (SDK,)),
     # Provenance keys: TOML, YAML, JSON and tuple spellings alike.
-    (re.compile(r"\bfern_cli_version" + r"""[\\"'\s:=,]*""" + V), (CLI,)),
-    (re.compile(r"\bfern_python_sdk_version" + r"""[\\"'\s:=,]*""" + V), (SDK,)),
+    Form(re.compile(r"\bfern_cli_version" + r"""[\\"'\s:=,]*""" + V), (CLI,)),
+    Form(re.compile(r"\bfern_python_sdk_version" + r"""[\\"'\s:=,]*""" + V), (SDK,)),
     # Install and image references.
-    (re.compile(r"\bfern-api@" + V), (CLI,)),
-    (re.compile(r"fern-python-sdk:" + V), (SDK,)),
-    (re.compile(r"\bpython-sdk@" + V), (SDK,)),
+    Form(re.compile(r"\bfern-api@" + V), (CLI,)),
+    Form(re.compile(r"fern-python-sdk:" + V), (SDK,)),
+    Form(re.compile(r"\bpython-sdk@" + V), (SDK,)),
     # Labels naming both.
-    (re.compile(r"\bFern CLI " + V + r"(?:,| /) python-sdk " + V), (CLI, SDK)),
+    Form(re.compile(r"\bFern CLI " + V + r"(?:,| /) python-sdk " + V), (CLI, SDK)),
     # A fern.config.json literal.
-    (re.compile(r"organization" + Q + r"\s*:\s*[^,\n]*,\s*" + Q + r"version" + Q + r"\s*:\s*" + Q + V), (CLI,)),
+    Form(re.compile(r"organization" + Q + r"\s*:\s*[^,\n]*,\s*" + Q + r"version" + Q + r"\s*:\s*" + Q + V), (CLI,)),
     # A generators.yml block: the version line under the python generator's name.
-    (re.compile(r"fernapi/fern-python-sdk(?:\\n|[\"'\s+])*version:\s*" + V), (SDK,)),
+    Form(re.compile(r"fernapi/fern-python-sdk(?:\\n|[\"'\s+])*version:\s*" + V), (SDK,)),
     # Constants and shell defaults.
-    (
+    Form(
         re.compile(r"\bFERN_CLI(?:_VERSION)?\b(?:\s*:\s*&(?:'static\s+)?str|\s*:\s*str)?(?:\s*=\s*|:-)[\"']?" + V),
         (CLI,),
     ),
-    (
+    Form(
         re.compile(
             r"\bFERN_PYTHON(?:_SDK)?(?:_VERSION)?\b(?:\s*:\s*&(?:'static\s+)?str|\s*:\s*str)?(?:\s*=\s*|:-)[\"']?" + V
         ),
         (SDK,),
     ),
-    (re.compile(r"FernPair\(\s*cli\s*=\s*[\"']" + V + r"[\"']\s*,\s*generator\s*=\s*[\"']" + V), (CLI, SDK)),
+    Form(re.compile(r"FernPair\(\s*cli\s*=\s*[\"']" + V + r"[\"']\s*,\s*generator\s*=\s*[\"']" + V), (CLI, SDK)),
 )
 
 
