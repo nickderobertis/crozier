@@ -1758,15 +1758,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         references = importlib.util.module_from_spec(spec)
         sys.modules[spec.name] = references
         spec.loader.exec_module(references)
-        with unittest.mock.patch.dict(os.environ, {"PATH": environment["PATH"]}):
-            with references.run_fern(
+        with (
+            unittest.mock.patch.dict(os.environ, {"PATH": environment["PATH"]}),
+            references.run_fern(
                 root / "tests/fixtures/beta/openapi.yml",
                 references.Pair(cli="9.8.7", generator="6.5.4"),
                 audiences=("public",),
                 client_class_name="Acme",
                 extra_fields="forbid",
-            ):
-                pass
+            ),
+        ):
+            pass
         script_run, tool_run = [json.loads(line) for line in recorded.read_text(encoding="utf-8").splitlines()]
         self.assertEqual(["generate"], script_run["argv"], "the fixture script reached Fern")
         # Fern parses fern.config.json, so it is compared as the JSON it reads.
