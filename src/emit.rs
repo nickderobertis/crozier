@@ -5275,12 +5275,12 @@ fn method_params(ep: &Endpoint, imports: &mut Imports) -> MethodParams {
     let header: Vec<DocParam> = ep
         .header_params
         .iter()
-        .map(|hp| {
+        .map(|header_param| {
             optional_arg(
-                raw_type_str_ctx(&hp.type_ref, imports, true),
-                hp.required,
-                hp.docstring.clone(),
-                hp.py_name.clone(),
+                raw_type_str_ctx(&header_param.type_ref, imports, true),
+                header_param.required,
+                header_param.docstring.clone(),
+                header_param.py_name.clone(),
             )
         })
         .collect();
@@ -6395,17 +6395,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 )
             })
             .collect();
-        for hp in &ep.header_params {
-            let value = if hp.enum_value {
-                format!("{}.value", hp.py_name)
+        for header_param in &ep.header_params {
+            let value = if header_param.enum_value {
+                format!("{}.value", header_param.py_name)
             } else {
-                format!("str({})", hp.py_name)
+                format!("str({})", header_param.py_name)
             };
             headers.push((
-                hp.wire_name.as_str(),
+                header_param.wire_name.as_str(),
                 format!(
                     "                \"{}\": {value} if {} is not None else None,",
-                    hp.wire_name, hp.py_name
+                    header_param.wire_name, header_param.py_name
                 ),
             ));
         }
@@ -6418,12 +6418,17 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         lines.extend(headers.into_iter().map(|(_, line)| line));
         // The idempotency headers follow the operation's own, in the order the
         // document lists them.
-        lines.extend(ep.extensions.idempotency_headers.iter().map(|hp| {
-            format!(
-                "                \"{}\": str({1}) if {1} is not None else None,",
-                hp.wire_name, hp.py_name
-            )
-        }));
+        lines.extend(
+            ep.extensions
+                .idempotency_headers
+                .iter()
+                .map(|header_param| {
+                    format!(
+                        "                \"{}\": str({1}) if {1} is not None else None,",
+                        header_param.wire_name, header_param.py_name
+                    )
+                }),
+        );
         lines.push("            },".to_string());
     }
     lines.push(if ep.extensions.retries_disabled {
@@ -10738,38 +10743,38 @@ fn build_example_inner(
         };
         args.push((Some(qp.py_name.clone()), v));
     }
-    for hp in ep
+    for header_param in ep
         .header_params
         .iter()
         .filter(|header| header.required && !reference)
     {
-        let v = hp
+        let v = header_param
             .example
             .as_ref()
-            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+            .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
             .unwrap_or_else(|| {
-                let slot = header_slot(&hp.wire_name);
-                header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                let slot = header_slot(&header_param.wire_name);
+                header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
             });
-        args.push((Some(hp.py_name.clone()), v));
+        args.push((Some(header_param.py_name.clone()), v));
     }
     if header_first_request && !reference {
-        for hp in ep
+        for header_param in ep
             .header_params
             .iter()
             .filter(|header| !header.required && header.example.is_some() && declared_examples)
         {
-            let value = hp
+            let value = header_param
                 .example
                 .as_ref()
-                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
                 .unwrap_or_else(|| {
-                    let slot = header_slot(&hp.wire_name);
-                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                    let slot = header_slot(&header_param.wire_name);
+                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
                 });
-            args.push((Some(hp.py_name.clone()), value));
+            args.push((Some(header_param.py_name.clone()), value));
         }
         for qp in ep.query_params.iter().filter(|qp| qp.required) {
             args.push((
@@ -10785,33 +10790,33 @@ fn build_example_inner(
                 header_first_query_example(ctx, qp),
             ));
         }
-        for hp in ep.header_params.iter().filter(|header| header.required) {
-            let value = hp
+        for header_param in ep.header_params.iter().filter(|header| header.required) {
+            let value = header_param
                 .example
                 .as_ref()
-                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
                 .unwrap_or_else(|| {
-                    let slot = header_slot(&hp.wire_name);
-                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                    let slot = header_slot(&header_param.wire_name);
+                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
                 });
-            args.push((Some(hp.py_name.clone()), value));
+            args.push((Some(header_param.py_name.clone()), value));
         }
-        for hp in ep
+        for header_param in ep
             .header_params
             .iter()
             .filter(|header| !header.required && header.example.is_some() && declared_examples)
         {
-            let value = hp
+            let value = header_param
                 .example
                 .as_ref()
-                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
                 .unwrap_or_else(|| {
-                    let slot = header_slot(&hp.wire_name);
-                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                    let slot = header_slot(&header_param.wire_name);
+                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
                 });
-            args.push((Some(hp.py_name.clone()), value));
+            args.push((Some(header_param.py_name.clone()), value));
         }
     }
     for qp in ep.query_params.iter().filter(|qp| !qp.required) {
@@ -10842,32 +10847,32 @@ fn build_example_inner(
         ));
     }
     if reference && !header_first_request {
-        for hp in ep.header_params.iter().filter(|header| header.required) {
-            let value = hp
+        for header_param in ep.header_params.iter().filter(|header| header.required) {
+            let value = header_param
                 .example
                 .as_ref()
-                .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-                .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+                .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+                .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
                 .unwrap_or_else(|| {
-                    let slot = header_slot(&hp.wire_name);
-                    header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                    let slot = header_slot(&header_param.wire_name);
+                    header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
                 });
-            args.push((Some(hp.py_name.clone()), value));
+            args.push((Some(header_param.py_name.clone()), value));
         }
     }
-    for hp in ep.header_params.iter().filter(|header| {
+    for header_param in ep.header_params.iter().filter(|header| {
         !header_first_request && !header.required && header.example.is_some() && declared_examples
     }) {
-        let value = hp
+        let value = header_param
             .example
             .as_ref()
-            .filter(|_| ctx.example_is_scalar(&hp.type_ref))
-            .and_then(|example| ctx.value_from_example(&hp.type_ref, example))
+            .filter(|_| ctx.example_is_scalar(&header_param.type_ref))
+            .and_then(|example| ctx.value_from_example(&header_param.type_ref, example))
             .unwrap_or_else(|| {
-                let slot = header_slot(&hp.wire_name);
-                header_example(ctx.value(&hp.type_ref, Slot::Named(&slot)))
+                let slot = header_slot(&header_param.wire_name);
+                header_example(ctx.value(&header_param.type_ref, Slot::Named(&slot)))
             });
-        args.push((Some(hp.py_name.clone()), value));
+        args.push((Some(header_param.py_name.clone()), value));
     }
     // The docstring writer walks an example's headers before its query
     // parameters, whatever the body (`EndpointFunctionSnippetGenerator`); the
