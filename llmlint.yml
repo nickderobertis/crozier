@@ -102,6 +102,7 @@ files:
     - "assets/core/remove_none_from_dict.py"
     - "assets/core/request_options.py"
     - "assets/core/serialization.py"
+    - "assets/core/xml_utilities.py"
     - "assets/core/http_sse/**"
     - "assets/scaffolding/conftest.py"
     - "assets/scaffolding/default_clients.py.tmpl"
