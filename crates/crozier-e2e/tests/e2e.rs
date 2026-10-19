@@ -22333,8 +22333,11 @@ fn fern_refusal_gate_holds_a_retiring_class_to_generating() {
     ] {
         std::fs::write(
             registry.join(id).join("fern-refusal.txt"),
-            "fern_cli_version: 0.0.1\nfern_python_sdk_version: 0.0.2\ngenerate_exit: 1\n\
-             diagnostic: A scratch phrase about x\noutput_tree: none\n",
+            concat!(
+                "fern_cli_version: 0.0.1\n", // certified-pair: stand-in for an earlier pin
+                "fern_python_sdk_version: 0.0.2\n", // certified-pair: stand-in for an earlier pin
+                "generate_exit: 1\ndiagnostic: A scratch phrase about x\noutput_tree: none\n",
+            ),
         )
         .unwrap();
     }
