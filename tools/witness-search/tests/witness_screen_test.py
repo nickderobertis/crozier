@@ -14,6 +14,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -1125,6 +1126,11 @@ class HistoricalPairTests(unittest.TestCase):
         self.file("acme/shop", "refuse")  # Fern refused it: measured, rejected
         self.file("acme/eula", "pass")  # the licence failed: Fern never ran, no pins
         self.file("acme/declared", "generate-fail")
+        # A labelled row keeps its CRLF ending; the last, with none, gains a newline.
+        lines = self.screens().read_bytes().splitlines(keepends=True)
+        lines[1] = lines[1].rstrip(b"\n") + b"\r\n"
+        lines[3] = lines[3].rstrip(b"\n")
+        self.screens().write_bytes(b"".join(lines))
         before = self.screens().read_bytes().splitlines(keepends=True)
         self.assertEqual(4, len(before))
         self.assertTrue(before[0].endswith(b"\r\n"))
@@ -1135,6 +1141,8 @@ class HistoricalPairTests(unittest.TestCase):
         after = self.screens().read_bytes().splitlines(keepends=True)
         # The pre-stage row and the row whose Fern screen never ran stay byte for byte.
         self.assertEqual((before[0], before[2]), (after[0], after[2]))
+        self.assertEqual((b"\r\n", b"\n"), (after[1][-2:], after[3][-1:]))
+        self.assertFalse(after[3].endswith(b"\r\n"))
         for number in (1, 3):
             row = json.loads(after[number])
             self.assertIn(SCREEN.HISTORICAL_PAIR, row)
@@ -1150,12 +1158,38 @@ class HistoricalPairTests(unittest.TestCase):
         self.assertEqual(1, refused.returncode, refused.stderr)
         self.assertIn("ran no Fern screen at a pair", refused.stderr)
 
+    def test_an_arm_search_ledger_is_labelled_and_held_under_its_own_field_names(self) -> None:
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        [legacy] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        # The same measurement as an arm search files it: `licence`, under its source's directory.
+        arm = self.surface / "golden-reach-witnesses" / "sourcegraph"
+        shutil.copytree(self.evidence / "screens", arm / "screens")
+        row = {k: v for k, v in legacy.items() if k != "license"} | {
+            "licence": legacy["license"],
+            "key": "sample-shape",
+            "candidate": "acme/shop:openapi.yaml",
+        }
+        (arm / "screens.jsonl").write_text(json.dumps(row, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 2 screen(s)", labelled.stdout)
+        [after] = [json.loads(line) for line in (arm / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(row, {k: v for k, v in after.items() if k != SCREEN.HISTORICAL_PAIR})
+        # Its `licence` field is the one held to the measured outcome.
+        (arm / "screens.jsonl").write_text(
+            json.dumps({**row, "licence": "failed: stated"}, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+        )
+        refused = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("its licence 'failed: stated' is not the measured licence outcome", refused.stderr)
+
     def test_historical_refuses_a_root_or_a_line_it_cannot_read_and_writes_nothing(self) -> None:
         missing = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface / "absent"))
         self.assertEqual(1, missing.returncode)
         self.assertIn("is no directory", missing.stderr)
         self.file("acme/shop", "pass", "--disposition", "witness-found")
-        other = self.surface / "witness-search-jentic"
+        # Sorted after the readable ledger, which owes a label: nothing is written before it fails.
+        other = self.surface / "witness-search-vendor-portals"
         other.mkdir()
         for label, text in (("not JSON", "{oops\n"), ("no object", "[1, 2]\n")):
             with self.subTest(label):
@@ -1163,9 +1197,8 @@ class HistoricalPairTests(unittest.TestCase):
                 before = self.screens().read_bytes()
                 refused = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
                 self.assertEqual(1, refused.returncode)
-                self.assertIn("witness-search-jentic/screens.jsonl:1 is no JSON object", refused.stderr)
+                self.assertIn("witness-search-vendor-portals/screens.jsonl:1 is no JSON object", refused.stderr)
                 self.assertNotIn("Traceback", refused.stderr)
-                # The readable ledger, sorted before it, is not labelled either.
                 self.assertEqual(before, self.screens().read_bytes())
         (other / "screens.jsonl").unlink()
         # A record no longer whole is not labelled history: its committed log is gone.
