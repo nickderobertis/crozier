@@ -44,6 +44,12 @@ if sys.argv[1] == "check":
 if "x-stub-crash" in document:
     print("Traceback (most recent call last):\n    raise KeyError(key)\n  KeyError: 'type_:Probe'")
     sys.exit(1)
+if "x-stub-error-line" in document:
+    print("Error: the definition could not be read")
+    sys.exit(1)
+if "x-stub-failed-to" in document:
+    print("[api]: python-sdk Failed to load the API definition")
+    sys.exit(1)
 if "x-stub-silent" in document:
     print("[api]: python-sdk something went sideways")
     sys.exit(1)
@@ -516,6 +522,7 @@ class FernReferencesTests(unittest.TestCase):
         for config, reason in (
             ({"pydantic_config": "allow"}, "must be objects"),
             ({"client_class_name": "9Lives"}, "is no Python class name"),
+            ({"client_class_name": "class"}, "is no Python class name"),
             ({"pydantic_config": {"extra_fields": "sometimes"}}, "is none of allow, ignore, forbid"),
         ):
             with self.subTest(config=config):
@@ -643,6 +650,7 @@ class FernReferencesTests(unittest.TestCase):
         header = "case\tdocument\tenum_type\tlayout\toverlay\n"
         for rows, reason in (
             ("a/b\tdocs/x.yml\tliterals\tpackaged\tfern-expected\n", "its overlay 'fern-expected'"),
+            ("a/b\tdocs/x.yml\tliterals\tpackaged\texpected:../outside\n", "its overlay 'expected:../outside'"),
             ("a/b\tdocs/missing.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
             ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
             ("a/b\tdocs/x.yml\tliterals\tpackaged\t-\na/b\tdocs/x.yml\tliterals\tflat\t-\n", "unique"),
@@ -662,6 +670,76 @@ class FernReferencesTests(unittest.TestCase):
             "alpha", evidence=EVIDENCE.format("0" * 64).replace("\n[[covers]]", "audiences = 'public'\n\n[[covers]]")
         )
         self.assertIn("audiences must be a list of audience labels", self.run_tool("generate", "handwritten").stderr)
+        self.assertEqual(self.calls(), [])
+
+    def test_a_missing_fern_or_release_crozier_names_its_fix_and_keeps_the_reference(self) -> None:
+        fixture = self.handwritten("alpha")
+        empty = self.root / "no-fern-bin"
+        empty.mkdir()
+        missing = subprocess.run(
+            [sys.executable, str(self.tool), "generate", "handwritten", "alpha"],
+            env={**self.env, "PATH": str(empty)},
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertEqual(missing.returncode, 1, missing.stderr)
+        self.assertIn("`fern` is not on PATH; run `just setup-fern`", missing.stderr)
+        (self.root / "target/release/crozier").unlink()
+        unbuilt = self.run_tool("generate", "handwritten", "alpha")
+        self.assertEqual(unbuilt.returncode, 1)
+        self.assertIn("build crozier first: cargo build --release", unbuilt.stderr)
+        self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
+
+    def test_an_error_line_or_a_failed_to_line_is_the_recorded_refusal_diagnostic(self) -> None:
+        self.write("docs/openapi-surface/probes/unread.yml", "openapi: 3.0.3\nx-stub-error-line: true\n")
+        self.write("docs/openapi-surface/probes/unloaded.yml", "openapi: 3.0.3\nx-stub-failed-to: true\n")
+        self.manifest(
+            f"unread\trefusal\trefuses\tdocs/openapi-surface/probe-expected/unread.fern-refusal.txt\t—\t{'a' * 64}",
+            f"unloaded\trefusal\trefuses\tdocs/openapi-surface/probe-expected/unloaded.fern-refusal.txt\t—\t{'b' * 64}",
+        )
+        result = self.run_tool("generate", "probes")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        expected = self.root / "docs/openapi-surface/probe-expected"
+        self.assertIn(
+            "diagnostic: the definition could not be read\n",
+            (expected / "unread.fern-refusal.txt").read_text(encoding="utf-8"),
+        )
+        self.assertIn(
+            "diagnostic: Failed to load the API definition\n",
+            (expected / "unloaded.fern-refusal.txt").read_text(encoding="utf-8"),
+        )
+
+    def test_an_overlay_over_no_base_records_its_label_without_a_digest(self) -> None:
+        self.write("docs/fern-measurements/union-literals/omega/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "union-literals/omega\tdocs/fern-measurements/union-literals/omega/openapi.yml\tliterals\tpackaged\texpected:-\n",
+        )
+        result = self.run_tool("generate", "measurements", "union-literals/omega")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        overlay = json.loads(
+            (self.root / "docs/fern-measurements/union-literals/omega/fern-expected/.crozier-overlay.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            (overlay["base"], overlay["enum_type"], overlay["fern_cli_version"]), ("expected", "literals", CLI)
+        )
+        self.assertNotIn("digest", overlay)
+
+    def test_usage_errors_exit_two_and_a_bad_manifest_name_is_refused(self) -> None:
+        self.handwritten("alpha")
+        self.assertEqual(self.run_tool("generate", "handwritten", "nosuch").returncode, 2)
+        bad_version = self.run_tool("generate", "handwritten", "--version", "latest")
+        self.assertEqual(bad_version.returncode, 2)
+        self.assertIn("invalid Fern version 'latest'", bad_version.stderr)
+        self.manifest(f"../escape\tabsent-tree\tdiscards\tdocs/openapi-surface/probe-expected/x\t—\t{'a' * 64}")
+        listed = self.run_tool("list", "probes")
+        self.assertEqual(listed.returncode, 1)
+        self.assertIn("no plain file stem", listed.stderr)
         self.assertEqual(self.calls(), [])
 
     # llmlint: ignore[shell_test_tiers_stay_split] Serving a case's own documents on 127.0.0.1 is the behaviour under test (the tool hands Fern a loopback URL for a remote $ref); the socket never leaves the host, so this stays in the offline tier, which forbids external network rather than loopback.

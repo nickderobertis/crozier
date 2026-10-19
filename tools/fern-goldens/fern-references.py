@@ -53,6 +53,7 @@ import hashlib
 import http.server
 import importlib.util
 import json
+import keyword
 import os
 import re
 import shutil
@@ -326,7 +327,11 @@ def recorded_generator_config(tree: Path) -> GeneratorSettings:
         )
     client_class_name = config.get("client_class_name")
     extra_fields = pydantic.get("extra_fields")
-    if client_class_name is not None and not (isinstance(client_class_name, str) and client_class_name.isidentifier()):
+    if client_class_name is not None and not (
+        isinstance(client_class_name, str)
+        and client_class_name.isidentifier()
+        and not keyword.iskeyword(client_class_name)
+    ):
         raise ReferenceError(f"{rel(path)}: client_class_name {client_class_name!r} is no Python class name")
     if extra_fields is not None and extra_fields not in EXTRA_FIELDS:
         raise ReferenceError(f"{rel(path)}: extra_fields {extra_fields!r} is none of {', '.join(EXTRA_FIELDS)}")
@@ -601,7 +606,12 @@ def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
     if not document or not target.is_relative_to(ROOT.resolve()) or not target.is_file():
         return f"its document {document!r} is no file of this repository"
     label, colon, base = overlay.partition(":")
-    if overlay != "-" and not (colon and label in OVERLAY_BASES and (base == "-" or (base and (ROOT / base).is_dir()))):
+    base_tree = (ROOT / base).resolve() if base and base != "-" else None
+    if overlay != "-" and not (
+        colon
+        and label in OVERLAY_BASES
+        and (base == "-" or (base_tree is not None and base_tree.is_relative_to(ROOT.resolve()) and base_tree.is_dir()))
+    ):
         return f"its overlay {overlay!r} is `-` or `<{'|'.join(OVERLAY_BASES)}>:<base tree or ->`"
     return None
 
@@ -881,8 +891,20 @@ class ManifestRow:
 MANIFEST_HEADER = tuple(field.name for field in fields(ManifestRow))
 
 
+PROBE_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
+
+
 def manifest_rows() -> list[ManifestRow]:
-    return [ManifestRow(**row) for row in read_tsv(MANIFEST, MANIFEST_HEADER)]
+    """`MANIFEST.tsv`'s rows, each naming its probe and any control as a plain
+    file stem, since both become paths under the probe directories."""
+    rows = [ManifestRow(**row) for row in read_tsv(MANIFEST, MANIFEST_HEADER)]
+    for row in rows:
+        if not PROBE_NAME.fullmatch(row.key) or not (row.control == "—" or PROBE_NAME.fullmatch(row.control)):
+            raise SystemExit(
+                f"fern-references: {MANIFEST} row {row.key!r} names a probe or control {row.control!r} that is "
+                "no plain file stem; restore it from git"
+            )
+    return rows
 
 
 def write_manifest(rows: list[ManifestRow]) -> None:
@@ -1156,12 +1178,11 @@ def main(argv: list[str] | None = None) -> int:
     pair = Pair(cli=args.cli_version or certified.cli, generator=args.version or certified.generator)
     for value in (pair.cli, pair.generator):
         if not VERSION.fullmatch(value):
-            raise SystemExit(f"fern-references: invalid Fern version {value!r}; use an exact semantic version")
+            parser.error(f"invalid Fern version {value!r}; use an exact semantic version")
     unknown = [item for item in args.items if item not in known]
     if unknown:
-        raise SystemExit(
-            f"fern-references: no {args.family} item {', '.join(unknown)}; "
-            f"`fern-references.py list {args.family}` names the family"
+        parser.error(
+            f"no {args.family} item {', '.join(unknown)}; `fern-references.py list {args.family}` names the family"
         )
     failures = []
     for item in args.items or known:
