@@ -8757,8 +8757,20 @@ impl<'a> ExampleCtx<'a> {
             });
         }
         if let TypeRef::List(inner) | TypeRef::Set(inner) = t {
-            let values: Vec<serde_json::Value> =
-                serde_json::from_value(parse_example_value(example)?).ok()?;
+            let value = parse_example_value(example)?;
+            // Handed a non-array, Fern's importer examples one item from nothing,
+            // and an unknown item from nothing is no item: Short.io's opengraph
+            // body is a list of `[name, value]` tuples (`List[List[Any]]`) whose
+            // media example is the flat `["title", "My title"]`, and the golden
+            // passes `[[], []]`, measured at Fern CLI 5.163.1.
+            if !value.is_array() && self.resolves_to_any(inner) {
+                return Some(if self.documentation {
+                    Example::ReferenceList(Vec::new())
+                } else {
+                    Example::ExplicitList(Vec::new())
+                });
+            }
+            let values: Vec<serde_json::Value> = serde_json::from_value(value).ok()?;
             let mut unique = Vec::with_capacity(values.len());
             for value in values {
                 if !self.example_is_temporal(inner) || !unique.contains(&value) {
@@ -12183,6 +12195,35 @@ mod tests {
                 )
             })
             .collect()
+    }
+
+    #[test]
+    fn a_flat_example_for_a_list_of_unknown_lists_examples_empty_lists() {
+        let files = files_for(serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "Api", "version": "1"},
+            "paths": {"/tags": {"put": {
+                "operationId": "setTags",
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"type": "array", "items": {
+                        "type": "array",
+                        "prefixItems": [{"type": "string"}, {"type": "string"}],
+                        "items": false
+                    }},
+                    "example": ["title", "My title"]
+                }}},
+                "responses": {"204": {"description": "OK"}}
+            }}}
+        }));
+        let client = files
+            .iter()
+            .find(|(path, _)| path.ends_with("/client.py") && path.matches('/').count() == 2)
+            .map(|(_, contents)| contents)
+            .expect("the root client is generated");
+        assert!(
+            client.contains("request=[[], []]") && !client.contains("\"My title\""),
+            "{client}"
+        );
     }
 
     /// `GET /probe` carrying the header `probeParam` with `schema`, beside a

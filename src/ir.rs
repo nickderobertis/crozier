@@ -5895,63 +5895,44 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
                         }
                     }
                     if let Some(existing) = bodies.get_mut(&name) {
-                        // The last declaration documents the body: Zulip's `404`s
+                        // The last declaration is the body, whole: Zulip's `404`s
                         // are ten `allOf: [$ref CodedError, {description}]`s, and
-                        // the golden takes the emoji one's description.
-                        existing.description.clone_from(&schema.description);
-                        existing.all_of.clone_from(&schema.all_of);
-                        for (property, property_schema) in &schema.properties {
-                            if let Some(previous) = existing.properties.get(property) {
-                                if string_enum_values(previous).is_some()
-                                    && string_enum_values(property_schema).is_none()
-                                {
-                                    superseded_enums.insert(
-                                        format!("{name}{}", naming::class_name(property)),
-                                        previous.clone(),
-                                    );
-                                }
+                        // the golden takes the emoji one's description; Short.io's
+                        // `500`s answer `{error}` and `{message}` objects, and its
+                        // `InternalServerErrorBody` holds the final `/links/duplicate`
+                        // one's `message` alone, measured at Fern CLI 5.163.1 with
+                        // fern-python-sdk 5.41.3.
+                        // An earlier declaration's enum property the last one does
+                        // not declare as an enum leaves the body and stays behind as
+                        // a type of its own: MockServer's first `503` declares
+                        // `status: {enum: [NOT_READY]}` and its second `error`, and
+                        // the golden's `ServiceUnavailableErrorBody` holds `error`
+                        // alone beside a stray `ServiceUnavailableErrorBodyStatus`.
+                        for (property, previous) in &existing.properties {
+                            if string_enum_values(previous).is_some()
+                                && schema
+                                    .properties
+                                    .get(property)
+                                    .is_none_or(|later| string_enum_values(later).is_none())
+                            {
+                                superseded_enums.insert(
+                                    format!("{name}{}", naming::class_name(property)),
+                                    previous.clone(),
+                                );
                             }
+                        }
+                        // Declared again as an enum, the property hoists its own
+                        // type once more, so nothing is left behind: letta's
+                        // `errorCode` returns in its later `404`s.
+                        for (property, property_schema) in &schema.properties {
                             if string_enum_values(property_schema).is_some() {
-                                // Declared again as an enum, the property hoists its
-                                // own type once more, so nothing is left behind:
-                                // letta's `errorCode` returns in its later `404`s.
                                 superseded_enums.shift_remove(&format!(
                                     "{name}{}",
                                     naming::class_name(property)
                                 ));
                             }
-                            existing
-                                .properties
-                                .insert(property.clone(), property_schema.clone());
                         }
-                        // An earlier declaration's enum property the later one does
-                        // not declare leaves the body and stays behind as a type of
-                        // its own: MockServer's first `503` declares `status: {enum:
-                        // [NOT_READY]}` and its second `error`, and the golden's
-                        // `ServiceUnavailableErrorBody` holds `error` alone beside a
-                        // stray `ServiceUnavailableErrorBodyStatus`.
-                        let dropped: Vec<String> = existing
-                            .properties
-                            .iter()
-                            .filter(|(property, previous)| {
-                                string_enum_values(previous).is_some()
-                                    && !schema.properties.contains_key(property.as_str())
-                            })
-                            .map(|(property, _)| property.clone())
-                            .collect();
-                        for property in dropped {
-                            if let Some(previous) = existing.properties.shift_remove(&property) {
-                                superseded_enums.insert(
-                                    format!("{name}{}", naming::class_name(&property)),
-                                    previous,
-                                );
-                            }
-                        }
-                        for required in &schema.required {
-                            if !existing.required.contains(required) {
-                                existing.required.push(required.clone());
-                            }
-                        }
+                        *existing = schema.clone();
                     } else {
                         bodies.insert(name, schema.clone());
                     }
@@ -17743,6 +17724,54 @@ mod tests {
             decl,
             TypeDecl::Enum(value) if value.name == "BadRequestErrorBodyErrorCode"
         )));
+    }
+
+    #[test]
+    fn the_last_error_body_declaration_is_the_body_whole() {
+        let doc: OpenApi = serde_json::from_value(serde_json::json!({
+            "paths": {
+                "/first": { "get": { "responses": { "500": {
+                    "content": { "application/json": { "schema": {
+                        "type": "object", "required": ["success", "error"],
+                        "properties": {
+                            "success": { "type": "boolean" },
+                            "error": { "type": "string" }
+                        }
+                    } } }
+                } } } },
+                "/second": { "get": { "responses": { "500": {
+                    "content": { "application/json": { "schema": {
+                        "type": "object", "required": ["message"],
+                        "properties": { "message": { "type": "string" } }
+                    } } }
+                } } } }
+            }
+        }))
+        .expect("error responses deserialize");
+        let mut builder = Builder {
+            types: Vec::new(),
+            schemas: &doc.components.schemas,
+            strip_discriminant: std::collections::HashMap::new(),
+            building_types: std::collections::HashSet::new(),
+            copying_refs: Vec::new(),
+        };
+        super::hoist_error_body_types(&doc, &mut builder);
+        let body = builder
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::Object(object) if object.name == "InternalServerErrorBody" => {
+                    Some(object)
+                }
+                _ => None,
+            })
+            .expect("the body is hoisted");
+        let fields: Vec<(&str, bool)> = body
+            .fields
+            .iter()
+            .map(|field| (field.wire_name.as_str(), field.optional))
+            .collect();
+        assert_eq!(fields, [("message", false)]);
     }
 
     #[test]

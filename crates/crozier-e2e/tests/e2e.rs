@@ -11009,7 +11009,6 @@ const KOMGA: Corpus = Corpus {
 /// `short-io`: the Short.io link API is the corpus's third declarer of two path
 /// templates that normalize to one — `/links/{link_id}` beside `/links/{linkId}`,
 /// both `GET` — and the first whose colliding pair shares an HTTP method.
-/// Registered with the measured `unmatched` set below rather than at full parity.
 const SHORT_IO: Corpus = Corpus {
     api: "short-io",
     package_name: "fern",
@@ -11018,68 +11017,7 @@ const SHORT_IO: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/link_management/__init__.py",
-        "src/fern/link_management/client.py",
-        "src/fern/link_management/types/__init__.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_created_at.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_expires_at.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_ttl.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_expires_at.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_source.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_user.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_expires_at.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_redirect_type.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_source.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_ttl.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_user.py",
-        "src/fern/link_management/types/post_links_link_id_request_created_at.py",
-        "src/fern/link_management/types/post_links_link_id_request_expires_at.py",
-        "src/fern/link_management/types/post_links_link_id_request_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response_expires_at.py",
-        "src/fern/link_management/types/post_links_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_public_request_created_at.py",
-        "src/fern/link_management/types/post_links_public_request_expires_at.py",
-        "src/fern/link_management/types/post_links_public_request_ttl.py",
-        "src/fern/link_management/types/post_links_public_response.py",
-        "src/fern/link_management/types/post_links_public_response_expires_at.py",
-        "src/fern/link_management/types/post_links_public_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_public_response_source.py",
-        "src/fern/link_management/types/post_links_public_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_public_response_ttl.py",
-        "src/fern/link_management/types/post_links_public_response_user.py",
-        "src/fern/link_management/types/post_links_request_created_at.py",
-        "src/fern/link_management/types/post_links_request_expires_at.py",
-        "src/fern/link_management/types/post_links_request_ttl.py",
-        "src/fern/link_management/types/post_links_response.py",
-        "src/fern/link_management/types/post_links_response_expires_at.py",
-        "src/fern/link_management/types/post_links_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_response_source.py",
-        "src/fern/link_management/types/post_links_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_response_ttl.py",
-        "src/fern/link_management/types/post_links_response_user.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_expires_at.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_ttl.py",
-        "src/fern/link_queries/types/get_links_expand_response_expires_at.py",
-        "src/fern/link_queries/types/get_links_expand_response_ttl.py",
-        "src/fern/link_queries/types/get_links_link_id_response_expires_at.py",
-        "src/fern/link_queries/types/get_links_link_id_response_ttl.py",
-        "src/fern/types/bad_request_error_body.py",
-        "src/fern/types/conflict_error_body.py",
-        "src/fern/types/forbidden_error_body.py",
-        "src/fern/types/internal_server_error_body.py",
-        "src/fern/types/not_found_error_body.py",
-        "src/fern/types/payment_required_error_body.py",
-        "src/fern/types/unauthorized_error_body.py",
-    ],
+    unmatched: &[],
 };
 
 /// `webflow-v2`: Webflow's Data API v2 is the corpus's third declarer of a
@@ -16147,11 +16085,14 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
             && !client.contains("request=b\"string\""),
         "the high-level bytes method should use Fern's string example: {client}"
     );
+    // fern-python-sdk 5.41.3 documents the body by the signature's `bytes`
+    // (apideck.com-file-storage's `upload_sessions.upload`, a `*/*` binary
+    // body beside an `id` path parameter); 5.20.0 wrote the schema's `str`.
     let reference =
         std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
     assert!(
-        reference.contains("**request:** `str`"),
-        "reference docs should retain Fern's source-schema type: {reference}"
+        reference.contains("**request:** `bytes`"),
+        "reference docs should document the body as the signature's bytes: {reference}"
     );
 }
 
@@ -16695,6 +16636,11 @@ fn server_url_variables_are_exposed_by_the_root_client() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: https://api.example.com/{basePath}\n    variables:\n      basePath: { default: v1 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      responses:\n        '200': { description: OK }\n",
     );
+    // fern-python-sdk 5.41.3 formats the variable into the selected
+    // environment's URL template, falling back to the server's own
+    // (docu-goapiserver's `host`: `_environment_url_templates.get(environment,
+    // "https://{host}/primula/api/v3")`, then `_url_template.format(host=_host)`
+    // when no `base_url` is given); 5.20.0 formatted the server URL directly.
     let client =
         std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
     assert!(
@@ -16705,8 +16651,18 @@ fn server_url_variables_are_exposed_by_the_root_client() {
             && client.matches("_base_path = base_path if base_path is not None else \"v1\"").count()
                 == 2
             && client
+                .matches("AcmeApiEnvironment.DEFAULT: \"https://api.example.com/{basePath}\",")
+                .count()
+                == 2
+            && client
                 .matches(
-                    "base_url = \"https://api.example.com/{basePath}\".format(basePath=_base_path)"
+                    "_url_template = _environment_url_templates.get(environment, \"https://api.example.com/{basePath}\")"
+                )
+                .count()
+                == 2
+            && client
+                .matches(
+                    "if base_url is None:\n                base_url = _url_template.format(basePath=_base_path)"
                 )
                 .count()
                 == 2,
