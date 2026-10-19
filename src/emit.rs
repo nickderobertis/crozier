@@ -1708,9 +1708,9 @@ pub fn generate(ir: &Ir) -> Result<Vec<GeneratedFile>> {
     // the auth-shaped `client_wrapper.py`.
     files.extend(core_files(
         pkg,
-        ir.endpoints.iter().any(|endpoint| {
-            endpoint.pagination.is_some() || endpoint.extensions.pagination_declared
-        }),
+        ir.endpoints
+            .iter()
+            .any(|endpoint| endpoint.pagination.is_some()),
         ir.enum_type,
         &ir.auth,
     ));
@@ -4910,6 +4910,7 @@ fn render_discriminated_union(
                 deprecated: false,
                 xml: None,
                 admits_only_empty_object: false,
+                inherited_from_flattened_parent: false,
             },
             &mut imports,
         );
@@ -10095,7 +10096,23 @@ impl<'a> ExampleCtx<'a> {
                 out.extend(self.object_fields(b));
             }
         }
-        for f in &obj.fields {
+        // In a docstring a flattened parent's fields lead the model's own, as
+        // an extended parent's do: TAMS's `FlowVideo` docstring example opens
+        // with `FlowCore`'s `id` and `source_id` though the model writes
+        // `codec` first, where `reference.md` keeps the model's order. A model
+        // still extending a base keeps its own order: the Vonage Messages API's
+        // `SendMessageRequestZero` extends `ChannelOptionsSms` and
+        // `BaseMessageType`, and its example writes the flattened `Text`'s
+        // `message_type` after its own `text`.
+        let leads = |f: &&Field| {
+            !self.documentation && obj.bases.is_empty() && f.inherited_from_flattened_parent
+        };
+        let inherited_first = obj
+            .fields
+            .iter()
+            .filter(leads)
+            .chain(obj.fields.iter().filter(|f| !leads(f)));
+        for f in inherited_first {
             // An example spells a field Fern renames only on the model under its
             // plain name: VisKit's `ThreePieceIn.copy` is the model field `copy_`,
             // and Fern's example constructs `ThreePieceIn(copy="copy", …)`.
@@ -13255,7 +13272,6 @@ mod tests {
                 enum_value: false,
             }],
             retries_disabled: true,
-            pagination_declared: false,
             environment_field: None,
         };
         let out = raw_method(&ep, false, &mut Imports::default());
@@ -14248,6 +14264,7 @@ mod tests {
             deprecated: false,
             admits_only_empty_object: false,
             xml: None,
+            inherited_from_flattened_parent: false,
         }
     }
 

@@ -1904,10 +1904,6 @@ pub struct EndpointExtensions {
     /// Whether the operation sends its request with retries off
     /// (`x-fern-retries: {disabled: true}`).
     pub retries_disabled: bool,
-    /// Whether the operation declared a pagination contract the layout leaves
-    /// without a pager (the flat tree): the pagination runtime still ships.
-    // llmlint: ignore[invalid_states_unrepresentable] `Endpoint::pagination` is an existing IR field other generator code builds and reads, so it keeps its type; this flag is set only where the flat layout clears that pagination, so the two are never both set.
-    pub pagination_declared: bool,
     /// In a multi-URL environment, the field whose URL the operation's requests
     /// go to (`base`, or an operation server's name); `None` otherwise.
     pub environment_field: Option<EnvironmentField>,
@@ -2364,6 +2360,13 @@ pub struct Field {
     pub deprecated: bool,
     /// The property's XML encoding; set on every field of an XML model.
     pub xml: Option<XmlProperty>,
+    /// Whether the field comes from an `allOf` parent the model flattens
+    /// rather than extends. Fern's worked examples list such a parent's
+    /// fields ahead of the model's own, as they do an extended parent's:
+    /// TAMS's `FlowVideo` writes `codec`, `format` and `essence_parameters`
+    /// first, yet its `put_flows_flow_id` example opens with `FlowCore`'s
+    /// `id` and `source_id`.
+    pub inherited_from_flattened_parent: bool,
 }
 
 impl Field {
@@ -4347,7 +4350,6 @@ fn build_endpoint(
                 Vec::new()
             },
             retries_disabled: op.retries_disabled(),
-            pagination_declared: false,
             environment_field: (!operation_server_urls(doc).is_empty())
                 .then(|| environment_field(doc, op)),
         },
@@ -5979,7 +5981,30 @@ fn hoist_error_body_types(doc: &OpenApi, builder: &mut Builder) {
     // `BadRequestErrorBodyZero` that no longer declares `msg`.
     for (name, schema) in &union_declarations {
         let before = builder.types.len();
-        builder.add_named(name, schema);
+        // A declaration whose alternatives all convert alike is its last one,
+        // under that alternative's own name (see [`later_same_variant`]):
+        // Zulip's `/users/me/avatar` `400` offers four annotated `CodedError`s,
+        // and declares only `BadRequestErrorBodyThree`.
+        match collapsed_union_survivor(schema, builder.schemas) {
+            Some(last) => {
+                let variants = schema
+                    .one_of
+                    .as_deref()
+                    .or(schema.any_of.as_deref())
+                    .unwrap_or_default();
+                // An unknown survivor declares nothing: Webflow's
+                // `/sites/{site_id}/publish` `400` offers two Response Objects
+                // where schemas belong, and no `BadRequestErrorBodyOne` exists.
+                let survivor = &variants[last];
+                if !is_unknown(survivor) {
+                    builder.add_named(
+                        &variant_class_name(name, last, survivor, variants),
+                        survivor,
+                    );
+                }
+            }
+            None => builder.add_named(name, schema),
+        }
         let produced = builder.types.split_off(before);
         builder
             .types
@@ -7424,7 +7449,10 @@ impl InlineHoister<'_> {
             // and Fern's `GetCurrentUserResponse` writes that field first and then
             // `User`'s others, extending nothing.
             bases.clear();
-            fields.extend(inherited);
+            fields.extend(inherited.into_iter().map(|mut field| {
+                field.inherited_from_flattened_parent = true;
+                field
+            }));
         }
         let xml = xml_encoding(schema, name);
         if xml.is_some() {
@@ -7539,7 +7567,7 @@ impl InlineHoister<'_> {
         variant: &Schema,
         siblings: &[Schema],
     ) -> TypeRef {
-        if let Some(later) = later_same_variant(index, siblings) {
+        if let Some(later) = later_same_variant(index, siblings, self.schemas) {
             let hoisted = self.out.len();
             let type_ref = self.hoist_union_variant(parent, later, &siblings[later], siblings);
             self.out.truncate(hoisted);
@@ -7819,6 +7847,7 @@ impl InlineHoister<'_> {
                     referenced_example_literal(target)
                 }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
+                inherited_from_flattened_parent: false,
             });
         }
     }
@@ -11357,6 +11386,7 @@ fn append_member_fields(
             docstring: None,
             example: schema_example_literal(prop_schema),
             admits_only_empty_object: admits_only_empty_object(prop_schema),
+            inherited_from_flattened_parent: false,
         });
     }
 }
@@ -11503,6 +11533,7 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         deprecated: false,
         xml: None,
         admits_only_empty_object: false,
+        inherited_from_flattened_parent: false,
     }
 }
 
@@ -11645,7 +11676,9 @@ impl Builder<'_> {
                 if !dropped_null && declared_members > 1 && schema.properties.is_empty() {
                     let last = variants.len() - 1;
                     if is_inline_struct(&variants[last])
-                        && (0..last).all(|index| later_same_variant(index, variants) == Some(last))
+                        && (0..last).all(|index| {
+                            later_same_variant(index, variants, Some(self.schemas)) == Some(last)
+                        })
                     {
                         let survivor = &variants[last];
                         self.add_object(
@@ -12432,6 +12465,9 @@ impl Builder<'_> {
                         true
                     }
                 });
+                for field in &mut inherited {
+                    field.inherited_from_flattened_parent = true;
+                }
                 fields.extend(inherited);
             }
         }
@@ -12722,6 +12758,7 @@ impl Builder<'_> {
                         Some(format!("[{item}]"))
                     }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
+                inherited_from_flattened_parent: false,
             });
         }
     }
@@ -13082,6 +13119,7 @@ impl Builder<'_> {
                         deprecated: false,
                         xml: None,
                         admits_only_empty_object: false,
+                        inherited_from_flattened_parent: false,
                     }],
                     discriminant_index: None,
                     source: None,
@@ -14232,7 +14270,7 @@ impl Builder<'_> {
         variant: &Schema,
         siblings: &[Schema],
     ) -> TypeRef {
-        if let Some(later) = later_same_variant(index, siblings) {
+        if let Some(later) = later_same_variant(index, siblings, Some(self.schemas)) {
             let hoisted = self.types.len();
             let type_ref = self.variant_ref(parent, later, &siblings[later], siblings);
             self.types.truncate(hoisted);
@@ -14644,10 +14682,17 @@ fn collapsed_union(members: &[Schema], variants: &[TypeRef]) -> Option<TypeRef> 
 /// returns the last of them, `SendMessageResponseMessageUuid`. A member that
 /// yields to a later one forwards to it, so what it would have hoisted is never
 /// declared.
-fn later_same_variant(index: usize, siblings: &[Schema]) -> Option<usize> {
+fn later_same_variant(
+    index: usize,
+    siblings: &[Schema],
+    schemas: Option<&IndexMap<String, Schema>>,
+) -> Option<usize> {
     let variant = siblings.get(index)?;
+    let variant = annotated_ref_copy(variant, schemas);
+    let variant = variant.as_ref();
     (index + 1..siblings.len()).rev().find(|&later| {
-        let other = &siblings[later];
+        let other = annotated_ref_copy(&siblings[later], schemas);
+        let other = other.as_ref();
         match (variant.reference.as_deref(), other.reference.as_deref()) {
             (Some(left), Some(right)) => {
                 ref_to_class(left) == ref_to_class(right) && variant.nullable == other.nullable
@@ -14660,6 +14705,70 @@ fn later_same_variant(index: usize, siblings: &[Schema]) -> Option<usize> {
             _ => false,
         }
     })
+}
+
+/// The index of the one alternative a `oneOf`/`anyOf` without sibling
+/// properties or a `null` member keeps once alike alternatives collapse to
+/// the last of them, or `None` when two or more stay.
+fn collapsed_union_survivor(schema: &Schema, schemas: &IndexMap<String, Schema>) -> Option<usize> {
+    let variants = schema.one_of.as_deref().or(schema.any_of.as_deref())?;
+    let last = variants.len().checked_sub(1)?;
+    (last > 0
+        && schema.properties.is_empty()
+        && !variants.iter().any(is_null_variant)
+        && (0..last).all(|index| later_same_variant(index, variants, Some(schemas)) == Some(last)))
+    .then_some(last)
+}
+
+/// The schema Fern's importer converts a union member written `allOf: [$ref
+/// Target, {description, example}]` as: a copy of `Target` with the
+/// annotations laid over it, compared by its content rather than by name.
+/// Zulip's `/streams/{stream_id}` `400` offers `InvalidChannelError` and two
+/// `CodedError`s, each so annotated; the three are alike, only the last stays,
+/// and the `BadRequestErrorBodyZero` the document's `/invites` declared earlier
+/// survives in the golden. Any other member is itself.
+fn annotated_ref_copy<'a>(
+    member: &'a Schema,
+    schemas: Option<&IndexMap<String, Schema>>,
+) -> std::borrow::Cow<'a, Schema> {
+    let (Some(schemas), None, Some(members)) = (
+        schemas,
+        member.reference.as_deref(),
+        member.all_of.as_deref(),
+    ) else {
+        return std::borrow::Cow::Borrowed(member);
+    };
+    let mut references = members.iter().filter(|part| part.reference.is_some());
+    let (Some(only), None) = (references.next(), references.next()) else {
+        return std::borrow::Cow::Borrowed(member);
+    };
+    let annotation_only = members
+        .iter()
+        .filter(|part| part.reference.is_none())
+        .all(|part| {
+            !part.properties.declared()
+                && part.ty.is_none()
+                && part.all_of.is_none()
+                && part.one_of.is_none()
+                && part.any_of.is_none()
+                && part.items.is_none()
+                && part.additional_properties.is_none()
+        });
+    let target = only
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref_from_schemas(schemas, reference));
+    match target {
+        Some(target) if annotation_only && target.one_of.is_none() && target.any_of.is_none() => {
+            let mut copy = all_properties_of(schemas, target, 0);
+            copy.nullable = member.nullable;
+            if copy.ty.is_none() && copy.properties.declared() {
+                copy.ty = Some(TypeField::Single("object".to_string()));
+            }
+            std::borrow::Cow::Owned(copy)
+        }
+        _ => std::borrow::Cow::Borrowed(member),
+    }
 }
 
 fn dedupe_union_members(members: Vec<TypeRef>) -> Vec<TypeRef> {
@@ -17227,6 +17336,7 @@ mod tests {
             deprecated: false,
             admits_only_empty_object: false,
             xml: None,
+            inherited_from_flattened_parent: false,
         }
     }
 
@@ -20993,7 +21103,6 @@ mod tests {
             .find(|endpoint| endpoint.method_name == "list_beacons")
             .expect("the paginated operation is an endpoint");
         assert!(endpoint.pagination.is_some());
-        assert!(!endpoint.extensions.pagination_declared);
     }
 
     #[test]
@@ -25425,6 +25534,13 @@ mod tests {
             flood.fields[0].type_ref,
             TypeRef::Named("Gauge".to_string())
         );
+        // Only the flattened parent's own fields are marked inherited.
+        let inherited: Vec<bool> = flood
+            .fields
+            .iter()
+            .map(|field| field.inherited_from_flattened_parent)
+            .collect();
+        assert_eq!(inherited, [false, false, true, true, true]);
         let plain = object_decl(&ir, "PlainLock");
         assert_eq!(plain.bases, ["LockCore"]);
         assert_eq!(field_shape(plain), [("chamber", false)]);
@@ -25628,6 +25744,50 @@ mod tests {
     /// names its payload `{OperationId}Payload` in its tag's package, hoisted
     /// types and all, and a grouped operation's union member declaring a type
     /// name is that class.
+    #[test]
+    fn error_union_members_alike_by_content_collapse_to_the_last() {
+        // Zulip's shape at Fern CLI 5.163.1: annotated `$ref`s whose targets
+        // convert alike are one member, and a union left with one declares
+        // only that member's class.
+        let error = |members: serde_json::Value| {
+            serde_json::json!({"400": {"description": "bad", "content": {"application/json": {
+                "schema": {"oneOf": members}
+            }}}})
+        };
+        let annotated = |target: &str, description: &str| {
+            serde_json::json!({"allOf": [
+                {"$ref": format!("#/components/schemas/{target}")},
+                {"description": description}
+            ]})
+        };
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "components": {"schemas": {
+                "Coded": {"type": "object", "properties": {"code": {"type": "string"}}},
+                "Channel": {"type": "object", "properties": {"code": {"type": "string"}}},
+                "Invite": {"type": "object", "properties": {
+                    "code": {"type": "string"}, "errors": {"type": "string"}
+                }}
+            }},
+            "paths": {
+                "/invites": {"post": {"operationId": "invite",
+                    "responses": error(serde_json::json!([
+                        annotated("Invite", "Invites failed."),
+                        annotated("Coded", "Coded one.")
+                    ]))}},
+                "/streams": {"post": {"operationId": "stream",
+                    "responses": error(serde_json::json!([
+                        annotated("Channel", "Bad channel."),
+                        annotated("Coded", "Coded two.")
+                    ]))}}
+            }
+        }));
+        let zero = object_decl(&ir, "BadRequestErrorBodyZero");
+        assert_eq!(zero.docstring.as_deref(), Some("Invites failed."));
+        let one = object_decl(&ir, "BadRequestErrorBodyOne");
+        assert_eq!(one.docstring.as_deref(), Some("Coded two."));
+    }
+
     #[test]
     fn webhook_payloads_and_declared_members_take_their_declared_names() {
         let ir = build_document(serde_json::json!({

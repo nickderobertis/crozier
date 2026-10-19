@@ -1798,6 +1798,10 @@ pub struct Schema {
     /// bogus `$ref` (issue #86).
     #[serde(skip)]
     pub malformed: bool,
+    /// Set when a boolean stood where this schema object was expected. Not a
+    /// wire field; see [`normalize_boolean_property_objects`].
+    #[serde(skip)]
+    pub(crate) boolean_stand_in: bool,
     /// Set when this node's `$ref` named a component schema the document never
     /// declares, which `normalize_unresolvable_schema_refs` degraded to the
     /// unknown type. Not a wire field. Fern guards such a success body against an
@@ -2510,7 +2514,10 @@ impl<'de> serde::de::Visitor<'de> for MaybeSchemaVisitor {
 
     // Any other scalar standing in for a schema degrades to the unknown node.
     fn visit_bool<E>(self, _v: bool) -> std::result::Result<Self::Value, E> {
-        Ok(MaybeSchema(malformed_schema()))
+        Ok(MaybeSchema(Schema {
+            boolean_stand_in: true,
+            ..malformed_schema()
+        }))
     }
     fn visit_i64<E>(self, _v: i64) -> std::result::Result<Self::Value, E> {
         Ok(MaybeSchema(malformed_schema()))
@@ -2760,6 +2767,7 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
     normalize_sibling_one_of_constraints(&mut doc);
+    normalize_boolean_property_objects(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_unresolved_schema_pointers(&mut doc);
     normalize_error_class_schema_names(&mut doc);
@@ -3100,6 +3108,29 @@ fn normalize_sibling_one_of_constraints(doc: &mut OpenApi) {
                 }
             }
             node.one_of = None;
+        });
+    });
+}
+
+/// Read an object one of whose `properties` is a bare boolean as Fern's unknown
+/// type. Fern's importer (measured at CLI 5.163.1) cannot convert such an
+/// object, and the node it stands in is `typing.Any`: Webflow's field
+/// `validations.additionalProperties` offers `oneOf: [string, number, boolean,
+/// integer, {type: object, properties: {additionalProperties: true}}]`, and the
+/// golden alias is `typing.Union[str, float, bool, int, typing.Any]`.
+fn normalize_boolean_property_objects(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node
+                .properties
+                .values()
+                .any(|property| property.boolean_stand_in)
+            {
+                *node = Schema {
+                    description: node.description.take(),
+                    ..Schema::default()
+                };
+            }
         });
     });
 }
@@ -6346,6 +6377,50 @@ components:
         ] {
             assert!(schemas[kept].one_of.is_some(), "{kept} stays a union");
         }
+    }
+
+    /// Webflow's shape (measured at Fern CLI 5.163.1): an object one of whose
+    /// properties is a bare boolean is the unknown type.
+    #[test]
+    fn normalize_boolean_property_objects_reads_the_object_as_unknown() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Validations:
+      type: object
+      properties:
+        additionalProperties:
+          oneOf:
+            - type: string
+            - type: object
+              description: Open.
+              properties:
+                additionalProperties: true
+    Listed:
+      type: object
+      properties:
+        tags: [a, b]
+"##,
+        );
+        normalize_boolean_property_objects(&mut doc);
+        let members = doc.components.schemas["Validations"].properties["additionalProperties"]
+            .one_of
+            .as_ref()
+            .expect("the union stays");
+        assert_eq!(
+            members[1],
+            Schema {
+                description: Some("Open.".to_string()),
+                ..Schema::default()
+            }
+        );
+        assert!(doc.components.schemas["Listed"]
+            .properties
+            .contains_key("tags"));
     }
 
     #[test]
