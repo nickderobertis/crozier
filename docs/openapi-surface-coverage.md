@@ -2828,7 +2828,8 @@ why. The changes that took the arm off:
 | 53 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
 | 54 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 55 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 56 | `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
+| 56 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | its [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) reads `search-incomplete` at Fern CLI 5.163.1 with fern-python-sdk 5.41.3: the one candidate reaching the arm, Lap-Platform's `examples/verbose/openapi/vercel.yaml` in `sourcegraph`, carries a Fern screen taken at CLI 5.67.1 with fern-python-sdk 5.20.0, which no longer reads as measured. The hand-written `inline-oneof-variants` fixture executes the arm, but a cover cites its search's verdict, and a `search-incomplete` one owes a renewed search that has not run |
+| `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
 | 57 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `slashless-json-response` |
 | 58 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 59 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |

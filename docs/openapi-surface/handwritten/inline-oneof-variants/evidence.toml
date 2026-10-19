@@ -41,12 +41,6 @@ search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-varia
 verdict = "exhausted"
 
 [[covers]]
-key = "oneof-string-const-variant"
-arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md#witness-search-exhaustive"
-verdict = "exhausted"
-
-[[covers]]
 key = "annotated-ref-shape"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/annotated-ref-shape.md#witness-search-exhaustive"
