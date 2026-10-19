@@ -294,10 +294,9 @@ The suite is the only QA loop. E2E runs the real binary and byte-compares its
 the filesystem it writes. Done means complete, not minimal: cover malformed-spec
 failure and missing-file recovery, not just the happy path. Coverage is a floor
 (95%), not the target. `crates/crozier-e2e/tests/e2e.rs` is the source of truth for measured
-divergence — every corpus's `unmatched` list is empty except the measured
-residuals of `komga` and `webflow-v2`, so any other non-empty one means work in
-flight, never an accepted state; [`docs/matching.md`](docs/matching.md)
-holds the judgment about why.
+divergence — a non-empty `unmatched` list is a measured residual or work in
+flight, never an accepted state; [`docs/matching.md`](docs/matching.md) records
+each residual and holds the judgment about why.
 
 <!-- llmlint: ignore-block[agents_md_durable_and_terse] The per-project figures and the two structural 0% files are the measurement the lowered floor rests on; the create-repo Python reference lets a floor sit below 95% only with that reason recorded in AGENTS.md itself, and the manager's ruling for this floor required them here. -->
 **The Python tooling's floor is 88%, lower than the crate's 95% — a floor to
