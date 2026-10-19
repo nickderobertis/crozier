@@ -12,8 +12,8 @@ organization `LanternHarbor` and no `client_class_name`.
 ## Fern's output
 
 Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 (the certified pair),
-run by `tools/fern-goldens/fern-references.py generate departure-evidence
-readme-client-class-casing` under the settings
+run by `just fern-references departure-evidence readme-client-class-casing`
+under the settings
 [`readme-client-class-casing/fern-reference.json`](readme-client-class-casing/fern-reference.json)
 records — the flat layout (`fern generate --local`, no `FERN_TOKEN`), the
 organization `LanternHarbor`, no `client_class_name` and
