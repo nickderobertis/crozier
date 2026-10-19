@@ -9139,7 +9139,7 @@ fn hoist_form_object(
                 // An annotated `$ref` documents the field with its annotation, as
                 // a JSON body's does: Zulip's urlencoded `PATCH /streams/{stream_id}`
                 // `can_add_subscribers_group` is `allOf: [{description}, $ref …]`.
-                docstring: clean_doc(collapsed_doc.unwrap_or_else(|| {
+                docstring: clean_doc(collapsed_doc.or_else(|| {
                     prop_schema.description.as_deref().or_else(|| {
                         described_all_of_ref(prop_schema)
                             .and_then(|(_, description)| description)
@@ -12875,7 +12875,7 @@ impl Builder<'_> {
                 // `AlertFilterSuggestion` annotates `FilterSuggestion` with
                 // `readOnly` alone, and Fern documents `alert.id` with
                 // `FilterSuggestion`'s own description.
-                docstring: declared_doc(collapsed_doc.unwrap_or_else(|| {
+                docstring: declared_doc(collapsed_doc.or_else(|| {
                     annotation_lost_description(prop_schema, self.schemas)
                         .unwrap_or_else(|| property_description(prop_schema, optional))
                         .or_else(|| {
@@ -16413,17 +16413,9 @@ fn described_all_of_ref(schema: &Schema) -> Option<(&str, Option<&str>)> {
 /// description and all, in place of the union. LiveBuildings' required `id` is
 /// an `anyOf` of two string shapes each described `Property. Identifier format
 /// of any NGSI entity` beside its own `Unique identifier of the entity`, and its
-/// golden field reads the alternative's. The outer `None` is a property this
-/// does not apply to; `Some(None)` is a collapsed one whose first alternative
-/// carries no description, which leaves the field undocumented however the
-/// property itself is described: langchain-agent-server's required
-/// `assistant_id` is an `anyOf` of a uuid and a plain string, titled but not
-/// described, and its golden documents neither the model field nor the request
-/// argument (measured at fern-python-sdk 5.41.3).
-fn collapsed_member_description<'a>(
-    schema: &'a Schema,
-    type_ref: &TypeRef,
-) -> Option<Option<&'a str>> {
+/// golden field reads the alternative's. `None` is a property this does not
+/// apply to, or one whose first alternative carries no description.
+fn collapsed_member_description<'a>(schema: &'a Schema, type_ref: &TypeRef) -> Option<&'a str> {
     if schema.reference.is_some() {
         return None;
     }
@@ -16438,14 +16430,13 @@ fn collapsed_member_description<'a>(
     if matches!(inner, TypeRef::Named(_) | TypeRef::Union(_)) {
         return None;
     }
-    // Only an inline typed alternative stands in for the property this way: a
-    // `$ref` first alternative (hasura-metadata's `function`) or an untyped one
-    // (waylay-queries' `rows`) leaves the property's own description in place.
-    match first.description.as_deref() {
-        Some(description) => Some(Some(description)),
-        None if first.reference.is_none() && first.ty.is_some() => Some(None),
-        None => None,
-    }
+    // An undescribed first alternative leaves the property's own description in
+    // place. Fern documents nothing there — the inline typed alternative stands
+    // in for the property, description and all — and crozier keeping the
+    // declared description is the catalogued `collapsed-anyof-property-
+    // description` departure (assets/departures.yml): langchain-agent-server's
+    // `assistant_id` and the `marina-skipper-refs` measurement's `skipper`.
+    first.description.as_deref()
 }
 
 fn property_description(schema: &Schema, optional: bool) -> Option<&str> {
@@ -26349,8 +26340,13 @@ mod tests {
                 .find(|field| field.wire_name == wire)
                 .and_then(|field| field.docstring.clone())
         };
-        // The undescribed inline first alternative stands in for the property.
-        assert_eq!(field("assistant"), None);
+        // An undescribed inline first alternative leaves the property's own
+        // description: Fern documents nothing, and crozier's richer docstring is
+        // the catalogued `collapsed-anyof-property-description` departure.
+        assert_eq!(
+            field("assistant").as_deref(),
+            Some("The assistant ID or graph name.")
+        );
         // A `$ref` first alternative leaves the property's own description.
         assert_eq!(field("parent").as_deref(), Some("The parent run."));
     }
