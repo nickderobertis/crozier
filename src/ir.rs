@@ -290,11 +290,12 @@ fn environment_model(doc: &OpenApi, client_name: &str) -> Option<Environment> {
     let first = doc.servers.first()?;
     // Fern names a server from its description *only* when that description is
     // one of the two environment names it recognizes, compared whole and
-    // case-insensitively. Measured against Fern 5.20.0: `Production`/`production`/
-    // `PRODUCTION` and `Sandbox` are named, while `Prod`, `Staging`, `Live`,
-    // `Production API`, `Production server` and `Servidor de desarrollo local`
-    // are not — and the URL shape does not enter into it (a templated or
-    // root-relative URL described `Production` is still `PRODUCTION`).
+    // case-insensitively. Measured against Fern 5.20.0 (not re-measured at the
+    // certified pair): `Production`/`production`/`PRODUCTION` and `Sandbox` are
+    // named, while `Prod`, `Staging`, `Live`, `Production API`,
+    // `Production server` and `Servidor de desarrollo local` are not — and the
+    // URL shape does not enter into it (a templated or root-relative URL
+    // described `Production` is still `PRODUCTION`).
     const NAMED_ENVIRONMENTS: [&str; 2] = ["production", "sandbox"];
     // A server naming itself by `x-fern-server-name` (or crozier's spelling) is
     // that member, the declared name in SCREAMING_SNAKE (`main` is `MAIN`), and
@@ -670,8 +671,9 @@ pub enum HeaderPresence {
 
 /// A `{placeholder}` of the document's base path (`x-crozier-base-path` /
 /// `x-fern-base-path`), lifted out of every method into a client constructor
-/// argument that the routes read back from the client wrapper. Measured at Fern
-/// 5.20.0 on the object form `{path: /{edition}, paths-include-base-path: true,
+/// argument that the routes read back from the client wrapper. Measured at
+/// fern-python-sdk 5.41.3 (`docs/fern-measurements/parameter-lowering/`) on the
+/// object form `{path: /{edition}, paths-include-base-path: true,
 /// parameters: {edition: {type: string, default: v2}}}`: the client takes
 /// `edition: Optional[str] = "v2"` ahead of every promoted header and the
 /// credential, the wrapper `edition: Optional[str] = None`, and no method takes
@@ -1029,7 +1031,8 @@ fn is_promotion_reserved_header(wire_name: &str) -> bool {
 /// operation parameter with that wire name must not become a second constructor
 /// or method argument. OAuth and HTTP auth schemes write `Authorization` through
 /// the client wrapper, and a declared `apiKey` header scheme writes its own
-/// `name`. Fern compares the spelling exactly: measured at 5.20.0, a bearer
+/// `name`. Fern compares the spelling exactly: measured at Fern 5.20.0
+/// (not re-measured at the certified pair), a bearer
 /// document drops an `Authorization` header parameter but keeps `authorization`
 /// and `AUTHORIZATION` as ordinary optional arguments, and an `X-Kite-Key` key
 /// scheme drops `X-Kite-Key` but keeps `x-kite-key`.
@@ -2867,13 +2870,15 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
             {
                 fields.retain(|field| !schema_property_is_read_only(doc, source, &field.wire_name));
                 // A body Fern drops from the type layer sends a field renamed for a
-                // parameter collision from its renamed argument; one it keeps as a
-                // type sends the parameter's. Measured on Fern 5.20.0 over a 3.0
-                // probe: a schema posted by one operation alone sends `a_owner`
-                // (YourBrand's `CreateProject` sends `create_project_organization_id`),
-                // while the same schema also answered by a `GET`, or posted by a
-                // second operation, sends `owner` (Airflow's `DAG.tags` sends `tags`,
-                // Anchore's `PolicyBundleRecord.active` sends `active`).
+                // parameter collision from its renamed argument; one it keeps as a type
+                // sends the parameter's. Measured on Fern 5.20.0 over a 3.0 probe
+                // (`docs/fern-measurements/yourbrand-repairs/`, not re-measured at the
+                // certified pair): a schema posted by one operation alone sends
+                // `a_owner` (YourBrand's `CreateProject` sends
+                // `create_project_organization_id`), while the same schema also
+                // answered by a `GET`, or posted by a second operation, sends `owner`
+                // (Airflow's `DAG.tags` sends `tags`, Anchore's
+                // `PolicyBundleRecord.active` sends `active`).
                 for field in fields.iter_mut() {
                     field.collision_prefix = None;
                 }
@@ -3335,11 +3340,11 @@ fn request_media_variants(op: &Operation) -> Vec<Option<Operation>> {
 /// streaming half's and the buffered half's. An extension-declared name names
 /// both (`compose_stream` / `compose`). Without one, the buffered half takes the
 /// name the operation's own derivation gives it while the streaming half is the
-/// whole `operationId` snake-cased: measured at Fern 5.20.0, privateGPT's
-/// tagged FastAPI id `prompt_completion_v1_completions_post` splits into
-/// `prompt_completion_v1completions_post_stream` and `prompt_completion`. The
-/// `stream` fallback is for an operation declaring neither, and is meaningful
-/// only inside that split.
+/// whole `operationId` snake-cased: measured at fern-python-sdk 5.41.3,
+/// privateGPT's tagged FastAPI id `prompt_completion_v1_completions_post` splits
+/// into `prompt_completion_v1completions_post_stream` and `prompt_completion`.
+/// The `stream` fallback is for an operation declaring neither, and is
+/// meaningful only inside that split.
 fn stream_condition_method_names(
     op: &Operation,
     http_method: &str,
@@ -3367,7 +3372,8 @@ fn stream_condition_method_names(
 /// The component schemas that back the request body of an operation declaring a
 /// `stream-condition`. Fern keeps such a model in the public type layer even
 /// though both generated methods flatten its fields — but only while no other
-/// operation posts it: measured at Fern 5.20.0, a body schema a buffered
+/// operation posts it: measured at fern-python-sdk 5.41.3 (the hand-written
+/// `stream-condition-shared-body` fixture), a body schema a buffered
 /// operation also posts is flattened away like any single-use body.
 fn stream_condition_body_source_names(doc: &OpenApi) -> std::collections::HashSet<String> {
     let mut streamed = std::collections::HashSet::new();
@@ -3706,11 +3712,12 @@ fn build_endpoint(
             let omit_synthesized_example = without_declared_example
                 && (!required || !fern_imports_no_endpoint_example(doc, op));
             // Fern never examples an enum-typed query parameter from a declared
-            // example: measured on Fern 5.20.0, an inline `enum` carrying a schema
-            // example, the same enum carrying a parameter-level example, and a
-            // `$ref` to a named enum all render the call without an optional one,
-            // and a *required* one is rendered from the enum's first member —
-            // eNanoMapper's `type`, exampled `bystudytype`, is `BYINVESTIGATION`.
+            // example: measured on Fern 5.20.0 (not re-measured at the certified
+            // pair), an inline `enum` carrying a schema example, the same enum
+            // carrying a parameter-level example, and a `$ref` to a named enum
+            // all render the call without an optional one, and a *required* one
+            // is rendered from the enum's first member — eNanoMapper's `type`,
+            // exampled `bystudytype`, is `BYINVESTIGATION`.
             let string_enum = p.schema.as_ref().is_some_and(|schema| {
                 let resolved = schema
                     .reference
@@ -4637,7 +4644,8 @@ fn build_endpoint(
             || success_response_entry(op).is_some_and(|response| response.reference.is_some())
             // An unknown success body (`schema: {}`, inline or through a
             // component that is itself `{}`) may be empty in any OpenAPI version:
-            // measured at Fern 5.20.0, the same 3.0 and 3.1 documents guard it alike.
+            // measured at Fern 5.20.0 (not re-measured at the certified pair),
+            // the same 3.0 and 3.1 documents guard it alike.
             || success_response_schema(op).is_some_and(is_unknown)
             || success_names_unknown
             // A success schema pointing at a component the document never
@@ -4789,14 +4797,14 @@ fn schema_property_is_read_only(doc: &OpenApi, schema: &Schema, property: &str) 
 /// A parameter's declared example, or `None` where Fern discards it.
 ///
 /// Fern keeps a *parameter-level* `example`/`examples` only on a `type: string`
-/// parameter. Measured against Fern 5.20.0, identically for query, header and
-/// path parameters: a parameter-level integer or boolean example never reaches
-/// the worked call, and neither does a *string-valued* example declared on an
-/// `integer` schema — so the gate is the declared type, not the example's JSON
-/// kind. Where it applies, a required argument falls back to Fern's synthesized
-/// placeholder (`1`, `1.1`). A *schema-level* example carries no such
-/// restriction and is used whatever the type is, so
-/// `page: {type: integer, example: 0}` still renders `page=0`.
+/// parameter. Measured against Fern 5.20.0 (not re-measured at the certified
+/// pair), identically for query, header and path parameters: a parameter-level
+/// integer or boolean example never reaches the worked call, and neither does a
+/// *string-valued* example declared on an `integer` schema — so the gate is the
+/// declared type, not the example's JSON kind. Where it applies, a required
+/// argument falls back to Fern's synthesized placeholder (`1`, `1.1`). A
+/// *schema-level* example carries no such restriction and is used whatever the
+/// type is, so `page: {type: integer, example: 0}` still renders `page=0`.
 fn parameter_example_value<'a>(
     doc: &'a OpenApi,
     parameter: &'a crate::openapi::Parameter,
@@ -5350,8 +5358,9 @@ fn request_body_composition(doc: &OpenApi, op: &Operation) -> BodyComposition {
 
 /// Whether the operation's success response is a stream. A declared
 /// streaming extension without a `stream-condition` streams whatever the
-/// response's media types (Fern 5.20.0 streams `x-fern-streaming: {format: sse}`
-/// over a lone `application/json`); the boolean `false` declares nothing, as no
+/// response's media types (Fern streams `x-fern-streaming: {format: sse}` over a
+/// lone `application/json`, as the hand-written `streaming-extension-sse-format`
+/// fixture holds); the boolean `false` declares nothing, as no
 /// extension does.
 /// Otherwise Fern prefers an `application/json` representation when a response
 /// advertises both it and `text/event-stream`; an SSE-only response becomes an
@@ -5407,8 +5416,9 @@ fn stream_protocol(doc: &OpenApi, op: &Operation) -> StreamProtocol {
     }
 }
 
-/// The events an SSE stream dispatches on their `event` field. Measured at Fern
-/// 5.20.0, a chunk schema that is a `$ref` to a `oneOf` of `$ref` variants
+/// The events an SSE stream dispatches on their `event` field. Measured at
+/// fern-python-sdk 5.41.3 (the hand-written `event-stream-event-dispatch`
+/// fixture), a chunk schema that is a `$ref` to a `oneOf` of `$ref` variants
 /// discriminated on `event`, every variant declaring exactly the two properties
 /// `event` and `data`, streams as those events: each `_sse.event` value selects
 /// its variant, parsed from the event's JSON `data`. The values are the
@@ -5543,7 +5553,8 @@ fn is_binary_response(doc: &OpenApi, op: &Operation) -> bool {
         // `application/json` and its golden returns `typing.Any`, while
         // flowdapt's `get_plugin_file` is a schemaless `application/octet-stream`
         // alone and streams — and to a text media type declared before it:
-        // measured at Fern 5.20.0, `{text/plain: {}, application/octet-stream: {}}`
+        // measured at Fern 5.20.0 (not re-measured at the certified pair),
+        // `{text/plain: {}, application/octet-stream: {}}`
         // returns `str` and the same two the other way round stream, so the first
         // of the two kinds in the content map decides.
         let download_first = resp
@@ -5595,10 +5606,11 @@ fn has_byte_text_response(doc: &OpenApi, response: &Response) -> bool {
 
 /// Whether a success media type is one Fern streams back as bytes whatever its
 /// schema says, or with none. It is narrower than the request side's
-/// [`is_binary_media_type`]: measured at Fern 5.20.0, a schemaless
-/// `application/octet-stream`, `application/pdf`, `image/*`, `audio/*` or
-/// `video/*` response is a download, while `application/zip`, `application/gzip`,
-/// `application/x-tar`, `application/x-pdf`, `font/*` and `model/*` return nothing.
+/// [`is_binary_media_type`]: measured at Fern 5.20.0 (not re-measured at the
+/// certified pair), a schemaless `application/octet-stream`, `application/pdf`,
+/// `image/*`, `audio/*` or `video/*` response is a download, while
+/// `application/zip`, `application/gzip`, `application/x-tar`, `application/x-pdf`,
+/// `font/*` and `model/*` return nothing.
 fn is_download_media_type(media_type: &str) -> bool {
     let base = media_type
         .split_once(';')
@@ -5673,7 +5685,8 @@ fn success_response_doc(op: &Operation) -> Option<String> {
 /// (`"429 (burst)"`) wins over the plain one (`"429"`) whichever comes first:
 /// Fern walks a canonical integer key before every other key, so the later,
 /// spelled-out declaration overrides it. Measured at Fern 5.20.0 with the
-/// spelled-out key both after and before the plain one.
+/// spelled-out key both after and before the plain one (not re-measured at the
+/// certified pair).
 ///
 /// A `4XX` or `5XX` range key (any case) follows every concrete status as an
 /// error of its own (see [`ErrorStatus`]), the last spelling of a range winning.
@@ -5773,7 +5786,9 @@ fn wildcard_key_status(key: &str) -> Option<u16> {
 /// `"409 "` 409, while a range (`4XX`, `5xx`) declares its single leading digit,
 /// which no error status is, and `"x-200:err message"` declares none. Measured
 /// at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0: every one of those
-/// spellings raises exactly the error class its leading number names.
+/// spellings raises exactly the error class its leading number names. At the
+/// certified pair only the suffixed keys of the hand-written
+/// `suffixed-status-keys` fixture are re-verified.
 pub(crate) fn response_key_status(key: &str) -> Option<u16> {
     let rest = key.trim_start();
     let (negative, rest) = match rest.as_bytes().first() {
@@ -6920,10 +6935,10 @@ fn resolve_request_body(
         // package, so the argument is `Sequence[{Ctx}Item]` rather than
         // `Sequence[Any]`. An array of `$ref`/scalar items passes through unchanged.
         // The element takes the same `Body` infix a union body does when the
-        // operation has other inputs: probed at 5.20.0, one array body alone is
-        // `{Ctx}RequestItem`, and the same body beside a path *or* a query
-        // parameter is `{Ctx}RequestBodyItem` — VTEX's
-        // `createorupdatefixedpricesonpricetableortradepolicy` takes two path
+        // operation has other inputs: probed at Fern 5.20.0 (not re-measured at the
+        // certified pair), one array body alone is `{Ctx}RequestItem`, and the same
+        // body beside a path *or* a query parameter is `{Ctx}RequestBodyItem` —
+        // VTEX's `createorupdatefixedpricesonpricetableortradepolicy` takes two path
         // parameters beside its array.
         let item = if items.reference.is_none() && is_inline_struct(items) {
             let name = if union_body_suffix {
@@ -7023,7 +7038,8 @@ fn resolve_request_body(
     }
     scalar_body(schema).map(|(type_ref, content_type)| {
         // A described scalar carries the header as a described container does,
-        // where a `title` alone does not move it: measured at Fern 5.20.0, an
+        // where a `title` alone does not move it: measured at fern-python-sdk
+        // 5.41.3, an
         // inline `{type: string, description: …}` body sends it and a titled
         // `{type: integer}` or `{type: string}` one does not. The hand-written
         // fixture `described-scalar-bodies` holds both sides, byte-compared by
@@ -7103,7 +7119,7 @@ fn media_example<'a>(
     })
 }
 
-/// Select the example Fern uses in `reference.md`. Fern 5.20 consistently uses
+/// Select the example Fern uses in `reference.md`. Fern consistently uses
 /// the first resolvable named request example, just like its README writer.
 fn reference_body_example<'a>(
     doc: &'a OpenApi,
@@ -7187,8 +7203,9 @@ fn selected_json_request_media(
 
 fn request_body_ignored(rb: &crate::openapi::RequestBody) -> bool {
     // A JSON body that declares no schema at all (`application/json: {}`) sends
-    // nothing either: measured at Fern 5.20.0, its method takes no `request`,
-    // passes no `json=` and sends no content-type header.
+    // nothing either: measured at Fern 5.20.0 (not re-measured at the certified
+    // pair), its method takes no `request`, passes no `json=` and sends no
+    // content-type header.
     let schemaless_json = !rb.content.is_empty()
         && rb.content.iter().all(|(media_type, media)| {
             media.schema.is_none()
@@ -8547,7 +8564,7 @@ impl InlineHoister<'_> {
         if schema.reference.is_none() {
             if let Some(values) = string_enum_values(schema) {
                 let name = request_parameter_type_name(request_ctx, param);
-                // Fern 5.20 imports positional `x-enum-varnames` on model
+                // Fern imports positional `x-enum-varnames` on model
                 // properties, but an inline query parameter derives its enum
                 // members from the wire values (Raybot's `status` parameter).
                 let mut parameter_schema = schema.clone();
@@ -9182,8 +9199,9 @@ fn hoist_form_object(
 /// Whether an inline container request body — an array, a map or a bare object,
 /// sent whole as one `request` argument — carries the JSON content-type header
 /// when nothing else (a parameter, a media-type override) decides it. Measured at
-/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, the header follows the
-/// schema alone: a `title` or a `description` on it — even an empty one — sends
+/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (at the certified pair
+/// only the goldens named below re-verify it), the header follows the schema
+/// alone: a `title` or a `description` on it — even an empty one — sends
 /// the header, and an untitled, undescribed one leaves the content type to httpx.
 /// Neither the OpenAPI version, a `$ref` item, `requestBody.required` nor the
 /// request body's own `description` moves it: download-manager's and the OpenTOSCA
@@ -9527,7 +9545,8 @@ fn scalar_body(schema: &Schema) -> Option<(TypeRef, bool)> {
             Some("date") => TypeRef::Primitive(Prim::Date),
             // `uuid`/`byte` render as `str` but carry a content-type header.
             Some("uuid" | "byte") => return Some((TypeRef::Primitive(Prim::Str), true)),
-            // So do the other formats Fern types, measured at 5.20.0 on the
+            // So do the other formats Fern types, measured at fern-python-sdk
+            // 5.41.3 on the
             // hand-written fixture `format-scalar-bodies`.
             Some("email" | "hostname" | "ipv4" | "password" | "uri") => {
                 return Some((TypeRef::Primitive(Prim::Str), true))
@@ -9728,10 +9747,11 @@ fn success_response(op: &Operation) -> Option<TypeRef> {
 /// Whether a content-map key is a text media type Fern reads back as one plain
 /// `str` body: any `text/*` type, schema or not, ignoring media-type parameters
 /// after it. SFTPGo keys its `/healthz` body on `text/plain; charset=utf-8`, and
-/// measured at Fern 5.20.0 a schemaless `text/csv`, `text/plain`,
-/// `text/tab-separated-values`, `text/calendar` or `text/xml` success returns
-/// `str` alike. `text/event-stream` is the exception: an SSE response is
-/// generated as a stream of parsed events, not as a single text body.
+/// measured at Fern 5.20.0 (not re-measured at the certified pair) a schemaless
+/// `text/csv`, `text/plain`, `text/tab-separated-values`, `text/calendar` or
+/// `text/xml` success returns `str` alike. `text/event-stream` is the exception:
+/// an SSE response is generated as a stream of parsed events, not as a single
+/// text body.
 fn is_text_response_media(media_type: &str) -> bool {
     let base = media_type
         .split_once(';')
@@ -11994,7 +12014,7 @@ impl Builder<'_> {
         }
 
         // A bare `type: object` with no properties, `allOf`, or `additionalProperties`
-        // is a free-form object: Fern 5.20 aliases it to `Dict[str, Any]` (bunq's
+        // is a free-form object: Fern aliases it to `Dict[str, Any]` (bunq's
         // `AttachmentPublic`, `Whitelist`, …), not an empty model class. An object
         // example does not change that for a component: Zulip's
         // `CustomProfileFieldDataSchema` carries one and is `Dict[str, Any]`, as
@@ -14578,9 +14598,9 @@ impl Builder<'_> {
             return TypeRef::Named(name);
         }
         // A member that declares nothing but `nullable: true` is Fern's
-        // unknown-and-optional. Probed at 5.20.0: `oneOf: [{nullable: true},
-        // {type: integer}]` generates
-        // `typing.Union[typing.Optional[typing.Any], int]`.
+        // unknown-and-optional. Probed at Fern 5.20.0 (not re-measured at the
+        // certified pair): `oneOf: [{nullable: true}, {type: integer}]`
+        // generates `typing.Union[typing.Optional[typing.Any], int]`.
         if variant.reference.is_none() && variant.nullable == Some(true) && is_unknown(variant) {
             return TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Any)));
         }
@@ -14621,7 +14641,8 @@ impl Builder<'_> {
             }
         }
         // `format: binary` is a file body, not a union alternative: in a union
-        // Fern reads it as the `string` it is declared as. Probed at 5.20.0,
+        // Fern reads it as the `string` it is declared as. Probed at Fern
+        // 5.20.0 (not re-measured at the certified pair),
         // `oneOf: [{type: string, format: binary}, {type: integer}]` generates
         // `typing.Union[str, int]`, which is also why Eozilla's `InlineValue`
         // carries no `bytes`.
@@ -14819,12 +14840,13 @@ fn collapsed_union(members: &[Schema], variants: &[TypeRef]) -> Option<TypeRef> 
 /// Collapse duplicate union members, keeping the *last* occurrence's position.
 ///
 /// Fern renders each alternative and then folds equal renderings together where
-/// the final one stood: probed at 5.20.0, `oneOf: [string, integer, string/uri]`
-/// generates `typing.Union[int, str]` — the surviving `str` sits at the `uri`
-/// member's index, not the bare `string`'s. Eozilla's twelve-member `InlineValue`
-/// is the same rule at scale: its `binary`, `uri` and bare `string` alternatives
-/// all render `str`, and the ten-member union Fern emits carries one `str`,
-/// after `dt.datetime`.
+/// the final one stood: probed at Fern 5.20.0 (not re-measured at the certified
+/// pair), `oneOf: [string, integer, string/uri]` generates
+/// `typing.Union[int, str]` — the surviving `str` sits at the `uri` member's
+/// index, not the bare `string`'s. Eozilla's twelve-member `InlineValue` is the
+/// same rule at scale: its `binary`, `uri` and bare `string` alternatives all
+/// render `str`, and the ten-member union Fern emits carries one `str`, after
+/// `dt.datetime`.
 /// The last sibling after `index` that a union member converts to the same
 /// shape as, if any. Fern's importer (measured at CLI 5.163.1) keeps only the
 /// last of structurally equal alternatives, compared without names or
@@ -15874,7 +15896,7 @@ fn is_declared_empty_object(schema: &Schema) -> bool {
 }
 
 /// A bare `type: object` with no declared structure (no properties, `allOf`, or
-/// `additionalProperties`) — an open map Fern 5.20 types as `Dict[str, Any]`.
+/// `additionalProperties`) — an open map Fern types as `Dict[str, Any]`.
 fn is_bare_object(schema: &Schema) -> bool {
     schema.reference.is_none()
         && schema.properties.is_empty()
@@ -15973,7 +15995,7 @@ pub(crate) fn ordinal_word(n: usize) -> String {
 }
 
 /// Map a schema to its full type expression, wrapping in `Optional` when the
-/// schema is explicitly nullable. Fern 5.20 represents an untyped value as bare
+/// schema is explicitly nullable. Fern represents an untyped value as bare
 /// `Any`; property absence is modeled separately by the containing field. Used
 /// for aliases, where
 /// optionality lives in the type itself rather than a separate field flag.
@@ -16084,7 +16106,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
             TypeRef::Named(ref_to_class(reference))
         } else {
             // A non-component pointer that cannot be resolved by the component
-            // type builder is still an unknown value. Fern 5.20 keeps the value
+            // type builder is still an unknown value. Fern keeps the value
             // itself as bare `Any`; its containing field models absence.
             TypeRef::Primitive(Prim::Any)
         };
@@ -16147,7 +16169,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 // HelixDB's `QueryParameters` is
                 // `Dict[str, Optional[QueryParameterValue]]` because its
                 // `QueryParameterValue` opens with a `type: null` alternative.
-                // An ordinary unknown value itself is `Any` under Fern 5.20.
+                // An ordinary unknown value itself is `Any` under Fern.
                 // Either nullability spelling counts: discord writes 3.1's
                 // `type: [object, null]` where a 3.0 document writes `nullable`,
                 // and its `name_localizations` map is
@@ -16162,7 +16184,7 @@ fn base_type_ref(schema: &Schema) -> TypeRef {
                 TypeRef::Dict(Box::new(TypeRef::Primitive(Prim::Str)), Box::new(val))
             }
             // `additionalProperties: true` is an open map to unknown values,
-            // which Fern 5.20 types as `Dict[str, Any]`.
+            // which Fern types as `Dict[str, Any]`.
             Some(AdditionalProperties::Bool(true)) => TypeRef::Dict(
                 Box::new(TypeRef::Primitive(Prim::Str)),
                 Box::new(TypeRef::Primitive(Prim::Any)),
@@ -16997,7 +17019,7 @@ fn own_deprecated(schema: &Schema) -> bool {
     schema.deprecated && schema.reference.is_none() && schema.all_of.is_none()
 }
 
-/// Is a schema optional? Fern 5.20 reserves `Optional` for explicit nullability;
+/// Is a schema optional? Fern reserves `Optional` for explicit nullability;
 /// an unknown (untyped) schema is bare `Any` and a containing field separately
 /// models whether the property may be absent.
 fn is_optional(schema: &Schema) -> bool {
@@ -18271,7 +18293,8 @@ mod tests {
 
     #[test]
     fn only_fern_s_two_recognized_server_descriptions_name_an_environment() {
-        // Measured against Fern 5.20.0 over a one-server document: `Production`
+        // Measured against Fern 5.20.0 over a one-server document (not
+        // re-measured at the certified pair): `Production`
         // and `Sandbox` name the member (whatever their case), and everything
         // else — including near-misses and a non-English description — is
         // `DEFAULT`. The URL shape does not enter into it.
