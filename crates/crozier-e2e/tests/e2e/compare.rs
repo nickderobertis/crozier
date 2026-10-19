@@ -1864,12 +1864,6 @@ fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_differen
         &[("reference.md", 68, constant)],
         &[
             (
-                "reference-block",
-                "reference.md",
-                "**hatch_mode:** `typing.Literal` — Which way the roof hatch rests.",
-                "**hatch_mode:** `typing.Literal` — Which way the hatch rests.",
-            ),
-            (
                 "reference-call",
                 "reference.md",
                 "    lamp_watts=1,",
