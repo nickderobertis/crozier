@@ -210,7 +210,7 @@ The bounded searches above assess complete scenario triggers. The regenerated go
 | key | verdict | handling arm and proof |
 |---|---|---|
 | `type-single` | `search-incomplete` | `src/ir.rs::base_type_ref[if let Some\(value\) = schema\.bool_literal\(\) \{]`: `verified-seal`. |
-| `allof` | `search-incomplete` | `src/ir.rs::Builder::add_named[if schema\.explicitly_nullable\(\) \{]`: `nullable-store`. |
+| `allof` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]`: `nullable-store`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]`: `union-sample`. |
 | `allof` | `search-incomplete` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]`: `measurement-phase`. |
 | `enum` | `search-incomplete` | `src/ir.rs::EnumType::example_member[if let Some\(index\) = self\.members\.example \{]`: `measurement-phase`. |

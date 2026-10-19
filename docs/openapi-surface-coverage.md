@@ -2630,7 +2630,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
 The golden rows split in two. **412** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 122 unreached arms in all. By the verdict each arm's linked record states, 57 read `exhausted`, 28 read `search-incomplete`, 0 read `config-gated`, and 37 have no arm search.
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 123 unreached arms in all. By the verdict each arm's linked record states, 57 read `exhausted`, 26 read `search-incomplete`, 0 read `config-gated`, and 40 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources, or `not searched` where no arm
@@ -2751,26 +2751,27 @@ why. The changes that took the arm off:
 | 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"allOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"oneOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
 | 3 | `ref-pointer-composition-index` | `src/ir.rs::resolve_schema_pointer[^\s*"anyOf" => \{]` | 11 | `exhausted` | `ref-pointer-walk` |
-| 4 | `allof` | `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` | 2 | `not searched` — no arm search has run | — |
+| 4 | `allof` | `src/ir.rs::Builder::add_named_shape[if schema\.explicitly_nullable\(\) \{]` | 2 | `not searched` — no arm search has run | `nullable-store` |
 | 4 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `not searched` — no arm search has run | `union-sample` |
 | 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
 | 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
-| 5 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
-| 6 | `parameter-in-header` | `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]` | 1 | `search-incomplete` | `header-subset-string-default` |
-| 6 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
-| 6 | `parameter-in-header` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | 12 | `search-incomplete` | `observatory-client-headers` |
-| 7 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `not searched` — no arm search has run | `multipart-alias-object` |
-| 7 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `not searched` — no arm search has run | `multipart-json-module` |
-| 7 | `media-type-multipart` | `src/ir.rs::nullable_enum_part[    member$]` | 6 | `not searched` — no arm search has run | `transcript-format-part` |
-| 8 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
-| 8 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
-| 8 | `format-binary` | `src/ir.rs::hoist_form_object[if nullable_binary]` | 1 | `not searched` — no arm search has run | `multipart-nullable-array` |
-| 9 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
-| 9 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
-| 10 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
-| 10 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `search-incomplete` | `kitchen-nested-mapping-target` |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 30 | `not searched` — no arm search has run | — |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
+| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
+| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
+| 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
+| 6 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
+| 7 | `parameter-in-header` | `src/ir.rs::global_headers[Some\(default\) if count < total && py_type == HeaderType::Str => \{]` | 1 | `search-incomplete` | `header-subset-string-default` |
+| 7 | `parameter-in-header` | `src/ir.rs::header_py_type[=^\s*HeaderType::Date]` | 1 | `search-incomplete` | `observatory-client-date` |
+| 7 | `parameter-in-header` | `src/ir.rs::global_headers[for header in doc\.global_header_extensions]` | 12 | `search-incomplete` | `observatory-client-headers` |
+| 8 | `media-type-multipart` | `src/ir.rs::resolve_form_object_alias[=^ {8}resolved$]` | 1 | `not searched` — no arm search has run | `multipart-alias-object` |
+| 8 | `media-type-multipart` | `src/emit.rs::Imports::json_module[=^ {12}self\.json_module_alias = true;$]` | 1 | `not searched` — no arm search has run | `multipart-json-module` |
+| 8 | `media-type-multipart` | `src/ir.rs::nullable_enum_part[    member$]` | 6 | `not searched` — no arm search has run | `transcript-format-part` |
+| 9 | `format-binary` | `src/ir.rs::scalar_body[=Some\("binary"\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
+| 9 | `format-binary` | `src/emit.rs::build_example_inner[if s\.type_ref == TypeRef::Primitive\(Prim::Bytes\)]` | 2 | `not searched` — no arm search has run | `json-binary-path`, `json-request-shapes` |
+| 9 | `format-binary` | `src/ir.rs::hoist_form_object[if nullable_binary]` | 1 | `not searched` — no arm search has run | `multipart-nullable-array` |
+| 10 | `oneof` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | 2 | `search-incomplete` | `quiz-nullable-response-union` |
+| 10 | `oneof` | `src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]` | 10 | `search-incomplete` | `error-body-shapes` |
 | 11 | `oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `search-incomplete` | `nested-array-discriminated-unions` |
 | 11 | `oneof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | 10 | `search-incomplete` | `library-union-shared-fields` |
 | 12 | `anyof-discriminated-union` | `src/ir.rs::Builder::discriminated_union[if schema.discriminator.is_some\(\) && schema.one_of.is_none\(\) \{]` | 9 | `exhausted` | `nested-array-discriminated-unions` |
@@ -2790,13 +2791,13 @@ why. The changes that took the arm off:
 | 19 | `ref-pointer-nested-items` | `src/ir.rs::ref_to_class["items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 19 | `ref-pointer-nested-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 20 | `nullable` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | 2 | `search-incomplete` | `thermostat-nullable-member` |
-| 20 | `nullable` | `src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | 1 | `search-incomplete` | — |
+| 20 | `nullable` | `src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | 1 | `search-incomplete` | `pharmacy-nullable-scalar-unions` |
 | 21 | `format-byte` | `src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]` | 3 | `not searched` — no arm search has run | `sonar-packet-envelope` |
 | 21 | `format-byte` | `src/ir.rs::has_byte_text_response[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `byte-text-response`, `byte-text-response-controls` |
 | 22 | `array-item-oneof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
 | 23 | `array-item-anyof-discriminated-union` | `src/ir.rs::Builder::nested_array_element[^\s*\) \{$]` | 5 | `exhausted` | `nested-array-discriminated-unions` |
 | 24 | `anyof-oneof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-anyof-variants` |
-| 25 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | — |
+| 25 | `oneof-sole-non-null-member` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | 11 | `search-incomplete` | `harbor-nullable-inline-object` |
 | 26 | `additional-properties-schema` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 47 | `search-incomplete` | `survey-map-value-union` |
 | 27 | `anyof-map-variant-anyof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 47 | `search-incomplete` | `survey-map-value-union` |
 | 28 | `anyof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 47 | `search-incomplete` | `survey-map-value-union` |
@@ -2827,7 +2828,9 @@ why. The changes that took the arm off:
 | 53 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
 | 54 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 55 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 56 | `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
+| 56 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable |
+| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable; this arm renders that wrapper's worked example |
+| `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
 | 57 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `slashless-json-response` |
 | 58 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 59 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |
@@ -2878,18 +2881,14 @@ an `exhausted` reading would claim a search that never ran. Its record reads
 
 The search basis is the setting, then, not a census or an instrumented probe of
 every declarer. A hand-written cover cites a `config-gated` record the way it
-cites an `exhausted` one. `discriminator-mapping`'s
-[record](openapi-surface/golden-reach-witnesses/searches/discriminator-mapping.md)
-is the only one. Its arm runs only under an audience filter: since commit
-`63c6be587`, `collect_schema_refs` is called only from `filter_by_audience`. The
-fixture [`discriminator-mapping-audience`](openapi-surface/handwritten/discriminator-mapping-audience/)
-declares `audiences = ["public"]` and executes 9 of the arm's 9 regions with it
-and 0 without. Fern keeps the subtypes only the `mapping` names. The
-real-specification route stays open: a corpus row registered with an audience
-over a document that declares a `discriminator`. The verdict is the measured
-arm's alone. The key's two later union arms run with no setting, as
-`handwritten-reach.tsv` measures, so the arm table reads them
-`search-incomplete`, the verdict their covers cite.
+cites an `exhausted` one. No record reads `config-gated` today. The one that did,
+`discriminator-mapping`'s, was retired at the move to Fern CLI 5.163.1 with
+fern-python-sdk 5.41.3: its arm, `collect_schema_refs`'s `mapping` walk, ran only
+under an audience filter until the path-parameter rename that pair needed
+(`non_request_referenced_schemas`) began walking every document's components, and
+the reach ledger now measures it reached by registered goldens. Its fixture,
+`discriminator-mapping-audience`, was retired with it, since an audience setting
+is outside the certified defaults.
 
 **No arm rests on a disputed grant.** `ref-pointer-composition-index`'s
 `ref_to_class` pointer-walk site was reached only through corpus row 224,
