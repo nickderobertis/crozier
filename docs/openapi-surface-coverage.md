@@ -2630,7 +2630,7 @@ tree's document; each copy is its own declarer, named `<walk>:<path>`.
 
 <!-- BEGIN GENERATED ARM COUNTS: run `just golden-reach-arms` -->
 The golden rows split in two. **412** reach every handling site their
-[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 123 unreached arms in all. By the verdict each arm's linked record states, 57 read `exhausted`, 26 read `search-incomplete`, 0 read `config-gated`, and 40 have no arm search.
+[site table](openapi-surface/golden-reach-sites.tsv) declares, and **86** carry at least one handling site no golden-only witness executes: 123 unreached arms in all. By the verdict each arm's linked record states, 56 read `exhausted`, 27 read `search-incomplete`, 0 read `config-gated`, and 40 have no arm search.
 <!-- END GENERATED ARM COUNTS -->
 Every one is named below with the verdict its linked arm-search record
 states under Contract B's six declared sources, or `not searched` where no arm
@@ -2755,9 +2755,9 @@ why. The changes that took the arm off:
 | 4 | `allof` | `src/ir.rs::Builder::add_object[if let Some\(branches\) = &parent\.one_of \{]` | 19 | `not searched` — no arm search has run | `union-sample` |
 | 4 | `allof` | `src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]` | 7 | `not searched` — no arm search has run | `harbour-window`, `measurement-phase` |
 | 4 | `allof` | `src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]` | 1 | `not searched` — no arm search has run | `kiln-variant-trigger` |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 30 | `not searched` — no arm search has run | — |
-| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
-| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | 30 | `not searched` — no arm search has run | `kitchen-nested-mapping-target` |
+| 5 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | 20 | `not searched` — no arm search has run | — |
+| 5 | `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | 20 | `not searched` — no arm search has run | — |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = variant\.one_of\.as_ref\(\)\.or\(variant\.any_of\.as_ref\(\)\) \{]` | 67 | `exhausted` | `inline-oneof-variants` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]` | 5 | `exhausted` | `kiln-nested-reason` |
 | 6 | `oneof-anyof-variant` | `src/ir.rs::Builder::field_type_ref[=(?<=\.map\(\x7cvalues\x7c )\(items\x2c values\)]` | 2 | `exhausted` | `kiln-array-mode` |
@@ -2804,7 +2804,7 @@ why. The changes that took the arm off:
 | 29 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 47 | `search-incomplete` | `survey-map-value-union` |
 | 30 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 44 | `exhausted` | `inline-oneof-variants` |
 | 31 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `not searched` — no arm search has run | `ore-bin-screen` |
-| 32 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `exhausted` | `inline-oneof-variants` |
+| 32 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `search-incomplete` | `inline-oneof-variants` |
 | 33 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
 | 34 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
 | 35 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
@@ -2828,9 +2828,7 @@ why. The changes that took the arm off:
 | 53 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
 | 54 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 55 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 56 | `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable |
-| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable; this arm renders that wrapper's worked example |
-| `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
+| 56 | `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
 | 57 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `slashless-json-response` |
 | 58 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 59 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |
@@ -3079,33 +3077,31 @@ witnesses in corpus rows 301 (`ideaconsult-enanomapper`) and 302
 
 #### Golden rows resting only on residual goldens
 
-Three golden tests byte-compare their golden with a measured `unmatched`
-residual: `komga` (corpus row 130, 16 files), `short-io` (row 131, 60 files) and
-`webflow-v2` (row 132, 304 files). Each is a registered golden source, and every
-file of its golden outside that list is byte-compared. A row whose only
-golden-only witnesses are among the three is proven only where the code it emits
-sits in a byte-matched file, so
+Two golden tests byte-compare their golden with a measured `unmatched`
+residual: `komga` (corpus row 130, 16 files) and `webflow-v2` (row 132, 119
+files); `short-io` (row 131), the third until fern-python-sdk 5.41.3, now
+byte-matches whole. Each is a registered golden source, and every file of its
+golden outside that list is byte-compared. A row whose only golden-only
+witnesses are among the two is proven only where the code it emits sits in a
+byte-matched file, so
 [`residual-attribution.py`](../tools/surface-census/residual-attribution.py) (`just
 residual-attribution`) answers that from crozier itself: it renders the witness
 with the feature's declaring nodes perturbed, generates both documents, and
-splits the files that move by whether the golden test compares them. Four rows
-rest on those three alone. Three land in byte-matched files and stay proven,
-and one of them also moves a file its golden does not byte-match:
-`format-idn-hostname` moves `short-io`'s `reference.md`. That part is an open
-gap of its own, and the row's disposition is `split` — proven where its code
-lands in byte-matched files, unproven in the `unmatched` one named.
-`extension-server` rested on `webflow-v2` alone until corpus row 2800,
-`vocode-core`, gave it a byte-matched golden-only witness. One
-moves no generated file at all, so no byte-matched file vouches for it; it is an
-open gap, counted among the unproven, while the
-[category rules](#the-category-rules) still classify them `golden` because a
-registered golden source declares them.
+splits the files that move by whether the golden test compares them. Two rows
+rest on those two alone, both on `webflow-v2`. `boolean-schema-true` lands in
+byte-matched files and also moves three files its golden does not byte-match,
+so its disposition is `split` — proven where its code lands in byte-matched
+files, unproven in the `unmatched` ones named. `format-idn-hostname` and
+`format-iri` rested on `short-io` until it reached full parity, and
+`extension-server` on `webflow-v2` until corpus row 2800, `vocode-core`, gave it
+a byte-matched golden-only witness. `schema-example-null` moves no generated file
+at all, so no byte-matched file vouches for it; it is an open gap, counted among
+the unproven, while the [category rules](#the-category-rules) still classify it
+`golden` because a registered golden source declares it.
 
 | key | residual witness | files the feature moves | verdict |
 |---|---|---|---|
-| `format-idn-hostname` | `short-io` | `src/fern/domains/client.py`, `src/fern/domains/raw_client.py`; open gap: `reference.md`, which is `unmatched` | `split` |
-| `format-iri` | `short-io` | `src/fern/domains/types/get_api_domains_response_item.py`, `src/fern/domains/types/get_domains_domain_id_response.py`, `src/fern/domains/types/post_domains_response.py`, `src/fern/domains/types/post_domains_settings_domain_id_request_webhook_url.py` | `byte-matched` |
-| `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py` | `byte-matched` |
+| `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/__init__.py`, `src/fern/collections/fields/types/__init__.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py`; open gap: `src/fern/__init__.py`, `src/fern/collections/__init__.py`, `src/fern/collections/types/__init__.py`, which are `unmatched` | `split` |
 | `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
 
 ### The ranked `FIXTURE` backlog

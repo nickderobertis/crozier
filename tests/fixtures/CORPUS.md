@@ -658,9 +658,9 @@ accepted all six at `fernapi/fern-python-sdk:5.20.0`, so none took the
 | 127 | `torrentarr` | `media-type-range`, `duplicate-normalized-paths` | ✅ byte-matched, no generator change |
 | 128 | `agco-ats` | `duplicate-normalized-paths`, `duplicate-operation-id` | ✅ byte-matched after three repairs |
 | 129 | `svix-webhooks` | `duplicate-operation-id` | ✅ byte-matched after six repairs |
-| 130 | `komga` | `media-type-range` | ⚠️ registered with 25 of 338 files in `unmatched` (40 when batch 14 registered it, 31 until row 302's numbered-operationId repair) |
-| 131 | `short-io` | `duplicate-normalized-paths` | ⚠️ registered with 65 of 198 files in `unmatched` (77 when batch 14 registered it) |
-| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 305 of 1,495 files (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair, 306 until row 232's example-quoting repair) in `unmatched` and 148 crozier-only modules declared |
+| 130 | `komga` | `media-type-range` | ⚠️ registered with 16 of 338 files in `unmatched` at fern-python-sdk 5.41.3 (40 when batch 14 registered it, 31 until row 302's numbered-operationId repair, 25 before the move to 5.41.3) |
+| 131 | `short-io` | `duplicate-normalized-paths` | ✅ full byte parity at fern-python-sdk 5.41.3 (77 files in `unmatched` when batch 14 registered it, 61 before the move to 5.41.3) |
+| 132 | `webflow-v2` | `duplicate-operation-id` | ⚠️ registered with 119 of 1,501 files in `unmatched` and no crozier-only module at fern-python-sdk 5.41.3 (365 when batch 14 registered it, 364 until Batch 18's repairs, 312 until Batch 19's hoisted-map repair, 306 until row 232's example-quoting repair, 305 files and 148 crozier-only modules before the move to 5.41.3) |
 
 **What the three byte-matched rows cost.** AGCO: `float` joined
 `naming::is_reserved`'s builtin set; hoisted operation-scoped types are deduped by
@@ -683,12 +683,18 @@ from a sequence, with an explicit `properties: null` reading as the absent key.
 All are recorded in
 [`../../docs/matching.md`](../../docs/matching.md#documents-that-collide-with-themselves-issue-188).
 
-**Why the three residual rows are registered rather than dropped.** Fern accepted
+**Why the residual rows are registered rather than dropped.** Fern accepted
 each of them, so nothing removes them from the registration route; what they carry
 is crozier's own measured parity gap, enumerated file by file. Deleting the tree
 would have left no measured reason for the gap, which is the opposite of what this
 backlog is for. Each residual is a distinct body of work, named here so the next
 change has an exact set to shorten:
+
+The three bullets record the residuals as they stood before the move to
+fern-python-sdk 5.41.3 (CLI 5.163.1). At that pair `short-io` byte-matches whole,
+`komga`'s `unmatched` holds 16 files and `webflow-v2`'s 119, with no crozier-only
+module; `crates/crozier-e2e/tests/e2e.rs` names each file.
+
 
 - **`komga` (25 files, 40 when this batch registered it, 31 until row 302's numbered-operationId repair joined `getGenres_1` into `get_genres1`).** Binary/streaming responses. Fern makes **30**
   `httpx_client.stream(...)` calls returning `typing.Iterator[bytes]` under a

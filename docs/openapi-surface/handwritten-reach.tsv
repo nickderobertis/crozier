@@ -6,7 +6,6 @@ buoy-depth-response	response-description	src/emit.rs::push_return_doc[=None => \
 byte-text-response	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 byte-text-response-controls	format-byte	src/ir.rs::has_byte_text_response[=^ {16}return true;$]	1	1
 composition-index-pointer	ref-pointer-composition-index	src/ir.rs::ref_to_class[while index < parts.len\(\) \{]	8	19
-discriminator-mapping-audience	discriminator-mapping	src/openapi.rs::collect_schema_refs[if let Some\(disc\) = &schema\.discriminator \{]	9	9
 error-body-shapes	oneof	src/ir.rs::hoist_error_body_types[if schema\.discriminator\.is_some\(\)]	10	10
 event-stream-event-dispatch	media-type-event-stream	src/emit.rs::raw_stream_method[StreamProtocol::Sse \{ terminator, events \} if !events\.is_empty\(\) => \{]	41	41
 event-stream-event-dispatch	media-type-event-stream	src/ir.rs::sse_event_dispatch[if !discriminator\.mapping\.is_empty\(\) \{]	9	9
@@ -57,8 +56,7 @@ kiln-array-mode	oneof-anyof-variant	src/ir.rs::Builder::field_type_ref[=(?<=\.ma
 kiln-form-mode	media-type-form-urlencoded	src/ir.rs::hoist_form_object[=field.type_ref.clone\(\)]	2	2
 kiln-nested-reason	oneof-anyof-variant	src/ir.rs::InlineHoister::prop_type_ref[=return self.prop_type_ref\(parent\x2c prop\x2c &union\);]	5	5
 kiln-variant-trigger	allof	src/ir.rs::InlineHoister::prop_type_ref[=^ {12}return TypeRef::Named\(ref_to_class\(reference\)\);]	1	1
-kitchen-nested-mapping-target	discriminator-mapping	src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]	0	20
-kitchen-nested-mapping-target	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if union_target \{]	0	20
+kitchen-nested-mapping-target	discriminator-mapping	src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]	30	30
 library-union-shared-fields	oneof-discriminated-union	src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]	10	10
 meadow-tag-code	format-uuid	src/ir.rs::scalar_body[=Some\("uuid" \x7c "byte"\)]	2	3
 measurement-phase	allof	src/ir.rs::Builder::field_type_ref[if let Some\(declaration\) = scalar_narrowed_enum_type\(]	7	7
