@@ -266,7 +266,7 @@ fn initializer(field: &Field) -> Option<String> {
         return None;
     }
     match &field.type_ref {
-        TypeRef::Literal(values) if values.len() == 1 => Some(format!("\"{}\"", values[0])),
+        TypeRef::Literal(values) if values.len() == 1 => Some(py_double_quoted(&values[0])),
         TypeRef::Primitive(Prim::LiteralBool(value)) => {
             Some(if *value { "True" } else { "False" }.to_string())
         }
@@ -305,6 +305,26 @@ pub(super) fn py_repr(value: &str) -> String {
         }
     }
     out.push(quote);
+    out
+}
+
+/// A double-quoted Python string literal of `value`, the spelling Fern gives a
+/// literal's initializer, with its quotes, backslashes and controls escaped.
+fn py_double_quoted(value: &str) -> String {
+    let mut out = String::with_capacity(value.len() + 2);
+    out.push('"');
+    for c in value.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '"' => out.push_str("\\\""),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c.is_control() => out.push_str(&format!("\\u{:04x}", u32::from(c))),
+            c => out.push(c),
+        }
+    }
+    out.push('"');
     out
 }
 
@@ -865,7 +885,8 @@ impl<'a> XmlModel<'a> {
             },
             Some(&|w: &mut Writer| {
                 w.write(&format!(
-                    "Serializes this object as a `<{name}>` XML element, prefixed with the XML declaration unless `xml_declaration` is False."
+                    "Serializes this object as a `<{}>` XML element, prefixed with the XML declaration unless `xml_declaration` is False.",
+                    escape_docstring(&name)
                 ));
             }),
             &body,
@@ -1188,7 +1209,8 @@ impl<'a> XmlModel<'a> {
             },
             Some(&|w: &mut Writer| {
                 w.write(&format!(
-                    "Parses a `<{name}>` XML element from a document string or a parsed node.\n\nRaises `ValueError` for malformed XML, an unexpected root element or invalid values. Unknown attributes are kept as extra attributes; text segments and child elements (declared or not) are preserved in document order."
+                    "Parses a `<{}>` XML element from a document string or a parsed node.\n\nRaises `ValueError` for malformed XML, an unexpected root element or invalid values. Unknown attributes are kept as extra attributes; text segments and child elements (declared or not) are preserved in document order.",
+                    escape_docstring(&name)
                 ));
             }),
             &body,
@@ -2004,7 +2026,7 @@ fn namespace_declaration(xml: &XmlEncoding) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{py_repr, set_literal, Writer};
+    use super::{py_double_quoted, py_repr, set_literal, Writer};
 
     /// Every file the generator writes for `document`, formatted, keyed by path.
     fn generate(document: serde_json::Value) -> std::collections::BTreeMap<String, String> {
@@ -2278,6 +2300,31 @@ mod tests {
         assert_eq!(
             set_literal(&["b".to_string(), "a".to_string(), "b".to_string()]),
             "{'b', 'a'}"
+        );
+    }
+
+    #[test]
+    fn a_literal_initializer_escapes_its_quotes_backslashes_and_controls() {
+        assert_eq!(py_double_quoted("pet"), "\"pet\"");
+        assert_eq!(
+            py_double_quoted("say \"hi\"\\ok\n"),
+            "\"say \\\"hi\\\"\\\\ok\\n\""
+        );
+    }
+
+    /// An element name a document spells with Python's docstring quote still
+    /// generates valid Python: the serializer's and parser's docstrings escape it.
+    #[test]
+    fn a_triple_quote_in_an_xml_name_stays_inside_the_docstrings() {
+        let files = generate(document(serde_json::json!({
+            "Pet": {"type": "object", "xml": {"name": "pet\"\"\"x"},
+                "properties": {"id": {"type": "integer", "xml": {"attribute": true}}}}
+        })));
+        let pet = &files["src/zoo/types/pet.py"];
+        assert_eq!(
+            pet.matches("`<pet\\\"\"\"x>` XML element").count(),
+            2,
+            "{pet}"
         );
     }
 
