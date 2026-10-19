@@ -28,7 +28,7 @@ response-description	response.description	src/ir.rs::success_response_doc,src/em
 response-headers	response.headers	none	
 response-content	response.content	src/ir.rs::success_response_schema,src/ir.rs::error_body_type,src/openapi.rs::response_schemas,src/ir.rs::hoist_error_body_types[=\.map\(\x7c\(_\x2c media\)\x7c media\)]	—
 response-links	response.links	none	
-components-responses	components.responses	src/openapi.rs::resolve_response,src/openapi.rs::normalize_responses,src/ir.rs::error_body_type[Some\(schema\) if is_inline_struct\(schema\) =>]	
+components-responses	components.responses	src/openapi.rs::resolve_response,src/openapi.rs::normalize_responses,src/ir.rs::error_body_type[=Some\(schema\) if is_inline_struct\(schema\) =>]	
 link-operation-ref	link.operationRef	none	
 link-operation-id	link.operationId	none	
 link-parameters	link.parameters	none	
