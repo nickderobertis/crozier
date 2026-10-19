@@ -1174,11 +1174,6 @@ docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-e
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/discriminated-variant-date-value-snippet/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	36	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	37	sdk-identity-header-prefix
-docs/openapi-surface/handwritten/discriminator-mapping-audience/fern-expected	src/fern/core/client_wrapper.py	38	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/__init__.py	12	init-type-checking-import-order
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	34	sdk-identity-header-prefix
 docs/openapi-surface/handwritten/dock-yard-bookings/fern-expected	src/fern/core/client_wrapper.py	35	sdk-identity-header-prefix
