@@ -260,6 +260,31 @@ class CheckTests(unittest.TestCase):
                 "lint-certified-pair target must run",
             ),
             ("no definition", probe, delegated, "is no readable project definition"),
+            (
+                "options no object",
+                {
+                    **probe,
+                    f"{delegated}/project.json": json.dumps({"targets": {"lint-certified-pair": {"options": []}}}),
+                },
+                delegated,
+                "lint-certified-pair target must run",
+            ),
+            (
+                "dependsOn a string",
+                {
+                    **probe,
+                    f"{delegated}/project.json": json.dumps(
+                        {
+                            "targets": {
+                                **json.loads(wired(delegated))["targets"],
+                                "lint": {"dependsOn": "lint-certified-pair"},
+                            }
+                        }
+                    ),
+                },
+                delegated,
+                "lint target must depend on lint-certified-pair",
+            ),
         )
         for label, files, within, message in cases:
             with self.subTest(label):

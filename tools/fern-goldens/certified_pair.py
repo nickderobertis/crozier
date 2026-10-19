@@ -192,10 +192,12 @@ def wiring_failures(root: Path, within: str) -> list[str]:
     if not isinstance(targets, dict):
         return [f"{path} declares no targets; restore it with git checkout -- {path}"]
     target, lint = targets.get("lint-certified-pair"), targets.get("lint")
+    options = target.get("options") if isinstance(target, dict) else None
+    depends = lint.get("dependsOn") if isinstance(lint, dict) else None
     wrong = []
-    if not isinstance(target, dict) or (target.get("options") or {}).get("command") != command:
+    if not isinstance(options, dict) or options.get("command") != command:
         wrong.append(f"{path}'s lint-certified-pair target must run `{command}`")
-    if not isinstance(lint, dict) or "lint-certified-pair" not in (lint.get("dependsOn") or []):
+    if not isinstance(depends, list) or "lint-certified-pair" not in depends:
         wrong.append(f"{path}'s lint target must depend on lint-certified-pair")
     return wrong
 

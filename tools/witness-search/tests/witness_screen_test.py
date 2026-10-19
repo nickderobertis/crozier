@@ -1162,6 +1162,23 @@ class HistoricalPairTests(unittest.TestCase):
                 self.assertNotIn("Traceback", refused.stderr)
                 # The readable ledger, sorted before it, is not labelled either.
                 self.assertEqual(before, self.screens().read_bytes())
+        # A label already there is held as `--check` holds it, never passed over.
+        (other / "screens.jsonl").unlink()
+        [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        for label, labelled_row, message in (
+            ("on the current pair", {**row, SCREEN.HISTORICAL_PAIR: "measured at some pair"}, None),
+            (
+                "with no record",
+                {k: v for k, v in row.items() if k != "measured"} | {SCREEN.HISTORICAL_PAIR: "x"},
+                "with no measured record",
+            ),
+        ):
+            with self.subTest(label):
+                self.screens().write_text(json.dumps(labelled_row) + "\n", encoding="utf-8", newline="\n")
+                refused = self.run_stage(REPO, "historical", "--evidence-root", str(self.surface))
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message or "a current measurement is never history", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
 
     def test_the_index_reads_a_labelled_screen_as_history_of_its_pair(self) -> None:
         row = {

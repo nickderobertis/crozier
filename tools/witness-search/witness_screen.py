@@ -45,8 +45,8 @@ refused to file (an unknown key, a path outside the repository, a record that
 is not whole, a success claim the outcomes do not support, a Fern timeout); 2
 on a usage error. `historical` exits 0 when every committed screen it read is
 labelled where it owes one (printing how many it labelled, or nothing), 1 when
-the evidence root is no directory or a ledger line is no JSON object, writing
-nothing, and 2 on a usage error.
+the evidence root is no directory, a ledger line is no JSON object, or a label
+already there does not hold, writing nothing, and 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -1245,8 +1245,17 @@ def label_historical(root: Path) -> int:
                 row = error
             if not isinstance(row, dict):
                 fail(f"{screens}:{number + 1} is no JSON object; restore it from git (`git checkout -- {screens}`)")
+            if HISTORICAL_PAIR in row:
+                if unmeasured(row):
+                    fail(
+                        f"{screens}:{number + 1} carries `{HISTORICAL_PAIR}` with no measured record; restore it from git"
+                    )
+                _held, wrong = historical_pair_failures(row)
+                if wrong:
+                    fail(f"{screens}:{number + 1}: " + "; ".join(wrong))
+                continue
             recorded = recorded_pins(row.get("measured"))
-            if HISTORICAL_PAIR in row or recorded is None or recorded == pins:
+            if recorded is None or recorded == pins:
                 continue
             row[HISTORICAL_PAIR] = historical_pair_label(recorded)
             lines[number] = json.dumps(row, sort_keys=True) + "\n"
