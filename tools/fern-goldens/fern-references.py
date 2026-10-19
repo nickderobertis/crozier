@@ -299,6 +299,16 @@ def rewrite_evidence(path: Path, pair: Pair, digest: str) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+def restate_evidence_note(path: Path, pair: Pair, digest: str) -> None:
+    """Restate a measurement case's `evidence.md` provenance: the pair that
+    generated its tree and the tree's `Canonical tree SHA-256`."""
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(r"Fern CLI [0-9]+\.[0-9]+\.[0-9]+", f"Fern CLI {pair.cli}", text)
+    text = re.sub(r"(fernapi/fern-python-sdk`?:? )[0-9]+\.[0-9]+\.[0-9]+", rf"\g<1>{pair.generator}", text)
+    text = re.sub(r"(Canonical tree SHA-256: `)[0-9a-f]{64}(`)", rf"\g<1>{digest}\g<2>", text)
+    path.write_text(text, encoding="utf-8", newline="\n")
+
+
 def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     lines = (ROOT / path).read_text(encoding="utf-8").splitlines()
     if not lines or tuple(lines[0].split("\t")) != header:
@@ -476,6 +486,9 @@ def generate_measurement(item: str, pair: Pair) -> None:
     evidence = destination.parent / "evidence.toml"
     if evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8"):
         rewrite_evidence(evidence, pair, contract_digest(destination))
+    note = destination.parent / "evidence.md"
+    if note.is_file():
+        restate_evidence_note(note, pair, contract_digest(destination))
 
 
 def manifest_rows() -> list[dict[str, str]]:

@@ -217,9 +217,17 @@ class FernReferencesTests(unittest.TestCase):
             "case\tdocument\tenum_type\tlayout\toverlay\n"
             "clients/delta-flat\tdocs/fern-measurements/clients/delta/openapi.yml\tpython-enums\tflat\t-\n",
         )
+        self.write(
+            "docs/fern-measurements/clients/delta-flat/evidence.md",
+            f"Fern CLI {OLD} with fernapi/fern-python-sdk {OLD}.\n\nCanonical tree SHA-256: `{'0' * 64}`\n",
+        )
         result = self.run_tool("generate", "measurements", "clients/delta-flat")
         self.assertEqual(result.returncode, 0, result.stderr)
         tree = self.root / "docs/fern-measurements/clients/delta-flat/fern-expected"
+        self.assertEqual(
+            (tree.parent / "evidence.md").read_text(encoding="utf-8"),
+            f"Fern CLI {CLI} with fernapi/fern-python-sdk {SDK}.\n\nCanonical tree SHA-256: `{tree_digest(tree)}`\n",
+        )
         self.assertTrue((tree / "client.py").is_file())
         self.assertFalse((tree / "src").exists())
         (call,) = self.calls()
