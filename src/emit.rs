@@ -6052,10 +6052,23 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                     }
                     continue;
                 }
+                let repeated =
+                    form.multipart && !f.is_file && !f.form_json && is_list_type(&f.type_ref);
                 let value = if f.form_json {
                     let module = imports.json_module(json_shadowed);
                     imports.add_core("jsonable_encoder", "jsonable_encoder");
                     let encoded = format!("{module}.dumps(jsonable_encoder({}))", f.py_name);
+                    if f.optional {
+                        format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
+                    } else {
+                        encoded
+                    }
+                } else if repeated {
+                    // A list of form primitives (the IR leaves it out of
+                    // `form_json`) is passed through `jsonable_encoder` alone, so
+                    // httpx repeats the field per item.
+                    imports.add_core("jsonable_encoder", "jsonable_encoder");
+                    let encoded = format!("jsonable_encoder({})", f.py_name);
                     if f.optional {
                         format!("{encoded} if {} is not OMIT else OMIT", f.py_name)
                     } else {
@@ -6067,7 +6080,7 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
                 // A form field whose type is a named model serializes through the
                 // annotation converter, exactly as the same field would in a JSON
                 // body (`mosip-esignet`'s urlencoded `claims`, a `$ref` to `Claim`).
-                let entry = if f.convert && !f.is_file && !f.form_json {
+                let entry = if f.convert && !f.is_file && !f.form_json && !repeated {
                     imports.add_core("serialization", "convert_and_respect_annotation_metadata");
                     let annotation_type = if f.nullable {
                         TypeRef::Optional(Box::new(f.type_ref.clone()))
@@ -6118,6 +6131,13 @@ fn append_request_call_args(lines: &mut Vec<String>, ep: &Endpoint, imports: &mu
         }
     }
 
+    fn is_list_type(t: &TypeRef) -> bool {
+        match t {
+            TypeRef::List(_) | TypeRef::Set(_) => true,
+            TypeRef::Optional(inner) => is_list_type(inner),
+            _ => false,
+        }
+    }
     fn type_serializes_as(t: &TypeRef, primitive: Prim) -> bool {
         match t {
             TypeRef::Primitive(value) => *value == primitive,
@@ -6521,7 +6541,15 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
             imports.add_core("http_sse._api", "EventSource");
             imports.add_core("pydantic_utilities", "parse_obj_as");
             // Each event's `event` field picks the model its JSON `data` parses
-            // as; an event no branch names is skipped.
+            // as; an event no branch names is skipped. Like the single-model
+            // arm below, an event with empty `data` (a comment- or retry-only
+            // frame) is skipped before any parse — measured at
+            // fern-python-sdk 5.41.3 (exa-gate, torrentarr, truefoundry-trueforge).
+            // Every dispatched model is `{event, data}` (see
+            // `sse_event_dispatch`), which 5.41.3 reads as the SSE envelope
+            // itself — `data` plus at most `id` and `retry` beside the
+            // discriminant — so it parses `{"data": …}` rather than the bare
+            // payload (the hand-written `event-stream-event-dispatch` fixture).
             let branches: Vec<String> = events
                 .iter()
                 .enumerate()
@@ -6536,7 +6564,7 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                                             {model},
                                             parse_obj_as(
                                                 type_={model},
-                                                object_=json.loads(_sse.data),
+                                                object_={{\"data\": json.loads(_sse.data)}},
                                             ),
                                         )
                                     except Exception as e:
@@ -6549,6 +6577,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                             {for_kw} _sse in _event_source.{iter_sse}():
                                 if _sse.data == {end}:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
 {branches}",
                 end = sse_end(terminator.as_deref()),
                 branches = branches.join("\n"),
@@ -6565,6 +6595,8 @@ fn raw_stream_method(ep: &Endpoint, is_async: bool, imports: &mut Imports) -> St
                             {for_kw} _sse in _event_source.{iter_sse}():
                                 if _sse.data == {end}:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         {chunk},
@@ -17115,5 +17147,260 @@ mod parameter_lowering_tests {
                 "{doc}: {text}"
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod wire_tests {
+    //! How a method builds its request and reads its response, measured at
+    //! fern-python-sdk 5.41.3, each rule driven through the whole generator.
+    use serde_json::{json, Value};
+
+    /// Every file the generator writes for `document` in `layout`, keyed by path.
+    fn files_in(
+        document: Value,
+        layout: crate::settings::Layout,
+    ) -> std::collections::BTreeMap<String, String> {
+        let doc: crate::openapi::OpenApi =
+            serde_json::from_value(document).expect("document deserializes");
+        let mut config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .expect("the config is well formed");
+        config.layout = layout;
+        super::generate(&crate::ir::build(&doc, &config))
+            .expect("the document generates")
+            .into_iter()
+            .map(|file| {
+                (
+                    file.path.to_string_lossy().replace('\\', "/"),
+                    file.contents,
+                )
+            })
+            .collect()
+    }
+
+    fn files(document: Value) -> std::collections::BTreeMap<String, String> {
+        files_in(document, crate::settings::Layout::default())
+    }
+
+    fn raw_client(files: &std::collections::BTreeMap<String, String>, module: &str) -> String {
+        files
+            .iter()
+            .find(|(path, _)| path.ends_with(&format!("{module}/raw_client.py")))
+            .map(|(_, contents)| contents.clone())
+            .unwrap_or_else(|| panic!("no {module}/raw_client.py in {:?}", files.keys()))
+    }
+
+    #[test]
+    fn an_sse_stream_skips_events_with_empty_data() {
+        let tick = json!({"type": "object", "properties": {"n": {"type": "integer"}}});
+        let generated = files(json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {"/ticks": {"get": {
+                "operationId": "stream", "tags": ["ticks"],
+                "responses": {"200": {"description": "ok",
+                    "content": {"text/event-stream": {"schema": {"$ref": "#/components/schemas/Tick"}}}}}
+            }}},
+            "components": {"schemas": {"Tick": tick}}
+        }));
+        let raw = raw_client(&generated, "ticks");
+        let skip = "if _sse.data == None:\n                                    return\n                                if len(_sse.data) == 0:\n                                    continue\n";
+        // Once in the sync method, once in the async one.
+        assert_eq!(raw.matches(skip).count(), 2, "{raw}");
+    }
+
+    #[test]
+    fn an_event_dispatched_stream_parses_each_event_as_its_envelope() {
+        let event = |name: &str| {
+            json!({"type": "object", "required": ["event", "data"], "properties": {
+                "event": {"type": "string", "enum": [name]},
+                "data": {"type": "object", "properties": {"n": {"type": "integer"}}}
+            }})
+        };
+        let generated = files(json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {"/ticks": {"get": {
+                "operationId": "stream", "tags": ["ticks"],
+                "responses": {"200": {"description": "ok",
+                    "content": {"text/event-stream": {"schema": {"$ref": "#/components/schemas/Change"}}}}}
+            }}},
+            "components": {"schemas": {
+                "Change": {
+                    "oneOf": [
+                        {"$ref": "#/components/schemas/Opened"},
+                        {"$ref": "#/components/schemas/Closed"}
+                    ],
+                    "discriminator": {"propertyName": "event"}
+                },
+                "Opened": event("opened"),
+                "Closed": event("closed")
+            }}
+        }));
+        let raw = raw_client(&generated, "ticks");
+        for model in ["Opened", "Closed"] {
+            let parse = format!(
+                "type_={model},\n                                                object_={{\"data\": json.loads(_sse.data)}},"
+            );
+            assert_eq!(raw.matches(&parse).count(), 2, "{model}: {raw}");
+        }
+        assert_eq!(raw.matches("if len(_sse.data) == 0:").count(), 2, "{raw}");
+    }
+
+    #[test]
+    fn a_multipart_list_of_primitives_repeats_its_field_and_other_lists_stay_json() {
+        let generated = files(json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {"/files": {"post": {
+                "operationId": "upload", "tags": ["files"],
+                "requestBody": {"content": {"multipart/form-data": {"schema": {
+                    "type": "object",
+                    "required": ["file", "labels"],
+                    "properties": {
+                        "file": {"type": "string", "format": "binary"},
+                        "labels": {"type": "array", "items": {"type": "string"}},
+                        "read": {"type": "array", "items": {"type": "string"}},
+                        "kinds": {"type": "array", "items": {"$ref": "#/components/schemas/Kind"}},
+                        "ids": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+                        "points": {"type": "array", "items": {"type": "object",
+                            "properties": {"x": {"type": "integer"}}}}
+                    }
+                }}}},
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "components": {"schemas": {"Kind": {"type": "string", "enum": ["a", "b"]}}}
+        }));
+        let raw = raw_client(&generated, "files");
+        assert!(
+            raw.contains("\"labels\": jsonable_encoder(labels),\n"),
+            "{raw}"
+        );
+        for name in ["read", "kinds"] {
+            assert!(
+                raw.contains(&format!(
+                    "\"{name}\": jsonable_encoder({name}) if {name} is not OMIT else OMIT,\n"
+                )),
+                "{name}: {raw}"
+            );
+        }
+        for name in ["ids", "points"] {
+            assert!(
+                raw.contains(&format!(
+                    "\"{name}\": json.dumps(jsonable_encoder({name})) if {name} is not OMIT else OMIT,\n"
+                )),
+                "{name}: {raw}"
+            );
+        }
+    }
+
+    /// A `PATCH /folders/{id}` whose `$ref` body declares an `id` of its own.
+    fn folder_document(body_also_returned: bool, read_only_id: bool) -> Value {
+        let mut id = json!({"type": "string"});
+        if read_only_id {
+            id["readOnly"] = json!(true);
+        }
+        let response = if body_also_returned {
+            json!({"200": {"description": "ok", "content": {"application/json": {
+                "schema": {"$ref": "#/components/schemas/Folder"}}}}})
+        } else {
+            json!({"204": {"description": "ok"}})
+        };
+        json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {"/folders/{id}": {"patch": {
+                "operationId": "update", "tags": ["folders"],
+                "parameters": [{"name": "id", "in": "path", "required": true,
+                    "schema": {"type": "string"}}],
+                "requestBody": {"required": true, "content": {"application/json": {
+                    "schema": {"$ref": "#/components/schemas/Folder"}}}},
+                "responses": response
+            }}},
+            "components": {"schemas": {"Folder": {"type": "object", "properties": {
+                "id": id, "name": {"type": "string"}}}}}
+        })
+    }
+
+    #[test]
+    fn a_path_parameter_a_request_only_body_property_claims_is_renamed() {
+        // A body schema only a request references claims its property names,
+        // `readOnly` ones included, so the path parameter becomes `id_path_param`.
+        for read_only in [true, false] {
+            let raw = raw_client(&files(folder_document(false, read_only)), "folders");
+            assert!(raw.contains("id_path_param: str,"), "{raw}");
+            assert!(
+                raw.contains("f\"folders/{encode_path_param(id_path_param)}\""),
+                "{raw}"
+            );
+        }
+        // A body schema a response also returns claims only `body`: the
+        // parameter keeps its name, and the generator's own collision rule
+        // suffixes it when the body sends an `id` argument too.
+        let raw = raw_client(&files(folder_document(true, false)), "folders");
+        assert!(raw.contains("id_: str,"), "{raw}");
+        assert!(!raw.contains("id_path_param"), "{raw}");
+        // So does one that is the body of a second operation.
+        let mut shared = folder_document(false, false);
+        shared["paths"]["/folders"] = json!({"post": {
+            "operationId": "create", "tags": ["folders"],
+            "requestBody": {"required": true, "content": {"application/json": {
+                "schema": {"$ref": "#/components/schemas/Folder"}}}},
+            "responses": {"204": {"description": "ok"}}
+        }});
+        let raw = raw_client(&files(shared), "folders");
+        assert!(raw.contains("id_: str,"), "{raw}");
+        assert!(!raw.contains("id_path_param"), "{raw}");
+    }
+
+    #[test]
+    fn a_path_parameter_a_query_parameter_shares_a_name_with_is_renamed() {
+        let generated = files(json!({
+            "openapi": "3.0.3",
+            "info": {"title": "t", "version": "1"},
+            "paths": {"/items/{kind}": {"get": {
+                "operationId": "list", "tags": ["items"],
+                "parameters": [
+                    {"name": "kind", "in": "path", "required": true, "schema": {"type": "string"}},
+                    {"name": "kind", "in": "query", "schema": {"type": "string"}}
+                ],
+                "responses": {"204": {"description": "ok"}}
+            }}}
+        }));
+        let raw = raw_client(&generated, "items");
+        assert!(raw.contains("kind_path_param: str,"), "{raw}");
+    }
+
+    #[test]
+    fn the_flat_layout_pages_like_the_packaged_one() {
+        let page = json!({"type": "object", "properties": {
+            "items": {"type": "array", "items": {"type": "string"}},
+            "next": {"type": "string"}}});
+        let generated = files_in(
+            json!({
+                "openapi": "3.0.3",
+                "info": {"title": "t", "version": "1"},
+                "paths": {"/items": {"get": {
+                    "operationId": "list", "tags": ["items"],
+                    "parameters": [{"name": "cursor", "in": "query", "schema": {"type": "string"}}],
+                    "x-fern-pagination": {"cursor": "$request.cursor",
+                        "next_cursor": "$response.next", "results": "$response.items"},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {
+                        "schema": {"$ref": "#/components/schemas/Page"}}}}}
+                }}},
+                "components": {"schemas": {"Page": page}}
+            }),
+            crate::settings::Layout::Flat,
+        );
+        let raw = raw_client(&generated, "items");
+        assert!(raw.contains("SyncPager["), "{raw}");
     }
 }

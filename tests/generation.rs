@@ -4172,10 +4172,14 @@ paths:
     assert!(
         raw.contains(
             r#""payload": json.dumps(jsonable_encoder(payload)) if payload is not OMIT else OMIT"#
-        ) && raw.contains(
-            r#""labels": json.dumps(jsonable_encoder(labels)) if labels is not OMIT else OMIT"#
         ),
-        "unknown and collection form values must be JSON encoded: {raw}"
+        "unknown form values must be JSON encoded: {raw}"
+    );
+    // A list of primitives is handed to httpx as the list itself, so the field
+    // repeats per item (fern-python-sdk 5.41.3).
+    assert!(
+        raw.contains(r#""labels": jsonable_encoder(labels) if labels is not OMIT else OMIT"#),
+        "a primitive list form value must repeat its field: {raw}"
     );
     assert!(
         raw.contains(r#""note": note"#),
@@ -15602,7 +15606,8 @@ fn an_event_discriminated_stream_dispatches_on_the_sse_event() {
     let departed = raw.find(r#"elif _sse.event == "departed":"#).expect(raw);
     assert!(arrived < departed, "{raw}");
     assert!(
-        raw.contains("type_=Departure,") && raw.contains("object_=json.loads(_sse.data),"),
+        raw.contains("type_=Departure,")
+            && raw.contains(r#"object_={"data": json.loads(_sse.data)},"#),
         "{raw}"
     );
     assert!(raw.contains("Failed to parse SSE event 'arrived'"), "{raw}");

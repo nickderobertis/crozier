@@ -2895,15 +2895,9 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
         }
     }
 
-    // Fern's flat tree is its token-less local run, which writes the pagination
-    // runtime and its exports but returns each paginated method's page model
-    // rather than a pager: the operation keeps only the mark that it declared a
-    // contract.
-    if config.layout == crate::settings::Layout::Flat {
-        for ep in &mut endpoints {
-            ep.extensions.pagination_declared = ep.pagination.take().is_some();
-        }
-    }
+    // The flat tree pages exactly as the packaged one does: measured at
+    // fern-python-sdk 5.41.3, TrueForge's flat golden returns a `SyncPager` from
+    // each cursor-paginated method, where 5.20.0's returned the page model.
 
     // A literal enum is a plain string at runtime: Fern serializes an enum
     // header with `str(..)` rather than `.value`, and examples an enum value as
@@ -4143,6 +4137,21 @@ fn build_endpoint(
             decl,
         });
     }
+
+    // Fern's OpenAPI importer renames a path parameter whose name another of the
+    // operation's arguments already claims to `{name}PathParam` before the SDK
+    // generator sees it — measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    // (Apideck File Storage's `PATCH /file-storage/folders/{id}` takes
+    // `id_path_param`: its request-only `UpdateFolderRequest` declares a
+    // `readOnly` `id` the method then drops).
+    rename_claimed_path_params(
+        doc,
+        op,
+        &mut path_params,
+        &query_params,
+        &header_params,
+        request_body.as_ref(),
+    );
 
     // Resolve Python argument-name collisions across parameter locations and an
     // inlined body. Path params get the historical trailing `_`; body fields that
@@ -8471,6 +8480,256 @@ fn nullable_enum_part(schema: &Schema, schemas: Option<&IndexMap<String, Schema>
         .is_some_and(|target| string_enum_values(target).is_some())
 }
 
+/// Rename each path parameter whose name a query parameter, a header or a
+/// request-body property also claims, the way Fern's importer does: to
+/// `{name}PathParam` (then `{name}PathParam2`, …), unless the parameter carries
+/// its own SDK name. A JSON or urlencoded body claims its properties (and its
+/// `allOf` members') only when it is an object the importer can inline — an
+/// inline schema, or a `$ref` nothing but a request body references; any other
+/// body claims the name `body`. A multipart body always claims its properties.
+fn rename_claimed_path_params(
+    doc: &OpenApi,
+    op: &Operation,
+    path_params: &mut [PathParam],
+    query_params: &[QueryParam],
+    header_params: &[HeaderParam],
+    request_body: Option<&RequestBody>,
+) {
+    let declared: Vec<&crate::openapi::Parameter> = op
+        .parameters
+        .iter()
+        .filter(|p| p.location == Some(ParameterLocation::Path))
+        .collect();
+    let mut claimed: std::collections::HashSet<String> = op
+        .parameters
+        .iter()
+        .filter_map(|p| match p.location {
+            Some(ParameterLocation::Query) => Some(p.name.clone()),
+            Some(ParameterLocation::Header) => Some(p.sdk_name().to_string()),
+            _ => None,
+        })
+        .collect();
+    // Only the parameters the method keeps can claim a name.
+    claimed.retain(|name| {
+        query_params.iter().any(|q| q.wire_name == *name)
+            || header_params
+                .iter()
+                .any(|h| h.wire_name == *name || h.py_name == naming::field_name(name))
+    });
+    if let Some(body) = op.request_body.as_ref().filter(|_| request_body.is_some()) {
+        let schemas = &doc.components.schemas;
+        let media = |kind: &str| {
+            body.content
+                .get(kind)
+                .and_then(|media| media.schema.as_ref())
+        };
+        match request_body {
+            Some(RequestBody::Form(form)) if form.multipart => {
+                if let Some(schema) = media("multipart/form-data") {
+                    claimed_property_names(
+                        resolve_multipart_ref(schema, Some(schemas)),
+                        schemas,
+                        &mut claimed,
+                        0,
+                    );
+                }
+            }
+            Some(RequestBody::Bytes { .. }) | None => {}
+            Some(_) => {
+                let schema = selected_json_request_media(body)
+                    .and_then(|(_, media)| media.schema.as_ref())
+                    .or_else(|| media("application/x-www-form-urlencoded"));
+                if let Some(schema) = schema {
+                    let resolved = resolve_multipart_ref(schema, Some(schemas));
+                    let mut properties = std::collections::HashSet::new();
+                    if is_object_type(resolved) || resolved.all_of.is_some() {
+                        claimed_property_names(resolved, schemas, &mut properties, 0);
+                    }
+                    // Whether a response reaches the schema is a whole-document
+                    // walk, so it is asked only when a property would rename.
+                    let renames = |names: &std::collections::HashSet<String>| {
+                        path_params.iter().any(|param| {
+                            names.contains(&param.wire_name) || param.wire_name == "body"
+                        })
+                    };
+                    let inlined = (is_object_type(resolved) || resolved.all_of.is_some())
+                        && !(renames(&properties)
+                            && schema
+                                .reference
+                                .as_deref()
+                                .and_then(crate::openapi::referenced_component_schema)
+                                .is_some_and(|name| {
+                                    non_request_referenced_schemas(doc).contains(name)
+                                }));
+                    if inlined {
+                        claimed.extend(properties);
+                    } else {
+                        claimed.insert("body".to_string());
+                    }
+                }
+            }
+        }
+    }
+    if claimed.is_empty() {
+        return;
+    }
+    let names: Vec<String> = path_params.iter().map(|p| p.wire_name.clone()).collect();
+    for param in path_params.iter_mut() {
+        let overridden = declared
+            .iter()
+            .any(|p| p.name == param.wire_name && p.sdk_name() != p.name);
+        if overridden || !claimed.contains(&param.wire_name) {
+            continue;
+        }
+        let mut renamed = format!("{}PathParam", param.wire_name);
+        let mut ordinal = 2;
+        while claimed.contains(&renamed) || names.contains(&renamed) {
+            renamed = format!("{}PathParam{ordinal}", param.wire_name);
+            ordinal += 1;
+        }
+        param.py_name = naming::field_name(&renamed);
+    }
+}
+
+/// The property names an object schema declares, its `allOf` members' included.
+fn claimed_property_names(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    out: &mut std::collections::HashSet<String>,
+    depth: usize,
+) {
+    if depth > 32 {
+        return;
+    }
+    for (key, property) in &schema.properties {
+        out.insert(property.property_name().unwrap_or(key).to_string());
+    }
+    for member in schema.all_of.iter().flatten() {
+        claimed_property_names(
+            resolve_multipart_ref(member, Some(schemas)),
+            schemas,
+            out,
+            depth + 1,
+        );
+    }
+}
+
+/// The component schemas Fern's importer counts as referenced beyond a single
+/// request body: one a component schema references (it converts every one
+/// outside any request), one a response references, and one that is the body
+/// of two or more operations. Anchore's `RegistryConfigurationRequest` is the
+/// body of both `POST /registries` and `PUT /registries/{registry}`, so the
+/// latter keeps its `registry` path parameter beside the body's `registry`.
+fn non_request_referenced_schemas(doc: &OpenApi) -> std::collections::BTreeSet<String> {
+    let mut out = std::collections::BTreeSet::new();
+    for schema in doc.components.schemas.values() {
+        crate::openapi::collect_schema_refs(schema, &mut out);
+    }
+    let mut request_bodies: std::collections::BTreeMap<String, usize> =
+        std::collections::BTreeMap::new();
+    for item in doc.paths.values() {
+        for (_, op) in item.operations() {
+            for media in op.responses.values().flat_map(|r| r.content.values()) {
+                if let Some(schema) = &media.schema {
+                    crate::openapi::collect_schema_refs(schema, &mut out);
+                }
+            }
+            let bodies: std::collections::BTreeSet<&str> = op
+                .request_body
+                .iter()
+                .flat_map(|body| body.content.values())
+                .filter_map(|media| media.schema.as_ref()?.reference.as_deref())
+                .filter_map(crate::openapi::referenced_component_schema)
+                .collect();
+            for name in bodies {
+                *request_bodies.entry(name.to_string()).or_default() += 1;
+            }
+        }
+    }
+    out.extend(
+        request_bodies
+            .into_iter()
+            .filter(|(_, count)| *count > 1)
+            .map(|(name, _)| name),
+    );
+    out
+}
+
+/// Whether a multipart part is a list (or set) whose items httpx can send as
+/// plain form values, after unwrapping a nullable wrapper and `$ref` aliases.
+/// Mirrors fern-python-sdk 5.41.3's `is_type_list_of_primitives_for_multipart`.
+fn is_multipart_primitive_list(
+    schema: &Schema,
+    schemas: Option<&IndexMap<String, Schema>>,
+) -> bool {
+    let schema = resolve_multipart_ref(schema, schemas);
+    if let Some(member) = simple_nullable_member(schema) {
+        return is_multipart_primitive_list(member, schemas);
+    }
+    schema.ty.as_ref().and_then(TypeField::primary) == Some("array")
+        && schema
+            .items
+            .as_deref()
+            .is_some_and(|items| is_multipart_primitive(items, schemas, 0))
+}
+
+/// Whether a value is one httpx sends in `data=` without JSON encoding: a
+/// string, number or Boolean primitive, an enum or literal, or a union of
+/// those. Fern's importer gives the dated, UUID and base64 string formats their
+/// own primitives, which are not among them.
+fn is_multipart_primitive(
+    schema: &Schema,
+    schemas: Option<&IndexMap<String, Schema>>,
+    depth: usize,
+) -> bool {
+    if depth > 32 {
+        return false;
+    }
+    let schema = resolve_multipart_ref(schema, schemas);
+    if string_enum_values(schema).is_some() {
+        return true;
+    }
+    if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+        return members.iter().all(|member| {
+            member.ty.as_ref().and_then(TypeField::primary) == Some("null")
+                && member.reference.is_none()
+                || is_multipart_primitive(member, schemas, depth + 1)
+        });
+    }
+    if schema
+        .const_value
+        .as_ref()
+        .is_some_and(serde_json::Value::is_boolean)
+    {
+        return true;
+    }
+    match schema.ty.as_ref().and_then(TypeField::primary) {
+        Some("string") => !matches!(
+            schema.format.as_deref(),
+            Some("date" | "date-time" | "uuid" | "byte" | "binary")
+        ),
+        Some("integer" | "number" | "boolean") => true,
+        _ => false,
+    }
+}
+
+/// Follow a schema's `$ref` chain to the declaration it names.
+fn resolve_multipart_ref<'a>(
+    schema: &'a Schema,
+    schemas: Option<&'a IndexMap<String, Schema>>,
+) -> &'a Schema {
+    let mut resolved = schema;
+    for _ in 0..32 {
+        let Some(next) = resolved.reference.as_deref().and_then(|reference| {
+            schemas.and_then(|schemas| resolve_ref_from_schemas(schemas, reference))
+        }) else {
+            break;
+        };
+        resolved = next;
+    }
+    resolved
+}
+
 /// Resolve an object alias's encoding shape while retaining its declared type
 /// at the form-field call site.
 fn resolve_form_object_alias<'a>(
@@ -8566,8 +8825,22 @@ fn hoist_form_object(
             } else {
                 resolved
             };
+            // A part that is a list of form primitives goes to `data=` as the
+            // list itself, so httpx repeats the field once per item, rather than
+            // as one JSON-encoded string — measured at fern-python-sdk 5.41.3
+            // (Appwrite's `read`/`write` string arrays on `POST
+            // /storage/files`, DaniWeb's `metadata_N_values[]`). A part with
+            // its own `encoding.contentType` is sent through `files=` and keeps
+            // its existing encoding.
+            let repeated_part = multipart
+                && encoding
+                    .get(prop)
+                    .and_then(|e| e.content_type.as_ref())
+                    .is_none()
+                && is_multipart_primitive_list(resolved, hoister.schemas);
             let form_json = multipart
                 && !is_file
+                && !repeated_part
                 && simple_nullable_primitive_member(resolved).is_none()
                 && !nullable_enum_part(resolved, hoister.schemas)
                 && (is_unknown(resolved)
