@@ -4833,6 +4833,56 @@ pub(crate) fn collect_schema_refs(schema: &Schema, out: &mut std::collections::B
 mod tests {
     use super::*;
 
+    /// `FERN_ERROR_NAMES` is the importer's spelling of the error names, kept
+    /// apart from `ir::error_class_name` because the importer writes acronyms
+    /// whole (`URITooLongError` where the Python class is `UriTooLongError`).
+    /// This holds the two to each other: every class crozier names is one of
+    /// them, case aside, and the only names left over are the five the importer
+    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 449, 450).
+    #[test]
+    fn fern_error_names_are_the_error_classes_crozier_names_and_five_more() {
+        use std::collections::BTreeSet;
+        let fern: BTreeSet<String> = FERN_ERROR_NAMES
+            .iter()
+            .map(|name| name.to_ascii_lowercase())
+            .collect();
+        assert_eq!(fern.len(), FERN_ERROR_NAMES.len(), "a name is listed twice");
+        let mut named: BTreeSet<String> = (100..=599)
+            .filter_map(crate::ir::error_class_name)
+            .map(str::to_ascii_lowercase)
+            .collect();
+        for range in [
+            crate::ir::ErrorStatus::ClientRange,
+            crate::ir::ErrorStatus::ServerRange,
+        ] {
+            named.insert(
+                range
+                    .class_name()
+                    .expect("a named range")
+                    .to_ascii_lowercase(),
+            );
+        }
+        let missing: Vec<&String> = named.difference(&fern).collect();
+        assert!(
+            missing.is_empty(),
+            "crozier names errors the importer list lacks: {missing:?}"
+        );
+        let importer_only: BTreeSet<String> = [
+            "AuthenticationTimeoutError",
+            "MethodFailureError",
+            "NoResponseError",
+            "RetryWithError",
+            "BlockedByWindowsParentalControlsError",
+        ]
+        .iter()
+        .map(|name| name.to_ascii_lowercase())
+        .collect();
+        assert_eq!(
+            fern.difference(&named).cloned().collect::<BTreeSet<_>>(),
+            importer_only
+        );
+    }
+
     #[test]
     fn a_component_reads_its_group_and_placement_tag() {
         let schema =
