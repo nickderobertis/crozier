@@ -2367,6 +2367,14 @@ pub struct Field {
     /// first, yet its `put_flows_flow_id` example opens with `FlowCore`'s
     /// `id` and `source_id`.
     pub inherited_from_flattened_parent: bool,
+    /// A string property's declared `minLength`. Fern's IR fallback example
+    /// (written where its importer builds none) samples a string this long
+    /// instead of passing the property's name: nexmo-messages' `to`, typed by
+    /// the `ToNumber` alias with `minLength: 7`, is `"apricot"`.
+    pub min_length: Option<u64>,
+    /// A string property's declared `maxLength`, which that fallback samples
+    /// when no `minLength` is declared and it is under ten.
+    pub max_length: Option<u64>,
 }
 
 impl Field {
@@ -2394,6 +2402,10 @@ pub struct AliasType {
     /// sibling properties name the recursive `HttpResponse`, so a model holding a
     /// `List[Expectation]` gets Fern's `update_forward_refs` call.
     pub reach_refs: Vec<TypeRef>,
+    /// A string alias's declared `minLength`; see [`Field::min_length`].
+    pub min_length: Option<u64>,
+    /// A string alias's declared `maxLength`; see [`Field::max_length`].
+    pub max_length: Option<u64>,
 }
 
 /// A named string enum rendered as a real `enum.Enum` class (Fern's
@@ -3424,6 +3436,8 @@ fn declare_split_union_body(
             target,
             docstring: None,
             reach_refs: Vec::new(),
+            min_length: None,
+            max_length: None,
         }),
     });
     body.type_ref = TypeRef::Named(name);
@@ -3969,6 +3983,8 @@ fn build_endpoint(
                         module: naming::module_name(&name),
                         target,
                         docstring: clean_doc(schema.description.as_deref()),
+                        min_length: None,
+                        max_length: None,
                     }));
                     Some(if dropped_null {
                         optional_type_ref(TypeRef::Named(name))
@@ -4029,6 +4045,8 @@ fn build_endpoint(
                         module: naming::module_name(&name),
                         target,
                         docstring: clean_doc(value.description.as_deref()),
+                        min_length: None,
+                        max_length: None,
                     }));
                     Some(TypeRef::Dict(
                         Box::new(TypeRef::Primitive(Prim::Str)),
@@ -4962,10 +4980,28 @@ fn requires_unexampled_unknown(doc: &OpenApi, schema: &Schema, depth: usize) -> 
     if schema_example(schema).is_some() {
         return false;
     }
-    schema.properties.iter().any(|(name, property)| {
-        if !schema.required.iter().any(|required| required == name)
-            || schema_example(property).is_some()
-        {
+    // An undiscriminated union with no example is exampled by one member alone:
+    // the first declaring an example anywhere, else the first. Nexmo Messages'
+    // `send_message` body is a `oneOf` whose first member's `allOf` requires an
+    // untyped `text`, and Fern 5.163.1's IR fallback writes its call
+    // (`to="apricot"`, `from_="from"`).
+    if schema.discriminator.is_none() {
+        if let Some(members) = schema.one_of.as_ref().or(schema.any_of.as_ref()) {
+            let picked = members
+                .iter()
+                .find(|member| declares_example(doc, member, 0))
+                .or_else(|| members.first());
+            return picked
+                .is_some_and(|member| requires_unexampled_unknown(doc, member, depth + 1));
+        }
+    }
+    // An `allOf` object holds every member's properties, a later declaration of
+    // one replacing an earlier, and every member's `required`.
+    let mut properties: IndexMap<&str, &Schema> = IndexMap::new();
+    let mut required: Vec<&str> = Vec::new();
+    collect_all_of_object(doc, schema, &mut properties, &mut required, 0);
+    properties.iter().any(|(name, property)| {
+        if !required.contains(name) || schema_example(property).is_some() {
             return false;
         }
         let target = property
@@ -4977,6 +5013,68 @@ fn requires_unexampled_unknown(doc: &OpenApi, schema: &Schema, depth: usize) -> 
             || !target.properties.is_empty()
                 && requires_unexampled_unknown(doc, property, depth + 1)
     })
+}
+
+/// The properties and `required` names of `schema` with its `allOf` members
+/// (references resolved) folded in, members first and in order.
+fn collect_all_of_object<'a>(
+    doc: &'a OpenApi,
+    schema: &'a Schema,
+    properties: &mut IndexMap<&'a str, &'a Schema>,
+    required: &mut Vec<&'a str>,
+    depth: usize,
+) {
+    if depth > 8 {
+        return;
+    }
+    let schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    for member in schema.all_of.iter().flatten() {
+        collect_all_of_object(doc, member, properties, required, depth + 1);
+    }
+    for (name, property) in &schema.properties {
+        properties.insert(name.as_str(), property);
+    }
+    for name in schema.required.iter() {
+        if !required.contains(&name.as_str()) {
+            required.push(name.as_str());
+        }
+    }
+}
+
+/// Whether `schema` declares an example anywhere within it: on itself, a
+/// property, an array's items, or a member of a composition, references
+/// followed. Fern's importer examples the first such member of a union that
+/// has no example of its own.
+fn declares_example(doc: &OpenApi, schema: &Schema, depth: usize) -> bool {
+    if depth > 8 {
+        return false;
+    }
+    if schema_example(schema).is_some() {
+        return true;
+    }
+    let schema = schema
+        .reference
+        .as_deref()
+        .and_then(|reference| resolve_ref(doc, reference))
+        .unwrap_or(schema);
+    schema_example(schema).is_some()
+        || schema
+            .properties
+            .values()
+            .any(|property| declares_example(doc, property, depth + 1))
+        || schema
+            .items
+            .as_deref()
+            .is_some_and(|items| declares_example(doc, items, depth + 1))
+        || [&schema.all_of, &schema.one_of, &schema.any_of]
+            .into_iter()
+            .flatten()
+            .flatten()
+            .any(|member| declares_example(doc, member, depth + 1))
 }
 
 /// Whether the JSON request body holds an object whose `required` is not a list
@@ -5062,11 +5160,34 @@ fn ir_fallback_parameter_example(parameter: &crate::openapi::Parameter) -> Optio
     if let Some(default) = schema.default.as_ref().filter(|value| value.is_string()) {
         return example_literal(default);
     }
-    let length = schema
-        .min_length
+    Some(format!(
+        "\"{}\"",
+        fallback_string_sample(schema.min_length, schema.max_length)?
+    ))
+}
+
+/// The string Fern's IR fallback example generator (`generatePrimitiveStringExample`,
+/// read in the Fern CLI 5.163.1 bundle) samples from a string's declared lengths,
+/// reading no example: one `minLength` long when that is non-zero, else one
+/// `maxLength` long when that is under ten, else none, and the caller passes the
+/// property's or parameter's name.
+pub(crate) fn fallback_string_sample(
+    min_length: Option<u64>,
+    max_length: Option<u64>,
+) -> Option<String> {
+    let length = min_length
         .filter(|minimum| *minimum > 0)
-        .or_else(|| schema.max_length.filter(|maximum| *maximum < 10))?;
-    Some(format!("\"{}\"", sample_string_of_length(length)))
+        .or_else(|| max_length.filter(|maximum| *maximum < 10))?;
+    Some(sample_string_of_length(length))
+}
+
+/// A schema's declared `minLength` and `maxLength`, where it is a string.
+fn string_lengths(schema: &Schema) -> (Option<u64>, Option<u64>) {
+    if schema.ty.as_ref().and_then(TypeField::primary) == Some("string") {
+        (schema.min_length, schema.max_length)
+    } else {
+        (None, None)
+    }
 }
 
 /// Fern's `getStringExampleOfLength`: one word per length up to twelve, then the
@@ -6319,6 +6440,8 @@ fn resolve_request_body(
                         module: naming::module_name(&name),
                         target: TypeRef::Union(dedupe_union_members(variants)),
                         docstring: clean_doc(obj.description.as_deref()),
+                        min_length: None,
+                        max_length: None,
                     }));
                     return Some(single_with_override(
                         TypeRef::Named(name),
@@ -6637,6 +6760,8 @@ fn resolve_request_body(
                 module: naming::module_name(&request_body_name),
                 target,
                 docstring: clean_doc(schema.description.as_deref()),
+                min_length: None,
+                max_length: None,
             }));
         }
         let mut body = single_with_override(
@@ -7326,6 +7451,8 @@ impl InlineHoister<'_> {
             module: naming::module_name(item_name),
             target,
             docstring: clean_doc(item_schema.description.as_deref()),
+            min_length: None,
+            max_length: None,
         }));
         let element = TypeRef::Named(item_name.to_string());
         Some(TypeRef::List(Box::new(if dropped_null {
@@ -7627,6 +7754,8 @@ impl InlineHoister<'_> {
                         module: naming::module_name(&item_name),
                         target: TypeRef::Union(variants),
                         docstring: clean_doc(item.description.as_deref()),
+                        min_length: None,
+                        max_length: None,
                     }));
                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
                 }
@@ -7700,6 +7829,8 @@ impl InlineHoister<'_> {
                     module: naming::module_name(&name),
                     target: TypeRef::Union(nested),
                     docstring,
+                    min_length: None,
+                    max_length: None,
                 }));
                 return TypeRef::Named(name);
             }
@@ -7759,6 +7890,8 @@ impl InlineHoister<'_> {
                     module: naming::module_name(&value_name),
                     target,
                     docstring: clean_doc(value.description.as_deref()),
+                    min_length: None,
+                    max_length: None,
                 }));
                 let named = TypeRef::Named(value_name);
                 return TypeRef::Dict(
@@ -7829,6 +7962,8 @@ impl InlineHoister<'_> {
                 }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
+                min_length: string_lengths(prop_schema).0,
+                max_length: string_lengths(prop_schema).1,
             });
         }
     }
@@ -8110,6 +8245,8 @@ impl InlineHoister<'_> {
                     module: naming::module_name(&name),
                     target: TypeRef::Union(variants),
                     docstring: clean_doc(prop_schema.description.as_deref()),
+                    min_length: None,
+                    max_length: None,
                 }));
                 return TypeRef::Named(name);
             }
@@ -8225,6 +8362,8 @@ impl InlineHoister<'_> {
                 module: naming::module_name(&item_name),
                 target: TypeRef::Union(variants),
                 docstring: clean_doc(item_schema.description.as_deref()),
+                min_length: None,
+                max_length: None,
             }));
             return Some(sequence_of(array, TypeRef::Named(item_name)));
         }
@@ -8392,6 +8531,8 @@ impl InlineHoister<'_> {
             module: naming::module_name(&name),
             target: TypeRef::Union(variants),
             docstring: clean_doc(schema.description.as_deref()),
+            min_length: None,
+            max_length: None,
         }));
         wrap(TypeRef::Named(name))
     }
@@ -11368,6 +11509,8 @@ fn append_member_fields(
             example: schema_example_literal(prop_schema),
             admits_only_empty_object: admits_only_empty_object(prop_schema),
             inherited_from_flattened_parent: false,
+            min_length: string_lengths(prop_schema).0,
+            max_length: string_lengths(prop_schema).1,
         });
     }
 }
@@ -11515,6 +11658,8 @@ fn wrapped_value_field(type_ref: TypeRef) -> Field {
         xml: None,
         admits_only_empty_object: false,
         inherited_from_flattened_parent: false,
+        min_length: None,
+        max_length: None,
     }
 }
 
@@ -11538,6 +11683,24 @@ fn sole_reference_member(schema: &Schema) -> Option<&str> {
 impl Builder<'_> {
     /// Classify one named schema and push it (plus any hoisted types).
     fn add_named(&mut self, name: &str, schema: &Schema) {
+        let before = self.types.len();
+        self.add_named_shape(name, schema);
+        // A string component is an alias keeping its lengths for Fern's IR
+        // fallback example: nexmo-messages' `ToNumber` (`minLength: 7`).
+        let (min_length, max_length) = string_lengths(schema);
+        if min_length.is_some() || max_length.is_some() {
+            for decl in &mut self.types[before..] {
+                if let TypeDecl::Alias(alias) = decl {
+                    if alias.name == name && alias.target == TypeRef::Primitive(Prim::Str) {
+                        alias.min_length = min_length;
+                        alias.max_length = max_length;
+                    }
+                }
+            }
+        }
+    }
+
+    fn add_named_shape(&mut self, name: &str, schema: &Schema) {
         let module = naming::module_name(name);
         let docstring = operation_doc(schema.description.as_deref());
 
@@ -11720,6 +11883,8 @@ impl Builder<'_> {
                     module,
                     target,
                     docstring,
+                    min_length: None,
+                    max_length: None,
                 }));
                 return;
             }
@@ -12740,6 +12905,8 @@ impl Builder<'_> {
                     }),
                 admits_only_empty_object: admits_only_empty_object(prop_schema),
                 inherited_from_flattened_parent: false,
+                min_length: string_lengths(prop_schema).0,
+                max_length: string_lengths(prop_schema).1,
             });
         }
     }
@@ -13101,6 +13268,8 @@ impl Builder<'_> {
                         xml: None,
                         admits_only_empty_object: false,
                         inherited_from_flattened_parent: false,
+                        min_length: None,
+                        max_length: None,
                     }],
                     discriminant_index: None,
                     source: None,
@@ -14626,6 +14795,8 @@ impl Builder<'_> {
             module,
             target,
             docstring,
+            min_length: None,
+            max_length: None,
         }));
     }
 }
@@ -17318,6 +17489,8 @@ mod tests {
             admits_only_empty_object: false,
             xml: None,
             inherited_from_flattened_parent: false,
+            min_length: None,
+            max_length: None,
         }
     }
 
@@ -18279,6 +18452,57 @@ mod tests {
         );
         assert_eq!(sample_string_of_length(0), "");
         assert_eq!(sample_string_of_length(14), "blackcurrant..");
+    }
+
+    #[test]
+    fn the_fallback_string_sample_reads_min_then_short_max_length() {
+        use super::fallback_string_sample as sample;
+        assert_eq!(sample(Some(7), Some(15)).as_deref(), Some("apricot"));
+        // A zero `minLength` is no bound; a `maxLength` under ten then sizes it.
+        assert_eq!(sample(Some(0), Some(4)).as_deref(), Some("buzz"));
+        assert_eq!(sample(None, Some(0)).as_deref(), Some(""));
+        assert_eq!(sample(None, Some(10)), None);
+        assert_eq!(sample(None, None), None);
+    }
+
+    #[test]
+    fn a_union_body_whose_picked_all_of_member_requires_an_untyped_property_has_no_importer_example(
+    ) {
+        let document = |members: serde_json::Value| -> OpenApi {
+            serde_json::from_value(serde_json::json!({
+                "openapi": "3.0.3",
+                "info": {"title": "Api", "version": "1"},
+                "paths": {"/": {"post": {
+                    "operationId": "send",
+                    "requestBody": {"required": true, "content": {"application/json": {
+                        "schema": {"oneOf": members}
+                    }}},
+                    "responses": {"204": {"description": "OK"}}
+                }}},
+                "components": {"schemas": {"Text": {
+                    "type": "object", "required": ["to", "text"],
+                    "properties": {
+                        "to": {"type": "string", "example": "447700900000"},
+                        "text": {"type": "string", "example": "hello"}
+                    }
+                }}}
+            }))
+            .expect("document deserializes")
+        };
+        let restated = serde_json::json!({"allOf": [
+            {"$ref": "#/components/schemas/Text"},
+            {"properties": {"text": {"description": "Restated."}}}
+        ]});
+        let text = serde_json::json!({"$ref": "#/components/schemas/Text"});
+        let gives_up = |doc: &OpenApi| {
+            let (_, op) = doc.paths["/"].operations()[0];
+            super::request_requires_unexampled_unknown(doc, op)
+        };
+        // The first member restates `text` untyped and unexampled, and it is the
+        // member exampled, so the importer gives up.
+        assert!(gives_up(&document(serde_json::json!([restated, text]))));
+        // Exampling the declared `Text` first, it does not.
+        assert!(!gives_up(&document(serde_json::json!([text, restated]))));
     }
 
     #[test]
@@ -20952,6 +21176,8 @@ mod tests {
             module: "unknown_union".to_string(),
             target: TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)]),
             docstring: None,
+            min_length: None,
+            max_length: None,
         });
         assert!(super::type_needs_convert(
             &TypeRef::Named("UnknownUnion".to_string()),
