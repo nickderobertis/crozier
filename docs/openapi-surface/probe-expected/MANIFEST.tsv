@@ -56,7 +56,7 @@ format-relative-json-pointer	absent-tree	discards	docs/openapi-surface/probe-exp
 header-allow-reserved	absent-tree	discards	docs/openapi-surface/probe-expected/header-allow-reserved	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
 header-array	refusal	refuses	docs/openapi-surface/probe-expected/header-array.fern-refusal.txt	—	a4231021e8b933cf51b6172e64f195e6ec37b6680023a5951d529300c1d58933
 header-deprecated	absent-tree	discards	docs/openapi-surface/probe-expected/header-deprecated	—	219d7a22241b1576c5b458f2f9e4713ca783780c1664bd8334951777ff918303
-header-object	refusal	crashes	docs/openapi-surface/probe-expected/header-object.fern-refusal.txt	—	5079166d7e350f6282de7be72eb8473ee56d3e78145986306b4a60cd2a969578
+header-object	refusal	crashes	docs/openapi-surface/probe-expected/header-object.fern-refusal.txt	—	a2a159b26d44032d6952669197fc3394c36732df858868e2b9f217b4b3e6068c
 http-concealed	absent-tree	discards	docs/openapi-surface/probe-expected/http-concealed	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
 http-digest	absent-tree	discards	docs/openapi-surface/probe-expected/http-digest	—	fc688e9518543b81973ed9493c33104bd436562519b0c9b4314704393f5940ab
 http-gnap	absent-tree	discards	docs/openapi-surface/probe-expected/http-gnap	—	a74f77999c19e01e975649c936ad63ddc413010dca3af2e8e8ba254eabaa48ef
