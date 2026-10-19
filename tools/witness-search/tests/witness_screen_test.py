@@ -1120,17 +1120,19 @@ class HistoricalPairTests(unittest.TestCase):
                 "disposition": "witness-found",
             }
         )
-        self.screens().write_text(pre_stage + "\n", encoding="utf-8", newline="\n")
+        # Written with a CRLF ending, which labelling must leave as it is.
+        self.screens().write_bytes(pre_stage.encode("utf-8") + b"\r\n")
         self.file("acme/shop", "refuse")  # Fern refused it: measured, rejected
         self.file("acme/eula", "pass")  # the licence failed: Fern never ran, no pins
         self.file("acme/declared", "generate-fail")
-        before = self.screens().read_text(encoding="utf-8").splitlines(keepends=True)
+        before = self.screens().read_bytes().splitlines(keepends=True)
         self.assertEqual(4, len(before))
+        self.assertTrue(before[0].endswith(b"\r\n"))
 
         labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
         self.assertEqual(0, labelled.returncode, labelled.stderr)
         self.assertIn("labelled 2 screen(s)", labelled.stdout)
-        after = self.screens().read_text(encoding="utf-8").splitlines(keepends=True)
+        after = self.screens().read_bytes().splitlines(keepends=True)
         # The pre-stage row and the row whose Fern screen never ran stay byte for byte.
         self.assertEqual((before[0], before[2]), (after[0], after[2]))
         for number in (1, 3):

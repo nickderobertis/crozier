@@ -1236,7 +1236,8 @@ def label_historical(root: Path) -> int:
     rewrites: dict[Path, list[str]] = {}
     labelled = 0
     for screens in sorted(root.glob("**/screens.jsonl")):
-        lines = screens.read_text(encoding="utf-8").splitlines(keepends=True)
+        # Read and written as bytes, so no line it leaves is touched, whatever its ending.
+        lines = screens.read_bytes().decode("utf-8").splitlines(keepends=True)
         changed = False
         for number, line in enumerate(lines):
             try:
@@ -1258,13 +1259,14 @@ def label_historical(root: Path) -> int:
             if recorded is None or recorded == pins:
                 continue
             row[HISTORICAL_PAIR] = historical_pair_label(recorded)
-            lines[number] = json.dumps(row, sort_keys=True) + "\n"
+            ending = line[len(line.rstrip("\r\n")) :]
+            lines[number] = json.dumps(row, sort_keys=True) + (ending or "\n")
             changed = True
             labelled += 1
         if changed:
             rewrites[screens] = lines
     for screens, lines in rewrites.items():
-        screens.write_text("".join(lines), encoding="utf-8", newline="\n")
+        screens.write_bytes("".join(lines).encode("utf-8"))
     if labelled:
         print(f"witness-screen: labelled {labelled} screen(s) measured at an earlier pair as historical")
     return 0
