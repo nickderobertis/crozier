@@ -239,7 +239,7 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(call["config"]["version"], "8.0.0")
         self.assertIn("version: 7.0.0", call["generators"])
 
-    def test_a_literals_measurement_is_an_overlay_of_its_base_with_the_base_digest(self) -> None:
+    def test_a_literals_measurement_is_an_overlay_of_its_base_with_its_complete_tree_digest(self) -> None:
         base = self.handwritten("gamma") / "fern-expected"
         self.write("docs/openapi-surface/handwritten/gamma/fern-expected/src/fern/client.py", "CLIENT = 1\n")
         (base / "src/fern/stale.py").unlink()
@@ -375,6 +375,11 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual((measured["check_exit"], measured["generate_exit"]), ("0", "0"))
         self.assertEqual(measured["sha256"], hashlib.sha256(probe.read_bytes()).hexdigest())
         self.assertNotIn("generate_diagnostic", measured)
+        self.assertEqual(measured["check_diagnostic"], "All checks passed")
+        self.assertEqual(measured["check_log_sha256"], hashlib.sha256(b"All checks passed\n").hexdigest())
+        generated = b"[api]: python-sdk Wrote files to <workspace>/preview/fern-python-sdk\n"
+        self.assertEqual(measured["generate_log_sha256"], hashlib.sha256(generated).hexdigest())
+        self.assertEqual(measured["generate_python_files"], 3, "client.py, raw_client.py and core/enum.py")
         self.assertTrue((case / "fern.log").read_text(encoding="utf-8").startswith(f"Fern CLI {CLI}, python-sdk {SDK}"))
 
     def test_a_corpus_row_routes_through_fern_goldens_and_a_vendored_fixture_through_its_script(self) -> None:
@@ -885,6 +890,50 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(self.calls(), [], "Fern never ran")
         self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
         self.assertIn(f'fern_cli_version = "{OLD}"', (fixture / "evidence.toml").read_text(encoding="utf-8"))
+
+    def test_a_failed_generation_keeps_each_family_s_committed_reference(self) -> None:
+        refuse = "openapi: 3.0.3\nx-stub-refuse: true\n"
+        fixture = self.handwritten("alpha", document=refuse)
+        evidence_before = (fixture / "evidence.toml").read_text(encoding="utf-8")
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.write("docs/fern-measurements/repairs/probe.yaml", refuse)
+        record = self.write("docs/fern-measurements/repairs/measurement.json", json.dumps({"probe": "probe.yaml"}))
+        log = self.write("docs/fern-measurements/repairs/fern.log", "prior log\n")
+        raw = self.write("docs/fern-measurements/repairs/fern-raw_client.py.txt", "PRIOR = 1\n")
+        literals = "docs/fern-measurements/parameter-literals"
+        digests = self.write(f"{literals}/certified-trees.json", json.dumps({"alpha": "0" * 64}))
+        metadata = self.write(f"{literals}/metadata.json", "{}\n")
+        self.write("docs/departures/evidence/casing/openapi.yml", refuse)
+        self.write("docs/departures/evidence/casing/fern-reference.json", "{}")
+        reference = self.write("docs/departures/evidence/casing/fern-reference/client.py", "PRIOR = 1\n")
+        before = {path: path.read_text(encoding="utf-8") for path in (record, log, raw, digests, metadata, reference)}
+
+        for family, item in (
+            ("handwritten", "alpha"),
+            ("measurements", "repairs"),
+            ("measurements", "parameter-literals/alpha"),
+            ("departure-evidence", "casing"),
+        ):
+            with self.subTest(family=family, item=item):
+                result = self.run_tool("generate", family, item)
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("fern generate exited 1", result.stderr)
+        self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
+        self.assertEqual((fixture / "evidence.toml").read_text(encoding="utf-8"), evidence_before)
+        self.assertEqual({path: path.read_text(encoding="utf-8") for path in before}, before)
+
+    def test_a_case_note_with_no_pair_to_restate_stops_before_fern_runs(self) -> None:
+        self.write("docs/fern-measurements/clients/mu/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "clients/mu\tdocs/fern-measurements/clients/mu/openapi.yml\tpython-enums\tpackaged\t-\n",
+        )
+        self.write("docs/fern-measurements/clients/mu/evidence.md", "Measured some time ago.\n")
+        result = self.run_tool("generate", "measurements", "clients/mu")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("states no Fern CLI and fern-python-sdk version to restate", result.stderr)
+        self.assertEqual(self.calls(), [])
 
     def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
         self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")

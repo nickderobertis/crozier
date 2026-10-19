@@ -399,13 +399,30 @@ def rewrite_evidence(path: Path, pair: Pair, digest: str) -> None:
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
+NOTE_CLI = re.compile(r"Fern CLI [0-9]+\.[0-9]+\.[0-9]+")
+NOTE_SDK = re.compile(r"(fernapi/fern-python-sdk`?:? )[0-9]+\.[0-9]+\.[0-9]+")
+NOTE_DIGEST = re.compile(r"(Canonical tree SHA-256: `)[0-9a-f]{64}(`)")
+
+
+def check_evidence_note(path: Path) -> None:
+    """Fail before Fern runs unless a case's `evidence.md` states the pair (the
+    Fern CLI and the fern-python-sdk version), and a well-formed digest where it
+    names one, so a regeneration never leaves its note stating the old ones."""
+    text = path.read_text(encoding="utf-8")
+    if not NOTE_CLI.search(text) or not NOTE_SDK.search(text):
+        raise ReferenceError(f"{rel(path)} states no Fern CLI and fern-python-sdk version to restate")
+    if "Canonical tree SHA-256" in text and not NOTE_DIGEST.search(text):
+        raise ReferenceError(f"{rel(path)} names a canonical tree SHA-256 that is no 64-digit digest")
+
+
 def restate_evidence_note(path: Path, pair: Pair, digest: str) -> None:
     """Restate a measurement case's `evidence.md` provenance: the pair that
     generated its tree and the tree's `Canonical tree SHA-256`."""
+    check_evidence_note(path)
     text = path.read_text(encoding="utf-8")
-    text = re.sub(r"Fern CLI [0-9]+\.[0-9]+\.[0-9]+", f"Fern CLI {pair.cli}", text)
-    text = re.sub(r"(fernapi/fern-python-sdk`?:? )[0-9]+\.[0-9]+\.[0-9]+", rf"\g<1>{pair.generator}", text)
-    text = re.sub(r"(Canonical tree SHA-256: `)[0-9a-f]{64}(`)", rf"\g<1>{digest}\g<2>", text)
+    text = NOTE_CLI.sub(f"Fern CLI {pair.cli}", text)
+    text = NOTE_SDK.sub(rf"\g<1>{pair.generator}", text)
+    text = NOTE_DIGEST.sub(rf"\g<1>{digest}\g<2>", text)
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
@@ -868,6 +885,8 @@ def generate_measurement(item: str, pair: Pair) -> None:
     restates_evidence = evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8")
     if restates_evidence:
         check_evidence(evidence)
+    if (destination.parent / "evidence.md").is_file():
+        check_evidence_note(destination.parent / "evidence.md")
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
     if row.overlay != "-":
         label, _, base = row.overlay.partition(":")
