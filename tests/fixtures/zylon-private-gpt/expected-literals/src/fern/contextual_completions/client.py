@@ -443,7 +443,7 @@ class AsyncContextualCompletionsClient:
 
 
         async def main() -> None:
-            response = await client.contextual_completions.prompt_completion_v1completions_post_stream(
+            response = client.contextual_completions.prompt_completion_v1completions_post_stream(
                 prompt="How do you fry an egg?",
                 system_prompt="You are a rapper. Always answer with a rap.",
                 use_context=False,
@@ -615,7 +615,7 @@ class AsyncContextualCompletionsClient:
 
 
         async def main() -> None:
-            response = await client.contextual_completions.chat_completion_v1chat_completions_post_stream(
+            response = client.contextual_completions.chat_completion_v1chat_completions_post_stream(
                 messages=[
                     OpenAiMessage(
                         role="system",
