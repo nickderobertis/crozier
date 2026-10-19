@@ -12802,7 +12802,7 @@ components:
 /// `Union[typing.Any]` alias fern-python-sdk 5.20.0 emitted; and the README's
 /// example of it passes no arguments.
 #[test]
-fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
+fn peopledatalabs_tabs_optional_request_fields_and_an_argument_free_readme_call() {
     let files = render(
         "openapi: 3.0.3\ninfo: { title: api.peopledatalabs.com, version: '5.0' }\npaths:\n  /v5/company/search:\n    post:\n      tags: [Company Endpoints]\n      operationId: company_search\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query: { type: string }\n                sql: { type: string }\n              oneOf: [{ required: [query] }, { required: [sql] }]\n      responses:\n        '200':\n          description: ok\n          content: { application/json: { schema: { $ref: '#/components/schemas/CompanyLocation' } } }\ncomponents:\n  schemas:\n    CompanyLocation:\n      type: object\n      properties:\n        country: { type: string, description: \"The company's current HQ country\\tunited states\" }\n",
     );

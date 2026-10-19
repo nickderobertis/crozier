@@ -21030,9 +21030,27 @@ fn xml_suite_outcomes(py: &Path, sdk: &Path) -> Vec<(String, String)> {
         })
         .collect();
     outcomes.sort();
+    // A completed run exits 0 (all passed) or 1 (some failed); a collection
+    // error, an interrupted run or a usage error is no outcome to compare.
+    let summary: Vec<&str> = report
+        .lines()
+        .last()
+        .unwrap_or_default()
+        .split_whitespace()
+        .collect();
+    let counted = |word: &str| -> usize {
+        summary
+            .windows(2)
+            .find(|pair| pair[1].trim_end_matches(',') == word)
+            .and_then(|pair| pair[0].parse().ok())
+            .unwrap_or(0)
+    };
     assert!(
-        !outcomes.is_empty(),
-        "the XML suite under {} ran no test:\n{report}{}",
+        matches!(output.status.code(), Some(0 | 1))
+            && !report.lines().any(|line| line.starts_with("ERROR "))
+            && !outcomes.is_empty()
+            && counted("passed") + counted("failed") == outcomes.len(),
+        "the XML suite under {} did not complete with one outcome per test:\n{report}{}",
         sdk.display(),
         String::from_utf8_lossy(&output.stderr)
     );
