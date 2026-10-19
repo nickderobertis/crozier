@@ -1006,7 +1006,7 @@ fn collect_named_refs(t: &TypeRef, out: &mut Vec<String>) {
 
 /// The named types a declaration references (base classes plus every field's
 /// type), for building the type-reference graph that finds recursive cycles.
-fn decl_refs(decl: &TypeDecl) -> Vec<String> {
+pub(crate) fn decl_refs(decl: &TypeDecl) -> Vec<String> {
     let mut out = Vec::new();
     match decl {
         TypeDecl::Object(o) => {

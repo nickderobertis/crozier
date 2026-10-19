@@ -2702,7 +2702,34 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                     ));
                     name
                 }
-                _ => naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_"))),
+                // One with an `operationId` is `{OperationId}Payload`, placed in
+                // the package its tag groups it into, as an operation's inline
+                // body is (measured at Fern CLI 5.163.1): Webflow's
+                // `comment_created` webhook, tagged `Comments`, writes
+                // `comments/types/comment_created_payload.py`, with every type
+                // it hoists beside it.
+                _ => match operation
+                    .operation_id
+                    .as_deref()
+                    .map(str::trim)
+                    .filter(|id| !id.is_empty())
+                {
+                    Some(id) => {
+                        let module = endpoint_module(operation, event);
+                        let name = naming::class_name(&format!("{id}_payload"));
+                        let hoisted_from = builder.types.len();
+                        builder.add_named(&name, schema);
+                        if !module.is_empty() {
+                            for decl in &builder.types[hoisted_from..] {
+                                webhook_placements.push((decl.name().to_string(), module.clone()));
+                            }
+                        }
+                        continue;
+                    }
+                    None => {
+                        naming::class_name(&format!("{method}_{}_payload", event.replace('/', "_")))
+                    }
+                },
             };
             builder.add_named(&name, schema);
         }
@@ -2760,6 +2787,18 @@ pub fn build(doc: &OpenApi, config: &GenerateConfig) -> Ir {
                 .flat_map(|member| &member.fields)
                 .for_each(|field| collect_named(&field.type_ref, &mut referenced)),
             TypeDecl::Enum(_) => {}
+        }
+    }
+    // An `allOf` parent of a component is a use outside any request even when
+    // the component flattens it rather than extending it: LangChain's
+    // `RunStream` is `allOf: [$ref RunCreate, {…}]` and, since Fern's CLI
+    // 5.163.1 (measured), flattens `RunCreate` for a property it requires, yet
+    // `/runs/wait` still takes `request: RunCreate` and the golden declares it.
+    for schema in doc.components.schemas.values() {
+        for member in schema.all_of.iter().flatten() {
+            if let Some(reference) = member.reference.as_deref() {
+                referenced.insert(ref_to_class(reference));
+            }
         }
     }
     let inline_sources = inline_body_source_names(doc, &endpoints);
@@ -3903,7 +3942,7 @@ fn build_endpoint(
                 // `oneOf: [integer, boolean, null]`, and Fern declares
                 // `Union[int, bool]` and returns it optionally.
                 let dropped_null = variants.iter().any(is_null_variant);
-                let target = TypeRef::Union(
+                let mut members = dedupe_union_members(
                     variants
                         .iter()
                         .enumerate()
@@ -3913,18 +3952,27 @@ fn build_endpoint(
                         })
                         .collect(),
                 );
-                hoister.out.push(TypeDecl::Alias(AliasType {
-                    reach_refs: Vec::new(),
-                    name: name.clone(),
-                    module: naming::module_name(&name),
-                    target,
-                    docstring: clean_doc(schema.description.as_deref()),
-                }));
-                Some(if dropped_null {
-                    optional_type_ref(TypeRef::Named(name))
+                // Alternatives that all convert alike leave one, which is the
+                // response itself rather than a one-armed union (see
+                // [`later_same_variant`]): the Vonage Messages API's
+                // `send_message` returns `SendMessageResponseMessageUuid`.
+                if members.len() == 1 && !dropped_null && schema.properties.is_empty() {
+                    Some(members.remove(0))
                 } else {
-                    TypeRef::Named(name)
-                })
+                    let target = TypeRef::Union(members);
+                    hoister.out.push(TypeDecl::Alias(AliasType {
+                        reach_refs: Vec::new(),
+                        name: name.clone(),
+                        module: naming::module_name(&name),
+                        target,
+                        docstring: clean_doc(schema.description.as_deref()),
+                    }));
+                    Some(if dropped_null {
+                        optional_type_ref(TypeRef::Named(name))
+                    } else {
+                        TypeRef::Named(name)
+                    })
+                }
             }
         }
         // An `allOf` of one `$ref` and nothing else is that `$ref` to Fern's
@@ -7122,6 +7170,9 @@ impl InlineHoister<'_> {
                 self.schemas
                     .is_none_or(|schemas| !schemas.contains_key(key))
             })
+            // A declared name is a class name the way a component key is:
+            // Webflow's `Static Field` is `StaticField`.
+            .map(|key| naming::class_name(&key))
             .unwrap_or(derived)
     }
 
@@ -7295,17 +7346,21 @@ impl InlineHoister<'_> {
     }
 
     fn hoist_object_with_doc(&mut self, name: &str, schema: &Schema, docstring: Option<String>) {
+        // A nested inline `allOf` is merged member by member, as a component's
+        // is (see [`flatten_nested_all_of`]): Short.io's `POST /links` answers
+        // `allOf: [{allOf: [{originalURL, …}, {idString, …}]}, {success,
+        // duplicate}]`, and Fern's `PostLinksResponse` carries every property.
+        let flattened = flatten_nested_all_of(schema);
+        let schema = flattened.as_ref().unwrap_or(schema);
         // A `$ref` base whose properties this object restates takes the
         // component builder's path, which decides between extending the base and
         // flattening it the way Fern's parent-conflict rule does: every Zulip
         // response restates `JsonSuccessBase`'s `result` and `msg` untyped, and
         // Fern flattens each into a plain model.
-        let promoted = self
-            .schemas
-            .and_then(|schemas| promote_required_parent_properties(schemas, schema));
-        let schema = promoted.as_ref().unwrap_or(schema);
         if let Some(schemas) = self.schemas {
-            if restates_a_base_property(schemas, schema) {
+            if restates_a_base_property(schemas, schema)
+                || promote_required_parent_properties(schemas, schema).is_some()
+            {
                 let mut builder = Builder {
                     types: Vec::new(),
                     schemas,
@@ -7418,6 +7473,10 @@ impl InlineHoister<'_> {
                             own,
                             &field,
                             base_requires(schemas, base, &field.wire_name),
+                            own.type_ref == field.type_ref
+                                || own_property(schema, &field.wire_name)
+                                    .zip(base.properties.get(&field.wire_name))
+                                    .is_some_and(|(own, inherited)| same_shape(own, inherited)),
                         ) =>
                     {
                         restated.insert(field.wire_name.clone());
@@ -7440,6 +7499,24 @@ impl InlineHoister<'_> {
 
     /// Resolve an inline union variant, hoisting an object member to
     /// `{parent}{Ordinal}` in the operation's tag-scoped `types/` package.
+    /// A union member's class: the type name it declares, else its position's
+    /// name among its siblings. Fern names a member by its `x-fern-type-name`
+    /// (measured at CLI 5.163.1): Webflow's grouped `create-fields` body offers
+    /// `Static Field`, `Option Field` and `Reference Field`, and
+    /// `collections/fields/types/` declares `StaticField` and the others.
+    fn variant_name(
+        &self,
+        parent: &str,
+        index: usize,
+        variant: &Schema,
+        siblings: &[Schema],
+    ) -> String {
+        self.declared_or(
+            variant_class_name(parent, index, variant, siblings),
+            variant,
+        )
+    }
+
     fn hoist_union_variant(
         &mut self,
         parent: &str,
@@ -7447,6 +7524,12 @@ impl InlineHoister<'_> {
         variant: &Schema,
         siblings: &[Schema],
     ) -> TypeRef {
+        if let Some(later) = later_same_variant(index, siblings) {
+            let hoisted = self.out.len();
+            let type_ref = self.hoist_union_variant(parent, later, &siblings[later], siblings);
+            self.out.truncate(hoisted);
+            return type_ref;
+        }
         if let Some(reference) = &variant.reference {
             // A `$ref` to a schema declared `nullable` carries that nullability
             // into the union member, the same way it does at any other use site
@@ -7466,7 +7549,7 @@ impl InlineHoister<'_> {
         // `{enum: [mobile]}`, and the golden declares
         // `RegisterQueueRequestIdleQueueTimeoutOne`.
         if let Some(values) = string_enum_values(variant) {
-            let name = variant_class_name(parent, index, variant, siblings);
+            let name = self.variant_name(parent, index, variant, siblings);
             self.out.push(TypeDecl::Enum(build_enum(
                 variant,
                 &name,
@@ -7491,13 +7574,13 @@ impl InlineHoister<'_> {
                 // An inline string enum element is the enum `{Variant}Item`, as
                 // a component union's is (`Builder::field_type_ref`).
                 if item.reference.is_none() && string_enum_values(item).is_some() {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     if let Some(list) = self.hoist_array_item_enum(&variant_name, variant) {
                         return list;
                     }
                 }
                 if let Some(members) = item.one_of.as_ref().or(item.any_of.as_ref()) {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     if let Some(item) = self.hoist_discriminated_union(
                         &item_name,
@@ -7537,7 +7620,7 @@ impl InlineHoister<'_> {
                     .map(|(target, description)| (target.clone(), description))
                 {
                     observed_arm!("hoist_union_variant:6");
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     if let Some(element) =
                         self.hoist_annotated_copy(&item_name, &target, description)
@@ -7546,7 +7629,7 @@ impl InlineHoister<'_> {
                     }
                 }
                 if item.reference.is_none() && is_inline_struct(item) {
-                    let variant_name = variant_class_name(parent, index, variant, siblings);
+                    let variant_name = self.variant_name(parent, index, variant, siblings);
                     let item_name = format!("{variant_name}Item");
                     self.hoist_object(&item_name, item);
                     return TypeRef::List(Box::new(TypeRef::Named(item_name)));
@@ -7573,7 +7656,7 @@ impl InlineHoister<'_> {
                     let inner = self.hoist_union_variant(parent, index, member, siblings);
                     return optional_type_ref(inner);
                 }
-                let name = variant_class_name(parent, index, variant, siblings);
+                let name = self.variant_name(parent, index, variant, siblings);
                 let docstring = clean_doc(variant.description.as_deref());
                 let discriminated =
                     self.hoist_discriminated_union(&name, variant, docstring.clone());
@@ -7603,7 +7686,7 @@ impl InlineHoister<'_> {
             // a member declaring structure is hoisted.
             || is_declared_empty_object(variant)
         {
-            let name = variant_class_name(parent, index, variant, siblings);
+            let name = self.variant_name(parent, index, variant, siblings);
             self.hoist_object(&name, variant);
             return TypeRef::Named(name);
         }
@@ -7633,7 +7716,7 @@ impl InlineHoister<'_> {
             if let Some(members) = union_value {
                 let value_name = format!(
                     "{}Value",
-                    variant_class_name(parent, index, variant, siblings)
+                    self.variant_name(parent, index, variant, siblings)
                 );
                 let nullable = members.iter().any(is_null_variant);
                 let target = TypeRef::Union(
@@ -7663,6 +7746,13 @@ impl InlineHoister<'_> {
                     }),
                 );
             }
+        }
+        // A scalar member's own `nullable: true` stays on it, as the component
+        // builder's does: Short.io's `POST /links` `ttl` is `anyOf: [{type:
+        // string, nullable: true}, {type: integer, nullable: true}]`, and Fern's
+        // `PostLinksRequestTtl` is `Union[Optional[str], Optional[int]]`.
+        if is_plain_scalar(variant) && variant.nullable == Some(true) {
+            return optional_type_ref(base_type_ref(variant));
         }
         base_type_ref(variant)
     }
@@ -11271,6 +11361,23 @@ impl Builder<'_> {
                 // inline classes the others hoist.
                 let dropped_null = variants.iter().any(is_null_variant);
                 let declared_members = variants.iter().filter(|v| !is_null_variant(v)).count();
+                // Inline objects that all convert alike are the last of them,
+                // under its own description (see [`later_same_variant`]).
+                if !dropped_null && declared_members > 1 && schema.properties.is_empty() {
+                    let last = variants.len() - 1;
+                    if is_inline_struct(&variants[last])
+                        && (0..last).all(|index| later_same_variant(index, variants) == Some(last))
+                    {
+                        let survivor = &variants[last];
+                        self.add_object(
+                            name,
+                            module,
+                            survivor,
+                            clean_doc(survivor.description.as_deref()),
+                        );
+                        return;
+                    }
+                }
                 let members: Vec<TypeRef> = variants
                     .iter()
                     .enumerate()
@@ -11287,11 +11394,13 @@ impl Builder<'_> {
                     // bookMinified]` and its golden is `MediaMinified =
                     // BookMinified` under the schema's own description. Members
                     // that merely *dedupe* to one are a different shape and keep
-                    // the `Union`, because Fern names the alternatives before
-                    // collapsing them: free5gc's `GlobalRanNodeId` is three
-                    // `required`-only alternatives, all of them `Any`, and its
-                    // golden is `typing.Union[typing.Any]`.
-                    (false, 1) if declared_members == 1 => {
+                    // the `Union` when the schema declares properties beside
+                    // them (Fern's common properties): free5gc's `Area` is two
+                    // `required`-only alternatives, both `Any`, beside `tacs` and
+                    // `areaCodes`, and its golden is `typing.Union[typing.Any]`.
+                    // Without such properties the one left is the type (measured
+                    // at Fern CLI 5.163.1).
+                    (false, 1) if declared_members == 1 || schema.properties.is_empty() => {
                         let sole = members.remove(0);
                         if schema_accepts_none(schema, self.schemas) {
                             optional_type_ref(sole)
@@ -11729,7 +11838,10 @@ impl Builder<'_> {
         let flattened = flatten_nested_all_of(schema);
         let schema = flattened.as_ref().unwrap_or(schema);
         let promoted = promote_required_parent_properties(self.schemas, schema);
-        let schema = promoted.as_ref().unwrap_or(schema);
+        let (schema, promoted_owners) = match &promoted {
+            Some((rewritten, owners)) => (rewritten, Some(owners)),
+            None => (schema, None),
+        };
         let inherited = merge_restated_parent_properties(schema, self.schemas);
         let schema = inherited.as_ref().unwrap_or(schema);
         // `allOf` merges members: `$ref`s become base classes, inline members
@@ -11806,8 +11918,23 @@ impl Builder<'_> {
                     .keys()
                     .any(|field| declared_fields.contains(field.as_str()))
             });
+        let own_from = self.types.len();
         let mut fields = Vec::new();
-        for member in schema.all_of.iter().flatten() {
+        for (index, member) in schema.all_of.iter().flatten().enumerate() {
+            // A promoted parent property keeps the parent's name for whatever
+            // it hoists: auto-agent-protocol's `VehicleDetailResponse.data` is
+            // `allOf: [$ref Vehicle, {required: [status], …}]`, and the golden
+            // field is `Vehicle`'s own `VehicleStatus` enum.
+            if let (0, Some(owners)) = (index, promoted_owners) {
+                // They follow the schema's own `properties` when it has any:
+                // Groupe PSA's `Energy` declares `type` … `extension` beside
+                // `allOf: [$ref CreatedAtField]` and requires `createdAt`, and
+                // the golden writes `created_at` after `extension`.
+                if schema.properties.is_empty() {
+                    self.collect_promoted(name, member, owners, &required, &mut fields);
+                }
+                continue;
+            }
             if member.reference.is_none() {
                 // An inline `allOf` member that is itself an undiscriminated union
                 // contributes the union of its branches' properties, every one of
@@ -11856,6 +11983,12 @@ impl Builder<'_> {
             }
         }
         self.collect_fields(name, schema, &required, &mut fields);
+        if let (Some(owners), Some(member)) = (
+            promoted_owners.filter(|_| !schema.properties.is_empty()),
+            schema.all_of.iter().flatten().next(),
+        ) {
+            self.collect_promoted(name, member, owners, &required, &mut fields);
+        }
         if !schema.properties.is_empty() {
             for member in schema.all_of.iter().flatten() {
                 let Some(parent) = member
@@ -11906,7 +12039,9 @@ impl Builder<'_> {
         let mut inherited_by_base: Vec<Vec<Field>> = Vec::new();
         let mut overridden = false;
         let mut overridden_by_base = vec![false; base_refs.len()];
+        let mut first_conflict = vec![usize::MAX; base_refs.len()];
         let lowered_from = self.types.len();
+        let mut restated_from = None;
         if collides {
             let mut restated = std::collections::HashSet::new();
             for (index, (base_name, base)) in base_refs.iter().enumerate() {
@@ -11921,17 +12056,29 @@ impl Builder<'_> {
                         continue;
                     };
                     let requires = base_required.contains(&field.wire_name.as_str());
-                    if restates_without_conflict(local, field, requires) {
+                    let same_shape = local.type_ref == field.type_ref
+                        || own_property(schema, &field.wire_name)
+                            .zip(base.properties.get(&field.wire_name))
+                            .is_some_and(|(own, inherited)| same_shape(own, inherited));
+                    if restates_without_conflict(local, field, requires, same_shape) {
                         restated.insert(field.wire_name.clone());
                     } else {
                         overridden = true;
                         overridden_by_base[index] = true;
+                        let position = fields
+                            .iter()
+                            .position(|local| local.wire_name == field.wire_name)
+                            .unwrap_or(usize::MAX);
+                        first_conflict[index] = first_conflict[index].min(position);
                     }
                 }
                 inherited_by_base.push(inherited);
             }
             fields.retain(|field| !restated.contains(&field.wire_name));
             overridden |= flatten_all;
+            if !restated.is_empty() {
+                restated_from = Some(own_from..lowered_from);
+            }
         }
         let mut bases = Vec::new();
         if !overridden {
@@ -11944,9 +12091,15 @@ impl Builder<'_> {
             // SendMessageRequestZero(ChannelOptionsSms, BaseMessageType)`: `Text`
             // is inlined for its restated `text`, its own untouched parent
             // `baseMessageType` is extended in its place after the untouched
-            // `channelOptionsSms`, and `baseMessageType`'s `required` list, which
-            // names `message_type`, does not make `Text`'s `message_type`
-            // required. Zulip's `JsonSuccess` restates `result`, which both
+            // `channelOptionsSms`. Since Fern's CLI 5.163.1 (measured)
+            // `baseMessageType`'s `required` list, which names `message_type`,
+            // makes the inlined `Image`'s `message_type` required, and the
+            // inlined bases follow the model's own fields in the order those
+            // fields first conflict with them: `SendMessageRequestFourOne`
+            // redeclares `to`, `from` and `channel` from
+            // `channelOptionsViberWithButton` before `image` from `Image`, so
+            // `viber_service` comes before `message_type`. Zulip's
+            // `JsonSuccess` restates `result`, which both
             // `JsonSuccessBase` and its parent `JsonResponseBase` declare, so
             // both are inlined and the model extends nothing.
             //
@@ -11968,8 +12121,13 @@ impl Builder<'_> {
                         inline.required.iter().map(String::as_str).collect();
                     let mut inherited = Vec::new();
                     self.collect_fields(base_name, &inline, &inline_required, &mut inherited);
-                    inlined_by_base.push(inherited);
+                    inlined_by_base.push((first_conflict[index], inherited));
                 }
+                inlined_by_base.sort_by_key(|(position, _)| *position);
+                let inlined_by_base: Vec<Vec<Field>> = inlined_by_base
+                    .into_iter()
+                    .map(|(_, inherited)| inherited)
+                    .collect();
                 for parent in extended {
                     if !bases.contains(&parent) {
                         bases.push(parent);
@@ -12013,6 +12171,43 @@ impl Builder<'_> {
                 index += 1;
             }
         }
+        // An own property dropped as a restatement takes the types it hoisted
+        // with it: TimelyApp's `V1.Hour.state` restates `V1.State.permissions`
+        // with the same inline item object, and the golden declares no
+        // `V1HourStatePermissionsItem`, only the base's `V1StatePermissionsItem`.
+        if let Some(range) = restated_from {
+            let mut reachable = std::collections::HashSet::new();
+            for field in &fields {
+                collect_named(&field.type_ref, &mut reachable);
+            }
+            for decl in self.types[..range.start]
+                .iter()
+                .chain(&self.types[range.end..])
+            {
+                reachable.extend(crate::emit::decl_refs(decl));
+            }
+            loop {
+                let before = reachable.len();
+                for decl in &self.types[range.clone()] {
+                    if reachable.contains(decl.name()) {
+                        reachable.extend(crate::emit::decl_refs(decl));
+                    }
+                }
+                if reachable.len() == before {
+                    break;
+                }
+            }
+            let mut index = range.start;
+            let mut end = range.end;
+            while index < end {
+                if reachable.contains(self.types[index].name()) {
+                    index += 1;
+                } else {
+                    self.types.remove(index);
+                    end -= 1;
+                }
+            }
+        }
         let xml = xml_encoding(schema, name);
         if xml.is_some() {
             annotate_xml_fields(schema, &mut fields, Some(schemas));
@@ -12036,6 +12231,28 @@ impl Builder<'_> {
             xml,
         }));
         self.building_types.remove(name);
+    }
+
+    /// Collect the redeclared parent properties of
+    /// [`promote_required_parent_properties`]'s leading member, each lowered
+    /// under the component that declares it, so what it hoists keeps the
+    /// parent's name: auto-agent-protocol's `VehicleDetailResponse.data` is
+    /// `allOf: [$ref Vehicle, {required: [status], …}]`, and the golden field
+    /// is `Vehicle`'s own `VehicleStatus` enum.
+    fn collect_promoted(
+        &mut self,
+        name: &str,
+        member: &Schema,
+        owners: &IndexMap<String, String>,
+        required: &[&str],
+        fields: &mut Vec<Field>,
+    ) {
+        for (key, property) in member.properties.iter() {
+            let mut single = Schema::default();
+            single.properties.insert(key.clone(), property.clone());
+            let owner = owners.get(key).map_or(name, String::as_str);
+            self.collect_fields(owner, &single, required, fields);
+        }
     }
 
     /// The part of an overridden base a model inlines: `schema`'s own properties
@@ -12073,6 +12290,7 @@ impl Builder<'_> {
                         && !self.overrides_parent(&ref_to_class(reference), parent, local)
                     {
                         extended.push(ref_to_class(reference));
+                        required.extend(chain_required(schemas, parent));
                         continue;
                     }
                     self.inlined_part(parent, local, extended, depth + 1)
@@ -12108,7 +12326,7 @@ impl Builder<'_> {
                 .find(|own| own.wire_name == field.wire_name)
                 .is_some_and(|own| {
                     let requires = required.contains(&field.wire_name.as_str());
-                    !restates_without_conflict(own, field, requires)
+                    !restates_without_conflict(own, field, requires, own.type_ref == field.type_ref)
                 })
         })
     }
@@ -12433,11 +12651,45 @@ impl Builder<'_> {
         for (value, reference) in mapping {
             let target_key = reference.rsplit('/').next().unwrap_or(reference);
             let target = self.schemas.get(target_key)?;
-            // A mapping target that is itself a union of references has no
-            // fields to flatten, so the wrapper holds it whole in `value`: the
-            // hand-written `kitchen-nested-mapping-target` fixture's `Course`
-            // maps `grill` to `GrillCourse`, a `oneOf` of two `$ref`s, and Fern's
-            // `Course_Grill` is `value: GrillCourse` beside the `Literal` tag.
+            // A mapping target that is itself a union of objects is their merge:
+            // Fern's importer (measured at CLI 5.163.1) declares one object,
+            // named after the union and the mapping value, holding every
+            // branch's properties but the discriminant, required where every
+            // branch requires them, and the wrapper flattens it. The hand-written
+            // `kitchen-nested-mapping-target` fixture's `Course` maps `grill` to
+            // `GrillCourse`, a `oneOf` of `SteakOrder` and `SkewerOrder`, and
+            // Fern declares `CourseGrill` with optional `doneness` and `count`,
+            // which `Course_Grill` carries beside its `Literal` tag.
+            if let Some(merged) = merged_mapping_union(target, &property_name, self.schemas) {
+                let merged_name = format!("{name}{}", naming::class_name(value));
+                self.add_object(
+                    &merged_name,
+                    naming::module_name(&merged_name),
+                    &merged,
+                    None,
+                );
+                members.push(UnionMember {
+                    class_name: format!("{name}_{}", discriminant_class_name(value)),
+                    discriminant: value.clone(),
+                    fields: member_fields(
+                        &merged,
+                        &property_name,
+                        self.schemas,
+                        Some(&merged_name),
+                    ),
+                    discriminant_index: None,
+                    source: Some(merged_name.clone()),
+                    docstring: docstring.clone(),
+                    wrapped: false,
+                });
+                variant_targets.push(merged_name);
+                continue;
+            }
+            // A mapping target that is a union of references not all objects
+            // has no fields to flatten, so the wrapper holds it whole in
+            // `value` beside the `Literal` tag (Fern's `Course_Grill` was
+            // `value: GrillCourse` this way for every such union until CLI
+            // 5.163.1 began merging a union of objects, above).
             let union_target = target.properties.is_empty()
                 && target
                     .one_of
@@ -13701,6 +13953,12 @@ impl Builder<'_> {
         variant: &Schema,
         siblings: &[Schema],
     ) -> TypeRef {
+        if let Some(later) = later_same_variant(index, siblings) {
+            let hoisted = self.types.len();
+            let type_ref = self.variant_ref(parent, later, &siblings[later], siblings);
+            self.types.truncate(hoisted);
+            return type_ref;
+        }
         if let Some(reference) = &variant.reference {
             return TypeRef::Named(ref_to_class(reference));
         }
@@ -14098,6 +14356,33 @@ fn collapsed_union(members: &[Schema], variants: &[TypeRef]) -> Option<TypeRef> 
 /// is the same rule at scale: its `binary`, `uri` and bare `string` alternatives
 /// all render `str`, and the ten-member union Fern emits carries one `str`,
 /// after `dt.datetime`.
+/// The last sibling after `index` that a union member converts to the same
+/// shape as, if any. Fern's importer (measured at CLI 5.163.1) keeps only the
+/// last of structurally equal alternatives, compared without names or
+/// descriptions, and names the survivor as it would have named it among all
+/// of them: the Vonage Messages API answers `send_message` with a `oneOf` of
+/// six `{message_uuid}` objects that differ only in `description`, and Fern
+/// returns the last of them, `SendMessageResponseMessageUuid`. A member that
+/// yields to a later one forwards to it, so what it would have hoisted is never
+/// declared.
+fn later_same_variant(index: usize, siblings: &[Schema]) -> Option<usize> {
+    let variant = siblings.get(index)?;
+    (index + 1..siblings.len()).rev().find(|&later| {
+        let other = &siblings[later];
+        match (variant.reference.as_deref(), other.reference.as_deref()) {
+            (Some(left), Some(right)) => {
+                ref_to_class(left) == ref_to_class(right) && variant.nullable == other.nullable
+            }
+            (None, None) => {
+                variant.nullable == other.nullable
+                    && !is_null_variant(variant)
+                    && same_shape(variant, other)
+            }
+            _ => false,
+        }
+    })
+}
+
 fn dedupe_union_members(members: Vec<TypeRef>) -> Vec<TypeRef> {
     let mut out = Vec::with_capacity(members.len());
     for (index, member) in members.iter().enumerate() {
@@ -14324,14 +14609,264 @@ fn restates_a_base_property(schemas: &IndexMap<String, Schema>, schema: &Schema)
 /// of a property the base leaves optional conflicts too: TAMS's `FlowAudio`
 /// requires `FlowCore`'s optional `codec` and flattens `FlowCore`, where its
 /// sibling `FlowMulti` still extends it.
-fn restates_without_conflict(own: &Field, field: &Field, base_requires: bool) -> bool {
-    own.type_ref == field.type_ref
+fn restates_without_conflict(
+    own: &Field,
+    field: &Field,
+    base_requires: bool,
+    same_shape: bool,
+) -> bool {
+    same_shape
         && own.spec_required
         && base_requires
         && !own.optional
         && !own.nullable
         && !field.nullable
-        && own.docstring == field.docstring
+}
+
+/// The schema `schema` declares for its own property `key`, itself or in an
+/// inline `allOf` member.
+fn own_property<'a>(schema: &'a Schema, key: &str) -> Option<&'a Schema> {
+    schema.properties.get(key).or_else(|| {
+        schema
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_none())
+            .find_map(|member| member.properties.get(key))
+    })
+}
+
+/// The object Fern's importer (measured at CLI 5.163.1) merges a
+/// discriminator mapping target into when the target is a bare `oneOf`/`anyOf`
+/// (no `discriminator`, `properties` or `allOf` of its own) of object
+/// branches: each branch's properties, its `allOf` chain's first, in first
+/// appearance and without the discriminant, required where every branch
+/// declares and requires them. `None` for any other target.
+fn merged_mapping_union(
+    target: &Schema,
+    discriminant: &str,
+    schemas: &IndexMap<String, Schema>,
+) -> Option<Schema> {
+    fn collect<'a>(
+        schema: &'a Schema,
+        schemas: &'a IndexMap<String, Schema>,
+        visited: &std::collections::HashSet<&'a str>,
+        properties: &mut IndexMap<String, Schema>,
+        required: &mut std::collections::HashSet<String>,
+    ) {
+        let mut visited = visited.clone();
+        let node = match schema.reference.as_deref() {
+            Some(reference) => {
+                if !visited.insert(reference) {
+                    return;
+                }
+                let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                    return;
+                };
+                node
+            }
+            None => schema,
+        };
+        for member in node.all_of.iter().flatten() {
+            collect(member, schemas, &visited, properties, required);
+        }
+        for (key, property) in node.properties.iter() {
+            properties
+                .entry(key.clone())
+                .or_insert_with(|| property.clone());
+        }
+        required.extend(node.required.iter().cloned());
+    }
+    let branches = target.one_of.as_ref().or(target.any_of.as_ref())?;
+    if branches.is_empty()
+        || target.discriminator.is_some()
+        || target.properties.declared()
+        || target.all_of.is_some()
+    {
+        return None;
+    }
+    let mut merged = Schema {
+        ty: Some(TypeField::Single("object".to_string())),
+        ..Schema::default()
+    };
+    let mut seen: IndexMap<String, (usize, usize)> = IndexMap::new();
+    for branch in branches {
+        let resolved = match branch.reference.as_deref() {
+            Some(reference) => resolve_ref_from_schemas(schemas, reference)?,
+            None => branch,
+        };
+        if !resolved.properties.declared()
+            && resolved.all_of.is_none()
+            && resolved.ty.as_ref().and_then(TypeField::primary) != Some("object")
+        {
+            return None;
+        }
+        let mut properties = IndexMap::new();
+        let mut required = std::collections::HashSet::new();
+        collect(
+            branch,
+            schemas,
+            &std::collections::HashSet::new(),
+            &mut properties,
+            &mut required,
+        );
+        for (key, property) in properties {
+            if key == discriminant {
+                continue;
+            }
+            let counts = seen.entry(key.clone()).or_insert((0, 0));
+            counts.0 += 1;
+            if required.contains(&key) {
+                counts.1 += 1;
+            }
+            if !merged.properties.contains_key(&key) {
+                merged.properties.insert(key, property);
+            }
+        }
+    }
+    for (key, (present, required)) in seen {
+        if present == branches.len() && required == branches.len() {
+            merged.required.push(key);
+        }
+    }
+    Some(merged)
+}
+
+/// Whether two property schemas convert to the same shape by Fern's
+/// structural comparison (measured at CLI 5.163.1), which reads no names and no
+/// descriptions: references by target, enums by their value sets, primitives by
+/// type and format, and objects, arrays, maps and unions member by member, each
+/// object property with whether it is required and nullable.
+fn same_shape(a: &Schema, b: &Schema) -> bool {
+    fn depth_shape(a: &Schema, b: &Schema, depth: usize) -> bool {
+        if depth > 8 {
+            return false;
+        }
+        match (a.reference.as_deref(), b.reference.as_deref()) {
+            (Some(left), Some(right)) => return ref_to_class(left) == ref_to_class(right),
+            (None, None) => {}
+            _ => return false,
+        }
+        if let (Some(left), Some(right)) = (&a.enum_values, &b.enum_values) {
+            let left: std::collections::HashSet<String> =
+                left.iter().map(ToString::to_string).collect();
+            let right: std::collections::HashSet<String> =
+                right.iter().map(ToString::to_string).collect();
+            return left == right;
+        }
+        if a.enum_values.is_some() != b.enum_values.is_some()
+            || a.const_value != b.const_value
+            || a.all_of.is_some()
+            || b.all_of.is_some()
+        {
+            return false;
+        }
+        for (left, right) in [(&a.one_of, &b.one_of), (&a.any_of, &b.any_of)] {
+            match (left, right) {
+                (Some(left), Some(right)) => {
+                    if left.len() != right.len()
+                        || !left
+                            .iter()
+                            .zip(right)
+                            .all(|(l, r)| depth_shape(l, r, depth + 1))
+                    {
+                        return false;
+                    }
+                }
+                (None, None) => {}
+                _ => return false,
+            }
+        }
+        // An untyped schema declaring properties is an object, and one
+        // declaring items an array, as Fern converts them.
+        let ty = |schema: &Schema| {
+            schema
+                .ty
+                .as_ref()
+                .and_then(TypeField::primary)
+                .map(str::to_string)
+                .or_else(|| {
+                    if schema.properties.declared() {
+                        Some("object".to_string())
+                    } else if schema.items.is_some() {
+                        Some("array".to_string())
+                    } else {
+                        None
+                    }
+                })
+        };
+        // Only a format that changes the primitive counts: the Vonage Messages
+        // API's `vCard.vcard.url` is `format: url` where the restatement in
+        // `SendMessageRequestOneOne` writes none, and the model still extends
+        // `VCard`.
+        fn typed_format(schema: &Schema) -> Option<&str> {
+            schema.format.as_deref().filter(|format| {
+                matches!(
+                    *format,
+                    "date-time"
+                        | "date"
+                        | "int32"
+                        | "int64"
+                        | "float"
+                        | "double"
+                        | "binary"
+                        | "byte"
+                )
+            })
+        }
+        if ty(a) != ty(b) || typed_format(a) != typed_format(b) {
+            return false;
+        }
+        match (&a.items, &b.items) {
+            (Some(left), Some(right)) => {
+                if !depth_shape(left, right, depth + 1) {
+                    return false;
+                }
+            }
+            (None, None) => {}
+            _ => return false,
+        }
+        match (&a.additional_properties, &b.additional_properties) {
+            (
+                Some(AdditionalProperties::Schema(left)),
+                Some(AdditionalProperties::Schema(right)),
+            ) => {
+                if !depth_shape(left, right, depth + 1) {
+                    return false;
+                }
+            }
+            (Some(AdditionalProperties::Schema(_)), _)
+            | (_, Some(AdditionalProperties::Schema(_))) => {
+                return false;
+            }
+            (left, right) => {
+                // A closed or declared-empty object is a model, a bare object
+                // an open map: the hand-written `inline-oneof-variants`
+                // fixture's `{type: object, properties: {},
+                // additionalProperties: false}` member stays beside its
+                // `{type: object}` one.
+                let open = |schema: &Schema, value: &Option<AdditionalProperties>| {
+                    !schema.properties.declared()
+                        && !matches!(value, Some(AdditionalProperties::Bool(false)))
+                };
+                if open(a, left) != open(b, right) {
+                    return false;
+                }
+            }
+        }
+        if a.properties.len() != b.properties.len() {
+            return false;
+        }
+        let requires = |schema: &Schema, key: &str| schema.required.iter().any(|name| name == key);
+        a.properties.iter().all(|(key, left)| {
+            b.properties.get(key).is_some_and(|right| {
+                requires(a, key) == requires(b, key)
+                    && left.nullable == right.nullable
+                    && depth_shape(left, right, depth + 1)
+            })
+        })
+    }
+    depth_shape(a, b, 0)
 }
 
 /// A base reaching its prospective child cannot be imported as a superclass:
@@ -14560,40 +15095,16 @@ fn all_properties_of(schemas: &IndexMap<String, Schema>, schema: &Schema, depth:
 /// requiring it, `Feature` requires it, and the golden field is a required
 /// `id: str`.
 fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
-    fn walk<'a>(
-        schemas: &'a IndexMap<String, Schema>,
-        members: &'a [Schema],
-        visited: &mut std::collections::HashSet<&'a str>,
-        out: &mut Vec<String>,
-    ) {
-        for member in members {
-            let node = match member.reference.as_deref() {
-                Some(reference) => {
-                    if !visited.insert(reference) {
-                        continue;
-                    }
-                    let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
-                        continue;
-                    };
-                    node
-                }
-                None => member,
-            };
-            for name in node.required.iter() {
-                if !out.contains(name) {
-                    out.push(name.clone());
-                }
-            }
-            if let Some(inner) = node.all_of.as_deref() {
-                walk(schemas, inner, visited, out);
-            }
-        }
-    }
     let mut required = Vec::new();
     if let Some(members) = schema.all_of.as_deref() {
-        walk(
+        let objects: Vec<Schema> = members
+            .iter()
+            .filter(|member| is_object_all_of_member(member))
+            .cloned()
+            .collect();
+        required_through(
             schemas,
-            members,
+            &objects,
             &mut std::collections::HashSet::new(),
             &mut required,
         );
@@ -14606,40 +15117,98 @@ fn all_of_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<S
     required
 }
 
+/// Whether Fern's importer keeps an `allOf` member when it converts the
+/// composition as an object (measured at CLI 5.163.1): a `$ref`, or a member
+/// that is an object by `type` or by declaring `properties` (or composes only
+/// such members). Any other member — a bare `{required: [...]}` — is skipped,
+/// its `required` with it: TAMS's `StorageBackendsList` items are `allOf:
+/// [$ref StorageBackend, {required: [store_type, provider, store_product,
+/// id]}, {properties: {id, label, default_storage}}]`, and the golden
+/// `StorageBackendsListItem` extends `StorageBackend` with an optional `id`.
+fn is_object_all_of_member(member: &Schema) -> bool {
+    member.reference.is_some()
+        || member.ty.as_ref().and_then(TypeField::primary) == Some("object")
+        || member.properties.declared()
+        || [&member.all_of, &member.one_of, &member.any_of]
+            .into_iter()
+            .find_map(Option::as_ref)
+            .is_some_and(|inner| inner.iter().all(is_object_all_of_member))
+}
+
+/// Append what `members` require to `out`, each `$ref` read through its own
+/// `allOf` chain and each component once.
+fn required_through<'a>(
+    schemas: &'a IndexMap<String, Schema>,
+    members: &'a [Schema],
+    visited: &mut std::collections::HashSet<String>,
+    out: &mut Vec<String>,
+) {
+    for member in members {
+        let node = match member.reference.as_deref() {
+            Some(reference) => {
+                if !visited.insert(reference.to_string()) {
+                    continue;
+                }
+                let Some(node) = resolve_ref_from_schemas(schemas, reference) else {
+                    continue;
+                };
+                node
+            }
+            None => member,
+        };
+        for name in node.required.iter() {
+            if !out.contains(name) {
+                out.push(name.clone());
+            }
+        }
+        if let Some(inner) = node.all_of.as_deref() {
+            required_through(schemas, inner, visited, out);
+        }
+    }
+}
+
+/// Every name `schema` requires itself or anywhere in its `allOf` chain.
+fn chain_required(schemas: &IndexMap<String, Schema>, schema: &Schema) -> Vec<String> {
+    let mut required: Vec<String> = schema.required.iter().cloned().collect();
+    if let Some(members) = schema.all_of.as_deref() {
+        required_through(
+            schemas,
+            members,
+            &mut std::collections::HashSet::new(),
+            &mut required,
+        );
+    }
+    required
+}
+
 /// Whether `base`, read with its whole `allOf` chain, requires `key`.
 fn base_requires(schemas: &IndexMap<String, Schema>, base: &Schema, key: &str) -> bool {
-    all_of_required(schemas, base)
-        .iter()
-        .any(|name| name == key)
+    chain_required(schemas, base).iter().any(|name| name == key)
 }
 
 /// A property `key` that `schema` or a member of its `allOf` chain declares,
-/// with whether that path requires it and whether it is `readOnly`.
+/// with whether that path requires it, whether it is `readOnly`, and the class
+/// of the component declaring it (`owner` for an inline `schema`).
 fn parent_property<'a>(
     schemas: &'a IndexMap<String, Schema>,
     schema: &'a Schema,
     key: &str,
+    owner: &str,
     visited: &mut std::collections::HashSet<&'a str>,
-) -> Option<(&'a Schema, bool, bool)> {
-    let node = match schema.reference.as_deref() {
+) -> Option<(&'a Schema, bool, bool, String)> {
+    let (node, owner) = match schema.reference.as_deref() {
         Some(reference) => {
             if !visited.insert(reference) {
                 return None;
             }
-            resolve_ref_from_schemas(schemas, reference)?
+            (
+                resolve_ref_from_schemas(schemas, reference)?,
+                ref_to_class(reference),
+            )
         }
-        None => schema,
+        None => (schema, owner.to_string()),
     };
-    let required = node.required.iter().any(|name| name == key)
-        || all_of_required(
-            schemas,
-            &Schema {
-                all_of: node.all_of.clone(),
-                ..Schema::default()
-            },
-        )
-        .iter()
-        .any(|name| name == key);
+    let required = chain_required(schemas, node).iter().any(|name| name == key);
     if let Some(property) = node.properties.get(key) {
         let read_only = property.read_only == Some(true)
             || property
@@ -14647,11 +15216,12 @@ fn parent_property<'a>(
                 .as_deref()
                 .and_then(|reference| resolve_ref_from_schemas(schemas, reference))
                 .is_some_and(|target| target.read_only == Some(true));
-        return Some((property, required, read_only));
+        return Some((property, required, read_only, owner));
     }
     node.all_of.iter().flatten().find_map(|member| {
-        parent_property(schemas, member, key, visited)
-            .map(|(property, inner, read_only)| (property, inner || required, read_only))
+        parent_property(schemas, member, key, &owner, visited).map(
+            |(property, inner, read_only, owner)| (property, inner || required, read_only, owner),
+        )
     })
 }
 
@@ -14666,11 +15236,12 @@ fn parent_property<'a>(
 /// plain model whose required `codec` comes first, before `format`, with
 /// `FlowCore`'s other fields after its own. `FlowMulti`, requiring only its own
 /// `format`, still extends `FlowCore`. The redeclarations lead the composition,
-/// as an inline member of their own.
+/// as an inline member of their own; beside the rewritten schema comes each
+/// redeclaration's declaring component, whose name it hoists its types under.
 fn promote_required_parent_properties(
     schemas: &IndexMap<String, Schema>,
     schema: &Schema,
-) -> Option<Schema> {
+) -> Option<(Schema, IndexMap<String, String>)> {
     let members = schema.all_of.as_deref()?;
     let parents: Vec<&Schema> = members
         .iter()
@@ -14708,17 +15279,23 @@ fn promote_required_parent_properties(
                 })
     };
     let mut promoted = Schema::default();
+    let mut owners = IndexMap::new();
     for key in all_of_required(schemas, schema) {
         if declared(&key) {
             continue;
         }
         for parent in &parents {
-            let Some((property, required, read_only)) =
-                parent_property(schemas, parent, &key, &mut std::collections::HashSet::new())
-            else {
+            let Some((property, required, read_only, owner)) = parent_property(
+                schemas,
+                parent,
+                &key,
+                "",
+                &mut std::collections::HashSet::new(),
+            ) else {
                 continue;
             };
             if !required && !read_only {
+                owners.insert(key.clone(), owner);
                 promoted.properties.insert(key.clone(), property.clone());
                 promoted.required.push(key.clone());
             }
@@ -14735,7 +15312,7 @@ fn promote_required_parent_properties(
             .chain(members.iter().cloned())
             .collect(),
     );
-    Some(rewritten)
+    Some((rewritten, owners))
 }
 
 /// An inline `type: object` that declares `properties: {}` and nothing else. A
@@ -14945,7 +15522,7 @@ fn referenced_schema_accepts_none(schema: &Schema, schemas: &IndexMap<String, Sc
         let Some(target) = resolve_ref_from_schemas(schemas, reference) else {
             return false;
         };
-        if is_explicitly_nullable(target) {
+        if target.nullable_at_references() {
             return true;
         }
         current = target;
@@ -24578,6 +25155,329 @@ mod tests {
         assert_eq!(field_shape(id_lock), [("chamber", false)]);
     }
 
+    fn has_decl(ir: &super::Ir, name: &str) -> bool {
+        ir.types.iter().any(|decl| decl.name() == name)
+            || ir.tag_types.iter().any(|tag| tag.decl.name() == name)
+    }
+
+    /// Restatements compared structurally, as Fern's CLI 5.163.1 compares
+    /// them (TimelyApp's `V1.Hour.state`, TAMS's storage backends, the
+    /// Vonage Messages API's `vCard`, auto-agent-protocol's vehicles, Groupe
+    /// PSA's `Energy`).
+    #[test]
+    fn restatements_compare_structurally_and_promotions_keep_the_parents_names() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {
+                "Gate": {
+                    "type": "object", "required": ["id", "leaves"],
+                    "properties": {
+                        "id": {"type": "integer"},
+                        "label": {"type": "string"},
+                        "state": {"type": "string", "enum": ["open", "shut"]},
+                        "leaves": {"type": "array", "items": {
+                            "type": "object", "required": ["side"],
+                            "properties": {"side": {"type": "string", "format": "url"}}
+                        }}
+                    }
+                },
+                // Every restatement but `label` is the base's own shape (an
+                // inline item object under another name, an untyped object, a
+                // format that changes no primitive): `label` conflicts.
+                "SluiceGate": {
+                    "type": "object",
+                    "allOf": [{"$ref": "#/components/schemas/Gate"}],
+                    "properties": {
+                        "id": {"type": "integer", "description": "Restated."},
+                        "label": {"type": ["null", "string"]},
+                        "leaves": {"type": "array", "items": {
+                            "required": ["side"],
+                            "properties": {"side": {"type": "string"}}
+                        }}
+                    }
+                },
+                // A bare `required` member is no object member: `id` stays optional.
+                "GateListItem": {
+                    "allOf": [
+                        {"$ref": "#/components/schemas/Gate"},
+                        {"required": ["label"]},
+                        {"type": "object", "properties": {"note": {"type": "string"}}}
+                    ]
+                },
+                // `state` is promoted under `Gate`'s name, after the own fields.
+                "StateGate": {
+                    "type": "object",
+                    "allOf": [{"$ref": "#/components/schemas/Gate"}],
+                    "required": ["state"],
+                    "properties": {"note": {"type": "string"}}
+                }
+            }}
+        }));
+        let sluice = object_decl(&ir, "SluiceGate");
+        assert!(sluice.bases.is_empty());
+        assert_eq!(
+            field_shape(sluice),
+            [
+                ("label", true),
+                ("id", false),
+                ("state", true),
+                ("leaves", false)
+            ]
+        );
+        assert_eq!(
+            sluice.fields[3].type_ref,
+            TypeRef::List(Box::new(TypeRef::Named("GateLeavesItem".to_string())))
+        );
+        assert!(!has_decl(&ir, "SluiceGateLeavesItem"));
+        let item = object_decl(&ir, "GateListItem");
+        assert_eq!(item.bases, ["Gate"]);
+        assert_eq!(field_shape(item), [("note", true)]);
+        let state = object_decl(&ir, "StateGate");
+        assert!(state.bases.is_empty());
+        assert_eq!(field_shape(state)[..2], [("note", true), ("state", false)]);
+        assert_eq!(
+            state.fields[1].type_ref,
+            TypeRef::Named("GateState".to_string())
+        );
+        assert!(!has_decl(&ir, "StateGateState"));
+    }
+
+    /// Fern's CLI 5.163.1 keeps the last of structurally equal union
+    /// alternatives and, with no sibling properties, the one left is the type
+    /// (the Vonage Messages API's `send_message` response); with sibling
+    /// properties the union stays (free5gc's `Area`).
+    #[test]
+    fn structurally_equal_alternatives_collapse_to_the_last() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "components": {"schemas": {
+                "Receipt": {"oneOf": [
+                    {"description": "SMS", "type": "object", "properties": {"uuid": {"type": "string"}}},
+                    {"description": "MMS", "type": "object", "properties": {"uuid": {"type": "string", "description": "Id."}}}
+                ]},
+                "Area": {
+                    "type": "object",
+                    "properties": {"tacs": {"type": "string"}},
+                    "oneOf": [{"required": ["tacs"]}, {"required": ["codes"]}]
+                },
+                "Mixed": {"oneOf": [
+                    {"type": "object", "properties": {"a": {"type": "string"}}},
+                    {"type": "object", "properties": {"b": {"type": "string"}}},
+                    {"type": "object", "properties": {"a": {"type": "string"}}}
+                ]}
+            }},
+            "paths": {"/locks": {"post": {
+                "operationId": "lock",
+                "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {
+                    "oneOf": [
+                        {"description": "First", "type": "object", "properties": {"uuid": {"type": "string"}}},
+                        {"description": "Last", "type": "object", "properties": {"uuid": {"type": "string"}}}
+                    ]
+                }}}}}
+            }}}
+        }));
+        let receipt = object_decl(&ir, "Receipt");
+        assert_eq!(receipt.docstring.as_deref(), Some("MMS"));
+        assert!(!has_decl(&ir, "ReceiptZero") && !has_decl(&ir, "ReceiptUuid"));
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias) if alias.name == "Area"
+                && alias.target == TypeRef::Union(vec![TypeRef::Primitive(Prim::Any)])
+        )));
+        assert!(ir.types.iter().any(|decl| matches!(
+            decl,
+            TypeDecl::Alias(alias) if alias.name == "Mixed"
+                && alias.target == TypeRef::Union(vec![
+                    TypeRef::Named("MixedB".to_string()),
+                    TypeRef::Named("MixedTwo".to_string()),
+                ])
+        )));
+        assert!(!has_decl(&ir, "MixedZero"));
+        assert_eq!(
+            ir.endpoints[0].response,
+            Some(TypeRef::Named("LockResponseOne".to_string()))
+        );
+        assert!(!has_decl(&ir, "LockResponse"));
+    }
+
+    /// A discriminator mapping target that is a union of objects is merged
+    /// into one object named after the union and the value (the hand-written
+    /// `kitchen-nested-mapping-target` fixture, Fern CLI 5.163.1).
+    #[test]
+    fn a_mapping_target_union_of_objects_is_merged() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {},
+            "components": {"schemas": {
+                "Vessel": {
+                    "type": "object", "required": ["kind"],
+                    "properties": {"kind": {"type": "string"}},
+                    "discriminator": {"propertyName": "kind", "mapping": {
+                        "barge": "#/components/schemas/BargeVessel"
+                    }},
+                    "oneOf": [{"$ref": "#/components/schemas/BargeVessel"}]
+                },
+                "BargeVessel": {"oneOf": [
+                    {"$ref": "#/components/schemas/Coal"},
+                    {"$ref": "#/components/schemas/Grain"}
+                ]},
+                "Coal": {"type": "object", "required": ["kind", "tons", "hold"],
+                    "properties": {"kind": {"type": "string"}, "tons": {"type": "integer"}, "hold": {"type": "string"}}},
+                "Grain": {"type": "object", "required": ["kind", "hold"],
+                    "properties": {"kind": {"type": "string"}, "hold": {"type": "string"}, "sacks": {"type": "integer"}}}
+            }}
+        }));
+        let merged = object_decl(&ir, "VesselBarge");
+        assert_eq!(
+            field_shape(merged),
+            [("tons", true), ("hold", false), ("sacks", true)]
+        );
+        let union = ir
+            .types
+            .iter()
+            .find_map(|decl| match decl {
+                TypeDecl::DiscriminatedUnion(union) if union.name == "Vessel" => Some(union),
+                _ => None,
+            })
+            .expect("Vessel is a discriminated union");
+        assert!(!union.members[0].wrapped);
+        assert_eq!(union.members[0].fields.len(), 3);
+    }
+
+    /// Webflow's shapes at Fern CLI 5.163.1: a webhook with an `operationId`
+    /// names its payload `{OperationId}Payload` in its tag's package, hoisted
+    /// types and all, and a grouped operation's union member declaring a type
+    /// name is that class.
+    #[test]
+    fn webhook_payloads_and_declared_members_take_their_declared_names() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.1.0", "info": {"title": "Canal Locks", "version": "1"},
+            "paths": {"/gates": {"post": {
+                "operationId": "open-gate",
+                "tags": ["Gates"],
+                "requestBody": {"content": {"application/json": {"schema": {"oneOf": [
+                    {"x-fern-type-name": "Sluice Gate", "type": "object",
+                        "properties": {"depth": {"type": "integer"}}},
+                    {"type": "object", "properties": {"width": {"type": "integer"}}}
+                ]}}}},
+                "responses": {"204": {"description": "ok"}}
+            }}},
+            "webhooks": {"gate_opened": {"post": {
+                "operationId": "gate_opened",
+                "tags": ["Gates"],
+                "requestBody": {"content": {"application/json": {"schema": {
+                    "type": "object",
+                    "properties": {"payload": {"type": "object", "properties": {
+                        "gate": {"type": "string"}
+                    }}}
+                }}}},
+                "responses": {"200": {"description": "ok"}}
+            }}}
+        }));
+        let tagged: Vec<(&str, &str)> = ir
+            .tag_types
+            .iter()
+            .map(|tag| (tag.module.as_str(), tag.decl.name()))
+            .collect();
+        assert!(tagged.contains(&("gates", "GateOpenedPayload")));
+        assert!(tagged.contains(&("gates", "GateOpenedPayloadPayload")));
+        assert!(tagged.contains(&("gates", "SluiceGate")));
+        assert!(!has_decl(&ir, "PostGateOpenedPayload"));
+    }
+
+    /// Short.io and Hasura shapes at Fern CLI 5.163.1: a nested inline `allOf`
+    /// response merges every member, a nullable scalar member keeps its
+    /// `Optional`, a `$ref` to a component offering a `null` alternative is
+    /// nullable even beside an open map, and an `allOf` parent a component
+    /// flattens is still a type a request can take whole.
+    #[test]
+    fn inline_bodies_merge_nested_all_of_and_keep_member_nullability() {
+        let ir = build_document(serde_json::json!({
+            "openapi": "3.0.3", "info": {"title": "Canal Locks", "version": "1"},
+            "components": {"schemas": {
+                "Value": {"additionalProperties": true, "anyOf": [{"type": "string"}, {"type": "null"}]},
+                "Args": {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Value"}},
+                "Create": {"type": "object", "properties": {"label": {"type": "string"}}},
+                "Stream": {"allOf": [
+                    {"$ref": "#/components/schemas/Create"},
+                    {"type": "object", "required": ["label"], "properties": {"mode": {"type": "string"}}}
+                ]}
+            }},
+            "paths": {
+                "/links": {"post": {
+                    "operationId": "link",
+                    "requestBody": {"content": {"application/json": {"schema": {
+                        "type": "object",
+                        "properties": {"ttl": {"anyOf": [
+                            {"type": "string", "nullable": true},
+                            {"type": "integer", "nullable": true}
+                        ]}}
+                    }}}},
+                    "responses": {"200": {"description": "ok", "content": {"application/json": {"schema": {
+                        "allOf": [
+                            {"allOf": [
+                                {"type": "object", "properties": {"url": {"type": "string"}}},
+                                {"type": "object", "properties": {"id": {"type": "string"}}}
+                            ]},
+                            {"type": "object", "properties": {"ok": {"type": "boolean"}}}
+                        ]
+                    }}}}}
+                }},
+                "/wait": {"post": {
+                    "operationId": "wait",
+                    "requestBody": {"content": {"application/json": {"schema": {
+                        "$ref": "#/components/schemas/Create"
+                    }}}},
+                    "responses": {"204": {"description": "ok"}}
+                }}
+            }
+        }));
+        let response = object_decl(&ir, "LinkResponse");
+        let wires: Vec<&str> = response
+            .fields
+            .iter()
+            .map(|field| field.wire_name.as_str())
+            .collect();
+        assert_eq!(wires, ["url", "id", "ok"]);
+        assert!(
+            ir.types.iter().any(|decl| matches!(
+                decl,
+                TypeDecl::Alias(alias) if alias.name == "LinkRequestTtl"
+                    && alias.target == TypeRef::Union(vec![
+                        TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Str))),
+                        TypeRef::Optional(Box::new(TypeRef::Primitive(Prim::Int))),
+                    ])
+            )) || ir.tag_types.iter().any(|tag| matches!(
+                &tag.decl,
+                TypeDecl::Alias(alias) if alias.name == "LinkRequestTtl"
+            ))
+        );
+        assert!(object_decl(&ir, "Stream").bases.is_empty());
+        assert!(has_decl(&ir, "Create"));
+        assert!(ir
+            .endpoints
+            .iter()
+            .find(|ep| ep.path == "/wait")
+            .is_some_and(|ep| !ep.body_schema_dropped));
+        let value = Schema {
+            additional_properties: Some(crate::openapi::AdditionalProperties::Bool(true)),
+            any_of: Some(vec![
+                Schema {
+                    ty: Some(TypeField::Single("string".to_string())),
+                    ..Schema::default()
+                },
+                Schema {
+                    ty: Some(TypeField::Single("null".to_string())),
+                    ..Schema::default()
+                },
+            ]),
+            ..Schema::default()
+        };
+        assert!(!value.explicitly_nullable());
+        assert!(value.nullable_at_references());
+    }
+
     /// The shape of NDW's `MunicipalityFeature` (measured at Fern CLI 5.163.1):
     /// a `$ref` parent's `required` list requires the child's restatement of
     /// that property too, and a required restatement of a property the parent
@@ -24601,7 +25501,7 @@ mod tests {
                         {
                             "type": "object",
                             "properties": {
-                                "id": {"type": "string", "description": "The lock id."}
+                                "id": {"type": "integer"}
                             }
                         }
                     ]
@@ -24620,7 +25520,9 @@ mod tests {
                         {"$ref": "#/components/schemas/Feature"},
                         {
                             "type": "object",
-                            "properties": {"id": {"type": "string"}}
+                            "properties": {
+                                "id": {"type": "string", "description": "The lock id."}
+                            }
                         }
                     ]
                 }
@@ -24632,8 +25534,9 @@ mod tests {
         let stricter = object_decl(&ir, "Stricter");
         assert!(stricter.bases.is_empty());
         assert_eq!(field_shape(stricter), [("kind", false), ("id", false)]);
-        // Required by the parent's list and declared alike, `id` restates the
-        // parent's and the child extends it.
+        // Required by the parent's list and declared alike — a description
+        // is no difference to Fern's comparison — `id` restates the parent's
+        // and the child extends it.
         let restated = object_decl(&ir, "Restated");
         assert_eq!(restated.bases, ["Feature"]);
         assert!(restated.fields.is_empty());
