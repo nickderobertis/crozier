@@ -97,8 +97,8 @@ property-sole-anyof-struct-member	absent-tree	measured	docs/openapi-surface/prob
 property-sole-oneof-closed-object-member	absent-tree	measured	docs/openapi-surface/probe-expected/property-sole-oneof-closed-object-member	—	35a94a3296a3ee4014f7952a945179d79360fcd460bce0128bb2d8b80c6a102a
 range-1XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-1XX	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
 range-3XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-3XX	—	9b005e4f2d778d12f16c1f03aa8c4a7e82d1d33193dd67dd932759c7f0246e2a
-range-4XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-4XX	—	5377f7248faafa9391a2a189da6ca99d19e1a3ea03531b28aa10f4c597ad5b03
-range-5XX	absent-tree	discards	docs/openapi-surface/probe-expected/range-5XX	—	dbc8703b02ce92bb957d3b6febb52fd7c4a247148ce1574b59b9327d8ba5aa22
+range-4XX	absent-tree	measured	docs/openapi-surface/probe-expected/range-4XX	—	5377f7248faafa9391a2a189da6ca99d19e1a3ea03531b28aa10f4c597ad5b03
+range-5XX	absent-tree	measured	docs/openapi-surface/probe-expected/range-5XX	—	dbc8703b02ce92bb957d3b6febb52fd7c4a247148ce1574b59b9327d8ba5aa22
 ref-pointer-undeclared-component-head	absent-tree	measured	docs/openapi-surface/probe-expected/ref-pointer-undeclared-component-head	—	58a0c5f21c875b3c555787c4432fa1af2aa5cf92f4b3ef179ce2e5e06fc29171
 ref-pointer-unnamed-segment	refusal	refuses	docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt	—	82df112d57411611dbe1d7a1f2651eaf010bb3254bb61c4558ede7004a0adf5e
 reference-summary	differential	ignores	docs/openapi-surface/probe-expected/reference-summary	reference-summary-control	26f70c1b34a9b8c9a7e7607fe51d509a88e5bbc68d9e544d0ce5e42f8e2b3e04
