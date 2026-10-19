@@ -3966,13 +3966,11 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
         Auth::None => Vec::new(),
     };
     // A credential read from the environment is optional in the signature,
-    // defaulting to the variable, and a required one is checked once the client
-    // is built (`x-fern-bearer: {env: …}`).
+    // defaulting to `None`: the variable is read when the client is built (see
+    // [`env_fallback`]), not when the module is imported (`x-fern-bearer: {env:
+    // …}`).
     let ctor_ty = |credential: &Credential, ty: &str, required: bool| match &credential.env {
-        Some(env) => format!(
-            "typing.Optional[{ty}] = os.getenv(\"{}\")",
-            escape_py_str(env)
-        ),
+        Some(_) => format!("typing.Optional[{ty}] = None"),
         None if required => ty.to_string(),
         None => format!("typing.Optional[{ty}] = None"),
     };
@@ -4023,9 +4021,13 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
         .collect();
     let check: String = creds
         .iter()
-        .filter(|(credential, _, required)| *required && declared(credential))
-        .filter_map(|(credential, _, _)| {
-            Some(env_check(&credential.param, credential.env.as_ref()?))
+        .filter(|(credential, _, _)| declared(credential))
+        .filter_map(|(credential, _, required)| {
+            Some(env_fallback(
+                &credential.param,
+                credential.env.as_ref()?,
+                *required,
+            ))
         })
         .collect();
     AuthClient {
@@ -4037,13 +4039,22 @@ fn auth_client_parts(auth: &Auth, taken: &std::collections::HashSet<&str>) -> Au
     }
 }
 
-/// The root client's check that a required credential read from the
-/// environment variable `env` was given one way or the other.
-fn env_check(param: &str, env: &str) -> String {
-    format!(
-        "        if {param} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {param} or setting {}\")\n",
-        escape_py_str(env)
-    )
+/// The root client's read of the environment variable `env` for a constructor
+/// field the caller left `None`, and, for a `required` one, the check that it
+/// was given one way or the other. Fern reads the variable when the client is
+/// built, not as the signature default (`lock-keeper-vault`, `ski-lift-gates`,
+/// `relay-station-header-names`; measured at fern-python-sdk 5.41.3).
+fn env_fallback(param: &str, env: &str, required: bool) -> String {
+    let env = escape_py_str(env);
+    let fallback =
+        format!("        {param} = {param} if {param} is not None else os.getenv(\"{env}\")\n");
+    if required {
+        format!(
+            "{fallback}        if {param} is None:\n            raise ApiError(body=\"The client must be instantiated be either passing in {param} or setting {env}\")\n"
+        )
+    } else {
+        fallback
+    }
 }
 
 /// The environment variable a promoted header's constructor field defaults to:
@@ -7273,14 +7284,9 @@ fn root_client_class(
             distinct_global_header_params(global_headers)
                 .into_iter()
                 .map(|h| {
-                    if let Some(env) = header_env(h) {
-                        format!(
-                            "        {}: typing.Optional[{}] = os.getenv(\"{}\"),\n",
-                            h.py_name,
-                            global_header_annotation(h),
-                            escape_py_str(env)
-                        )
-                    } else if h.required() {
+                    // A header read from the environment defaults to `None`, as a
+                    // credential does ([`env_fallback`]).
+                    if h.required() && header_env(h).is_none() {
                         format!("        {}: {},\n", h.py_name, global_header_annotation(h))
                     } else {
                         format!(
@@ -7349,10 +7355,7 @@ fn root_client_class(
         example_line: a.example_line,
         auth_check: distinct_global_header_params(global_headers)
             .into_iter()
-            .filter(|h| h.required())
-            .filter_map(|h| {
-                Some(env_check(&h.py_name, header_env(h)?))
-            })
+            .filter_map(|h| Some(env_fallback(&h.py_name, header_env(h)?, h.required())))
             .collect::<String>()
             + &a.check,
         base_url_doc,
@@ -13120,16 +13123,34 @@ mod tests {
         let c = auth_client_parts(&lift, &free);
         assert_eq!(
             c.ctor_param,
-            "        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = os.getenv(\"LIFT_PASS\"),\n"
+            "        lift_pass: typing.Optional[typing.Union[str, typing.Callable[[], str]]] = None,\n"
         );
         assert_eq!(
             c.doc_param,
             "    lift_pass : typing.Optional[typing.Union[str, typing.Callable[[], str]]]\n"
         );
-        assert!(c.check.contains("if lift_pass is None:"));
-        assert!(c
-            .check
-            .contains("passing in lift_pass or setting LIFT_PASS"));
+        // The variable is read when the client is built, then a required
+        // credential is checked.
+        assert_eq!(
+            c.check,
+            concat!(
+                "        lift_pass = lift_pass if lift_pass is not None else os.getenv(\"LIFT_PASS\")\n",
+                "        if lift_pass is None:\n",
+                "            raise ApiError(body=\"The client must be instantiated be either passing in lift_pass or setting LIFT_PASS\")\n",
+            )
+        );
+        // An optional one is read the same way but never checked.
+        let optional_lift = Auth::Bearer {
+            required: false,
+            credential: Credential {
+                param: "lift_pass".to_string(),
+                env: Some("LIFT_PASS".to_string()),
+            },
+        };
+        assert_eq!(
+            auth_client_parts(&optional_lift, &free).check,
+            "        lift_pass = lift_pass if lift_pass is not None else os.getenv(\"LIFT_PASS\")\n"
+        );
         assert!(auth_wrapper_parts(&lift)
             .token_method
             .contains("def _get_lift_pass(self) -> str:"));
