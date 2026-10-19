@@ -216,7 +216,7 @@ fn retiring(root: &Path) -> std::collections::BTreeSet<String> {
 }
 
 #[test]
-fn every_class_probe_is_refused_as_its_registry_row_states() {
+fn every_class_probe_has_the_outcome_its_registry_row_states() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join(REGISTRY);
     assert!(!classes(&root).is_empty());
     let failures = class_probe_failures(&root);
