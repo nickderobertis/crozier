@@ -1052,10 +1052,10 @@ def registry_column(path: Path, column: str) -> list[str]:
         cells = line.split("\t")
         if not line:
             continue
-        if len(cells) != len(header) or not cells[index]:
+        if len(cells) != len(header) or not re.fullmatch(r"[a-z0-9][a-z0-9-]*", cells[index]):
             raise SystemExit(
-                f"fern-references: {path}:{number} has {len(cells)} cells for {len(header)} columns or no "
-                f"`{column}`; restore it from git"
+                f"fern-references: {path}:{number} has {len(cells)} cells for {len(header)} columns or a "
+                f"`{column}` that is no lower-case name; restore it from git"
             )
         names.append(cells[index])
     return names

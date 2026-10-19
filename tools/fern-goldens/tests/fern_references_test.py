@@ -666,6 +666,8 @@ class FernReferencesTests(unittest.TestCase):
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\n")
         self.write("docs/fern-refusals/findings.tsv", "finding\n")
         self.assertIn("classes.tsv:2 has 1 cells for 2 columns", self.run_tool("list", "refusals").stderr)
+        self.write("docs/fern-refusals/classes.tsv", "class\tstatus\n../../escape\trefuse\n")
+        self.assertIn("is no lower-case name", self.run_tool("list", "refusals").stderr)
         self.handwritten(
             "alpha", evidence=EVIDENCE.format("0" * 64).replace("\n[[covers]]", "audiences = 'public'\n\n[[covers]]")
         )
@@ -789,6 +791,32 @@ class FernReferencesTests(unittest.TestCase):
         self.assertIn("client_class_name: FernApi", generators)
         self.assertIn("extra_fields: allow", generators)
         self.assertNotIn("enum_type", generators)
+
+    def test_a_parameter_literals_case_with_its_own_metadata_refreshes_that_file_alone(self) -> None:
+        self.handwritten("own")
+        shutil.rmtree(self.root / "docs/openapi-surface/handwritten/own/fern-expected")
+        for rel, text in {
+            "src/fern/client.py": "CLIENT = 1\n",
+            "src/fern/literal.py": "LITERAL = 1\n",
+            "src/fern/core/enum.py": "ENUM = 1\n",
+            ".fern/metadata.json": "{}",
+        }.items():
+            self.write(f"docs/openapi-surface/handwritten/own/fern-expected/{rel}", text)
+        literals = self.root / "docs/fern-measurements/parameter-literals"
+        self.write("docs/fern-measurements/parameter-literals/certified-trees.json", json.dumps({"own": "0" * 64}))
+        shared = self.write("docs/fern-measurements/parameter-literals/metadata.json", '{"shared": true}\n')
+        own = self.write("docs/fern-measurements/parameter-literals/own.metadata.json", "{}\n")
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+
+        result = self.run_tool("generate", "measurements", "parameter-literals/own")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        measured = json.loads(own.read_text(encoding="utf-8"))
+        self.assertEqual((measured["cliVersion"], measured["generatorVersion"]), (CLI, SDK))
+        self.assertEqual(shared.read_text(encoding="utf-8"), '{"shared": true}\n')
+        self.assertNotEqual(
+            json.loads((literals / "certified-trees.json").read_text(encoding="utf-8"))["own"], "0" * 64
+        )
 
     def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
         self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")
