@@ -321,7 +321,7 @@ golden-reach-arms:
     python3 tools/surface-census/golden-reach.py arms
 
 # Which generated files each `golden` row resting only on a residual golden
-# (komga, short-io, webflow-v2) lands in, split by whether that golden test
+# (komga, webflow-v2) lands in, split by whether that golden test
 # byte-compares them: renders the witness with the feature perturbed and diffs
 # crozier's two outputs. Restated in docs/openapi-surface-coverage.md. Outside
 # `check`: it needs a built crozier and ruff.

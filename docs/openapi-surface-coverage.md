@@ -1265,7 +1265,7 @@ can express. Three conventions that derivation applies, stated once:
   `examples`, or an object whose values are themselves schema declarations, and
   `hoist_union_variant` sent all three to `base_type_ref` while it still hoisted
   a bare object with a concrete example. One-hundred-and-fourteen of the
-  one-hundred-and-sixteen cases below survive this test; the other two name the
+  one-hundred-and-eighteen cases below survive this test; the other four name the
   extension that would close them.
 
   What the test does **not** rule out is a node whose own declaration contradicts
@@ -3904,7 +3904,7 @@ selector the census declares — a conjunction, or, where the arm reads one Path
 Object key or one `$ref` value and opens no schema, a predicate — and only where
 that selector is
 *exact*, counting the nodes the branch is selected by and no others. Otherwise it
-is recorded as an enumeration hole of two remaining kinds, naming the property no
+is recorded as an enumeration hole of three remaining kinds, naming the property no
 selector kind can express and what closing it would take — the way
 `normalization-collision` was recorded before
 `components.schemas:normalized-collision` existed. No case is in neither, and none
@@ -3914,6 +3914,7 @@ is in both.
 |---|---|---|
 | **H-boolean-value** | The sole-reference property arm accepts absent or false `nullable`, and rejects true | The existing grammar records nullable presence, not its boolean truth; only `additionalProperties` has boolean-valued selectors |
 | **H-ordered-members** | Exactly two ordered `allOf` members: first a reference resolving to a string enum, then a string scalar carrying a pattern and no enum, reference, properties or nested composition | Ordered member selection with target resolution and sibling conjunctions |
+| **H-sibling-identity** | A union member whose shape a later sibling of the same union repeats — the same `$ref` class, or the same inline shape, at the same `nullable` | A member-to-sibling comparison: the grammar's selectors read one node and its children, never one sibling against another |
 
 **This table is machine-readable, and this is the restatement of it.** The
 derivation is declared once, as `CASES` in `tools/surface-census/openapi-surface-census.py` —
@@ -4373,7 +4374,8 @@ composition, so the gate below fires — which is the chain overlap
 
 | # | the branch it distinguishes | selector or hole |
 |---|---|---|
-| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm, so nothing precedes it | `schema.oneOf>schema.$ref` |
+| 0 | `if let Some(later) = later_same_variant(index, siblings, …)` — a member whose shape a later sibling repeats (the same `$ref` class, or the same inline shape, at the same `nullable`) is typed as that later sibling, the way Fern keeps the last of alike alternatives; it reads the variant against its siblings, which no selector compares | **H-sibling-identity** |
+| 1 | `if let Some(reference) = &variant.reference` — the variant is a Reference Object, `oneOf` head; the first arm after case 0's sibling check | `schema.oneOf>schema.$ref` |
 | 2 | the same arm, `anyOf` head | `schema.anyOf>schema.$ref` |
 | 2a | `if let Some(values) = string_enum_values(variant)` — a member declaring a string enum, hoisted as an enum named for the variant; `oneOf` head | `schema.oneOf>schema.enum:string-valued` |
 | 2b | the same arm, `anyOf` head | `schema.anyOf>schema.enum:string-valued` |
@@ -4421,6 +4423,7 @@ composition, so the gate below fires — which is the chain overlap
 | 14b | the value's `anyOf` spelling, which the arm reads only where no `oneOf` is written; `oneOf` head | `schema.oneOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` |
 | 14c | 14a's value, `anyOf` head | `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&schema.oneOf:several-non-null-members` |
 | 14d | 14b's value, `anyOf` head | `schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members` |
+| 15 | `if is_plain_scalar(variant) && variant.nullable == Some(true)` — a plain scalar member keeps its own `nullable: true` as `Optional[…]`, as the component builder's variant does; it accepts true and rejects absent or false `nullable` | **H-boolean-value** |
 | 12a | the closing `base_type_ref(variant)` — the residual arm, its selector **composed from the case table**; `oneOf` head. Only cases 1, 2a, 2c, 8a, 9, 13a and 13b are negatable: every case inside the `type: array` guard states a property of the item rather than of the variant. The nodes those cases claim are counted here too, which is the chain overlap [the exactness rule](#the-selector-grammar) permits between two cases of one table | `schema.oneOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
 | 12b | the same, `anyOf` head | `schema.anyOf>!schema.$ref&!schema.allOf&!schema.anyOf&!schema.const:string-valued&!schema.enum:string-valued&!schema.oneOf&!schema.properties:non-empty` |
 

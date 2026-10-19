@@ -57,25 +57,6 @@ CENSUS = _census()
 DISTINCT = {"type": "string", "format": "date-time"}
 
 
-def _retype_format(old: str) -> Callable[[Any], int]:
-    """Rewrite every `format: <old>` to `date-time`, which types the field differently."""
-
-    def perturb(node: Any) -> int:
-        count = 0
-        if isinstance(node, dict):
-            for key, value in node.items():
-                if key == "format" and value == old:
-                    node[key] = "date-time"
-                    count += 1
-                else:
-                    count += perturb(value)
-        elif isinstance(node, list):
-            count += sum(perturb(value) for value in node)
-        return count
-
-    return perturb
-
-
 def _retype_true_schemas(node: Any) -> int:
     """Replace every `true` schema at a property or `items` with a typed one."""
     count = 0
@@ -113,8 +94,6 @@ def _stringify_null_examples(node: Any) -> int:
 
 # key -> (the residual row that is its only real witness, the perturbation)
 CASES: dict[str, tuple[str, Callable[[Any], int]]] = {
-    "format-idn-hostname": ("short-io", _retype_format("idn-hostname")),
-    "format-iri": ("short-io", _retype_format("iri")),
     "boolean-schema-true": ("webflow-v2", _retype_true_schemas),
     "schema-example-null": ("webflow-v2", _stringify_null_examples),
 }

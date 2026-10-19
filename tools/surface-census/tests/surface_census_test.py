@@ -3198,6 +3198,7 @@ fn following() { let other = 42; }
             111: "one-hundred-and-eleven",
             114: "one-hundred-and-fourteen",
             116: "one-hundred-and-sixteen",
+            118: "one-hundred-and-eighteen",
         }
         rows_of = [cells for rows in self.case_rows().values() for cells in rows]
         selectors = [c for c in rows_of if re.fullmatch(r"`(.+)`", c[2])]
@@ -7466,11 +7467,14 @@ class GoldenSourcePopulationTests(unittest.TestCase):
         self.assertIn("apideck.com-crm", names)
         # The residual rows are golden sources whose registration names what
         # they do not byte-match yet.
-        for fixture in ("komga", "short-io", "webflow-v2"):
+        for fixture in ("komga", "webflow-v2"):
             with self.subTest(fixture=fixture):
                 self.assertIn(fixture, names)
                 self.assertTrue(registrations[fixture].unmatched)
-        self.assertEqual((), registrations["apideck.com-crm"].unmatched)
+        # short-io was the third residual until fern-python-sdk 5.41.3; it now
+        # byte-matches whole.
+        for fixture in ("apideck.com-crm", "short-io"):
+            self.assertEqual((), registrations[fixture].unmatched)
 
     def test_the_reach_join_reads_the_census_registrations(self) -> None:
         """`golden-reach` scopes one run per golden test; it must find every source's."""
