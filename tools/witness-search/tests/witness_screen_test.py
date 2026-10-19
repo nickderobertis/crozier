@@ -932,6 +932,9 @@ class HistoricalPairTests(unittest.TestCase):
         self.later = Path(scratch.name) / "later"
         for relative in (
             *(path.relative_to(REPO) for path in (REPO / "tools" / "witness-search").glob("*.py")),
+            *(path.relative_to(REPO) for path in (REPO / "tools" / "corpus").glob("*.py")),
+            Path("tools/surface-census/openapi-surface-census.py"),
+            Path("tools/surface-census/witness-search-region-keys.py"),
             Path("docs/corpus-licensing.md"),
         ):
             (self.later / relative).parent.mkdir(parents=True, exist_ok=True)
@@ -1181,48 +1184,70 @@ class HistoricalPairTests(unittest.TestCase):
                 self.assertNotIn("Traceback", refused.stderr)
 
     def test_the_index_reads_a_labelled_screen_as_history_of_its_pair(self) -> None:
-        row = {
-            "source": "sourcegraph",
-            "repository": "acme/shop",
-            "path": "openapi.yaml",
-            "commit": COMMIT,
-            "keys": ["sample-shape"],
-            "license": "passed",
-            "ref": "passed",
-            "fern": "passed",
-            "disposition": "witness-found",
-            "sha256": "a" * 64,
-            "measured": {},
-            SCREEN.HISTORICAL_PAIR: "measured at an earlier certified pair, Fern CLI 1.0.0 / g 2.0.0",
-        }
-        result = INDEX.classify(
-            "sourcegraph",
-            "sample-shape",
-            {
-                "repository": "acme/shop",
-                "path": "openapi.yaml",
-                "commit": COMMIT,
-                "sha256": "a" * 64,
-                "disposition": "declares",
-                "selector_count": 1,
-            },
-            "candidates.jsonl:7",
-            {("sample-shape", INDEX.candidate_name(row), "a" * 64): row},
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        # The rest of a legacy evidence root the index reads: each source's keys,
+        # the publisher set, the declaring candidate, and a region citing the search.
+        for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
+            directory = self.surface / f"witness-search-{source}"
+            directory.mkdir(exist_ok=True)
+            (directory / "keys.json").write_text(
+                json.dumps({"keys": {"sample-shape": {"selector": "schema.additionalProperties=false"}}}),
+                encoding="utf-8",
+                newline="\n",
+            )
+        (self.surface / "witness-search-github-publisher-trees" / "publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
         )
-        self.assertEqual(
-            "candidates.jsonl:7; historical screen: measured at an earlier certified pair, Fern CLI 1.0.0 / g 2.0.0",
-            result["evidence"],
-        )
-        # A region's compact line counts the candidate among those resting on historical screens.
-        (self.evidence / "records.tsv").write_text(
-            "key\tdisposition\tevidence\n"
-            f"sample-shape\twitness-found\t{result['evidence']}\n"
-            "sample-shape\twitness-found\tcandidates.jsonl:8\n",
+        (self.evidence / "candidates.jsonl").write_text(
+            json.dumps(
+                {
+                    "repository": "acme/shop",
+                    "path": "openapi.yaml",
+                    "commit": COMMIT,
+                    "sha256": row["sha256"],
+                    "source": "sourcegraph",
+                    "key": "sample-shape",
+                    "disposition": "declares",
+                    "selector_count": 1,
+                }
+            )
+            + "\n",
             encoding="utf-8",
             newline="\n",
         )
-        counts = INDEX.disposition_counts(self.surface, "sourcegraph")["sample-shape"]
-        self.assertEqual((2, 1), (counts["witness-found"], counts[INDEX.HISTORICAL]))
+        region = self.surface / "schemas.md"
+        region.write_text(
+            "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
+            "| `sample-shape` | `witness-found` | sourcegraph: 9 candidates (9 witness-found, 0 rejected, "
+            "0 outstanding, 0 not-owed) [records](witness-search-sourcegraph/records.tsv) witness "
+            "`acme/shop:openapi.yaml` at `x` | kept |\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        indexed = subprocess.run(
+            [
+                sys.executable,
+                str(self.later / "tools/witness-search/witness-search-github-index.py"),
+                "--evidence-root",
+                str(self.surface),
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=120,
+        )
+        self.assertEqual(0, indexed.returncode, indexed.stderr)
+        records = (self.evidence / "records.tsv").read_text(encoding="utf-8")
+        self.assertIn(f"historical screen: {row[SCREEN.HISTORICAL_PAIR]}", records)
+        self.assertIn(
+            "sourcegraph: 1 candidates (1 witness-found, 0 rejected, 0 outstanding, 0 not-owed, "
+            "1 on historical screens)",
+            region.read_text(encoding="utf-8"),
+        )
 
 
 class WindowsNewlineTests(unittest.TestCase):
