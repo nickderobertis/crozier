@@ -384,13 +384,25 @@ def reduce_overlay(tree: Path, base: Path | None, provenance: dict[str, object])
         module.reduce(base if base is not None else Path(empty), tree, provenance)
 
 
+EVIDENCE_KEYS = ("fern_cli_version", "fern_python_sdk_version", "digest")
+
+
+def check_evidence(path: Path) -> None:
+    """Fail before Fern runs unless `evidence.toml` carries each provenance line
+    this family restates, once, so a fixture's tree is never replaced under
+    evidence it cannot restate."""
+    text = path.read_text(encoding="utf-8")
+    for key in EVIDENCE_KEYS:
+        if len(re.findall(rf'(?m)^{key} = "[^"]*"$', text)) != 1:
+            raise ReferenceError(f"{rel(path)} has no single `{key}` line to restate; restore it from git")
+
+
 def rewrite_evidence(path: Path, pair: Pair, digest: str) -> None:
     """Restate an `evidence.toml`'s versions and digest, leaving every other line."""
+    check_evidence(path)
     text = path.read_text(encoding="utf-8")
-    for key, value in (("fern_cli_version", pair.cli), ("fern_python_sdk_version", pair.generator), ("digest", digest)):
-        text, count = re.subn(rf'(?m)^{key} = "[^"]*"$', f'{key} = "{value}"', text, count=1)
-        if count != 1:
-            raise ReferenceError(f"{rel(path)} has no `{key}` line to restate")
+    for key, value in zip(EVIDENCE_KEYS, (pair.cli, pair.generator, digest), strict=True):
+        text = re.sub(rf'(?m)^{key} = "[^"]*"$', f'{key} = "{value}"', text, count=1)
     path.write_text(text, encoding="utf-8", newline="\n")
 
 
@@ -548,6 +560,7 @@ def generate_handwritten(item: str, pair: Pair) -> None:
     ):
         raise ReferenceError(f"{rel(evidence)}: audiences must be a list of audience labels, not {declared!r}")
     audiences = tuple(declared)
+    check_evidence(evidence)
     # A fixture generated under a non-default setting keeps it: the committed
     # tree's own `.fern/metadata.json` records the generator config it was made with.
     config = recorded_generator_config(fixture / "fern-expected")
@@ -851,6 +864,10 @@ def generate_measurement(item: str, pair: Pair) -> None:
     if record.is_file() and not destination.exists():
         refused_measurement(item, row, record, pair)
         return
+    evidence = destination.parent / "evidence.toml"
+    restates_evidence = evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8")
+    if restates_evidence:
+        check_evidence(evidence)
     generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
     if row.overlay != "-":
         label, _, base = row.overlay.partition(":")
@@ -866,8 +883,7 @@ def generate_measurement(item: str, pair: Pair) -> None:
             # from the base and the overlay before comparing.
             provenance["digest"] = contract_digest(destination)
         reduce_overlay(destination, base_tree, provenance)
-    evidence = destination.parent / "evidence.toml"
-    if evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8"):
+    if restates_evidence:
         rewrite_evidence(evidence, pair, contract_digest(destination))
     note = destination.parent / "evidence.md"
     if note.is_file():

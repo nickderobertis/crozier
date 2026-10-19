@@ -818,6 +818,39 @@ class FernReferencesTests(unittest.TestCase):
             json.loads((literals / "certified-trees.json").read_text(encoding="utf-8"))["own"], "0" * 64
         )
 
+    def test_a_measurement_case_restates_its_evidence_toml_from_the_tree_it_reduces(self) -> None:
+        base = self.handwritten("kappa") / "fern-expected"
+        self.write("docs/fern-measurements/union-literals/kappa/openapi.yml", "openapi: 3.0.3\n")
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            "union-literals/kappa\tdocs/fern-measurements/union-literals/kappa/openapi.yml\tliterals\tpackaged\t"
+            f"fern-expected:{base.relative_to(self.root).as_posix()}\n",
+        )
+        evidence = self.write("docs/fern-measurements/union-literals/kappa/evidence.toml", EVIDENCE.format("0" * 64))
+
+        result = self.run_tool("generate", "measurements", "union-literals/kappa")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        tree = evidence.parent / "fern-expected"
+        text = evidence.read_text(encoding="utf-8")
+        self.assertIn(f'fern_cli_version = "{CLI}"\nfern_python_sdk_version = "{SDK}"\n', text)
+        self.assertIn(f'digest = "{tree_digest(tree)}"', text)
+        self.assertIn('[[covers]]\nkey = "k"\n', text)
+
+    def test_evidence_missing_a_provenance_line_stops_before_the_tree_is_replaced(self) -> None:
+        fixture = self.handwritten(
+            "lambda", evidence='fern_cli_version = "1.0.0"\ndigest = "x"\n\n[[covers]]\nkey = "k"\n'
+        )
+
+        result = self.run_tool("generate", "handwritten", "lambda")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("has no single `fern_python_sdk_version` line to restate", result.stderr)
+        self.assertEqual(self.calls(), [], "Fern never ran")
+        self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
+        self.assertIn('fern_cli_version = "1.0.0"', (fixture / "evidence.toml").read_text(encoding="utf-8"))
+
     def test_a_departure_note_s_tree_is_regenerated_under_its_recorded_settings(self) -> None:
         self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")
         self.write(
