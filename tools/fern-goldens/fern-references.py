@@ -172,6 +172,8 @@ def run_fern(
     layout: str = "packaged",
     audiences: tuple[str, ...] = (),
     check: bool = False,
+    client_class_name: str | None = None,
+    extra_fields: str | None = None,
 ) -> Generator[FernRun]:
     """`fern generate` (after `fern check` when asked) over one document in the
     workspace `generate-fern-fixture.sh` scaffolds, yielding the raw output tree."""
@@ -188,13 +190,18 @@ def run_fern(
                 json.dumps({"organization": "fern", "version": pair.cli}) + "\n", encoding="utf-8"
             )
             audiences_block = "".join(f"      - {name}\n" for name in audiences)
-            pydantic = "          pydantic_config:\n            enum_type: python_enums\n"
+            pydantic_lines = ("            enum_type: python_enums\n" if enum_type == "python-enums" else "") + (
+                f"            extra_fields: {extra_fields}\n" if extra_fields else ""
+            )
+            pydantic = f"          pydantic_config:\n{pydantic_lines}" if pydantic_lines else ""
+            client_class = f"          client_class_name: {client_class_name}\n" if client_class_name else ""
             (workspace / "generators.yml").write_text(
                 "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n"
                 + (f"    audiences:\n{audiences_block}" if audiences else "")
                 + "    generators:\n      - name: fernapi/fern-python-sdk\n"
                 + f"        version: {pair.generator}\n        config:\n"
-                + (pydantic if enum_type == "python-enums" else "")
+                + client_class
+                + pydantic
                 + "        output:\n          location: local-file-system\n          path: ../generated/python\n",
                 encoding="utf-8",
             )
@@ -459,11 +466,65 @@ def cases() -> dict[str, dict[str, str]]:
     return {row["case"]: row for row in read_tsv(CASES, CASES_HEADER)}
 
 
+PARAMETER_LITERALS = MEASUREMENTS / "parameter-literals"
+
+
+def parameter_literal_cases() -> list[str]:
+    return sorted(json.loads((ROOT / PARAMETER_LITERALS / "certified-trees.json").read_text(encoding="utf-8")))
+
+
 def list_measurements() -> list[str]:
-    return sorted(cases())
+    extra = (
+        [f"parameter-literals/{case}" for case in parameter_literal_cases()]
+        if (ROOT / PARAMETER_LITERALS / "certified-trees.json").is_file()
+        else []
+    )
+    return sorted([*cases(), *extra])
+
+
+def generate_parameter_literal(case: str, pair: Pair) -> None:
+    """Re-measure a parameter-literals claim: Fern's literals tree for a
+    hand-written fixture (client `FernApi`, extra fields `allow`) is its
+    python-enums tree less `core/enum.py`, with only `.fern/metadata.json`
+    differing. Records that metadata and the tree's digest, or fails naming the
+    first file the claim no longer holds for."""
+    fixture = ROOT / HANDWRITTEN / case
+    with run_fern(
+        fixture / "openapi.yml", pair, enum_type="literals", client_class_name="FernApi", extra_fields="allow"
+    ) as run:
+        if run.generate_exit != "0" or run.tree is None:
+            raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
+        with tempfile.TemporaryDirectory() as scratch:
+            tree = Path(scratch) / "tree"
+            strip_into(run.tree, tree)
+            base = fixture / "fern-expected"
+            ignored = {".fern/metadata.json", ".crozier-fern-golden.json"}
+            mine = {p.relative_to(tree).as_posix() for p in tree.rglob("*") if p.is_file()} - ignored
+            theirs = {p.relative_to(base).as_posix() for p in base.rglob("*") if p.is_file()} - ignored
+            theirs.discard("src/fern/core/enum.py")
+            differing = sorted(mine ^ theirs) or [
+                rel for rel in sorted(mine) if (tree / rel).read_bytes() != (base / rel).read_bytes()
+            ]
+            if differing:
+                raise ReferenceError(
+                    f"the literals tree no longer equals the python-enums tree less core/enum.py: {differing[0]}"
+                )
+            name = (
+                f"{case}.metadata.json"
+                if (ROOT / PARAMETER_LITERALS / f"{case}.metadata.json").is_file()
+                else "metadata.json"
+            )
+            shutil.copyfile(tree / ".fern" / "metadata.json", ROOT / PARAMETER_LITERALS / name)
+            digests_path = ROOT / PARAMETER_LITERALS / "certified-trees.json"
+            digests = json.loads(digests_path.read_text(encoding="utf-8"))
+            digests[case] = contract_digest(tree)
+            digests_path.write_text(json.dumps(digests, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def generate_measurement(item: str, pair: Pair) -> None:
+    if item.startswith("parameter-literals/"):
+        generate_parameter_literal(item.removeprefix("parameter-literals/"), pair)
+        return
     row = cases().get(item)
     if row is None:
         raise ReferenceError(f"{item} is no {CASES} row; `list measurements` names the family")
@@ -480,8 +541,10 @@ def generate_measurement(item: str, pair: Pair) -> None:
             "base": label,
         }
         base_tree = None if base == "-" else ROOT / base
-        if label == "fern-expected" and base_tree is not None:
-            provenance["digest"] = contract_digest(base_tree)
+        if label == "fern-expected":
+            # The digest of the complete tree Fern wrote, which the gate rebuilds
+            # from the base and the overlay before comparing.
+            provenance["digest"] = contract_digest(destination)
         reduce_overlay(destination, base_tree, provenance)
     evidence = destination.parent / "evidence.toml"
     if evidence.is_file() and "digest = " in evidence.read_text(encoding="utf-8"):

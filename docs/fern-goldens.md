@@ -369,7 +369,7 @@ just fern-references <family> --version V --cli-version C [<item>...]   # anothe
 | `corpus` | `tests/fixtures/<fixture>/expected/` and `expected-flat/` | `fern-goldens generate` for a `CORPUS.md` row, `generate-fern-fixture.sh` for a vendored fixture |
 | `overlays` | `tests/fixtures/<fixture>/expected-literals/` and `expected-default-max-retries/` | `fern-overlay-goldens.sh --jobs 1` |
 | `handwritten` | `docs/openapi-surface/handwritten/<fixture>/fern-expected/`, with `evidence.toml`'s versions and `digest` | the probe workspace below |
-| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base | the probe workspace below |
+| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a hand-written fixture's literals tree is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
 | `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
 | `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
 | `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |

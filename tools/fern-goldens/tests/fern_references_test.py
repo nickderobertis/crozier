@@ -191,6 +191,13 @@ class FernReferencesTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         tree = self.root / "docs/fern-measurements/union-literals/gamma/fern-expected"
+        # The complete tree Fern wrote: the base minus what it omits, plus the overlay.
+        complete = Path(tempfile.mkdtemp(prefix="complete-"))
+        self.addCleanup(shutil.rmtree, complete, ignore_errors=True)
+        shutil.copytree(base, complete, dirs_exist_ok=True)
+        (complete / "src/fern/core/enum.py").unlink()
+        shutil.copytree(tree, complete, dirs_exist_ok=True)
+        (complete / ".crozier-overlay.json").unlink()
         self.assertEqual(
             sorted(p.relative_to(tree).as_posix() for p in tree.rglob("*") if p.is_file()),
             [".crozier-overlay.json", ".fern/metadata.json", "src/fern/literal.py"],
@@ -203,7 +210,7 @@ class FernReferencesTests(unittest.TestCase):
                 "fern_cli_version": CLI,
                 "enum_type": "literals",
                 "base": "fern-expected",
-                "digest": tree_digest(base),
+                "digest": tree_digest(complete),
                 "removed": ["src/fern/core/enum.py"],
             },
         )
@@ -248,6 +255,37 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         served = self.root / "docs/fern-measurements/remote/case/fern-expected/src/fern/remote.txt"
         self.assertEqual(served.read_text(encoding="utf-8"), "Served: true\n")
+
+    def test_a_parameter_literals_claim_is_re_measured_with_its_metadata_and_digest(self) -> None:
+        for name, files in (
+            ("holds", {"src/fern/client.py": "CLIENT = 1\n", "src/fern/literal.py": "LITERAL = 1\n"}),
+            ("broken", {"src/fern/client.py": "CLIENT = 2\n", "src/fern/literal.py": "LITERAL = 1\n"}),
+        ):
+            self.handwritten(name)
+            shutil.rmtree(self.root / f"docs/openapi-surface/handwritten/{name}/fern-expected")
+            for rel, text in {**files, "src/fern/core/enum.py": "ENUM = 1\n", ".fern/metadata.json": "{}"}.items():
+                self.write(f"docs/openapi-surface/handwritten/{name}/fern-expected/{rel}", text)
+        self.write(
+            "docs/fern-measurements/parameter-literals/certified-trees.json",
+            json.dumps({"broken": "0" * 64, "holds": "0" * 64}),
+        )
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.assertIn("parameter-literals/holds\n", self.run_tool("list", "measurements").stdout)
+
+        result = self.run_tool("generate", "measurements", "parameter-literals/holds", "parameter-literals/broken")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("broken: the literals tree no longer equals the python-enums tree", result.stderr)
+        literals = self.root / "docs/fern-measurements/parameter-literals"
+        metadata = json.loads((literals / "metadata.json").read_text(encoding="utf-8"))
+        self.assertEqual((metadata["cliVersion"], metadata["generatorVersion"]), (CLI, SDK))
+        digests = json.loads((literals / "certified-trees.json").read_text(encoding="utf-8"))
+        self.assertNotEqual(digests["holds"], "0" * 64)
+        self.assertEqual(digests["broken"], "0" * 64)
+        generators = self.calls()[0]["generators"]
+        self.assertIn("client_class_name: FernApi", generators)
+        self.assertIn("extra_fields: allow", generators)
+        self.assertNotIn("enum_type", generators)
 
     def manifest(self, *rows: str) -> None:
         self.write(
