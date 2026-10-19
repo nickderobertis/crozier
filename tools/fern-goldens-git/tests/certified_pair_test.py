@@ -69,6 +69,22 @@ FORMS = (
 )
 
 
+def wired(within: str) -> str:
+    """A delegated root's project definition, running the check over itself from its lint."""
+    command = f"python3 tools/fern-goldens/certified_pair.py check --within {within.rstrip('/')}"
+    return json.dumps(
+        {
+            "targets": {
+                "lint-certified-pair": {"options": {"command": command}},
+                "lint": {"dependsOn": ["lint-certified-pair"]},
+            }
+        }
+    )
+
+
+WIRED = {f"{delegated}project.json": wired(delegated) for delegated in certified_pair.DELEGATED}
+
+
 def run_check(root: Path, *options: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, str(SCRIPT), "check", str(root), *options],
@@ -197,6 +213,7 @@ class CheckTests(unittest.TestCase):
             "pool-maintenance/measure.sh": f"FERN_CLI_VERSION=${{FERN_CLI_VERSION:-{OTHER_CLI}}}\n",
             "templates/pin.j2": f"fern-api@{OTHER_CLI}\n",
             **{f"{delegated}probe.py": statement for delegated in certified_pair.DELEGATED},
+            **WIRED,
         }
         root = self.tree(planted)
         result = run_check(root)
@@ -214,11 +231,43 @@ class CheckTests(unittest.TestCase):
                     result.stderr.splitlines()[:-1],
                 )
         clean = self.tree(
-            {f"{delegated}probe.py": f'FERN_PYTHON_SDK = "{SDK}"\n' for delegated in certified_pair.DELEGATED}
+            {
+                **{f"{delegated}probe.py": f'FERN_PYTHON_SDK = "{SDK}"\n' for delegated in certified_pair.DELEGATED},
+                **WIRED,
+            }
         )
         for delegated in certified_pair.DELEGATED:
             with self.subTest(clean=delegated):
                 self.assertEqual(0, run_check(clean, "--within", delegated).returncode)
+                self.assertEqual(0, run_check(clean, "--within", f"./{delegated}").returncode)
+
+    def test_a_within_root_that_is_not_delegated_or_not_wired_is_refused(self) -> None:
+        delegated = certified_pair.DELEGATED[0].rstrip("/")
+        probe = {f"{delegated}/probe.py": f'FERN_PYTHON_SDK = "{SDK}"\n'}
+        cases: tuple[tuple[str, dict[str, str], str, str], ...] = (
+            ("a typo", {**probe, **WIRED}, "tests/runtme", "is no delegated root"),
+            ("not delegated", {**probe, **WIRED, "tools/probe/x.py": ""}, "tools/probe", "is no delegated root"),
+            (
+                "the target dropped",
+                {**probe, f"{delegated}/project.json": json.dumps({"targets": {"lint": {"dependsOn": []}}})},
+                delegated,
+                "lint-certified-pair target must run",
+            ),
+            (
+                "another root checked",
+                {**probe, f"{delegated}/project.json": wired("tests/elsewhere")},
+                delegated,
+                "lint-certified-pair target must run",
+            ),
+            ("no definition", probe, delegated, "is no readable project definition"),
+        )
+        for label, files, within, message in cases:
+            with self.subTest(label):
+                root = self.tree(files)
+                result = run_check(root, "--within", within)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertIn(message, result.stderr)
 
     def test_the_whole_tree_and_the_delegated_roots_cover_every_tracked_file_but_history(self) -> None:
         listed = subprocess.run(

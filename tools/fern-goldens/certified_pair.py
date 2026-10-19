@@ -21,13 +21,16 @@ A target's inputs are its cache key and affected trigger, and nx.json's
 take no input from the promoted tiers, the release-packaging suite or the
 workspace aggregate. So `check` scans every tracked file outside those
 `DELEGATED` roots, and each of those projects runs `check --within <its root>`
-as its own `lint-certified-pair` target: together they cover the tree.
+as its own `lint-certified-pair` target: together they cover the tree. `--within`
+takes only a `DELEGATED` root, and holds that root's own `project.json` to the
+wiring: a `lint-certified-pair` target running exactly that command, which its
+`lint` depends on.
 
 Usage: certified_pair.py check [ROOT] [--within DIR]
 
 Exit status: 0 when every statement names the declared pair; 1 when one names
-another (each printed on stderr) or the declaration is unreadable or malformed;
-2 on a usage error.
+another (each printed on stderr), the declaration is unreadable or malformed, or
+a `--within` root is not delegated or not wired; 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -45,7 +48,11 @@ METADATA = Path("assets") / "scaffolding" / "metadata.json"
 # the pair.
 HISTORY_DIRS = ("tests/fixtures/", "docs/")
 HISTORY_FILES = ("CHANGELOG.md",)
-# Roots whose own project checks them with `--within` (see the docstring).
+# Roots whose own project checks them with `--within` (see the docstring). The
+# whole-tree check may not read those projects' definitions (nx.json's
+# `boundaries`), so each `--within` run reconciles its own project's wiring
+# (`wiring_failures`); a project whose target is dropped together with its
+# `lint` dependency is beyond any check this project may run.
 DELEGATED = (
     "tests/census_fallback/",
     "tests/corpus_match/",
@@ -174,6 +181,25 @@ def drifts(path: str, text: str, pair: Pair) -> Iterable[Drift]:
                     yield Drift(path, number, line.strip(), member, stated)
 
 
+def wiring_failures(root: Path, within: str) -> list[str]:
+    """Why the project rooted at `within` does not run this check over itself from its `lint`, or nothing."""
+    path = f"{within}/project.json"
+    command = f"python3 tools/fern-goldens/certified_pair.py check --within {within}"
+    try:
+        targets = json.loads((root / path).read_text(encoding="utf-8")).get("targets")
+    except (OSError, ValueError, AttributeError) as error:
+        return [f"{path} is no readable project definition ({error}); restore it with git checkout -- {path}"]
+    if not isinstance(targets, dict):
+        return [f"{path} declares no targets; restore it with git checkout -- {path}"]
+    target, lint = targets.get("lint-certified-pair"), targets.get("lint")
+    wrong = []
+    if not isinstance(target, dict) or (target.get("options") or {}).get("command") != command:
+        wrong.append(f"{path}'s lint-certified-pair target must run `{command}`")
+    if not isinstance(lint, dict) or "lint-certified-pair" not in (lint.get("dependsOn") or []):
+        wrong.append(f"{path}'s lint target must depend on lint-certified-pair")
+    return wrong
+
+
 def check(root: Path, within: str | None = None) -> list[Drift]:
     pair = certified(root)
     found: list[Drift] = []
@@ -189,11 +215,24 @@ def check(root: Path, within: str | None = None) -> list[Drift]:
 def main(argv: list[str]) -> int:
     within = None
     if len(argv) >= 2 and argv[-2] == "--within":
-        within, argv = argv[-1], argv[:-2]
-    if not argv or argv[0] != "check" or len(argv) > 2 or (within is not None and within.strip("/") == ""):
+        within, argv = argv[-1].removeprefix("./").strip("/"), argv[:-2]
+    if not argv or argv[0] != "check" or len(argv) > 2 or within == "":
         print("usage: certified_pair.py check [ROOT] [--within DIR]", file=sys.stderr)
         return 2
     root = Path(argv[1]) if len(argv) == 2 else Path(__file__).resolve().parents[2]
+    if within is not None:
+        if f"{within}/" not in DELEGATED:
+            print(
+                f"certified-pair: --within {within} is no delegated root ({', '.join(DELEGATED)}); "
+                "the whole-tree check covers every other path",
+                file=sys.stderr,
+            )
+            return 1
+        wiring = wiring_failures(root, within)
+        if wiring:
+            for line in wiring:
+                print(f"certified-pair: {line}", file=sys.stderr)
+            return 1
     found = check(root, within)
     if not found:
         return 0
