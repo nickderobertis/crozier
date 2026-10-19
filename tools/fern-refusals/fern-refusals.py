@@ -126,10 +126,24 @@ MEASUREMENT_GRAMMAR = {
     "generate_files": _COUNT,
     "crozier_files": _COUNT,
 }
+
+
 # The certified pair, read from its one declaration.
-_CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
-FERN_CLI: str = _CERTIFIED["cliVersion"]
-FERN_PYTHON_SDK: str = _CERTIFIED["generatorVersion"]
+def _certified_pair(path: Path) -> tuple[str, str]:
+    """`cliVersion` and `generatorVersion` of the pair's declaration, each an exact version."""
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"fern-refusals: cannot read {path} ({error}); restore it from git") from None
+    pair = tuple(record.get(key) if isinstance(record, dict) else None for key in ("cliVersion", "generatorVersion"))
+    if not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+\.\d+", value) for value in pair):
+        raise SystemExit(
+            f"fern-refusals: {path} must give cliVersion and generatorVersion as exact versions, not {pair}"
+        )
+    return str(pair[0]), str(pair[1])
+
+
+FERN_CLI, FERN_PYTHON_SDK = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.

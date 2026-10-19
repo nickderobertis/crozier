@@ -22,6 +22,10 @@ never rerun it. None states a pair. Test data that deliberately names another ve
 on the line the statement starts on; nothing else is exempt.
 
 Usage: certified_pair.py check [ROOT]
+
+Exit status: 0 when every statement names the declared pair; 1 when one names
+another (each printed on stderr) or the declaration is unreadable or malformed;
+2 on a usage error.
 """
 
 from __future__ import annotations
@@ -106,14 +110,21 @@ class Drift(NamedTuple):
 def certified(root: Path) -> Pair:
     """The pair `root`'s metadata.json declares."""
     path = root / METADATA
+    fix = f"restore it with git checkout -- {METADATA.as_posix()}"
     try:
         record = json.loads(path.read_text(encoding="utf-8"))
-        return Pair(cli=str(record["cliVersion"]), sdk=str(record["generatorVersion"]))
-    except (OSError, ValueError, KeyError, TypeError) as error:
+    except (OSError, ValueError) as error:
         raise SystemExit(
-            f"certified-pair: cannot read cliVersion and generatorVersion from {METADATA.as_posix()} ({error}); "
-            f"restore it with git checkout -- {METADATA.as_posix()}"
+            f"certified-pair: cannot read cliVersion and generatorVersion from {METADATA.as_posix()} ({error}); {fix}"
         ) from error
+    cli = record.get("cliVersion") if isinstance(record, dict) else None
+    sdk = record.get("generatorVersion") if isinstance(record, dict) else None
+    if not (isinstance(cli, str) and re.fullmatch(V, cli) and isinstance(sdk, str) and re.fullmatch(V, sdk)):
+        raise SystemExit(
+            f"certified-pair: {METADATA.as_posix()} must be an object whose cliVersion and generatorVersion "
+            f"are exact versions, not {cli!r} and {sdk!r}; {fix}"
+        )
+    return Pair(cli=cli, sdk=sdk)
 
 
 def scanned(root: Path) -> list[str]:

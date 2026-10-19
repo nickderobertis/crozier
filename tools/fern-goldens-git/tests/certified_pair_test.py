@@ -206,6 +206,19 @@ class CheckTests(unittest.TestCase):
         self.assertIn("git checkout -- assets/scaffolding/metadata.json", result.stderr)
         self.assertNotIn("Traceback", result.stderr)
 
+    def test_a_malformed_declaration_names_the_file_and_the_fix(self) -> None:
+        root = self.tree({})
+        for record in ('["5.163.1"]', '{"cliVersion": null, "generatorVersion": "5.41.3"}', '{"cliVersion": 5}'):
+            with self.subTest(record=record):
+                (root / "assets/scaffolding/metadata.json").write_text(record, encoding="utf-8")
+                result = run_check(root)
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn(
+                    "must be an object whose cliVersion and generatorVersion are exact versions", result.stderr
+                )
+                self.assertIn("git checkout -- assets/scaffolding/metadata.json", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+
     def test_a_root_outside_git_names_the_fix(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

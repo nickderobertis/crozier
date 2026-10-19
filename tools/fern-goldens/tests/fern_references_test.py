@@ -11,6 +11,7 @@ and refuses a document carrying `x-stub-refuse` the way Fern prints a refusal.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -43,6 +44,9 @@ if sys.argv[1] == "check":
 if "x-stub-crash" in document:
     print("Traceback (most recent call last):\n    raise KeyError(key)\n  KeyError: 'type_:Probe'")
     sys.exit(1)
+if "x-stub-silent" in document:
+    print("[api]: python-sdk something went sideways")
+    sys.exit(1)
 if "x-stub-refuse" in document:
     print(f"[api]: python-sdk Generator logs here: /tmp/tmp-stub-1\n[api]: python-sdk {workspace}\n                  [error] Stub refused the document")
     sys.exit(1)
@@ -69,6 +73,16 @@ for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
 (root / ".fern").mkdir(parents=True, exist_ok=True)
 (root / ".fern" / "metadata.json").write_text(json.dumps({"cliVersion": json.loads(config)["version"], "generatorVersion": version}))
 print(f"[api]: python-sdk Wrote files to {root}")
+"""
+
+# A delegated script: records what it was run with, then exits as told.
+STUB_DELEGATE = r"""#!/usr/bin/env python3
+import json, os, sys
+from pathlib import Path
+with open(os.environ["DELEGATE_LOG"], "a") as log:
+    log.write(json.dumps({"script": Path(sys.argv[0]).name, "argv": sys.argv[1:], "cli": os.environ.get("FERN_CLI_VERSION")}) + "\n")
+print("delegate ran")
+sys.exit(int(os.environ.get("DELEGATE_EXIT", "0")))
 """
 
 STUB_CROZIER = r"""#!/usr/bin/env python3
@@ -132,6 +146,28 @@ class FernReferencesTests(unittest.TestCase):
             encoding="utf-8",
             check=False,
         )
+
+    def delegates(self, *scripts: str) -> list[dict]:
+        """Stand each named script in at its path, and return what was run, once called."""
+        log = self.root / "delegate-calls.jsonl"
+        self.env["DELEGATE_LOG"] = str(log)
+        for script in scripts:
+            self.write(script, STUB_DELEGATE, executable=True)
+        return []
+
+    def delegated(self) -> list[dict]:
+        log = self.root / "delegate-calls.jsonl"
+        if not log.is_file():
+            return []
+        return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+
+    def load_tool(self):
+        spec = importlib.util.spec_from_file_location("fern_references_under_test", self.tool)
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        spec.loader.exec_module(module)
+        return module
 
     def calls(self) -> list[dict]:
         if not self.log.is_file():
@@ -333,6 +369,189 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual(measured["sha256"], hashlib.sha256(probe.read_bytes()).hexdigest())
         self.assertNotIn("generate_diagnostic", measured)
         self.assertTrue((case / "fern.log").read_text(encoding="utf-8").startswith(f"Fern CLI {CLI}, python-sdk {SDK}"))
+
+    def test_a_corpus_row_routes_through_fern_goldens_and_a_vendored_fixture_through_its_script(self) -> None:
+        self.delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
+        self.write("tests/fixtures/CORPUS.md", "| # | name |\n|---|---|\n| 1 | `alpha` |\n")
+        self.write("tests/fixtures/alpha/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/beta/openapi.yml", "openapi: 3.0.3\n")
+        self.write("tests/fixtures/beta/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/gamma/openapi.yml", "openapi: 3.0.3\n")
+        self.write("tests/fixtures/gamma/expected-flat/__init__.py", "")
+        self.write("tests/fixtures/flat-goldens.txt", "alpha\ngamma\n")
+
+        result = self.run_tool("generate", "corpus")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted((call["script"], tuple(call["argv"]), call["cli"]) for call in self.delegated()),
+            [
+                ("fern-goldens", ("generate", "--version", SDK, "--fixture", "alpha"), CLI),
+                ("generate-fern-fixture.sh", ("--layout", "flat", "gamma", SDK), CLI),
+                ("generate-fern-fixture.sh", ("beta", SDK), CLI),
+            ],
+        )
+        self.assertEqual(self.calls(), [], "a delegated family runs no Fern of its own")
+
+    def test_a_delegated_corpus_failure_names_its_log_and_the_rest_still_run(self) -> None:
+        self.delegates("tools/fern-goldens/generate-fern-fixture.sh")
+        self.env["DELEGATE_EXIT"] = "3"
+        for fixture in ("beta", "delta"):
+            self.write(f"tests/fixtures/{fixture}/openapi.yml", "openapi: 3.0.3\n")
+            self.write(f"tests/fixtures/{fixture}/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/CORPUS.md", "")
+        self.write("tests/fixtures/flat-goldens.txt", "")
+
+        result = self.run_tool("generate", "corpus")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("corpus: 0 regenerated, 2 failed", result.stdout)
+        self.assertIn("`generate-fern-fixture.sh beta", result.stderr)
+        self.assertIn("exited 3; see .local/fern-references/corpus/beta.log", result.stderr)
+        self.assertEqual(len(self.delegated()), 2)
+        log = self.root / ".local/fern-references/corpus/beta.log"
+        self.assertEqual(log.read_text(encoding="utf-8"), "delegate ran\n")
+
+    def test_each_overlay_kind_runs_the_overlay_script_with_its_setting_and_the_cli(self) -> None:
+        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
+        self.write(
+            "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
+            json.dumps({"default_max_retries": 5}),
+        )
+
+        result = self.run_tool("generate", "overlays", "--cli-version", "8.0.0")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted((tuple(call["argv"]), call["cli"]) for call in self.delegated()),
+            [
+                (("--jobs", "1", "--default-max-retries", "5", "alpha"), "8.0.0"),
+                (("--jobs", "1", "--enum-type", "literals", "alpha"), "8.0.0"),
+            ],
+        )
+
+    def test_an_overlay_with_a_malformed_retry_count_is_refused_before_it_runs(self) -> None:
+        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh")
+        for retries in ("-1", '"5"', "true"):
+            with self.subTest(retries=retries):
+                self.write(
+                    "tests/fixtures/alpha/expected-default-max-retries/.crozier-overlay.json",
+                    f'{{"default_max_retries": {retries}}}',
+                )
+                result = self.run_tool("generate", "overlays")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("default_max_retries must be a non-negative integer", result.stderr)
+        self.assertEqual(self.delegated(), [])
+
+    def test_a_refusal_class_and_a_finding_run_fern_refusals_one_generation_at_a_time(self) -> None:
+        self.delegates("tools/fern-refusals/fern-refusals.py")
+        self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\neta\tgenerates\n")
+
+        result = self.run_tool("generate", "refusals", "--cli-version", "8.0.0")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted((tuple(call["argv"]), call["cli"]) for call in self.delegated()),
+            [(("finding", "--jobs", "1", "eta"), "8.0.0"), (("probe", "--jobs", "1", "zeta"), "8.0.0")],
+        )
+        self.env["DELEGATE_EXIT"] = "4"
+        failed = self.run_tool("generate", "refusals", "zeta")
+        self.assertEqual(failed.returncode, 1)
+        self.assertIn("exited 4; see .local/fern-references/refusals/probe.zeta.log", failed.stderr)
+
+    def test_a_registry_table_without_its_name_column_is_refused(self) -> None:
+        self.write("docs/fern-refusals/classes.tsv", "name\tstatus\nzeta\trefuse\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\nfindings\n")
+        result = self.run_tool("list", "refusals")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("docs/fern-refusals/classes.tsv has no `class` column", result.stderr)
+
+    def test_an_unrecognised_generator_failure_keeps_its_log_and_the_reference(self) -> None:
+        self.write("docs/openapi-surface/probes/odd.yml", "openapi: 3.0.3\nx-stub-silent: true\n")
+        kept = self.write("docs/openapi-surface/probe-expected/odd/src/fern/client.py", "KEPT = 1\n")
+        self.manifest(f"odd\tabsent-tree\tdiscards\tdocs/openapi-surface/probe-expected/odd\t—\t{'a' * 64}")
+
+        result = self.run_tool("generate", "probes", "odd")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("printing no diagnostic this tool recognises", result.stderr)
+        log = self.root / ".local/fern-references/probes/odd.generate.log"
+        self.assertIn("something went sideways", log.read_text(encoding="utf-8"))
+        self.assertEqual(kept.read_text(encoding="utf-8"), "KEPT = 1\n")
+        self.assertFalse((self.root / "docs/openapi-surface/probe-expected/odd.fern-refusal.txt").exists())
+
+    def test_an_install_refuses_a_stale_backup_and_restores_the_prior_tree_on_failure(self) -> None:
+        tool = self.load_tool()
+        destination = self.root / "docs/openapi-surface/handwritten/alpha/fern-expected"
+        self.write("docs/openapi-surface/handwritten/alpha/fern-expected/client.py", "PRIOR = 1\n")
+        backup = destination.parent / f".{destination.name}.backup.{os.getpid()}"
+        backup.mkdir()
+        with self.assertRaisesRegex(tool.ReferenceError, "a stale backup blocks the install"):
+            tool.install(self.root / "staged", destination)
+        backup.rmdir()
+        with self.assertRaises(OSError):
+            tool.install(self.root / "never-staged", destination)
+        self.assertEqual((destination / "client.py").read_text(encoding="utf-8"), "PRIOR = 1\n")
+        self.assertFalse(backup.exists())
+
+    def test_a_malformed_certified_pair_is_refused_naming_the_file(self) -> None:
+        self.handwritten("alpha")
+        for record in ('{"cliVersion": null, "generatorVersion": "5.41.3"}', '["5.163.1"]', '{"cliVersion": 5}'):
+            with self.subTest(record=record):
+                self.write("assets/scaffolding/metadata.json", record)
+                result = self.run_tool("generate", "handwritten")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(
+                    "must be an object whose cliVersion and generatorVersion are exact versions", result.stderr
+                )
+        self.assertEqual(self.calls(), [])
+
+    def test_a_tree_recording_malformed_generator_settings_is_not_regenerated(self) -> None:
+        self.handwritten("delta")
+        metadata = "docs/openapi-surface/handwritten/delta/fern-expected/.fern/metadata.json"
+        for config, reason in (
+            ({"pydantic_config": "allow"}, "must be objects"),
+            ({"client_class_name": "9Lives"}, "is no Python class name"),
+            ({"pydantic_config": {"extra_fields": "sometimes"}}, "is none of allow, ignore, forbid"),
+        ):
+            with self.subTest(config=config):
+                self.write(metadata, json.dumps({"generatorConfig": config}))
+                result = self.run_tool("generate", "handwritten", "delta")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(reason, result.stderr)
+        self.assertEqual(self.calls(), [])
+
+    def test_a_pinned_run_whose_probe_leaves_its_case_is_refused(self) -> None:
+        self.write("docs/fern-measurements/cases.tsv", "case\tdocument\tenum_type\tlayout\toverlay\n")
+        self.write("docs/fern-measurements/outside.yaml", "openapi: 3.0.3\n")
+        for probe in ("../outside.yaml", "missing.yaml", None):
+            with self.subTest(probe=probe):
+                self.write("docs/fern-measurements/repairs/measurement.json", json.dumps({"probe": probe}))
+                result = self.run_tool("generate", "measurements", "repairs")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(
+                    "must be an object whose `probe` names a file in docs/fern-measurements/repairs", result.stderr
+                )
+        self.assertEqual(self.calls(), [])
+
+    def test_a_measurement_case_or_departure_naming_an_unknown_mode_is_refused(self) -> None:
+        self.write(
+            "docs/fern-measurements/cases.tsv",
+            "case\tdocument\tenum_type\tlayout\toverlay\nbodies/x\tdocs/x.yml\tpython_enums\tpackaged\t-\n",
+        )
+        listed = self.run_tool("list", "measurements")
+        self.assertEqual(listed.returncode, 1)
+        self.assertIn("enum_type is one of python-enums, literals", listed.stderr)
+        self.write("docs/departures/evidence/casing/openapi.yml", "openapi: 3.0.3\n")
+        for settings in ({"layout": "sideways"}, {"organization": "Acme Corp"}, ["literals"]):
+            with self.subTest(settings=settings):
+                self.write("docs/departures/evidence/casing/fern-reference.json", json.dumps(settings))
+                result = self.run_tool("generate", "departure-evidence", "casing")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("docs/departures/evidence/casing/fern-reference.json", result.stderr)
+        self.assertEqual(self.calls(), [])
 
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
         self.write(

@@ -133,8 +133,18 @@ class FernPair(NamedTuple):
 
 def certified_pair(metadata: Path) -> FernPair:
     """The certified pair `metadata` (`assets/scaffolding/metadata.json`, its one declaration) records."""
-    record = json.loads(metadata.read_text(encoding="utf-8"))
-    return FernPair(cli=record["cliVersion"], generator=record["generatorVersion"])
+    try:
+        record = json.loads(metadata.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"scenario-proof-index: cannot read {metadata} ({error}); restore it from git") from None
+    cli = record.get("cliVersion") if isinstance(record, dict) else None
+    generator = record.get("generatorVersion") if isinstance(record, dict) else None
+    if not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+\.\d+", value) for value in (cli, generator)):
+        raise SystemExit(
+            f"scenario-proof-index: {metadata} must give cliVersion and generatorVersion as exact versions, "
+            f"not {cli!r} and {generator!r}"
+        )
+    return FernPair(cli=str(cli), generator=str(generator))
 
 
 PIN = certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")

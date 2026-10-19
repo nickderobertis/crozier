@@ -40,6 +40,9 @@ unless `--version`/`--cli-version` name another, writing each item where its
 committed reference lives. Fern runs once at a time, in a scratch workspace
 outside any checkout (so it stamps no `originGitCommit`). Quiet on success
 apart from one summary line; a failed item names its log and the rest still run.
+
+Exit status: 0 when every item listed or regenerated; 1 when an item failed
+(each named on stderr) or an input it reads is malformed; 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -112,17 +115,28 @@ class FernRun:
     tree: Path | None
 
 
+VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?")
+
+
 def certified_pair(root: Path = ROOT) -> Pair:
-    """The pair `assets/scaffolding/metadata.json` certifies."""
+    """The pair `assets/scaffolding/metadata.json` certifies: an object whose
+    `cliVersion` and `generatorVersion` are exact versions."""
     path = root / METADATA
+    fix = "restore it with git checkout -- assets/scaffolding/metadata.json"
     try:
         record = json.loads(path.read_text(encoding="utf-8"))
-        return Pair(cli=str(record["cliVersion"]), generator=str(record["generatorVersion"]))
-    except (OSError, ValueError, KeyError) as error:
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"fern-references: cannot read the certified pair from {path} ({error}); {fix}") from None
+    cli = record.get("cliVersion") if isinstance(record, dict) else None
+    generator = record.get("generatorVersion") if isinstance(record, dict) else None
+    if not (
+        isinstance(cli, str) and VERSION.fullmatch(cli) and isinstance(generator, str) and VERSION.fullmatch(generator)
+    ):
         raise SystemExit(
-            f"fern-references: cannot read the certified pair from {path} ({error}); "
-            "restore it with git checkout -- assets/scaffolding/metadata.json"
-        ) from None
+            f"fern-references: {path} must be an object whose cliVersion and generatorVersion are exact "
+            f"versions, not {cli!r} and {generator!r}; {fix}"
+        )
+    return Pair(cli=cli, generator=generator)
 
 
 def contract_digest(tree: Path) -> str:
@@ -138,9 +152,6 @@ def contract_digest(tree: Path) -> str:
 
 def rel(path: Path) -> str:
     return path.relative_to(ROOT).as_posix() if path.is_relative_to(ROOT) else str(path)
-
-
-# ---------------------------------------------------------------- Fern itself
 
 
 @contextlib.contextmanager
@@ -282,13 +293,42 @@ def install(staged: Path, destination: Path) -> None:
         shutil.rmtree(backup)
 
 
-def recorded_generator_config(tree: Path) -> dict:
-    """The `generatorConfig` a committed Fern tree's `.fern/metadata.json` records."""
+EXTRA_FIELDS = ("allow", "ignore", "forbid")
+
+
+@dataclass(frozen=True)
+class GeneratorSettings:
+    """The generator settings a committed tree was made under that this family
+    regenerates it with: Fern's `client_class_name` and
+    `pydantic_config.extra_fields`, each `None` where the tree used the default."""
+
+    client_class_name: str | None = None
+    extra_fields: str | None = None
+
+
+def recorded_generator_config(tree: Path) -> GeneratorSettings:
+    """The settings a committed Fern tree's `.fern/metadata.json` records; the
+    defaults for a tree that carries none."""
+    path = tree / ".fern" / "metadata.json"
+    if not path.is_file():
+        return GeneratorSettings()
     try:
-        config = json.loads((tree / ".fern" / "metadata.json").read_text(encoding="utf-8")).get("generatorConfig")
-    except (OSError, ValueError):
-        return {}
-    return config if isinstance(config, dict) else {}
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ReferenceError(f"cannot read {rel(path)} ({error}); restore it from git") from None
+    config = record.get("generatorConfig", {}) if isinstance(record, dict) else None
+    pydantic = config.get("pydantic_config", {}) if isinstance(config, dict) else None
+    if not isinstance(config, dict) or not isinstance(pydantic, dict):
+        raise ReferenceError(
+            f"{rel(path)}: generatorConfig and its pydantic_config must be objects; restore it from git"
+        )
+    client_class_name = config.get("client_class_name")
+    extra_fields = pydantic.get("extra_fields")
+    if client_class_name is not None and not (isinstance(client_class_name, str) and client_class_name.isidentifier()):
+        raise ReferenceError(f"{rel(path)}: client_class_name {client_class_name!r} is no Python class name")
+    if extra_fields is not None and extra_fields not in EXTRA_FIELDS:
+        raise ReferenceError(f"{rel(path)}: extra_fields {extra_fields!r} is none of {', '.join(EXTRA_FIELDS)}")
+    return GeneratorSettings(client_class_name=client_class_name, extra_fields=extra_fields)
 
 
 def generated_tree(
@@ -362,9 +402,6 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     if not lines or tuple(lines[0].split("\t")) != header:
         raise SystemExit(f"fern-references: {path} must open with the header {' '.join(header)}")
     return [dict(zip(header, line.split("\t"), strict=True)) for line in lines[1:] if line]
-
-
-# ----------------------------------------------------------------- families
 
 
 def corpus_rows() -> dict[str, str]:
@@ -472,7 +509,12 @@ def generate_overlay(item: str, pair: Pair) -> None:
         raise ReferenceError(f"{item} is no committed overlay; `list overlays` names the family")
     setting = OVERLAY_KINDS[kind]
     if setting is None:
-        retries = json.loads((golden / OVERLAY_MANIFEST).read_text(encoding="utf-8"))["default_max_retries"]
+        manifest = json.loads((golden / OVERLAY_MANIFEST).read_text(encoding="utf-8"))
+        retries = manifest.get("default_max_retries") if isinstance(manifest, dict) else None
+        if not isinstance(retries, int) or isinstance(retries, bool) or retries < 0:
+            raise ReferenceError(
+                f"{rel(golden / OVERLAY_MANIFEST)}: default_max_retries must be a non-negative integer, not {retries!r}"
+            )
         setting = ("--default-max-retries", str(retries))
     run_script(
         [str(ROOT / "tools/fern-goldens/fern-overlay-goldens.sh"), "--jobs", "1", *setting, fixture],
@@ -502,14 +544,41 @@ def generate_handwritten(item: str, pair: Pair) -> None:
         enum_type="python-enums",
         layout="packaged",
         audiences=audiences,
-        client_class_name=config.get("client_class_name"),
-        extra_fields=config.get("pydantic_config", {}).get("extra_fields"),
+        client_class_name=config.client_class_name,
+        extra_fields=config.extra_fields,
     )
     rewrite_evidence(evidence, pair, contract_digest(fixture / "fern-expected"))
 
 
-def cases() -> dict[str, dict[str, str]]:
-    return {row["case"]: row for row in read_tsv(CASES, CASES_HEADER)}
+ENUM_TYPES = ("python-enums", "literals")
+LAYOUTS = ("packaged", "flat")
+
+
+@dataclass(frozen=True)
+class MeasurementCase:
+    """One `cases.tsv` row: the document a case generates from, its enum mode and
+    layout, and the overlay it reduces to (`-` for a complete tree)."""
+
+    name: str
+    document: Path
+    enum_type: str
+    layout: str
+    overlay: str
+
+
+def cases() -> dict[str, MeasurementCase]:
+    """`cases.tsv`'s rows, each held to the enum modes and layouts a case may name."""
+    found = {}
+    for row in read_tsv(CASES, CASES_HEADER):
+        if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
+            raise ReferenceError(
+                f"{CASES} row {row['case']}: enum_type is one of {', '.join(ENUM_TYPES)} "
+                f"and layout one of {', '.join(LAYOUTS)}"
+            )
+        found[row["case"]] = MeasurementCase(
+            row["case"], ROOT / row["document"], row["enum_type"], row["layout"], row["overlay"]
+        )
+    return found
 
 
 PARAMETER_LITERALS = MEASUREMENTS / "parameter-literals"
@@ -543,13 +612,44 @@ def refusal_logs() -> dict[str, tuple[Path, Path]]:
     return found
 
 
+@dataclass(frozen=True)
+class PinnedRun:
+    """A measurement recording one pinned run over its own probe: the case
+    directory, its `measurement.json` and the probe that record names."""
+
+    case: Path
+    record: dict[str, object]
+    probe: Path
+
+
+def pinned_run(record_path: Path) -> PinnedRun:
+    """The run a `measurement.json` records, held to an object naming a probe
+    file inside its own case directory."""
+    case = record_path.parent
+    try:
+        record = json.loads(record_path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ReferenceError(f"cannot read {rel(record_path)} ({error}); restore it from git") from None
+    probe = record.get("probe") if isinstance(record, dict) else None
+    target = (case / probe).resolve() if isinstance(probe, str) and probe else None
+    if (
+        not isinstance(record, dict)
+        or target is None
+        or not target.is_relative_to(case.resolve())
+        or not target.is_file()
+    ):
+        raise ReferenceError(
+            f"{rel(record_path)} must be an object whose `probe` names a file in {rel(case)}, not {probe!r}"
+        )
+    return PinnedRun(case, record, target)
+
+
 def pinned_runs() -> dict[str, Path]:
-    """`<case>` -> its directory: a measurement recording one pinned run over its
-    own probe in `measurement.json`, with the run's log and Fern's raw client."""
+    """`<case>` -> its `measurement.json`: a measurement recording one pinned run
+    over its own probe, with the run's log and Fern's raw client."""
     return {
-        rel(record.parent)[len(str(MEASUREMENTS)) + 1 :]: record.parent
+        rel(record.parent)[len(str(MEASUREMENTS)) + 1 :]: record
         for record in sorted((ROOT / MEASUREMENTS).glob(f"*/{PINNED_RUN}"))
-        if "probe" in json.loads(record.read_text(encoding="utf-8"))
     }
 
 
@@ -572,13 +672,12 @@ def remeasure_refusal_log(item: str, log: Path, document: Path, pair: Pair) -> N
             )
 
 
-def remeasure_pinned_run(case: Path, pair: Pair) -> None:
+def remeasure_pinned_run(record_path: Path, pair: Pair) -> None:
     """Re-take a pinned run over the case's probe: its log, Fern's raw
     `src/fern/raw_client.py` (kept as text, bytes unedited) and the record of
     both exits and each log's digest."""
-    record_path = case / PINNED_RUN
-    record = json.loads(record_path.read_text(encoding="utf-8"))
-    probe = case / record["probe"]
+    run_record = pinned_run(record_path)
+    case, record, probe = run_record.case, dict(run_record.record), run_record.probe
     with run_fern(probe, pair, check=True) as run:
         if run.generate_exit != "0" or run.tree is None:
             raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
@@ -644,12 +743,12 @@ def generate_parameter_literal(case: str, pair: Pair) -> None:
 MEASUREMENT_REFUSAL = "fern-refusal.txt"
 
 
-def refused_measurement(item: str, row: dict[str, str], record: Path, pair: Pair) -> None:
+def refused_measurement(item: str, row: MeasurementCase, record: Path, pair: Pair) -> None:
     """Re-measure a case whose committed reference is Fern's refusal: rewrite its
     Contract A record, or, where Fern now generates, install the tree in its place
     and fail naming the case, whose evidence then states a refusal Fern no longer
     makes."""
-    with run_fern(ROOT / row["document"], pair, enum_type=row["enum_type"], layout=row["layout"]) as run:
+    with run_fern(row.document, pair, enum_type=row.enum_type, layout=row.layout) as run:
         if run.generate_exit == "0" and run.tree is not None:
             destination = record.with_name("fern-expected")
             stage = Path(tempfile.mkdtemp(prefix=".fern-references.", dir=record.parent))
@@ -684,20 +783,18 @@ def generate_measurement(item: str, pair: Pair) -> None:
     row = cases().get(item)
     if row is None:
         raise ReferenceError(f"{item} is no {CASES} row; `list measurements` names the family")
-    if row["enum_type"] not in ("python-enums", "literals") or row["layout"] not in ("packaged", "flat"):
-        raise ReferenceError(f"{CASES} row {item}: enum_type python-enums|literals, layout packaged|flat")
     destination = ROOT / MEASUREMENTS / item / "fern-expected"
     record = destination.with_name(MEASUREMENT_REFUSAL)
     if record.is_file() and not destination.exists():
         refused_measurement(item, row, record, pair)
         return
-    generated_tree(ROOT / row["document"], destination, pair, enum_type=row["enum_type"], layout=row["layout"])
-    if row["overlay"] != "-":
-        label, _, base = row["overlay"].partition(":")
+    generated_tree(row.document, destination, pair, enum_type=row.enum_type, layout=row.layout)
+    if row.overlay != "-":
+        label, _, base = row.overlay.partition(":")
         provenance: dict[str, object] = {
             "fern_python_sdk_version": pair.generator,
             "fern_cli_version": pair.cli,
-            "enum_type": row["enum_type"],
+            "enum_type": row.enum_type,
             "base": label,
         }
         base_tree = None if base == "-" else ROOT / base
@@ -844,29 +941,27 @@ def evidence_document(log: Path) -> Path | None:
     return next((log.with_name(stem + s) for s in DOCUMENT_SUFFIXES if log.with_name(stem + s).is_file()), None)
 
 
+def registry_column(path: Path, column: str) -> list[str]:
+    """One column of a refusal-registry table, found by its header. The table's
+    other columns are `fern-refusals.py`'s to define; this family reads only the
+    item names."""
+    lines = (ROOT / path).read_text(encoding="utf-8").splitlines()
+    header = lines[0].split("\t") if lines else []
+    if column not in header:
+        raise SystemExit(f"fern-references: {path} has no `{column}` column; restore it from git")
+    index = header.index(column)
+    return [line.split("\t")[index] for line in lines[1:] if line]
+
+
 def list_refusals() -> list[str]:
-    classes = [row["class"] for row in read_tsv(REGISTRY / "classes.tsv", REFUSAL_CLASSES_HEADER)]
-    findings = [f"findings/{row['finding']}" for row in read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER)]
+    classes = registry_column(REGISTRY / "classes.tsv", "class")
+    findings = [f"findings/{name}" for name in registry_column(REGISTRY / "findings.tsv", "finding")]
     evidence = [
         rel(log)[len(str(REGISTRY)) + 1 : -len(PINNED_LOG)]
         for log in sorted((ROOT / REGISTRY).glob(f"*/evidence/*{PINNED_LOG}"))
         if evidence_document(log) is not None
     ]
     return sorted(classes) + findings + evidence
-
-
-REFUSAL_CLASSES_HEADER = (
-    "class",
-    "family",
-    "fern_stage",
-    "fern_exit",
-    "diagnostic",
-    "documents",
-    "status",
-    "crozier_diagnostic",
-    "population_strict",
-)
-FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 
 
 def generate_refusal(item: str, pair: Pair) -> None:
@@ -897,13 +992,25 @@ def generate_departure_evidence(item: str, pair: Pair) -> None:
     settings_path = case / "fern-reference.json"
     if not settings_path.is_file():
         raise ReferenceError(f"{item} has no fern-reference.json; `list departure-evidence` names the family")
-    settings = json.loads(settings_path.read_text(encoding="utf-8"))
-    run_kwargs = {
-        "enum_type": settings.get("enum_type", "python-enums"),
-        "layout": settings.get("layout", "packaged"),
-        "organization": settings.get("organization", "fern"),
-    }
-    with run_fern(case / "openapi.yml", pair, **run_kwargs) as run:
+    try:
+        settings = json.loads(settings_path.read_text(encoding="utf-8"))
+    except ValueError as error:
+        raise ReferenceError(f"cannot read {rel(settings_path)} ({error}); restore it from git") from None
+    if not isinstance(settings, dict):
+        raise ReferenceError(f"{rel(settings_path)} must be an object of generation settings")
+    enum_type = settings.get("enum_type", "python-enums")
+    layout = settings.get("layout", "packaged")
+    organization = settings.get("organization", "fern")
+    if (
+        enum_type not in ENUM_TYPES
+        or layout not in LAYOUTS
+        or not (isinstance(organization, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", organization))
+    ):
+        raise ReferenceError(
+            f"{rel(settings_path)}: enum_type is one of {', '.join(ENUM_TYPES)}, layout one of "
+            f"{', '.join(LAYOUTS)} and organization letters and digits starting with a letter, not {enum_type!r}, {layout!r}, {organization!r}"
+        )
+    with run_fern(case / "openapi.yml", pair, enum_type=enum_type, layout=layout, organization=organization) as run:
         if run.generate_exit != "0" or run.tree is None:
             raise ReferenceError(f"fern generate exited {run.generate_exit} with no tree")
         stage = Path(tempfile.mkdtemp(prefix=".fern-references.", dir=case))
@@ -945,7 +1052,7 @@ def main(argv: list[str] | None = None) -> int:
     certified = certified_pair()
     pair = Pair(cli=args.cli_version or certified.cli, generator=args.version or certified.generator)
     for value in (pair.cli, pair.generator):
-        if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?", value):
+        if not VERSION.fullmatch(value):
             raise SystemExit(f"fern-references: invalid Fern version {value!r}; use an exact semantic version")
     unknown = [item for item in args.items if item not in known]
     if unknown:
