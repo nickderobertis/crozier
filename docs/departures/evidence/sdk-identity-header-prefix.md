@@ -4,7 +4,10 @@
 
 ## The command and its result
 
-Over the committed `alma-france` corpus document, with the corpus's settings:
+Over the committed `alma-france` corpus document, with the corpus's settings,
+against its golden as Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3
+generates it (re-run at that pair; the output is unchanged from the previous
+pair's):
 
 ```text
 $ spec=$(python3 tools/corpus/corpus_sources.py prepare --fixture alma-france --output /tmp/alma-src)
@@ -32,7 +35,9 @@ The first difference is a comment, outside the comparison. Each of the other
 five is this departure: the same header with the same value, named
 `X-Crozier-` instead of `X-Fern-` (the emitter writes them in
 `src/emit.rs`, where the client wrapper's `get_headers` is built). The flat
-layout writes the first three only, on both sides.
+layout writes the first three only, on both sides (for example
+`tests/fixtures/truefoundry-trueforge/expected-flat/core/client_wrapper.py`
+lines 36–38).
 
 Every golden's client wrapper carries these lines, so every golden's rows in
 `tests/fixtures/departures-ledger.tsv` include them.

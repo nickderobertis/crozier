@@ -60,10 +60,10 @@ def check(root: Path, group: str, method: str, expected: str) -> None:
     assert len(advertised) == 1
     assert advertised[0] == ("string" if expected == "invalid" else b"string")
     section = next(part for part in reference.split("<details>") if f">{method}</a>" in part)
-    documented = "str" if expected == "invalid" else "bytes"
-    assert f"**request:** `{documented}`" in section
-    other = "bytes" if expected == "invalid" else "str"
-    assert f"**request:** `{other}`" not in section
+    # fern-python-sdk 5.41.3 documents the parameter as bytes, as crozier does;
+    # only the worked example's value differs.
+    assert "**request:** `bytes`" in section
+    assert "**request:** `str`" not in section
     readme = (root.parent / "README.md").read_text(encoding="utf-8")
     shown = []
     for code in re.findall(r"```python\n(.*?)\n```", readme, re.DOTALL):

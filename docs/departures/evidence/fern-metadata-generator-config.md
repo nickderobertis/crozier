@@ -21,7 +21,9 @@ $ diff tests/fixtures/openfigi.com/expected-literals/.fern/metadata.json "$SDK_O
 >   },
 ```
 
-`SDK_OUT` names a writable scratch directory. That block is this departure. The goldens generated with `client_class_name`,
+`SDK_OUT` names a writable scratch directory; re-run at the certified pair on
+2026-10-18, where Fern's record reads `"cliVersion": "5.163.1"` and
+`"generatorVersion": "5.41.3"`, the diff is exactly this. That block is this departure. The goldens generated with `client_class_name`,
 `extra_fields` or `default_max_retries` record a different `generatorConfig`
 object instead, and each is this departure on its first differing line; their rows are in
 `tests/fixtures/departures-ledger.tsv`. The rule applies to the SDK root's

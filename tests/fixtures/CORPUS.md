@@ -1781,9 +1781,8 @@ The LangSmith Deployment agent-server API its publisher ships in
 inline `oneOf` of titled objects each tagged by a one-value `kind` enum, which
 crozier now renders, as Fern does, as the union's variant constructors. The
 required `assistant_id` property, an `anyOf` of two strings that both collapse
-to `str`, keeps its declared description in crozier's docstrings and
-`reference.md` where Fern writes none: the catalogued
-`collapsed-anyof-property-description` departure. Its streaming methods' `reference.md`
+to `str`, is left undocumented on both sides, as its undescribed first
+alternative is (fern-python-sdk 5.41.3). Its streaming methods' `reference.md`
 headings take the catalogued `stream-reference-return-type` correction.
 Its screening record is
 [`blocked-witnesses`](../../docs/fern-measurements/blocked-witnesses/README.md#langchain).
@@ -1796,7 +1795,7 @@ pinned revision is the redistribution grant.
 
 | # | name | the shape it witnesses | status |
 |---:|---|---|---|
-| 2802 | `langchain-agent-server` | union-item request examples rendered as variant constructors; a collapsed two-string `anyOf` property keeping its description (`collapsed-anyof-property-description`) | ✅ byte-matched after this node's repair; its other differences are catalogued departures |
+| 2802 | `langchain-agent-server` | union-item request examples rendered as variant constructors; a collapsed two-string `anyOf` property documented as its first alternative is | ✅ byte-matched after this node's repair; its other differences are catalogued departures |
 
 ## Row 2803 — a lab-control document with nullable and query-array parameters
 

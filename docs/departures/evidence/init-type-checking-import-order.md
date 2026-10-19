@@ -18,7 +18,9 @@ $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' tests/fixture
 >     from .balance_transactions import ListbalancetransactionsResponse
 ```
 
-The two blocks import the same names, one statement in another place; sorted by
+Re-run at the certified pair (Fern CLI 5.163.1 with `fernapi/fern-python-sdk`
+5.41.3) on 2026-10-18, the diff is exactly this, and the rule records it at
+`src/fern/__init__.py` line 33. The two blocks import the same names, one statement in another place; sorted by
 `ruff check --select I --fix`, they are the same text. The block runs only under
 a type checker, so the order changes nothing the SDK does. crozier emits its
 imports sorted (`src/emit.rs`, the lazy-loader assembly), and the rule takes the
@@ -30,7 +32,8 @@ two blocks sort to the same text.
 A root package whose tag subpackages re-export their hoisted types orders the
 root client's and environment's statements differently. Fern sorts them by
 module among the tag subpackages'; crozier writes them ahead of every one. The
-handed-off `kompaz` witness shows it:
+handed-off `kompaz` witness showed it (measured before this pair; it is not a
+committed golden, so it was not re-run):
 
 ```text
 $ diff <(sed -n '/^if typing.TYPE_CHECKING:/,/^_dynamic_imports/p' preview/fern-python-sdk/src/fern/__init__.py) \

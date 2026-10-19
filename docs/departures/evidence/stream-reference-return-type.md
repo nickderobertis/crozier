@@ -9,12 +9,15 @@ returns an iterator of parsed chunks.
 [`streaming-extension-terminator/openapi.yml`](../../openapi-surface/handwritten/streaming-extension-terminator/openapi.yml),
 a crozier-authored document. Its `GET /builds/{buildId}/log` streams
 Server-Sent Events of a `StepResult` model, ended by a `[DONE]` terminator.
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 exits 0 on it. The
-comment-stripped tree is the fixture's `fern-expected/`.
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 exits 0 on it. The
+comment-stripped tree is the fixture's `fern-expected/`, whose `reference.md`
+line 2 heads the method `follow_build_log(...) -> typing.Iterator[bytes]`.
 
 Every stream does the same, whatever its framing or chunk type. The registered
-SSE goldens and the newline-delimited JSON halves of corpus row 1600 all carry
-the heading. A binary download is the one case where the heading is true: its
+SSE goldens and the newline-delimited JSON halves of corpus row 1600
+(`zylon-private-gpt`) all carry the heading at the new pair: the comparison
+applies this departure in 32 goldens: eleven hand-written fixtures, one
+measurement case and twenty corpus goldens and overlays. A binary download is the one case where the heading is true: its
 method does return `typing.Iterator[bytes]`, and this departure never touches
 it.
 
@@ -28,13 +31,15 @@ served by a local HTTP server. It compares both with the method's
 `sdk_env_stream_reference_heading_states_the_returned_iterator` in
 `crates/crozier-e2e/tests/e2e.rs`, three ways.
 
-Over Fern's tree, expecting the heading to contradict the method, it exits 0:
+Re-run at the new pair, over Fern's tree, expecting the heading to contradict
+the method, it exits 0:
 
 ```text
 reference.md heads follow_build_log `-> typing.Iterator[bytes]`; the method declares `-> typing.Iterator[StepResult]`; iterating yields ['StepResult']
 ```
 
-Over Fern's tree, expecting agreement, it exits 1. That is the induced failure
+Over Fern's tree, expecting agreement, it exits 1 (`expected the heading to
+agree with the method, and it does not`). That is the induced failure
 showing the assertion detects the defect. `reference.md` documents a return
 type the method does not have, which the defect rule names.
 

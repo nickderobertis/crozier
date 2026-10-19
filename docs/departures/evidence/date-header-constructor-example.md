@@ -1,8 +1,12 @@
 # Date header constructor example
 
-The independently authored [date-header document](../../openapi-surface/handwritten/observatory-client-date/openapi.yml) promotes an optional date header. Its complete certified CLI 5.67.1 / Python SDK 5.20.0 output annotates `sampling_day` as `typing.Optional[dt.date]`, but supplies `"YOUR_SAMPLING_DAY"` in constructor examples. That value is invalid for the schema's `format: date`.
+The independently authored [date-header document](../../openapi-surface/handwritten/observatory-client-date/openapi.yml) promotes an optional date header. Its complete certified Fern CLI 5.163.1 / `fernapi/fern-python-sdk` 5.41.3 output annotates `sampling_day` as `typing.Optional[dt.date]` (`src/fern/client.py` lines 71 and 211), but supplies `"YOUR_SAMPLING_DAY"` in the constructor examples of `src/fern/client.py`'s docstrings: the `FernApi` and `AsyncFernApi` class docstrings (lines 62 and 202) and the `list_signals` method docstrings (lines 128 and 268). That value is invalid for the schema's `format: date`. The README's constructor snippets pass no `sampling_day` at this pair, so the departure applies to `client.py` alone; its ledger row is the file's one differing window, at crozier's line 59.
 
-Run `python3 docs/departures/evidence/date-header-constructor-example.py`: the script extracts the placeholder from the unedited certified output and proves it fails date validation. The replacement passes. Its form and default value come from the certified [observation-date output](../../openapi-surface/handwritten/skyglass-observation-date/fern-expected/src/fern/client.py), which renders `datetime.date.fromisoformat("2023-01-15")`.
+Run `python3 docs/departures/evidence/date-header-constructor-example.py`: the script extracts the placeholder from the unedited certified output and proves it fails date validation. The replacement passes. Its form and default value come from the certified [observation-date output](../../openapi-surface/handwritten/skyglass-observation-date/fern-expected/src/fern/client.py), which renders `datetime.date.fromisoformat("2023-01-15")` (lines 125 and 263). Result, exit 0:
+
+```text
+certified placeholder fails date validation; replacement passes
+```
 
 ## Type-checking the certified example against the certified SDK
 
@@ -10,7 +14,7 @@ The certified SDK pins `mypy==1.13.0` in its own `pyproject.toml`. Install the
 unedited certified tree (a copy of `fern-expected/` as `sdk/`) into a fresh
 venv beside that mypy, so its `py.typed` package is checked as a dependency and
 only the example call is reported. `certified_call.py` is the constructor
-example exactly as the certified docstrings and README emit it;
+example exactly as the certified docstrings emit it;
 `crozier_call.py` is the same call with crozier's replacement value:
 
 ```text

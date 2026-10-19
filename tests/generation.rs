@@ -16067,7 +16067,6 @@ fn examples_docs_cases_render_to_their_certified_trees() {
     departures.dedup();
     for id in [
         "anyof-path-param-schema-example",
-        "collapsed-anyof-property-description",
         "emoji-tag-reference-identifiers",
         "optional-lowered-required-query-array-example",
         "text-response-optional-query-examples",

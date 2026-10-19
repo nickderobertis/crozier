@@ -16,25 +16,27 @@ over plain integers.
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, generated as
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, generated as
 [`constant-header-docs-arguments`](constant-header-docs-arguments.md#fern-s-output)
 describes, exits 0 on both; the comment-stripped trees are each document's
 `fern-expected/`. The signature types `rows` as
 `typing.Optional[typing.Union[int, typing.Sequence[int]]]`, and the docstring
-example passes `rows=[]`. But `reference.md` documents `crops`, `rows` and
+example passes `rows=[]` (`src/fern/beds/client.py` lines 32 and 70). But `reference.md` documents `crops`, `rows` and
 `trays` as `typing.Optional[typing.Union[typing.Optional[int],
 typing.Sequence[typing.Optional[int]]]]` (lines 67, 75, 83), and the worked calls
-of `README.md` and `reference.md` pass `rows=[None]` and `trays=[None]`, where
-`pots`, over plain integers, gets `[1]`.
+of `README.md` (lines 44–49 and 85–90) and `reference.md` (lines 25–30) pass
+`rows=[None]` and `trays=[None]`, where `pots`, over plain integers, gets `[1]`.
 
 ## Why it is a defect
 
-With the tree's `src/` on `MYPYPATH` (a copy), and `typed_call.py` holding the
-README's call:
+Re-run at the new pair on 2026-10-18 under Python 3.12 (which spells the
+annotation `typing.Union[...]` where 3.14 writes `int | typing.Sequence[int] |
+None`), with the tree's `src/` on `PYTHONPATH` and `MYPYPATH` (a copy), and
+`typed_call.py` holding the README's call:
 
 ```text
 $ python -c 'import inspect; from fern import FernApi; print(inspect.signature(FernApi().beds.list_beds).parameters["rows"].annotation)'
-int | typing.Sequence[int] | None
+typing.Union[int, typing.Sequence[int], NoneType]
 $ cat typed_call.py
 from fern.beds.client import BedsClient
 
@@ -57,7 +59,9 @@ crozier's `reference.md` documents the signature's own type, and its worked
 calls pass the element Fern passes for items without `nullable`
 (`rows=[1]`, `trays=["trays"]`). `crozier compare` over each pair matches and
 reports this departure once per file, at the first line of the differing window
-(`README.md:45`, `reference.md:26`); those are the goldens'
+(`README.md:45`, `reference.md:26`), the same in the 3.1 twin; the hand-written
+`nullable-query-union-items`, `observatory-nullable-query` and
+`sensor-batch-query` trees carry it too. Those are the goldens'
 `nullable-items-docs` rows in `tests/fixtures/departures-ledger.tsv`, and
 `compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference`
 in `crates/crozier-e2e/tests/e2e/compare.rs` drives it.

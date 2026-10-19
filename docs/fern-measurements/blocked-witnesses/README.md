@@ -65,10 +65,11 @@ Source SHA-256: `0437ad48ef2e96fae47e804e86333cbf76ad6a280918373a9f479f964624051
 Registered as corpus row 2802, `langchain-agent-server`. The comparison exits
 **0** over 241 files. The `post_a2a` example's union items are now
 constructed as `PostA2ARequestParamsMessageMessagePartsItem_Text`/`_Data`
-variants, as Fern writes them. The description of `assistant_id`, a collapsed
-two-string `anyOf` described on the property, which Fern omits and crozier
-writes, is the `collapsed-anyof-property-description` departure (44 lines over
-models, docstrings and `reference.md`).
+variants, as Fern writes them. `assistant_id`, a collapsed two-string `anyOf`
+described on the property, is undocumented on both sides at fern-python-sdk
+5.41.3, as its undescribed first alternative is; crozier's earlier
+`collapsed-anyof-property-description` departure, which kept the property's
+description, is retired.
 
 ## rice-shower
 
