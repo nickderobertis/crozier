@@ -120,23 +120,23 @@ split four ways:
 497 + 66 + 145 + 9 = 717.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
-same way. The 498 `golden` rows declare 1020 handling sites in
+same way. The 498 `golden` rows declare 1018 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
 [`golden-reach.tsv`](openapi-surface/golden-reach.tsv), measured at commit
-`0dd7f9c77` over all 256 golden tests, with the records it links splits them
+`926de86eb` over all 256 golden tests at Fern CLI 5.163.1 with fern-python-sdk 5.41.3, with the records it links splits them
 three ways:
 
-- **897 are reached by a registered real specification.** A golden-only
+- **895 are reached by a registered real specification.** A golden-only
   witness executes the arm and its golden byte-matches.
-- **115 are reached only by a hand-written fixture.** An arm-level cover
+- **112 are reached only by a hand-written fixture.** An arm-level cover
   in [the hand-written fixtures](openapi-surface/handwritten/AGENTS.md) executes
   the arm, and crozier byte-matches the tree Fern generated from it. That is the
-  same weaker proof as the `handwritten` rows, so each of the 115 is still
+  same weaker proof as the `handwritten` rows, so each of the 112 is still
   one of the 123 [unreached arms](#every-unreached-arm-and-its-search-verdict).
-  The cited records of 49 read `exhausted`, 65 read `search-incomplete`
-  and 1 read `config-gated`. The bounded replacement searches preserve their
-  limits. The config-gated `discriminator-mapping` arm runs only under an
-  audience filter, which no search probe sets.
+  The cited records of 48 read `exhausted`, 64 read `search-incomplete`
+  and 0 read `config-gated`. The bounded replacement searches preserve their
+  limits. The one `config-gated` record, `discriminator-mapping`'s, was retired
+  when registered goldens began reaching its arm at the new pair.
 - **5 are reachable only by a document Fern refuses**, which leaves no Fern tree
   to byte-match. They are `enum-leading-zero-member`'s,
   `enum-leading-digit-identifier`'s and `enum-empty-identifier-member`'s
@@ -146,22 +146,27 @@ three ways:
   six-source search reads `exhausted`. Each record, a minimal refused document
   and a control Fern generates from, is in
   [Arms only a refused document reaches](fern-limitations.md#arms-only-a-refused-document-reaches).
-- **3 are named gaps**, arms no proof crozier can show covers yet, each new with
-  a row the example predicates of #361 made `golden`, and each `not searched`:
+- **6 are named gaps**, arms no proof crozier can show covers yet
+  ([Unproven arms, named](#unproven-arms-named)). Three are new with a row the
+  example predicates of #361 made `golden`, each `not searched`:
   `schema-example-empty-object`'s field-less model arm,
   `schema-example-object-on-map`'s `Dict` test and
-  `schema-example-outside-enum`'s enum test
-  ([Unproven arms, named](#unproven-arms-named)). `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
+  `schema-example-outside-enum`'s enum test. Three left their covers at the move
+  to Fern CLI 5.163.1: `discriminator-mapping`'s whole-union wrapper arm and its
+  worked example, which a union-of-objects mapping target no longer reaches now
+  that Fern merges one, and `oneof-string-const-variant`'s string-enum member
+  arm, whose search reads `search-incomplete` while a candidate's Fern screen
+  predates the pair. `format-duration`'s `scalar_body` arm is reached on this measurement by corpus row 308,
   `yourbrand-ticketing`.
 
-897 + 115 + 5 + 3 = 1020. Fourteen sites left the table with the two functions
+895 + 112 + 5 + 6 = 1018. Fourteen sites left the table with the two functions
 that served only the `Body_*` exemption and the HTTP Basic header drop,
 `form_body_source_names` and `operation_uses_basic_auth`; the ledger re-joins its
 committed measurement without them. No arm rests on a witness whose redistribution grant is
 disputed. `ref-pointer-composition-index`'s `ref_to_class` composition-index
 walk was reached only through corpus row 224 until that row was withdrawn for
 its disputed grant. It now rests on the hand-written fixture
-`composition-index-pointer` and is one of the 115. Corpus row 223
+`composition-index-pointer` and is one of the 112. Corpus row 223
 (`nexmo-conversation`) rested on the same aggregation-only grant and is
 withdrawn too
 ([record](openapi-surface/withdrawn-witnesses/nexmo-conversation.md)).
@@ -2804,7 +2809,7 @@ why. The changes that took the arm off:
 | 29 | `oneof-map-variant-oneof-value` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | 47 | `search-incomplete` | `survey-map-value-union` |
 | 30 | `oneof-array-variant-anyof-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]` | 44 | `exhausted` | `inline-oneof-variants` |
 | 31 | `parameter-style-form-query-object` | `src/emit.rs::append_request_call_args[\} else if qp\.convert \{]` | 30 | `not searched` — no arm search has run | `ore-bin-screen` |
-| 32 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `search-incomplete` | `inline-oneof-variants` |
+| 32 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | 16 | `search-incomplete` | — |
 | 33 | `annotated-ref-shape` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-oneof-variants` |
 | 34 | `anyof-array-variant-annotated-ref-item` | `src/ir.rs::InlineHoister::hoist_union_variant[^ {16}\{$]` | 16 | `exhausted` | `inline-anyof-variants` |
 | 35 | `anyof-array-variant-composed-item` | `src/ir.rs::InlineHoister::hoist_union_variant[if item.reference.is_none\(\) && is_inline_struct\(item\) \{]` | 14 | `exhausted` | `inline-anyof-variants` |
@@ -2828,8 +2833,7 @@ why. The changes that took the arm off:
 | 53 | `http-dpop` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-dpop-unrequired` |
 | 54 | `http-mutual` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-mutual-unrequired` |
 | 55 | `http-negotiate` | `src/ir.rs::auth_model[=_ => Auth::None,]` | 1 | `exhausted` | `http-negotiate-unrequired` |
-| 56 | `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | its [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) reads `search-incomplete` at Fern CLI 5.163.1 with fern-python-sdk 5.41.3: the one candidate reaching the arm, Lap-Platform's `examples/verbose/openapi/vercel.yaml` in `sourcegraph`, carries a Fern screen taken at CLI 5.67.1 with fern-python-sdk 5.20.0, which no longer reads as measured. The hand-written `inline-oneof-variants` fixture executes the arm, but a cover cites its search's verdict, and a `search-incomplete` one owes a renewed search that has not run |
-| `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
+| 56 | `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | 5 | `not searched` — no arm search has run | — |
 | 57 | `media-type-malformed-key` | `src/ir.rs::has_dispatchable_media[=^ {16}return true;$]` | 1 | `not searched` — no arm search has run | `slashless-json-response` |
 | 58 | `array-item-pointer-walk-items` | `src/ir.rs::resolve_schema_pointer[^\s*"items" => \{]` | 3 | `exhausted` | `ref-pointer-walk` |
 | 59 | `description` | `src/ir.rs::InlineHoister::hoist_object[let docstring = if schema\.description\.as_deref\(\) == Some\(""\) \{]` | 1 | `not searched` — no arm search has run | `blank-reading-description` |
@@ -2949,6 +2953,9 @@ before, left it that way: the reach ledger re-measured over corpus row 308,
 
 | key | unreached arm | why it is unproven |
 |---|---|---|
+| `discriminator-mapping` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable |
+| `discriminator-mapping` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `not searched` as an arm — no arm search record exists for it. At Fern CLI 5.163.1 with fern-python-sdk 5.41.3 a mapping target that is a union of objects is merged by the `merged_mapping_union` arm, which `kitchen-nested-mapping-target` covers, so this arm is reached only by a target union whose members are not all objects; no registered golden or hand-written fixture declares one, and the shape-level union-scenarios search, `search-incomplete`, found nothing registrable; this arm renders that wrapper's worked example |
+| `oneof-string-const-variant` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]` | its [arm search](openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md) reads `search-incomplete` at Fern CLI 5.163.1 with fern-python-sdk 5.41.3: the one candidate reaching the arm, Lap-Platform's `examples/verbose/openapi/vercel.yaml` in `sourcegraph`, carries a Fern screen taken at CLI 5.67.1 with fern-python-sdk 5.20.0, which no longer reads as measured. The hand-written `inline-oneof-variants` fixture executes the arm, but a cover cites its search's verdict, and a `search-incomplete` one owes a renewed search that has not run |
 | `schema-example-empty-object` | `src/emit.rs::ExampleCtx::value_from_example[if fields.is_empty\(\) \{]` | `not searched` — the row is new with the example predicates of #361; its three golden witnesses declare an empty-object example but none renders it through a field-less model, and no arm search has been run |
 | `schema-example-object-on-map` | `src/emit.rs::ExampleCtx::example_matches_type_through[=TypeRef::Dict\(_, _\) => value.is_object\(\),]` | `not searched` — the row is new with the example predicates of #361; its eleven golden witnesses declare an object example on an open map but none reaches the `Dict` test of a union member, and no arm search has been run |
 | `schema-example-outside-enum` | `src/emit.rs::ExampleCtx::example_matches_type_through[=Some\(TypeDecl::Enum\(decl\)\) => value]` | `not searched` — the row is new with the example predicates of #361; its three golden witnesses declare a string outside the enum but none tests it against an enum union member, and no arm search has been run |
