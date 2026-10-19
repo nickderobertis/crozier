@@ -1,8 +1,8 @@
 key	kind	subject	result	file
 *	wait	sourcegraph guard log index-pacing-waits.jsonl	8 entries	index-pacing-waits.jsonl
 *	wait	sourcegraph guard log rate-limit-calls.jsonl	190 entries	rate-limit-calls.jsonl
-*	wait	sourcegraph guard log raw-github-calls.jsonl	12381 entries	raw-github-calls.jsonl
-*	wait	sourcegraph guard log raw-github-waits.jsonl	11796 entries	raw-github-waits.jsonl
+*	wait	sourcegraph guard log raw-github-calls.jsonl	12383 entries	raw-github-calls.jsonl
+*	wait	sourcegraph guard log raw-github-waits.jsonl	11797 entries	raw-github-waits.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/chain_api_plugin/chain.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/AntelopeIO/leap:plugins/producer_api_plugin/producer.swagger.yaml@92b6fec5e949660bae78e90ebf555fe71ab06940	census 0	candidates.jsonl
 annotated-ref-shape	document	github.com/Azure-Samples/AI-Gateway:labs/realtime-mcp-agents/src/spotify/apim-api/openapi.json@1679e3137d2fe7592d2a668d77ff71550d35b69e	census 0	candidates.jsonl

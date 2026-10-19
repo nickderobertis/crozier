@@ -392,6 +392,14 @@ Omitting `--version` here keeps the certified pair;
 `just fern-goldens-generate` without `--version` still resolves the newest
 stable Fern tag.
 
+Witness screens are records of a search, not references, so a move does not
+regenerate them. Once the goldens carry the new pair, `python3
+tools/witness-search/witness_screen.py historical` labels every committed
+screen measured at an earlier pair as that pair's history, which no live
+decision reads as a measurement; a candidate is re-measured at the new pair by
+screening it again (`golden-reach-search.py screen`, or `witness_screen.py
+screen`).
+
 ## Publication safety
 
 Each fixture is generated into a same-filesystem staging directory and replaces

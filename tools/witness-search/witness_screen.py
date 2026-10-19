@@ -34,6 +34,10 @@ its own recorded run yields is refused as unmeasured.
 A screen row filed before this stage landed carries no such record. It stays
 readable and is **historical**: no live completeness decision reads it as a
 measurement. A row dated at or after [`MEASURED_SINCE`] without one is refused.
+A row whose Fern screen was measured at a certified pair the corpus has since
+moved from is historical too, once it carries [`HISTORICAL_PAIR`] naming that
+pair; `historical` labels every such committed row, and its record is still
+held whole, at the pair it names.
 
 `screen` exits 0 when it filed the row — a rejected candidate is filed too, so
 0 says the screens were taken and recorded, not that they passed; 1 when it
@@ -76,6 +80,9 @@ SCREENS = ("licence", "ref", "fern")
 # A screen row dated at or after this instant was filed after the measured stage
 # landed, so it owes the measured record; one before it is historical.
 MEASURED_SINCE = "2026-10-02T00:00:00+00:00"
+# The row field labelling a measurement taken at an earlier certified pair as
+# history of that pair, worded as `historical_pair_label` writes it.
+HISTORICAL_PAIR = "historical"
 LOG_DIR = "screens"
 LICENCE_FILES = ("LICENSE", "LICENSE.md", "LICENSE.txt", "LICENCE", "LICENCE.md", "COPYING")
 # How much of a licence file is read for its grant: its title and opening
@@ -180,8 +187,17 @@ def fern_workspace_files() -> tuple[str, str]:
     return json.dumps({"organization": "fern", "version": cli}) + "\n", "\n".join(generators) + "\n"
 
 
-def fern_label() -> str:
-    cli, _name, version, _config = corpus_fern_pins()
+Pins = tuple[str, str, str]
+
+
+def current_pins() -> Pins:
+    """The Fern CLI, generator and generator version a live screen is held to: the corpus's."""
+    cli, generator, version, _config = corpus_fern_pins()
+    return cli, generator, version
+
+
+def fern_label(pins: Pins | None = None) -> str:
+    cli, _name, version = pins or current_pins()
     return f"Fern CLI {cli} / python-sdk {version}"
 
 
@@ -305,22 +321,21 @@ def fern_screen_document(document: Path, scratch: Path, timeout: int) -> dict[st
     return row
 
 
-def fern_verdict(row: dict[str, Any]) -> str | None:
-    """A screen's `fern` result from a measured run, or None when the run did not finish."""
+def fern_verdict(row: dict[str, Any], pins: Pins | None = None) -> str | None:
+    """A screen's `fern` result from a measured run at `pins` (the corpus's by default),
+    or None when the run did not finish."""
+    label = fern_label(pins)
     check = row["check_exit"]
     if check == "timeout" or row.get("generate_exit") == "timeout":
         return None
     if check != "0":
-        return f"failed: {fern_label()} fern check exit {check}: {row['check_diagnostic']}"
+        return f"failed: {label} fern check exit {check}: {row['check_diagnostic']}"
     generated = row["generate_exit"]
     if generated != "0":
-        return (
-            f"failed: {fern_label()} fern generate exit {generated} after fern check exit 0: "
-            f"{row['generate_diagnostic']}"
-        )
+        return f"failed: {label} fern generate exit {generated} after fern check exit 0: {row['generate_diagnostic']}"
     if UNPARSED.search(row["generate_diagnostic"]) or row["generate_python_files"] == 0:
         return (
-            f"failed: {fern_label()} fern generate exit 0 over an unparsed document, "
+            f"failed: {label} fern generate exit 0 over an unparsed document, "
             f"{row['generate_python_files']} Python files: {row['generate_diagnostic']}"
         )
     return "passed"
@@ -692,14 +707,15 @@ REQUIRED_PINS = {
 }
 
 
-def measured_failures(record: Any, base: Path | None = None) -> list[str]:
+def measured_failures(record: Any, base: Path | None = None, held_pins: Pins | None = None) -> list[str]:
     """Every part of a measured record that is missing or does not hold; empty means it is whole.
 
     Each screen that ran owes its outcome, the exit status of what it ran, its
     pins, and its redacted log's path and digest; where `base` is given the log
     must be there and carry that digest. A screen that did not run says
     `not-run: <why>`, and only after an earlier screen failed. A Fern outcome
-    must be the one its own recorded run yields, at the corpus's pins.
+    must be the one its own recorded run yields, at `held_pins` — the corpus's
+    unless a historical row names the earlier pair it was measured at.
     """
     if not isinstance(record, dict):
         return ["no measured record"]
@@ -774,13 +790,11 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
             missing += licence_pass_failures(pins)
         if name == "fern":
             run = section.get("run") if isinstance(section.get("run"), dict) else None
-            cli, generator, version, _config = corpus_fern_pins()
-            if (pins.get("fern_cli"), pins.get("generator"), pins.get("generator_version")) != (
-                cli,
-                generator,
-                version,
-            ):
-                missing.append(f"the fern screen's run at the corpus pins ({cli}, {generator} {version})")
+            held = held_pins or current_pins()
+            cli, generator, version = held
+            if (pins.get("fern_cli"), pins.get("generator"), pins.get("generator_version")) != held:
+                where = "the corpus pins" if held_pins is None else "the pair its row names"
+                missing.append(f"the fern screen's run at {where} ({cli}, {generator} {version})")
             if run is None or "check_exit" not in run:
                 missing.append("the fern screen's measured run (`run.check_exit` and what followed)")
             elif wrong := fern_run_failures(run, document):
@@ -799,7 +813,7 @@ def measured_failures(record: Any, base: Path | None = None) -> list[str]:
                         f"the fern screen's exit as its run records it ({expected!r}, not {section.get('exit')!r})"
                     )
                 try:
-                    measured = fern_verdict(run)
+                    measured = fern_verdict(run, held)
                 except KeyError as error:
                     measured = f"an incomplete run lacking {error}"
                 if measured != outcome:
@@ -981,17 +995,78 @@ def unmeasured_date_failure(row: dict[str, Any]) -> str | None:
     return None
 
 
+def recorded_pins(record: Any) -> Pins | None:
+    """The pair a measured record's Fern screen ran at, or None where it records none."""
+    fern = record.get("fern") if isinstance(record, dict) else None
+    pins = fern.get("pins") if isinstance(fern, dict) else None
+    if not isinstance(pins, dict):
+        return None
+    cli, generator, version = pins.get("fern_cli"), pins.get("generator"), pins.get("generator_version")
+    if (
+        isinstance(cli, str)
+        and isinstance(generator, str)
+        and isinstance(version, str)
+        and cli
+        and generator
+        and version
+    ):
+        return cli, generator, version
+    return None
+
+
+def historical_pair_label(pins: Pins) -> str:
+    """The [`HISTORICAL_PAIR`] label of a measurement taken at `pins`."""
+    cli, generator, version = pins
+    return f"measured at an earlier certified pair, Fern CLI {cli} / {generator} {version}"
+
+
+def historical(row: dict[str, Any]) -> bool:
+    """A screen row no live decision reads as a measurement: unmeasured, or labelled history of an earlier pair."""
+    return unmeasured(row) or HISTORICAL_PAIR in row
+
+
+def historical_pair_failures(row: dict[str, Any]) -> tuple[Pins | None, list[str]]:
+    """The earlier pair a labelled row is held to, and why its label does not hold, or nothing.
+
+    The label must name exactly the pair its record's Fern screen ran at, and
+    that pair must not be the corpus's: a measurement at the current pins is
+    live evidence, never history.
+    """
+    pins = recorded_pins(row.get("measured"))
+    if pins is None:
+        return None, [f"its `{HISTORICAL_PAIR}` label on a row whose measured record ran no Fern screen at a pair"]
+    if pins == current_pins():
+        return None, [
+            f"its `{HISTORICAL_PAIR}` label on a measurement at the corpus pins {pins}: a current "
+            f"measurement is never history — drop `{HISTORICAL_PAIR}`"
+        ]
+    if row[HISTORICAL_PAIR] != historical_pair_label(pins):
+        return None, [
+            f"its `{HISTORICAL_PAIR}` label {row[HISTORICAL_PAIR]!r}, not the pair its record ran at "
+            f"({historical_pair_label(pins)!r}) — relabel it with `{SCRIPT_PATH} historical`"
+        ]
+    return pins, []
+
+
 def row_failures(row: dict[str, Any], base: Path, fields: dict[str, str]) -> list[str]:
     """One screen row against its measured record: refused unless it is whole or historical.
 
     `fields` maps each screen to the row field that states its outcome. A row
     carrying a record must state exactly the outcomes it records; one without
     is historical only if it predates the stage (`unmeasured_date_failure`).
+    A row labelled [`HISTORICAL_PAIR`] is held whole at the earlier pair it names.
     """
     if unmeasured(row):
+        if HISTORICAL_PAIR in row:
+            return [f"its `{HISTORICAL_PAIR}` label on a row with no measured record"]
         failure = unmeasured_date_failure(row)
         return [failure] if failure else []
-    failures = measured_failures(row["measured"], base)
+    held = None
+    if HISTORICAL_PAIR in row:
+        held, wrong = historical_pair_failures(row)
+        if wrong:
+            return wrong
+    failures = measured_failures(row["measured"], base, held)
     if not failures:
         for name, field in fields.items():
             if row.get(field) != row["measured"][name]["outcome"]:
@@ -1139,6 +1214,34 @@ def legacy_screen(args: argparse.Namespace) -> int:
     return 0
 
 
+def label_historical(root: Path) -> int:
+    """Label every committed screen measured at a pair other than the corpus's as history of that pair.
+
+    Only the rows it labels are rewritten, in the form `screen` files them; every
+    other line stays byte for byte. Re-screening a candidate at the current pins
+    is a separate measurement, filed through `screen`.
+    """
+    pins = current_pins()
+    labelled = 0
+    for screens in sorted(root.glob("**/screens.jsonl")):
+        lines = screens.read_text(encoding="utf-8").splitlines(keepends=True)
+        changed = False
+        for number, line in enumerate(lines):
+            row = json.loads(line)
+            recorded = recorded_pins(row.get("measured"))
+            if HISTORICAL_PAIR in row or recorded is None or recorded == pins:
+                continue
+            row[HISTORICAL_PAIR] = historical_pair_label(recorded)
+            lines[number] = json.dumps(row, sort_keys=True) + "\n"
+            changed = True
+            labelled += 1
+        if changed:
+            screens.write_text("".join(lines), encoding="utf-8", newline="\n")
+    if labelled:
+        print(f"witness-screen: labelled {labelled} screen(s) measured at an earlier pair as historical")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     sub = parser.add_subparsers(dest="command", required=True)
@@ -1157,7 +1260,11 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--timeout", type=positive_int, default=1800)
     s.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")
     s.add_argument("--fern", help=argparse.SUPPRESS)
+    h = sub.add_parser("historical", help="label every screen measured at an earlier certified pair as its history")
+    h.add_argument("--evidence-root", type=Path, default=REPO / "docs" / "openapi-surface")
     args = parser.parse_args(argv)
+    if args.command == "historical":
+        return label_historical(args.evidence_root)
     return legacy_screen(args)
 
 
