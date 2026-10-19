@@ -493,8 +493,15 @@ def list_probes() -> list[str]:
 
 def first_diagnostic(log: str) -> str:
     """The first error Fern itself printed: an `issue:` line of `fern check`'s
-    report, or the line after `[error]` in the generation's."""
-    for pattern in (r"issue: (.+)", r"\[error\] (.+)", r"(?m)^\s*(?:Error|error): (.+)", r"Failed to .+"):
+    report, the line after `[error]` in the generation's, or the exception a
+    crashed generator raised (`KeyError: …`)."""
+    for pattern in (
+        r"issue: (.+)",
+        r"\[error\] (.+)",
+        r"(?m)^\s*([A-Z]\w*Error: .+)$",
+        r"(?m)^\s*(?:Error|error): (.+)",
+        r"Failed to .+",
+    ):
         match = re.search(pattern, log)
         if match:
             return (match.group(1) if match.groups() else match.group(0)).strip()

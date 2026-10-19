@@ -40,6 +40,9 @@ if sys.argv[1] == "check":
         sys.exit(1)
     print("All checks passed")
     sys.exit(0)
+if "x-stub-crash" in document:
+    print("Traceback (most recent call last):\n    raise KeyError(key)\n  KeyError: 'type_:Probe'")
+    sys.exit(1)
 if "x-stub-refuse" in document:
     print(f"[api]: python-sdk Generator logs here: /tmp/tmp-stub-1\n[api]: python-sdk {workspace}\n                  [error] Stub refused the document")
     sys.exit(1)
@@ -266,6 +269,18 @@ class FernReferencesTests(unittest.TestCase):
         rows = (expected / "MANIFEST.tsv").read_text(encoding="utf-8").splitlines()
         self.assertEqual(rows[1].split("\t")[5], tree_digest(expected / "kept"))
         self.assertEqual(rows[2].split("\t")[5], hashlib.sha256(record.encode()).hexdigest())
+
+    def test_a_crashed_generator_s_exception_is_the_refusal_diagnostic(self) -> None:
+        self.write("docs/openapi-surface/probes/crashed.yml", "openapi: 3.0.3\nx-stub-crash: true\n")
+        self.manifest(
+            f"crashed\trefusal\tcrashes\tdocs/openapi-surface/probe-expected/crashed.fern-refusal.txt\t—\t{'c' * 64}"
+        )
+        result = self.run_tool("generate", "probes")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        record = (self.root / "docs/openapi-surface/probe-expected/crashed.fern-refusal.txt").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("diagnostic: KeyError: 'type_:Probe'\n", record)
 
     def test_a_probe_whose_outcome_changes_form_is_written_and_reported_for_a_decision(self) -> None:
         self.write("docs/openapi-surface/probes/turned.yml", "openapi: 3.0.3\nx-stub-refuse: true\n")
