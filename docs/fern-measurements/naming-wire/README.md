@@ -1,7 +1,7 @@
 # Header enum values and member descriptions
 
 These two complete, comment-stripped trees were generated with Fern CLI
-5.67.1 and `fernapi/fern-python-sdk` 5.20.0, with
+5.163.1 and `fernapi/fern-python-sdk` 5.41.3, with
 `pydantic_config.enum_type: python_enums`. Each uses the document of the same
 name in [the literals-mode measurements](../literals-mode/README.md), so the
 two modes exercise identical inputs.

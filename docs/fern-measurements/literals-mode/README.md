@@ -7,7 +7,7 @@ none is a real specification, and none settles a coverage row.
 
 Each `fern-expected/` is the output of
 `tools/fern-goldens/generate-fern-fixture.sh --enum-type literals` at Fern CLI
-5.67.1 and `fernapi/fern-python-sdk` 5.20.0, comment-stripped by
+5.163.1 and `fernapi/fern-python-sdk` 5.41.3, comment-stripped by
 `crozier internal-strip`, and never edited. Where the case's document is a
 hand-written fixture, the script reduced Fern's tree to an overlay of that
 fixture's `fern-expected/` (Fern's `python_enums` tree): the files whose bytes

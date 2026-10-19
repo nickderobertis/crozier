@@ -1,7 +1,7 @@
 # Client and package construction, measured under other settings
 
-Each directory here is a tree Fern generated at Fern CLI 5.67.1 with
-`fernapi/fern-python-sdk` 5.20.0 under a setting other than the one its
+Each directory here is a tree Fern generated at Fern CLI 5.163.1 with
+`fernapi/fern-python-sdk` 5.41.3 under a setting other than the one its
 document's own gate uses, comment-stripped by `crozier internal-strip`. The
 trees are Fern's output as measured; nothing in them was edited. The workspace
 is the one `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of

@@ -1,7 +1,7 @@
 # How Fern lowers query and header parameters, measured
 
 Each directory here is a document written for the purpose and the tree Fern
-generated from it at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in
+generated from it at Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in
 the workspace `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of
 [`../../fern-goldens.md`](../../fern-goldens.md)), comment-stripped by
 `crozier internal-strip`. The trees are Fern's output as measured; nothing in

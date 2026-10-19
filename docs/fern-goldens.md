@@ -34,8 +34,9 @@ before Route A or Route B spends a generate.
 
 Before spending a generate on a shape, check
 [`fern-limitations.md`](fern-limitations.md): it records, with the measured
-evidence, which shapes Fern 5.20.0 discards, ignores or refuses — a golden cannot
-pin a style Fern throws away — and which candidate pools are exhausted.
+evidence and the pair each measurement ran at, which shapes Fern discards,
+ignores or refuses — a golden cannot pin a style Fern throws away — and which
+candidate pools are exhausted.
 
 Work on one corpus row at a time. There are two routes to the same golden, and
 who can run them differs:
@@ -314,9 +315,10 @@ step 3 rather than silently pinning nothing.
 
 ### Exact known upstream failures
 
-`calorieninjas.com` is the single registered exception across the whole corpus at
-`fernapi/fern-python-sdk:5.20.0`. Its source operation has no `operationId`, and
-Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
+`calorieninjas.com` is the single registered exception across the whole corpus,
+recorded at `fernapi/fern-python-sdk:5.20.0` and not re-measured at the certified
+5.41.3 (a registration applies only at its own generator version). Its source
+operation has no `operationId`, and Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
 SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
 binds the exception to the exact generator version, corpus name/ref/URL, exit
 code, six ordered syntax diagnostics and source lines, Ruff summary, and failed
@@ -410,7 +412,7 @@ Rust, and Ruff prerequisites as the workflow and writes nothing to a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 5.20.0 --fixture anchore.io
+just fern-goldens --version 5.41.3 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -420,7 +422,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 5.20.0 --fixture anchore.io
+just fern-goldens-generate --version 5.41.3 --fixture anchore.io
 just fern-goldens-compare
 ```
 

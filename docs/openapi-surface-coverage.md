@@ -1669,8 +1669,10 @@ These 44 rows are the 27 generator categories and the 17 scenarios later
 parity repairs closed: the base-path and string-map example gaps, the
 parameter fix's additional scenarios, and every scenario whose correction is a
 Fern defect. Other
-scenarios are not proof claims here. Each path is committed output from Fern CLI **5.67.1** with
-`fernapi/fern-python-sdk` **5.20.0**, compared by the named deterministic e2e
+scenarios are not proof claims here. Each path is committed output from Fern CLI **5.163.1** with
+`fernapi/fern-python-sdk` **5.41.3** (the pair
+[`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)
+declares), compared by the named deterministic e2e
 test. Hand-written and measurement documents certify their shapes without
 counting as real-specification matches.
 
@@ -2980,10 +2982,11 @@ The table had 61 arms across 55 rows until `example`'s one unreached site,
 `src/ir.rs::example_is_schema_definition`, left it: 60 arms across 54 rows. That
 helper's only caller was the `InlineHoister::hoist_union_variant` disjunct that
 hoisted a bare `type: object` union member carrying a concrete object example
-into a named model. Fern at CLI 5.67.1 and python-sdk 5.20.0 never does. It types
+into a named model. Fern at CLI 5.163.1 and python-sdk 5.41.3 never does. It types
 the member `typing.Dict[str, typing.Any]` in the hand-written
 [`inline-oneof-variants`](openapi-surface/handwritten/inline-oneof-variants/)
-fixture's inline response `oneOf`. Local runs at the same pin gave the same
+fixture's inline response `oneOf`. Local runs at CLI 5.67.1 and python-sdk 5.20.0
+(not re-measured at the certified pair) gave the same
 result for an inline request-body `oneOf` (plain, with a `title`, with a
 `description`, and with 3.1 `examples`) and for a `oneOf` under an inline
 property. The committed probe
@@ -3151,7 +3154,7 @@ now holds for it. The paragraphs below walk them in the order they happened; thi
 is the shape they add up to.
 
 - **By a registered witness.** A real-world document was screened for licence and
-  immutable ref, put to Fern at 5.20.0, and committed as a corpus row with its
+  immutable ref, put to Fern at the certified pair, and committed as a corpus row with its
   golden. The row is `golden`, and crozier's bytes are compared against Fern's
   over that document on every `just check`. This is the only route that produces
   parity evidence, and it is the route most of this list took — on the corpus
@@ -3190,7 +3193,7 @@ is the shape they add up to.
 
 **Pinned from this backlog:** [`header-allow-empty-value`](openapi-surface/parameters.md)
 is pinned by corpus row 94, `ndw-accessibility-map`; its two Header Objects declare
-the field and its Fern 5.20.0 golden byte-matches with no exclusions.
+the field and its Fern 5.41.3 golden byte-matches with no exclusions.
 
 The two highest-ranked entries stayed for two rounds, and the issue #188 witness
 search
@@ -3210,11 +3213,11 @@ measured. `header-content` was the third and left this backlog on corpus row 121
 
 [`content-encoding`](openapi-surface/schemas.md) is pinned by corpus row 95,
 `marimo`; its `Base64String` component declares `contentEncoding: base64` and
-its Fern 5.20.0 golden byte-matches with no exclusions.
+its Fern 5.41.3 golden byte-matches with no exclusions.
 
 [`format-duration`](openapi-surface/schemas.md) is pinned by corpus row 97,
 `mosip-esignet`, registered as one of the three `http-dpop` witnesses; two of its
-schemas declare `format: duration` and its Fern 5.20.0 golden byte-matches with
+schemas declare `format: duration` and its Fern 5.41.3 golden byte-matches with
 no exclusions.
 
 Six `schemas` rows left this backlog together, on the three witnesses the issue
@@ -3228,14 +3231,14 @@ all three as corpus rows 110, 111 and 112:
 [`dollar-defs`](openapi-surface/schemas.md) on `flowdapt` (7), and
 [`property-names`](openapi-surface/schemas.md) on all three of
 `volview-backend-contract`, `osparc-simcore-webserver` and `helixdb-http-api`
-(7, 30 and 2). Each of the three Fern 5.20.0 goldens byte-matches with no
+(7, 30 and 2). Each of the three Fern 5.41.3 goldens byte-matches with no
 exclusions, so all six rows are `golden` outright.
 
 [`format-json-pointer`](openapi-surface/schemas.md) left it next, alone, on the
 witness the same search recorded as `witness-found` for it and the change that
 registered that witness as corpus row 113,
 `k8s-container-service-provider`: its `Error.pointer` and `ErrorDetail.pointer`
-each annotate a string field with the RFC 6901 format, and its Fern 5.20.0 golden
+each annotate a string field with the RFC 6901 format, and its Fern 5.41.3 golden
 byte-matches with no exclusions, so the row is `golden` outright.
 
 Six `parameters` rows left this backlog together, on the witnesses the issue #188
@@ -3257,7 +3260,7 @@ conjunction pass had reported as none —
 registered as corpus row 121 — the same document the
 `parameter-style-simple-header-scalar` search recorded as an alternate — whose 22
 Response Header Objects each carry a media type instead of a `schema`. Every one of
-those Fern 5.20.0 goldens byte-matches with no exclusions, so all six rows are
+those Fern 5.41.3 goldens byte-matches with no exclusions, so all six rows are
 `golden` outright.
 
 [`operation-overrides-path-item-parameter`](openapi-surface/parameters.md) left
@@ -3300,7 +3303,7 @@ all three witnesses the search recorded: `api-openverse-org` (row 124, 6
 declarations), `braintrust-dev` (row 126, 148) and `discord-com` (22). **Every
 alternate that search recorded is registered**, because a witness is not dropped
 for being redundant; none of the four was refused by Fern, so none took the
-`fern-rejected` route. Each of the four Fern 5.20.0 goldens byte-matches — the
+`fern-rejected` route. Each of the four Fern 5.41.3 goldens byte-matches — the
 four documents cost a run of repairs in `src/` between them, recorded in
 [`matching.md`](matching.md) — so both rows are `golden` outright. The
 same walk shows `helixdb-http-api` (row 111) already declared the optional
@@ -3322,7 +3325,7 @@ still carries that evidence.
 a `PROBE` until the issue #188 search found it a publisher-owned, Apache-2.0
 witness, and the change that settled it registered that witness as corpus row 109,
 `volview-backend-contract`, whose two `$comment` declarations and byte-matching
-Fern 5.20.0 golden make the row `golden` outright.
+Fern 5.41.3 golden make the row `golden` outright.
 [`format-relative-json-pointer`](openapi-surface/schemas.md) arrived here from the
 other direction: the same search found it a publisher-owned witness Fern accepts
 whose licence is proprietary, and a witness blocked on redistribution puts a row
@@ -3415,7 +3418,7 @@ Fern at both stages and it passed, and it is registered as corpus row 133.
 goes on its two `spaceDelimited` query parameters and
 [`parameter-style-pipedelimited-query-scalar`](openapi-surface/parameters.md) on
 its four `pipeDelimited` ones, all six on `PATCH /queries/{QueryID}`. Its
-Fern 5.20.0 golden byte-matches with no exclusions, so both rows are `golden`
+Fern 5.41.3 golden byte-matches with no exclusions, so both rows are `golden`
 outright — the first of the two on the only witness found anywhere, and the second
 beside the Fern-rejected AlayaCare document its own search recorded.
 
@@ -3425,14 +3428,15 @@ corpus's densest `media-type-range` declarer and its second
 `operation-overrides-path-item-parameter` source, row 135
 (`googleapis-servicebroker`) its fourth `duplicate-normalized-paths` declarer, and
 row 136 (`audiobookshelf`) its fourth `media-type-range` one. Each of the four
-Fern 5.20.0 goldens byte-matches; between them they cost a run of repairs in
+Fern 5.41.3 goldens byte-matches; between them they cost a run of repairs in
 `src/`, recorded in [`matching.md`](matching.md). The rescreening's fifth
 registrable candidate, Eclipse Ditto — the only admitted `format-iri-reference`
-declarer — is **not** registered: Fern's Python generator refuses it at the CLI
-version the corpus's goldens are pinned to, which is why
+declarer — is **not** registered: Fern's Python generator refused it at CLI 5.67.1
+with fern-python-sdk 5.20.0, the pair the corpus's goldens were then pinned to
+(not re-measured at the certified pair), which is why
 [`format-iri-reference`](openapi-surface/schemas.md) left this backlog on a
 measured probe rather than on a corpus row. Its own cell carries that refusal, and
-a document Fern's 5.20.0 generator accepts still promotes it to `golden`.
+a document Fern's generator accepts still promotes it to `golden`.
 
 #### The six rows a round of probes settled
 
@@ -3757,7 +3761,7 @@ lists name three keys. They are Codat's seven `APIs-guru` copies for
 `ref-pointer-unnamed-segment` and PandaScore's for
 `annotated-ref-target-closed-object` and `annotated-ref-target-oneof`. All
 three keys are `golden` on registered documents that declare the same shape,
-carry an evidenced licence and byte-match their Fern 5.20.0 goldens:
+carry an evidenced licence and byte-match their Fern 5.41.3 goldens:
 
 - `ref-pointer-unnamed-segment` is `golden` on `auto-agent-protocol`, corpus
   row 153 (Apache-2.0, the document's own `info.license`).

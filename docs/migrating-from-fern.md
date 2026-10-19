@@ -61,7 +61,7 @@ Fern applies a spec's `overrides` and then its `overlays`, both set on an
 [Overlays](https://buildwithfern.com/learn/api-definitions/openapi/overlays) and
 [Overrides](https://buildwithfern.com/learn/api-definitions/overrides) pages; the
 keys are in
-[`generators-yml.schema.json` at CLI 5.67.1](https://github.com/fern-api/fern/blob/b8414a6f56a875fc828f16af0d49ca93f22fd082/generators-yml.schema.json),
+[`generators-yml.schema.json` at CLI 5.163.1](https://github.com/fern-api/fern/blob/014b566a7aa8af3e4b0c1941d37caa2463c3023a/generators-yml.schema.json),
 `generators.OpenAPISpecSchema`). crozier reads the document as given (overlay
 support is tracked in
 [#83](https://github.com/nickderobertis/crozier/issues/83)), so apply them first
@@ -125,14 +125,15 @@ npx swagger2openapi@7.0.8 build/swagger.json -o build/openapi.json
 
 ### Referenced-schema pruning
 
-Fern CLI 5.67.1 ignores range-status responses such as `4XX` when deciding which
-schemas `only-include-referenced-schemas` retains. A component reachable only
-through such a response is removed. `openapi-format`'s `unusedComponents`
-follows those references and retains it, so that filter does not reproduce
-Fern's workspace setting. The [measurement](fern-measurements/workspace-presteps/README.md#pruning)
-records the retained models on both sides. This guide gives no equivalent
-pruning recipe; compare against Fern before migrating a workspace using that
-setting.
+The [measurement](fern-measurements/workspace-presteps/README.md#pruning) was
+taken at an earlier Fern CLI, which ignored range-status responses such as `4XX`
+altogether, so `only-include-referenced-schemas` removed a component reachable
+only through one; `openapi-format`'s `unusedComponents` follows those references
+and retains it. The certified CLI 5.163.1 imports `4XX` and `5XX` responses as
+their own errors (`ClientRequestError` and `ServerError`, each with an optional
+`status_code`), so that measurement no longer describes it and has not been
+re-run at the certified pair. This guide gives no equivalent pruning recipe;
+compare against Fern before migrating a workspace using that setting.
 
 ### Keep your post-generation patches
 
@@ -201,13 +202,13 @@ config, and the Action's `paths` input does the same.
 
 ## Fern generator options
 
-The options are those `fernapi/fern-python-sdk` 5.20.0 accepts in a generator's
+The options are those `fernapi/fern-python-sdk` 5.41.3 accepts in a generator's
 `config`, read from its `SDKCustomConfig` and `pydantic_config` models, both of
 which refuse unknown keys:
-[`sdk/custom_config.py`](https://github.com/fern-api/fern/blob/4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553/generators/python/src/fern_python/generators/sdk/custom_config.py)
+[`sdk/custom_config.py`](https://github.com/fern-api/fern/blob/163c530ed91c6ce48a1b431124c1b0b3887cd9c6/generators/python/src/fern_python/generators/sdk/custom_config.py)
 and
-[`pydantic_model/custom_config.py`](https://github.com/fern-api/fern/blob/4d07e6aeeed1d88917ce59dfc9b4cf9e6008e553/generators/python/src/fern_python/generators/pydantic_model/custom_config.py),
-at the commit that released 5.20.0. Defaults are Fern's.
+[`pydantic_model/custom_config.py`](https://github.com/fern-api/fern/blob/163c530ed91c6ce48a1b431124c1b0b3887cd9c6/generators/python/src/fern_python/generators/pydantic_model/custom_config.py),
+at the commit that released 5.41.3. Defaults are Fern's.
 
 **Default only** in the table means crozier has no setting for the option and
 its output is Fern's at the default shown, the configuration crozier's goldens
@@ -244,6 +245,7 @@ the difference, or stays on Fern.
 | `extras` | `{}` | Default only. |
 | `pyproject_python_version` | `^3.10` | Default only. |
 | `pyproject_toml` | unset | Default only. |
+| `license_header` | unset | Default only. |
 | `include_union_utils` | `false` | Default only. |
 | `additional_init_exports` | unset | Default only. |
 | `exclude_types_from_init_exports` | `false` | Default only. |
@@ -255,6 +257,9 @@ the difference, or stays on Fern.
 | `environment_class_name` | unset | Default only. |
 | `inline_request_params` | `true` | Default only. |
 | `inline_path_params` | `false` | Default only. |
+| `encode_path_params` | `false` | Default only. |
+| `respect_optional_request_body` | `false` | Default only. |
+| `stream_abstraction` | `false` | Default only. |
 | `flatten_union_request_bodies` | `false` | Default only. |
 | `use_typeddict_requests` | `false` | Default only. |
 | `use_typeddict_requests_for_file_upload` | `false` | Default only. |
@@ -271,6 +276,12 @@ the difference, or stays on Fern.
 | `datetime_milliseconds` | `false` | Default only. |
 | `omit_fern_headers` (or `omitFernHeaders`) | `false` | Default only. |
 | `include_platform_headers` | `false` | Default only. |
+| `user_agent_only` (or `userAgentOnly`) | `false` | Default only. |
+| `runtime_version` (or `runtimeVersion`, `runtime-version`) | `false` | Default only. |
+| `allow_user_agent_app_info` (or `allowUserAgentAppInfo`) | `false` | Default only. |
+| `optional_auth` (or `optionalAuth`, `optional-auth`) | `false` | Default only. |
+| `prefer_explicit_auth` (or `preferExplicitAuth`, `prefer-explicit-auth`) | `false` | Default only. |
+| `omit_unset_inferred_auth_params` | `false` | Default only. |
 | `use_request_defaults` | unset | Default only. |
 | `custom_transport` | `false` | Default only. |
 | `tcp_keepalive.enabled` | `false` | Default only. |
@@ -279,6 +290,7 @@ the difference, or stays on Fern.
 | `tcp_keepalive.count` | `5` | Default only. |
 | `wire_tests.enabled` | `false` | Default only. |
 | `wire_tests.exclusions` | unset | Default only. |
+| `wire_tests.fallback_to_autogenerated_error_examples` | `true` | Default only. |
 | `enable_wire_tests` | `false` | Default only. |
 | `include_legacy_wire_tests` | `false` | Default only. |
 | `mypy_exclude` | unset | Default only. |

@@ -101,7 +101,7 @@ that kill most specs:
 
 A clean generate is still not enough on its own: check the shape you are buying
 against [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md), which
-records what Fern 5.20.0 was measured to discard, ignore, refuse or match only by
+records what Fern was measured to discard, ignore, refuse or match only by
 coincidence — a golden cannot pin a shape Fern throws away — plus the two
 exit-0-and-nothing-happened failure modes no exit code reveals: a check that
 passes over an unparsed document, and a duplicate `operationId` that collapses
