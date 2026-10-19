@@ -60,8 +60,10 @@ import subprocess
 import sys
 import tempfile
 import threading
+import tomllib
 from collections.abc import Callable, Generator
-from dataclasses import dataclass
+from dataclasses import astuple, dataclass, fields
+from enum import StrEnum
 from pathlib import Path
 
 ROOT = Path(os.environ.get("CROZIER_FERN_REFERENCES_ROOT") or Path(__file__).resolve().parents[2]).resolve()
@@ -532,8 +534,15 @@ def generate_handwritten(item: str, pair: Pair) -> None:
     evidence = fixture / "evidence.toml"
     if not evidence.is_file() or not (fixture / "openapi.yml").is_file():
         raise ReferenceError(f"{item} is no hand-written fixture; `list handwritten` names the family")
-    match = re.search(r"(?m)^audiences = \[([^\]]*)\]", evidence.read_text(encoding="utf-8"))
-    audiences = tuple(re.findall(r'"([^"]+)"', match.group(1))) if match else ()
+    try:
+        declared = tomllib.loads(evidence.read_text(encoding="utf-8")).get("audiences", [])
+    except tomllib.TOMLDecodeError as error:
+        raise ReferenceError(f"cannot read {rel(evidence)} ({error}); repair its TOML") from None
+    if not isinstance(declared, list) or not all(
+        isinstance(name, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9._-]*", name) for name in declared
+    ):
+        raise ReferenceError(f"{rel(evidence)}: audiences must be a list of audience labels, not {declared!r}")
+    audiences = tuple(declared)
     # A fixture generated under a non-default setting keeps it: the committed
     # tree's own `.fern/metadata.json` records the generator config it was made with.
     config = recorded_generator_config(fixture / "fern-expected")
@@ -550,8 +559,23 @@ def generate_handwritten(item: str, pair: Pair) -> None:
     rewrite_evidence(evidence, pair, contract_digest(fixture / "fern-expected"))
 
 
-ENUM_TYPES = ("python-enums", "literals")
-LAYOUTS = ("packaged", "flat")
+class EnumMode(StrEnum):
+    """Fern's `pydantic_config.enum_type`, as this family's records spell it."""
+
+    PYTHON_ENUMS = "python-enums"
+    LITERALS = "literals"
+
+
+class Layout(StrEnum):
+    """Whether Fern writes the packaged SDK (`--preview`) or the flat module tree."""
+
+    PACKAGED = "packaged"
+    FLAT = "flat"
+
+
+ENUM_TYPES = tuple(EnumMode)
+LAYOUTS = tuple(Layout)
+OVERLAY_BASES = ("expected", "fern-expected")
 
 
 @dataclass(frozen=True)
@@ -561,22 +585,37 @@ class MeasurementCase:
 
     name: str
     document: Path
-    enum_type: str
-    layout: str
+    enum_type: EnumMode
+    layout: Layout
     overlay: str
 
 
+def case_row_failure(row: dict[str, str], seen: set[str]) -> str | None:
+    """Why one `cases.tsv` row is malformed, or `None`."""
+    name, document, overlay = row["case"], row["document"], row["overlay"]
+    if not re.fullmatch(r"[a-z0-9][a-z0-9._-]*(?:/[a-z0-9][a-z0-9._-]*)*", name) or name in seen:
+        return "a case is a unique lower-case path under docs/fern-measurements/"
+    if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
+        return f"enum_type is one of {', '.join(ENUM_TYPES)} and layout one of {', '.join(LAYOUTS)}"
+    target = (ROOT / document).resolve()
+    if not document or not target.is_relative_to(ROOT.resolve()) or not target.is_file():
+        return f"its document {document!r} is no file of this repository"
+    label, colon, base = overlay.partition(":")
+    if overlay != "-" and not (colon and label in OVERLAY_BASES and (base == "-" or (base and (ROOT / base).is_dir()))):
+        return f"its overlay {overlay!r} is `-` or `<{'|'.join(OVERLAY_BASES)}>:<base tree or ->`"
+    return None
+
+
 def cases() -> dict[str, MeasurementCase]:
-    """`cases.tsv`'s rows, each held to the enum modes and layouts a case may name."""
-    found = {}
+    """`cases.tsv`'s rows, each a unique case naming a committed document, an
+    enum mode, a layout and an overlay this family can build."""
+    found: dict[str, MeasurementCase] = {}
     for row in read_tsv(CASES, CASES_HEADER):
-        if row["enum_type"] not in ENUM_TYPES or row["layout"] not in LAYOUTS:
-            raise ReferenceError(
-                f"{CASES} row {row['case']}: enum_type is one of {', '.join(ENUM_TYPES)} "
-                f"and layout one of {', '.join(LAYOUTS)}"
-            )
+        failure = case_row_failure(row, set(found))
+        if failure:
+            raise ReferenceError(f"{CASES} row {row['case']!r}: {failure}")
         found[row["case"]] = MeasurementCase(
-            row["case"], ROOT / row["document"], row["enum_type"], row["layout"], row["overlay"]
+            row["case"], ROOT / row["document"], EnumMode(row["enum_type"]), Layout(row["layout"]), row["overlay"]
         )
     return found
 
@@ -585,7 +624,21 @@ PARAMETER_LITERALS = MEASUREMENTS / "parameter-literals"
 
 
 def parameter_literal_cases() -> list[str]:
-    return sorted(json.loads((ROOT / PARAMETER_LITERALS / "certified-trees.json").read_text(encoding="utf-8")))
+    """`certified-trees.json`'s fixtures: an object of hand-written fixture names to digests."""
+    path = ROOT / PARAMETER_LITERALS / "certified-trees.json"
+    try:
+        digests = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise ReferenceError(f"cannot read {rel(path)} ({error}); restore it from git") from None
+    if not isinstance(digests, dict) or not all(
+        isinstance(name, str)
+        and re.fullmatch(r"[a-z0-9][a-z0-9-]*", name)
+        and isinstance(digest, str)
+        and re.fullmatch(r"[0-9a-f]{64}", digest)
+        for name, digest in digests.items()
+    ):
+        raise ReferenceError(f"{rel(path)} must map hand-written fixture names to SHA-256 digests")
+    return sorted(digests)
 
 
 REFUSAL_LOG = ".fern.log"
@@ -686,7 +739,7 @@ def remeasure_pinned_run(record_path: Path, pair: Pair) -> None:
         python_files = sum(1 for path in run.tree.rglob("*.py") if path.is_file())
         record.update(
             {
-                "check_diagnostic": first_diagnostic(run.check_log) or "All checks passed",
+                "check_diagnostic": preferred_diagnostic(run.check_log) or "All checks passed",
                 "check_exit": run.check_exit,
                 "check_log_sha256": hashlib.sha256(run.check_log.encode("utf-8")).hexdigest(),
                 "fern_cli": pair.cli,
@@ -761,7 +814,7 @@ def refused_measurement(item: str, row: MeasurementCase, record: Path, pair: Pai
             raise ReferenceError(
                 f"Fern now generates {item}; its tree replaces {rel(record)}, so restate the evidence that cites the refusal"
             )
-        diagnostic = first_diagnostic(run.generate_log)
+        diagnostic = preferred_diagnostic(run.generate_log)
         if not diagnostic:
             raise ReferenceError(
                 f"fern generate exited {run.generate_exit} printing no diagnostic this tool recognises:\n"
@@ -811,23 +864,50 @@ def generate_measurement(item: str, pair: Pair) -> None:
         restate_evidence_note(note, pair, contract_digest(destination))
 
 
-def manifest_rows() -> list[dict[str, str]]:
-    return read_tsv(MANIFEST, ("key", "form", "verdict", "artifact", "control", "digest"))
+@dataclass
+class ManifestRow:
+    """One `MANIFEST.tsv` row: a probe, its Contract A form and verdict, the
+    artifact its gate reads, the control it is measured against, and the
+    artifact's digest."""
+
+    key: str
+    form: str
+    verdict: str
+    artifact: str
+    control: str
+    digest: str
+
+
+MANIFEST_HEADER = tuple(field.name for field in fields(ManifestRow))
+
+
+def manifest_rows() -> list[ManifestRow]:
+    return [ManifestRow(**row) for row in read_tsv(MANIFEST, MANIFEST_HEADER)]
+
+
+def write_manifest(rows: list[ManifestRow]) -> None:
+    (ROOT / MANIFEST).write_text(
+        "\t".join(MANIFEST_HEADER) + "\n" + "".join("\t".join(astuple(row)) + "\n" for row in rows),
+        encoding="utf-8",
+        newline="\n",
+    )
 
 
 def list_probes() -> list[str]:
     names = set()
     for row in manifest_rows():
-        names.add(row["key"])
-        if row["control"] != "—":
-            names.add(row["control"])
+        names.add(row.key)
+        if row.control != "—":
+            names.add(row.control)
     return sorted(names)
 
 
-def first_diagnostic(log: str) -> str:
-    """The first error Fern itself printed: an `issue:` line of `fern check`'s
-    report, the line after `[error]` in the generation's, or the exception a
-    crashed generator raised (`KeyError: …`)."""
+def preferred_diagnostic(log: str) -> str:
+    """The error Fern printed of the most telling kind, in this order of
+    preference: an `issue:` line of `fern check`'s report, the line after
+    `[error]` in the generation's, the exception a crashed generator raised
+    (`KeyError: …`), an `Error:` line, then a `Failed to …` line; the first of
+    that kind in the log."""
     for pattern in (
         r"issue: (.+)",
         r"\[error\] (.+)",
@@ -868,14 +948,14 @@ def generate_probe(item: str, pair: Pair) -> None:
             record.unlink(missing_ok=True)
             artifact, digest = tree, contract_digest(tree)
         else:
-            diagnostic = first_diagnostic(run.generate_log)
+            diagnostic = preferred_diagnostic(run.generate_log)
             if not diagnostic:
                 log = ROOT / LOGS / "probes" / f"{item}.generate.log"
                 log.parent.mkdir(parents=True, exist_ok=True)
                 log.write_text(run.generate_log, encoding="utf-8", newline="\n")
                 raise ReferenceError(
                     f"fern generate exited {run.generate_exit} printing no diagnostic this tool recognises; "
-                    f"read {rel(log)} and extend first_diagnostic"
+                    f"read {rel(log)} and extend preferred_diagnostic"
                 )
             write_refusal_record(record, pair, run.generate_exit, diagnostic)
             if tree.exists():
@@ -885,18 +965,13 @@ def generate_probe(item: str, pair: Pair) -> None:
     rows = manifest_rows()
     flipped = []
     for row in rows:
-        if row["artifact"] == new:
-            row["digest"] = digest
-        elif row["artifact"] == old or (row["control"] == item and artifact == record):
-            flipped.append(row["key"])
-            if row["artifact"] == old:
-                row["artifact"], row["digest"] = new, digest
-    header = ("key", "form", "verdict", "artifact", "control", "digest")
-    (ROOT / MANIFEST).write_text(
-        "\t".join(header) + "\n" + "".join("\t".join(row[c] for c in header) + "\n" for row in rows),
-        encoding="utf-8",
-        newline="\n",
-    )
+        if row.artifact == new:
+            row.digest = digest
+        elif row.artifact == old or (row.control == item and artifact == record):
+            flipped.append(row.key)
+            if row.artifact == old:
+                row.artifact, row.digest = new, digest
+    write_manifest(rows)
     if flipped:
         raise ReferenceError(
             f"Fern's outcome on {item} changed form ({'refusal' if artifact == record else 'tree'} now); "
@@ -950,7 +1025,18 @@ def registry_column(path: Path, column: str) -> list[str]:
     if column not in header:
         raise SystemExit(f"fern-references: {path} has no `{column}` column; restore it from git")
     index = header.index(column)
-    return [line.split("\t")[index] for line in lines[1:] if line]
+    names = []
+    for number, line in enumerate(lines[1:], start=2):
+        cells = line.split("\t")
+        if not line:
+            continue
+        if len(cells) != len(header) or not cells[index]:
+            raise SystemExit(
+                f"fern-references: {path}:{number} has {len(cells)} cells for {len(header)} columns or no "
+                f"`{column}`; restore it from git"
+            )
+        names.append(cells[index])
+    return names
 
 
 def list_refusals() -> list[str]:
@@ -1033,6 +1119,18 @@ FAMILY: dict[str, tuple[Callable[[], list[str]], Callable[[str, Pair], None]]] =
 }
 
 
+# The version overrides a family's delegate cannot honour, and why: an overlay
+# is generated at the version its own golden records (run `corpus` first), and
+# `fern-refusals.py` reads the certified pair itself.
+UNPINNABLE: dict[str, dict[str, str]] = {
+    "overlays": {"--version": "each overlay is generated at the version its golden's provenance records"},
+    "refusals": {
+        "--version": "fern-refusals.py measures at the certified pair metadata.json declares",
+        "--cli-version": "fern-refusals.py measures at the certified pair metadata.json declares",
+    },
+}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="fern-references.py", description=__doc__.split("\n", 1)[0])
     commands = parser.add_subparsers(dest="command", required=True)
@@ -1040,8 +1138,10 @@ def main(argv: list[str] | None = None) -> int:
     listing.add_argument("family", choices=FAMILIES)
     generate = commands.add_parser("generate", help="regenerate the named items, or the whole family")
     generate.add_argument("family", choices=FAMILIES)
-    generate.add_argument("--version", help="fern-python-sdk version (default: the certified pair's)")
-    generate.add_argument("--cli-version", help="Fern CLI version (default: the certified pair's)")
+    generate.add_argument(
+        "--version", help="fern-python-sdk version (default: the certified pair's; not for overlays or refusals)"
+    )
+    generate.add_argument("--cli-version", help="Fern CLI version (default: the certified pair's; not for refusals)")
     generate.add_argument("items", nargs="*")
     args = parser.parse_args(argv)
     lister, generator = FAMILY[args.family]
@@ -1049,6 +1149,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.command == "list":
         sys.stdout.write("".join(f"{item}\n" for item in known))
         return 0
+    for flag, value in (("--version", args.version), ("--cli-version", args.cli_version)):
+        if value and flag in UNPINNABLE.get(args.family, ()):
+            parser.error(f"{args.family} cannot take {flag}: {UNPINNABLE[args.family][flag]}")
     certified = certified_pair()
     pair = Pair(cli=args.cli_version or certified.cli, generator=args.version or certified.generator)
     for value in (pair.cli, pair.generator):

@@ -69,6 +69,7 @@ else:
 for audience in re.findall(r"^      - (\w+)$", generators, re.M):
     (package / f"audience_{audience}.py").write_text("AUDIENCE = 1\n")
 for url in re.findall(r"http://127\.0\.0\.1:\d+/\S+?\.yml", document):
+    # llmlint: ignore[async_typed_clients_at_boundaries] This stands in for Fern's own resolver fetching a remote $ref, inside an executable stub script; it reads one loopback URL the tool under test serves and has no client boundary to type.
     (package / "remote.txt").write_text(urllib.request.urlopen(url).read().decode())
 (root / ".fern").mkdir(parents=True, exist_ok=True)
 (root / ".fern" / "metadata.json").write_text(json.dumps({"cliVersion": json.loads(config)["version"], "generatorVersion": version}))
@@ -182,7 +183,8 @@ class FernReferencesTests(unittest.TestCase):
         return fixture
 
     def test_a_hand_written_fixture_is_regenerated_at_the_certified_pair_with_its_evidence(self) -> None:
-        fixture = self.handwritten("alpha", evidence=EVIDENCE.format("0" * 64) + 'audiences = ["public"]\n')
+        top_level = EVIDENCE.format("0" * 64).replace("\n[[covers]]", 'audiences = ["public"]\n\n[[covers]]')
+        fixture = self.handwritten("alpha", evidence=top_level)
         self.handwritten("beta")
         self.assertEqual(self.run_tool("list", "handwritten").stdout, "alpha\nbeta\n")
 
@@ -449,12 +451,12 @@ class FernReferencesTests(unittest.TestCase):
         self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
         self.write("docs/fern-refusals/findings.tsv", "finding\tkind\neta\tgenerates\n")
 
-        result = self.run_tool("generate", "refusals", "--cli-version", "8.0.0")
+        result = self.run_tool("generate", "refusals")
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
-            sorted((tuple(call["argv"]), call["cli"]) for call in self.delegated()),
-            [(("finding", "--jobs", "1", "eta"), "8.0.0"), (("probe", "--jobs", "1", "zeta"), "8.0.0")],
+            sorted(tuple(call["argv"]) for call in self.delegated()),
+            [("finding", "--jobs", "1", "eta"), ("probe", "--jobs", "1", "zeta")],
         )
         self.env["DELEGATE_EXIT"] = "4"
         failed = self.run_tool("generate", "refusals", "zeta")
@@ -553,6 +555,116 @@ class FernReferencesTests(unittest.TestCase):
                 self.assertIn("docs/departures/evidence/casing/fern-reference.json", result.stderr)
         self.assertEqual(self.calls(), [])
 
+    def test_a_version_override_a_family_cannot_honour_is_refused(self) -> None:
+        self.delegates("tools/fern-goldens/fern-overlay-goldens.sh", "tools/fern-refusals/fern-refusals.py")
+        self.write("tests/fixtures/alpha/expected-literals/.crozier-overlay.json", "{}\n")
+        self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\trefuse\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\tkind\n")
+        for family, flag in (("overlays", "--version"), ("refusals", "--version"), ("refusals", "--cli-version")):
+            with self.subTest(family=family, flag=flag):
+                result = self.run_tool("generate", family, flag, "7.0.0")
+                self.assertEqual(result.returncode, 2)
+                self.assertIn(f"{family} cannot take {flag}", result.stderr)
+        self.assertEqual(self.delegated(), [])
+
+    def test_an_aliased_row_a_known_failure_and_a_flat_golden_over_another_spec_route_by_row(self) -> None:
+        self.delegates("tools/fern-goldens/fern-goldens", "tools/fern-goldens/generate-fern-fixture.sh")
+        self.write(
+            "tests/fixtures/CORPUS.md",
+            "| # | name |\n|---|---|\n| 1 | `museum.local` | | \n| 2 | `broken` |\n| 3 | `delta` |\n",
+        )
+        self.write("tests/fixtures/corpus-aliases.tsv", "# row\tfixture\nmuseum.local\tmuseum\n")
+        self.write("tests/fixtures/museum/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/broken/known-fern-failure.json", "{}\n")
+        self.write("tests/fixtures/delta/expected/src/x.py", "X = 1\n")
+        self.write("tests/fixtures/delta-flat-spec/expected-flat/__init__.py", "")
+        self.write("tests/fixtures/flat-goldens.txt", "delta-flat-spec|delta\n")
+
+        result = self.run_tool("generate", "corpus", "museum", "broken", "delta-flat-spec")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted((call["script"], tuple(call["argv"])) for call in self.delegated()),
+            [
+                ("fern-goldens", ("generate", "--version", SDK, "--fixture", "broken")),
+                ("fern-goldens", ("generate", "--version", SDK, "--fixture", "museum.local")),
+                ("generate-fern-fixture.sh", ("--layout", "flat", "delta-flat-spec", SDK)),
+            ],
+        )
+
+    def test_a_failed_strip_leaves_the_committed_reference_and_no_staging(self) -> None:
+        fixture = self.handwritten("alpha")
+        self.write(
+            "target/release/crozier", "#!/usr/bin/env python3\nimport sys\nsys.exit('cannot strip')\n", executable=True
+        )
+
+        result = self.run_tool("generate", "handwritten", "alpha")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("crozier internal-strip failed on client.py: cannot strip", result.stderr)
+        self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
+        self.assertEqual([p.name for p in fixture.iterdir() if p.name.startswith(".")], [])
+
+    def test_a_refusal_fern_now_generates_from_is_written_and_reported_for_a_decision(self) -> None:
+        self.write("docs/openapi-surface/probes/thawed.yml", "openapi: 3.0.3\n")
+        record = self.write("docs/openapi-surface/probe-expected/thawed.fern-refusal.txt", "old\n")
+        self.manifest(
+            f"thawed\trefusal\trefuses\tdocs/openapi-surface/probe-expected/thawed.fern-refusal.txt\t—\t{'a' * 64}"
+        )
+
+        result = self.run_tool("generate", "probes", "thawed")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("changed form (tree now)", result.stderr)
+        self.assertFalse(record.exists())
+        tree = self.root / "docs/openapi-surface/probe-expected/thawed"
+        self.assertTrue((tree / "src/fern/client.py").is_file())
+        row = (
+            (self.root / "docs/openapi-surface/probe-expected/MANIFEST.tsv").read_text(encoding="utf-8").splitlines()[1]
+        )
+        self.assertEqual(row.split("\t")[3:], ["docs/openapi-surface/probe-expected/thawed", "—", tree_digest(tree)])
+
+    def test_a_control_fern_now_refuses_flags_the_row_it_controls(self) -> None:
+        self.write("docs/openapi-surface/probes/shape.yml", "openapi: 3.0.3\n")
+        self.write("docs/openapi-surface/probes/plain.yml", "openapi: 3.0.3\nx-stub-refuse: true\n")
+        self.write("docs/openapi-surface/probe-expected/plain/src/fern/client.py", "CLIENT = 1\n")
+        self.manifest(
+            f"shape\tdifferential\tignores\tdocs/openapi-surface/probe-expected/shape\tplain\t{'a' * 64}",
+            f"plain\tabsent-tree\tmeasured\tdocs/openapi-surface/probe-expected/plain\t—\t{'b' * 64}",
+        )
+
+        result = self.run_tool("generate", "probes", "plain")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("row(s) plain, shape need their form and verdict decided", result.stderr)
+
+    def test_malformed_family_records_are_refused_before_fern_runs(self) -> None:
+        self.write("docs/x.yml", "openapi: 3.0.3\n")
+        header = "case\tdocument\tenum_type\tlayout\toverlay\n"
+        for rows, reason in (
+            ("a/b\tdocs/x.yml\tliterals\tpackaged\tfern-expected\n", "its overlay 'fern-expected'"),
+            ("a/b\tdocs/missing.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
+            ("a/b\t../outside.yml\tliterals\tpackaged\t-\n", "is no file of this repository"),
+            ("a/b\tdocs/x.yml\tliterals\tpackaged\t-\na/b\tdocs/x.yml\tliterals\tflat\t-\n", "unique"),
+        ):
+            with self.subTest(rows=rows):
+                self.write("docs/fern-measurements/cases.tsv", header + rows)
+                result = self.run_tool("list", "measurements")
+                self.assertEqual(result.returncode, 1)
+                self.assertIn(reason, result.stderr)
+        self.write("docs/fern-measurements/cases.tsv", header)
+        self.write("docs/fern-measurements/parameter-literals/certified-trees.json", '["alpha"]')
+        self.assertIn("must map hand-written fixture names", self.run_tool("list", "measurements").stderr)
+        self.write("docs/fern-refusals/classes.tsv", "class\tstatus\nzeta\n")
+        self.write("docs/fern-refusals/findings.tsv", "finding\n")
+        self.assertIn("classes.tsv:2 has 1 cells for 2 columns", self.run_tool("list", "refusals").stderr)
+        self.handwritten(
+            "alpha", evidence=EVIDENCE.format("0" * 64).replace("\n[[covers]]", "audiences = 'public'\n\n[[covers]]")
+        )
+        self.assertIn("audiences must be a list of audience labels", self.run_tool("generate", "handwritten").stderr)
+        self.assertEqual(self.calls(), [])
+
+    # llmlint: ignore[shell_test_tiers_stay_split] Serving a case's own documents on 127.0.0.1 is the behaviour under test (the tool hands Fern a loopback URL for a remote $ref); the socket never leaves the host, so this stays in the offline tier, which forbids external network rather than loopback.
     def test_a_remote_reference_is_served_from_the_documents_directory(self) -> None:
         self.write(
             "docs/fern-measurements/remote/case/documents/openapi.yml",

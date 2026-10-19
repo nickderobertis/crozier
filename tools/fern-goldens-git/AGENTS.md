@@ -14,5 +14,4 @@
   tracked tree (it lists files with `git ls-files`, hence this project). It is
   its own target so the many paths it reads never rerun the lifecycle suite,
   and it reads `crates/crozier-e2e/` without running it — hence the
-  `measures:crozier-e2e` tag. Its inputs must name every file it scans; its
-  suite fails naming a scanned path they miss.
+  `measures:crozier-e2e` tag.

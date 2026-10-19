@@ -384,7 +384,11 @@ The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
 whose outcome changes form (a tree Fern now refuses, or a refusal it now
 generates from) is written and reported, because its `MANIFEST.tsv` row's form
 and verdict are a Contract A decision; an authored probe Fern now refuses moves
-to the refusal registry. Omitting `--version` here keeps the certified pair;
+to the refusal registry. Two families refuse an override their delegate cannot
+honour: `overlays` takes no `--version` (each overlay is generated at the version
+its golden's provenance records, so run `corpus` first), and `refusals` takes
+neither flag (`fern-refusals.py` measures at the pair `metadata.json` declares).
+Omitting `--version` here keeps the certified pair;
 `just fern-goldens-generate` without `--version` still resolves the newest
 stable Fern tag.
 

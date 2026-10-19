@@ -129,21 +129,30 @@ MEASUREMENT_GRAMMAR = {
 
 
 # The certified pair, read from its one declaration.
-def _certified_pair(path: Path) -> tuple[str, str]:
-    """`cliVersion` and `generatorVersion` of the pair's declaration, each an exact version."""
+class CertifiedPair(NamedTuple):
+    """The Fern CLI and fern-python-sdk versions `assets/scaffolding/metadata.json` declares."""
+
+    cli: str
+    sdk: str
+
+
+def _certified_pair(path: Path) -> CertifiedPair:
+    """The pair's declaration, each member an exact version."""
     try:
         record = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
         raise SystemExit(f"fern-refusals: cannot read {path} ({error}); restore it from git") from None
-    pair = tuple(record.get(key) if isinstance(record, dict) else None for key in ("cliVersion", "generatorVersion"))
-    if not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+\.\d+", value) for value in pair):
+    cli = record.get("cliVersion") if isinstance(record, dict) else None
+    sdk = record.get("generatorVersion") if isinstance(record, dict) else None
+    if not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+\.\d+", value) for value in (cli, sdk)):
         raise SystemExit(
-            f"fern-refusals: {path} must give cliVersion and generatorVersion as exact versions, not {pair}"
+            f"fern-refusals: {path} must give cliVersion and generatorVersion as exact versions, not {cli!r} and {sdk!r}"
         )
-    return str(pair[0]), str(pair[1])
+    return CertifiedPair(cli=str(cli), sdk=str(sdk))
 
 
-FERN_CLI, FERN_PYTHON_SDK = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
+_PAIR = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
+FERN_CLI, FERN_PYTHON_SDK = _PAIR.cli, _PAIR.sdk
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.
