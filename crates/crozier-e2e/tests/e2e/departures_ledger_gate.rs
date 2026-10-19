@@ -10,8 +10,7 @@ use std::path::Path;
 use super::departures_ledger::{self, GoldenLedger, Ledger, Row};
 use super::{
     assert_generated_tree_matches, compared_goldens, corpus_golden_ledger, golden_differences,
-    golden_tree_failures, load_departure_ledger, Corpus, CORPORA, OPENFIGI, WEBFLOW_V2,
-    WEBFLOW_V2_CROZIER_ONLY,
+    golden_tree_failures, load_departure_ledger, Corpus, CORPORA, OPENFIGI,
 };
 
 /// The directory, inside each case under the catalog's evidence directory, of
@@ -354,14 +353,6 @@ fn a_file_also_carved_out_at_file_level_is_refused() {
         &carve_out_failures(&ledger, &golden, &UNMATCHED),
         &row,
         "also an `unmatched` entry",
-    );
-    // A crozier-only file.
-    let file = WEBFLOW_V2_CROZIER_ONLY[0];
-    let (root, golden) = corpus_repository(WEBFLOW_V2.api, file);
-    assert_names(
-        &carve_out_failures(&loaded(root.path()), &golden, &WEBFLOW_V2),
-        file,
-        "also a crozier-only file",
     );
     // The same row over a corpus that carves nothing out is admitted.
     assert!(corpus_golden_ledger(&ledger, &golden, &OPENFIGI).is_ok());

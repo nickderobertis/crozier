@@ -120,31 +120,6 @@ struct Corpus {
     unmatched: &'static [&'static str],
 }
 
-/// Files crozier emits that this corpus's Fern golden does not carry — the
-/// file-set half of a declared residual, the mirror of `Corpus::unmatched`.
-///
-/// The comparison is bidirectional precisely so a crozier-only file cannot hide
-/// behind Fern's tree lacking it, and this does not relax that: every such file is
-/// **named here**, and the assertions that read this list fail if one of them
-/// appears in the golden (it must enter byte comparison) or stops being emitted
-/// (the list is stale). What it allows is registering a corpus whose measured
-/// divergence includes names as well as bytes, which is the state
-/// [`CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14 records for `webflow-v2`:
-/// 148 modules Fern named differently for a `oneOf` request body's hoisted
-/// variants and webhook payloads. crozier now names them as Fern 5.163.1 does
-/// (declared `x-fern-type-name` members, `{OperationId}Payload` webhooks), so
-/// the list is empty; a future name divergence is listed here again.
-fn crozier_only_files(c: &Corpus) -> &'static [&'static str] {
-    if c.api == WEBFLOW_V2.api {
-        WEBFLOW_V2_CROZIER_ONLY
-    } else {
-        &[]
-    }
-}
-
-/// See [`crozier_only_files`]. Measured against the Fern 5.41.3 golden.
-const WEBFLOW_V2_CROZIER_ONLY: &[&str] = &[];
-
 /// Feature-coverage target specs: hand-authored OpenAPI documents that each pin
 /// one shape (see docs/matching.md) — auth schemes beyond bearer, inline
 /// request/response hoisting, cookie params, form bodies, discriminated unions,
@@ -781,10 +756,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
 /// Corpus `c`'s file-level carve-outs, each as its slug in
 /// [`departures_ledger::CARVE_OUT_KINDS`] and the files it covers.
 fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
-    vec![
-        ("unmatched", c.unmatched.to_vec()),
-        ("crozier-only", crozier_only_files(c).to_vec()),
-    ]
+    vec![("unmatched", c.unmatched.to_vec())]
 }
 
 /// Nonempty corpus carve-outs, as recorded in the inventory.
@@ -1134,7 +1106,7 @@ fn assert_generated_tree_matches(
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
     // merely because the golden lacks it.
     for rel in walk_files(out) {
-        if expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()) {
+        if expected_root.join(&rel).is_file() {
             continue;
         }
         let id =
@@ -1145,21 +1117,6 @@ fn assert_generated_tree_matches(
     }
     let failures = ledger.check(&observed, &|_| true);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-
-    // The declared crozier-only set is held to the same staleness contract as
-    // `unmatched`: a listed file that reached the golden must enter byte
-    // comparison, and one crozier no longer emits must leave the list.
-    let emitted: std::collections::BTreeSet<String> = walk_files(out).into_iter().collect();
-    for rel in crozier_only_files(c) {
-        assert!(
-            !expected_root.join(rel).is_file(),
-            "{rel} is now in the Fern golden — remove it from the crozier-only list"
-        );
-        assert!(
-            emitted.contains(*rel),
-            "{rel} is no longer emitted — remove it from the crozier-only list"
-        );
-    }
 
     for rel in c.unmatched {
         let expected = std::fs::read_to_string(expected_root.join(rel))
