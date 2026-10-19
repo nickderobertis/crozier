@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "8b77dc808531a438b39dbf01cf545d380e4b05c787c9f78a2713c85363dfdeff"
+digest = "8c0cfeaef9c6b68330a943c3589f4f44408f33986f481fa00f290eb109e5c921"
 
 [[covers]]
 key = "client-header-date-format"

@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "c06c52243855b071382ca08205d5648bd6d2aeab5a40e4ff383b9801346ed377"
+digest = "c83e43af9b518cdc504b5ae231507360af839e04f8a284b2fd866734feb61b1f"
 
 [[covers]]
 key = "global-headers-extension"

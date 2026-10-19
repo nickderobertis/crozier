@@ -20024,6 +20024,7 @@ fn fern_refusal_failures(
     }
 
     let carried = refusal_document_class_counts(registry, &known, &mut failures);
+    let retiring = retiring_refusal_classes(registry, &mut failures);
     for class in &classes {
         let recorded = carried.get(class.class.as_str());
         let count = recorded.map_or(0, |recorded| recorded.carried);
@@ -20046,9 +20047,58 @@ fn fern_refusal_failures(
                 ));
             }
         }
-        failures.extend(refusal_class_failures(registry, class, generator, wire));
+        let retiring = retiring.contains(class.class.as_str());
+        failures.extend(refusal_class_failures(
+            registry, class, retiring, generator, wire,
+        ));
     }
     failures
+}
+
+/// The classes the registry is retiring: each whose own `probe.yml` is the
+/// probe of a `generates` or `check-only` row of `findings.tsv`, because Fern
+/// at the pin writes an SDK from it. Its `classes.tsv` and `documents.tsv` rows
+/// stay until the population is measured again; meanwhile the gate holds
+/// crozier to generating its probe in both modes. A registry without
+/// `findings.tsv` retires nothing (`fern-refusals.py check` owns that file's
+/// presence and header).
+fn retiring_refusal_classes(
+    registry: &Path,
+    failures: &mut Vec<String>,
+) -> std::collections::BTreeSet<String> {
+    let mut retiring = std::collections::BTreeSet::new();
+    let Ok(text) = std::fs::read_to_string(registry.join("findings.tsv")) else {
+        return retiring;
+    };
+    let mut lines = text.lines();
+    let header: Vec<&str> = lines.next().unwrap_or_default().split('\t').collect();
+    let column = |name: &str| header.iter().position(|cell| *cell == name);
+    let (Some(kind), Some(probe)) = (column("kind"), column("probe")) else {
+        failures.push(
+            "findings.tsv: its header names no `kind` and `probe` columns, so no retiring \
+             class can be read from it"
+                .to_owned(),
+        );
+        return retiring;
+    };
+    for line in lines {
+        let fields: Vec<&str> = line.split('\t').collect();
+        let (Some(kind), Some(probe)) = (fields.get(kind), fields.get(probe)) else {
+            continue;
+        };
+        if !["generates", "check-only"].contains(kind) {
+            continue;
+        }
+        if let Some(class) = probe
+            .strip_prefix(FERN_REFUSALS_DIR)
+            .and_then(|rest| rest.strip_prefix('/'))
+            .and_then(|rest| rest.strip_suffix("/probe.yml"))
+            .filter(|class| !class.contains('/'))
+        {
+            retiring.insert(class.to_owned());
+        }
+    }
+    retiring
 }
 
 /// The header, the column count, the sort order and each cell's vocabulary.
@@ -20225,9 +20275,13 @@ fn refusal_document_class_counts<'a>(
 }
 
 /// One class's files, record and — once evaluated — crozier's behaviour over its probe.
+/// A `retiring` class (see [`retiring_refusal_classes`]) keeps its last refusal
+/// record, which need not be at the pin, and its probe must generate in both
+/// modes rather than be refused.
 fn refusal_class_failures(
     registry: &Path,
     class: &RefusalClass,
+    retiring: bool,
     generator: &dyn Fn() -> Command,
     wire: WireTests,
 ) -> Vec<String> {
@@ -20240,7 +20294,12 @@ fn refusal_class_failures(
         failures.push(format!("{id}: its probe {id}/probe.yml is missing"));
     }
     match std::fs::read_to_string(&record) {
-        Ok(text) => failures.extend(refusal_record_failures(id, &text, &class.fern_exit)),
+        Ok(text) => failures.extend(refusal_record_failures(
+            id,
+            &text,
+            &class.fern_exit,
+            !retiring,
+        )),
         Err(_) => failures.push(format!(
             "{id}: its Fern record {id}/fern-refusal.txt is missing"
         )),
@@ -20261,6 +20320,15 @@ fn refusal_class_failures(
         ));
     }
     if class.status == "unevaluated" || !probe.is_file() {
+        return failures;
+    }
+    if retiring {
+        failures.extend(retiring_class_failures(
+            id,
+            &probe,
+            (class.status == "generate" && wire == WireTests::Run).then_some(wire_test.as_path()),
+            generator,
+        ));
         return failures;
     }
 
@@ -20299,11 +20367,60 @@ fn refusal_class_failures(
     failures
 }
 
-/// A class's `fern-refusal.txt`: Contract A's five fields in order, at the
-/// corpus pin, with Fern's non-empty phrase and the exit `classes.tsv` states.
-/// A false success records exit 0, so the exit is held to the row rather than
-/// to non-zero.
-fn refusal_record_failures(id: &str, text: &str, fern_exit: &str) -> Vec<String> {
+/// A retiring class's probe: Fern generates from it at the pin, so crozier
+/// generates too, with and without `--fern-strict`, and strict mode writes the
+/// same bytes (it only ever decides whether an SDK is written). `wire_test`,
+/// when given, runs against the default SDK.
+fn retiring_class_failures(
+    id: &str,
+    probe: &Path,
+    wire_test: Option<&Path>,
+    generator: &dyn Fn() -> Command,
+) -> Vec<String> {
+    let mut failures = Vec::new();
+    let mut runs = Vec::new();
+    for strict in [false, true] {
+        let mode = if strict {
+            "under --fern-strict"
+        } else {
+            "by default"
+        };
+        match refusal_run(generator, probe, strict) {
+            Ok(run) if run.code == Some(0) && !run.files.is_empty() => runs.push(run),
+            Ok(run) => failures.push(format!(
+                "{id}: a retiring class's probe (findings.tsv records Fern generating from it) \
+                 is refused {mode} (exit {}), where crozier should generate: {}",
+                exit_label(run.code),
+                run.stderr.trim()
+            )),
+            Err(error) => failures.push(format!("{id}: {error}")),
+        }
+    }
+    if let [default, strict] = &runs[..] {
+        let differs = default.files != strict.files
+            || default.files.iter().any(|file| {
+                std::fs::read(default.target.join(file)).ok()
+                    != std::fs::read(strict.target.join(file)).ok()
+            });
+        if differs {
+            failures.push(format!(
+                "{id}: a retiring class's probe generates different files under --fern-strict; \
+                 strict mode only decides whether an SDK is written"
+            ));
+        }
+        if let Some(wire_test) = wire_test {
+            failures.extend(wire_test_failures(id, wire_test, &default.target, probe));
+        }
+    }
+    failures
+}
+
+/// A class's `fern-refusal.txt`: Contract A's five fields in order, with Fern's
+/// non-empty phrase and the exit `classes.tsv` states — at the corpus pin when
+/// `at_pin`, which a retiring class's last refusal record need not be. A false
+/// success records exit 0, so the exit is held to the row rather than to
+/// non-zero.
+fn refusal_record_failures(id: &str, text: &str, fern_exit: &str, at_pin: bool) -> Vec<String> {
     let mut failures = Vec::new();
     let fields: Vec<(&str, &str)> = text
         .lines()
@@ -20327,7 +20444,13 @@ fn refusal_record_failures(id: &str, text: &str, fern_exit: &str) -> Vec<String>
         ("fern_cli_version", cli_pin.as_str()),
         ("fern_python_sdk_version", sdk_pin.as_str()),
     ] {
-        if value(name) != Some(pin) {
+        if !at_pin {
+            if value(name).is_none_or(str::is_empty) {
+                failures.push(format!(
+                    "{id}: fern-refusal.txt's {name} is empty; it names the version that refused"
+                ));
+            }
+        } else if value(name) != Some(pin) {
             failures.push(format!(
                 "{id}: fern-refusal.txt's {name} is `{}`, but the corpus pins `{pin}`",
                 value(name).unwrap_or("")
@@ -22145,6 +22268,106 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
                 && line.contains("wrote 1 file(s) to the output directory (partial.py)")),
         "a refusal that wrote output was not reported:\n{}",
         failures.join("\n")
+    );
+}
+
+/// A class whose probe `findings.tsv` records Fern generating from is retiring:
+/// over the real binary, one whose probe crozier generates in both modes holds
+/// even though its last refusal record predates the pin, one whose probe crozier
+/// still refuses fails naming that, and a `refuse` class no finding names is
+/// held to refusing exactly as before — its stale record still fails.
+#[test]
+fn fern_refusal_gate_holds_a_retiring_class_to_generating() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    let refused = header_array_probe();
+    write_scratch_registry(
+        &registry,
+        &[
+            ScratchClass {
+                id: "retiring-generated",
+                status: "refuse",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "retiring-still-refused",
+                status: "refuse",
+                crozier_diagnostic: "GET /probe header probeParam",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "example-type-mismatch",
+                status: "refuse",
+                crozier_diagnostic: "GET /probe header probeParam",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            },
+        ],
+        &[],
+    );
+    std::fs::write(
+        registry.join("findings.tsv"),
+        format!(
+            "finding\tkind\tcheck_exit\tgenerate_exit\tdiagnostic\tprobe\n\
+             retiring-generated-generates\tgenerates\t0\t0\t—\t{FERN_REFUSALS_DIR}/retiring-generated/probe.yml\n\
+             retiring-still-refused-check-only\tcheck-only\t1\t0\tA scratch phrase about <…>\t{FERN_REFUSALS_DIR}/retiring-still-refused/probe.yml\n\
+             elsewhere\tgenerates\t0\t0\t—\tdocs/openapi-surface/fern-refusals/findings/example-type-mismatch.yml\n"
+        ),
+    )
+    .unwrap();
+    // Each record as the pin before last wrote it.
+    for id in [
+        "retiring-generated",
+        "retiring-still-refused",
+        "example-type-mismatch",
+    ] {
+        std::fs::write(
+            registry.join(id).join("fern-refusal.txt"),
+            "fern_cli_version: 0.0.1\nfern_python_sdk_version: 0.0.2\ngenerate_exit: 1\n\
+             diagnostic: A scratch phrase about x\noutput_tree: none\n",
+        )
+        .unwrap();
+    }
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    let report = failures.join("\n");
+    assert!(
+        !failures
+            .iter()
+            .any(|line| line.starts_with("retiring-generated:")),
+        "a retiring class crozier generates from was refused:\n{report}"
+    );
+    for mode in ["by default", "under --fern-strict"] {
+        assert!(
+            failures.iter().any(|line| line
+                .starts_with("retiring-still-refused:")
+                && line.contains(&format!("a retiring class's probe (findings.tsv records Fern generating from it) is refused {mode}"))),
+            "no failure names the retiring class crozier still refuses {mode}:\n{report}"
+        );
+    }
+    assert!(
+        !failures
+            .iter()
+            .any(|line| line.starts_with("retiring-still-refused:") && line.contains("pins")),
+        "a retiring class's last refusal record was held to the pin:\n{report}"
+    );
+    // The class no finding names is unaffected: refused as before, and its
+    // stale record fails. (A finding probe outside the registry retires nothing.)
+    let unaffected: Vec<&String> = failures
+        .iter()
+        .filter(|line| line.starts_with("example-type-mismatch:"))
+        .collect();
+    assert_eq!(unaffected.len(), 2, "{report}");
+    assert!(
+        unaffected
+            .iter()
+            .all(|line| line.contains("but the corpus pins")),
+        "{report}"
     );
 }
 
@@ -24660,8 +24883,46 @@ fn declared_parameter_names_deconflict_refusals_and_generation() {
     }
 }
 
+/// Every way crozier's `--fern-strict` tree for the authored-probe `case`
+/// differs from the tree Fern generated from it: the authored-probe gate holds
+/// the default mode, and a retired refusal class's probe must match in both.
+fn authored_probe_strict_failures(case: &str) -> Vec<String> {
+    let root = repo_root().join(AUTHORED_PROBES_DIR).join(case);
+    let spec = root.join("openapi.yml");
+    let expected = root.join("fern-expected");
+    let out = tempfile::tempdir().expect("probe output tempdir");
+    let result = probe_command(&spec, out.path())
+        .arg("--fern-strict")
+        .output()
+        .expect("run crozier");
+    if !result.status.success() {
+        return vec![format!(
+            "{case}: crozier refused under --fern-strict: {}",
+            String::from_utf8_lossy(&result.stderr)
+        )];
+    }
+    let ledger = match departure_ledger().golden(&authored_golden(&expected), &[]) {
+        Ok(ledger) => ledger,
+        Err(failures) => return failures,
+    };
+    golden_tree_failures(
+        case,
+        &spec.display().to_string(),
+        &ledger,
+        &expected,
+        out.path(),
+    )
+}
+
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a path parameter a
+/// body property shares its name with is renamed `{name}PathParam`, so the
+/// `request-property-name-collision` probe generates — byte for byte as Fern
+/// does under `--fern-strict` too — where 5.67.1 refused it. A path parameter
+/// that declares its own name is not renamed, and still collides.
 #[test]
-fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_generate() {
+fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes() {
+    let failures = authored_probe_strict_failures("549-request-property-name-collision");
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let probe = std::fs::read_to_string(
@@ -24690,30 +24951,32 @@ fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_genera
             if strict {
                 command.arg("--fern-strict");
             }
-            if location == "path" {
-                command
-                    .assert()
-                    .code(1)
-                    .stderr(predicates::str::contains("request-property-name-collision"));
-                assert!(!output.exists());
-            } else {
-                command.assert().success();
-                assert!(output.join("pyproject.toml").is_file());
-            }
+            command.assert().success();
+            assert!(output.join("pyproject.toml").is_file());
         }
     }
-    let recovered = probe
-        .replace("name: name", "name: repo_name")
-        .replace("{name}", "{repo_name}");
-    std::fs::write(&spec, recovered).unwrap();
-    crozier_clean_env()
-        .args(["--no-config", "generate", "python", "--spec"])
-        .arg(&spec)
-        .arg("--output")
-        .arg(dir.path().join("recovered"))
-        .arg("--fern-strict")
-        .assert()
-        .success();
+    let declared = probe.replace(
+        "          in: path\n",
+        "          in: path\n          x-fern-parameter-name: name\n",
+    );
+    assert_ne!(declared, probe, "the probe's path parameter moved");
+    std::fs::write(&spec, declared).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("declared-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().code(1).stderr(predicates::str::contains(
+            "request-property-name-collision: PATCH /repos/{name} body property \"name\"",
+        ));
+        assert!(!output.exists());
+    }
 }
 
 #[test]
@@ -25181,44 +25444,28 @@ fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
         .success();
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: an object that
+/// redeclares a property its nullable `allOf` base declares generates one field
+/// per name — byte for byte as Fern does under `--fern-strict` too — where 5.67.1
+/// refused it (`object-property-name-collision`). A non-nullable base generates
+/// as it always did.
 #[test]
-fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
+fn nullable_inherited_property_redeclarations_generate_in_both_modes() {
+    let failures = authored_probe_strict_failures("549-object-property-name-collision");
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
     ))
     .unwrap();
-    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
-    for strict in [false, true] {
-        let output = dir.path().join(format!("bad-{strict}"));
-        let mut command = crozier_clean_env();
-        command
-            .args(["--no-config", "generate", "python", "--spec"])
-            .arg(&spec)
-            .arg("--output")
-            .arg(&output);
-        if strict {
-            command.arg("--fern-strict");
-        }
-        let result = command.output().unwrap();
-        let stderr = String::from_utf8(result.stderr).unwrap();
-        assert_eq!(result.status.code(), Some(1), "{stderr}");
-        assert!(
-            stderr.contains("object-property-name-collision"),
-            "{stderr}"
-        );
-        assert!(stderr.contains("sha1"), "{stderr}");
-        assert_eq!(stderr.contains("fern-strict"), strict);
-        assert!(!output.exists());
-    }
     document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
     crozier_clean_env()
         .args(["--no-config", "generate", "python", "--spec"])
         .arg(&spec)
         .arg("--output")
-        .arg(dir.path().join("recovered"))
+        .arg(dir.path().join("nonnullable"))
         .arg("--fern-strict")
         .assert()
         .success();

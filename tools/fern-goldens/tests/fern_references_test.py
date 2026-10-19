@@ -167,6 +167,25 @@ class FernReferencesTests(unittest.TestCase):
         # Only the named item ran: beta keeps its stale tree.
         self.assertTrue((self.root / "docs/openapi-surface/handwritten/beta/fern-expected/src/fern/stale.py").exists())
 
+    def test_a_hand_written_fixture_keeps_the_generator_settings_its_tree_records(self) -> None:
+        self.handwritten("delta")
+        self.write(
+            "docs/openapi-surface/handwritten/delta/fern-expected/.fern/metadata.json",
+            json.dumps(
+                {
+                    "generatorConfig": {
+                        "client_class_name": "FernApi",
+                        "pydantic_config": {"enum_type": "python_enums", "extra_fields": "allow"},
+                    }
+                }
+            ),
+        )
+        result = self.run_tool("generate", "handwritten", "delta")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        (call,) = self.calls()
+        self.assertIn("client_class_name: FernApi", call["generators"])
+        self.assertIn("enum_type: python_enums\n            extra_fields: allow", call["generators"])
+
     def test_an_explicit_version_overrides_the_certified_pair(self) -> None:
         self.handwritten("alpha")
         result = self.run_tool("generate", "handwritten", "--version", "7.0.0", "--cli-version", "8.0.0")

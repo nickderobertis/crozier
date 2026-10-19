@@ -279,11 +279,36 @@ def install(staged: Path, destination: Path) -> None:
         shutil.rmtree(backup)
 
 
+def recorded_generator_config(tree: Path) -> dict:
+    """The `generatorConfig` a committed Fern tree's `.fern/metadata.json` records."""
+    try:
+        config = json.loads((tree / ".fern" / "metadata.json").read_text(encoding="utf-8")).get("generatorConfig")
+    except (OSError, ValueError):
+        return {}
+    return config if isinstance(config, dict) else {}
+
+
 def generated_tree(
-    document: Path, destination: Path, pair: Pair, *, enum_type: str, layout: str, audiences: tuple[str, ...] = ()
+    document: Path,
+    destination: Path,
+    pair: Pair,
+    *,
+    enum_type: str,
+    layout: str,
+    audiences: tuple[str, ...] = (),
+    client_class_name: str | None = None,
+    extra_fields: str | None = None,
 ) -> None:
     """Generate `document` and install Fern's stripped tree at `destination`."""
-    with run_fern(document, pair, enum_type=enum_type, layout=layout, audiences=audiences) as run:
+    with run_fern(
+        document,
+        pair,
+        enum_type=enum_type,
+        layout=layout,
+        audiences=audiences,
+        client_class_name=client_class_name,
+        extra_fields=extra_fields,
+    ) as run:
         if run.generate_exit != "0" or run.tree is None:
             raise ReferenceError(
                 f"fern generate exited {run.generate_exit} with no tree:\n{run.generate_log.strip()[-2000:]}"
@@ -464,6 +489,9 @@ def generate_handwritten(item: str, pair: Pair) -> None:
         raise ReferenceError(f"{item} is no hand-written fixture; `list handwritten` names the family")
     match = re.search(r"(?m)^audiences = \[([^\]]*)\]", evidence.read_text(encoding="utf-8"))
     audiences = tuple(re.findall(r'"([^"]+)"', match.group(1))) if match else ()
+    # A fixture generated under a non-default setting keeps it: the committed
+    # tree's own `.fern/metadata.json` records the generator config it was made with.
+    config = recorded_generator_config(fixture / "fern-expected")
     generated_tree(
         fixture / "openapi.yml",
         fixture / "fern-expected",
@@ -471,6 +499,8 @@ def generate_handwritten(item: str, pair: Pair) -> None:
         enum_type="python-enums",
         layout="packaged",
         audiences=audiences,
+        client_class_name=config.get("client_class_name"),
+        extra_fields=config.get("pydantic_config", {}).get("extra_fields"),
     )
     rewrite_evidence(evidence, pair, contract_digest(fixture / "fern-expected"))
 

@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "86720717031defd61ada239b67c629a37de0ff4ef4ac3b50f48646fecfbcac41"
+digest = "40db2b9e4cf5bac3a55eaf9d6a9eed5a1d965eecee22bf3dde3c493d6ef96cb1"
 
 [[covers]]
 key = "sdk-variables-extension"

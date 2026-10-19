@@ -1,6 +1,6 @@
 fern_cli_version = "5.163.1"
 fern_python_sdk_version = "5.41.3"
-digest = "ae61ecb70d900e38621e060afaf6b46a969888127f7a7be2602f4357c87ffc3b"
+digest = "76dd1eed8b74de32f94e38caf7c7d59775dbdc8e00db1a111a22df3783830044"
 
 [[covers]]
 key = "parameter-name-extension"

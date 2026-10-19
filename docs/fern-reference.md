@@ -92,7 +92,7 @@ holding a control character (a line break, say) is refused before `fern` runs.
 
 ### Names
 
-Measured with Fern CLI 5.67.1 and `fernapi/fern-python-sdk` 5.20.0:
+Measured with Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3:
 
 - **Packaged.** Fern emits its packaged tree with a placeholder token only for
   the organization `fern`: with `acme` it falls back to the flat module tree. Its
