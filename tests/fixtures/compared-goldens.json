@@ -458,6 +458,8 @@
     "docs/openapi-surface/authored-probes/376-350-declared-type-name/fern-expected": {},
     "docs/openapi-surface/authored-probes/376-354-model-property-construct/fern-expected": {},
     "docs/openapi-surface/authored-probes/376-357-tag-only-operation-id/fern-expected": {},
+    "docs/openapi-surface/authored-probes/549-object-property-name-collision/fern-expected": {},
+    "docs/openapi-surface/authored-probes/549-request-property-name-collision/fern-expected": {},
     "docs/openapi-surface/authored-probes/parity-property-anyof-composed-members/fern-expected": {},
     "docs/openapi-surface/authored-probes/parity-required-query-array-examples/fern-expected": {},
     "docs/openapi-surface/authored-probes/parity-unrequired-tag-variant-classes/fern-expected": {},
