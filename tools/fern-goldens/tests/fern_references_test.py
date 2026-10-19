@@ -44,6 +44,9 @@ if sys.argv[1] == "check":
 if "x-stub-crash" in document:
     print("Traceback (most recent call last):\n    raise KeyError(key)\n  KeyError: 'type_:Probe'")
     sys.exit(1)
+if "x-stub-empty" in document:
+    print("[api]: python-sdk Finished.")
+    sys.exit(0)
 if "x-stub-error-line" in document:
     print("Error: the definition could not be read")
     sys.exit(1)
@@ -921,6 +924,17 @@ class FernReferencesTests(unittest.TestCase):
         self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
         self.assertEqual((fixture / "evidence.toml").read_text(encoding="utf-8"), evidence_before)
         self.assertEqual({path: path.read_text(encoding="utf-8") for path in before}, before)
+
+    def test_a_generation_that_exits_zero_with_no_tree_keeps_the_reference(self) -> None:
+        fixture = self.handwritten("nu", document="openapi: 3.0.3\nx-stub-empty: true\n")
+        evidence = (fixture / "evidence.toml").read_text(encoding="utf-8")
+
+        result = self.run_tool("generate", "handwritten", "nu")
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("fern generate exited 0 with no tree", result.stderr)
+        self.assertEqual((fixture / "fern-expected/src/fern/stale.py").read_text(encoding="utf-8"), "STALE = 1\n")
+        self.assertEqual((fixture / "evidence.toml").read_text(encoding="utf-8"), evidence)
 
     def test_a_case_note_with_no_pair_to_restate_stops_before_fern_runs(self) -> None:
         self.write("docs/fern-measurements/clients/mu/openapi.yml", "openapi: 3.0.3\n")
