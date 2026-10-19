@@ -277,7 +277,12 @@ fn initializer(field: &Field) -> Option<String> {
     }
 }
 
-/// Python's `repr()` of a string, the literal Fern writes for every name.
+/// Python's `repr()` of a string, the literal Fern writes for every name: the
+/// escapes Python gives a backslash, a quote and each character it does not
+/// print as itself — controls, format characters, private-use characters, and
+/// line, paragraph and space separators other than the space. An unassigned code
+/// point, which Python also escapes, is written as itself: telling one apart
+/// needs Unicode's tables, which crozier does not carry.
 pub(super) fn py_repr(value: &str) -> String {
     let quote = if value.contains('\'') && !value.contains('"') {
         '"'
@@ -296,12 +301,14 @@ pub(super) fn py_repr(value: &str) -> String {
                 out.push('\\');
                 out.push(c);
             }
-            c if c.is_control() => {
+            c if c.is_control() || py_unprintable(c) => {
                 let code = u32::from(c);
                 if code <= 0xff {
                     out.push_str(&format!("\\x{code:02x}"));
-                } else {
+                } else if code <= 0xffff {
                     out.push_str(&format!("\\u{code:04x}"));
+                } else {
+                    out.push_str(&format!("\\U{code:08x}"));
                 }
             }
             c => out.push(c),
@@ -309,6 +316,24 @@ pub(super) fn py_repr(value: &str) -> String {
     }
     out.push(quote);
     out
+}
+
+/// Whether Python's `str.isprintable()` is false for `c` by its general
+/// category: a space separator other than the space (Zs), a line or paragraph
+/// separator (Zl, Zp), a format character (Cf) or a private-use one (Co).
+fn py_unprintable(c: char) -> bool {
+    matches!(
+        u32::from(c),
+        // Zs, less U+0020, and Zl, Zp.
+        0xa0 | 0x1680 | 0x2000..=0x200a | 0x2028 | 0x2029 | 0x202f | 0x205f | 0x3000
+        // Cf.
+        | 0xad | 0x600..=0x605 | 0x61c | 0x6dd | 0x70f | 0x890..=0x891 | 0x8e2 | 0x180e
+        | 0x200b..=0x200f | 0x202a..=0x202e | 0x2060..=0x2064 | 0x2066..=0x206f | 0xfeff
+        | 0xfff9..=0xfffb | 0x110bd | 0x110cd | 0x13430..=0x1343f | 0x1bca0..=0x1bca3
+        | 0x1d173..=0x1d17a | 0xe0001 | 0xe0020..=0xe007f
+        // Co.
+        | 0xe000..=0xf8ff | 0xf0000..=0xffffd | 0x100000..=0x10fffd
+    )
 }
 
 /// A double-quoted Python string literal of `value`, the spelling Fern gives a
@@ -731,7 +756,7 @@ impl<'a> XmlModel<'a> {
     }
 
     /// `fields` with every literal-defaulted one moved last (stably).
-    fn optional_last(fields: Vec<&Field>) -> Vec<&Field> {
+    fn literal_defaulted_last(fields: Vec<&Field>) -> Vec<&Field> {
         let (plain, defaulted): (Vec<&Field>, Vec<&Field>) = fields
             .into_iter()
             .partition(|field| initializer(field).is_none());
@@ -922,7 +947,7 @@ impl<'a> XmlModel<'a> {
         if text.is_none() && inline.is_empty() {
             return;
         }
-        let keyword = Self::optional_last(
+        let keyword = Self::literal_defaulted_last(
             self.all
                 .iter()
                 .filter(|field| text.is_none_or(|text| !std::ptr::eq(*field, text)))
@@ -1303,11 +1328,8 @@ impl<'a> XmlModel<'a> {
         }
         let append_child = imports.add_core_local("xml_utilities", "append_xml_child");
         for (field, item) in &lists {
-            let inline = if is_wrapped(field) {
-                ", inline=False"
-            } else {
-                ""
-            };
+            let wrapped = is_wrapped(field);
+            let inline = append_arguments(wrapped);
             if lists.len() == 1 {
                 let hint = render_type(item, imports).flat();
                 let field_name = field.py_name.clone();
@@ -1348,7 +1370,7 @@ impl<'a> XmlModel<'a> {
             for (class, method) in names {
                 let append = ChildAppend {
                     field,
-                    inline,
+                    wrapped,
                     append_child: &append_child,
                 };
                 self.write_child_builder(w, imports, &method, &class, &append);
@@ -1366,9 +1388,10 @@ impl<'a> XmlModel<'a> {
     ) {
         let ChildAppend {
             field,
-            inline,
+            wrapped,
             append_child,
         } = *append;
+        let inline = append_arguments(wrapped);
         let Some(child) = self.types.object(class) else {
             return;
         };
@@ -1380,7 +1403,7 @@ impl<'a> XmlModel<'a> {
         };
         let child_fields = self.types.all_fields(child, 0);
         let text = child_fields.iter().find(|field| is_text(field));
-        let keyword = Self::optional_last(
+        let keyword = Self::literal_defaulted_last(
             child_fields
                 .iter()
                 .filter(|candidate| {
@@ -1984,12 +2007,23 @@ impl<'a> TestSuite<'a> {
 }
 
 /// How a child builder appends the element it builds: the list field it lands
-/// in, the call's trailing arguments, and the core helper that appends it.
+/// in, whether that list is wrapped in an element of its own, and the core
+/// helper that appends it.
 #[derive(Clone, Copy)]
 struct ChildAppend<'a> {
     field: &'a Field,
-    inline: &'a str,
+    wrapped: bool,
     append_child: &'a str,
+}
+
+/// The trailing arguments of an `append_xml_child` call: a wrapped list's
+/// children are appended inside its wrapper, so the call says `inline=False`.
+fn append_arguments(wrapped: bool) -> &'static str {
+    if wrapped {
+        ", inline=False"
+    } else {
+        ""
+    }
 }
 
 /// The primitive a generated XML test samples a value of.
@@ -2297,6 +2331,18 @@ mod tests {
         assert_eq!(py_repr("it's"), "\"it's\"");
         assert_eq!(py_repr("both ' and \""), "'both \\' and \"'");
         assert_eq!(py_repr("a\\b\n\t\u{1}"), "'a\\\\b\\n\\t\\x01'");
+        // Each as Python 3's `repr()` writes it: separators, format and
+        // private-use characters escaped at their width; a printable letter kept.
+        assert_eq!(py_repr("a\u{a0}b"), "'a\\xa0b'");
+        assert_eq!(
+            py_repr("\u{ad}\u{200b}\u{2028}\u{3000}"),
+            "'\\xad\\u200b\\u2028\\u3000'"
+        );
+        assert_eq!(
+            py_repr("\u{e000}\u{e0001}\u{10fffd}"),
+            "'\\ue000\\U000e0001\\U0010fffd'"
+        );
+        assert_eq!(py_repr("café, π"), "'café, π'");
         assert_eq!(set_literal(&[]), "()");
         assert_eq!(
             set_literal(&["b".to_string(), "a".to_string(), "b".to_string()]),
