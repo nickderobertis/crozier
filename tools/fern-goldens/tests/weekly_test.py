@@ -88,10 +88,7 @@ class RealPlanTests(unittest.TestCase):
 
     def unit_weights(self) -> list[float]:
         table, default = weekly.timings(REPO)
-        return [
-            sum(table.get(tuple(key.split("\t")), default) for key in unit)
-            for unit in weekly.units(REPO, self.inventory)
-        ]
+        return [sum(table.get(key, default) for key in unit) for unit in weekly.units(REPO, self.inventory)]
 
     def test_twice_the_inventory_plans_more_shards_not_longer_ones(self) -> None:
         weights = self.unit_weights()
