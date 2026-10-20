@@ -374,6 +374,47 @@ class CheckTests(unittest.TestCase):
         result = run_check(root)
         self.assertEqual((0, ""), (result.returncode, result.stderr))
 
+    def test_restating_after_a_move_rewrites_every_statement_and_nothing_else(self) -> None:
+        """A move of the declaration is finished by `restate`: every form, in a
+        scanned file or a delegated root, names the new pair, and the check is
+        green again; a comment, a stand-in and history keep what they said."""
+        statements = "".join(form.format(cli=CLI, sdk=SDK) + "\n" for form, _members in FORMS)
+        delegated = certified_pair.DELEGATED[0]
+        kept = {
+            "tools/probe/notes.py": f"# measured at Fern CLI {CLI}, python-sdk {SDK}\n"
+            f'FERN_CLI = "{CLI}"  # certified-pair: stand-in\n',
+            "docs/history.md": f"Measured with Fern CLI {CLI}, python-sdk {SDK}.\n",
+            "tests/fixtures/x/expected/.fern/metadata.json": f'{{"cliVersion": "{CLI}"}}\n',
+        }
+        root = self.tree({"tools/probe/probe.py": statements, f"{delegated}probe.py": statements, **WIRED, **kept})
+        metadata = root / "assets/scaffolding/metadata.json"
+        metadata.write_text(
+            json.dumps({**RECORD, "cliVersion": OTHER_CLI, "generatorVersion": OTHER_SDK}), encoding="utf-8"
+        )
+        self.assertEqual(1, run_check(root).returncode)
+
+        restated = subprocess.run(
+            [sys.executable, str(SCRIPT), "restate", str(root)],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            check=False,
+        )
+        self.assertEqual((0, ""), (restated.returncode, restated.stderr))
+        members = sum(len(found) for _form, found in FORMS)
+        self.assertEqual(
+            f"certified-pair: restated {2 * members} statement(s) in 2 file(s) at "
+            f"Fern CLI {OTHER_CLI}, fern-python-sdk {OTHER_SDK}\n",
+            restated.stdout,
+        )
+        moved = "".join(form.format(cli=OTHER_CLI, sdk=OTHER_SDK) + "\n" for form, _members in FORMS)
+        for path in ("tools/probe/probe.py", f"{delegated}probe.py"):
+            self.assertEqual(moved, (root / path).read_text(encoding="utf-8"), path)
+        for path, text in kept.items():
+            self.assertEqual(text, (root / path).read_text(encoding="utf-8"), path)
+        self.assertEqual((0, ""), (run_check(root).returncode, run_check(root).stderr))
+        self.assertEqual(0, run_check(root, "--within", delegated.rstrip("/")).returncode)
+
     def test_an_unreadable_declaration_names_the_file_and_the_fix(self) -> None:
         root = self.tree({})
         (root / "assets/scaffolding/metadata.json").write_text("{", encoding="utf-8")
@@ -418,6 +459,7 @@ class CheckTests(unittest.TestCase):
         self.assertEqual(2, certified_pair.main(["lint"]))
         self.assertEqual(2, certified_pair.main(["check", "--within", "/"]))
         self.assertEqual(2, certified_pair.main(["check", "a", "b", "--within", "tests"]))
+        self.assertEqual(2, certified_pair.main(["restate", "a", "b"]))
 
 
 if __name__ == "__main__":
