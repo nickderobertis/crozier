@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 134 errors
+[sdk] 133 errors
     [error]
         path: __package__.yml -> types -> CalendarBaseColor
         issue: Enum name 367B9C for value #367B9C is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
@@ -338,12 +339,6 @@ Warnings for generators.yml:
         issue: Enum name 6Ac9De for value #6AC9DE is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
 
     [error]
-        path: documentVersions.yml -> service -> endpoints -> DocumentVersion#index
-        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "id"
-  - Query Parameter "id"
-
-    [error]
         path: openapi/openapi.yml -> paths -> /documents/{id}/versions.json -> get
         issue: Parameters query parameter 'id', path parameter 'id' all normalize to 'id' in generated SDKs. This causes broken code (duplicate keyword arguments in Python, duplicate properties in TypeScript). Rename one of the parameters to avoid the collision.
 
@@ -539,4 +534,4 @@ Warnings for generators.yml:
         path: taskTemplateLists.yml -> service -> endpoints -> TaskTemplateList#update -> examples[0] -> response
         issue: Unexpected property "creator"
 
-Found 134 errors and 0 warnings in <n> seconds.
+Found 133 errors and 0 warnings in <n> seconds.

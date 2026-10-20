@@ -1,0 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document 
+[api]: Failed to resolve nestedcomponentsref.openapi.json#/components/securitySchemes/Name 
+       CliError: Failed to resolve nestedcomponentsref.openapi.json#/components/securitySchemes/Name
+All checks passed

@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 237 errors
+[sdk] 235 errors
     [error]
         path: __package__.yml -> types -> CreateTicketRequest
         issue: CreateTicketRequest is already declared in tickets.yml
@@ -3838,12 +3839,6 @@ Warnings for generators.yml:
   - 2.14
 
     [error]
-        path: reportingDataExport.yml -> service -> endpoints -> downloadCompletedExportJobData
-        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "job_identifier"
-  - Query Parameter "job_identifier"
-
-    [error]
         path: reportingDataExport.yml -> service -> endpoints -> enqueueANewReportingDataExportJob -> examples[0] -> headers
         issue: "Intercom-Version" is not a valid example for this enum. Enum values are:
   - 1.0
@@ -3914,12 +3909,6 @@ Warnings for generators.yml:
   - 2.12
   - 2.13
   - 2.14
-
-    [error]
-        path: reportingDataExport.yml -> service -> endpoints -> getExportJobStatus
-        issue: Multiple request properties have the name job_identifier. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "job_identifier"
-  - Query Parameter "job_identifier"
 
     [error]
         path: reportingDataExport.yml -> service -> endpoints -> listAvailableDatasetsAndAttributes -> examples[0] -> headers
@@ -5393,4 +5382,4 @@ Warnings for generators.yml:
   - 2.13
   - 2.14
 
-Found 237 errors and 16 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 235 errors and 16 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

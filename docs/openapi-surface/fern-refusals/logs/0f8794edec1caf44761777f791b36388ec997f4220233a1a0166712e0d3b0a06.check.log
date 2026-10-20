@@ -1,18 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 153 errors
-    [error]
-        path: __package__.yml -> types -> FileConflict
-        issue: Object has multiple properties named "sha1":
-  - FileConflict -> sha1
-  - FileConflict -> (extends) FileMini -> sha1
-
-    [error]
-        path: __package__.yml -> types -> FileConflict
-        issue: Object has multiple properties named "file_version":
-  - FileConflict -> file_version
-  - FileConflict -> (extends) FileMini -> file_version
-
+[sdk] 151 errors
     [error]
         path: boxSignRequests.yml -> service -> endpoints -> get_sign_requests_id -> examples[0] -> response
         issue: Example is missing required property "response.body.signing_log.id"
@@ -617,4 +606,4 @@ Warnings for generators.yml:
         path: uploadsChunked.yml -> service -> endpoints -> post_files_upload_sessions_id_commit -> examples[0] -> response
         issue: Example is missing required property "response.body.entries.0.type"
 
-Found 153 errors and 68 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 151 errors and 68 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
