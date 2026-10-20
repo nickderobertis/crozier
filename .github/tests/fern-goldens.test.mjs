@@ -45,6 +45,9 @@ test('the reader reports the recorded minutes and their detail through the SDK',
   assert.equal(detail.longestShardMinutes, Math.max(...plan.shards.map(shard => shard.minutes)));
   assert.equal(detail.setupMinutesPerJob, plan.estimate.setup_minutes_per_job);
   assert.equal(detail.assemblyMinutes, plan.estimate.assembly_minutes);
+  assert.deepEqual(detail.stages, plan.estimate.stages);
+  assert.equal(detail.waves, plan.estimate.waves);
+  assert.equal(detail.items, plan.shards.flatMap(shard => shard.items).length);
 });
 
 test('the reader refuses a usage error, missing telemetry and a subset plan', t => {
@@ -67,9 +70,12 @@ test('the reader refuses a usage error, missing telemetry and a subset plan', t 
     [{ families: { corpus: { items: 2, seconds: 32.4 } }, shards: [shard] }, /plans an item twice/],
     [{ families: { corpus: { items: 1, seconds: 16.2 }, probes: { items: 1, seconds: 16.2 } }, shards: [{ ...shard, items: [item] }] }, /do not hold every probes item/],
     [{ families: {}, shards: [shard] }, /names no family/],
+    [{ families: { corpus: { items: 1, seconds: 16.2 } }, shards: [{ ...shard, items: [{ ...item, item: '' }] }] }, /no family, name or seconds/],
+    [{ families: { corpus: { items: 1, seconds: 16.2 } }, shards: [{ ...shard, items: [item] }], estimate: { minutes: 9 } }, /lacks a figure/],
   ]) {
     const file = join(dir, 'bad.json');
-    writeFileSync(file, JSON.stringify({ schema_version: 1, complete: true, estimate: { minutes: 9 }, ...plan }));
+    const estimate = { minutes: 9, longest_shard_minutes: 4.5, setup_minutes_per_job: 4, assembly_minutes: 6, waves: 1, stages: { shards: 4.5 } };
+    writeFileSync(file, JSON.stringify({ schema_version: 1, complete: true, estimate, ...plan }));
     const refused = spawnSync(process.execPath, [reader, '--telemetry', file], { encoding: 'utf8' });
     assert.equal(refused.status, 1);
     assert.match(refused.stderr, reason);

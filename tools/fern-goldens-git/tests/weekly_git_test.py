@@ -211,36 +211,42 @@ if command in os.environ.get("GH_FAIL", "").split(","):
     print(f"gh: {command}: refused by the stand-in", file=sys.stderr)
     sys.exit(1)
 pulls = state["pulls"]
-if command == "label list":
-    done(json.dumps([{"name": name} for name in state["labels"]]))
-if command == "label create":
-    state["labels"].append(args[2])
-    done()
-if command == "pr list":
-    found = [p for p in pulls if p["head"] == option("--head") and p["state"] == option("--state")]
-    done(json.dumps(found))
-if command == "pr create":
-    if option("--label") not in state["labels"]:
-        print("gh: label not found", file=sys.stderr)
-        sys.exit(1)
-    number = len(pulls) + 1
-    pulls.append({
-        "number": number, "url": f"https://example.test/pull/{number}", "head": option("--head"),
-        "base": option("--base"), "title": option("--title"),
-        "body": pathlib.Path(option("--body-file")).read_text(encoding="utf-8"),
-        "labels": [{"name": option("--label")}], "autoMergeRequest": None, "state": "open",
-    })
-    done(f"https://example.test/pull/{number}\n")
-pull = next(p for p in pulls if str(p["number"]) == args[2])
-if command == "pr edit":
-    pull["title"] = option("--title")
-    pull["body"] = pathlib.Path(option("--body-file")).read_text(encoding="utf-8")
-    if {"name": option("--add-label")} not in pull["labels"]:
-        pull["labels"].append({"name": option("--add-label")})
-    done()
-if command == "pr merge":
-    pull["autoMergeRequest"] = None if "--disable-auto" in args else {"mergeMethod": "SQUASH"}
-    done()
+
+
+def pull():
+    return next(p for p in pulls if str(p["number"]) == args[2])
+
+
+match command:
+    case "label list":
+        done(json.dumps([{"name": name} for name in state["labels"]]))
+    case "label create":
+        state["labels"].append(args[2])
+        done()
+    case "pr list":
+        done(json.dumps([p for p in pulls if p["head"] == option("--head") and p["state"] == option("--state")]))
+    case "pr create":
+        if option("--label") not in state["labels"]:
+            print("gh: label not found", file=sys.stderr)
+            sys.exit(1)
+        number = len(pulls) + 1
+        pulls.append({
+            "number": number, "url": f"https://example.test/pull/{number}", "head": option("--head"),
+            "base": option("--base"), "title": option("--title"),
+            "body": pathlib.Path(option("--body-file")).read_text(encoding="utf-8"),
+            "labels": [{"name": option("--label")}], "autoMergeRequest": None, "state": "open",
+        })
+        done(f"https://example.test/pull/{number}\n")
+    case "pr edit":
+        edited = pull()
+        edited["title"] = option("--title")
+        edited["body"] = pathlib.Path(option("--body-file")).read_text(encoding="utf-8")
+        if {"name": option("--add-label")} not in edited["labels"]:
+            edited["labels"].append({"name": option("--add-label")})
+        done()
+    case "pr merge":
+        pull()["autoMergeRequest"] = None if "--disable-auto" in args else {"mergeMethod": "SQUASH"}
+        done()
 print(f"gh stand-in: unsupported {args}", file=sys.stderr)
 sys.exit(2)
 """

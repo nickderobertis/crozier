@@ -415,6 +415,32 @@ class CheckTests(unittest.TestCase):
         self.assertEqual((0, ""), (run_check(root).returncode, run_check(root).stderr))
         self.assertEqual(0, run_check(root, "--within", delegated.rstrip("/")).returncode)
 
+    @unittest.skipIf(os.name == "nt", "a read-only bit does not stop Windows' owner from writing")
+    def test_restating_skips_what_is_no_text_and_names_a_file_it_cannot_rewrite(self) -> None:
+        statement = f'FERN_CLI = "{CLI}"\n'
+        root = self.tree({"tools/probe/probe.py": statement, "tools/probe/locked.py": statement})
+        (root / "tools/probe/blob.bin").write_bytes(b"\xff\xfe" + statement.encode("utf-8"))
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, capture_output=True)
+        (root / "assets/scaffolding/metadata.json").write_text(
+            json.dumps({**RECORD, "cliVersion": OTHER_CLI}), encoding="utf-8"
+        )
+        locked = root / "tools/probe/locked.py"
+        locked.chmod(0o444)
+        self.addCleanup(locked.chmod, 0o644)
+        restate = [sys.executable, str(SCRIPT), "restate", str(root)]
+        refused = subprocess.run(restate, capture_output=True, text=True, encoding="utf-8", check=False)
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn("cannot rewrite tools/probe/locked.py", refused.stderr)
+        self.assertIn("make it writable, then re-run", refused.stderr)
+        self.assertNotIn("Traceback", refused.stderr)
+        locked.chmod(0o644)
+        restated = subprocess.run(restate, capture_output=True, text=True, encoding="utf-8", check=False)
+        self.assertEqual((0, ""), (restated.returncode, restated.stderr))
+        for path in ("tools/probe/probe.py", "tools/probe/locked.py"):
+            self.assertEqual(f'FERN_CLI = "{OTHER_CLI}"\n', (root / path).read_text(encoding="utf-8"))
+        self.assertEqual(b"\xff\xfe" + statement.encode("utf-8"), (root / "tools/probe/blob.bin").read_bytes())
+        self.assertEqual(0, run_check(root).returncode)
+
     def test_an_unreadable_declaration_names_the_file_and_the_fix(self) -> None:
         root = self.tree({})
         (root / "assets/scaffolding/metadata.json").write_text("{", encoding="utf-8")

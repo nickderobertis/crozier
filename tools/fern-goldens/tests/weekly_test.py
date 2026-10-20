@@ -15,7 +15,10 @@ import sys
 import tempfile
 import textwrap
 import unittest
+import unittest.mock
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 os.environ["PYTHONUTF8"] = "1"
 
@@ -474,6 +477,281 @@ class AssemblyTests(unittest.TestCase):
         result = self.assemble()
         self.assertEqual(1, result.returncode)
         self.assertIn("shard 0 lists tests/fixtures/a/x.py but its artifact does not carry it", result.stderr)
+
+
+def small_plan(**changes: object) -> weekly.Plan:
+    """A two-shard plan of two corpus items, as the plan phase records one."""
+    plan = weekly.Plan(
+        complete=True,
+        items="",
+        base="a" * 40,
+        pair=weekly.Pair("2.0.0", "3.0.0"),
+        budget_minutes=weekly.BUDGET_MINUTES,
+        shard_limit_minutes=94.5,
+        default_seconds=1.0,
+        families={"corpus": weekly.FamilyTotal(2, 2.0)},
+        units=2,
+        shards=tuple(
+            weekly.PlannedShard(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
+            for index, item in enumerate(("a", "b"))
+        ),
+        estimate=weekly.wall_clock([1.0, 1.0]),
+    )
+    return weekly.replace(plan, **changes)
+
+
+class ArtifactTests(unittest.TestCase):
+    """Every artifact a phase reads is refused, naming the fault, when it is
+    not what the phase that writes it writes."""
+
+    def test_a_plan_is_refused_for_each_fault(self) -> None:
+        good = small_plan().to_json()
+        weekly.Plan.from_json(good, "plan.json")
+        faults: list[tuple[str, object, str]] = []
+
+        def fault(message: str, change: Callable[[dict[str, Any]], object]) -> None:
+            record = json.loads(json.dumps(good))
+            change(record)
+            faults.append((message, record, message))
+
+        fault("`base` must be a commit's full name or null", lambda r: r.update(base="main"))
+        fault("is no family or item name", lambda r: r["shards"][0]["items"][0].update(item="../escape"))
+        fault("is no family or item name", lambda r: r["shards"][0]["items"][0].update(family="/abs"))
+        fault("plans an item twice", lambda r: r["shards"][1]["items"].append(r["shards"][0]["items"][0]))
+        fault("do not hold the 2 corpus item(s) it counts", lambda r: r["shards"][1].update(items=[]))
+        fault(
+            "a shard holds an item of no family it counts",
+            lambda r: r["families"].update(corpus={"items": 1, "seconds": 1})
+            or r["shards"][1]["items"][0].update(family="probes"),
+        )
+        fault("shards must be numbered from 0 in order", lambda r: r["shards"][1].update(index=5))
+        fault("must be a non-negative number", lambda r: r["estimate"].update(minutes=float("nan")))
+        fault("no plan of this tool's schema", lambda r: r.update(schema_version=2))
+        for message, record, expected in faults:
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.Plan.from_json(record, "plan.json")
+            self.assertIn(expected, str(raised.exception))
+
+    def test_a_shard_result_or_bundle_naming_a_path_outside_the_checkout_is_refused(self) -> None:
+        item = {
+            "family": "corpus",
+            "item": "a",
+            "status": "ok",
+            "detail": "",
+            "seconds": 1.0,
+            "changed": [],
+            "log": "x",
+        }
+        shard = {
+            "schema_version": 1,
+            "index": 0,
+            "pair": {"cli": "2.0.0", "generator": "3.0.0"},
+            "base": None,
+            "items": [item],
+            "written": [],
+            "deleted": [],
+        }
+        for key, value in (("written", ["../outside"]), ("deleted", ["/etc/passwd"]), ("written", [".git/config"])):
+            with self.subTest(path=value), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.ShardResult.from_json({**shard, key: value}, "result.json")
+            self.assertIn("is no path inside the repository", str(raised.exception))
+        with self.assertRaises(weekly.WeeklyError) as raised:
+            weekly.ShardResult.from_json({**shard, "items": [{**item, "status": "skipped"}]}, "result.json")
+        self.assertIn("status 'skipped' is none of", str(raised.exception))
+        bundle = {
+            "schema_version": 1,
+            "pair": shard["pair"],
+            "base": None,
+            "complete": True,
+            "items": [item],
+            "deleted": ["a/../../b"],
+            "failures": [],
+        }
+        with self.assertRaises(weekly.WeeklyError):
+            weekly.Bundle.from_json(bundle, "bundle.json")
+
+    def test_a_phase_reading_a_faulty_artifact_fails_naming_it(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            plan = Path(scratch) / "plan.json"
+            record = small_plan().to_json()
+            record["shards"][0]["items"][0]["item"] = "../escape"
+            plan.write_text(json.dumps(record), encoding="utf-8")
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(SCRIPT),
+                    "assemble",
+                    "--plan",
+                    str(plan),
+                    "--shards",
+                    scratch,
+                    "--output",
+                    str(Path(scratch) / "out"),
+                ],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                check=False,
+            )
+        self.assertEqual(1, result.returncode)
+        self.assertIn("'../escape' is no family or item name", result.stderr)
+
+
+class EstimateTests(unittest.TestCase):
+    def test_more_shards_than_the_concurrent_allowance_run_in_waves(self) -> None:
+        seconds = [600.0] * 25 + [1200.0]
+        estimate = weekly.wall_clock(seconds)
+        self.assertEqual(2, estimate.waves)
+        # Each wave lasts as long as its longest shard; the longest leads the first.
+        first = weekly.JOB_SETUP_MINUTES + 1200 / 60
+        second = weekly.JOB_SETUP_MINUTES + 600 / 60
+        self.assertAlmostEqual(first + second, estimate.stages["shards"])
+        self.assertAlmostEqual(sum(estimate.stages.values()), estimate.minutes, places=1)
+        self.assertEqual(round(first, 2), estimate.longest_shard_minutes)
+
+
+class TimingTableTests(unittest.TestCase):
+    def results(self) -> list[weekly.ItemResult]:
+        return [
+            weekly.ItemResult("corpus", "a", weekly.Status.OK, "", 7.5, (), "x"),
+            weekly.ItemResult("corpus", "b", weekly.Status.FAILED, "boom", 99.0, (), "x"),
+        ]
+
+    def write(self, plan: weekly.Plan) -> str:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            weekly.write_tsv(
+                root / weekly.TIMINGS,
+                weekly.TIMINGS_HEADER,
+                [["corpus", "a", "1.0"], ["corpus", "b", "2.0"], ["corpus", "gone", "3.0"]],
+            )
+            destination = root / "out.tsv"
+            weekly.write_timings(root, plan, self.results(), destination)
+            return destination.read_text(encoding="utf-8").split("family\titem\tseconds\n", 1)[1]
+
+    def test_a_complete_run_drops_items_no_longer_planned_and_keeps_an_unmeasured_row(self) -> None:
+        self.assertEqual("corpus\ta\t7.5\ncorpus\tb\t2.0\n", self.write(small_plan()))
+
+    def test_a_subset_run_keeps_every_row_it_did_not_measure(self) -> None:
+        self.assertEqual("corpus\ta\t7.5\ncorpus\tb\t2.0\ncorpus\tgone\t3.0\n", self.write(small_plan(complete=False)))
+
+    def test_a_malformed_row_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            for rows, message in (
+                ([["corpus", "a", "nan"]], "finite, non-negative"),
+                ([["corpus", "a", "-1"]], "finite, non-negative"),
+                ([["corpus", "a", "1"], ["corpus", "a", "2"]], "has two rows"),
+            ):
+                weekly.write_tsv(root / weekly.TIMINGS, weekly.TIMINGS_HEADER, rows)
+                with self.subTest(rows=rows), self.assertRaises(weekly.WeeklyError) as raised:
+                    weekly.timings(root)
+                self.assertIn(message, str(raised.exception))
+
+
+class BodyTests(unittest.TestCase):
+    def decision(self, reports: list[str]) -> weekly.Decision:
+        decision = weekly.Decision(weekly.Pair("2.0.0", "3.0.0"), True, "digest")
+        decision.failing["corpus"] = [weekly.FailingItem(f"item-{n}", report) for n, report in enumerate(reports)]
+        return decision
+
+    def bundle(self) -> weekly.Bundle:
+        item = weekly.ItemResult("corpus", "a", weekly.Status.OK, "", 1.0, (), "x")
+        return weekly.Bundle(weekly.Pair("2.0.0", "3.0.0"), None, True, (item,), (), ())
+
+    def test_a_report_holding_a_fence_is_fenced_longer(self) -> None:
+        text = weekly.body(self.decision(["before\n````\nafter"]), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
+        self.assertIn("`````text\nbefore\n````\nafter\n`````", text)
+
+    def test_long_reports_and_bodies_are_truncated_and_say_where_the_rest_is(self) -> None:
+        one = weekly.body(self.decision(["x" * 20000]), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
+        self.assertIn("… (truncated; the decision artifact holds the whole report)", one)
+        self.assertLess(len(one), weekly.REPORT_LIMIT + 2000)
+        many = weekly.body(self.decision(["y" * 5000] * 400), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
+        self.assertLessEqual(len(many), weekly.BODY_LIMIT + 5000)
+
+    def test_the_run_is_linked_when_the_workflow_names_it(self) -> None:
+        with unittest.mock.patch.dict(
+            os.environ,
+            {"GITHUB_RUN_ID": "77", "GITHUB_REPOSITORY": "owner/crozier", "GITHUB_SERVER_URL": "https://github.com"},
+        ):
+            text = weekly.body(self.decision(["r"]), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
+        self.assertIn("Run: https://github.com/owner/crozier/actions/runs/77", text)
+
+
+class PublicationGuardTests(unittest.TestCase):
+    """`publish` refuses, before any remote step, what it must never publish."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temporary.cleanup)
+        self.scratch = Path(self.temporary.name)
+        self.bundle = self.scratch / "bundle"
+        (self.bundle / "files").mkdir(parents=True)
+        (self.bundle / "files/x.txt").write_text("x\n", encoding="utf-8")
+        record = {
+            "schema_version": 1,
+            "pair": {"cli": "2.0.0", "generator": "3.0.0"},
+            "base": None,
+            "complete": True,
+            "items": [],
+            "deleted": [],
+            "failures": [],
+        }
+        (self.bundle / "bundle.json").write_text(json.dumps(record), encoding="utf-8")
+        self.decision = self.scratch / "decision"
+        self.decision.mkdir()
+
+    def publish(
+        self, outcome: str = "match", *, digest: str | None = None, checked_on: str = "2026-10-19"
+    ) -> subprocess.CompletedProcess[str]:
+        record = {
+            "schema_version": 1,
+            "outcome": outcome,
+            "complete": True,
+            "pair": {"cli": "2.0.0", "generator": "3.0.0"},
+            "bundle": digest or weekly.bundle_digest(self.bundle),
+            "title": "test(fern-goldens): regenerate",
+        }
+        (self.decision / "decision.json").write_text(json.dumps(record), encoding="utf-8")
+        return subprocess.run(
+            [
+                sys.executable,
+                str(SCRIPT),
+                "publish",
+                "--bundle",
+                str(self.bundle),
+                "--decision",
+                str(self.decision),
+                "--repo",
+                "owner/crozier",
+                "--checked-on",
+                checked_on,
+            ],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            env={**os.environ, weekly.ROOT_ENV: str(self.scratch), "GH_TOKEN": "token"},
+            check=False,
+        )
+
+    def test_a_failed_decision_another_bundle_or_a_bad_date_is_refused(self) -> None:
+        for (outcome, digest, checked_on), message in (
+            (("failure", None, "2026-10-19"), "the decision is 'failure'"),
+            (("match", "0" * 64, "2026-10-19"), "made over another bundle"),
+            (("match", None, "19/10/2026"), "is no YYYY-MM-DD date"),
+        ):
+            with self.subTest(message):
+                result = self.publish(outcome, digest=digest, checked_on=checked_on)
+                self.assertEqual(1, result.returncode)
+                self.assertIn(message, result.stderr)
+
+    def test_a_file_changed_after_the_decision_breaks_its_binding(self) -> None:
+        digest = weekly.bundle_digest(self.bundle)
+        (self.bundle / "files/x.txt").write_text("changed\n", encoding="utf-8")
+        result = self.publish(digest=digest)
+        self.assertEqual(1, result.returncode)
+        self.assertIn("made over another bundle", result.stderr)
 
 
 if __name__ == "__main__":

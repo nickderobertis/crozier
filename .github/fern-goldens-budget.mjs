@@ -19,8 +19,12 @@ try {
   if (!families || typeof families !== 'object' || !Object.keys(families).length) incomplete('it names no family');
   if (!Object.values(families).every(family => Number.isInteger(family?.items) && family.items > 0 && finite(family.seconds))) incomplete('a family has no items or no seconds');
   if (!Array.isArray(shards) || !shards.length || !shards.every(shard => finite(shard?.minutes) && Array.isArray(shard.items))) incomplete('it plans no shard');
-  if (!finite(estimate?.minutes)) incomplete('it predicts no minutes');
+  const named = value => typeof value === 'string' && value.length > 0;
+  if (!finite(estimate?.minutes) || !finite(estimate.longest_shard_minutes) || !finite(estimate.setup_minutes_per_job)
+    || !finite(estimate.assembly_minutes) || !Number.isInteger(estimate.waves) || estimate.waves < 1
+    || !estimate.stages || typeof estimate.stages !== 'object' || !Object.values(estimate.stages).every(finite)) incomplete('its estimate lacks a figure');
   const planned = shards.flatMap(shard => shard.items);
+  if (!planned.every(entry => named(entry?.family) && named(entry?.item) && finite(entry.seconds))) incomplete('a planned item has no family, name or seconds');
   const keys = new Set(planned.map(entry => `${entry?.family}\t${entry?.item}`));
   if (keys.size !== planned.length) incomplete('it plans an item twice');
   for (const [name, family] of Object.entries(families)) {

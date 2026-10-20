@@ -171,6 +171,15 @@ def base_of(record: object, where: str) -> str | None:
     return value
 
 
+def name_of(record: object, key: str, where: str) -> str:
+    """A family or item name: path segments of letters, digits, `.`, `_` and
+    `-`, never `..`, so it can name a log or a path under the checkout."""
+    value = field_of(record, key, str, where)
+    if not NAME.fullmatch(value) or ".." in value.split("/"):
+        raise WeeklyError(f"{where}: `{key}` {value!r} is no family or item name")
+    return value
+
+
 def stable(version: object) -> bool:
     return isinstance(version, str) and VERSION.fullmatch(version) is not None
 
@@ -301,11 +310,7 @@ class Plan:
             if field_of(shard, "index", int, at) != index:
                 raise WeeklyError(f"{at}: shards must be numbered from 0 in order")
             items = tuple(
-                PlannedItem(
-                    field_of(entry, "family", str, at),
-                    field_of(entry, "item", str, at),
-                    seconds_of(entry, "seconds", at),
-                )
+                PlannedItem(name_of(entry, "family", at), name_of(entry, "item", at), seconds_of(entry, "seconds", at))
                 for entry in field_of(shard, "items", list, at)
             )
             shards.append(
@@ -314,6 +319,17 @@ class Plan:
         keys = [entry.key() for shard in shards for entry in shard.items]
         if len(keys) != len(set(keys)):
             raise WeeklyError(f"{where} plans an item twice; re-run the plan job")
+        families = {
+            name_of({"family": name}, "family", where): FamilyTotal(
+                field_of(total, "items", int, where), seconds_of(total, "seconds", where)
+            )
+            for name, total in field_of(record, "families", dict, where).items()
+        }
+        for name, total in families.items():
+            if total.items < 1 or sum(family == name for family, _item in keys) != total.items:
+                raise WeeklyError(f"{where}: its shards do not hold the {total.items} {name} item(s) it counts")
+        if {family for family, _item in keys} - set(families):
+            raise WeeklyError(f"{where}: a shard holds an item of no family it counts")
         estimate = field_of(record, "estimate", dict, where)
         stages = field_of(estimate, "stages", dict, where)
         pair = record.get("pair")
@@ -325,10 +341,7 @@ class Plan:
             budget_minutes=seconds_of(record, "budget_minutes", where),
             shard_limit_minutes=seconds_of(record, "shard_limit_minutes", where),
             default_seconds=seconds_of(record, "default_seconds", where),
-            families={
-                name: FamilyTotal(field_of(total, "items", int, where), seconds_of(total, "seconds", where))
-                for name, total in field_of(record, "families", dict, where).items()
-            },
+            families=families,
             units=field_of(record, "units", int, where),
             shards=tuple(shards),
             estimate=Estimate(
@@ -381,8 +394,8 @@ class ItemResult:
             raise WeeklyError(f"{where}: status {status!r} is none of {', '.join(Status)}")
         shard = record.get("shard") if isinstance(record, dict) else None
         return cls(
-            family=field_of(record, "family", str, where),
-            item=field_of(record, "item", str, where),
+            family=name_of(record, "family", where),
+            item=name_of(record, "item", where),
             status=Status(status),
             detail=field_of(record, "detail", str, where),
             seconds=seconds_of(record, "seconds", where),
@@ -1079,7 +1092,7 @@ def make_plan(base: Path, items: str, pair: Pair | None, commit: str | None = No
     """The plan of `items` (the whole inventory when blank) over `base`'s
     reference inventory and timing table, at `pair`, generated over `commit`."""
     selectors = parse_selectors(items)
-    chosen = select(inventory(base), selectors)
+    chosen = {family: entries for family, entries in select(inventory(base), selectors).items() if entries}
     table, default = timings(base)
     weights = {
         f"{family}\t{item}": table.get((family, item), default)
@@ -1410,12 +1423,20 @@ def write_timings(base: Path, made: Plan, results: list[ItemResult], destination
 
 
 def bundle_digest(path: Path) -> str:
-    """The digest of a bundle's record, which a decision names to bind itself
-    to the one tree it decided."""
+    """The digest of a bundle — its record and every file it carries, each by
+    path and content — which a decision names to bind itself to the one tree it
+    decided."""
+    digest = hashlib.sha256()
     try:
-        return hashlib.sha256((path / "bundle.json").read_bytes()).hexdigest()
+        digest.update((path / "bundle.json").read_bytes())
+        files = path / "files"
+        for source in sorted(p for p in files.rglob("*") if p.is_file()) if files.is_dir() else []:
+            content = source.read_bytes()
+            digest.update(f"\0{source.relative_to(files).as_posix()}\0{len(content)}\0".encode())
+            digest.update(content)
     except OSError as error:
-        raise WeeklyError(f"cannot read {path / 'bundle.json'} ({error}); re-run the assembly job") from error
+        raise WeeklyError(f"cannot read the bundle {path} ({error}); re-run the assembly job") from error
+    return digest.hexdigest()
 
 
 def read_bundle(path: Path) -> Bundle:
@@ -1475,8 +1496,12 @@ def gates(base: Path, families: Iterable[str] | None = None) -> list[Gate]:
             raise WeeklyError(f"{where}: scope is item or family, and a family is named")
         if known is not None and not set(named) <= known:
             raise WeeklyError(f"{where}: {', '.join(sorted(set(named) - known))} is no reference family")
-        if not row["command"].strip():
-            raise WeeklyError(f"{where}: the command is empty")
+        try:
+            words = shlex.split(row["command"])
+        except ValueError as error:
+            raise WeeklyError(f"{where}: the command does not parse ({error})") from error
+        if not [word for word in words if not re.fullmatch(r"[A-Z_][A-Z0-9_]*=.*", word)]:
+            raise WeeklyError(f"{where}: the command names nothing to run")
         passes: tuple[int, ...] = ()
         rejects: tuple[int, ...] = ()
         if row["verdict"] != "fixtures-report":
@@ -1833,6 +1858,8 @@ def publish(args: argparse.Namespace) -> int:
             raise WeeklyError(f"the decision is {decision.outcome.value!r}; only a match or a diff is published")
         if not decision.complete or not bundle.complete:
             raise WeeklyError("a diagnostic subset run never publishes, adopts or records a pair")
+        if decision.pair != bundle.pair:
+            raise WeeklyError(f"the decision is at {decision.pair.label()}, the bundle at {bundle.pair.label()}")
         if decision.bundle != bundle_digest(Path(args.bundle)):
             raise WeeklyError("the decision was made over another bundle than this one; re-run the decision job")
         if not os.environ.get("GH_TOKEN"):
