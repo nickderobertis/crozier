@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.123](https://github.com/nickderobertis/crozier/compare/v0.0.122...v0.0.123) - 2026-10-20
+
+### Added
+
+- *(parity)* retarget crozier to Fern CLI 5.163.1 with fern-python-sdk 5.41.3 ([#555](https://github.com/nickderobertis/crozier/pull/555))
+
 ## [0.0.122](https://github.com/nickderobertis/crozier/compare/v0.0.121...v0.0.122) - 2026-10-18
 
 ### Fixed
