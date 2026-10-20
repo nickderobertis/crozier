@@ -381,7 +381,8 @@ class AssemblyTests(unittest.TestCase):
         self.scratch = Path(self.temporary.name)
         self.root = self.scratch / "repo"
         (self.root / "assets/scaffolding").mkdir(parents=True)
-        (self.root / "assets/scaffolding/metadata.json").write_text('{"cliVersion": "1.0.0"}', encoding="utf-8")
+        stand_in = '{"cliVersion": "1.0.0"}'  # certified-pair: stand-in
+        (self.root / "assets/scaffolding/metadata.json").write_text(stand_in, encoding="utf-8")
         self.plan = {
             "schema_version": 1,
             "complete": True,

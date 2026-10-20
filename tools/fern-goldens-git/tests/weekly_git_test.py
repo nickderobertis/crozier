@@ -393,9 +393,9 @@ class WeeklyRunTests(unittest.TestCase):
         handwritten.mkdir(parents=True)
         (handwritten / "openapi.yml").write_text(DOCUMENT.format(title="Harbour Lanterns"), encoding="utf-8")
         (handwritten / "crozier.yml").write_text(compare.format(tree="fern-expected"), encoding="utf-8")
-        (handwritten / "evidence.toml").write_text(
-            'fern_cli_version = "0.0.0"\nfern_python_sdk_version = "0.0.0"\ndigest = "0"\n', encoding="utf-8"
-        )
+        # Placeholder provenance the recipe restates when it generates the tree.
+        placeholder = 'fern_cli_version = "0.0.0"\nfern_python_sdk_version = "0.0.0"\n'  # certified-pair: stand-in
+        (handwritten / "evidence.toml").write_text(placeholder + 'digest = "0"\n', encoding="utf-8")
         self.fern_tree("Harbour Lanterns", handwritten / "openapi.yml")
         (root / "docs/fern-measurements").mkdir(parents=True)
         (root / "docs/fern-measurements/cases.tsv").write_text(
