@@ -1,10 +1,11 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           Failed to format Cannot parse: 3:9
@@ -112,7 +113,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/cli/abstract_generator.py", line 225, in generate_project
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
                                               publisher.run_ruff_check_fix("/fern/output", cwd="/")
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
                                             File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix
