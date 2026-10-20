@@ -643,7 +643,12 @@ class ArtifactTests(unittest.TestCase):
             "written": [],
             "deleted": [],
         }
-        for key, value in (("written", ["../outside"]), ("deleted", ["/etc/passwd"]), ("written", [".git/config"])):
+        for key, value in (
+            ("written", ["../outside"]),
+            ("deleted", ["/etc/passwd"]),
+            ("written", [".git/config"]),
+            ("written", ["tests/fixtures/a\0/x.py"]),
+        ):
             with self.subTest(path=value), self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.ShardResult.from_json({**shard, key: value}, "result.json")
             self.assertIn("is no path inside the repository", str(raised.exception))

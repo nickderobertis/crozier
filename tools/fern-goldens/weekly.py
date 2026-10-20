@@ -185,8 +185,9 @@ def stable(version: object) -> bool:
 
 
 def safe_path(value: object, where: str) -> str:
-    """A repository-relative POSIX path that stays inside the checkout."""
-    path = PurePosixPath(value) if isinstance(value, str) and value and "\\" not in value else None
+    """A repository-relative POSIX path that stays inside the checkout, with no
+    NUL a filesystem call would raise on."""
+    path = PurePosixPath(value) if isinstance(value, str) and value and not {"\\", "\0"} & set(value) else None
     if path is None or path.is_absolute() or ".." in path.parts or path.parts[:1] == (".git",):
         raise WeeklyError(f"{where}: {value!r} is no path inside the repository")
     return path.as_posix()
