@@ -267,8 +267,6 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/licence-rescreening.md`](docs/licence-rescreening.md);
   `just lint-licence-rescreening` derives that candidate set from the region
   ledgers itself, so a grouped or dropped line fails.
-- Add or repair a numbered corpus golden locally, one row at a time; the
-  weekly workflow only proposes regenerated references as a pull request.
 - CalorieNinjas at Fern 5.20 is covered by an exact, always-retried upstream
   failure fingerprint and has no golden until Fern can generate one.
 - A corpus document naming another document by absolute URL is reproducible only

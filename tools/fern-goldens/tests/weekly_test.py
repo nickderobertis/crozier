@@ -470,6 +470,25 @@ class AssemblyTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("docs/shared.tsv was written by shards 0 and 1", result.stderr)
 
+    def test_a_result_no_planned_shard_accounts_for_is_a_failure(self) -> None:
+        self.shard(0, "a", [])
+        self.shard(1, "b", [])
+        self.shard(7, "a", [])
+        result = self.assemble()
+        self.assertEqual(1, result.returncode)
+        self.assertIn("shard 7 uploaded a result the plan has no shard for", result.stderr)
+
+    @unittest.skipIf(os.name == "nt", "symbolic links need privileges on Windows")
+    def test_a_symbolic_link_in_an_artifact_is_a_failure(self) -> None:
+        self.shard(0, "a", ["tests/fixtures/a/x.py"])
+        self.shard(1, "b", [])
+        carried = self.scratch / "artifacts/fern-goldens-shard-0/files/tests/fixtures/a/x.py"
+        carried.unlink()
+        carried.symlink_to("/etc/hostname")
+        result = self.assemble()
+        self.assertEqual(1, result.returncode)
+        self.assertIn("tests/fixtures/a/x.py is a symbolic link", result.stderr)
+
     def test_a_shard_listing_a_file_it_does_not_carry_is_a_failure(self) -> None:
         self.shard(0, "a", ["tests/fixtures/a/x.py"])
         self.shard(1, "b", [])
@@ -509,6 +528,7 @@ class ArtifactTests(unittest.TestCase):
         weekly.Plan.from_json(good, "plan.json")
         faults: list[tuple[str, object, str]] = []
 
+        # A mutation of the plan's JSON record, whose values are of every JSON type.
         def fault(message: str, change: Callable[[dict[str, Any]], object]) -> None:
             record = json.loads(json.dumps(good))
             change(record)

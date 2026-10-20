@@ -192,6 +192,29 @@ def safe_path(value: object, where: str) -> str:
     return path.as_posix()
 
 
+def inside(root: Path, relative: str, where: str) -> Path:
+    """`root / relative`, refused unless it resolves inside `root`: a lexically
+    safe path whose components are symbolic links leading out is no path of
+    the checkout either."""
+    target = root / safe_path(relative, where)
+    if not target.resolve().is_relative_to(root.resolve()):
+        raise WeeklyError(f"{where}: {relative!r} resolves outside {root} through a symbolic link")
+    return target
+
+
+def regular_files(directory: Path, where: str) -> list[Path]:
+    """Every file under an artifact directory, refused if any is a symbolic link."""
+    found = []
+    for path in sorted(directory.rglob("*")) if directory.is_dir() else []:
+        if path.is_symlink():
+            raise WeeklyError(
+                f"{where}: {path.relative_to(directory).as_posix()} is a symbolic link; re-run the job that wrote it"
+            )
+        if path.is_file():
+            found.append(path)
+    return found
+
+
 def safe_name(item: str) -> str:
     return item.replace("/", "__")
 
@@ -1187,9 +1210,15 @@ def digest_of(path: Path) -> str | None:
 
 
 def dirty(base: Path) -> dict[str, str | None]:
-    """Every path that differs from HEAD, to its content digest (None when deleted)."""
-    listed = run(["git", "-C", str(base), "status", "--porcelain=v1", "-z", "--untracked-files=all"], base, check=True)
-    return {entry[3:]: digest_of(base / entry[3:]) for entry in listed.stdout.split("\0") if len(entry) > 3}
+    """Every path that differs from HEAD — modified, deleted, or new and not
+    ignored — to its content digest (None when deleted). `ls-files -z` prints
+    bare paths, so nothing is parsed off a status prefix."""
+    listed = run(
+        ["git", "-C", str(base), "ls-files", "-z", "--modified", "--deleted", "--others", "--exclude-standard"],
+        base,
+        check=True,
+    )
+    return {path: digest_of(base / path) for path in listed.stdout.split("\0") if path}
 
 
 def changed_between(base: Path, before: dict[str, str | None], after: dict[str, str | None]) -> list[str]:
@@ -1320,6 +1349,12 @@ def uploaded_results(shards_dir: Path, failures: list[str]) -> dict[int, tuple[P
     return uploaded
 
 
+def unplanned(uploaded: dict[int, tuple[Path, ShardResult]], made: Plan) -> list[str]:
+    """A failure for every uploaded result no planned shard accounts for."""
+    planned = {shard.index for shard in made.shards}
+    return [f"shard {index} uploaded a result the plan has no shard for" for index in sorted(set(uploaded) - planned)]
+
+
 def assemble(args: argparse.Namespace) -> int:
     base = root()
     made = read_plan(Path(args.plan))
@@ -1333,6 +1368,7 @@ def assemble(args: argparse.Namespace) -> int:
     owners: dict[str, int] = {}
     deleted: list[str] = []
     uploaded = uploaded_results(Path(args.shards), failures)
+    failures += unplanned(uploaded, made)
     for planned in made.shards:
         index = planned.index
         if index not in uploaded:
@@ -1355,14 +1391,17 @@ def assemble(args: argparse.Namespace) -> int:
             if path in owners and owners[path] != index:
                 failures.append(f"{path} was written by shards {owners[path]} and {index}; plan their items together")
             owners[path] = index
+        carried = {
+            source.relative_to(shard_dir / "files").as_posix()
+            for source in regular_files(shard_dir / "files", f"shard {index}")
+        }
         for path in record.written:
-            source = shard_dir / "files" / path
-            if not source.is_file():
+            if path not in carried:
                 failures.append(f"shard {index} lists {path} but its artifact does not carry it")
                 continue
-            target = output / "files" / path
+            target = inside(output / "files", path, f"shard {index}")
             target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
+            shutil.copy2(shard_dir / "files" / path, target)
         deleted += record.deleted
         if (shard_dir / "logs").is_dir():
             shutil.copytree(shard_dir / "logs", output / "logs", dirs_exist_ok=True)
@@ -1452,12 +1491,12 @@ def apply_bundle(base: Path, path: Path) -> Bundle:
     if bundle.base and head != bundle.base:
         raise WeeklyError(f"the bundle was generated over {bundle.base}, but this checkout is at {head}")
     files = path / "files"
-    for source in sorted(p for p in files.rglob("*") if p.is_file()):
-        target = base / safe_path(source.relative_to(files).as_posix(), str(path))
+    for source in regular_files(files, str(path)):
+        target = inside(base, source.relative_to(files).as_posix(), str(path))
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
     for relative in bundle.deleted:
-        target = base / relative
+        target = inside(base, relative, str(path))
         if target.is_file():
             target.unlink()
     restated = run([sys.executable, str(base / "tools/fern-goldens/certified_pair.py"), "restate", str(base)], base)

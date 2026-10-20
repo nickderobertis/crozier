@@ -976,6 +976,22 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(state.publish)
         self.assert_untouched()
 
+    def test_a_bundle_is_applied_only_over_the_commit_it_was_planned_on(self) -> None:
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide")
+        self.assertEqual("match", state.outcome())
+        moved = self.clone()
+        (moved / "README.md").write_text("main moved on after the plan\n", encoding="utf-8")
+        self.git(moved, "add", "README.md")
+        self.git(moved, "commit", "-qm", "move main")
+        self.git(moved, "push", "-q", "origin", "HEAD:main")
+        refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("the bundle was generated over", refused.stderr)
+        self.assertIn("but this checkout is at", refused.stderr)
+        self.assertEqual(["main"], self.remote_branches())
+        self.assertEqual([], self.pulls())
+
     def test_a_missing_token_is_red_before_any_work_or_remote_step(self) -> None:
         self.publish_seed()
         state = self.run_workflow(NO_TOKEN="1")
