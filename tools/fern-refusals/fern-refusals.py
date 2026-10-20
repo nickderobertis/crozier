@@ -132,6 +132,9 @@ MEASUREMENT_FIELDS = (
     "crozier_exit",
     "crozier_files",
     "crozier_strict_exit",
+    # What crozier's `--fern-strict` run printed: the diagnostic that names the
+    # class its refusal is held to.
+    "crozier_strict_log",
     # The Fern CLI and fern-python-sdk versions the Fern fields were taken at;
     # empty on a record taken before the pair was recorded.
     "fern_cli",
@@ -763,8 +766,45 @@ def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: s
 
 
 def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
-    log = CACHE / "crozier-logs" / f"{digest}.strict.log"
-    return {"crozier_strict_exit": crozier_run(binary, document, timeout, log, "--fern-strict")[0]}
+    """crozier's `--fern-strict` verdict, its stderr committed beside Fern's logs
+    with the scratch path of the document made generic."""
+    log = EVIDENCE / "crozier-logs" / f"{digest}.strict.log"
+    status = crozier_run(binary, document, timeout, log, "--fern-strict")[0]
+    log.write_text(log.read_text(encoding="utf-8").replace(str(document), "<document>"), encoding="utf-8")
+    return {"crozier_strict_exit": status, "crozier_strict_log": rel(log)}
+
+
+# How crozier reports a refusal class: `crozier: invalid OpenAPI document <path>: <class>: <element>…`.
+STRICT_REFUSAL = re.compile(r"^crozier: invalid OpenAPI document .*?: (?P<cls>[a-z][a-z0-9]*(?:-[a-z0-9]+)+): ", re.M)
+
+
+def strict_refusal(log: str) -> tuple[str, str]:
+    """The class crozier's `--fern-strict` run refused with, if any, and its
+    first error line (what it stopped at when no class detector refused)."""
+    error = next((line for line in log.splitlines() if line.startswith("crozier: ")), "")
+    found = STRICT_REFUSAL.match(error)
+    return (found["cls"] if found else ""), error
+
+
+def strict_problems(digest: str, names: list[str], exit_status: str, log: str) -> list[str]:
+    """A refused record held to the diagnostic crozier printed: its strict exit
+    agrees with the log, and the refusal is by one of the classes it carries."""
+    if not (REPO / log).is_file():
+        return [f"{digest}: its crozier log {log} is missing; retake it with `measure --crozier-again`"]
+    printed, error = strict_refusal(read_log(log))
+    if exit_status == "timeout":
+        return [
+            f"{digest}: crozier --fern-strict ran past `measure`'s time bound ({log}); retake it with a longer --timeout"
+        ]
+    if exit_status != ("1" if error else "0"):
+        return [f"{digest}: crozier_strict_exit {exit_status} disagrees with {log}; retake it with `measure`"]
+    if printed in names:
+        return []
+    said = f"stops at `{error}`" if error else "generates it"
+    return [
+        f"{digest}: crozier --fern-strict {said} ({log}), not with a diagnostic of its classes "
+        f"{', '.join(names)}; repair crozier so the class detector refuses it, then `measure --crozier-again`"
+    ]
 
 
 def read_measurements() -> dict[str, dict[str, str]]:
@@ -833,7 +873,8 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
     # generates anything; nothing reads a default-mode run's exit or file count,
     # so `measure` takes none (`crozier_exit` and `crozier_files` stay as an
     # earlier tree recorded them).
-    if not row.get("crozier_strict_exit"):
+    log = row.get("crozier_strict_log")
+    if not row.get("crozier_strict_exit") or not log or not (REPO / log).is_file():
         missing.add("crozier-strict")
     return missing
 
@@ -1206,9 +1247,10 @@ def tables() -> tuple[dict[str, str], list[str]]:
         strict = EMPTY
         if evaluated.intersection(names):
             strict = result["crozier_strict_exit"]
-            if not strict:
+            if not strict or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
                 continue
+            problems += strict_problems(digest, names, strict, result["crozier_strict_log"])
         documents[digest] = dict(
             identity,
             digest=digest,

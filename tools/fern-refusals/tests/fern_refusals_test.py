@@ -1322,6 +1322,9 @@ class MeasuredAtThePair(unittest.TestCase):
                     "sha256": digest,
                 }
             )
+            strict = self.evidence / "crozier-logs" / f"{digest}.strict.log"
+            strict.parent.mkdir(exist_ok=True)
+            strict.write_text(self.refusal("<document>"), encoding="utf-8")
             row = {
                 "key": digest,
                 "digest": digest,
@@ -1331,6 +1334,7 @@ class MeasuredAtThePair(unittest.TestCase):
                 "crozier_exit": "1",
                 "crozier_files": "0",
                 "crozier_strict_exit": "1",
+                "crozier_strict_log": strict.relative_to(root).as_posix(),
             }
             if pair:
                 row.update(fern_cli=pair["cliVersion"], fern_python_sdk=pair["generatorVersion"])
@@ -1338,11 +1342,19 @@ class MeasuredAtThePair(unittest.TestCase):
         (screens / "screens.jsonl").write_text("".join(json.dumps(record) + "\n" for record in records), "utf-8")
         self.measurements = self.evidence / "measurements.jsonl"
         self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured), encoding="utf-8")
-        # A stand-in crozier that refuses every document and counts its runs.
+        # A stand-in crozier that refuses every document with the class's
+        # diagnostic, as the real one prints it, and counts its runs.
         self.crozier_calls = root / "crozier-calls"
         crozier = root / "target" / "release" / "crozier"
         crozier.parent.mkdir(parents=True)
-        crozier.write_text(f'#!/bin/sh\necho "$*" >> {shlex.quote(str(self.crozier_calls))}\nexit 1\n', "utf-8")
+        crozier.write_text(
+            "#!/bin/sh\n"
+            f'echo "$*" >> {shlex.quote(str(self.crozier_calls))}\n'
+            'while [ $# -gt 0 ]; do [ "$1" = --spec ] && spec=$2; shift; done\n'
+            f'printf %s "{self.refusal("$spec")}" >&2\n'
+            "exit 1\n",
+            "utf-8",
+        )
         crozier.chmod(0o755)
         self.calls = root / "fern-calls.jsonl"
         self.env = {key: value for key, value in os.environ.items() if not key.startswith(("CROZIER", "FERN_STUB"))}
@@ -1355,6 +1367,10 @@ class MeasuredAtThePair(unittest.TestCase):
 
     def tearDown(self) -> None:
         self.scratch.cleanup()
+
+    def refusal(self, document: str) -> str:
+        """What crozier's `--fern-strict` run prints refusing `document` with the class."""
+        return f"crozier: invalid OpenAPI document {document}: {self.CLASS}: type Widget (fern-strict refusal)\n"
 
     def script(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -1412,6 +1428,47 @@ class MeasuredAtThePair(unittest.TestCase):
         self.calls.unlink()
         self.assertEqual(self.measure(), measured)
         self.assertEqual(self.checked(), [])
+
+    def test_crozier_s_strict_diagnostic_is_committed_and_holds_each_refused_record(self) -> None:
+        measured = self.measure()
+        # Each strict run's stderr is committed beside Fern's logs, the scratch
+        # path of the document made generic, and the record names it.
+        for name, digest in self.documents.items():
+            with self.subTest(document=name):
+                log = f"docs/openapi-surface/fern-refusals/crozier-logs/{digest}.strict.log"
+                self.assertEqual(measured[digest]["crozier_strict_log"], log)
+                self.assertEqual((self.root / log).read_text(encoding="utf-8"), self.refusal("<document>"))
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        [row] = rows(self.root / "docs" / "fern-refusals" / "classes.tsv")[1:]
+        self.assertEqual(row[8], "4/4")
+
+        # A refusal at the parser, before any class detector, is no refusal by the class.
+        stopped = self.documents["measured-current"]
+        log = self.root / measured[stopped]["crozier_strict_log"]
+        parser = "crozier: could not parse OpenAPI document <document>: alias replay limit exceeded\n"
+        log.write_text(parser, encoding="utf-8")
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0, built.stdout)
+        self.assertIn(f"{stopped}: crozier --fern-strict stops at `{parser.strip()}`", built.stderr)
+        self.assertIn(f"not with a diagnostic of its classes {self.CLASS}", built.stderr)
+
+        # Nor is a refusal by a class the document does not carry.
+        log.write_text(self.refusal("<document>").replace(self.CLASS, "type-name-not-letter-led"), encoding="utf-8")
+        self.assertIn(f"{stopped}: crozier --fern-strict stops at", self.script("build").stderr)
+
+        # A recorded exit the log does not bear out is named too.
+        log.write_text("", encoding="utf-8")
+        self.assertIn(f"{stopped}: crozier_strict_exit 1 disagrees with", self.script("build").stderr)
+
+        # A record whose log is gone is taken again, with no Fern run.
+        log.unlink()
+        self.calls.unlink()
+        self.crozier_calls.unlink()
+        self.measure()
+        self.assertEqual(len(self.crozier_calls.read_text(encoding="utf-8").splitlines()), 1)
+        self.assertFalse(self.calls.exists(), "Fern ran again over a verdict already at the pair")
+        self.assertEqual(self.script("build").returncode, 0)
 
     def test_crozier_runs_in_lanes_of_its_own_beside_one_fern_lane(self) -> None:
         # A stand-in crozier that holds each run open long enough for lanes to overlap.
