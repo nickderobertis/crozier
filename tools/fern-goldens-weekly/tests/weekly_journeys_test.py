@@ -29,7 +29,7 @@ import unittest
 import unittest.mock
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, TypedDict
 
 os.environ["PYTHONUTF8"] = "1"
 
@@ -58,6 +58,36 @@ CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "d
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
 TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
+
+
+class RuffDiagnostic(TypedDict):
+    path: str
+    line: int
+    column: int
+    message: str
+    source: str
+
+
+class RuffFingerprint(TypedDict):
+    """A registration's fingerprint of Fern's Ruff pass rejecting the SDK."""
+
+    failed_command: str
+    diagnostics: list[RuffDiagnostic]
+    ruff_summary: str
+
+
+class Registration(TypedDict):
+    """A `known-fern-failure.json`, as `fern-goldens` validates it."""
+
+    schema_version: int
+    generator: str
+    generator_version: str
+    corpus_spec_name: str
+    corpus_spec_ref: str
+    corpus_spec_url: str
+    exit_code: int
+    fingerprint: RuffFingerprint
+
 
 MIRRORED = (
     "tools/fern-goldens/weekly.py",
@@ -1453,11 +1483,11 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("auto-merge: already enabled", finished.stdout)
         self.assertEqual(1, len(self.pulls()))
 
-    def register_known_failure(self, version: str) -> dict[str, Any]:
+    def register_known_failure(self, version: str) -> Registration:
         """A CORPUS.md row, `gamma`, whose golden is a known upstream Fern
         failure registered at `version`, published with the seed; the corpus
         gate compares only the rows with goldens, as crozier-e2e's does."""
-        manifest = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
+        manifest: Registration = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
         manifest.update(
             {
                 "generator_version": version,
@@ -1493,7 +1523,7 @@ class WeeklyRunTests(unittest.TestCase):
         return manifest
 
     @staticmethod
-    def fern_failure(fingerprint: dict[str, Any]) -> str:
+    def fern_failure(fingerprint: RuffFingerprint) -> str:
         """Fern's log of its own Ruff pass rejecting the SDK, as it prints it."""
         blocks = [
             f"fern/output/{entry['path']}:{entry['line']}:{entry['column']}: {entry['message']}\n"
@@ -1503,7 +1533,7 @@ class WeeklyRunTests(unittest.TestCase):
         payload = "\n\n".join([*blocks, fingerprint["ruff_summary"]]) + "\n"
         return f"Failed to run command: {fingerprint['failed_command']}\n{payload.encode('utf-8')!r}"
 
-    def failing_gamma(self, exit_code: int, fingerprint: dict[str, Any]) -> None:
+    def failing_gamma(self, exit_code: int, fingerprint: RuffFingerprint) -> None:
         self.stand_in(
             {
                 "rules": {
@@ -1563,7 +1593,10 @@ class WeeklyRunTests(unittest.TestCase):
         the run publishes a diff whose pull request carries the registration
         rewritten at the candidate with the failure Fern now gives."""
         manifest = self.register_known_failure(OLD.generator)
-        changed = {**manifest["fingerprint"], "ruff_summary": "Found 12 errors (5 fixed, 7 remaining)."}
+        changed: RuffFingerprint = {
+            **manifest["fingerprint"],
+            "ruff_summary": "Found 12 errors (5 fixed, 7 remaining).",
+        }
         self.failing_gamma(2, changed)
         state = self.run_workflow()
         self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
