@@ -155,7 +155,7 @@ def field_of(record: object, key: str, kind: type[T], where: str) -> T:
     return value
 
 
-def seconds_of(record: object, key: str, where: str) -> float:
+def non_negative_of(record: object, key: str, where: str) -> float:
     value = record.get(key) if isinstance(record, dict) else None
     if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value) or value < 0:
         raise WeeklyError(f"{where}: `{key}` must be a non-negative number, not {value!r}")
@@ -333,18 +333,20 @@ class Plan:
             if field_of(shard, "index", int, at) != index:
                 raise WeeklyError(f"{at}: shards must be numbered from 0 in order")
             items = tuple(
-                PlannedItem(name_of(entry, "family", at), name_of(entry, "item", at), seconds_of(entry, "seconds", at))
+                PlannedItem(
+                    name_of(entry, "family", at), name_of(entry, "item", at), non_negative_of(entry, "seconds", at)
+                )
                 for entry in field_of(shard, "items", list, at)
             )
             shards.append(
-                PlannedShard(index, seconds_of(shard, "seconds", at), seconds_of(shard, "minutes", at), items)
+                PlannedShard(index, non_negative_of(shard, "seconds", at), non_negative_of(shard, "minutes", at), items)
             )
         keys = [entry.key() for shard in shards for entry in shard.items]
         if len(keys) != len(set(keys)):
             raise WeeklyError(f"{where} plans an item twice; re-run the plan job")
         families = {
             name_of({"family": name}, "family", where): FamilyTotal(
-                field_of(total, "items", int, where), seconds_of(total, "seconds", where)
+                field_of(total, "items", int, where), non_negative_of(total, "seconds", where)
             )
             for name, total in field_of(record, "families", dict, where).items()
         }
@@ -366,19 +368,19 @@ class Plan:
             items=field_of(record, "items", str, where),
             base=base_of(record, where),
             pair=Pair.from_json(pair, where) if pair is not None else None,
-            budget_minutes=seconds_of(record, "budget_minutes", where),
-            shard_limit_minutes=seconds_of(record, "shard_limit_minutes", where),
-            default_seconds=seconds_of(record, "default_seconds", where),
+            budget_minutes=non_negative_of(record, "budget_minutes", where),
+            shard_limit_minutes=non_negative_of(record, "shard_limit_minutes", where),
+            default_seconds=non_negative_of(record, "default_seconds", where),
             families=families,
             units=field_of(record, "units", int, where),
             shards=tuple(shards),
             estimate=Estimate(
-                minutes=seconds_of(estimate, "minutes", where),
-                stages={name: seconds_of(stages, name, where) for name in stages},
+                minutes=non_negative_of(estimate, "minutes", where),
+                stages={name: non_negative_of(stages, name, where) for name in stages},
                 waves=field_of(estimate, "waves", int, where),
-                setup_minutes_per_job=seconds_of(estimate, "setup_minutes_per_job", where),
-                assembly_minutes=seconds_of(estimate, "assembly_minutes", where),
-                longest_shard_minutes=seconds_of(estimate, "longest_shard_minutes", where),
+                setup_minutes_per_job=non_negative_of(estimate, "setup_minutes_per_job", where),
+                assembly_minutes=non_negative_of(estimate, "assembly_minutes", where),
+                longest_shard_minutes=non_negative_of(estimate, "longest_shard_minutes", where),
             ),
         )
 
@@ -430,7 +432,7 @@ class ItemResult:
             item=name_of(record, "item", where),
             status=Status(status),
             detail=field_of(record, "detail", str, where),
-            seconds=seconds_of(record, "seconds", where),
+            seconds=non_negative_of(record, "seconds", where),
             changed=tuple(safe_path(path, where) for path in field_of(record, "changed", list, where)),
             log=field_of(record, "log", str, where),
             shard=shard,
