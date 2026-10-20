@@ -1683,8 +1683,20 @@ def shapes(args: argparse.Namespace) -> int:
         if args.cls and name not in args.cls:
             continue
         digest = hashlib.sha256(shape.read_bytes()).hexdigest()
-        kept = table.get((name, shape.name))
+        # A shape renamed between probe and control keeps its bytes and its log,
+        # so the measurement it already has is its own.
+        kept = table.get((name, shape.name)) or next(
+            (
+                row
+                for row in on_record.values()
+                if row["class"] == name and row["digest"] == digest and row["log"] == rel(shape_log(shape))
+            ),
+            None,
+        )
         if not args.again and kept and kept["digest"] == digest and logged_at_pair(kept["log"]):
+            if kept["shape"] != shape.name:
+                table[(name, shape.name)] = dict(kept, shape=shape.name, role=role)
+                write_shapes(path, table)
             continue
         with tempfile.TemporaryDirectory(prefix="fern-refusals-shape-") as scratch:
             workspace = Path(scratch) / "fern"
@@ -1731,13 +1743,16 @@ def shapes(args: argparse.Namespace) -> int:
             "verdict": outcome,
             "log": rel(log),
         }
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
+        write_shapes(path, table)
         taken += 1
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
+    write_shapes(path, table)
     print(f"fern-refusals: {taken} shape(s) measured, {len(table)} on record")
     return 0
+
+
+def write_shapes(path: Path, table: dict[tuple[str, str], dict[str, str]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
 
 
 def shape_problems() -> list[str]:

@@ -1112,6 +1112,17 @@ class FernRuns(unittest.TestCase):
         result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(list(self.shape_rows()), ["alpha-control.yml"])
+        calls = len(self.calls_made())
+        # Renamed back to a probe over the same bytes, it keeps the measurement it has.
+        probe.with_name("alpha-control.yml").rename(probe)
+        result = self.script("shapes")
+        self.assertEqual("fern-refusals: 0 shape(s) measured, 1 on record\n", result.stdout)
+        self.assertEqual(len(self.calls_made()), calls)
+        self.assertEqual(self.shape_rows()["alpha-probe.yml"]["role"], "probe")
+        self.assertEqual(self.shape_problems(), [])
+        probe.rename(probe.with_name("alpha-control.yml"))
+        result = self.script("shapes")
+        self.assertEqual(list(self.shape_rows()), ["alpha-control.yml"])
         self.assertEqual(
             self.shape_problems(),
             [
