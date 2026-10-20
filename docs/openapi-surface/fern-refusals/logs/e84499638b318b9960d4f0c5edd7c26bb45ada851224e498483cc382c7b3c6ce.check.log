@@ -1,312 +1,313 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [sdk] 62 errors
     [error]
-        path: folders.yml -> service -> endpoints -> monitoring.folders.timeSeries.list
+        path: folders.yml -> service -> endpoints -> monitoringFoldersTimeSeriesList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: folders.yml -> service -> endpoints -> monitoring.folders.timeSeries.list
+        path: folders.yml -> service -> endpoints -> monitoringFoldersTimeSeriesList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.alertPolicies.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsAlertPoliciesCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.alertPolicies.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsAlertPoliciesCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.alertPolicies.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsAlertPoliciesList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.alertPolicies.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsAlertPoliciesList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.collectdTimeSeries.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsCollectdTimeSeriesCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.collectdTimeSeries.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsCollectdTimeSeriesCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.members.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsMembersList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.members.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsMembersList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.update
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsUpdate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.groups.update
+        path: projects.yml -> service -> endpoints -> monitoringProjectsGroupsUpdate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.metricDescriptors.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMetricDescriptorsCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.metricDescriptors.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMetricDescriptorsCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.metricDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMetricDescriptorsList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.metricDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMetricDescriptorsList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.monitoredResourceDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMonitoredResourceDescriptorsList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.monitoredResourceDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsMonitoredResourceDescriptorsList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannelDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelDescriptorsList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannelDescriptors.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelDescriptorsList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.getVerificationCode
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsGetVerificationCode
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.getVerificationCode
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsGetVerificationCode
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsList
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsList
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.sendVerificationCode
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsSendVerificationCode
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.sendVerificationCode
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsSendVerificationCode
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.verify
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsVerify
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.notificationChannels.verify
+        path: projects.yml -> service -> endpoints -> monitoringProjectsNotificationChannelsVerify
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.snoozes.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsSnoozesCreate
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.snoozes.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsSnoozesCreate
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.snoozes.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsSnoozesList
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.snoozes.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsSnoozesList
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesCreate
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesCreate
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.createService
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesCreateService
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.createService
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesCreateService
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.query
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesQuery
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.timeSeries.query
+        path: projects.yml -> service -> endpoints -> monitoringProjectsTimeSeriesQuery
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.uptimeCheckConfigs.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsUptimeCheckConfigsCreate
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.uptimeCheckConfigs.create
+        path: projects.yml -> service -> endpoints -> monitoringProjectsUptimeCheckConfigsCreate
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.uptimeCheckConfigs.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsUptimeCheckConfigsList
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: projects.yml -> service -> endpoints -> monitoring.projects.uptimeCheckConfigs.list
+        path: projects.yml -> service -> endpoints -> monitoringProjectsUptimeCheckConfigsList
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.create
+        path: services.yml -> service -> endpoints -> monitoringServicesCreate
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.create
+        path: services.yml -> service -> endpoints -> monitoringServicesCreate
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.list
+        path: services.yml -> service -> endpoints -> monitoringServicesList
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.list
+        path: services.yml -> service -> endpoints -> monitoringServicesList
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.create
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesCreate
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.create
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesCreate
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.delete
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesDelete
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.delete
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesDelete
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.get
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesGet
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.get
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesGet
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.list
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesList
         issue: Path parameter is unreferenced in endpoint: parent.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.list
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesList
         issue: Multiple request properties resolve to the same generated name parent after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+parent" (name: "+parent")
   - Path parameter "parent" (name: "parent")
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.patch
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesPatch
         issue: Path parameter is unreferenced in endpoint: name.
 
     [error]
-        path: services.yml -> service -> endpoints -> monitoring.services.serviceLevelObjectives.patch
+        path: services.yml -> service -> endpoints -> monitoringServicesServiceLevelObjectivesPatch
         issue: Multiple request properties resolve to the same generated name name after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
   - Path parameter "+name" (name: "+name")
   - Path parameter "name" (name: "name")

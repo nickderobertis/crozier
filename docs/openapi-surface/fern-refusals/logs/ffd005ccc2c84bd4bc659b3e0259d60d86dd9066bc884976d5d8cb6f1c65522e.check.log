@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 210 errors
+[sdk] 208 errors
     [error]
         path: __package__.yml -> types -> Account -> extends -> DataAccessControlField
         issue: Objects can only extend other objects, and DataAccessControlField is not an object.
@@ -642,20 +643,8 @@ Warnings for generators.yml:
         issue: Objects can only extend other objects, and root.CreditMemoObjectCustomFields is not an object.
 
     [error]
-        path: invoices.yml -> service -> endpoints -> POST_CreditMemoFromInvoice
-        issue: Multiple request properties have the name invoiceId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "invoiceId"
-  - Body property: <Request Body> -> invoiceId
-
-    [error]
         path: invoices.yml -> service -> endpoints -> POST_DebitMemoFromInvoice -> request -> body -> extends -> root.DebitMemoObjectCustomFields
         issue: Objects can only extend other objects, and root.DebitMemoObjectCustomFields is not an object.
-
-    [error]
-        path: invoices.yml -> service -> endpoints -> POST_DebitMemoFromInvoice
-        issue: Multiple request properties have the name invoiceId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "invoiceId"
-  - Body property: <Request Body> -> invoiceId
 
     [error]
         path: invoices.yml -> service -> endpoints -> POST_StandaloneInvoice -> request -> body -> extends -> root.InvoiceObjectCustomFields
@@ -845,4 +834,4 @@ Warnings for generators.yml:
         path: usage.yml -> service -> endpoints -> Object_PUTUsage -> request -> body -> extends -> root.UsageObjectCustomFields
         issue: Objects can only extend other objects, and root.UsageObjectCustomFields is not an object.
 
-Found 210 errors and 16 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 208 errors and 16 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
