@@ -1228,6 +1228,47 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("the plan was made over", elsewhere.stderr)
         self.assertIn("check out the plan's commit", elsewhere.stderr)
 
+    def test_a_decision_over_a_checkout_that_drifted_after_apply_is_refused(self) -> None:
+        """Each of `decide`'s own guards, past the one a bundle's carried files
+        trip: a file the bundle deletes is back, or the pair the checkout
+        declares is not the bundle's."""
+        self.publish_seed()
+        self.stand_in(
+            {
+                "rules": {"probe": self.refusal_rule},
+                "tweaks": {"Alpha Lanterns": [["core/force_multipart.py", None, None]]},
+            }
+        )
+        state = self.run_workflow(stop_after="decide")
+        self.assertEqual("diff", state.outcome(), self.summary())
+        bundle = state.artifacts / "bundle"
+        record = json.loads((bundle / "bundle.json").read_text(encoding="utf-8"))
+        (removed,) = record["deleted"]
+        self.assertTrue(removed.endswith("core/force_multipart.py"), removed)
+
+        restored = self.clone()
+        self.assertEqual(0, self.phase(restored, "apply", "--bundle", str(bundle)).returncode)
+        self.git(restored, "checkout", "HEAD", "--", removed)
+        refused = self.phase(restored, "decide", "--bundle", str(bundle), "--output", str(state.artifacts / "d2"))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"this checkout still has {removed}, which the bundle deletes", refused.stderr)
+
+        # The carried files all match; only the pair the bundle records moved.
+        other = state.artifacts / "other-pair"
+        shutil.copytree(bundle, other)
+        (other / "bundle.json").write_text(
+            json.dumps({**record, "pair": {"cli": OLD.cli, "generator": OLD.generator}}), encoding="utf-8"
+        )
+        applied = self.clone()
+        self.assertEqual(0, self.phase(applied, "apply", "--bundle", str(bundle)).returncode)
+        refused = self.phase(applied, "decide", "--bundle", str(other), "--output", str(state.artifacts / "d3"))
+        self.assertEqual(1, refused.returncode)
+        self.assertIn(f"this checkout declares Fern CLI {CANDIDATE.cli}", refused.stderr)
+        self.assertIn(f"not the bundle's Fern CLI {OLD.cli}", refused.stderr)
+        self.assertFalse(
+            (state.artifacts / "d2/decision.json").exists() or (state.artifacts / "d3/decision.json").exists()
+        )
+
     def test_a_missing_token_is_red_before_any_work_or_remote_step(self) -> None:
         self.publish_seed()
         state = self.run_workflow(NO_TOKEN="1")
@@ -1318,7 +1359,8 @@ class WeeklyRunTests(unittest.TestCase):
     def test_family_gates_run_a_shared_command_once_and_attribute_its_report(self) -> None:
         """A gate that decides whole families runs once however many rows name
         it; a rejection lists each item its report names, and a report naming
-        none is listed whole under its family."""
+        none is listed whole under its family. An item's name inside a longer
+        one (`lantern` in `types/lantern.py` or `alpha_lanterns`) names no item."""
         compare_all = "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml"
         refuse = "{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/lantern-refused/probe.yml --output {scratch}/out"
         (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
@@ -1343,6 +1385,12 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual("diff", state.outcome(), self.summary())
         self.assertEqual(1, state.gate_commands().count(compare_all), "the shared command ran once")
         self.assertEqual({"corpus": ["alpha"], "refusals": ["(the gate's report names no item)"]}, state.failing())
+        runs = state.recorded()["gates"]
+        assert isinstance(runs, list)
+        (shared,) = (run["report"] for run in runs if run["command"] == compare_all)
+        report = (state.artifacts / "decision/reports" / shared).read_text(encoding="utf-8")
+        self.assertIn("types/lantern.py", report, "the shared report spells `lantern` only inside longer names")
+        self.assertIn("alpha_lanterns", report)
         (pull,) = self.pulls()
         failing = pull["body"].split("## Failing items", 1)[1].split("## Inventory", 1)[0]
         self.assertIn("tests/fixtures/alpha/crozier.yml", failing)
