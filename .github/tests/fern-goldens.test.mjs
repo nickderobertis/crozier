@@ -60,10 +60,16 @@ test('the reader refuses a usage error, missing telemetry and a subset plan', t 
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /ENOENT/);
   const subset = join(dir, 'subset.json');
-  writeFileSync(subset, JSON.stringify({ schema_version: 1, complete: false, families: {}, shards: [], estimate: { minutes: 1 } }));
+  writeFileSync(subset, JSON.stringify({ schema_version: 2, complete: false, families: {}, shards: [], estimate: { minutes: 1 } }));
   const partial = spawnSync(process.execPath, [reader, '--telemetry', subset], { encoding: 'utf8' });
   assert.equal(partial.status, 1);
   assert.match(partial.stderr, /incomplete telemetry/);
+  // weekly.py's records are at schema 2; a plan of the schema before it is refused.
+  const stale = join(dir, 'stale.json');
+  writeFileSync(stale, JSON.stringify({ ...JSON.parse(readFileSync(subset, 'utf8')), schema_version: 1, complete: true }));
+  const older = spawnSync(process.execPath, [reader, '--telemetry', stale], { encoding: 'utf8' });
+  assert.equal(older.status, 1);
+  assert.match(older.stderr, /no plan of the whole inventory/);
   const item = { family: 'corpus', item: 'anchore.io', seconds: 16.2 };
   const shard = { index: 0, seconds: 32.4, minutes: 4.54, items: [item, item] };
   for (const [plan, reason] of [
@@ -75,7 +81,7 @@ test('the reader refuses a usage error, missing telemetry and a subset plan', t 
   ]) {
     const file = join(dir, 'bad.json');
     const estimate = { minutes: 9, longest_shard_minutes: 4.5, setup_minutes_per_job: 4, assembly_minutes: 6, waves: 1, stages: { shards: 4.5 } };
-    writeFileSync(file, JSON.stringify({ schema_version: 1, complete: true, estimate, ...plan }));
+    writeFileSync(file, JSON.stringify({ schema_version: 2, complete: true, estimate, ...plan }));
     const refused = spawnSync(process.execPath, [reader, '--telemetry', file], { encoding: 'utf8' });
     assert.equal(refused.status, 1);
     assert.match(refused.stderr, reason);

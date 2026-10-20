@@ -15,7 +15,7 @@ try {
   const families = plan?.families;
   const shards = plan?.shards;
   const estimate = plan?.estimate;
-  if (plan?.schema_version !== 1 || plan.complete !== true) incomplete('it is no plan of the whole inventory');
+  if (plan?.schema_version !== 2 || plan.complete !== true) incomplete('it is no plan of the whole inventory');
   if (!families || typeof families !== 'object' || !Object.keys(families).length) incomplete('it names no family');
   if (!Object.values(families).every(family => Number.isInteger(family?.items) && family.items > 0 && nonNegative(family.seconds))) incomplete('a family has no items or no seconds');
   if (!Array.isArray(shards) || !shards.length || !shards.every(shard => nonNegative(shard?.minutes) && Array.isArray(shard.items))) incomplete('it plans no shard');
