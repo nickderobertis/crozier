@@ -1178,6 +1178,28 @@ class FernRuns(unittest.TestCase):
             ],
         )
 
+    def test_shapes_measures_only_the_named_class_and_again_runs_fern_anew(self) -> None:
+        other = "named-type-default"
+        classes = rows(REGISTRY / "classes.tsv")
+        write_rows(
+            self.registry / "classes.tsv",
+            [classes[0], *sorted([self.class_row, next(row for row in classes[1:] if row[0] == other)])],
+        )
+        (self.registry / other).mkdir()
+        shutil.copy(REGISTRY / other / "probe.yml", self.registry / other / "beta-control.yml")
+        self.shape("alpha-control.yml", "alpha")
+        self.assertEqual(self.script("shapes", generate_files="2").returncode, 0)
+        before = self.shape_rows()
+        self.assertEqual(sorted(before), ["alpha-control.yml", "beta-control.yml"])
+        calls = len(self.calls_made())
+        # Named, one class is measured again from scratch; the other's row is untouched.
+        result = self.script("shapes", self.CLASS, "--again", generate_files="3")
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 2 on record\n", result.stdout)
+        after = self.shape_rows()
+        self.assertEqual([call["argv"][0] for call in self.calls_made()[calls:]], ["check", "generate"])
+        self.assertEqual(after["alpha-control.yml"]["generate_files"], "3")
+        self.assertEqual(after["beta-control.yml"], before["beta-control.yml"])
+
     def test_a_shape_past_the_bound_is_unmeasured_never_a_verdict(self) -> None:
         self.shape("alpha-control.yml", "alpha")
         result = self.script("shapes", "--timeout", "3", hang=str(self.root / "fern-pids"))
@@ -1448,6 +1470,38 @@ class MeasuredAtThePair(unittest.TestCase):
                 for name in ("screened-old", "measured-old")
             ),
         )
+
+    def rewrite_measurement(self, name: str, **fields: str) -> None:
+        """The measurements.jsonl row of document `name`, with `fields` replaced."""
+        digest = self.documents[name]
+        table = [json.loads(line) for line in self.measurements.read_text(encoding="utf-8").splitlines()]
+        for row in table:
+            if row["key"] == digest:
+                row.update(fields)
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in table), encoding="utf-8")
+
+    def test_a_record_of_other_bytes_is_measured_afresh(self) -> None:
+        self.measure()
+        self.calls.unlink()
+        # The record says it measured other bytes than the document now holds.
+        self.rewrite_measurement("measured-current", digest="f" * 64)
+        measured = self.measure()
+        self.assertEqual(self.checked(), ["measured-current"])
+        row = measured[self.documents["measured-current"]]
+        self.assertEqual(row["digest"], self.documents["measured-current"])
+        self.assertTrue((self.root / row["check_log"]).read_text(encoding="utf-8").startswith(PAIR_LINE))
+
+    def test_an_unretrievable_record_another_pair_took_is_fetched_again(self) -> None:
+        self.measure()
+        self.calls.unlink()
+        reason = "fetch failed: the host was down"
+        self.rewrite_measurement("measured-old", unretrievable=reason, fern_cli="5.67.1", fern_python_sdk="5.20.0")
+        self.rewrite_measurement("measured-current", unretrievable=reason)
+        measured = self.measure()
+        # The older pair's failed fetch is tried again and measured; this pair's is kept as it stands.
+        self.assertEqual(self.checked(), ["measured-old"])
+        self.assertEqual(measured[self.documents["measured-old"]]["unretrievable"], "")
+        self.assertEqual(measured[self.documents["measured-current"]]["unretrievable"], reason)
 
     def test_crozier_again_retakes_only_the_strict_verdict(self) -> None:
         self.measure()

@@ -187,9 +187,9 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Any, NamedTuple, TypedDict
+from typing import Any, Literal, NamedTuple, Protocol, TypedDict
 
 FLOOR = fractions.Fraction(2, 5)
 """The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
@@ -406,16 +406,24 @@ def _is_graphql(response: Any) -> bool:
     return path.endswith("/graphql") or _header(response, "x-ratelimit-resource") == "graphql"
 
 
+class ResponseHeaders(Protocol):
+    """What the cache reads of a response's headers: a live ``HTTPMessage`` or a stored mapping."""
+
+    def get(self, name: str, /) -> str | None: ...
+
+    def items(self) -> Iterable[tuple[str, str]]: ...
+
+
 class AdmissionProbe(TypedDict, total=False):
     """One ``probe`` row of the wait ledger: a reading taken to admit a call, and the decision."""
 
-    host: str
+    host: Literal["github"]
     bucket: str
-    kind: str
+    kind: Literal["probe"]
     reading: dict[str, int]
     cost: int
     admitted: bool
-    admitted_by: str
+    admitted_by: Literal["floor", "burn-rate"]
     burn: dict[str, float]
 
 
@@ -804,7 +812,7 @@ def github_cache_root(url: str) -> Path | None:
     return root / "crozier" / "github-responses"
 
 
-def cache_key(method: str, url: str, headers: Any) -> str:
+def cache_key(method: str, url: str, headers: Mapping[str, str]) -> str:
     """SHA-256 of the request's method, URL and answer-changing headers; never the credential."""
     kept = {name.lower(): str(value) for name, value in dict(headers).items() if name.lower() in CACHE_KEY_HEADERS}
     canonical = json.dumps(
@@ -813,7 +821,7 @@ def cache_key(method: str, url: str, headers: Any) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def is_answer(status: int | None, headers: Any, body: bytes = b"") -> bool:
+def is_answer(status: int | None, headers: ResponseHeaders | None, body: bytes = b"") -> bool:
     """Whether a GitHub response is an answer to store, not a refusal or transient failure."""
     if status is None or status >= 500 or status in (401, 407, 408, 429):
         return False
@@ -867,7 +875,7 @@ def _file_digest(path: Path) -> tuple[str, int]:
     return digest.hexdigest(), size
 
 
-def cache_lookup(method: str, url: str, headers: Any) -> CachedResponse | None:
+def cache_lookup(method: str, url: str, headers: Mapping[str, str]) -> CachedResponse | None:
     """The stored answer for this request, or ``None`` on a miss (or a torn or unreadable entry)."""
     root = github_cache_root(url)
     if root is None:
@@ -916,7 +924,12 @@ def _publish(path: Path, write: Callable[[Path], object]) -> None:
 
 
 def cache_store(
-    method: str, url: str, headers: Any, status: int | None, response_headers: Any, body: bytes | Path
+    method: str,
+    url: str,
+    headers: Mapping[str, str],
+    status: int | None,
+    response_headers: ResponseHeaders | None,
+    body: bytes | Path,
 ) -> CachedResponse | None:
     """Store an answer (see ``is_answer``) for later requests; ``None`` when it is not one or cannot be stored.
 

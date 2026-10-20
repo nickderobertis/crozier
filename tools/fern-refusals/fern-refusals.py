@@ -850,6 +850,8 @@ def measure(args: argparse.Namespace) -> int:
         or missing_measurements(done[entry["key"]])
         or args.again
         or (args.crozier_again and not done[entry["key"]]["unretrievable"])
+        # A record of other bytes than the committed records name says nothing of these.
+        or (entry["digest"] and done[entry["key"]]["digest"] not in ("", entry["digest"]))
     ]
     if args.limit:
         todo = todo[: args.limit]
