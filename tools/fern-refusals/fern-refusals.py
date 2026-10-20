@@ -1326,11 +1326,13 @@ def confirm(args: argparse.Namespace) -> int:
     measured = {row["digest"]: row for row in read_measurements().values() if row["digest"] and at_pair(row)}
     cached = {path.stem: path for path in (CACHE / "documents").glob("*") if path.is_file()}
     path = confirmations_path()
-    # A confirmation another pair took confirms nothing about this one.
+    carried = {(name, doc["digest"]) for doc in documents for name in doc["classes"].split(",")}
+    # A confirmation another pair took confirms nothing about this one, and one
+    # of a document that no longer carries the class confirms nothing about it.
     kept = [
         row
         for row in (read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else [])
-        if logged_at_pair(row["generate_log"])
+        if logged_at_pair(row["generate_log"]) and (row["class"], row["digest"]) in carried
     ]
     plan: list[tuple[str, dict[str, str]]] = []
     for row in classes:

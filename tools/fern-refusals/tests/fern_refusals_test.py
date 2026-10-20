@@ -1001,6 +1001,22 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
         self.assertTrue((self.root / log).read_text(encoding="utf-8").startswith(PAIR_LINE))
 
+    def test_confirm_drops_a_confirmation_of_a_document_that_no_longer_carries_the_class(self) -> None:
+        carrying = self.carrying_document()
+        log = f"docs/openapi-surface/fern-refusals/logs/{carrying}.generate.log"
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(PAIR_LINE + f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        # Taken at the pair, but of a document a later measurement no longer files under the class.
+        gone = "0" * 64
+        header = ["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"]
+        write_rows(self.evidence / "confirmations.tsv", [header, [self.CLASS, gone, "other", "1", "0", log]])
+        result = self.script("confirm", generate_exit="1", generate_output=f"[error] {phrase(self.class_row[4])}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
+        self.assertEqual(
+            rows(self.evidence / "confirmations.tsv"), [header, [self.CLASS, carrying, "acme", "1", "0", log]]
+        )
+
     # `shapes` over a class's committed probe and control shapes.
 
     def shape(self, name: str, marker: str) -> Path:
