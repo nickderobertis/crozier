@@ -788,7 +788,7 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
         # A run that ran out of Node's default heap reported the host, not Fern:
         # take it again. One that exhausts `NODE_HEAP` is Fern's own verdict.
         missing.add("check")
-    elif not row.get("generate_files") and not check_blocks(row):
+    elif row["check_exit"] != "timeout" and not row.get("generate_files") and not check_blocks(row):
         missing.add("generate")
     if not row.get("crozier_exit"):
         missing.add("crozier")
@@ -843,7 +843,8 @@ def measure(args: argparse.Namespace) -> int:
                 with fern_lane:
                     committed = fern_check(path, digest, args.timeout)
             row.update(committed)
-            if not check_blocks(row):
+            if row["check_exit"] != "timeout" and not check_blocks(row):
+                # A check that never finished says nothing a generation could add to.
                 needed.add("generate")
         if "generate" in needed:
             with fern_lane:
@@ -1094,6 +1095,22 @@ def verdict(
     )
 
 
+def unmeasured(result: dict[str, str]) -> str:
+    """Why Fern gave no verdict on a fetched document: a stage that ran past
+    `measure`'s `--timeout` is recorded, not waited on, so one document cannot
+    hold the population."""
+    stage = next(
+        (stage for stage in ("check", "generate") if result[f"{stage}_exit"] == "timeout"),
+        "",
+    )
+    if not stage:
+        return ""
+    return (
+        f"unmeasured: `fern {stage}` ran past `measure`'s time bound at Fern CLI {result['fern_cli']} "
+        f"with fernapi/fern-python-sdk {result['fern_python_sdk']}"
+    )
+
+
 def tables() -> tuple[dict[str, str], list[str]]:
     """Every table `build` writes, by file name, and every problem that stops it."""
     problems: list[str] = []
@@ -1122,14 +1139,15 @@ def tables() -> tuple[dict[str, str], list[str]]:
             "revision": entry["revision"] or EMPTY,
             "recorded_by": records,
         }
-        if result["unretrievable"]:
+        reason = result["unretrievable"] or unmeasured(result)
+        if reason:
             # A record that never located its document is named by the record itself.
             unretrievable.append(
                 dict(
                     identity,
                     locator=entry["locator"] or entry["key"],
-                    digest=entry["digest"] or EMPTY,
-                    reason=result["unretrievable"],
+                    digest=result["digest"] or entry["digest"] or EMPTY,
+                    reason=reason,
                 )
             )
             continue

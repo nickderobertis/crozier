@@ -1117,22 +1117,17 @@ class MeasuredAtThePair(unittest.TestCase):
     def tearDown(self) -> None:
         self.scratch.cleanup()
 
-    def measure(self) -> dict[str, dict[str, str]]:
-        result = subprocess.run(
-            [
-                sys.executable,
-                str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"),
-                "measure",
-                "--jobs",
-                "1",
-                "--root",
-                str(self.root / "documents"),
-            ],
+    def script(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"), *args],
             capture_output=True,
             text=True,
             env=self.env,
             cwd=self.root,
         )
+
+    def measure(self, *args: str) -> dict[str, dict[str, str]]:
+        result = self.script("measure", "--jobs", "1", "--root", str(self.root / "documents"), *args)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
 
@@ -1172,6 +1167,32 @@ class MeasuredAtThePair(unittest.TestCase):
         self.calls.unlink()
         self.assertEqual(self.measure(), measured)
         self.assertEqual(self.checked(), [])
+
+    def test_a_check_past_the_time_bound_is_recorded_unmeasured_and_not_generated(self) -> None:
+        self.env["FERN_STUB_HANG"] = str(self.root / "fern-pids")
+        measured = self.measure("--timeout", "2")
+        for name in ("screened-old", "measured-old"):
+            with self.subTest(document=name):
+                row = measured[self.documents[name]]
+                self.assertEqual((row["check_exit"], row["generate_exit"]), ("timeout", ""))
+        # Only the two checks ran: a check that never finished is not followed by a generation.
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-old"])
+        self.assertEqual(len(self.calls.read_text(encoding="utf-8").splitlines()), 2)
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertEqual("fern-refusals: 2 refused, 0 generated, 2 unretrievable\n", built.stdout)
+        unretrievable = rows(self.root / "docs" / "fern-refusals" / "unretrievable.tsv")[1:]
+        self.assertEqual(
+            sorted((row[4], row[5]) for row in unretrievable),
+            sorted(
+                (
+                    self.documents[name],
+                    f"unmeasured: `fern check` ran past `measure`'s time bound at Fern CLI "
+                    f"{CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}",
+                )
+                for name in ("screened-old", "measured-old")
+            ),
+        )
 
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
