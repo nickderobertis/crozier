@@ -363,7 +363,7 @@ phases.
      corpus's `unmatched` list, or a generation or processing failure, is a
      diff;
    - **per family**: every other family, through the crozier-e2e suite
-     (`cargo nextest run -p crozier-e2e`, which holds the overlay, hand-written,
+     (the tests `just test-e2e` runs, printing only what fails, which hold the overlay, hand-written,
      measurement, probe, authored-probe, departure-evidence and refusal-class
      gates, and every corpus golden's own test), and for the refusal registry
      also `tests/refusal_registry.rs` and `fern-refusals.py check`. A failing

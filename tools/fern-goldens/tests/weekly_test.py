@@ -111,15 +111,25 @@ class RealPlanTests(unittest.TestCase):
                 self.assertEqual(shard[("corpus", item.split("/")[0])], shard[("overlays", item)])
         module = weekly.load_references(REPO)
         handwritten = (REPO / module.HANDWRITTEN).resolve()
-        overlaid = 0
+        measured = (REPO / module.MEASUREMENTS).resolve()
+        overlaid = {"handwritten": 0, "measurements": 0}
         for name, case in module.cases().items():
-            base = case.overlay.base if case.overlay else None
-            if base is not None and base.resolve().is_relative_to(handwritten):
-                fixture = base.resolve().relative_to(handwritten).parts[0]
-                with self.subTest(case=name):
-                    self.assertEqual(shard[("handwritten", fixture)], shard[("measurements", name)])
-                overlaid += 1
-        self.assertGreater(overlaid, 10)
+            base = case.overlay.base.resolve() if case.overlay and case.overlay.base else None
+            if base is not None and base.is_relative_to(handwritten):
+                owner = ("handwritten", base.relative_to(handwritten).parts[0])
+            elif base is not None and base.is_relative_to(measured):
+                inner = base.relative_to(measured).as_posix()
+                owner = ("measurements", max((c for c in module.cases() if inner.startswith(f"{c}/")), key=len))
+            else:
+                continue
+            with self.subTest(case=name):
+                self.assertEqual(shard[owner], shard[("measurements", name)])
+                planned = [entry.key() for entry in self.plan.shards[shard[owner]].items]
+                self.assertLess(planned.index(owner), planned.index(("measurements", name)), "its base first")
+            overlaid[owner[0]] += 1
+        # The real inventory overlays both kinds of base.
+        self.assertGreater(overlaid["handwritten"], 10)
+        self.assertGreater(overlaid["measurements"], 0)
         for family in weekly.SHARED_TABLE_FAMILIES:
             with self.subTest(family=family):
                 self.assertEqual(1, len({shard[(family, item)] for item in self.inventory[family]}))
@@ -144,6 +154,31 @@ class RealPlanTests(unittest.TestCase):
         budgets = (REPO / ".github/budgets.yaml").read_text(encoding="utf-8")
         entry = budgets.split("id: crozier-fern-goldens-weekly-minutes", 1)[1].split("\n  - id:", 1)[0]
         self.assertIn(f"threshold: {weekly.BUDGET_MINUTES:g}\n", entry)
+
+
+class OverlayBaseTests(unittest.TestCase):
+    def test_a_measurement_overlaying_a_tree_no_family_writes_stops_the_plan(self) -> None:
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            (root / "tools/fern-goldens").mkdir(parents=True)
+            (root / "tools/fern-goldens/fern-references.py").write_bytes(
+                (REPO / "tools/fern-goldens/fern-references.py").read_bytes()
+            )
+            case = root / "docs/fern-measurements/group/case"
+            base = root / "docs/elsewhere/fern-expected"
+            base.mkdir(parents=True)
+            case.mkdir(parents=True)
+            (case / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
+            (root / "docs/fern-measurements/cases.tsv").write_text(
+                "case\tdocument\tenum_type\tlayout\toverlay\n"
+                "group/case\tdocs/fern-measurements/group/case/openapi.yml\tpython-enums\tpackaged\t"
+                "fern-expected:docs/elsewhere/fern-expected\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.units(root, {"measurements": ["group/case"]})
+        self.assertIn("case group/case overlays", str(raised.exception))
+        self.assertIn("which no hand-written fixture or measurement case writes", str(raised.exception))
 
 
 class SubsetTests(unittest.TestCase):
