@@ -135,7 +135,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     summary = "Found 12 errors (5 fixed, 7 remaining)."
                 payload = "\n\n".join([*blocks, summary]) + "\n"
                 print(f"Failed to run command: {fingerprint['failed_command']}")
-                print(repr(payload.encode("utf-8")))
+                print(repr(payload.encode("utf-8")), flush=True)
+                if os.environ.get("KNOWN_FAILURE_SIGNAL") == "1":
+                    os.kill(os.getpid(), 9)
                 raise SystemExit(int(os.environ.get("KNOWN_FAILURE_EXIT_CODE", "1")))
             if fixture in os.environ.get("FERN_ERROR_FIXTURES", "").split(","):
                 for message in os.environ["FERN_ERROR"].split("\n"):
@@ -1156,6 +1158,27 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 {"fern_errors": ["Failed to generate python-sdk", "KeyError: 'operationId'"]},
                 json.loads(path.read_text(encoding="utf-8"))["fingerprint"],
             )
+
+        for name, env, message in (
+            (
+                "a blank generator error",
+                {"FERN_ERROR_FIXTURES": "alpha", "FERN_ERROR": "   "},
+                "no Fern `[error]`",
+            ),
+            (
+                "a generator killed by a signal",
+                {"KNOWN_FAILURE_FIXTURES": "alpha", "KNOWN_FAILURE_SIGNAL": "1"},
+                "terminated by signal 9",
+            ),
+        ):
+            with self.subTest(name):
+                path = self.write_known_failure()
+                before = path.read_bytes()
+                failed = self.run_tool("generate", "--version", "5.21.0", "--fixture", "alpha", check=False, **env)
+                self.assertEqual(failed.returncode, 1)
+                self.assertIn(message, failed.stderr)
+                self.assertEqual(before, path.read_bytes())
+                self.assertEqual(0, self.run_tool("compare").returncode, "the kept registration still loads")
 
         with self.subTest("an infrastructure error"):
             path = self.write_known_failure()

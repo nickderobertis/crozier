@@ -584,8 +584,9 @@ def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
     errors: list[str] = []
     for line in ANSI.sub("", log).splitlines():
         match = FERN_ERROR.search(line)
-        if match and match.group(1).strip() not in errors:
-            errors.append(match.group(1).strip())
+        message = match.group(1).strip() if match else ""
+        if message and message not in errors:
+            errors.append(message)
     if not errors:
         raise GoldensError(f"Fern failure log has no failed {RUFF_COMMAND!r} marker and no Fern `[error]`")
     infrastructure = [error for error in errors if INFRASTRUCTURE_ERROR.search(error)]
@@ -919,6 +920,11 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                         if candidate_failure is not None:
                             # A failure no fingerprint describes (Docker, the network) is
                             # no new registration: it fails here, and the old one stands.
+                            if result.returncode < 0:
+                                raise GoldensError(
+                                    f"generator was terminated by signal {-result.returncode}, which no known-failure "
+                                    f"registration records; kept {candidate_failure.path}; see {log_path}"
+                                )
                             try:
                                 actual_fingerprint = extract_fern_failure_fingerprint(log_path)
                             except GoldensError as error:
