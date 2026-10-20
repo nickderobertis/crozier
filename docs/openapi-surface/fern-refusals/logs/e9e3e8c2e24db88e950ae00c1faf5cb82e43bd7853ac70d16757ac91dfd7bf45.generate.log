@@ -1,0 +1,411 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk __package__.yml -> errors -> ConflictError
+                  __package__.yml
+                  [error] ConflictError is already declared in this file
+                  
+[api]: python-sdk openapi/openapi.yml -> paths -> /dns/v2/network-mappings/import -> post -> description
+                  openapi/openapi.yml
+                  [error] Endpoint description for POST /dns/v2/network-mappings/import contains "---" which will be interpreted as a YAML frontmatter delimiter by the docs renderer, causing parsing failures and 500 errors on the generated docs site. Remove the "---" delimiters from the description.
+                  
+[api]: python-sdk fastEdgeTemplates.yml -> service -> endpoints -> addTemplate -> examples[0] -> request
+                  fastEdgeTemplates.yml
+                  [error] Example is missing required property "response.body.code"
+                  [error] Example is missing required property "response.body.name_en"
+                  [error] Unexpected property "binary_id"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "owned"
+                  [error] Unexpected property "params"
+                  
+[api]: python-sdk iamResellerUsers.yml -> service -> endpoints -> createClientUsers -> examples[0] -> response
+                  iamResellerUsers.yml
+                  [error] Example is missing required property "response.body.user_role.user_role.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk managedPostgreSql.yml -> service -> endpoints -> dbaasPorstresLimitsHandlerPost -> examples[0] -> request
+                  managedPostgreSql.yml
+                  [error] Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+                  
+[api]: python-sdk fastEdgeResellerClients.yml -> service -> endpoints -> getClient -> examples[0] -> response
+                  fastEdgeResellerClients.yml
+                  [error] Example is missing required property "response.body.id"
+                  [error] Example is missing required property "response.body.email"
+                  [error] Example is missing required property "response.body.companyName"
+                  [error] Example is missing required property "response.body.currentUser"
+                  [error] Example is missing required property "response.body.capabilities"
+                  [error] Example is missing required property "response.body.serviceStatuses"
+                  [error] Example is missing required property "response.body.paidFeatures"
+                  [error] Example is missing required property "response.body.freeFeatures"
+                  [error] Example is missing required property "response.body.bill_type"
+                  [error] Example is missing required property "response.body.is_test"
+                  [error] Example is missing required property "response.body.has_active_admin"
+                  [error] Expected example to be a string. Example is: 1
+                  [error] Unexpected property "hourly_consumption"
+                  [error] Unexpected property "daily_consumption"
+                  [error] Unexpected property "app_count"
+                  [error] Unexpected property "monthly_consumption"
+                  [error] Unexpected property "networks"
+                  [error] Unexpected property "plan_id"
+                  [error] Unexpected property "plan"
+                  
+[api]: python-sdk fastEdgeClients.yml -> service -> endpoints -> getClientMe -> examples[0] -> response
+                  fastEdgeClients.yml
+                  [error] Example is missing required property "response.body.id"
+                  [error] Example is missing required property "response.body.email"
+                  [error] Example is missing required property "response.body.companyName"
+                  [error] Example is missing required property "response.body.currentUser"
+                  [error] Example is missing required property "response.body.capabilities"
+                  [error] Example is missing required property "response.body.serviceStatuses"
+                  [error] Example is missing required property "response.body.paidFeatures"
+                  [error] Example is missing required property "response.body.freeFeatures"
+                  [error] Example is missing required property "response.body.bill_type"
+                  [error] Example is missing required property "response.body.is_test"
+                  [error] Example is missing required property "response.body.has_active_admin"
+                  [error] Expected example to be a string. Example is: 1
+                  [error] Unexpected property "hourly_consumption"
+                  [error] Unexpected property "daily_consumption"
+                  [error] Unexpected property "app_count"
+                  [error] Unexpected property "monthly_consumption"
+                  [error] Unexpected property "networks"
+                  [error] Unexpected property "plan_id"
+                  [error] Unexpected property "plan"
+                  
+[api]: python-sdk iamResellerClients.yml -> service -> endpoints -> getClients -> examples[0] -> response
+                  iamResellerClients.yml
+                  [error] Example is missing required property "response.body.0.users.0.groups.0.name"
+                  [error] Example is missing required property "response.body.0.users.0.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk iamResellerClients.yml -> service -> endpoints -> getClientsDetails -> examples[0] -> response
+                  iamResellerClients.yml
+                  [error] Example is missing required property "response.body.users.0.groups.0.name"
+                  [error] Example is missing required property "response.body.users.0.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk fastEdgeTemplates.yml -> service -> endpoints -> getTemplate -> examples[0] -> response
+                  fastEdgeTemplates.yml
+                  [error] Example is missing required property "response.body.code"
+                  [error] Example is missing required property "response.body.name_en"
+                  [error] Unexpected property "binary_id"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "short_descr"
+                  [error] Unexpected property "long_descr"
+                  [error] Unexpected property "api_type"
+                  [error] Unexpected property "owned"
+                  [error] Unexpected property "params"
+                  
+[api]: python-sdk templates.yml -> service -> endpoints -> getTemplateAdmin -> examples[0] -> response
+                  templates.yml
+                  [error] Example is missing required property "response.body.code"
+                  [error] Example is missing required property "response.body.name_en"
+                  [error] Unexpected property "binary_id"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "short_descr"
+                  [error] Unexpected property "long_descr"
+                  [error] Unexpected property "api_type"
+                  [error] Unexpected property "owned"
+                  [error] Unexpected property "params"
+                  
+[api]: python-sdk ipReputation.yml -> service -> endpoints -> get_ip_reputation_summary_v1_ip_reputation_get -> request -> query-parameters -> ordering -> type
+                  ipReputation.yml
+                  [error] Default value '-date' is not a valid enum value
+                  
+[api]: python-sdk analytics.yml -> service -> endpoints -> get_request_details_v1_domains__domain_id__requests__request_id__details_get -> examples[0] -> response
+                  analytics.yml
+                  [error] Example is missing required property "response.body.network.name"
+                  [error] Example is missing required property "response.body.network.is_default"
+                  [error] Unexpected property "client_ip"
+                  [error] Unexpected property "country"
+                  [error] Unexpected property "organization"
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamChangePassword
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamCreateAccount
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk apiTokens.yml -> service -> endpoints -> iamCreateApiToken -> examples[0] -> response
+                  apiTokens.yml
+                  [error] Example is missing required property "response.body.client_user.role.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk iamResellerUsers.yml -> service -> endpoints -> iamCreateUser -> examples[0] -> response
+                  iamResellerUsers.yml
+                  [error] Example is missing required property "response.body.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamForgotPassword
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamGetAccountDetails -> examples[0] -> response
+                  account.yml
+                  [error] Example is missing required property "response.body.users.0.groups.0.name"
+                  [error] Example is missing required property "response.body.users.0.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamGetAccountDetails
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk apiTokens.yml -> service -> endpoints -> iamGetApiToken -> examples[0] -> response
+                  apiTokens.yml
+                  [error] Example is missing required property "response.body.client_user.role.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk apiTokens.yml -> service -> endpoints -> iamGetApiTokens -> examples[0] -> response
+                  apiTokens.yml
+                  [error] Example is missing required property "response.body.0.client_user.role.name"
+                  [error] Example is missing required property "response.body.0.client_user.role.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> iamGetClientUserRole -> examples[0] -> response
+                  users.yml
+                  [error] Example is missing required property "response.body.user_role.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamGetLastLoginTime
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> iamGetUser -> examples[0] -> response
+                  users.yml
+                  [error] Example is missing required property "response.body.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> iamGetUsers -> examples[0] -> response
+                  users.yml
+                  [error] Example is missing required property "response.body.results.0.groups.0.name"
+                  [error] Example is missing required property "response.body.results.0.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> iamInviteUser -> examples[0] -> request
+                  users.yml
+                  [error] Example is missing required property "request.user_role.name"
+                  [error] Example is missing required property "request.user_role.default_flag"
+                  
+[api]: python-sdk account.yml -> service -> endpoints -> iamSelectAccount
+                  account.yml
+                  [error] Endpoint requires auth, but no auth is defined.
+                  
+[api]: python-sdk users.yml -> service -> endpoints -> iamUpdateUser -> examples[0] -> response
+                  users.yml
+                  [error] Example is missing required property "response.body.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk everywhereInferenceApps.yml -> service -> endpoints -> inferenceApplicationDeploymentGet -> examples[0] -> response
+                  everywhereInferenceApps.yml
+                  [error] Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
+                  
+[api]: python-sdk everywhereInferenceApps.yml -> service -> endpoints -> inferenceApplicationDeploymentsCollectionGet -> examples[0] -> response
+                  everywhereInferenceApps.yml
+                  [error] Expected example to be a string. Example is: {"component_inferences":{"key":{"flavor":"flavor","name":"name"}},"consolidated_status":"Active","expose_addresses":{"key":{"address":"address"}},"regions":[{"components":{"model":{"error":"","status":"Active"}},"region_id":1,"status":"status"}]}
+                  
+[api]: python-sdk managedPostgreSql.yml -> service -> endpoints -> pgClusterViewSetGet -> examples[0] -> response
+                  managedPostgreSql.yml
+                  [error] Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+                  
+[api]: python-sdk managedPostgreSql.yml -> service -> endpoints -> pgClustersViewSetPost -> examples[0] -> request
+                  managedPostgreSql.yml
+                  [error] Expected example to be a list. Example is: {"size_gib":100,"type":"ssd-hiiops"}
+                  
+[api]: python-sdk iamResellerClients.yml -> service -> endpoints -> updateClientsDetails -> examples[0] -> response
+                  iamResellerClients.yml
+                  [error] Example is missing required property "response.body.users.0.groups.0.name"
+                  [error] Example is missing required property "response.body.users.0.groups.0.default_flag"
+                  [error] Unexpected property "id"
+                  
+[api]: python-sdk fastEdgeTemplates.yml -> service -> endpoints -> updateTemplate -> examples[0] -> request
+                  fastEdgeTemplates.yml
+                  [error] Example is missing required property "response.body.code"
+                  [error] Example is missing required property "response.body.name_en"
+                  [error] Unexpected property "binary_id"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "owned"
+                  [error] Unexpected property "params"
+                  
+[api]: python-sdk templates.yml -> service -> endpoints -> updateTemplateAdmin -> examples[0] -> request
+                  templates.yml
+                  [error] Example is missing required property "response.body.code"
+                  [error] Example is missing required property "response.body.name_en"
+                  [error] Unexpected property "binary_id"
+                  [error] Unexpected property "name"
+                  [error] Unexpected property "owned"
+                  [error] Unexpected property "params"
+                  
+[api]: python-sdk bareMetal.yml -> service
+                  bareMetal.yml
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  [error] Service requires auth, but no auth is defined.
+                  
+[api]: python-sdk ipReputation.yml -> types -> GetIpReputationSummaryV1IpReputationGetRequestOrdering
+                  ipReputation.yml
+                  [error] Default value '-date' is not a valid enum value
+                  
+[api]: python-sdk __package__.yml -> types -> ListClientsResponse
+                  __package__.yml
+                  [error] ListClientsResponse is already declared in fastEdgeResellerClients.yml
+                  
+[api]: python-sdk __package__.yml -> types -> S3OtherConfig
+                  __package__.yml
+                  [error] Object has multiple properties named "access_key_id":
+                    - S3OtherConfig -> access_key_id
+                    - S3OtherConfig -> (extends) BaseS3Config -> access_key_id
+                  [error] Object has multiple properties named "secret_access_key":
+                    - S3OtherConfig -> secret_access_key
+                    - S3OtherConfig -> (extends) BaseS3Config -> secret_access_key
+                  [error] Object has multiple properties named "bucket_name":
+                    - S3OtherConfig -> bucket_name
+                    - S3OtherConfig -> (extends) BaseS3Config -> bucket_name
+                  [error] Object has multiple properties named "region":
+                    - S3OtherConfig -> region
+                    - S3OtherConfig -> (extends) BaseS3Config -> region
+                  
+[api]: python-sdk Found 274 errors and 70 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.

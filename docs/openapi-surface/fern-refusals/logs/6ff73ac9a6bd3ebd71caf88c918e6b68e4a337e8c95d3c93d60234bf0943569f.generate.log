@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-crozier-s-30-downstream-parity-gaps-and-mine-Fern-s-test-inputs-for-more/scratch/4031986-0/generation-tmp/fern-refusals-y5ldvt73/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ledgerV1.yml -> service -> endpoints -> countTransactions

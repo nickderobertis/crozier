@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -161,18 +162,9 @@ Warnings for generators.yml:
                   [error] Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
                   [error] Expected example to be a string. Example is: {"created":"2024-01-15T09:30:00Z","deleteRecordingAfterDays":45,"enabled":true,"keysRotatedAt":"2024-01-15T09:30:00Z","meta":{"name":"test stream 1"},"modified":"2024-01-15T09:30:00Z","playback":{"dash":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.mpd","hls":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/66be4bf738797e01e1fca35a7bdecdcd/manifest/video.m3u8"},"preferLowLatency":true,"recording":{"allowedOrigins":["example.com"],"hideLiveViewerCount":false,"mode":"off","requireSignedURLs":false,"timeoutSeconds":0},"rtmps":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"rtmpsPlayback":{"streamKey":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","url":"rtmps://live.cloudflare.com:443/live/"},"srt":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"srt://live.cloudflare.com:778"},"srtPlayback":{"passphrase":"2fb3cb9f17e68a2568d6ebed8d5505eak3ceaf8c9b1f395e1b76b79332497cada","streamId":"f256e6ea9341d51eea64c9454659e576","url":"rtmps://live.cloudflare.com:443/live/"},"status":"connected","uid":"66be4bf738797e01e1fca35a7bdecdcd","webRTC":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/publish"},"webRTCPlayback":{"url":"https://customer-m033z5x00ks6nunl.cloudflarestream.com/b236bde30eb07b9d01318940e5fc3edake34a3efb3896e18f2dc277ce6cc993ad/webRTC/play"}}
                   
-[api]: python-sdk cloudforceOneThreatEvents.yml -> service -> endpoints -> create
-                  intelIndicatorFeedsProviders.yml
-                  [error] Multiple request properties have the name account_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "account_id"
-                    - Body property: <Request Body> -> account_id
-                  
 [api]: python-sdk addressingAddressMapsAccounts.yml -> service -> endpoints -> delete
                   addressingAddressMapsAccounts.yml
                   [error] Endpoint has duplicate path parameter: account_id.
-                  [error] Multiple request properties have the name member_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "member_id"
-                    - Body property: <Request Body> -> member_id
                   
 [api]: python-sdk dnsFirewallReverseDns.yml -> service -> endpoints -> edit -> examples[0] -> response
                   dnsFirewallReverseDns.yml
@@ -333,6 +325,30 @@ Warnings for generators.yml:
                   [error] BuildsApiResponseErrorsItem is already declared in workersBuildsWorkers.yml
                   [error] BuildsApiResponseErrorsItem is already declared in workersBuildsDeployHooks.yml
                   
+[api]: python-sdk __package__.yml -> types -> ClientRequestErrorBody
+                  __package__.yml
+                  [error] Object has multiple properties named "errors":
+                    - ClientRequestErrorBody -> errors
+                    - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - ClientRequestErrorBody -> messages
+                    - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - ClientRequestErrorBody -> success
+                    - ClientRequestErrorBody -> (extends) CustomPagesApiResponseSingle -> (alias of) CustomPagesApiResponseCommon -> success
+                  
+[api]: python-sdk __package__.yml -> types -> ClientRequestErrorBodyZero
+                  __package__.yml
+                  [error] Object has multiple properties named "errors":
+                    - ClientRequestErrorBodyZero -> errors
+                    - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - ClientRequestErrorBodyZero -> messages
+                    - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - ClientRequestErrorBodyZero -> success
+                    - ClientRequestErrorBodyZero -> (extends) WorkersApiResponseCommon -> success
+                  
 [api]: python-sdk rulesetsAccountRulesetsRules.yml -> types -> CreateRulesetsAccountRulesetsRulesRequestPositionOne -> extends -> root.RulesetsRulePosition
                   rulesetsAccountRulesetsRules.yml
                   [error] Objects can only extend other objects, and root.RulesetsRulePosition is not an object.
@@ -420,6 +436,21 @@ Warnings for generators.yml:
                   [error] RealtimekitPagingResponsePaging is already declared in realtimekitPresets.yml
                   [error] RealtimekitPagingResponsePaging is already declared in realtimekitRecordings.yml
                   
+[api]: python-sdk __package__.yml -> types -> ServerErrorBody
+                  __package__.yml
+                  [error] Object has multiple properties named "result":
+                    - ServerErrorBody -> result
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> result
+                  [error] Object has multiple properties named "errors":
+                    - ServerErrorBody -> errors
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> errors
+                  [error] Object has multiple properties named "messages":
+                    - ServerErrorBody -> messages
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> messages
+                  [error] Object has multiple properties named "success":
+                    - ServerErrorBody -> success
+                    - ServerErrorBody -> (extends) Web3ApiResponseCommon -> success
+                  
 [api]: python-sdk smartShieldCacheReserveClear.yml -> types -> SmartshieldApiResponseCommonResult
                   smartShieldCacheReserveClear.yml
                   [error] SmartshieldApiResponseCommonResult is already declared in smartShield.yml
@@ -506,6 +537,6 @@ Warnings for generators.yml:
                   __package__.yml
                   [error] Objects can only extend other objects, and WaitingroomApiResponseCommon is not an object.
                   
-[api]: python-sdk Found 234 errors and 467 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk Found 242 errors and 467 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.

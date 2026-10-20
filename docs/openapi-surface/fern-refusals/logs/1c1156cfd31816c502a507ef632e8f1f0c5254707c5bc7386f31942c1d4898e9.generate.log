@@ -1,3 +1,4 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
@@ -7,57 +8,57 @@ Warnings for generators.yml:
 [api]: python-sdk Failed to parse an OpenAPI schema at the following location: contents.email.fromFile->Request->file. Coercing to unknown.
 [api]: python-sdk Failed to parse an OpenAPI schema at the following location: StoreImportFile->import_strategy_settings[file]. Coercing to unknown.
 [api]: python-sdk Failed to parse an OpenAPI schema at the following location: StoreRecipient->email_address_notify. Coercing to unknown.
-[api]: python-sdk consent.yml -> service -> endpoints -> consents.export
+[api]: python-sdk consent.yml -> service -> endpoints -> consentsExport
                   consent.yml
                   [error] Path parameter is unreferenced in endpoint: id.
                   
-[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.contact-actitivity -> request -> query-parameters -> limit -> type
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reportsCampaignsContactActitivity -> request -> query-parameters -> limit -> type
                   campaignReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.domain -> request -> query-parameters -> limit -> type
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reportsCampaignsDomain -> request -> query-parameters -> limit -> type
                   campaignReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk campaignReports.yml -> service -> endpoints -> reports.campaigns.link -> request -> query-parameters -> limit -> type
+[api]: python-sdk campaignReports.yml -> service -> endpoints -> reportsCampaignsLink -> request -> query-parameters -> limit -> type
                   campaignReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.contact-actitivity -> request -> query-parameters -> limit -> type
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reportsRecipientsContactActitivity -> request -> query-parameters -> limit -> type
                   recipientReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.domain -> request -> query-parameters -> limit -> type
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reportsRecipientsDomain -> request -> query-parameters -> limit -> type
                   recipientReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk recipientReports.yml -> service -> endpoints -> reports.recipients.link -> request -> query-parameters -> limit -> type
+[api]: python-sdk recipientReports.yml -> service -> endpoints -> reportsRecipientsLink -> request -> query-parameters -> limit -> type
                   recipientReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk workflowReports.yml -> service -> endpoints -> reports.workflows.contact-actitivity -> request -> query-parameters -> limit -> type
+[api]: python-sdk workflowReports.yml -> service -> endpoints -> reportsWorkflowsContactActitivity -> request -> query-parameters -> limit -> type
                   workflowReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk workflowReports.yml -> service -> endpoints -> reports.workflows.link -> request -> query-parameters -> limit -> type
+[api]: python-sdk workflowReports.yml -> service -> endpoints -> reportsWorkflowsLink -> request -> query-parameters -> limit -> type
                   workflowReports.yml
                   [error] Default value '5' is not a valid integer
                   
-[api]: python-sdk carts.yml -> service -> endpoints -> stores.carts.update
+[api]: python-sdk carts.yml -> service -> endpoints -> storesCartsUpdate
                   carts.yml
                   [error] Multiple request properties resolve to the same generated name cartId after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.
                     - Path parameter "cartId" (name: "cartId")
                     - Body property: <Request Body> -> cart_id (name: "cart_id")
                   
-[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.changeStatus
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribersChangeStatus
                   contacts.yml
                   [error] Path parameter is unreferenced in endpoint: subscriberId.
                   
-[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.sendCampaign
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribersSendCampaign
                   contacts.yml
                   [error] Path parameter is unreferenced in endpoint: subscribedId.
                   
-[api]: python-sdk contacts.yml -> service -> endpoints -> subscribers.sendWhatsAppMessage
+[api]: python-sdk contacts.yml -> service -> endpoints -> subscribersSendWhatsAppMessage
                   contacts.yml
                   [error] Path parameter is unreferenced in endpoint: subscriberId.
                   

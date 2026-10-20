@@ -1,14 +1,9 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 [api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
-[api]: python-sdk callCommands.yml -> service -> endpoints -> BridgeCall
-                  callCommands.yml
-                  [error] Multiple request properties have the name call_control_id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "call_control_id"
-                    - Body property: <Request Body> -> call_control_id
-                  
 [api]: python-sdk phoneNumberOrders.yml -> service -> endpoints -> CreateNumberOrder -> examples[0] -> response
                   phoneNumberOrders.yml
                   [error] Expected example to be a string. Example is: {"bundle_id":"bc8e4d67-33a0-4cbb-af74-7b58f05bd474","country_code":"US","country_iso_alpha2":"US","id":"dc8e4d67-33a0-4cbb-af74-7b58f05bd494","phone_number":"+19705555098","record_type":"number_order_phone_number","regulatory_requirements":[{"field_type":"address","field_value":"45f45a04-b4be-4592-95b1-9306b9db2b21","record_type":"phone_number_regulatory_requirement","requirement_id":"8ffb3622-7c6b-4ccc-b65f-7a3dc0099576"}],"requirements_met":true,"status":"success"}
@@ -65,12 +60,6 @@ Warnings for generators.yml:
 [api]: python-sdk addresses.yml -> service -> endpoints -> ValidateAddress -> examples[0] -> response
                   addresses.yml
                   [error] Expected example to be a boolean. Example is: {"administrative_area":"TX","country_code":"US","extended_address":"14th Floor","locality":"Austin","postal_code":"78701","street_address":"600 Congress Avenue"}
-                  
-[api]: python-sdk addresses.yml -> service -> endpoints -> acceptAddressSuggestions
-                  addresses.yml
-                  [error] Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-                    - Path parameter "id"
-                    - Body property: <Request Body> -> id
                   
 [api]: python-sdk portingOrders.yml -> types -> CreateCommentResponse
                   portingOrders.yml
@@ -164,8 +153,32 @@ Warnings for generators.yml:
                   __package__.yml
                   [error] Default value 'e164' is not a valid enum value
                   
+[api]: python-sdk __package__.yml -> types -> NetworkCreate
+                  __package__.yml
+                  [error] Object has multiple properties named "record_type":
+                    - NetworkCreate -> record_type
+                    - NetworkCreate -> (extends) Record -> record_type
+                  
 [api]: python-sdk __package__.yml -> types -> VirtualCrossConnectCombined
                   __package__.yml
+                  [error] Object has multiple properties named "network_id":
+                    - VirtualCrossConnectCombined -> network_id
+                    - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> (extends) Interface -> network_id
+                  [error] Object has multiple properties named "region_code":
+                    - VirtualCrossConnectCombined -> region_code
+                    - VirtualCrossConnectCombined -> (extends) RegionIn -> region_code
+                  [error] Object has multiple properties named "cloud_provider":
+                    - VirtualCrossConnectCombined -> cloud_provider
+                    - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> cloud_provider
+                  [error] Object has multiple properties named "cloud_provider_region":
+                    - VirtualCrossConnectCombined -> cloud_provider_region
+                    - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> cloud_provider_region
+                  [error] Object has multiple properties named "bgp_asn":
+                    - VirtualCrossConnectCombined -> bgp_asn
+                    - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> bgp_asn
+                  [error] Object has multiple properties named "primary_cloud_account_id":
+                    - VirtualCrossConnectCombined -> primary_cloud_account_id
+                    - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> primary_cloud_account_id
                   [error] Object has multiple properties named "primary_cloud_ip":
                     - VirtualCrossConnectCombined -> primary_cloud_ip
                     - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> primary_cloud_ip
@@ -178,10 +191,13 @@ Warnings for generators.yml:
                   [error] Object has multiple properties named "secondary_enabled":
                     - VirtualCrossConnectCombined -> secondary_enabled
                     - VirtualCrossConnectCombined -> (extends) VirtualCrossConnect -> secondary_enabled
-                  [error] Object has multiple properties named "region_code":
-                    - VirtualCrossConnectCombined -> region_code
-                    - VirtualCrossConnectCombined -> (extends) RegionIn -> region_code
                   
-[api]: python-sdk Found 43 errors and 395 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk __package__.yml -> types -> VirtualCrossConnectCreate
+                  __package__.yml
+                  [error] Object has multiple properties named "record_type":
+                    - VirtualCrossConnectCreate -> record_type
+                    - VirtualCrossConnectCreate -> (extends) Record -> record_type
+                  
+[api]: python-sdk Found 48 errors and 395 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.
