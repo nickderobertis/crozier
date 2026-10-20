@@ -26,7 +26,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, Literal, Protocol, TypedDict
+from typing import ClassVar, Literal, Protocol, TypedDict
 
 
 def load_guard():
@@ -87,7 +87,7 @@ class CachedAnswer(Protocol):
 
     def body(self) -> bytes: ...
 
-    def ledger(self) -> dict[str, Any]: ...
+    def ledger(self) -> GUARD.CacheHit: ...
 
 
 class Digest(Protocol):
@@ -151,6 +151,7 @@ def main() -> int:
         else:
             guard.acquire(args.bucket, cost=1)
             try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; this one download per invocation has no concurrency an async client would serve.
                 with GUARD.open_checked(request, is_download_url, timeout=120) as response:
                     record["status"] = response.status
                     with temporary.open("wb") as handle:

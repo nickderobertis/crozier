@@ -189,7 +189,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, TypedDict
 
 FLOOR = fractions.Fraction(2, 5)
 """The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
@@ -406,6 +406,37 @@ def _is_graphql(response: Any) -> bool:
     return path.endswith("/graphql") or _header(response, "x-ratelimit-resource") == "graphql"
 
 
+class AdmissionProbe(TypedDict, total=False):
+    """One ``probe`` row of the wait ledger: a reading taken to admit a call, and the decision."""
+
+    host: str
+    bucket: str
+    kind: str
+    reading: dict[str, int]
+    cost: int
+    admitted: bool
+    admitted_by: str
+    burn: dict[str, float]
+
+
+class CacheHit(TypedDict):
+    """The fields a ``github-cache-hits.jsonl`` row records of the answer it was served."""
+
+    cache_key: str
+    status: int
+    sha256: str
+    bytes: int
+
+
+class CacheMeta(TypedDict):
+    """A cache entry's stored record beside its body: the answer's status, kept headers and body digest."""
+
+    status: int
+    headers: list[list[str]]
+    sha256: str
+    bytes: int
+
+
 class Burn(NamedTuple):
     """The burn-rate exception's measurement of a bucket: the units spent per
     second over the guard's readings, the seconds they span and until the reset,
@@ -595,7 +626,7 @@ class RateLimitGuard:
                 admitted_by = None
             admitted = admitted_by is not None
             if waiting or admitted_by != "floor":
-                probe: dict[str, Any] = {
+                probe: AdmissionProbe = {
                     "host": "github",
                     "bucket": bucket,
                     "kind": "probe",
@@ -607,7 +638,7 @@ class RateLimitGuard:
                     probe["admitted_by"] = admitted_by
                 if burn is not None:
                     probe["burn"] = burn.logged()
-                self._log_wait(probe)
+                self._log_wait(dict(probe))
             if admitted:
                 return reading
             waiting = True
@@ -816,7 +847,7 @@ class CachedResponse:
             message[name] = value
         return message
 
-    def ledger(self) -> dict[str, Any]:
+    def ledger(self) -> CacheHit:
         """The fields a caller's ``github-cache-hits.jsonl`` row records."""
         return {"cache_key": self.key, "status": self.status, "sha256": self.sha256, "bytes": self.size}
 
@@ -892,7 +923,15 @@ def cache_store(
     ``body`` is the bytes, or a file holding them (a large download). A cache
     that cannot be written is reported on stderr and costs the caller nothing."""
     root = github_cache_root(url)
-    probe = body if isinstance(body, bytes) else b""
+    if isinstance(body, bytes):
+        probe = body[:4096]
+    else:
+        # A file-backed body is judged on the same head a refusal's message sits in.
+        try:
+            with body.open("rb") as handle:
+                probe = handle.read(4096)
+        except OSError:
+            return None
     if root is None or status is None or not is_answer(status, response_headers, probe):
         return None
     key = cache_key(method, url, headers)
@@ -908,7 +947,7 @@ def cache_store(
         else:
             _publish(body_path, lambda path: shutil.copyfile(body, path))
         sha256, size = _file_digest(body_path)
-        meta = {"status": status, "headers": [list(pair) for pair in kept], "sha256": sha256, "bytes": size}
+        meta: CacheMeta = {"status": status, "headers": [list(pair) for pair in kept], "sha256": sha256, "bytes": size}
         _publish(meta_path, lambda path: path.write_text(json.dumps(meta, sort_keys=True), encoding="utf-8"))
     except OSError as error:
         print(

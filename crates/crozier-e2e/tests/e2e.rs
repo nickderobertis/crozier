@@ -23934,6 +23934,132 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
     }
 }
 
+/// Every probe and control shape the registry commits, through the real CLI.
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3 (`shapes.tsv`, which
+/// `fern-refusals.py check` holds to each role), a `-probe` is a shape Fern
+/// refuses and a `-control` one it generates from: crozier refuses each probe
+/// in both modes — exit 1, nothing written, one line naming a registry class
+/// and, only under `--fern-strict`, the strict cause — and generates each
+/// control with identical bytes in both modes.
+#[test]
+fn every_committed_shape_follows_its_measured_role_through_the_cli() {
+    let registry = repo_root().join(FERN_REFUSALS_DIR);
+    let classes: Vec<String> = std::fs::read_to_string(registry.join("classes.tsv"))
+        .unwrap()
+        .lines()
+        .skip(1)
+        .filter_map(|row| row.split('\t').next().map(str::to_owned))
+        .collect();
+    let mut shapes = Vec::new();
+    for class in &classes {
+        let Ok(entries) = std::fs::read_dir(registry.join(class)) else {
+            continue;
+        };
+        for entry in entries {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            if ["-probe.", "-control."]
+                .iter()
+                .any(|role| name.contains(role))
+                && [".yml", ".yaml", ".json"]
+                    .iter()
+                    .any(|suffix| name.ends_with(suffix))
+            {
+                shapes.push(path);
+            }
+        }
+    }
+    shapes.sort();
+    assert!(shapes.len() > 300, "only {} shapes found", shapes.len());
+    let failures: Vec<String> = std::thread::scope(|scope| {
+        let workers: Vec<_> = shapes
+            .chunks(shapes.len().div_ceil(8))
+            .map(|chunk| {
+                let classes = &classes;
+                scope.spawn(move || {
+                    chunk
+                        .iter()
+                        .flat_map(|path| shape_role_failures(classes, path))
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+        workers
+            .into_iter()
+            .flat_map(|worker| worker.join().unwrap())
+            .collect()
+    });
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}
+
+/// How crozier's two runs over one committed shape depart from its role.
+fn shape_role_failures(classes: &[String], path: &Path) -> Vec<String> {
+    let name = path
+        .strip_prefix(repo_root())
+        .unwrap_or(path)
+        .display()
+        .to_string();
+    let runs = [false, true].map(|strict| (strict, refusal_run(&crozier, path, strict)));
+    let mut failures = Vec::new();
+    let mut generated = Vec::new();
+    for (strict, run) in runs {
+        let run = match run {
+            Ok(run) => run,
+            Err(error) => {
+                failures.push(format!("{name}: {error}"));
+                continue;
+            }
+        };
+        let mode = if strict {
+            "--fern-strict"
+        } else {
+            "default mode"
+        };
+        if name.contains("-probe.") {
+            let line = run.stderr.trim();
+            let names_class = classes
+                .iter()
+                .any(|class| line.contains(&format!("{class}: ")));
+            if run.code != Some(1)
+                || !run.files.is_empty()
+                || run.stderr.lines().count() != 1
+                || !names_class
+                || line.contains("fern-strict") != strict
+            {
+                failures.push(format!(
+                    "{name}: a probe Fern refuses must be refused in {mode} with one line naming its \
+                     class; crozier exited {}, wrote {} file(s) and printed: {line}",
+                    exit_label(run.code),
+                    run.files.len()
+                ));
+            }
+        } else if run.code != Some(0) || run.files.is_empty() {
+            failures.push(format!(
+                "{name}: a control Fern generates from must generate in {mode}; crozier exited {}: {}",
+                exit_label(run.code),
+                run.stderr.trim()
+            ));
+        } else {
+            generated.push(run);
+        }
+    }
+    if let [normal, strict] = generated.as_slice() {
+        if normal.files != strict.files {
+            failures.push(format!(
+                "{name}: --fern-strict writes other files than default mode"
+            ));
+        }
+        for file in &normal.files {
+            if std::fs::read(normal.target.join(file)).ok()
+                != std::fs::read(strict.target.join(file)).ok()
+            {
+                failures.push(format!("{name}: {file} differs under --fern-strict"));
+            }
+        }
+    }
+    failures
+}
+
 /// One example-value class's committed evidence, through the real CLI: the
 /// probe is refused in both modes with `diagnostic`, every other measured
 /// refused shape (`*-probe.yml`/`.json`) is refused with the class, and every

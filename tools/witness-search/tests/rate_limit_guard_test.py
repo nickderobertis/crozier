@@ -863,6 +863,21 @@ class ResponseCacheTests(GuardTestCase):
         self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
         self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
 
+    def test_a_rate_limit_refusal_held_in_a_file_is_not_stored(self) -> None:
+        url = f"{self.url}/repos/o/r/tarball"
+        body = self.cache.parent / f"{self.cache.name}-download"
+        self.addCleanup(body.unlink, missing_ok=True)
+        body.write_bytes(b'{"message": "API rate limit exceeded for 127.0.0.1."}')
+        self.assertIsNone(guard_module.cache_store("GET", url, {}, 403, {}, body))
+        self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
+        # The same file holding an answer is kept, and served back whole.
+        body.write_bytes(b"tree archive bytes")
+        stored = guard_module.cache_store("GET", url, {}, 200, {}, body)
+        self.assertIsNotNone(stored)
+        cached = guard_module.cache_lookup("GET", url, {})
+        assert cached is not None
+        self.assertEqual((cached.status, cached.body()), (200, b"tree archive bytes"))
+
     def test_an_answer_that_is_not_a_success_is_cached(self) -> None:
         self.fixture.scripted["/repos/o/r/contents"] = [(404, {"x-ratelimit-resource": "core"})]
         guard = self.guard()
