@@ -992,6 +992,25 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(["main"], self.remote_branches())
         self.assertEqual([], self.pulls())
 
+    def test_a_shard_or_decision_over_the_wrong_tree_is_refused(self) -> None:
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide")
+        plan, bundle = state.artifacts / "plan.json", state.artifacts / "bundle"
+        unapplied = self.phase(self.clone(), "decide", "--bundle", str(bundle), "--output", str(state.artifacts / "d2"))
+        self.assertEqual(1, unapplied.returncode)
+        self.assertIn("run `apply` before `decide`", unapplied.stderr)
+        moved = self.clone()
+        (moved / "README.md").write_text("main moved on after the plan\n", encoding="utf-8")
+        self.git(moved, "add", "README.md")
+        self.git(moved, "commit", "-qm", "move main")
+        self.git(moved, "push", "-q", "origin", "HEAD:main")
+        elsewhere = self.phase(
+            self.clone(), "shard", "--plan", str(plan), "--index", "0", "--output", str(state.artifacts / "s2")
+        )
+        self.assertEqual(1, elsewhere.returncode)
+        self.assertIn("the plan was made over", elsewhere.stderr)
+        self.assertIn("check out the plan's commit", elsewhere.stderr)
+
     def test_a_missing_token_is_red_before_any_work_or_remote_step(self) -> None:
         self.publish_seed()
         state = self.run_workflow(NO_TOKEN="1")

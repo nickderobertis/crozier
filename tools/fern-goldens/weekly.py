@@ -1294,6 +1294,11 @@ def shard(args: argparse.Namespace) -> int:
     if not 0 <= args.index < len(made.shards):
         raise WeeklyError(f"the plan has {len(made.shards)} shard(s), not index {args.index}")
     pair = made.candidate()
+    head = git(base, "rev-parse", "HEAD")
+    if made.base and head != made.base:
+        raise WeeklyError(
+            f"the plan was made over {made.base}, but this checkout is at {head}; check out the plan's commit"
+        )
     output = Path(args.output).resolve()
     if output.exists():
         shutil.rmtree(output)
@@ -1503,6 +1508,25 @@ def apply_bundle(base: Path, path: Path) -> Bundle:
     if restated.returncode != 0:
         raise WeeklyError(f"restating the pair failed: {restated.stderr.strip()}")
     return bundle
+
+
+def verify_applied(base: Path, path: Path, bundle: Bundle) -> None:
+    """Refuse to decide over a checkout the bundle was not laid over: every file
+    it carries must be there byte for byte, every file it deletes gone, and the
+    declared pair its own."""
+    files = path / "files"
+    for source in regular_files(files, str(path)):
+        relative = source.relative_to(files).as_posix()
+        target = inside(base, relative, str(path))
+        if not target.is_file() or target.read_bytes() != source.read_bytes():
+            raise WeeklyError(f"this checkout does not carry the bundle's {relative}; run `apply` before `decide`")
+    for relative in bundle.deleted:
+        if inside(base, relative, str(path)).exists():
+            raise WeeklyError(
+                f"this checkout still has {relative}, which the bundle deletes; run `apply` before `decide`"
+            )
+    if certified(base) != bundle.pair:
+        raise WeeklyError(f"this checkout declares {certified(base).label()}, not the bundle's {bundle.pair.label()}")
 
 
 def apply(args: argparse.Namespace) -> int:
@@ -1762,6 +1786,7 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
 def decide(args: argparse.Namespace) -> int:
     base = root()
     bundle = read_bundle(Path(args.bundle))
+    verify_applied(base, Path(args.bundle), bundle)
     current = certified_at_base(base)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
