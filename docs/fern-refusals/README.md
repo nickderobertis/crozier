@@ -43,7 +43,8 @@ caused it.
   three come from `measurements.jsonl`, which `just fern-refusals-measure`
   fills, so `build` reproduces them.
 - [`unretrievable.tsv`](unretrievable.tsv) — a selected document whose bytes
-  could not be read again, with its revision and the reason.
+  could not be read again, or whose Fern run never finished inside `measure`'s
+  bound (`unmeasured: …`), with its revision and the reason.
 - [`generated.tsv`](generated.tsv) — a selected document whose `fern check`
   failed but whose `fern generate` at the pin still writes an SDK, with its log
   and the check-only phrases it printed. Fern produces output for these, so
@@ -134,12 +135,22 @@ tools/fern-refusals/fern-refusals.py confirm           # sample each class's rea
 tools/fern-refusals/fern-refusals.py check             # offline drift check; tools/fern-refusals/tests/fern_refusals_test.py runs it
 ```
 
-`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane,
-reuses a committed screen's `fern check` log where its record states the exit,
-and otherwise runs `fern check` — then `fern generate` unless the check named a
-class — in a scratch workspace outside any checkout, writing each log to
+`measure` fetches through `tools/witness-search/rate_limit_guard.py`'s paced raw lane
+(answered from its shared GitHub response cache where the request was made
+before), and takes every Fern verdict at the certified pair
+`assets/scaffolding/metadata.json` declares. It reuses a committed screen's
+`fern check` log only where the screen's record states the exit and names that
+pair's CLI (and no other generator), and keeps a `measurements.jsonl` record
+only where its `fern_cli` and `fern_python_sdk` are that pair; everything else
+gets a fresh `fern check` — then `fern generate` unless the check named a class
+— in a scratch workspace outside any checkout, writing each log to
 [`../openapi-surface/fern-refusals/logs/`](../openapi-surface/fern-refusals/logs/)
-and the result to `measurements.jsonl` beside it. Fern runs with a 16 GB Node
+(its first line naming the pair) and the result to `measurements.jsonl` beside
+it. A fetch that failed under another pair is tried again. Fern runs `--jobs`
+at a time and crozier `--crozier-jobs`, and a Fern run past `--timeout` is
+ended with every process it started; its document gets no generation and is
+listed in `unretrievable.tsv` as unmeasured, with the stage that ran past the
+bound. Fern runs with a 16 GB Node
 heap: at the default 4 GB the largest documents (the GitHub REST descriptions)
 report the host's memory rather than Fern's diagnostics. Every
 `documents.tsv` row's `crozier_exit` and `crozier_files` were last re-measured
