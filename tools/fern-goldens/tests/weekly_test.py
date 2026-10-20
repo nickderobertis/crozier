@@ -693,6 +693,15 @@ class TimingTableTests(unittest.TestCase):
                 self.assertIn(message, str(raised.exception))
 
 
+class TitleTests(unittest.TestCase):
+    def test_the_pull_request_title_is_a_conventional_commit_naming_both_versions(self) -> None:
+        decision = weekly.Decision(weekly.Pair("5.170.0", "5.42.0"), True, "digest")
+        self.assertEqual(
+            "test(fern-goldens): regenerate at Fern CLI 5.170.0 / fern-python-sdk 5.42.0", decision.title()
+        )
+        self.assertEqual(decision.title(), decision.to_json()["title"])
+
+
 class BodyTests(unittest.TestCase):
     def decision(self, reports: list[str]) -> weekly.Decision:
         decision = weekly.Decision(weekly.Pair("2.0.0", "3.0.0"), True, "digest")
