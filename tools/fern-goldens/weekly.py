@@ -11,8 +11,8 @@ job of its own, so every decision lives here where the tests drive it:
             pair, ends green here and changes nothing
   plan      every family `fern-references.py list` names (or a dispatch's
             subset), grouped into units that must generate together and packed
-            into the fewest shards whose predicted generation time fits the
-            weekly budget with a margin, from `generation-seconds.tsv`
+            into as few shards as fit the weekly budget with a margin, each
+            predicted from `generation-seconds.tsv`
   shard     one shard's items, each through `fern-references.py generate`, with
             `metadata.json` at the candidate pair; per item its seconds, its log,
             its outcome and the files it wrote
@@ -31,7 +31,8 @@ job of its own, so every decision lives here where the tests drive it:
             auto-merged
 
 Each phase prints one line and appends its Markdown to `--summary` (the step
-summary). Exit status: 0 when the phase finished (a diff is a finished
+summary). Every artifact one phase hands the next is a typed record, validated
+when it is read. Exit status: 0 when the phase finished (a diff is a finished
 decision), 1 when it found a failure (each named on stderr and in the summary),
 2 on a usage error. See docs/fern-goldens.md.
 """
@@ -53,11 +54,12 @@ import subprocess
 import sys
 import tempfile
 import time
-from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
-from pathlib import Path
+from collections.abc import Callable, Iterable, Sequence
+from dataclasses import dataclass, field, replace
+from enum import StrEnum
+from pathlib import Path, PurePosixPath
 from types import ModuleType
-from typing import Any
+from typing import TypeVar
 
 ROOT_ENV = "CROZIER_FERN_WEEKLY_ROOT"
 METADATA = Path("assets/scaffolding/metadata.json")
@@ -96,8 +98,8 @@ ASSEMBLY_MINUTES = 2.0
 # Estimated, not measured: a crozier build and its golden gates over the tree.
 DECISION_MINUTES = 30.0
 PUBLISH_MINUTES = 1.0
-# GitHub-hosted runners stop a job at 6 hours; a shard's timeout-minutes sits
-# inside it, and no shard is planned past the timeout.
+# The shard job's `timeout-minutes`, which the workflow test holds the YAML to;
+# GitHub stops a job at 6 hours, and no shard is planned past this.
 SHARD_TIMEOUT_MINUTES = 300.0
 # A free-plan public repository runs at most 20 jobs at once.
 CONCURRENT_JOBS = 20
@@ -108,16 +110,72 @@ SEED_SECONDS_PER_GENERATION = 3590.0 / 222
 
 VERSION = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+")
 NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*")
-STATUS_OK = "ok"
-STATUS_KNOWN = "known-upstream-failure"
-STATUS_UNFETCHABLE = "spec-unfetchable"
-STATUS_FAILED = "failed"
 REPORT_LIMIT = 6000
 BODY_LIMIT = 60000
 
 
 class WeeklyError(RuntimeError):
     """A failure this phase names, with what to do about it."""
+
+
+class Status(StrEnum):
+    """How one item's regeneration ended."""
+
+    OK = "ok"
+    KNOWN = "known-upstream-failure"
+    UNFETCHABLE = "spec-unfetchable"
+    FAILED = "failed"
+
+
+class Verdict(StrEnum):
+    """How one of crozier's comparisons ended."""
+
+    PASS = "pass"
+    REJECT = "reject"
+    CANNOT_RUN = "cannot-run"
+
+
+class Outcome(StrEnum):
+    """The run's decision: crozier matches every reference, differs from one,
+    or a comparison could not be made."""
+
+    MATCH = "match"
+    DIFF = "diff"
+    FAILURE = "failure"
+
+
+T = TypeVar("T")
+
+
+def field_of(record: object, key: str, kind: type[T], where: str) -> T:
+    """`record[key]` when `record` is an object and the value is a `kind`."""
+    value = record.get(key) if isinstance(record, dict) else None
+    if not isinstance(value, kind) or (kind is int and isinstance(value, bool)):
+        raise WeeklyError(f"{where}: `{key}` must be {kind.__name__}, not {value!r}; re-run the phase that wrote it")
+    return value
+
+
+def seconds_of(record: object, key: str, where: str) -> float:
+    value = record.get(key) if isinstance(record, dict) else None
+    if isinstance(value, bool) or not isinstance(value, int | float) or not math.isfinite(value) or value < 0:
+        raise WeeklyError(f"{where}: `{key}` must be a non-negative number, not {value!r}")
+    return float(value)
+
+
+def stable(version: object) -> bool:
+    return isinstance(version, str) and VERSION.fullmatch(version) is not None
+
+
+def safe_path(value: object, where: str) -> str:
+    """A repository-relative POSIX path that stays inside the checkout."""
+    path = PurePosixPath(value) if isinstance(value, str) and value and "\\" not in value else None
+    if path is None or path.is_absolute() or ".." in path.parts or path.parts[:1] == (".git",):
+        raise WeeklyError(f"{where}: {value!r} is no path inside the repository")
+    return path.as_posix()
+
+
+def safe_name(item: str) -> str:
+    return item.replace("/", "__")
 
 
 @dataclass(frozen=True)
@@ -127,6 +185,369 @@ class Pair:
 
     def label(self) -> str:
         return f"Fern CLI {self.cli} / fern-python-sdk {self.generator}"
+
+    def to_json(self) -> dict[str, str]:
+        return {"cli": self.cli, "generator": self.generator}
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> Pair:
+        cli, generator = field_of(record, "cli", str, where), field_of(record, "generator", str, where)
+        if not (stable(cli) and stable(generator)):
+            raise WeeklyError(f"{where}: the pair must name exact stable versions, not {cli!r} and {generator!r}")
+        return cls(cli, generator)
+
+
+@dataclass(frozen=True)
+class Selector:
+    """One part of a dispatch's subset: a whole family, or one item of it."""
+
+    family: str
+    item: str | None = None
+
+
+@dataclass(frozen=True)
+class PlannedItem:
+    family: str
+    item: str
+    seconds: float
+
+    def key(self) -> tuple[str, str]:
+        return self.family, self.item
+
+
+@dataclass(frozen=True)
+class PlannedShard:
+    index: int
+    seconds: float
+    minutes: float
+    items: tuple[PlannedItem, ...]
+
+
+@dataclass(frozen=True)
+class FamilyTotal:
+    items: int
+    seconds: float
+
+
+@dataclass(frozen=True)
+class Estimate:
+    """The run's predicted minutes, start to pull request, and their parts."""
+
+    minutes: float
+    stages: dict[str, float]
+    waves: int
+    setup_minutes_per_job: float
+    assembly_minutes: float
+    longest_shard_minutes: float
+
+
+@dataclass(frozen=True)
+class Plan:
+    """What the run generates, in which shards, at which pair and base."""
+
+    complete: bool
+    items: str
+    base: str | None
+    pair: Pair | None
+    budget_minutes: float
+    shard_limit_minutes: float
+    default_seconds: float
+    families: dict[str, FamilyTotal]
+    units: int
+    shards: tuple[PlannedShard, ...]
+    estimate: Estimate
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "complete": self.complete,
+            "items": self.items,
+            "base": self.base,
+            "pair": self.pair.to_json() if self.pair else None,
+            "budget_minutes": self.budget_minutes,
+            "shard_limit_minutes": self.shard_limit_minutes,
+            "default_seconds": self.default_seconds,
+            "families": {name: vars(total) for name, total in self.families.items()},
+            "units": self.units,
+            "shards": [
+                {
+                    "index": shard.index,
+                    "seconds": shard.seconds,
+                    "minutes": shard.minutes,
+                    "items": [vars(entry) for entry in shard.items],
+                }
+                for shard in self.shards
+            ],
+            "estimate": vars(self.estimate),
+        }
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> Plan:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} is no plan of this tool's schema; re-run the plan job")
+        assert isinstance(record, dict)
+        shards = []
+        for index, shard in enumerate(field_of(record, "shards", list, where)):
+            at = f"{where} shard {index}"
+            if field_of(shard, "index", int, at) != index:
+                raise WeeklyError(f"{at}: shards must be numbered from 0 in order")
+            items = tuple(
+                PlannedItem(
+                    field_of(entry, "family", str, at),
+                    field_of(entry, "item", str, at),
+                    seconds_of(entry, "seconds", at),
+                )
+                for entry in field_of(shard, "items", list, at)
+            )
+            shards.append(
+                PlannedShard(index, seconds_of(shard, "seconds", at), seconds_of(shard, "minutes", at), items)
+            )
+        keys = [entry.key() for shard in shards for entry in shard.items]
+        if len(keys) != len(set(keys)):
+            raise WeeklyError(f"{where} plans an item twice; re-run the plan job")
+        estimate = field_of(record, "estimate", dict, where)
+        stages = field_of(estimate, "stages", dict, where)
+        base = record.get("base")
+        pair = record.get("pair")
+        return cls(
+            complete=field_of(record, "complete", bool, where),
+            items=field_of(record, "items", str, where),
+            base=base if isinstance(base, str) else None,
+            pair=Pair.from_json(pair, where) if pair is not None else None,
+            budget_minutes=seconds_of(record, "budget_minutes", where),
+            shard_limit_minutes=seconds_of(record, "shard_limit_minutes", where),
+            default_seconds=seconds_of(record, "default_seconds", where),
+            families={
+                name: FamilyTotal(field_of(total, "items", int, where), seconds_of(total, "seconds", where))
+                for name, total in field_of(record, "families", dict, where).items()
+            },
+            units=field_of(record, "units", int, where),
+            shards=tuple(shards),
+            estimate=Estimate(
+                minutes=seconds_of(estimate, "minutes", where),
+                stages={name: seconds_of(stages, name, where) for name in stages},
+                waves=field_of(estimate, "waves", int, where),
+                setup_minutes_per_job=seconds_of(estimate, "setup_minutes_per_job", where),
+                assembly_minutes=seconds_of(estimate, "assembly_minutes", where),
+                longest_shard_minutes=seconds_of(estimate, "longest_shard_minutes", where),
+            ),
+        )
+
+    def candidate(self) -> Pair:
+        if self.pair is None:
+            raise WeeklyError("the plan names no pair to generate at; re-run the plan job with --cli and --generator")
+        return self.pair
+
+
+@dataclass(frozen=True)
+class ItemResult:
+    """How one item regenerated: its outcome, seconds, log and files written."""
+
+    family: str
+    item: str
+    status: Status
+    detail: str
+    seconds: float
+    changed: tuple[str, ...]
+    log: str
+    shard: int | None = None
+
+    def to_json(self) -> dict[str, object]:
+        record: dict[str, object] = {
+            "family": self.family,
+            "item": self.item,
+            "status": self.status.value,
+            "detail": self.detail,
+            "seconds": self.seconds,
+            "changed": list(self.changed),
+            "log": self.log,
+        }
+        if self.shard is not None:
+            record["shard"] = self.shard
+        return record
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> ItemResult:
+        status = field_of(record, "status", str, where)
+        if status not in set(Status):
+            raise WeeklyError(f"{where}: status {status!r} is none of {', '.join(Status)}")
+        shard = record.get("shard") if isinstance(record, dict) else None
+        return cls(
+            family=field_of(record, "family", str, where),
+            item=field_of(record, "item", str, where),
+            status=Status(status),
+            detail=field_of(record, "detail", str, where),
+            seconds=seconds_of(record, "seconds", where),
+            changed=tuple(safe_path(path, where) for path in field_of(record, "changed", list, where)),
+            log=field_of(record, "log", str, where),
+            shard=shard if isinstance(shard, int) and not isinstance(shard, bool) else None,
+        )
+
+
+@dataclass(frozen=True)
+class ShardResult:
+    """One shard's artifact record: what each item did, and the files it carries."""
+
+    index: int
+    pair: Pair
+    base: str | None
+    items: tuple[ItemResult, ...]
+    written: tuple[str, ...]
+    deleted: tuple[str, ...]
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "index": self.index,
+            "pair": self.pair.to_json(),
+            "base": self.base,
+            "items": [item.to_json() for item in self.items],
+            "written": list(self.written),
+            "deleted": list(self.deleted),
+        }
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> ShardResult:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} is no shard result of this tool's schema")
+        base = record.get("base") if isinstance(record, dict) else None
+        return cls(
+            index=field_of(record, "index", int, where),
+            pair=Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
+            base=base if isinstance(base, str) else None,
+            items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
+            written=tuple(safe_path(path, where) for path in field_of(record, "written", list, where)),
+            deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
+        )
+
+
+@dataclass(frozen=True)
+class Bundle:
+    """Every shard combined: the one tree a decision and a pull request read."""
+
+    pair: Pair
+    base: str | None
+    complete: bool
+    items: tuple[ItemResult, ...]
+    deleted: tuple[str, ...]
+    failures: tuple[str, ...]
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "pair": self.pair.to_json(),
+            "base": self.base,
+            "complete": self.complete,
+            "items": [item.to_json() for item in self.items],
+            "deleted": list(self.deleted),
+            "failures": list(self.failures),
+        }
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> Bundle:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} holds no bundle of this tool's schema; re-run the assembly job")
+        base = record.get("base") if isinstance(record, dict) else None
+        return cls(
+            pair=Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
+            base=base if isinstance(base, str) else None,
+            complete=field_of(record, "complete", bool, where),
+            items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
+            deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
+            failures=tuple(str(failure) for failure in field_of(record, "failures", list, where)),
+        )
+
+
+@dataclass(frozen=True)
+class FailingItem:
+    """An item crozier's comparison rejected, with the comparison's own report."""
+
+    item: str
+    report: str
+
+
+@dataclass(frozen=True)
+class Unfetchable:
+    """A reference whose pinned upstream specification could not be fetched."""
+
+    item: str
+    detail: str
+
+
+@dataclass(frozen=True)
+class GateRun:
+    """One comparison the decision ran, and the file its report is saved in."""
+
+    command: str
+    family: str
+    item: str | None
+    verdict: Verdict
+    exit: int | None
+    report: str
+
+
+@dataclass
+class Decision:
+    pair: Pair
+    complete: bool
+    failing: dict[str, list[FailingItem]] = field(default_factory=dict)
+    unfetchable: list[Unfetchable] = field(default_factory=list)
+    cannot_run: list[str] = field(default_factory=list)
+    gates: list[GateRun] = field(default_factory=list)
+
+    @property
+    def outcome(self) -> Outcome:
+        if self.cannot_run:
+            return Outcome.FAILURE
+        return Outcome.DIFF if self.failing or self.unfetchable else Outcome.MATCH
+
+    def title(self) -> str:
+        return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
+
+    def to_json(self) -> dict[str, object]:
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "outcome": self.outcome.value,
+            "complete": self.complete,
+            "pair": self.pair.to_json(),
+            "failing": {family: [vars(entry) for entry in entries] for family, entries in self.failing.items()},
+            "unfetchable": [vars(entry) for entry in self.unfetchable],
+            "cannot_run": self.cannot_run,
+            "gates": [{**vars(run_), "verdict": run_.verdict.value} for run_ in self.gates],
+            "title": self.title(),
+        }
+
+
+@dataclass(frozen=True)
+class RecordedDecision:
+    """A decision as the publication job reads it back."""
+
+    outcome: Outcome
+    complete: bool
+    pair: Pair
+    title: str
+
+    @classmethod
+    def from_json(cls, record: object, where: str) -> RecordedDecision:
+        if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
+            raise WeeklyError(f"{where} is no decision of this tool's schema; re-run the decision job")
+        outcome = field_of(record, "outcome", str, where)
+        if outcome not in set(Outcome):
+            raise WeeklyError(f"{where}: outcome {outcome!r} is none of {', '.join(Outcome)}")
+        return cls(
+            Outcome(outcome),
+            field_of(record, "complete", bool, where),
+            Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
+            field_of(record, "title", str, where),
+        )
+
+
+@dataclass(frozen=True)
+class Step:
+    """One publication step and how it ended."""
+
+    name: str
+    outcome: str
 
 
 def root() -> Path:
@@ -139,28 +560,23 @@ def run(
     env: dict[str, str] | None = None,
     *,
     check: bool = False,
-    binary: bool = False,
-) -> subprocess.CompletedProcess[Any]:
+) -> subprocess.CompletedProcess[str]:
     environment = {**(os.environ if env is None else env), "PYTHONUTF8": "1"}
     try:
-        if binary:
-            result = subprocess.run(list(argv), cwd=cwd, env=environment, capture_output=True, check=False)
-        else:
-            result = subprocess.run(
-                list(argv),
-                cwd=cwd,
-                env=environment,
-                capture_output=True,
-                check=False,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-            )
+        result = subprocess.run(
+            list(argv),
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            check=False,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
     except OSError as error:
         raise WeeklyError(f"could not run {argv[0]!r}: {error}; install it, then re-run") from error
     if check and result.returncode != 0:
-        detail = result.stderr if isinstance(result.stderr, str) else result.stderr.decode("utf-8", "replace")
-        raise WeeklyError(f"`{' '.join(argv)}` exited {result.returncode}: {detail.strip()[-2000:]}")
+        raise WeeklyError(f"`{' '.join(argv)}` exited {result.returncode}: {result.stderr.strip()[-2000:]}")
     return result
 
 
@@ -179,11 +595,20 @@ def load_module(name: str, path: Path) -> ModuleType:
     return module
 
 
-def references(base: Path) -> ModuleType:
+def load_references(base: Path) -> ModuleType:
     """`fern-references.py` over `base`: the per-family recipe whose item lists
-    and case tables the planner reads rather than re-parses."""
+    and case tables the planner calls rather than re-parses. The module reads
+    its root from `CROZIER_FERN_REFERENCES_ROOT` as it loads, so that is set for
+    the load and restored after it."""
+    previous = os.environ.get("CROZIER_FERN_REFERENCES_ROOT")
     os.environ["CROZIER_FERN_REFERENCES_ROOT"] = str(base)
-    return load_module("fern_references", base / "tools/fern-goldens/fern-references.py")
+    try:
+        return load_module("fern_references", base / "tools/fern-goldens/fern-references.py")
+    finally:
+        if previous is None:
+            del os.environ["CROZIER_FERN_REFERENCES_ROOT"]
+        else:
+            os.environ["CROZIER_FERN_REFERENCES_ROOT"] = previous
 
 
 def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
@@ -211,21 +636,55 @@ def write_tsv(path: Path, header: tuple[str, ...], rows: Iterable[Sequence[str]]
     )
 
 
-def certified(base: Path) -> Pair:
+def read_json(path: Path, what: str) -> object:
     try:
-        record = json.loads((base / METADATA).read_text(encoding="utf-8"))
+        return json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as error:
+        raise WeeklyError(f"cannot read the {what} {path} ({error})") from error
+
+
+def write_json(path: Path, record: dict[str, object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
+def metadata_record(text: str, where: str) -> dict[str, object]:
+    try:
+        record = json.loads(text)
+    except ValueError as error:
+        raise WeeklyError(f"cannot read {where} ({error}); restore it with git checkout -- {METADATA}") from error
+    if not isinstance(record, dict):
+        raise WeeklyError(f"{where} must be an object; restore it with git checkout -- {METADATA}")
+    return record
+
+
+def certified(base: Path) -> Pair:
+    """The pair `metadata.json` declares."""
+    try:
+        text = (base / METADATA).read_text(encoding="utf-8")
+    except OSError as error:
         raise WeeklyError(f"cannot read {METADATA} ({error}); restore it with git checkout -- {METADATA}") from error
-    cli, generator = record.get("cliVersion"), record.get("generatorVersion")
-    if not (isinstance(cli, str) and isinstance(generator, str)):
-        raise WeeklyError(f"{METADATA} names no cliVersion and generatorVersion; restore it with git checkout")
-    return Pair(cli, generator)
+    record = metadata_record(text, str(METADATA))
+    return Pair.from_json({"cli": record.get("cliVersion"), "generator": record.get("generatorVersion")}, str(METADATA))
+
+
+def certified_at_base(base: Path) -> Pair:
+    """The pair HEAD certifies, whatever the working tree now declares."""
+    shown = subprocess.run(
+        ["git", "-C", str(base), "cat-file", "blob", f"HEAD:{METADATA.as_posix()}"], capture_output=True, check=False
+    )
+    if shown.returncode != 0:
+        return certified(base)
+    record = metadata_record(shown.stdout.decode("utf-8"), f"HEAD:{METADATA}")
+    return Pair.from_json(
+        {"cli": record.get("cliVersion"), "generator": record.get("generatorVersion")}, f"HEAD:{METADATA}"
+    )
 
 
 def set_pair(base: Path, pair: Pair) -> None:
     """Move `metadata.json`, the pair's one declaration, to `pair`."""
     path = base / METADATA
-    record = json.loads(path.read_text(encoding="utf-8"))
+    record = metadata_record(path.read_text(encoding="utf-8"), str(METADATA))
     record["cliVersion"], record["generatorVersion"] = pair.cli, pair.generator
     path.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
 
@@ -242,28 +701,25 @@ def write_outputs(path: str | None, values: dict[str, str]) -> None:
             handle.write("".join(f"{key}={value}\n" for key, value in values.items()))
 
 
-# ---------------------------------------------------------------- resolve
-
-
-def stable(version: str) -> bool:
-    return VERSION.fullmatch(version) is not None
-
-
 def semantic(version: str) -> tuple[int, int, int]:
     major, minor, patch = version.split(".")
     return int(major), int(minor), int(patch)
 
 
+# llmlint: ignore-block[async_typed_clients_at_boundaries] Each phase is one CI job that makes these few remote calls one after another: npm and Docker Hub are read once through `curl` (as `fern-goldens` already resolves its tags), and `git` and `gh` are the CLIs the runner authenticates with the workflow's token. The repository's Python tooling stays stdlib-only (AGENTS.md's Python departures), so a typed async client would add a dependency and buy no concurrency.
 def newest_cli(base: Path) -> str:
     """The newest stable `fern-api` version npm publishes."""
     fetched = run(["curl", "-fsSL", NPM_URL], base)
     if fetched.returncode != 0:
         raise WeeklyError(f"could not read {NPM_URL}: {fetched.stderr.strip() or fetched.returncode}; re-run later")
     try:
-        versions = json.loads(fetched.stdout).get("versions", {})
-    except (ValueError, AttributeError) as error:
+        document = json.loads(fetched.stdout)
+    except ValueError as error:
         raise WeeklyError(f"{NPM_URL} returned no package document ({error}); re-run later") from error
-    found = [version for version in versions if isinstance(version, str) and stable(version)]
+    versions = document.get("versions") if isinstance(document, dict) else None
+    if not isinstance(versions, dict):
+        raise WeeklyError(f"{NPM_URL} returned no `versions` object; re-run later")
+    found = [version for version in versions if stable(version)]
     if not found:
         raise WeeklyError(f"{NPM_URL} lists no stable fern-api version")
     return max(found, key=semantic)
@@ -278,27 +734,113 @@ def newest_generator(base: Path) -> str:
         raise WeeklyError(str(error)) from error
 
 
-def checked_pairs(base: Path) -> dict[Pair, str]:
-    path = base / CHECKS
-    if not path.is_file():
-        return {}
-    return {
-        Pair(row["fern_cli_version"], row["fern_python_sdk_version"]): row["checked_on"]
-        for row in read_tsv(path, CHECKS_HEADER)
-    }
+def gh(repo: str, *args: str) -> subprocess.CompletedProcess[str]:
+    return run(["gh", *args, "--repo", repo], Path.cwd())
 
 
-def parse_selectors(spec: str) -> list[tuple[str, str | None]]:
+def gh_objects(listed: subprocess.CompletedProcess[str], what: str) -> list[dict[str, object]]:
+    try:
+        found = json.loads(listed.stdout or "[]")
+    except ValueError as error:
+        raise WeeklyError(f"gh printed no JSON listing {what} ({error})") from error
+    if not isinstance(found, list) or not all(isinstance(entry, dict) for entry in found):
+        raise WeeklyError(f"gh listed {what} as no list of objects")
+    return found
+
+
+@dataclass(frozen=True)
+class OpenPull:
+    """The open pull request on `fern-goldens/update`, as gh lists it."""
+
+    number: int
+    auto_merge: bool
+
+
+def open_pull(repo: str) -> OpenPull | None:
+    listed = gh(repo, "pr", "list", "--head", BRANCH, "--state", "open", "--json", "number,url,autoMergeRequest,labels")
+    if listed.returncode != 0:
+        raise WeeklyError(f"could not list pull requests: {listed.stderr.strip()}")
+    pulls = gh_objects(listed, "pull requests")
+    if not pulls:
+        return None
+    return OpenPull(field_of(pulls[0], "number", int, "gh pr list"), bool(pulls[0].get("autoMergeRequest")))
+
+
+def ensure_label(repo: str) -> str:
+    listed = gh(repo, "label", "list", "--search", LABEL, "--json", "name", "--limit", "100")
+    if listed.returncode != 0:
+        raise WeeklyError(f"could not list labels: {listed.stderr.strip()}")
+    if any(label.get("name") == LABEL for label in gh_objects(listed, "labels")):
+        return "present"
+    created = gh(repo, "label", "create", LABEL, "--color", "0E8A16", "--description", "Weekly Fern goldens run")
+    if created.returncode != 0:
+        raise WeeklyError(f"could not create the {LABEL} label: {created.stderr.strip()}")
+    return "created"
+
+
+def push(base: Path, steps: list[Step]) -> None:
+    """Push the branch unless the remote already holds this tree on this base;
+    a lease on what the remote held keeps the push from overwriting a change
+    made since it was read. Never `main`."""
+    remote = git(base, "ls-remote", "origin", f"refs/heads/{BRANCH}").split("\t")[0]
+    if remote:
+        git(base, "fetch", "--no-tags", "origin", f"refs/heads/{BRANCH}")
+        same_tree = git(base, "rev-parse", f"{remote}^{{tree}}") == git(base, "rev-parse", "HEAD^{tree}")
+        same_base = git(base, "rev-parse", f"{remote}^", check=False) == git(base, "rev-parse", "HEAD^")
+        if same_tree and same_base:
+            git(base, "reset", "-q", "--hard", remote)
+            mark(steps, f"push {BRANCH}", f"already on the remote at {remote[:12]}")
+            return
+    pushed = run(
+        [
+            "git",
+            "-C",
+            str(base),
+            "push",
+            f"--force-with-lease=refs/heads/{BRANCH}:{remote}",
+            "origin",
+            f"HEAD:refs/heads/{BRANCH}",
+        ],
+        base,
+    )
+    if pushed.returncode != 0:
+        raise WeeklyError(f"pushing {BRANCH} failed: {pushed.stderr.strip()}")
+    mark(steps, f"push {BRANCH}", "pushed")
+
+
+# llmlint: ignore-end[async_typed_clients_at_boundaries]
+
+
+def parse_selectors(spec: str) -> list[Selector]:
     """A dispatch's subset: comma-separated `family` or `family:item`."""
-    selectors: list[tuple[str, str | None]] = []
+    selectors = []
     for part in (part.strip() for part in spec.split(",")):
         if not part:
             continue
         family, colon, item = part.partition(":")
         if not NAME.fullmatch(family) or (colon and not NAME.fullmatch(item)):
             raise WeeklyError(f"items selector {part!r} is no `family` or `family:item`")
-        selectors.append((family, item if colon else None))
+        selectors.append(Selector(family, item if colon else None))
     return selectors
+
+
+def checked_pairs(base: Path) -> dict[Pair, str]:
+    """The pairs a run recorded crozier as matching, each to the day it checked."""
+    path = base / CHECKS
+    if not path.is_file():
+        return {}
+    found = {}
+    for row in read_tsv(path, CHECKS_HEADER):
+        where = f"{CHECKS} row {row['fern_cli_version']} {row['fern_python_sdk_version']}"
+        pair = Pair.from_json({"cli": row["fern_cli_version"], "generator": row["fern_python_sdk_version"]}, where)
+        try:
+            datetime.date.fromisoformat(row["checked_on"])
+        except ValueError as error:
+            raise WeeklyError(f"{where}: checked_on {row['checked_on']!r} is no YYYY-MM-DD date") from error
+        if row["outcome"] != Outcome.MATCH:
+            raise WeeklyError(f"{where}: outcome {row['outcome']!r} is not `match`, the only outcome a run records")
+        found[pair] = row["checked_on"]
+    return found
 
 
 def resolve(args: argparse.Namespace) -> int:
@@ -343,23 +885,10 @@ def resolve(args: argparse.Namespace) -> int:
     return 0
 
 
-# ---------------------------------------------------------------- plan
-
-
-@dataclass
-class Item:
-    family: str
-    item: str
-    seconds: float
-
-    def key(self) -> str:
-        return f"{self.family}\t{self.item}"
-
-
 def inventory(base: Path) -> dict[str, list[str]]:
     """Every family's items, as `fern-references.py list` names them: the same
     listing functions, called in this process rather than once per family."""
-    module = references(base)
+    module = load_references(base)
     found = {}
     for family, entry in module.FAMILY.items():
         try:
@@ -369,11 +898,12 @@ def inventory(base: Path) -> dict[str, list[str]]:
     return found
 
 
-def select(found: dict[str, list[str]], selectors: list[tuple[str, str | None]]) -> dict[str, list[str]]:
+def select(found: dict[str, list[str]], selectors: list[Selector]) -> dict[str, list[str]]:
     if not selectors:
         return found
     chosen: dict[str, list[str]] = {}
-    for family, item in selectors:
+    for selector in selectors:
+        family, item = selector.family, selector.item
         if family not in found:
             raise WeeklyError(f"no reference family {family!r}; the families are {', '.join(found)}")
         if item is not None and item not in found[family]:
@@ -386,16 +916,19 @@ def select(found: dict[str, list[str]], selectors: list[tuple[str, str | None]])
 def timings(base: Path) -> tuple[dict[tuple[str, str], float], float]:
     """The recorded seconds per item, and the corpus rate an untimed item gets."""
     path = base / TIMINGS
-    rows = read_tsv(path, TIMINGS_HEADER) if path.is_file() else []
     table: dict[tuple[str, str], float] = {}
-    for row in rows:
+    for row in read_tsv(path, TIMINGS_HEADER) if path.is_file() else []:
+        key = (row["family"], row["item"])
+        where = f"{TIMINGS} row {row['family']} {row['item']}"
         try:
             seconds = float(row["seconds"])
         except ValueError as error:
-            raise WeeklyError(f"{TIMINGS} row {row['family']} {row['item']}: seconds is no number") from error
-        if seconds < 0:
-            raise WeeklyError(f"{TIMINGS} row {row['family']} {row['item']}: seconds is negative")
-        table[(row["family"], row["item"])] = seconds
+            raise WeeklyError(f"{where}: seconds is no number") from error
+        if not math.isfinite(seconds) or seconds < 0:
+            raise WeeklyError(f"{where}: seconds must be a finite, non-negative number")
+        if key in table:
+            raise WeeklyError(f"{where}: the item has two rows; keep one")
+        table[key] = seconds
     corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
     return table, (sum(corpus) / len(corpus) if corpus else SEED_SECONDS_PER_GENERATION)
 
@@ -425,7 +958,7 @@ SHARED_TABLE_FAMILIES = ("probes", "refusals")
 
 
 def units(base: Path, chosen: dict[str, list[str]]) -> list[list[str]]:
-    module = references(base)
+    module = load_references(base)
     keys = [f"{family}\t{item}" for family, items in chosen.items() for item in items]
     grouped = Units(keys)
     for family in SHARED_TABLE_FAMILIES:
@@ -494,9 +1027,11 @@ def pack(weights: list[float], count: int) -> list[list[int]]:
 
 
 def shard_count(weights: list[float], limit: float) -> tuple[int, list[list[int]]]:
-    """The fewest bins whose every load fits `limit`: never fewer than the
-    total over the limit allows, one more each time the packing overflows, and
-    one bin per unit at most (a unit alone past the limit cannot be split)."""
+    """How many bins the units take: from the fewest the total allows under
+    `limit` (its lower bound), one more each time longest-processing-time
+    packing overflows a bin, and one bin per unit at most (a unit alone past the
+    limit cannot be split). It is the minimum whenever the packing reaches the
+    lower bound, which the test over the real inventory holds it to."""
     if not weights:
         return 0, []
     count = max(1, math.ceil(sum(weights) / limit))
@@ -507,32 +1042,34 @@ def shard_count(weights: list[float], limit: float) -> tuple[int, list[list[int]
         count += 1
 
 
-def wall_clock(shard_seconds: list[float]) -> dict[str, Any]:
+def wall_clock(shard_seconds: list[float]) -> Estimate:
     """The run's predicted minutes, start to pull request: the plan job, the
     shards in waves of the concurrent-job allowance, then assembly, decision
     and publication, each with its job setup."""
     minutes = sorted((JOB_SETUP_MINUTES + seconds / 60 for seconds in shard_seconds), reverse=True)
     waves = [minutes[start : start + CONCURRENT_JOBS] for start in range(0, len(minutes), CONCURRENT_JOBS)]
-    shards = sum(wave[0] for wave in waves)
     stages = {
         "plan": JOB_SETUP_MINUTES + PLAN_MINUTES,
-        "shards": shards,
+        "shards": sum(wave[0] for wave in waves),
         "assembly": JOB_SETUP_MINUTES + ASSEMBLY_MINUTES,
         "decision": JOB_SETUP_MINUTES + DECISION_MINUTES,
         "publication": JOB_SETUP_MINUTES + PUBLISH_MINUTES,
     }
-    return {
-        "minutes": round(sum(stages.values()), 2),
-        "stages": {name: round(value, 2) for name, value in stages.items()},
-        "waves": len(waves),
-        "setup_minutes_per_job": JOB_SETUP_MINUTES,
-        "assembly_minutes": round(stages["assembly"], 2),
-        "longest_shard_minutes": round(minutes[0], 2) if minutes else 0.0,
-    }
+    return Estimate(
+        minutes=round(sum(stages.values()), 2),
+        stages={name: round(value, 2) for name, value in stages.items()},
+        waves=len(waves),
+        setup_minutes_per_job=JOB_SETUP_MINUTES,
+        assembly_minutes=round(stages["assembly"], 2),
+        longest_shard_minutes=round(minutes[0], 2) if minutes else 0.0,
+    )
 
 
-def make_plan(base: Path, items: str, pair: Pair | None) -> dict[str, Any]:
-    chosen = select(inventory(base), parse_selectors(items))
+def make_plan(base: Path, items: str, pair: Pair | None, commit: str | None = None) -> Plan:
+    """The plan of `items` (the whole inventory when blank) over `base`'s
+    reference inventory and timing table, at `pair`, generated over `commit`."""
+    selectors = parse_selectors(items)
+    chosen = select(inventory(base), selectors)
     table, default = timings(base)
     weights = {
         f"{family}\t{item}": table.get((family, item), default)
@@ -543,135 +1080,110 @@ def make_plan(base: Path, items: str, pair: Pair | None) -> dict[str, Any]:
     limit = shard_limit_seconds()
     _, bins = shard_count([sum(weights[key] for key in unit) for unit in grouped], limit)
     shards = []
-    shard_seconds: list[float] = []
     for index, group in enumerate(bins):
         members = [key for unit in (grouped[i] for i in group) for key in unit]
         seconds = sum(weights[key] for key in members)
-        shard_seconds.append(seconds)
         shards.append(
-            {
-                "index": index,
-                "seconds": round(seconds, 1),
-                "minutes": round(JOB_SETUP_MINUTES + seconds / 60, 2),
-                "items": [
-                    {"family": key.split("\t")[0], "item": key.split("\t")[1], "seconds": round(weights[key], 1)}
+            PlannedShard(
+                index=index,
+                seconds=round(seconds, 1),
+                minutes=round(JOB_SETUP_MINUTES + seconds / 60, 2),
+                items=tuple(
+                    PlannedItem(key.partition("\t")[0], key.partition("\t")[2], round(weights[key], 1))
                     for key in members
-                ],
-            }
+                ),
+            )
         )
-    families = {
-        family: {
-            "items": len(entries),
-            "seconds": round(sum(weights[f"{family}\t{item}"] for item in entries), 1),
-        }
-        for family, entries in chosen.items()
-    }
-    return {
-        "schema_version": SCHEMA_VERSION,
-        "complete": not parse_selectors(items),
-        "items": items,
-        "base": git(base, "rev-parse", "HEAD", check=False) or None,
-        "pair": {"cli": pair.cli, "generator": pair.generator} if pair else None,
-        "budget_minutes": BUDGET_MINUTES,
-        "shard_limit_minutes": round(limit / 60, 2),
-        "default_seconds": round(default, 2),
-        "families": families,
-        "units": len(grouped),
-        "shards": shards,
-        "estimate": wall_clock(shard_seconds),
-    }
+    return Plan(
+        complete=not selectors,
+        items=items,
+        base=commit,
+        pair=pair,
+        budget_minutes=BUDGET_MINUTES,
+        shard_limit_minutes=round(limit / 60, 2),
+        default_seconds=round(default, 2),
+        families={
+            family: FamilyTotal(len(entries), round(sum(weights[f"{family}\t{item}"] for item in entries), 1))
+            for family, entries in chosen.items()
+        },
+        units=len(grouped),
+        shards=tuple(shards),
+        estimate=wall_clock(
+            [sum(weights[f"{entry.family}\t{entry.item}"] for entry in shard.items) for shard in shards]
+        ),
+    )
 
 
 def plan(args: argparse.Namespace) -> int:
     base = root()
-    pair = Pair(args.cli, args.generator) if args.cli and args.generator else None
-    made = make_plan(base, args.items, pair)
-    text = json.dumps(made, indent=2) + "\n"
+    if bool(args.cli) != bool(args.generator):
+        raise WeeklyError("--cli and --generator name the pair together; pass both or neither")
+    pair = Pair.from_json({"cli": args.cli, "generator": args.generator}, "--cli/--generator") if args.cli else None
+    made = make_plan(base, args.items, pair, git(base, "rev-parse", "HEAD", check=False) or None)
     for destination in (args.output, args.telemetry):
         if destination:
-            Path(destination).parent.mkdir(parents=True, exist_ok=True)
-            Path(destination).write_text(text, encoding="utf-8", newline="\n")
-    count = len(made["shards"])
+            write_json(Path(destination), made.to_json())
+    count = len(made.shards)
     write_outputs(args.github_output, {"matrix": json.dumps({"shard": list(range(count))}), "shards": str(count)})
-    total = sum(family["items"] for family in made["families"].values())
-    estimate = made["estimate"]
+    total = sum(family.items for family in made.families.values())
     summarize(
         args.summary,
         [
             "## Fern goldens: plan",
             "",
-            f"{total} item(s) in {made['units']} unit(s), {count} shard(s) of at most "
-            f"{made['shard_limit_minutes']} generation minutes; predicted {estimate['minutes']} minutes "
+            f"{total} item(s) in {made.units} unit(s), {count} shard(s) of at most "
+            f"{made.shard_limit_minutes} generation minutes; predicted {made.estimate.minutes} minutes "
             f"start to pull request (budget {BUDGET_MINUTES:g}).",
             "",
             "| family | items | predicted seconds |",
             "|---|---:|---:|",
-            *(f"| {name} | {family['items']} | {family['seconds']} |" for name, family in made["families"].items()),
+            *(f"| {name} | {family.items} | {family.seconds} |" for name, family in made.families.items()),
         ],
     )
-    print(f"fern-goldens-weekly: planned {total} item(s) in {count} shard(s), {estimate['minutes']} minutes predicted")
+    print(
+        f"fern-goldens-weekly: planned {total} item(s) in {count} shard(s), {made.estimate.minutes} minutes predicted"
+    )
     return 0
 
 
-def read_json(path: Path, what: str) -> Any:
-    try:
-        return json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, ValueError) as error:
-        raise WeeklyError(f"cannot read the {what} {path} ({error})") from error
+def read_plan(path: Path) -> Plan:
+    return Plan.from_json(read_json(path, "plan"), str(path))
 
 
-def read_plan(path: Path) -> dict[str, Any]:
-    made = read_json(path, "plan")
-    if not isinstance(made, dict) or made.get("schema_version") != SCHEMA_VERSION or not made.get("pair"):
-        raise WeeklyError(f"{path} is no plan of this tool's schema naming a pair; re-run the plan job")
-    return made
+def committed_digest(base: Path, path: str) -> str | None:
+    """The digest of `path`'s committed bytes, or None when HEAD has no such file."""
+    shown = subprocess.run(
+        ["git", "-C", str(base), "cat-file", "blob", f"HEAD:{path}"], capture_output=True, check=False
+    )
+    return hashlib.sha256(shown.stdout).hexdigest() if shown.returncode == 0 else None
 
 
-def plan_pair(made: dict[str, Any]) -> Pair:
-    return Pair(made["pair"]["cli"], made["pair"]["generator"])
-
-
-# ---------------------------------------------------------------- shard
-
-
-def blob(base: Path, path: str) -> bytes | None:
-    """`path`'s committed bytes, or None when HEAD has no such file."""
-    shown = run(["git", "-C", str(base), "cat-file", "blob", f"HEAD:{path}"], base, binary=True)
-    return shown.stdout if shown.returncode == 0 else None
+def digest_of(path: Path) -> str | None:
+    return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
 
 
 def dirty(base: Path) -> dict[str, str | None]:
     """Every path that differs from HEAD, to its content digest (None when deleted)."""
     listed = run(["git", "-C", str(base), "status", "--porcelain=v1", "-z", "--untracked-files=all"], base, check=True)
-    found: dict[str, str | None] = {}
-    for entry in listed.stdout.split("\0"):
-        if len(entry) > 3:
-            path = entry[3:]
-            target = base / path
-            found[path] = digest(target.read_bytes()) if target.is_file() else None
-    return found
-
-
-def digest(data: bytes | None) -> str | None:
-    return None if data is None else hashlib.sha256(data).hexdigest()
+    return {entry[3:]: digest_of(base / entry[3:]) for entry in listed.stdout.split("\0") if len(entry) > 3}
 
 
 def changed_between(base: Path, before: dict[str, str | None], after: dict[str, str | None]) -> list[str]:
     paths = []
     for path in sorted({*before, *after}):
-        was = before[path] if path in before else digest(blob(base, path))
-        target = base / path
-        now = digest(target.read_bytes()) if target.is_file() else None
-        if was != now:
+        was = before[path] if path in before else committed_digest(base, path)
+        if was != digest_of(base / path):
             paths.append(path)
     return paths
 
 
-def listed_fixtures(path: Path) -> list[str]:
+def listed_fixtures(path: Path) -> dict[str, str]:
+    """A `fern-goldens` report's fixtures, each to the detail after its tab."""
     try:
-        return [line.split("\t")[0] for line in path.read_text(encoding="utf-8").splitlines() if line]
+        lines = path.read_text(encoding="utf-8").splitlines()
     except OSError:
-        return []
+        return {}
+    return {line.split("\t")[0]: line.partition("\t")[2] for line in lines if line}
 
 
 def delegate_logs(base: Path, since: float) -> list[Path]:
@@ -683,11 +1195,8 @@ def delegate_logs(base: Path, since: float) -> list[Path]:
     return sorted(found)
 
 
-def safe_name(item: str) -> str:
-    return item.replace("/", "__")
-
-
-def generate_item(base: Path, family: str, item: str, logs: Path) -> dict[str, Any]:
+def generate_item(base: Path, entry: PlannedItem, logs: Path) -> ItemResult:
+    family, item = entry.family, entry.item
     environment = dict(os.environ, CROZIER_FERN_REFERENCES_ROOT=str(base), CROZIER_FERN_GOLDENS_ROOT=str(base))
     before = dirty(base)
     started_wall, started = time.time() - 1, time.monotonic()
@@ -705,131 +1214,110 @@ def generate_item(base: Path, family: str, item: str, logs: Path) -> dict[str, A
             f"\n=== {path.relative_to(base).as_posix()} ===\n{path.read_text(encoding='utf-8', errors='replace')}"
         )
     log.write_text("".join(parts), encoding="utf-8", newline="\n")
-    status, detail = STATUS_OK, ""
-    known = listed_fixtures(base / FERN_GOLDENS_REPORT / "known-upstream-failures.txt")
+    status, detail = Status.OK, ""
     if result.returncode != 0:
-        fetch = base / FERN_GOLDENS_REPORT / "fetch-failures.txt"
-        unfetchable = (
-            {
-                line.split("\t")[0]: line.partition("\t")[2]
-                for line in fetch.read_text(encoding="utf-8").splitlines()
-                if line
-            }
-            if family == "corpus" and fetch.is_file()
-            else {}
-        )
+        unfetchable = listed_fixtures(base / FERN_GOLDENS_REPORT / "fetch-failures.txt") if family == "corpus" else {}
         if item in unfetchable:
-            status, detail = STATUS_UNFETCHABLE, unfetchable[item]
+            status, detail = Status.UNFETCHABLE, unfetchable[item]
         else:
-            status = STATUS_FAILED
+            status = Status.FAILED
             detail = (result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}").splitlines()[-1]
-    elif family == "corpus" and item in known:
-        status, detail = STATUS_KNOWN, "the exact known upstream Fern failure, reproduced"
-    return {
-        "family": family,
-        "item": item,
-        "status": status,
-        "detail": detail,
-        "seconds": round(seconds, 1),
-        "changed": changed_between(base, before, dirty(base)),
-        "log": log.relative_to(logs.parent).as_posix(),
-    }
+    elif family == "corpus" and item in listed_fixtures(base / FERN_GOLDENS_REPORT / "known-upstream-failures.txt"):
+        status, detail = Status.KNOWN, "the exact known upstream Fern failure, reproduced"
+    return ItemResult(
+        family=family,
+        item=item,
+        status=status,
+        detail=detail,
+        seconds=round(seconds, 1),
+        changed=tuple(changed_between(base, before, dirty(base))),
+        log=log.relative_to(logs.parent).as_posix(),
+    )
 
 
 def shard(args: argparse.Namespace) -> int:
     base = root()
     made = read_plan(Path(args.plan))
-    shards = made["shards"]
-    if not 0 <= args.index < len(shards):
-        raise WeeklyError(f"the plan has {len(shards)} shard(s), not index {args.index}")
-    pair = plan_pair(made)
+    if not 0 <= args.index < len(made.shards):
+        raise WeeklyError(f"the plan has {len(made.shards)} shard(s), not index {args.index}")
+    pair = made.candidate()
     output = Path(args.output).resolve()
     if output.exists():
         shutil.rmtree(output)
     (output / "files").mkdir(parents=True)
     set_pair(base, pair)
-    results = [
-        generate_item(base, entry["family"], entry["item"], output / "logs") for entry in shards[args.index]["items"]
-    ]
-    written = sorted({path for result in results for path in result["changed"]})
-    deleted = []
-    for path in written:
+    results = [generate_item(base, entry, output / "logs") for entry in made.shards[args.index].items]
+    written, deleted = [], []
+    for path in sorted({path for result in results for path in result.changed}):
         source = base / path
         if source.is_file():
             target = output / "files" / path
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
+            written.append(path)
         else:
             deleted.append(path)
-    record = {
-        "schema_version": SCHEMA_VERSION,
-        "index": args.index,
-        "pair": made["pair"],
-        "base": made["base"],
-        "items": results,
-        "written": [path for path in written if path not in deleted],
-        "deleted": deleted,
-    }
-    (output / "result.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
-    failed = [result for result in results if result["status"] == STATUS_FAILED]
-    counts = {
-        status: sum(r["status"] == status for r in results)
-        for status in (STATUS_OK, STATUS_KNOWN, STATUS_UNFETCHABLE, STATUS_FAILED)
-    }
+    record = ShardResult(args.index, pair, made.base, tuple(results), tuple(written), tuple(deleted))
+    write_json(output / "result.json", record.to_json())
+    failed = [result for result in results if result.status == Status.FAILED]
+    counts = {status: sum(result.status == status for result in results) for status in Status}
     summarize(
         args.summary,
         [
             f"## Fern goldens: shard {args.index}",
             "",
             f"{len(results)} item(s) at {pair.label()}: "
-            + ", ".join(f"{count} {status}" for status, count in counts.items()),
+            + ", ".join(f"{count} {status.value}" for status, count in counts.items()),
             *(
-                f"- {r['family']} `{r['item']}`: {r['status']}: {r['detail']}"
-                for r in results
-                if r["status"] != STATUS_OK
+                f"- {result.family} `{result.item}`: {result.status.value}: {result.detail}"
+                for result in results
+                if result.status != Status.OK
             ),
         ],
     )
     print(f"fern-goldens-weekly: shard {args.index}: {len(results)} item(s), {len(failed)} failed")
     for result in failed:
-        print(f"{result['family']} {result['item']}: {result['detail']} (log {result['log']})", file=sys.stderr)
+        print(f"{result.family} {result.item}: {result.detail} (log {result.log})", file=sys.stderr)
     return 1 if failed else 0
 
 
-# ---------------------------------------------------------------- assemble
+def uploaded_results(shards_dir: Path, failures: list[str]) -> dict[int, tuple[Path, ShardResult]]:
+    """Every shard result under the downloaded artifacts, by its index."""
+    uploaded: dict[int, tuple[Path, ShardResult]] = {}
+    for path in sorted(shards_dir.rglob("result.json")):
+        try:
+            record = ShardResult.from_json(read_json(path, "shard result"), str(path))
+        except WeeklyError as error:
+            failures.append(str(error))
+            continue
+        if record.index in uploaded:
+            failures.append(f"shard {record.index} uploaded two results ({uploaded[record.index][0]} and {path})")
+        uploaded[record.index] = (path.parent, record)
+    return uploaded
 
 
 def assemble(args: argparse.Namespace) -> int:
     base = root()
     made = read_plan(Path(args.plan))
-    pair = plan_pair(made)
-    shards_dir = Path(args.shards)
+    pair = made.candidate()
     output = Path(args.output).resolve()
     if output.exists():
         shutil.rmtree(output)
     (output / "files").mkdir(parents=True)
     failures: list[str] = []
-    results: list[dict[str, Any]] = []
+    results: list[ItemResult] = []
     owners: dict[str, int] = {}
     deleted: list[str] = []
-    uploaded: dict[int, Path] = {}
-    for path in sorted(shards_dir.rglob("result.json")):
-        record = read_json(path, "shard result")
-        index = record.get("index") if isinstance(record, dict) else None
-        if isinstance(index, int):
-            if index in uploaded:
-                failures.append(f"shard {index} uploaded two results ({uploaded[index]} and {path})")
-            uploaded[index] = path
-    for planned in made["shards"]:
-        index = planned["index"]
+    uploaded = uploaded_results(Path(args.shards), failures)
+    for planned in made.shards:
+        index = planned.index
         if index not in uploaded:
             failures.append(f"shard {index} uploaded no result; its job failed or was cancelled before uploading")
             continue
-        record = read_json(uploaded[index], f"shard {index} result")
-        shard_dir = uploaded[index].parent
-        expected = [(entry["family"], entry["item"]) for entry in planned["items"]]
-        reported = [(entry["family"], entry["item"]) for entry in record.get("items", [])]
-        if record.get("pair") != made["pair"] or record.get("base") != made["base"]:
+        shard_dir, record = uploaded[index]
+        expected = [entry.key() for entry in planned.items]
+        reported = [(entry.family, entry.item) for entry in record.items]
+        if record.pair != pair or record.base != made.base:
             failures.append(f"shard {index} generated at another pair or base than the plan")
             continue
         if reported != expected:
@@ -839,11 +1327,11 @@ def assemble(args: argparse.Namespace) -> int:
                 + (f": missing {', '.join(missing)}" if missing else ": its items differ from the plan")
             )
             continue
-        for path in [*record["written"], *record["deleted"]]:
+        for path in (*record.written, *record.deleted):
             if path in owners and owners[path] != index:
                 failures.append(f"{path} was written by shards {owners[path]} and {index}; plan their items together")
             owners[path] = index
-        for path in record["written"]:
+        for path in record.written:
             source = shard_dir / "files" / path
             if not source.is_file():
                 failures.append(f"shard {index} lists {path} but its artifact does not carry it")
@@ -851,63 +1339,30 @@ def assemble(args: argparse.Namespace) -> int:
             target = output / "files" / path
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source, target)
-        deleted += record["deleted"]
-        logs = shard_dir / "logs"
-        if logs.is_dir():
-            shutil.copytree(logs, output / "logs", dirs_exist_ok=True)
-        for entry in record["items"]:
-            entry["shard"] = index
-            results.append(entry)
-            if entry["status"] == STATUS_FAILED:
-                failures.append(
-                    f"{entry['family']} {entry['item']}: generation failed: {entry['detail']} (log {entry['log']})"
-                )
-    # The measured seconds replace the recorded ones; an item that did not run keeps its row.
-    table, _default = timings(base)
-    for entry in results:
-        if entry["status"] in (STATUS_OK, STATUS_KNOWN):
-            table[(entry["family"], entry["item"])] = entry["seconds"]
-    if made["complete"]:
-        planned_keys = {
-            (entry["family"], entry["item"]) for shard_plan in made["shards"] for entry in shard_plan["items"]
-        }
-        table = {key: value for key, value in table.items() if key in planned_keys}
-    families = list(made["families"])
-    rows = sorted(
-        table.items(), key=lambda kv: (families.index(kv[0][0]) if kv[0][0] in families else len(families), kv[0][1])
-    )
-    write_tsv(
-        output / "files" / TIMINGS,
-        TIMINGS_HEADER,
-        ([family, item, f"{seconds:.1f}"] for (family, item), seconds in rows),
-        TIMINGS_NOTE,
-    )
+        deleted += record.deleted
+        if (shard_dir / "logs").is_dir():
+            shutil.copytree(shard_dir / "logs", output / "logs", dirs_exist_ok=True)
+        for entry in record.items:
+            results.append(replace(entry, shard=index))
+            if entry.status == Status.FAILED:
+                failures.append(f"{entry.family} {entry.item}: generation failed: {entry.detail} (log {entry.log})")
+    write_timings(base, made, results, output / "files" / TIMINGS)
     metadata = output / "files" / METADATA
     metadata.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(base / METADATA, metadata)
-    record = json.loads(metadata.read_text(encoding="utf-8"))
-    record["cliVersion"], record["generatorVersion"] = pair.cli, pair.generator
-    metadata.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
-    unfetchable = [entry for entry in results if entry["status"] == STATUS_UNFETCHABLE]
-    bundle = {
-        "schema_version": SCHEMA_VERSION,
-        "pair": made["pair"],
-        "base": made["base"],
-        "complete": made["complete"],
-        "items": results,
-        "deleted": sorted(set(deleted)),
-        "failures": failures,
-    }
-    (output / "bundle.json").write_text(json.dumps(bundle, indent=2) + "\n", encoding="utf-8", newline="\n")
+    set_pair(output / "files", pair)
+    unfetchable = [entry for entry in results if entry.status == Status.UNFETCHABLE]
+    bundle = Bundle(pair, made.base, made.complete, tuple(results), tuple(sorted(set(deleted))), tuple(failures))
+    write_json(output / "bundle.json", bundle.to_json())
     summarize(
         args.summary,
         [
             "## Fern goldens: assembly",
             "",
-            f"{len(results)} item(s) from {len(made['shards'])} shard(s) at {pair.label()}; "
+            f"{len(results)} item(s) from {len(made.shards)} shard(s) at {pair.label()}; "
             f"{len(unfetchable)} with an unfetchable upstream specification; {len(failures)} failure(s).",
             *(f"- **failure**: {failure}" for failure in failures),
-            *(f"- not regenerated: corpus `{entry['item']}`: {entry['detail']}" for entry in unfetchable),
+            *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in unfetchable),
         ],
     )
     if failures:
@@ -915,33 +1370,52 @@ def assemble(args: argparse.Namespace) -> int:
         for failure in failures:
             print(f"  {failure}", file=sys.stderr)
         return 1
-    print(f"fern-goldens-weekly: assembled {len(results)} item(s) from {len(made['shards'])} shard(s)")
+    print(f"fern-goldens-weekly: assembled {len(results)} item(s) from {len(made.shards)} shard(s)")
     return 0
 
 
-# ---------------------------------------------------------------- apply
+def write_timings(base: Path, made: Plan, results: list[ItemResult], destination: Path) -> None:
+    """The timing table with every measured item's seconds in place of its
+    row; an item that did not run keeps its row, and a complete run drops the
+    rows of items no longer in the inventory."""
+    table, _default = timings(base)
+    for entry in results:
+        if entry.status in (Status.OK, Status.KNOWN):
+            table[(entry.family, entry.item)] = entry.seconds
+    if made.complete:
+        planned = {entry.key() for shard_plan in made.shards for entry in shard_plan.items}
+        table = {key: value for key, value in table.items() if key in planned}
+    families = list(made.families)
+
+    def order(key: tuple[str, str]) -> tuple[int, str]:
+        return (families.index(key[0]) if key[0] in families else len(families), key[1])
+
+    write_tsv(
+        destination,
+        TIMINGS_HEADER,
+        ([family, item, f"{table[(family, item)]:.1f}"] for family, item in sorted(table, key=order)),
+        TIMINGS_NOTE,
+    )
 
 
-def read_bundle(path: Path) -> dict[str, Any]:
-    bundle = read_json(path / "bundle.json", "assembled bundle")
-    if not isinstance(bundle, dict) or bundle.get("schema_version") != SCHEMA_VERSION:
-        raise WeeklyError(f"{path} holds no bundle of this tool's schema; re-run the assembly job")
-    if bundle.get("failures"):
+def read_bundle(path: Path) -> Bundle:
+    bundle = Bundle.from_json(read_json(path / "bundle.json", "assembled bundle"), str(path / "bundle.json"))
+    if bundle.failures:
         raise WeeklyError(f"{path} is a failed assembly; nothing from it may be decided or published")
     return bundle
 
 
-def apply_bundle(base: Path, path: Path) -> dict[str, Any]:
+def apply_bundle(base: Path, path: Path) -> Bundle:
     bundle = read_bundle(path)
     head = git(base, "rev-parse", "HEAD")
-    if bundle["base"] and head != bundle["base"]:
-        raise WeeklyError(f"the bundle was generated over {bundle['base']}, but this checkout is at {head}")
+    if bundle.base and head != bundle.base:
+        raise WeeklyError(f"the bundle was generated over {bundle.base}, but this checkout is at {head}")
     files = path / "files"
     for source in sorted(p for p in files.rglob("*") if p.is_file()):
-        target = base / source.relative_to(files)
+        target = base / safe_path(source.relative_to(files).as_posix(), str(path))
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(source, target)
-    for relative in bundle["deleted"]:
+    for relative in bundle.deleted:
         target = base / relative
         if target.is_file():
             target.unlink()
@@ -952,13 +1426,9 @@ def apply_bundle(base: Path, path: Path) -> dict[str, Any]:
 
 
 def apply(args: argparse.Namespace) -> int:
-    base = root()
-    bundle = apply_bundle(base, Path(args.bundle))
-    print(f"fern-goldens-weekly: applied {len(bundle['items'])} item(s) at {Pair(**bundle['pair']).label()}")
+    bundle = apply_bundle(root(), Path(args.bundle))
+    print(f"fern-goldens-weekly: applied {len(bundle.items)} item(s) at {bundle.pair.label()}")
     return 0
-
-
-# ---------------------------------------------------------------- decide
 
 
 @dataclass(frozen=True)
@@ -975,27 +1445,35 @@ class Gate:
     command: str
 
 
-def gates(base: Path) -> list[Gate]:
+def gates(base: Path, families: Iterable[str] | None = None) -> list[Gate]:
+    known = set(families) if families is not None else None
     found = []
     for row in read_tsv(base / GATES, GATES_HEADER):
-        families = tuple(name for name in row["family"].split(",") if name)
-        if row["scope"] not in ("item", "family") or not families:
-            raise WeeklyError(f"{GATES}: {row['family']}: scope is item or family, and a family is named")
+        where = f"{GATES}: {row['family']} `{row['command']}`"
+        named = tuple(name for name in row["family"].split(",") if name)
+        if row["scope"] not in ("item", "family") or not named:
+            raise WeeklyError(f"{where}: scope is item or family, and a family is named")
+        if known is not None and not set(named) <= known:
+            raise WeeklyError(f"{where}: {', '.join(sorted(set(named) - known))} is no reference family")
+        if not row["command"].strip():
+            raise WeeklyError(f"{where}: the command is empty")
         passes: tuple[int, ...] = ()
         rejects: tuple[int, ...] = ()
         if row["verdict"] != "fixtures-report":
             match = re.fullmatch(r"exit:([0-9,]+)/([0-9,]+)", row["verdict"])
             if match is None:
-                raise WeeklyError(f"{GATES}: verdict {row['verdict']!r} is fixtures-report or exit:PASS/REJECT")
-            passes = tuple(int(code) for code in match.group(1).split(","))
-            rejects = tuple(int(code) for code in match.group(2).split(","))
-        found.append(Gate(families, row["scope"] == "item", row["verdict"], passes, rejects, row["command"]))
+                raise WeeklyError(f"{where}: verdict {row['verdict']!r} is fixtures-report or exit:PASS/REJECT")
+            passes = tuple(int(code) for code in match.group(1).split(",") if code)
+            rejects = tuple(int(code) for code in match.group(2).split(",") if code)
+            if set(passes) & set(rejects) or not passes or not rejects:
+                raise WeeklyError(f"{where}: verdict {row['verdict']!r} names each exit once, as a pass or a rejection")
+        found.append(Gate(named, row["scope"] == "item", row["verdict"], passes, rejects, row["command"]))
     return found
 
 
-@dataclass
-class Verdict:
-    status: str  # pass, reject, cannot-run
+@dataclass(frozen=True)
+class GateResult:
+    verdict: Verdict
     report: str
     exit: int | None = None
 
@@ -1007,7 +1485,7 @@ REGRESSION = re.compile(r"(?m)^--- .* \[REGRESSION")
 SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
 
 
-def read_report(code: int, output: str) -> str:
+def read_report(code: int, output: str) -> Verdict:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in
     `unmatched`, a Crozier generation failure or a comparison it could not
@@ -1015,12 +1493,12 @@ def read_report(code: int, output: str) -> str:
     is a comparison that could not run."""
     summaries = [pattern.search(output) for pattern in (DIFFS, GENERATION, PROCESSING)]
     if code != 0 or any(match is None for match in summaries) or SETUP.search(output):
-        return "cannot-run"
+        return Verdict.CANNOT_RUN
     _diffs, generation, processing = (int(match.group(1)) for match in summaries if match is not None)
-    return "reject" if REGRESSION.search(output) or generation or processing else "pass"
+    return Verdict.REJECT if REGRESSION.search(output) or generation or processing else Verdict.PASS
 
 
-def run_gate(base: Path, gate: Gate, item: str | None) -> Verdict:
+def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:
     with tempfile.TemporaryDirectory(prefix="fern-goldens-gate-") as scratch:
         words = [
             word.replace("{root}", str(base)).replace("{scratch}", scratch).replace("{item}", item or "")
@@ -1033,131 +1511,116 @@ def run_gate(base: Path, gate: Gate, item: str | None) -> Verdict:
         try:
             result = run(words, base, environment)
         except WeeklyError as error:
-            return Verdict("cannot-run", str(error))
+            return GateResult(Verdict.CANNOT_RUN, str(error))
     output = (result.stdout or "") + (result.stderr or "")
     if gate.verdict == "fixtures-report":
-        return Verdict(read_report(result.returncode, output), output, result.returncode)
+        return GateResult(read_report(result.returncode, output), output, result.returncode)
     if result.returncode in gate.passes:
-        return Verdict("pass", output, result.returncode)
+        return GateResult(Verdict.PASS, output, result.returncode)
     if result.returncode in gate.rejects:
-        return Verdict("reject", output, result.returncode)
-    return Verdict("cannot-run", output, result.returncode)
+        return GateResult(Verdict.REJECT, output, result.returncode)
+    return GateResult(Verdict.CANNOT_RUN, output, result.returncode)
 
 
 def excerpt(report: str, tokens: Iterable[str], context: int = 4, limit: int = 80) -> str:
     """The lines of a family gate's own report that name an item, with the
-    lines after each, which is how the report attributes a failure."""
-    wanted = [token for token in tokens if token]
+    lines after each, which is how the report attributes a failure. A token
+    names the item only standing alone: `lantern` in `handwritten/lantern/` or
+    `lantern: …`, never inside `types/lantern.py` or `alpha_lanterns`."""
+    edge = r"[A-Za-z0-9_.-]"
+    wanted = [re.compile(rf"(?<!{edge}){re.escape(token)}(?!{edge})") for token in tokens if token]
     lines = report.splitlines()
     keep: set[int] = set()
     for number, line in enumerate(lines):
-        if any(token in line for token in wanted):
+        if any(pattern.search(line) for pattern in wanted):
             keep.update(range(number, min(number + context + 1, len(lines))))
     return "\n".join(lines[number] for number in sorted(keep)[:limit])
 
 
-@dataclass
-class Decision:
-    pair: Pair
-    complete: bool
-    failing: dict[str, list[dict[str, str]]] = field(default_factory=dict)
-    unfetchable: list[dict[str, str]] = field(default_factory=list)
-    cannot_run: list[str] = field(default_factory=list)
-    gates: list[dict[str, Any]] = field(default_factory=list)
-
-    @property
-    def outcome(self) -> str:
-        if self.cannot_run:
-            return "failure"
-        return "diff" if self.failing or self.unfetchable else "match"
-
-
-def decide_bundle(base: Path, bundle: dict[str, Any], reports: Path) -> Decision:
-    decision = Decision(Pair(**bundle["pair"]), bool(bundle["complete"]))
-    items: dict[str, list[dict[str, Any]]] = {}
-    for entry in bundle["items"]:
-        if entry["status"] == STATUS_UNFETCHABLE:
-            decision.unfetchable.append({"item": entry["item"], "detail": entry["detail"]})
-        else:
-            items.setdefault(entry["family"], []).append(entry)
-    reports.mkdir(parents=True, exist_ok=True)
-    seen: dict[str, Verdict] = {}
-    for gate in gates(base):
-        decided = [family for family in gate.families if family in items]
-        if not decided:
-            continue
-        if gate.per_item:
-            for family in decided:
-                for entry in items[family]:
-                    verdict = run_gate(base, gate, entry["item"])
-                    record_gate(decision, reports, gate, family, entry["item"], verdict)
-                    if verdict.status == "reject":
-                        decision.failing.setdefault(family, []).append(
-                            {"item": entry["item"], "report": verdict.report.strip()}
-                        )
-            continue
-        verdict = seen.get(gate.command) or run_gate(base, gate, None)
-        first = gate.command not in seen
-        seen[gate.command] = verdict
-        if first:
-            record_gate(decision, reports, gate, ",".join(gate.families), None, verdict)
-        if verdict.status != "reject":
-            continue
-        for family in decided:
-            named = False
-            for entry in items[family]:
-                part = excerpt(verdict.report, [entry["item"], *entry["changed"]])
-                if part:
-                    named = True
-                    listed = decision.failing.setdefault(family, [])
-                    if not any(existing["item"] == entry["item"] for existing in listed):
-                        listed.append({"item": entry["item"], "report": f"`{gate.command}`:\n{part}"})
-            if not named and family == decided[0]:
-                tail = "\n".join(verdict.report.splitlines()[-80:])
-                decision.failing.setdefault(family, []).append(
-                    {"item": "(the gate's report names no item)", "report": f"`{gate.command}`:\n{tail}"}
-                )
-    return decision
-
-
-def record_gate(decision: Decision, reports: Path, gate: Gate, family: str, item: str | None, verdict: Verdict) -> None:
+def record_gate(
+    decision: Decision, reports: Path, gate: Gate, family: str, item: str | None, result: GateResult
+) -> None:
     name = f"{len(decision.gates):04d}-{safe_name(family)}{'-' + safe_name(item) if item else ''}.log"
-    (reports / name).write_text(verdict.report, encoding="utf-8", newline="\n")
-    decision.gates.append(
-        {
-            "command": gate.command,
-            "family": family,
-            "item": item,
-            "status": verdict.status,
-            "exit": verdict.exit,
-            "report": name,
-        }
-    )
-    if verdict.status == "cannot-run":
+    (reports / name).write_text(result.report, encoding="utf-8", newline="\n")
+    decision.gates.append(GateRun(gate.command, family, item, result.verdict, result.exit, name))
+    if result.verdict == Verdict.CANNOT_RUN:
         decision.cannot_run.append(
             f"`{gate.command}`{f' for {family} `{item}`' if item else ''} could not run "
-            f"(exit {verdict.exit}); see {name}"
+            f"(exit {result.exit}); see {name}"
         )
 
 
+def attribute(
+    decision: Decision, gate: Gate, families: list[str], items: dict[str, list[ItemResult]], report: str
+) -> None:
+    """A rejecting family gate's report, split over the items it names: each
+    item whose name or regenerated files appear in it, with those lines; the
+    report's tail under the first family when it names none."""
+    named = False
+    for family in families:
+        for entry in items[family]:
+            part = excerpt(report, [entry.item, *entry.changed])
+            if not part:
+                continue
+            named = True
+            listed = decision.failing.setdefault(family, [])
+            if not any(existing.item == entry.item for existing in listed):
+                listed.append(FailingItem(entry.item, f"`{gate.command}`:\n{part}"))
+    if not named:
+        tail = "\n".join(report.splitlines()[-80:])
+        decision.failing.setdefault(families[0], []).append(
+            FailingItem("(the gate's report names no item)", f"`{gate.command}`:\n{tail}")
+        )
+
+
+def decide_bundle(base: Path, bundle: Bundle, reports: Path, families: Iterable[str]) -> Decision:
+    decision = Decision(bundle.pair, bundle.complete)
+    items: dict[str, list[ItemResult]] = {}
+    for entry in bundle.items:
+        if entry.status == Status.UNFETCHABLE:
+            decision.unfetchable.append(Unfetchable(entry.item, entry.detail))
+        else:
+            items.setdefault(entry.family, []).append(entry)
+    reports.mkdir(parents=True, exist_ok=True)
+    # A command several family rows name runs once, and its report is split over
+    # every family those rows name.
+    shared: dict[str, tuple[Gate, list[str]]] = {}
+    for gate in gates(base, families):
+        decided = [family for family in gate.families if family in items]
+        if not decided:
+            continue
+        if not gate.per_item:
+            _first, named = shared.setdefault(gate.command, (gate, []))
+            named.extend(family for family in decided if family not in named)
+            continue
+        for family in decided:
+            for entry in items[family]:
+                result = run_gate(base, gate, entry.item)
+                record_gate(decision, reports, gate, family, entry.item, result)
+                if result.verdict == Verdict.REJECT:
+                    decision.failing.setdefault(family, []).append(FailingItem(entry.item, result.report.strip()))
+    for gate, named in shared.values():
+        result = run_gate(base, gate, None)
+        record_gate(decision, reports, gate, ",".join(named), None, result)
+        if result.verdict == Verdict.REJECT:
+            attribute(decision, gate, named, items, result.report)
+    return decision
+
+
 def fenced(text: str) -> str:
-    longest = max((len(run_) for run_ in re.findall(r"`+", text)), default=0)
+    longest = max((len(ticks) for ticks in re.findall(r"`+", text)), default=0)
     fence = "`" * max(3, longest + 1)
     return f"{fence}text\n{text}\n{fence}"
 
 
-def title(pair: Pair) -> str:
-    return f"test(fern-goldens): regenerate at Fern CLI {pair.cli} / fern-python-sdk {pair.generator}"
-
-
-def body(decision: Decision, bundle: dict[str, Any], current: Pair) -> str:
+def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID") and os.environ.get("GITHUB_REPOSITORY"):
         server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
         run_url = f"{server}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}"
     families: dict[str, int] = {}
-    for entry in bundle["items"]:
-        families[entry["family"]] = families.get(entry["family"], 0) + 1
+    for entry in bundle.items:
+        families[entry.family] = families.get(entry.family, 0) + 1
     lines = [
         "## What",
         "",
@@ -1165,49 +1628,38 @@ def body(decision: Decision, bundle: dict[str, Any], current: Pair) -> str:
         f"(certified: {current.label()}) and compared crozier's output with each through crozier's own comparison.",
         "",
     ]
-    if decision.outcome == "match":
-        lines += [
+    if decision.outcome == Outcome.MATCH:
+        lines.append(
             "**No diff**: crozier's output matches every regenerated reference, so this adopts the pair: "
             "`assets/scaffolding/metadata.json`, every statement of the pair, the regenerated references, the "
             "measured generation seconds and a `tests/fixtures/fern-pair-checks.tsv` row. It merges itself once "
-            "crozier's required checks pass.",
-        ]
+            "crozier's required checks pass."
+        )
     else:
         failing = sum(len(entries) for entries in decision.failing.values())
-        lines += [
-            f"**Diff**: crozier's comparison fails for {failing} item(s)"
-            + (
-                f", and {len(decision.unfetchable)} reference(s) could not be regenerated"
-                if decision.unfetchable
-                else ""
-            )
-            + ". This carries the regenerated references and the new pair; crozier's checks on it show what "
-            "crozier must change. It is not auto-merged.",
-        ]
+        unfetchable = (
+            f", and {len(decision.unfetchable)} reference(s) could not be regenerated" if decision.unfetchable else ""
+        )
+        lines.append(
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}. This carries the regenerated "
+            "references and the new pair; crozier's checks on it show what crozier must change. It is not auto-merged."
+        )
     lines += ["", "## Why", "", "Fern released a new version; crozier promises to match the Fern its users run.", ""]
     if decision.failing:
         lines += ["## Failing items", ""]
         budget = BODY_LIMIT // max(1, sum(len(entries) for entries in decision.failing.values()))
+        limit = min(REPORT_LIMIT, max(400, budget))
         for family, entries in decision.failing.items():
             lines += [f"### {family} ({len(entries)})", ""]
             for entry in entries:
-                report = entry["report"]
-                limit = min(REPORT_LIMIT, max(400, budget))
+                report = entry.report
                 if len(report) > limit:
                     report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
-                lines += [
-                    f"- `{entry['item']}`",
-                    "",
-                    "<details><summary>report</summary>",
-                    "",
-                    fenced(report),
-                    "",
-                    "</details>",
-                    "",
-                ]
+                lines += [f"- `{entry.item}`", "", "<details><summary>report</summary>", "", fenced(report), ""]
+                lines += ["</details>", ""]
     if decision.unfetchable:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
-        lines += [f"- corpus `{entry['item']}`: {entry['detail']}" for entry in decision.unfetchable]
+        lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
         lines += [""]
     lines += ["## Inventory", "", "| family | items |", "|---|---:|"]
     lines += [f"| {family} | {count} |" for family, count in families.items()]
@@ -1224,34 +1676,23 @@ def decide(args: argparse.Namespace) -> int:
     current = certified_at_base(base)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    decision = decide_bundle(base, bundle, output / "reports")
-    record = {
-        "schema_version": SCHEMA_VERSION,
-        "outcome": decision.outcome,
-        "complete": decision.complete,
-        "pair": bundle["pair"],
-        "failing": decision.failing,
-        "unfetchable": decision.unfetchable,
-        "cannot_run": decision.cannot_run,
-        "gates": decision.gates,
-        "title": title(decision.pair),
-    }
-    (output / "decision.json").write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
+    decision = decide_bundle(base, bundle, output / "reports", load_references(base).FAMILY)
+    write_json(output / "decision.json", decision.to_json())
     (output / "body.md").write_text(body(decision, bundle, current), encoding="utf-8", newline="\n")
-    failing = [f"{family} `{entry['item']}`" for family, entries in decision.failing.items() for entry in entries]
+    failing = [f"{family} `{entry.item}`" for family, entries in decision.failing.items() for entry in entries]
     summarize(
         args.summary,
         [
             "## Fern goldens: decision",
             "",
-            f"**{decision.outcome}** at {decision.pair.label()}"
+            f"**{decision.outcome.value}** at {decision.pair.label()}"
             + ("" if decision.complete else " (a diagnostic subset: nothing is published)"),
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- differs: {line}" for line in failing),
-            *(f"- not regenerated: corpus `{entry['item']}`: {entry['detail']}" for entry in decision.unfetchable),
+            *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],
     )
-    print(f"fern-goldens-weekly: decision {decision.outcome}: {len(failing)} failing item(s)")
+    print(f"fern-goldens-weekly: decision {decision.outcome.value}: {len(failing)} failing item(s)")
     if decision.cannot_run:
         for line in decision.cannot_run:
             print(f"  cannot run: {line}", file=sys.stderr)
@@ -1259,68 +1700,20 @@ def decide(args: argparse.Namespace) -> int:
     return 0
 
 
-def certified_at_base(base: Path) -> Pair:
-    """The pair HEAD certifies, whatever the working tree now declares."""
-    shown = blob(base, METADATA.as_posix())
-    if shown is None:
-        return certified(base)
-    record = json.loads(shown.decode("utf-8"))
-    return Pair(record["cliVersion"], record["generatorVersion"])
+def mark(steps: list[Step], name: str, outcome: str) -> None:
+    steps.append(Step(name, outcome))
+    print(f"fern-goldens-weekly: publish: {name}: {outcome}")
 
 
-# ---------------------------------------------------------------- publish
-
-
-class Steps:
-    """The publication steps and how each ended, for the summary a failure
-    leaves: the next run reconciles from the remote, not from this record."""
-
-    def __init__(self) -> None:
-        self.done: list[tuple[str, str]] = []
-
-    def mark(self, step: str, outcome: str) -> None:
-        self.done.append((step, outcome))
-        print(f"fern-goldens-weekly: publish: {step}: {outcome}")
-
-    def lines(self) -> list[str]:
-        return [f"- {step}: {outcome}" for step, outcome in self.done]
-
-
-def gh(repo: str, *args: str) -> subprocess.CompletedProcess[Any]:
-    return run(["gh", *args, "--repo", repo], Path.cwd())
-
-
-def open_pull(repo: str) -> dict[str, Any] | None:
-    listed = gh(repo, "pr", "list", "--head", BRANCH, "--state", "open", "--json", "number,url,autoMergeRequest,labels")
-    if listed.returncode != 0:
-        raise WeeklyError(f"could not list pull requests: {listed.stderr.strip()}")
-    try:
-        pulls = json.loads(listed.stdout or "[]")
-    except ValueError as error:
-        raise WeeklyError(f"gh pr list printed no JSON ({error})") from error
-    return pulls[0] if pulls else None
-
-
-def ensure_label(repo: str) -> str:
-    listed = gh(repo, "label", "list", "--search", LABEL, "--json", "name", "--limit", "100")
-    if listed.returncode != 0:
-        raise WeeklyError(f"could not list labels: {listed.stderr.strip()}")
-    if any(label.get("name") == LABEL for label in json.loads(listed.stdout or "[]")):
-        return "present"
-    created = gh(repo, "label", "create", LABEL, "--color", "0E8A16", "--description", "Weekly Fern goldens run")
-    if created.returncode != 0:
-        raise WeeklyError(f"could not create the {LABEL} label: {created.stderr.strip()}")
-    return "created"
-
-
-def commit_tree(base: Path, bundle_path: Path, decision: dict[str, Any], checked_on: str) -> str:
+def commit_tree(base: Path, bundle_path: Path, decision: RecordedDecision, checked_on: str) -> None:
     """The one commit the pull request carries, on the planned base."""
     apply_bundle(base, bundle_path)
-    pair = Pair(**decision["pair"])
-    if decision["outcome"] == "match":
+    if decision.outcome == Outcome.MATCH:
         path = base / CHECKS
         rows = read_tsv(path, CHECKS_HEADER) if path.is_file() else []
-        rows.append(dict(zip(CHECKS_HEADER, (pair.cli, pair.generator, checked_on, "match"), strict=True)))
+        rows.append(
+            dict(zip(CHECKS_HEADER, (decision.pair.cli, decision.pair.generator, checked_on, "match"), strict=True))
+        )
         write_tsv(path, CHECKS_HEADER, ([row[key] for key in CHECKS_HEADER] for row in rows))
     git(base, "checkout", "-B", BRANCH)
     git(base, "add", "-A")
@@ -1334,119 +1727,107 @@ def commit_tree(base: Path, bundle_path: Path, decision: dict[str, Any], checked
         "-q",
         "--allow-empty",
         "-m",
-        decision["title"],
+        decision.title,
     )
-    return git(base, "rev-parse", "HEAD")
 
 
-def push(base: Path, steps: Steps) -> None:
-    """Push the branch unless the remote already holds this tree on this base;
-    a lease on what the remote held keeps the push from overwriting a change
-    made since it was read. Never `main`."""
-    remote = git(base, "ls-remote", "origin", f"refs/heads/{BRANCH}").split("\t")[0]
-    if remote:
-        git(base, "fetch", "--no-tags", "origin", f"refs/heads/{BRANCH}")
-        same_tree = git(base, "rev-parse", f"{remote}^{{tree}}") == git(base, "rev-parse", "HEAD^{tree}")
-        same_base = git(base, "rev-parse", f"{remote}^", check=False) == git(base, "rev-parse", "HEAD^")
-        if same_tree and same_base:
-            git(base, "reset", "-q", "--hard", remote)
-            steps.mark(f"push {BRANCH}", f"already on the remote at {remote[:12]}")
+def open_or_update(repo: str, decision: RecordedDecision, body_file: str, steps: list[Step]) -> OpenPull:
+    pull = open_pull(repo)
+    if pull is None:
+        created = gh(
+            repo,
+            "pr",
+            "create",
+            "--base",
+            BASE,
+            "--head",
+            BRANCH,
+            "--title",
+            decision.title,
+            "--body-file",
+            body_file,
+            "--label",
+            LABEL,
+        )
+        if created.returncode != 0:
+            raise WeeklyError(f"opening the pull request failed: {created.stderr.strip()}")
+        pull = open_pull(repo)
+        if pull is None:
+            raise WeeklyError("the pull request gh reported opened is not listed open")
+        mark(steps, "pull request", f"opened #{pull.number}")
+        return pull
+    edited = gh(
+        repo,
+        "pr",
+        "edit",
+        str(pull.number),
+        "--title",
+        decision.title,
+        "--body-file",
+        body_file,
+        "--add-label",
+        LABEL,
+    )
+    if edited.returncode != 0:
+        raise WeeklyError(f"updating pull request #{pull.number} failed: {edited.stderr.strip()}")
+    mark(steps, "pull request", f"updated #{pull.number}")
+    return pull
+
+
+def settle_auto_merge(repo: str, decision: RecordedDecision, pull: OpenPull, steps: list[Step]) -> None:
+    """Auto-merge on for a match, off for a diff, each only when not already so."""
+    number = str(pull.number)
+    if decision.outcome == Outcome.MATCH:
+        if pull.auto_merge:
+            mark(steps, "auto-merge", "already enabled")
             return
-    pushed = run(
-        [
-            "git",
-            "-C",
-            str(base),
-            "push",
-            f"--force-with-lease=refs/heads/{BRANCH}:{remote}",
-            "origin",
-            f"HEAD:refs/heads/{BRANCH}",
-        ],
-        base,
-    )
-    if pushed.returncode != 0:
-        raise WeeklyError(f"pushing {BRANCH} failed: {pushed.stderr.strip()}")
-    steps.mark(f"push {BRANCH}", "pushed")
+        merged = gh(repo, "pr", "merge", number, "--auto", "--squash")
+        if merged.returncode != 0:
+            raise WeeklyError(f"enabling auto-merge on #{number} failed: {merged.stderr.strip()}")
+        mark(steps, "auto-merge", "enabled")
+    elif pull.auto_merge:
+        disabled = gh(repo, "pr", "merge", number, "--disable-auto")
+        if disabled.returncode != 0:
+            raise WeeklyError(f"turning off auto-merge on #{number} failed: {disabled.stderr.strip()}")
+        mark(steps, "auto-merge", "turned off: a diff waits for a person")
+    else:
+        mark(steps, "auto-merge", "off: a diff waits for a person")
 
 
 def publish(args: argparse.Namespace) -> int:
     base = root()
-    steps = Steps()
-    decision = read_json(Path(args.decision) / "decision.json", "decision")
+    steps: list[Step] = []
     try:
-        if decision.get("outcome") not in ("match", "diff"):
-            raise WeeklyError(f"the decision is {decision.get('outcome')!r}; only a match or a diff is published")
-        if not decision.get("complete"):
+        decision = RecordedDecision.from_json(
+            read_json(Path(args.decision) / "decision.json", "decision"), str(Path(args.decision) / "decision.json")
+        )
+        bundle = read_bundle(Path(args.bundle))
+        if decision.outcome not in (Outcome.MATCH, Outcome.DIFF):
+            raise WeeklyError(f"the decision is {decision.outcome.value!r}; only a match or a diff is published")
+        if not decision.complete or not bundle.complete:
             raise WeeklyError("a diagnostic subset run never publishes, adopts or records a pair")
+        if decision.pair != bundle.pair:
+            raise WeeklyError(f"the decision is at {decision.pair.label()}, the bundle at {bundle.pair.label()}")
         if not os.environ.get("GH_TOKEN"):
             raise WeeklyError(
                 "GH_TOKEN (the workflow's RELEASE_PLZ_TOKEN) is not set; add the secret, then re-run. Nothing was pushed."
             )
         checked_on = args.checked_on or datetime.datetime.now(datetime.UTC).date().isoformat()
+        try:
+            datetime.date.fromisoformat(checked_on)
+        except ValueError as error:
+            raise WeeklyError(f"--checked-on {checked_on!r} is no YYYY-MM-DD date") from error
         commit_tree(base, Path(args.bundle), decision, checked_on)
-        steps.mark("commit", git(base, "rev-parse", "--short=12", "HEAD"))
+        mark(steps, "commit", git(base, "rev-parse", "--short=12", "HEAD"))
         push(base, steps)
-        steps.mark(f"label {LABEL}", ensure_label(args.repo))
-        body_file = str(Path(args.decision) / "body.md")
         # Every write reads the remote first and is skipped when already done, so
         # a run after a failure or a lost response finishes the rest; a write that
         # fails ends the run red, whatever the remote may since have applied.
-        pull = open_pull(args.repo)
-        if pull is None:
-            created = gh(
-                args.repo,
-                "pr",
-                "create",
-                "--base",
-                BASE,
-                "--head",
-                BRANCH,
-                "--title",
-                decision["title"],
-                "--body-file",
-                body_file,
-                "--label",
-                LABEL,
-            )
-            if created.returncode != 0:
-                raise WeeklyError(f"opening the pull request failed: {created.stderr.strip()}")
-            pull = open_pull(args.repo)
-            if pull is None:
-                raise WeeklyError("the pull request gh reported opened is not listed open")
-            steps.mark("pull request", f"opened #{pull['number']}")
-        else:
-            edited = gh(
-                args.repo,
-                "pr",
-                "edit",
-                str(pull["number"]),
-                "--title",
-                decision["title"],
-                "--body-file",
-                body_file,
-                "--add-label",
-                LABEL,
-            )
-            if edited.returncode != 0:
-                raise WeeklyError(f"updating pull request #{pull['number']} failed: {edited.stderr.strip()}")
-            steps.mark("pull request", f"updated #{pull['number']}")
-        number = str(pull["number"])
-        if decision["outcome"] == "match":
-            if pull.get("autoMergeRequest"):
-                steps.mark("auto-merge", "already enabled")
-            else:
-                merged = gh(args.repo, "pr", "merge", number, "--auto", "--squash")
-                if merged.returncode != 0:
-                    raise WeeklyError(f"enabling auto-merge on #{number} failed: {merged.stderr.strip()}")
-                steps.mark("auto-merge", "enabled")
-        elif pull.get("autoMergeRequest"):
-            disabled = gh(args.repo, "pr", "merge", number, "--disable-auto")
-            if disabled.returncode != 0:
-                raise WeeklyError(f"turning off auto-merge on #{number} failed: {disabled.stderr.strip()}")
-            steps.mark("auto-merge", "turned off: a diff waits for a person")
-        else:
-            steps.mark("auto-merge", "off: a diff waits for a person")
+        mark(steps, f"label {LABEL}", ensure_label(args.repo))
+        pull = open_or_update(args.repo, decision, str(Path(args.decision) / "body.md"), steps)
+        settle_auto_merge(args.repo, decision, pull, steps)
     except WeeklyError as error:
+        completed = [f"- {step.name}: {step.outcome}" for step in steps] or ["- none"]
         summarize(
             args.summary,
             [
@@ -1455,18 +1836,26 @@ def publish(args: argparse.Namespace) -> int:
                 f"**{error}**",
                 "",
                 "Steps completed before it:",
-                *(steps.lines() or ["- none"]),
+                *completed,
                 "",
                 "The next run reconciles from the remote: it reuses the branch and pull request and finishes the rest.",
             ],
         )
         print(f"fern-goldens-weekly: publication failed: {error}", file=sys.stderr)
         return 1
-    summarize(args.summary, ["## Fern goldens: publication", "", *steps.lines()])
+    summarize(args.summary, ["## Fern goldens: publication", "", *(f"- {step.name}: {step.outcome}" for step in steps)])
     return 0
 
 
-# ---------------------------------------------------------------- main
+PHASES: dict[str, Callable[[argparse.Namespace], int]] = {
+    "resolve": resolve,
+    "plan": plan,
+    "shard": shard,
+    "assemble": assemble,
+    "apply": apply,
+    "decide": decide,
+    "publish": publish,
+}
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -1507,17 +1896,9 @@ def main(argv: list[str] | None = None) -> int:
         sub.add_argument("--github-output", help="append this phase's outputs here")
     args = parser.parse_args(argv)
     try:
-        return {
-            "resolve": resolve,
-            "plan": plan,
-            "shard": shard,
-            "assemble": assemble,
-            "apply": apply,
-            "decide": decide,
-            "publish": publish,
-        }[args.command](args)
+        return PHASES[args.command](args)
     except WeeklyError as error:
-        summarize(getattr(args, "summary", None), [f"## Fern goldens: {args.command} failed", "", f"**{error}**"])
+        summarize(args.summary, [f"## Fern goldens: {args.command} failed", "", f"**{error}**"])
         print(f"fern-goldens-weekly: {error}", file=sys.stderr)
         return 1
 

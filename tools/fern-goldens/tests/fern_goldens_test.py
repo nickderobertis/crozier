@@ -117,6 +117,22 @@ class CommittedGoldenStateTests(unittest.TestCase):
         self.assertGreater(checked, 100, "the committed corpus should be most of the rows")
 
 
+class GeneratorConfigColumnsTests(unittest.TestCase):
+    """`fern-goldens` records a fixture's `fern-generator-config.txt` row by
+    column; the table's header and `generate-fern-fixture.sh`'s reader name the
+    same columns in the same order."""
+
+    def test_the_recorded_columns_are_the_table_s_and_the_generator_s(self) -> None:
+        tool = load_goldens_tool()
+        table = (REPO / "tests/fixtures/fern-generator-config.txt").read_text(encoding="utf-8").splitlines()
+        header = next(line for line in table if line.startswith("# fixture|"))
+        self.assertEqual(("fixture", *tool.GENERATOR_CONFIG_FIELDS), tuple(header.removeprefix("# ").split("|")))
+        script = (REPO / "tools/fern-goldens/generate-fern-fixture.sh").read_text(encoding="utf-8")
+        reader = next(line for line in script.splitlines() if "while IFS='|' read -r configured_fixture" in line)
+        names = reader.split("read -r ", 1)[1].split(";", 1)[0].split()
+        self.assertEqual(len(tool.GENERATOR_CONFIG_FIELDS) + 1, len(names), reader)
+
+
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class SharedLibraryTests(unittest.TestCase):
     """Each script loads `scripts/lib.sh` before anything else; a checkout missing it

@@ -61,4 +61,17 @@ test('the reader refuses a usage error, missing telemetry and a subset plan', t 
   const partial = spawnSync(process.execPath, [reader, '--telemetry', subset], { encoding: 'utf8' });
   assert.equal(partial.status, 1);
   assert.match(partial.stderr, /incomplete telemetry/);
+  const item = { family: 'corpus', item: 'anchore.io', seconds: 16.2 };
+  const shard = { index: 0, seconds: 32.4, minutes: 4.54, items: [item, item] };
+  for (const [plan, reason] of [
+    [{ families: { corpus: { items: 2, seconds: 32.4 } }, shards: [shard] }, /plans an item twice/],
+    [{ families: { corpus: { items: 1, seconds: 16.2 }, probes: { items: 1, seconds: 16.2 } }, shards: [{ ...shard, items: [item] }] }, /do not hold every probes item/],
+    [{ families: {}, shards: [shard] }, /names no family/],
+  ]) {
+    const file = join(dir, 'bad.json');
+    writeFileSync(file, JSON.stringify({ schema_version: 1, complete: true, estimate: { minutes: 9 }, ...plan }));
+    const refused = spawnSync(process.execPath, [reader, '--telemetry', file], { encoding: 'utf8' });
+    assert.equal(refused.status, 1);
+    assert.match(refused.stderr, reason);
+  }
 });

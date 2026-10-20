@@ -208,7 +208,7 @@ jobs:
         run: python3 tools/fern-goldens/weekly.py apply --bundle .local/fern-goldens-weekly/bundle
 
       - name: Build crozier from that tree
-        run: cargo build --locked --bin crozier
+        run: just nx run crozier:build
 
       - name: Decide with crozier's own comparison
         run: |

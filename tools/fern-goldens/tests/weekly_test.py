@@ -47,30 +47,26 @@ class RealPlanTests(unittest.TestCase):
         cls.inventory = weekly.inventory(REPO)
 
     def planned(self) -> list[tuple[str, str]]:
-        return [(entry["family"], entry["item"]) for shard in self.plan["shards"] for entry in shard["items"]]
+        return [entry.key() for shard in self.plan.shards for entry in shard.items]
 
     def shard_of(self) -> dict[tuple[str, str], int]:
-        return {
-            (entry["family"], entry["item"]): shard["index"]
-            for shard in self.plan["shards"]
-            for entry in shard["items"]
-        }
+        return {entry.key(): shard.index for shard in self.plan.shards for entry in shard.items}
 
     def test_every_item_of_every_family_is_planned_once(self) -> None:
         expected = [(family, item) for family, items in self.inventory.items() for item in items]
         self.assertEqual(sorted(expected), sorted(self.planned()))
         self.assertEqual(len(expected), len(set(self.planned())))
-        self.assertTrue(self.plan["complete"])
+        self.assertTrue(self.plan.complete)
         self.assertEqual(
             {family: len(items) for family, items in self.inventory.items()},
-            {family: entry["items"] for family, entry in self.plan["families"].items()},
+            {family: entry.items for family, entry in self.plan.families.items()},
         )
         # Every family the recipe defines, so a Fern change to any reference is seen.
-        self.assertEqual(set(weekly.references(REPO).FAMILY), set(self.plan["families"]))
+        self.assertEqual(set(weekly.load_references(REPO).FAMILY), set(self.plan.families))
 
     def test_the_shard_count_is_the_fewest_that_fit_the_budget(self) -> None:
         limit = weekly.shard_limit_seconds()
-        loads = [shard["seconds"] for shard in self.plan["shards"]]
+        loads = [shard.seconds for shard in self.plan.shards]
         self.assertTrue(all(load <= limit / 60 * 60 + 0.1 for load in loads), (loads, limit))
         count = len(loads)
         total = sum(loads)
@@ -83,9 +79,9 @@ class RealPlanTests(unittest.TestCase):
                 f"{count - 1} shard(s) would have fitted",
             )
         self.assertEqual(max(1, math.ceil(total / limit)), count, "the packing reached the lower bound")
-        self.assertLessEqual(self.plan["estimate"]["minutes"], weekly.BUDGET_MINUTES)
-        for shard in self.plan["shards"]:
-            self.assertLess(shard["minutes"], weekly.SHARD_TIMEOUT_MINUTES)
+        self.assertLessEqual(self.plan.estimate.minutes, weekly.BUDGET_MINUTES)
+        for shard in self.plan.shards:
+            self.assertLess(shard.minutes, weekly.SHARD_TIMEOUT_MINUTES)
 
     def unit_weights(self) -> list[float]:
         table, default = weekly.timings(REPO)
@@ -110,7 +106,7 @@ class RealPlanTests(unittest.TestCase):
         for item in self.inventory["overlays"]:
             with self.subTest(overlay=item):
                 self.assertEqual(shard[("corpus", item.split("/")[0])], shard[("overlays", item)])
-        module = weekly.references(REPO)
+        module = weekly.load_references(REPO)
         handwritten = (REPO / module.HANDWRITTEN).resolve()
         overlaid = 0
         for name, case in module.cases().items():
@@ -127,8 +123,8 @@ class RealPlanTests(unittest.TestCase):
         literals = [item for item in self.inventory["measurements"] if item.startswith("parameter-literals/")]
         self.assertEqual(1, len({shard[("measurements", item)] for item in literals}))
         # Within a shard a golden generates before the overlay reduced against it.
-        for planned in self.plan["shards"]:
-            order = [(entry["family"], entry["item"]) for entry in planned["items"]]
+        for planned in self.plan.shards:
+            order = [entry.key() for entry in planned.items]
             for index, (family, item) in enumerate(order):
                 if family == "overlays":
                     self.assertIn(("corpus", item.split("/")[0]), order[:index])
@@ -138,8 +134,8 @@ class RealPlanTests(unittest.TestCase):
         corpus = [seconds for (family, _item), seconds in table.items() if family == "corpus"]
         self.assertTrue(corpus, "the table is seeded with corpus timings")
         self.assertAlmostEqual(sum(corpus) / len(corpus), default)
-        handwritten = self.plan["families"]["handwritten"]
-        self.assertAlmostEqual(handwritten["seconds"], round(handwritten["items"] * default, 1), delta=1)
+        handwritten = self.plan.families["handwritten"]
+        self.assertAlmostEqual(handwritten.seconds, round(handwritten.items * default, 1), delta=1)
 
     def test_the_budget_the_planner_sizes_against_is_the_registered_one(self) -> None:
         budgets = (REPO / ".github/budgets.yaml").read_text(encoding="utf-8")
@@ -150,13 +146,13 @@ class RealPlanTests(unittest.TestCase):
 class SubsetTests(unittest.TestCase):
     def test_a_subset_plans_exactly_what_it_names(self) -> None:
         made = weekly.make_plan(REPO, "handwritten,corpus:anchore.io", None)
-        planned = [(entry["family"], entry["item"]) for shard in made["shards"] for entry in shard["items"]]
+        planned = [entry.key() for shard in made.shards for entry in shard.items]
         inventory = weekly.inventory(REPO)
         self.assertEqual(
             sorted([("corpus", "anchore.io"), *(("handwritten", item) for item in inventory["handwritten"])]),
             sorted(planned),
         )
-        self.assertFalse(made["complete"])
+        self.assertFalse(made.complete)
 
     def test_an_unknown_family_or_item_is_refused(self) -> None:
         for spec, message in (
@@ -337,14 +333,14 @@ class ReportTests(unittest.TestCase):
 class GateTableTests(unittest.TestCase):
     def test_the_committed_gates_are_crozier_s_own_comparisons(self) -> None:
         gates = weekly.gates(REPO)
-        families = set(weekly.references(REPO).FAMILY)
+        families = set(weekly.load_references(REPO).FAMILY)
         self.assertEqual(families, {family for gate in gates for family in gate.families})
         commands = {gate.command for gate in gates}
         self.assertEqual(
             {
                 "just fixtures-diff {item}",
-                "cargo nextest run --locked --no-fail-fast -p crozier-e2e",
-                "cargo nextest run --locked --no-fail-fast -p crozier --test refusal_registry",
+                "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e",
+                "cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry",
                 "python3 tools/fern-refusals/fern-refusals.py check",
             },
             commands,
@@ -383,19 +379,25 @@ class AssemblyTests(unittest.TestCase):
         (self.root / "assets/scaffolding").mkdir(parents=True)
         stand_in = '{"cliVersion": "1.0.0"}'  # certified-pair: stand-in
         (self.root / "assets/scaffolding/metadata.json").write_text(stand_in, encoding="utf-8")
-        self.plan = {
-            "schema_version": 1,
-            "complete": True,
-            "items": "",
-            "base": "abc",
-            "pair": {"cli": "2.0.0", "generator": "3.0.0"},
-            "families": {"corpus": {"items": 2, "seconds": 2}},
-            "shards": [
-                {"index": 0, "items": [{"family": "corpus", "item": "a", "seconds": 1}]},
-                {"index": 1, "items": [{"family": "corpus", "item": "b", "seconds": 1}]},
-            ],
-        }
-        (self.scratch / "plan.json").write_text(json.dumps(self.plan), encoding="utf-8")
+        self.pair = weekly.Pair("2.0.0", "3.0.0")
+        shards = tuple(
+            weekly.PlannedShard(index, 1.0, 4.02, (weekly.PlannedItem("corpus", item, 1.0),))
+            for index, item in enumerate(("a", "b"))
+        )
+        plan = weekly.Plan(
+            complete=True,
+            items="",
+            base="abc",
+            pair=self.pair,
+            budget_minutes=weekly.BUDGET_MINUTES,
+            shard_limit_minutes=94.5,
+            default_seconds=1.0,
+            families={"corpus": weekly.FamilyTotal(2, 2.0)},
+            units=2,
+            shards=shards,
+            estimate=weekly.wall_clock([1.0, 1.0]),
+        )
+        (self.scratch / "plan.json").write_text(json.dumps(plan.to_json()), encoding="utf-8")
 
     def shard(self, index: int, item: str, written: list[str], status: str = "ok") -> None:
         directory = self.scratch / "artifacts" / f"fern-goldens-shard-{index}"
@@ -405,7 +407,7 @@ class AssemblyTests(unittest.TestCase):
         record = {
             "schema_version": 1,
             "index": index,
-            "pair": self.plan["pair"],
+            "pair": self.pair.to_json(),
             "base": "abc",
             "items": [
                 {

@@ -126,6 +126,21 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
             "{name} stays inside GitHub's six-hour job limit"
         );
     }
+    // The planner plans no shard past the shard job's timeout, so the two agree.
+    let planned_timeout = WEEKLY
+        .lines()
+        .find_map(|line| line.strip_prefix("SHARD_TIMEOUT_MINUTES = "))
+        .expect("weekly.py declares SHARD_TIMEOUT_MINUTES");
+    assert_eq!(
+        planned_timeout
+            .trim_end_matches(".0")
+            .parse::<u64>()
+            .expect("a whole number of minutes"),
+        nested_mapping(jobs, "shard")
+            .get("timeout-minutes")
+            .and_then(Value::as_u64)
+            .expect("the shard job's timeout")
+    );
 
     // The shard matrix is the planner's, never a hand-edited constant.
     let shard = nested_mapping(jobs, "shard");
@@ -179,9 +194,8 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         Some(true)
     );
 
-    // The decision runs crozier's comparison with Nx installed (the old
-    // compare job had none, so it failed on every fixture), after the tree is
-    // the one the pull request would carry.
+    // `just fixtures-diff` runs through Nx, so the decision bootstraps it first,
+    // and compares only once the tree is the one the pull request would carry.
     let decide = nested_mapping(jobs, "decide");
     assert!(decide.get("if").is_none(), "decide needs a green assembly");
     let decide_steps = steps(decide);
@@ -193,10 +207,7 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         "Lay the regenerated references over this checkout",
     );
     let (build, build_step) = named_step(decide_steps, "Build crozier from that tree");
-    assert_eq!(
-        text(build_step, "run"),
-        "cargo build --locked --bin crozier"
-    );
+    assert_eq!(text(build_step, "run"), "just nx run crozier:build");
     let (decision, _) = named_step(decide_steps, "Decide with crozier's own comparison");
     assert!(bootstrap < apply && apply < build && build < decision);
 

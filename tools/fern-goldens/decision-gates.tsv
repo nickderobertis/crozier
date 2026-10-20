@@ -2,13 +2,13 @@
 # `decide`), over the tree its pull request would carry: crozier's own, run unchanged.
 # `scope` item runs the command once per item ({item}); family runs it once for every
 # family it names, and a rejection names each item whose name or regenerated paths
-# its report mentions. `verdict` exit:PASS/REJECT lists the exits that pass and that
-# reject; any other exit is a comparison that could not run. fixtures-report reads
-# `report_fixture_diffs`' own summary (a difference outside the corpus's `unmatched`,
-# or a generation or processing failure, rejects). docs/fern-goldens.md says which
-# family is compared per item and which per family.
+# its report mentions, so the suites print only what failed. `verdict` exit:PASS/REJECT
+# lists the exits that pass and that reject; any other exit is a comparison that could
+# not run. fixtures-report reads `report_fixture_diffs`' own summary (a difference
+# outside the corpus's `unmatched`, or a generation or processing failure, rejects).
+# docs/fern-goldens.md says which family is compared per item and which per family.
 family	scope	verdict	command
 corpus	item	fixtures-report	just fixtures-diff {item}
-corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast -p crozier-e2e
-refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast -p crozier --test refusal_registry
+corpus,overlays,handwritten,measurements,probes,authored-probes,departure-evidence,refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier-e2e
+refusals	family	exit:0/100	cargo nextest run --locked --no-fail-fast --status-level fail --final-status-level fail -p crozier --test refusal_registry
 refusals	family	exit:0/1	python3 tools/fern-refusals/fern-refusals.py check

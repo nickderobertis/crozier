@@ -27,14 +27,24 @@ import tempfile
 import textwrap
 import unittest
 import unittest.mock
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 os.environ["PYTHONUTF8"] = "1"
 
 REPO = Path(__file__).resolve().parents[3]
 RECORD = json.loads((REPO / "assets/scaffolding/metadata.json").read_text(encoding="utf-8"))
-CANDIDATE = (RECORD["cliVersion"], RECORD["generatorVersion"])
+
+
+class Versions(NamedTuple):
+    """A Fern pair as these journeys spell it."""
+
+    cli: str
+    generator: str
+
+
+CANDIDATE = Versions(RECORD["cliVersion"], RECORD["generatorVersion"])
 
 
 def older(version: str) -> str:
@@ -43,7 +53,7 @@ def older(version: str) -> str:
     return f"{major}.{minor - 1}.0" if minor else f"{major - 1}.0.0"
 
 
-OLD = (older(CANDIDATE[0]), older(CANDIDATE[1]))
+OLD = Versions(older(CANDIDATE.cli), older(CANDIDATE.generator))
 CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "debug" / "crozier")
 REFUSAL_CLASS = "default-not-enum-value"
 
@@ -157,7 +167,10 @@ if config.get("sdk_headers"):
 wrapper.write_text(source, encoding="utf-8")
 for suffix, old, new in config.get("tweaks", {}).get(title, []):
     target = next(path for path in out.rglob("*") if path.as_posix().endswith(suffix))
-    target.write_text(target.read_text(encoding="utf-8").replace(old, new, 1), encoding="utf-8")
+    if old is None:
+        target.unlink()  # Fern no longer writes this file
+    else:
+        target.write_text(target.read_text(encoding="utf-8").replace(old, new, 1), encoding="utf-8")
 """
 
 GH = r"""
@@ -274,6 +287,53 @@ else:
 """
 
 
+Completed = subprocess.CompletedProcess[str]
+
+
+@dataclass
+class Journey:
+    """One workflow run as the journeys drive it: each phase's process, in the
+    order the jobs run, and the artifacts they leave."""
+
+    artifacts: Path
+    resolve: Completed | None = None
+    plan: Completed | None = None
+    shards: list[Completed] = field(default_factory=list)
+    assemble: Completed | None = None
+    decide: Completed | None = None
+    decision: dict[str, object] | None = None
+    publish: Completed | None = None
+
+    def ran(self, phase: str) -> Completed:
+        result = getattr(self, phase)
+        if not isinstance(result, subprocess.CompletedProcess):
+            raise AssertionError(f"the {phase} phase did not run")
+        return result
+
+    def recorded(self) -> dict[str, object]:
+        if self.decision is None:
+            raise AssertionError("the decision phase recorded no decision")
+        return self.decision
+
+    def outcome(self) -> object:
+        return self.recorded()["outcome"]
+
+    def failing(self) -> dict[str, list[str]]:
+        failing = self.recorded()["failing"]
+        assert isinstance(failing, dict)
+        return {family: [entry["item"] for entry in entries] for family, entries in failing.items()}
+
+    def unfetchable(self) -> list[str]:
+        entries = self.recorded()["unfetchable"]
+        assert isinstance(entries, list)
+        return [entry["item"] for entry in entries]
+
+    def gate_commands(self) -> list[object]:
+        runs = self.recorded()["gates"]
+        assert isinstance(runs, list)
+        return [entry["command"] for entry in runs]
+
+
 def write_executable(path: Path, source: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(textwrap.dedent(source).lstrip(), encoding="utf-8", newline="\n")
@@ -330,9 +390,7 @@ class WeeklyRunTests(unittest.TestCase):
         shutil.copytree(Path(cls.pristine.name) / "seed", self.seed, symlinks=True)
         self.stand_in({"rules": {"probe": self.refusal_rule}})
 
-    # ------------------------------------------------------------ the tree
-
-    def stand_in(self, config: dict[str, Any]) -> None:
+    def stand_in(self, config: dict[str, object]) -> None:
         """The stood-in Fern's behaviour for the next generation."""
         self.fern.write_text(
             json.dumps({"trees": str(self.trees), "calls": str(self.scratch / "fern-calls.jsonl"), **config}),
@@ -365,7 +423,7 @@ class WeeklyRunTests(unittest.TestCase):
             shutil.copy2(REPO / path, root / path)
         (root / "assets/scaffolding").mkdir(parents=True)
         (root / "assets/scaffolding/metadata.json").write_text(
-            json.dumps({**RECORD, "cliVersion": OLD[0], "generatorVersion": OLD[1]}, indent=2) + "\n",
+            json.dumps({**RECORD, "cliVersion": OLD.cli, "generatorVersion": OLD.generator}, indent=2) + "\n",
             encoding="utf-8",
         )
         (root / ".gitignore").write_text("/.local\n/target\n", encoding="utf-8")
@@ -434,6 +492,38 @@ class WeeklyRunTests(unittest.TestCase):
             self.assertEqual(0, generated.returncode, generated.stdout + generated.stderr)
         shutil.rmtree(root / ".local", ignore_errors=True)
 
+    def add_refused_class(self) -> None:
+        """A refusal class whose probe crozier generates from, its record what
+        the recipe writes when the stand-in Fern refuses that probe."""
+        registry = self.seed / "docs/fern-refusals"
+        classes = (registry / "classes.tsv").read_text(encoding="utf-8").splitlines()
+        cells = classes[1].split("\t")
+        header = classes[0].split("\t")
+        cells[header.index("class")] = "lantern-refused"
+        cells[header.index("diagnostic")] = "Lantern <…> cannot be lit"
+        cells[header.index("fern_stage")], cells[header.index("fern_exit")] = "generate", "1"
+        (registry / "classes.tsv").write_text("\n".join([*classes, "\t".join(cells)]) + "\n", encoding="utf-8")
+        (registry / "lantern-refused").mkdir()
+        (registry / "lantern-refused/probe.yml").write_text(DOCUMENT.format(title="Refused Lanterns"), encoding="utf-8")
+        refused = {"generate": [1, "Lantern 'harbour' cannot be lit"]}
+        self.stand_in({"rules": {"probe": self.refusal_rule, "Refused Lanterns": refused}})
+        generated = subprocess.run(
+            [
+                sys.executable,
+                str(self.seed / "tools/fern-goldens/fern-references.py"),
+                "generate",
+                "refusals",
+                "lantern-refused",
+            ],
+            cwd=self.seed,
+            env=self.environment(self.seed),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, generated.returncode, generated.stderr)
+        shutil.rmtree(self.seed / ".local", ignore_errors=True)
+
     def publish_seed(self, root: Path | None = None) -> None:
         root = root or self.seed
         self.git(root, "add", "-A")
@@ -489,16 +579,14 @@ class WeeklyRunTests(unittest.TestCase):
         path = self.scratch / "summary.md"
         return path.read_text(encoding="utf-8") if path.exists() else ""
 
-    # ------------------------------------------------------------ the run
-
-    def run_workflow(self, items: str = "", *, stop_after: str = "", **env: str) -> dict[str, Any]:
+    def run_workflow(self, items: str = "", *, stop_after: str = "", **env: str) -> Journey:
         """The workflow's jobs in order, each in its own checkout, stopping
         where a job's failure stops the workflow: a red phase skips every phase
         after it, as `needs` does."""
         artifacts = self.scratch / f"artifacts-{self.clones}"
         outputs = artifacts / "outputs"
         artifacts.mkdir()
-        state: dict[str, Any] = {"artifacts": artifacts}
+        state = Journey(artifacts)
         planner = self.clone()
         resolved = self.phase(
             planner,
@@ -506,9 +594,9 @@ class WeeklyRunTests(unittest.TestCase):
             "--ref",
             "refs/heads/main",
             "--cli-version",
-            CANDIDATE[0],
+            CANDIDATE.cli,
             "--generator-version",
-            CANDIDATE[1],
+            CANDIDATE.generator,
             "--items",
             items,
             "--github-output",
@@ -516,7 +604,7 @@ class WeeklyRunTests(unittest.TestCase):
             *(() if env.pop("NO_TOKEN", "") else ("--token-present",)),
             **env,
         )
-        state["resolve"] = resolved
+        state.resolve = resolved
         values = (
             dict(line.split("=", 1) for line in outputs.read_text(encoding="utf-8").splitlines())
             if outputs.exists()
@@ -538,11 +626,10 @@ class WeeklyRunTests(unittest.TestCase):
             str(plan),
             **env,
         )
-        state["plan"] = planned
+        state.plan = planned
         if planned.returncode != 0:
             return state
         shards = json.loads(plan.read_text(encoding="utf-8"))["shards"]
-        state["shards"] = []
         for shard in shards:
             job = self.clone()
             result = self.phase(
@@ -556,14 +643,14 @@ class WeeklyRunTests(unittest.TestCase):
                 str(artifacts / f"fern-goldens-shard-{shard['index']}"),
                 **env,
             )
-            state["shards"].append(result)
+            state.shards.append(result)
         if stop_after == "shards":
             return state
         bundle = artifacts / "bundle"
         assembled = self.phase(
             self.clone(), "assemble", "--plan", str(plan), "--shards", str(artifacts), "--output", str(bundle), **env
         )
-        state["assemble"] = assembled
+        state.assemble = assembled
         if assembled.returncode != 0:
             return state
         decider = self.clone()
@@ -571,15 +658,15 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(0, applied.returncode, applied.stderr)
         decision = artifacts / "decision"
         decided = self.phase(decider, "decide", "--bundle", str(bundle), "--output", str(decision), **env)
-        state["decide"] = decided
-        state["decision"] = (
+        state.decide = decided
+        state.decision = (
             json.loads((decision / "decision.json").read_text(encoding="utf-8"))
             if (decision / "decision.json").exists()
             else None
         )
         if decided.returncode != 0 or values.get("complete") != "true" or stop_after == "decide":
             return state
-        state["publish"] = self.publish(bundle, decision, **env)
+        state.publish = self.publish(bundle, decision, **env)
         return state
 
     def publish(self, bundle: Path, decision: Path, **env: str) -> subprocess.CompletedProcess[str]:
@@ -598,6 +685,8 @@ class WeeklyRunTests(unittest.TestCase):
         )
 
     def pulls(self) -> list[dict[str, Any]]:
+        """The stood-in GitHub's pull requests, as the JSON gh returns them (so
+        `Any`: each field's type is gh's)."""
         return json.loads(self.gh_state.read_text(encoding="utf-8"))["pulls"] if self.gh_state.exists() else []
 
     def remote_branches(self) -> list[str]:
@@ -611,8 +700,6 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(["main"], self.remote_branches())
         self.assertEqual([], self.pulls())
         self.assertEqual(1, int(self.git(self.remote, "rev-list", "--count", "main")))
-
-    # ------------------------------------------------------------ the paths
 
     def test_no_diff_adopts_the_pair_through_one_auto_merged_pull_request(self) -> None:
         """References that differ from the committed ones only where crozier's
@@ -630,15 +717,15 @@ class WeeklyRunTests(unittest.TestCase):
             {"rules": {"probe": self.refusal_rule}, "sdk_headers": True, "generator_config": {"stand_in_revision": 2}}
         )
         state = self.run_workflow()
-        self.assertEqual(2, len(state["shards"]), "two 4,000-second items cannot share one shard")
-        self.assertEqual("match", state["decision"]["outcome"], state["decide"].stdout + self.summary())
-        published = state["publish"]
+        self.assertEqual(2, len(state.shards), "two 4,000-second items cannot share one shard")
+        self.assertEqual("match", state.outcome(), state.ran("decide").stdout + self.summary())
+        published = state.ran("publish")
         self.assertEqual(0, published.returncode, published.stderr + self.summary())
 
         self.assertEqual(["fern-goldens/update", "main"], self.remote_branches())
         self.assertEqual(1, int(self.git(self.remote, "rev-list", "--count", "main")), "nothing is pushed to main")
         (pull,) = self.pulls()
-        title = f"test(fern-goldens): regenerate at Fern CLI {CANDIDATE[0]} / fern-python-sdk {CANDIDATE[1]}"
+        title = f"test(fern-goldens): regenerate at Fern CLI {CANDIDATE.cli} / fern-python-sdk {CANDIDATE.generator}"
         self.assertEqual((title, "fern-goldens/update", "main"), (pull["title"], pull["head"], pull["base"]))
         self.assertEqual([{"name": "fern-goldens"}], pull["labels"])
         self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
@@ -650,7 +737,7 @@ class WeeklyRunTests(unittest.TestCase):
         metadata = json.loads(self.remote_file(branch, "assets/scaffolding/metadata.json"))
         self.assertEqual(CANDIDATE, (metadata["cliVersion"], metadata["generatorVersion"]))
         checks = self.remote_file(branch, "tests/fixtures/fern-pair-checks.tsv").splitlines()
-        self.assertEqual(f"{CANDIDATE[0]}\t{CANDIDATE[1]}\t2026-10-19\tmatch", checks[-1])
+        self.assertEqual(f"{CANDIDATE.cli}\t{CANDIDATE.generator}\t2026-10-19\tmatch", checks[-1])
         for regenerated in (
             "tests/fixtures/alpha/expected/.fern/metadata.json",
             "tests/fixtures/alpha/expected/.crozier-fern-golden.json",
@@ -664,12 +751,12 @@ class WeeklyRunTests(unittest.TestCase):
         wrapper = next(
             path for path in changed if path.startswith("tests/fixtures/alpha/") and path.endswith("client_wrapper.py")
         )
-        self.assertIn(f'"X-Fern-SDK-Version": "{CANDIDATE[1]}"', self.remote_file(branch, wrapper))
+        self.assertIn(f'"X-Fern-SDK-Version": "{CANDIDATE.generator}"', self.remote_file(branch, wrapper))
         # Its bytes differ from the committed tree's, which published no SDK name
         # or version; crozier's output still matches it.
         self.assertNotIn("X-Fern-SDK-Version", self.remote_file("main", wrapper))
         self.assertIn(
-            f"fern_cli_version: {CANDIDATE[0]}",
+            f"fern_cli_version: {CANDIDATE.cli}",
             self.remote_file(branch, f"docs/fern-refusals/{REFUSAL_CLASS}/fern-refusal.txt"),
         )
         measured = self.remote_file(branch, "tools/fern-goldens/generation-seconds.tsv")
@@ -690,27 +777,32 @@ class WeeklyRunTests(unittest.TestCase):
         # Once it merges, the pair is the certified one: the next run checks nothing.
         self.git(self.remote, "update-ref", "refs/heads/main", f"refs/heads/{branch}")
         again = self.run_workflow()
-        self.assertEqual(0, again["resolve"].returncode)
-        self.assertNotIn("plan", again)
-        self.assertIn("is the certified pair already", again["resolve"].stdout)
+        self.assertEqual(0, again.ran("resolve").returncode)
+        self.assertIsNone(again.plan)
+        self.assertIn("is the certified pair already", again.ran("resolve").stdout)
 
     def test_a_small_engine_difference_opens_a_diff_pull_request_naming_the_item(self) -> None:
         self.publish_seed()
         self.stand_in(
             {
                 "rules": {"probe": self.refusal_rule},
-                "tweaks": {"Alpha Lanterns": [["types/lantern.py", "lit:", "lit_state:"]]},
+                "tweaks": {
+                    "Alpha Lanterns": [
+                        ["types/lantern.py", "lit:", "lit_state:"],
+                        ["core/force_multipart.py", None, None],
+                    ]
+                },
             }
         )
         state = self.run_workflow()
-        self.assertEqual("diff", state["decision"]["outcome"])
-        self.assertEqual(0, state["publish"].returncode, state["publish"].stderr + self.summary())
+        self.assertEqual("diff", state.outcome())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"], "a diff is never auto-merged")
         self.assertEqual("fern-goldens/update", pull["head"])
         self.assertEqual([{"name": "fern-goldens"}], pull["labels"])
-        self.assertIn(CANDIDATE[0], pull["title"])
-        self.assertIn(CANDIDATE[1], pull["title"])
+        self.assertIn(CANDIDATE.cli, pull["title"])
+        self.assertIn(CANDIDATE.generator, pull["title"])
         failing = pull["body"].split("## Failing items", 1)[1].split("## Inventory", 1)[0]
         self.assertIn("### corpus (1)", failing)
         self.assertIn("- `alpha`", failing)
@@ -726,6 +818,12 @@ class WeeklyRunTests(unittest.TestCase):
             if path.startswith("tests/fixtures/alpha/expected/") and path.endswith("types/lantern.py")
         )
         self.assertIn("lit_state:", self.remote_file(branch, lantern))
+        # A file Fern no longer writes is deleted from the tree the pull request carries.
+        removed = lantern.replace("types/lantern.py", "core/force_multipart.py")
+        self.assertTrue(self.remote_file("main", removed))
+        tree = self.git(self.remote, "ls-tree", "-r", "--name-only", branch).splitlines()
+        self.assertNotIn(removed, tree)
+        self.assertIn("core/force_multipart.py", failing, "crozier still emits it, which the engine reports")
         self.assertEqual(
             "fern_cli_version\tfern_python_sdk_version\tchecked_on\toutcome",
             self.remote_file(branch, "tests/fixtures/fern-pair-checks.tsv"),
@@ -735,37 +833,10 @@ class WeeklyRunTests(unittest.TestCase):
     def test_a_refusal_class_crozier_does_not_refuse_is_a_diff(self) -> None:
         """A regenerated refusal record says Fern refuses a document crozier
         generates from, so crozier's refusal path rejects it."""
-        registry = self.seed / "docs/fern-refusals"
-        classes = (registry / "classes.tsv").read_text(encoding="utf-8").splitlines()
-        cells = classes[1].split("\t")
-        header = classes[0].split("\t")
-        cells[header.index("class")] = "lantern-refused"
-        cells[header.index("diagnostic")] = "Lantern <…> cannot be lit"
-        cells[header.index("fern_stage")], cells[header.index("fern_exit")] = "generate", "1"
-        (registry / "classes.tsv").write_text("\n".join([*classes, "\t".join(cells)]) + "\n", encoding="utf-8")
-        (registry / "lantern-refused").mkdir()
-        (registry / "lantern-refused/probe.yml").write_text(DOCUMENT.format(title="Refused Lanterns"), encoding="utf-8")
-        refused = {"generate": [1, "Lantern 'harbour' cannot be lit"]}
-        self.stand_in({"rules": {"probe": self.refusal_rule, "Refused Lanterns": refused}})
-        generated = subprocess.run(
-            [
-                sys.executable,
-                str(self.seed / "tools/fern-goldens/fern-references.py"),
-                "generate",
-                "refusals",
-                "lantern-refused",
-            ],
-            cwd=self.seed,
-            env=self.environment(self.seed),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        self.assertEqual(0, generated.returncode, generated.stderr)
-        shutil.rmtree(self.seed / ".local", ignore_errors=True)
+        self.add_refused_class()
         self.publish_seed()
         state = self.run_workflow()
-        self.assertEqual("diff", state["decision"]["outcome"], self.summary())
+        self.assertEqual("diff", state.outcome(), self.summary())
         (pull,) = self.pulls()
         failing = pull["body"].split("## Failing items", 1)[1]
         self.assertIn("### refusals (1)", failing)
@@ -778,11 +849,11 @@ class WeeklyRunTests(unittest.TestCase):
         self.publish_seed()
         self.stand_in({"rules": {"probe": self.refusal_rule}, "generator_config": {"stand_in_revision": 2}})
         state = self.run_workflow(FAIL_FETCH="beta")
-        self.assertEqual([0], [shard.returncode for shard in state["shards"]], state["shards"][0].stderr)
-        self.assertEqual(0, state["assemble"].returncode, state["assemble"].stderr)
-        self.assertEqual("diff", state["decision"]["outcome"])
-        self.assertEqual([], [entry for entries in state["decision"]["failing"].values() for entry in entries])
-        self.assertEqual(["beta"], [entry["item"] for entry in state["decision"]["unfetchable"]])
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual(0, state.ran("assemble").returncode, state.ran("assemble").stderr)
+        self.assertEqual("diff", state.outcome())
+        self.assertEqual({}, state.failing())
+        self.assertEqual(["beta"], state.unfetchable())
         self.assertIn("not regenerated: corpus `beta`", self.summary())
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"])
@@ -801,45 +872,43 @@ class WeeklyRunTests(unittest.TestCase):
             }
         )
         subset = self.run_workflow("handwritten,corpus:alpha", NO_TOKEN="1")
-        self.assertEqual(0, subset["resolve"].returncode, subset["resolve"].stderr)
-        plan = json.loads((subset["artifacts"] / "plan.json").read_text(encoding="utf-8"))
+        self.assertEqual(0, subset.ran("resolve").returncode, subset.ran("resolve").stderr)
+        plan = json.loads((subset.artifacts / "plan.json").read_text(encoding="utf-8"))
         self.assertFalse(plan["complete"])
         planned = [(entry["family"], entry["item"]) for shard in plan["shards"] for entry in shard["items"]]
         self.assertEqual([("corpus", "alpha"), ("handwritten", "lantern")], planned)
-        self.assertEqual("diff", subset["decision"]["outcome"])
+        self.assertEqual("diff", subset.outcome())
         self.assertIn("lantern", self.summary())
-        self.assertNotIn("publish", subset)
-        refused = self.publish(subset["artifacts"] / "bundle", subset["artifacts"] / "decision")
+        self.assertIsNone(subset.publish)
+        refused = self.publish(subset.artifacts / "bundle", subset.artifacts / "decision")
         self.assertEqual(1, refused.returncode)
         self.assertIn("a diagnostic subset run never publishes", refused.stderr)
         self.assert_untouched()
 
         self.stand_in({"rules": {"probe": self.refusal_rule}})
         full = self.run_workflow()
-        plan = json.loads((full["artifacts"] / "plan.json").read_text(encoding="utf-8"))
+        plan = json.loads((full.artifacts / "plan.json").read_text(encoding="utf-8"))
         self.assertTrue(plan["complete"])
         planned = {(entry["family"], entry["item"]) for shard in plan["shards"] for entry in shard["items"]}
         self.assertEqual(
             {("corpus", "alpha"), ("corpus", "beta"), ("handwritten", "lantern"), ("refusals", REFUSAL_CLASS)}, planned
         )
-        self.assertEqual("match", full["decision"]["outcome"])
-        self.assertEqual(0, full["publish"].returncode, full["publish"].stderr)
+        self.assertEqual("match", full.outcome())
+        self.assertEqual(0, full.ran("publish").returncode, full.ran("publish").stderr)
 
     def test_a_checked_or_certified_pair_ends_green_and_changes_nothing(self) -> None:
         checks = self.seed / "tests/fixtures/fern-pair-checks.tsv"
         checks.write_text(
-            checks.read_text(encoding="utf-8") + f"{CANDIDATE[0]}\t{CANDIDATE[1]}\t2026-10-12\tmatch\n",
+            checks.read_text(encoding="utf-8") + f"{CANDIDATE.cli}\t{CANDIDATE.generator}\t2026-10-12\tmatch\n",
             encoding="utf-8",
         )
         self.publish_seed()
         state = self.run_workflow()
-        self.assertEqual(0, state["resolve"].returncode, state["resolve"].stderr)
-        self.assertIn("was checked on 2026-10-12", state["resolve"].stdout)
+        self.assertEqual(0, state.ran("resolve").returncode, state.ran("resolve").stderr)
+        self.assertIn("was checked on 2026-10-12", state.ran("resolve").stdout)
         self.assertIn("was checked on 2026-10-12", self.summary())
-        self.assertNotIn("plan", state)
+        self.assertIsNone(state.plan)
         self.assert_untouched()
-
-    # ------------------------------------------------------------ failure before publication
 
     def test_a_failed_item_generation_is_red_before_anything_is_published(self) -> None:
         self.publish_seed()
@@ -847,17 +916,17 @@ class WeeklyRunTests(unittest.TestCase):
             {"rules": {"probe": self.refusal_rule, "Harbour Lanterns": {"generate": [2, "container exited 137"]}}}
         )
         state = self.run_workflow()
-        self.assertEqual([1], [shard.returncode for shard in state["shards"]])
-        self.assertEqual(1, state["assemble"].returncode)
-        self.assertIn("handwritten lantern: generation failed", state["assemble"].stderr)
+        self.assertEqual([1], [shard.returncode for shard in state.shards])
+        self.assertEqual(1, state.ran("assemble").returncode)
+        self.assertIn("handwritten lantern: generation failed", state.ran("assemble").stderr)
         self.assertIn("**failure**: handwritten lantern: generation failed", self.summary())
-        self.assertNotIn("decide", state)
+        self.assertIsNone(state.decide)
         self.assert_untouched()
 
     def test_a_missing_or_incomplete_shard_is_red_before_anything_is_published(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="shards")
-        artifacts = state["artifacts"]
+        artifacts = state.artifacts
         plan = artifacts / "plan.json"
         result = artifacts / "fern-goldens-shard-0" / "result.json"
         record = json.loads(result.read_text(encoding="utf-8"))
@@ -891,33 +960,31 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.publish_seed()
         state = self.run_workflow()
-        self.assertEqual(1, state["decide"].returncode)
-        self.assertEqual("failure", state["decision"]["outcome"])
-        self.assertIn("could not run (exit 2)", state["decide"].stderr)
+        self.assertEqual(1, state.ran("decide").returncode)
+        self.assertEqual("failure", state.outcome())
+        self.assertIn("could not run (exit 2)", state.ran("decide").stderr)
         self.assertIn("**cannot run**", self.summary())
-        self.assertNotIn("publish", state)
+        self.assertIsNone(state.publish)
         self.assert_untouched()
 
     def test_a_missing_token_is_red_before_any_work_or_remote_step(self) -> None:
         self.publish_seed()
         state = self.run_workflow(NO_TOKEN="1")
-        self.assertEqual(1, state["resolve"].returncode)
-        self.assertIn("RELEASE_PLZ_TOKEN is not set", state["resolve"].stderr)
-        self.assertNotIn("plan", state)
+        self.assertEqual(1, state.ran("resolve").returncode)
+        self.assertIn("RELEASE_PLZ_TOKEN is not set", state.ran("resolve").stderr)
+        self.assertIsNone(state.plan)
         decided = self.run_workflow(stop_after="decide")
-        artifacts = decided["artifacts"]
+        artifacts = decided.artifacts
         unauthenticated = self.publish(artifacts / "bundle", artifacts / "decision", GH_TOKEN="<unset>")
         self.assertEqual(1, unauthenticated.returncode)
         self.assertIn("GH_TOKEN (the workflow's RELEASE_PLZ_TOKEN) is not set", unauthenticated.stderr)
         self.assertIn("Steps completed before it:\n- none", self.summary())
         self.assert_untouched()
 
-    # ------------------------------------------------------------ failure during publication
-
     def test_a_refused_auto_merge_is_red_and_the_next_run_finishes_it(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="decide")
-        bundle, decision = state["artifacts"] / "bundle", state["artifacts"] / "decision"
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
         refused = self.publish(bundle, decision, GH_FAIL="pr merge")
         self.assertEqual(1, refused.returncode)
         summary = self.summary().split("## Fern goldens: publication failed", 1)[1]
@@ -937,7 +1004,7 @@ class WeeklyRunTests(unittest.TestCase):
     def test_a_lost_response_is_red_and_the_next_run_reuses_what_the_remote_applied(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="decide")
-        bundle, decision = state["artifacts"] / "bundle", state["artifacts"] / "decision"
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
         lost = self.publish(bundle, decision, GH_LOSE="pr create")
         self.assertEqual(1, lost.returncode)
         self.assertIn("opening the pull request failed", self.summary())
@@ -963,7 +1030,7 @@ class WeeklyRunTests(unittest.TestCase):
     def test_a_rejected_push_or_label_is_red_and_says_what_completed(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="decide")
-        bundle, decision = state["artifacts"] / "bundle", state["artifacts"] / "decision"
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
         hook = self.remote / "hooks" / "pre-receive"
         write_executable(hook, "#!/bin/sh\necho 'protected by the stand-in remote' >&2\nexit 1\n")
         rejected = self.publish(bundle, decision)
@@ -987,10 +1054,78 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("already on the remote", finished.stdout)
         self.assertEqual(1, len(self.pulls()))
 
+    def test_family_gates_run_a_shared_command_once_and_attribute_its_report(self) -> None:
+        """A gate that decides whole families runs once however many rows name
+        it; a rejection lists each item its report names, and a report naming
+        none is listed whole under its family."""
+        compare_all = "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml"
+        refuse = "{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/lantern-refused/probe.yml --output {scratch}/out"
+        (self.seed / "tools/fern-goldens/decision-gates.tsv").write_text(
+            "family\tscope\tverdict\tcommand\n"
+            f"corpus\tfamily\texit:0/3\t{compare_all}\n"
+            f"handwritten\tfamily\texit:0/3\t{compare_all}\n"
+            f"refusals\tfamily\texit:1/0\t{refuse}\n",
+            encoding="utf-8",
+        )
+        self.add_refused_class()
+        self.publish_seed()
+        self.stand_in(
+            {
+                "rules": {
+                    "probe": self.refusal_rule,
+                    "Refused Lanterns": {"generate": [1, "Lantern 'harbour' cannot be lit"]},
+                },
+                "tweaks": {"Alpha Lanterns": [["types/lantern.py", "lit:", "lit_state:"]]},
+            }
+        )
+        state = self.run_workflow()
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual(1, state.gate_commands().count(compare_all), "the shared command ran once")
+        self.assertEqual({"corpus": ["alpha"], "refusals": ["(the gate's report names no item)"]}, state.failing())
+        (pull,) = self.pulls()
+        failing = pull["body"].split("## Failing items", 1)[1].split("## Inventory", 1)[0]
+        self.assertIn("tests/fixtures/alpha/crozier.yml", failing)
+        self.assertIn("### refusals (1)", failing)
+        self.assertIn("generated", failing, "a report naming no item is quoted whole")
+
+    def test_a_concurrent_push_to_the_branch_fails_the_lease_and_the_next_run_reconciles(self) -> None:
+        self.publish_seed()
+        first = self.run_workflow()
+        self.assertEqual(0, first.ran("publish").returncode, first.ran("publish").stderr)
+        published = self.git(self.remote, "rev-parse", "refs/heads/fern-goldens/update")
+        self.stand_in({"rules": {"probe": self.refusal_rule}, "generator_config": {"stand_in_revision": 3}})
+        state = self.run_workflow(stop_after="decide")
+        # Another writer lands on the branch between the run's read and its push.
+        real_git = shutil.which("git")
+        assert real_git is not None
+        concurrent = self.git(self.remote, "commit-tree", f"{published}^{{tree}}", "-p", published, "-m", "concurrent")
+        racing = self.scratch / "racing-bin"
+        write_executable(
+            racing / "git",
+            f"""#!/bin/sh
+            if [ "$3" = push ]; then
+              {real_git} --git-dir={self.remote} update-ref refs/heads/fern-goldens/update {concurrent}
+            fi
+            exec {real_git} "$@"
+            """,
+        )
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
+        raced = self.publish(bundle, decision, PATH=f"{racing}{os.pathsep}{self.bin}{os.pathsep}{os.environ['PATH']}")
+        self.assertEqual(1, raced.returncode)
+        self.assertIn("pushing fern-goldens/update failed", raced.stderr)
+        self.assertIn("stale info", raced.stderr)
+        self.assertEqual(concurrent, self.git(self.remote, "rev-parse", "refs/heads/fern-goldens/update"))
+
+        finished = self.publish(bundle, decision)
+        self.assertEqual(0, finished.returncode, finished.stderr)
+        self.assertIn("push fern-goldens/update: pushed", finished.stdout)
+        self.assertIn("pull request: updated #1", finished.stdout)
+        self.assertEqual(1, len(self.pulls()))
+
     def test_a_diff_after_an_adopting_run_turns_auto_merge_off(self) -> None:
         self.publish_seed()
         matched = self.run_workflow()
-        self.assertEqual({"mergeMethod": "SQUASH"}, self.pulls()[0]["autoMergeRequest"], matched["publish"].stderr)
+        self.assertEqual({"mergeMethod": "SQUASH"}, self.pulls()[0]["autoMergeRequest"], matched.ran("publish").stderr)
         self.stand_in(
             {
                 "rules": {"probe": self.refusal_rule},
@@ -998,7 +1133,7 @@ class WeeklyRunTests(unittest.TestCase):
             }
         )
         differing = self.run_workflow()
-        self.assertEqual(0, differing["publish"].returncode, differing["publish"].stderr)
+        self.assertEqual(0, differing.ran("publish").returncode, differing.ran("publish").stderr)
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"])
         self.assertIn("**Diff**", pull["body"])
