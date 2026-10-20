@@ -215,8 +215,10 @@ def check(root: Path, within: str | None = None) -> list[Drift]:
     for path in scanned(root, within):
         try:
             text = (root / path).read_text(encoding="utf-8")
-        except (UnicodeDecodeError, FileNotFoundError, IsADirectoryError):
-            continue  # binary, or a tracked file deleted in the worktree
+        except (UnicodeDecodeError, OSError):
+            # Binary, deleted in the worktree, replaced by a directory (Windows reports that as
+            # PermissionError, not IsADirectoryError), or otherwise unreadable.
+            continue
         found.extend(drifts(path, text, pair))
     return sorted(set(found))
 

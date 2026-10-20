@@ -11,6 +11,7 @@ from __future__ import annotations
 import fnmatch
 import importlib.util
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -336,6 +337,26 @@ class CheckTests(unittest.TestCase):
         (root / "tools/probe/deleted.py").unlink()
         (root / "tools/probe/now-a-directory.py").unlink()
         (root / "tools/probe/now-a-directory.py").mkdir()
+        result = run_check(root)
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(
+            [f'tools/probe/drift.py:1: states Fern CLI {OTHER_CLI}: FERN_CLI = "{OTHER_CLI}"'],
+            result.stderr.splitlines()[:-1],
+        )
+
+    @unittest.skipIf(os.name == "nt" or os.geteuid() == 0, "needs a POSIX mode a non-root reader is refused by")
+    def test_a_tracked_file_it_is_refused_permission_to_read_is_skipped_and_the_rest_still_checked(self) -> None:
+        # The PermissionError Windows raises for a path replaced by a directory, reached on POSIX.
+        root = self.tree(
+            {
+                "tools/probe/drift.py": f'FERN_CLI = "{OTHER_CLI}"\n',
+                "tools/probe/unreadable.py": f'FERN_CLI = "{OTHER_CLI}"\n',
+            }
+        )
+        unreadable = root / "tools/probe/unreadable.py"
+        unreadable.chmod(0)
+        self.addCleanup(unreadable.chmod, 0o644)
         result = run_check(root)
         self.assertEqual(1, result.returncode, result.stderr)
         self.assertNotIn("Traceback", result.stderr)
