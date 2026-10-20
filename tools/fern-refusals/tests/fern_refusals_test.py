@@ -1001,6 +1001,125 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
         self.assertTrue((self.root / log).read_text(encoding="utf-8").startswith(PAIR_LINE))
 
+    # `shapes` over a class's committed probe and control shapes.
+
+    def shape(self, name: str, marker: str) -> Path:
+        """A shape file in the scratch class directory: the class probe's bytes plus `marker`."""
+        path = self.registry / self.CLASS / name
+        path.write_text((REGISTRY / self.CLASS / "probe.yml").read_text(encoding="utf-8") + f"# {marker}\n")
+        return path
+
+    def shape_rows(self) -> dict[str, dict[str, str]]:
+        table = rows(self.evidence / "shapes.tsv")
+        return {row[1]: dict(zip(table[0], row, strict=True)) for row in table[1:]}
+
+    def shape_problems(self) -> list[str]:
+        """`check`'s verdict on the scratch shapes, from the REAL script loaded at the scratch root."""
+        spec = importlib.util.spec_from_file_location(
+            "fern_refusals_scratch", self.root / "tools" / "fern-refusals" / "fern-refusals.py"
+        )
+        assert spec is not None and spec.loader is not None
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        problems: list[str] = module.shape_problems()
+        return problems
+
+    def test_shapes_records_a_refused_probe_and_a_generated_control_and_keeps_each_at_the_pair(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        result = self.script("shapes", self.CLASS, check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 1 on record\n", result.stdout)
+        alpha = self.shape_rows()["alpha-probe.yml"]
+        log = f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha.log"
+        self.assertEqual(
+            [alpha[key] for key in ("role", "check_exit", "generate_exit", "classes", "verdict", "log")],
+            ["probe", "1", "—", self.CLASS, "refused", log],
+        )
+        written = (self.root / log).read_text(encoding="utf-8")
+        self.assertTrue(written.startswith(PAIR_LINE + "check exit: 1\n"), written)
+        self.assertIn(said, written)
+        # The check named the class, which stops the generation: it was not run.
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check"])
+        # A near miss Fern generates from; the probe, measured at the pair over these bytes, is kept.
+        self.shape("beta-control.yml", "beta")
+        result = self.script("shapes", generate_files="3")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 2 on record\n", result.stdout)
+        beta = self.shape_rows()["beta-control.yml"]
+        self.assertEqual(
+            [beta[key] for key in ("role", "check_exit", "generate_exit", "generate_files", "classes", "verdict")],
+            ["control", "0", "0", "3", "—", "generates"],
+        )
+        self.assertIn("generate exit: 0\nfiles: 3\n", (self.root / beta["log"]).read_text(encoding="utf-8"))
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check", "check", "generate"])
+        self.assertEqual(self.shape_problems(), [])
+
+    def test_check_names_a_probe_fern_generates_from_and_a_log_another_pair_took(self) -> None:
+        probe = self.shape("alpha-probe.yml", "alpha")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                "docs/openapi-surface/fern-refusals/shapes.tsv is missing; run `tools/fern-refusals/fern-refusals.py shapes`"
+            ],
+        )
+        result = self.script("shapes", generate_files="2")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.shape_rows()["alpha-probe.yml"]["verdict"], "generates")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: Fern generates from the probe, not refusing it "
+                f"with {self.CLASS}; make it a control and narrow crozier's detector to match"
+            ],
+        )
+        # A log an older pair took says nothing of this one: `check` names it and `shapes` takes it again.
+        log = self.root / self.shape_rows()["alpha-probe.yml"]["log"]
+        log.write_text("Fern CLI 5.67.1, python-sdk 5.20.0\ncheck exit: 1\n", encoding="utf-8")
+        self.assertIn("was not taken at Fern CLI", self.shape_problems()[0])
+        said = phrase(self.class_row[4])
+        result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual("fern-refusals: 1 shape(s) measured, 1 on record\n", result.stdout)
+        self.assertEqual(self.shape_problems(), [])
+        # Other bytes than were measured are unmeasured, and so is a control Fern refuses.
+        probe.write_text(probe.read_text(encoding="utf-8") + "# edited\n", encoding="utf-8")
+        probe.rename(probe.with_name("alpha-control.yml"))
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-control.yml: not measured over these bytes; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`",
+                f"docs/openapi-surface/fern-refusals/shapes.tsv names alpha-probe.yml of {self.CLASS}, which is "
+                "not committed; rerun `shapes`",
+            ],
+        )
+        result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(list(self.shape_rows()), ["alpha-control.yml"])
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-control.yml: Fern refuses the control with {self.CLASS}; "
+                "make it a probe of the class that names it"
+            ],
+        )
+
+    def test_a_shape_past_the_bound_is_unmeasured_never_a_verdict(self) -> None:
+        self.shape("alpha-control.yml", "alpha")
+        result = self.script("shapes", "--timeout", "3", hang=str(self.root / "fern-pids"))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        alpha = self.shape_rows()["alpha-control.yml"]
+        self.assertEqual(
+            [alpha[key] for key in ("check_exit", "generate_exit", "verdict")], ["timeout", "—", "unmeasured"]
+        )
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check"])
+        self.assertEqual(self.shape_problems(), [])
+
+    def test_shapes_refuses_a_class_the_registry_does_not_name(self) -> None:
+        result = self.script("shapes", "no-such-class")
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("no classes.tsv row for no-such-class; add the row first", result.stderr)
+
 
 # What `measure` loads by repository path besides the script: the witness-search
 # GitHub acquirer its fetcher runs (with the modules that pulls in), the census

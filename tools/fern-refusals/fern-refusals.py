@@ -28,9 +28,13 @@ Subcommands, in the order a refresh runs them:
     Rewrite ``documents.tsv``, ``generated.tsv``, ``unretrievable.tsv`` and
     ``classes.tsv``'s ``documents`` and ``population_strict`` columns from the
     committed inputs alone (offline).
+``shapes``
+    Run Fern at the pin over every class's committed ``*-probe``/``*-control``
+    shape, one at a time, writing each log and ``shapes.tsv``.
 ``check``
-    Fail when a committed table differs from what ``build`` writes, or when its
-    header or cross references drift from the registry contract (offline).
+    Fail when a committed table differs from what ``build`` writes, when its
+    header or cross references drift from the registry contract, or when a
+    committed shape's verdict at the pin is not its role's (offline).
 
 Every class a document carries is found by matching each diagnostic in its Fern
 log against ``classes.tsv``'s ``diagnostic`` templates, where ``<…>`` stands for
@@ -99,6 +103,21 @@ DOCUMENTS_HEADER = (
 UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "reason")
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
 CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
+SHAPES_HEADER = (
+    "class",
+    "shape",
+    "role",
+    "digest",
+    "check_exit",
+    "generate_exit",
+    "generate_files",
+    "classes",
+    "verdict",
+    "log",
+)
+# A class's measured shape beside its probe: `<name>-probe.yml` is one Fern
+# refuses with the class, `<name>-control.yml` a near miss Fern generates from.
+SHAPE = re.compile(r"(?P<name>.+)-(?P<role>probe|control)\.(?:yml|yaml|json)")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
@@ -1426,7 +1445,7 @@ def check(_args: argparse.Namespace) -> int:
             problems.append(f"docs/fern-refusals/{name}: the header must be exactly {chr(9).join(header)!r}")
     if problems:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
-    problems = cross_reference_problems() + confirmation_problems()
+    problems = cross_reference_problems() + confirmation_problems() + shape_problems()
     if problems:
         fail(
             "\n  ".join(
@@ -1595,6 +1614,170 @@ def finding(args: argparse.Namespace) -> int:
     return 0
 
 
+def shapes_path() -> Path:
+    return EVIDENCE / "shapes.tsv"
+
+
+def class_shapes(classes: list[dict[str, str]]) -> list[tuple[str, Path, str]]:
+    """`(class, shape file, role)` for every measured shape a class directory commits."""
+    found = []
+    for row in classes:
+        directory = REGISTRY / row["class"]
+        if not directory.is_dir():
+            continue
+        for path in sorted(directory.iterdir()):
+            match = SHAPE.fullmatch(path.name)
+            if match and path.is_file():
+                found.append((row["class"], path, match["role"]))
+    return found
+
+
+def shape_log(path: Path) -> Path:
+    """Where a shape's Fern log lives: `evaluation-logs/fern-<name>.log` beside it."""
+    match = SHAPE.fullmatch(path.name)
+    assert match is not None
+    return path.parent / "evaluation-logs" / f"fern-{match['name']}.log"
+
+
+def shape_verdict(
+    measured: dict[str, str], check_log: str, generate_log: str, patterns: list[Template], near: list[Template]
+) -> tuple[list[str], str]:
+    """The classes Fern's logs over a shape name, and whether it `refused` the
+    shape, `generates` from it, or left it `unmeasured` past the time bound —
+    by the rule `verdict` holds a real document to."""
+    if "timeout" in (measured["check_exit"], measured["generate_exit"]):
+        return [], "unmeasured"
+    check_classes = classify(diagnostics(check_log), patterns, near)[0]
+    if check_classes and measured["check_exit"] != "0":
+        return check_classes, "refused"
+    generate_classes = classify(diagnostics(generate_log), patterns, near)[0]
+    if measured["generate_exit"] != "0" or measured["generate_files"] == "0" or generate_classes:
+        return check_classes or generate_classes, "refused"
+    return [], "generates"
+
+
+def shapes(args: argparse.Namespace) -> int:
+    """Measure Fern on every committed probe and control shape of the named classes (all by default).
+
+    `fern check`, then `fern generate` unless the check names a class, each
+    shape's log written to `evaluation-logs/fern-<name>.log` (its first line
+    naming the pair) and its verdict to `shapes.tsv`, which `check` holds to
+    each shape's role. A shape already measured at the pair over the same bytes
+    is kept; the table is written after every shape, so a stopped run resumes.
+    """
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    names = {row["class"] for row in classes}
+    missing = [name for name in args.cls if name not in names]
+    if missing:
+        fail(f"no classes.tsv row for {', '.join(missing)}; add the row first")
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    every = class_shapes(classes)
+    path = shapes_path()
+    on_record = {(row["class"], row["shape"]): row for row in read_tsv(path, SHAPES_HEADER)} if path.is_file() else {}
+    current = {(name, shape.name) for name, shape, _role in every}
+    table = {key: row for key, row in on_record.items() if key in current}
+    taken = 0
+    for name, shape, role in every:
+        if args.cls and name not in args.cls:
+            continue
+        digest = hashlib.sha256(shape.read_bytes()).hexdigest()
+        kept = table.get((name, shape.name))
+        if not args.again and kept and kept["digest"] == digest and logged_at_pair(kept["log"]):
+            continue
+        with tempfile.TemporaryDirectory(prefix="fern-refusals-shape-") as scratch:
+            workspace = Path(scratch) / "fern"
+            fern_workspace(shape, workspace)
+            check_exit, check_log = fern_run(["fern", "check"], workspace, args.timeout)
+            generate_exit, generate_files, generate_log = "", "", ""
+            blocked = check_exit != "0" and classify(diagnostics(check_log), patterns, near)[0]
+            if check_exit != "timeout" and not blocked:
+                preview = Path(scratch) / "preview"
+                generate_exit, generate_log = fern_run(
+                    [
+                        "fern",
+                        "generate",
+                        "--group",
+                        "python-sdk",
+                        "--local",
+                        "--preview",
+                        "--output",
+                        str(preview),
+                        "--force",
+                    ],
+                    workspace,
+                    args.timeout,
+                )
+                files = sum(1 for file in preview.rglob("*") if file.is_file()) if preview.is_dir() else 0
+                generate_files = str(files)
+        measured = {"check_exit": check_exit, "generate_exit": generate_exit, "generate_files": generate_files}
+        found, outcome = shape_verdict(measured, check_log, generate_log, patterns, near)
+        log = shape_log(shape)
+        log.parent.mkdir(parents=True, exist_ok=True)
+        text = PAIR_LINE + f"check exit: {check_exit}\n" + scrub(check_log)
+        if generate_exit:
+            text += f"\ngenerate exit: {generate_exit}\nfiles: {generate_files}\n" + scrub(generate_log)
+        log.write_text(text, encoding="utf-8")
+        table[(name, shape.name)] = {
+            "class": name,
+            "shape": shape.name,
+            "role": role,
+            "digest": digest,
+            "check_exit": check_exit,
+            "generate_exit": generate_exit or EMPTY,
+            "generate_files": generate_files or EMPTY,
+            "classes": ",".join(found) or EMPTY,
+            "verdict": outcome,
+            "log": rel(log),
+        }
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
+        taken += 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
+    print(f"fern-refusals: {taken} shape(s) measured, {len(table)} on record")
+    return 0
+
+
+def shape_problems() -> list[str]:
+    """Every committed shape is measured at the pair over its own bytes, and Fern's
+    verdict is its role's: a probe refused with its class, a control generated."""
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    every = class_shapes(classes)
+    path = shapes_path()
+    if not path.is_file():
+        return [f"{rel(path)} is missing; run `tools/fern-refusals/fern-refusals.py shapes`"] if every else []
+    on_record = {(row["class"], row["shape"]): row for row in read_tsv(path, SHAPES_HEADER)}
+    problems = []
+    for name, shape, role in every:
+        row = on_record.pop((name, shape.name), None)
+        again = f"run `tools/fern-refusals/fern-refusals.py shapes {name}`"
+        if row is None or row["digest"] != hashlib.sha256(shape.read_bytes()).hexdigest() or row["role"] != role:
+            problems.append(f"{rel(shape)}: not measured over these bytes; {again}")
+        elif not logged_at_pair(row["log"]):
+            problems.append(
+                f"{rel(shape)}: its log {row['log']} was not taken at Fern CLI {FERN_CLI} with "
+                f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
+            )
+        elif row["verdict"] == "unmeasured":
+            continue
+        elif role == "probe" and (row["verdict"] != "refused" or name not in row["classes"].split(",")):
+            problems.append(
+                f"{rel(shape)}: Fern {'generates from' if row['verdict'] == 'generates' else 'refuses'} the probe"
+                + (f" with {row['classes']}" if row["verdict"] == "refused" else "")
+                + f", not refusing it with {name}; make it a control and narrow crozier's detector to match"
+            )
+        elif role == "control" and row["verdict"] != "generates":
+            problems.append(
+                f"{rel(shape)}: Fern refuses the control with {row['classes']}; make it a probe of the class "
+                "that names it"
+            )
+    problems += [
+        f"{rel(path)} names {shape} of {name}, which is not committed; rerun `shapes`"
+        for name, shape in sorted(on_record)
+    ]
+    return problems
+
+
 def positive(text: str) -> int:
     """A worker count or a timeout: an integer of at least one."""
     value = int(text)
@@ -1646,6 +1829,11 @@ def main(argv: list[str] | None = None) -> int:
     f.add_argument("--jobs", type=positive, default=6)
     f.add_argument("--timeout", type=positive, default=900)
     f.set_defaults(run=finding)
+    s = sub.add_parser("shapes", help="measure Fern on classes' probe and control shapes into shapes.tsv")
+    s.add_argument("cls", nargs="*", metavar="CLASS", help="the classes whose shapes to measure (default: every one)")
+    s.add_argument("--again", action="store_true", help="re-measure shapes already on record at the pair")
+    s.add_argument("--timeout", type=positive, default=1800)
+    s.set_defaults(run=shapes)
     c = sub.add_parser("confirm", help="sample each class's real documents through fern generate")
     c.add_argument("--per-class", type=nonnegative, default=3)
     c.add_argument("--jobs", type=positive, default=6)
