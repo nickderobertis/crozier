@@ -1,0 +1,9 @@
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Cannot use 'in' operator to search for 'wireValue' in 1
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

@@ -1,3 +1,10 @@
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-All checks passed
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> updateRequest
+        issue: Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+  - Path parameter "id"
+  - Body property: <Request Body> -> (extends) Request -> (extends) CommonRequest -> id
+
+Found 1 error and 0 warnings in <n> seconds.

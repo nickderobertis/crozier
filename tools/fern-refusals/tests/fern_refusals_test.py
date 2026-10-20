@@ -1416,6 +1416,16 @@ class DiagnosticExtraction(unittest.TestCase):
             self.module.diagnostics(log),
         )
 
+    def test_the_generators_type_error_over_a_value_is_its_diagnostic(self) -> None:
+        log = "\n".join(
+            [
+                "[api]: python-sdk ✓ All checks passed",
+                "[api]: python-sdk fernapi/fern-python-sdk Cannot use 'in' operator to search for 'wireValue' in 1",
+                "[api]: python-sdk fernapi/fern-python-sdk Failed.",
+            ]
+        )
+        self.assertEqual(["Cannot use 'in' operator to search for 'wireValue' in 1"], self.module.diagnostics(log))
+
     def test_the_generators_progress_lines_are_no_diagnostic(self) -> None:
         log = "\n".join(
             [

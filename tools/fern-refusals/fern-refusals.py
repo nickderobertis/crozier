@@ -967,7 +967,8 @@ def diagnostics(log: str) -> list[str]:
             message = text.split("[error] ", 1)[1]
         elif (api := API_LINE.match(text)) and re.match(
             r"Failed to (resolve|parse openapi document)|Unexpected error|Unsupported |Maximum call stack"
-            r"|Response must be an object in order to return property |.* is undefined$|\w*(Error|Exception)\b.*:",
+            r"|Response must be an object in order to return property |.* is undefined$|\w*(Error|Exception)\b.*:"
+            r"|Cannot use 'in' operator ",
             api.group(1),
         ):
             message = api.group(1)

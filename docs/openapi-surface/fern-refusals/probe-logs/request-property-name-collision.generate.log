@@ -3,9 +3,12 @@ Warnings for generators.yml:
 [api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
-[api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
-[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
-[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
-[api]: python-sdk fernapi/fern-python-sdk Finished.
-[api]: python-sdk Finished.
+[api]: python-sdk __package__.yml -> service -> endpoints -> updateRequest
+                  __package__.yml
+                  [error] Multiple request properties have the name id. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
+                    - Path parameter "id"
+                    - Body property: <Request Body> -> (extends) Request -> (extends) CommonRequest -> id
+                  
+[api]: python-sdk Found 1 errors and 0 warnings in <n> seconds.
+[api]: python-sdk Failed.
+[api]: python-sdk fernapi/fern-python-sdk Failed.
