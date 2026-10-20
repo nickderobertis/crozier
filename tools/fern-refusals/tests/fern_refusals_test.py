@@ -68,7 +68,8 @@ def run(
 # `fern check` and `fern generate` as the FERN_STUB_* variables say, writing
 # FERN_STUB_GENERATE_FILES files under `--output`, and appends what it was run
 # with (its arguments, the workspace's pinned CLI and generator versions, and
-# the environment `fern_run` sets) to FERN_STUB_CALLS.
+# the environment `fern_run` sets) to FERN_STUB_CALLS. With FERN_STUB_HANG it
+# starts a child and never ends, writing both process ids to that file.
 FERN_STUB = """\
 import json, os, sys
 from pathlib import Path
@@ -81,6 +82,13 @@ if calls:
                                  "generators": Path("generators.yml").read_text(),
                                  "spec": Path("openapi/openapi.yml").read_text(),
                                  "node_options": os.environ.get("NODE_OPTIONS")}) + "\\n")
+hang = os.environ.get("FERN_STUB_HANG")
+if hang:
+    # A run that never ends, as Fern's `npx` tree does: a child of its own, then a wait.
+    import subprocess, time
+    child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"])
+    Path(hang).write_text(f"{os.getpid()} {child.pid}", encoding="utf-8")
+    time.sleep(600)
 prefix = "FERN_STUB_" + stage.upper()
 print(os.environ.get(prefix + "_OUTPUT", ""))
 if stage == "generate":
@@ -815,6 +823,21 @@ class FernRuns(unittest.TestCase):
             f"{self.CLASS}.*.log",
             result.stderr,
         )
+
+    def test_a_run_past_its_timeout_is_ended_with_every_process_it_started(self) -> None:
+        pids = self.root / "fern-pids"
+        result = self.script("probe", self.CLASS, "--timeout", "3", hang=str(pids))
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("(check exit timeout, generate exit timeout)", result.stderr)
+        for pid in map(int, pids.read_text(encoding="utf-8").split()):
+            # Ended and reaped, or at most a zombie of an exited parent: never still running.
+            with self.subTest(pid=pid), contextlib.suppress(ProcessLookupError):
+                os.kill(pid, 0)
+                state = Path(f"/proc/{pid}/stat")
+                if state.exists():
+                    self.assertIn(state.read_text().split(") ", 1)[1][0], "ZX", f"process {pid} still runs")
+                else:
+                    self.fail(f"process {pid} still runs")
 
     def test_without_fern_on_path_the_setup_recipe_is_named(self) -> None:
         self.env["PATH"] = str(self.root / "no-fern")

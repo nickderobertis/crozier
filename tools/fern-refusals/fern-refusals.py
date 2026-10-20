@@ -40,6 +40,7 @@ new phrase becomes a class deliberately rather than silently.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import csv
 import gzip
 import hashlib
@@ -554,13 +555,34 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
     env = dict(
         os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true", NODE_OPTIONS=NODE_HEAP
     )
-    try:
-        run = subprocess.run(
-            command, cwd=workspace, env=env, capture_output=True, text=True, errors="replace", timeout=timeout
-        )
-    except subprocess.TimeoutExpired:
-        return "timeout", ""
-    return str(run.returncode), run.stdout + run.stderr
+    # Fern runs the pinned CLI through `npx`, a tree of processes: a run that
+    # outlives `timeout` is ended as a whole, not just the `fern` it started.
+    with subprocess.Popen(
+        command,
+        cwd=workspace,
+        env=env,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        errors="replace",
+        start_new_session=os.name == "posix",
+    ) as run:
+        try:
+            stdout, stderr = run.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            end_tree(run)
+            run.communicate()
+            return "timeout", ""
+    return str(run.returncode), stdout + stderr
+
+
+def end_tree(run: subprocess.Popen[str]) -> None:
+    """Kill a run and, on POSIX, every process of the session it leads."""
+    killpg = getattr(os, "killpg", None)
+    if killpg is not None:
+        with contextlib.suppress(ProcessLookupError):
+            killpg(run.pid, 9)
+    run.kill()
 
 
 def at_pair(row: dict[str, str]) -> bool:
