@@ -574,6 +574,10 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
     env = dict(
         os.environ, FERN_TOKEN="preview-only-no-publish", CI="true", GITHUB_ACTIONS="true", NODE_OPTIONS=NODE_HEAP
     )
+    if STOPPING.is_set():
+        # Terminated: a worker thread's next stage must not start a Fern run
+        # nothing would end.
+        raise SystemExit(128 + signal.SIGTERM)
     # Fern runs the pinned CLI through `npx`, a tree of processes: a run that
     # outlives `timeout` is ended as a whole, not just the `fern` it started.
     with subprocess.Popen(
@@ -587,6 +591,9 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
         start_new_session=os.name == "posix",
     ) as run:
         RUNNING.add(run)
+        if STOPPING.is_set():
+            # Started while `terminated` was ending the others.
+            end_tree(run)
         try:
             stdout, stderr = run.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
@@ -601,10 +608,13 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
 # The Fern runs in flight. Each leads a session of its own, so a signal to the
 # script's process group never reaches them: `terminated` ends them itself.
 RUNNING: set[subprocess.Popen[str]] = set()
+# Set once the script is terminated, so no further Fern run starts.
+STOPPING = threading.Event()
 
 
 def terminated(signum: int, _frame: object) -> NoReturn:
-    """End every Fern run in flight, then exit as the signal asked."""
+    """End every Fern run in flight, and refuse any further one, then exit as the signal asked."""
+    STOPPING.set()
     for run in list(RUNNING):
         end_tree(run)
     raise SystemExit(128 + signum)
@@ -1545,6 +1555,9 @@ def probe(args: argparse.Namespace) -> int:
             try:
                 results.update([future.result()])
             except SystemExit:
+                if STOPPING.is_set():
+                    # The signal's exit, not this probe's failure.
+                    raise
                 problems.append(name)
     for row in classes:
         row.update(results.get(row["class"], {}))
