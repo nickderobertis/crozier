@@ -183,6 +183,9 @@ if config.get("sdk_headers"):
         source,
     )
 wrapper.write_text(source, encoding="utf-8")
+for relative, link in config.get("links", {}).get(title, []):
+    # A generation step that leaves a link in the checkout itself.
+    (pathlib.Path(os.environ["CROZIER_FERN_WEEKLY_ROOT"]) / relative).symlink_to(link)
 for suffix, old, new in config.get("tweaks", {}).get(title, []):
     target = next(path for path in out.rglob("*") if path.as_posix().endswith(suffix))
     if old is None:
@@ -1104,6 +1107,21 @@ class WeeklyRunTests(unittest.TestCase):
         refused = self.phase(self.clone(), "apply", "--bundle", str(artifacts / "b2"))
         self.assertEqual(1, refused.returncode)
         self.assertIn("is a failed assembly", refused.stderr)
+        self.assert_untouched()
+
+    def test_a_symbolic_link_left_in_the_checkout_is_red_and_its_target_never_carried(self) -> None:
+        self.publish_seed()
+        outside = self.scratch / "outside.txt"
+        outside.write_text("not a reference\n", encoding="utf-8")
+        link = "tests/fixtures/alpha/stray.txt"
+        self.stand_in({"rules": {"probe": self.refusal_rule}, "links": {"Alpha Lanterns": [[link, str(outside)]]}})
+        state = self.run_workflow()
+        (shard,) = state.shards
+        self.assertEqual(1, shard.returncode)
+        self.assertIn(f"corpus alpha generated {link} as a symbolic link", shard.stderr)
+        self.assertIsNone(state.decision)
+        carried = [path for path in state.artifacts.rglob("*") if path.is_file() and not path.is_symlink()]
+        self.assertFalse(any("not a reference" in path.read_text("utf-8", "replace") for path in carried), carried)
         self.assert_untouched()
 
     def test_a_comparison_that_cannot_run_is_red_never_a_pass(self) -> None:

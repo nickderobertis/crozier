@@ -1345,7 +1345,14 @@ def shard(args: argparse.Namespace) -> int:
     results = [generate_item(base, entry, output / "logs") for entry in made.shards[args.index].items]
     written, deleted = [], []
     for path in sorted({path for result in results for path in result.changed}):
-        source = base / path
+        if (base / path).is_symlink():
+            # copy2 would carry the link's target, from anywhere, as a regular file.
+            owners = ", ".join(f"{r.family} {r.item}" for r in results if path in r.changed)
+            raise WeeklyError(
+                f"shard {args.index}: {owners} generated {path} as a symbolic link, which no reference is; "
+                "read that item's log and fix its generation"
+            )
+        source = inside(base, path, f"shard {args.index}")
         if source.is_file():
             target = output / "files" / path
             target.parent.mkdir(parents=True, exist_ok=True)
