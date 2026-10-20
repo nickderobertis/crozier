@@ -32,7 +32,7 @@ fn text<'a>(mapping: &'a Mapping, key: &str) -> &'a str {
         .unwrap_or_else(|| panic!("{key} must be a string"))
 }
 
-fn steps<'a>(job: &'a Mapping) -> &'a [Value] {
+fn steps(job: &Mapping) -> &[Value] {
     job.get("steps")
         .and_then(Value::as_array)
         .expect("a job's steps are a sequence")
@@ -148,7 +148,10 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     let (_, upload) = uses_steps(steps(shard), "actions/upload-artifact@v4")[0];
     assert_eq!(text(upload, "if"), "always()");
     let upload = nested_mapping(upload, "with");
-    assert_eq!(text(upload, "name"), "fern-goldens-shard-${{ matrix.shard }}");
+    assert_eq!(
+        text(upload, "name"),
+        "fern-goldens-shard-${{ matrix.shard }}"
+    );
     assert_eq!(
         upload.get("include-hidden-files").and_then(Value::as_bool),
         Some(true),
@@ -165,7 +168,9 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     let shards = downloads
         .iter()
         .find(|(_, step)| {
-            nested_mapping(step, "with").get("pattern").and_then(Value::as_str)
+            nested_mapping(step, "with")
+                .get("pattern")
+                .and_then(Value::as_str)
                 == Some("fern-goldens-shard-*")
         })
         .expect("the assembly downloads every shard");
@@ -188,7 +193,10 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
         "Lay the regenerated references over this checkout",
     );
     let (build, build_step) = named_step(decide_steps, "Build crozier from that tree");
-    assert_eq!(text(build_step, "run"), "cargo build --locked --bin crozier");
+    assert_eq!(
+        text(build_step, "run"),
+        "cargo build --locked --bin crozier"
+    );
     let (decision, _) = named_step(decide_steps, "Decide with crozier's own comparison");
     assert!(bootstrap < apply && apply < build && build < decision);
 
@@ -227,10 +235,11 @@ fn fern_goldens_workflow_runs_weekly_sharded_and_least_privilege() {
     ] {
         let job = nested_mapping(jobs, job);
         assert!(
-            steps(job).iter().any(|step| step
-                .get("run")
-                .and_then(Value::as_str)
-                .is_some_and(|run| run.contains(&format!("tools/fern-goldens/weekly.py {phase} ")))),
+            steps(job).iter().any(|step| {
+                step.get("run").and_then(Value::as_str).is_some_and(|run| {
+                    run.contains(&format!("tools/fern-goldens/weekly.py {phase} "))
+                })
+            }),
             "{phase} runs as tools/fern-goldens/weekly.py {phase}"
         );
     }
