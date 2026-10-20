@@ -1,81 +1,111 @@
 name: Fern goldens
 
+# Every Monday: check the newest Fern against every committed Fern reference
+# crozier byte-matches against, and propose what changed as one pull request on
+# `fern-goldens/update`. Each job is one phase of tools/fern-goldens/weekly.py,
+# which holds every decision; see docs/fern-goldens.md.
 on:
   schedule:
-    # Monday 05:17 UTC. Scheduled workflows run from the default branch; the
-    # event guard below makes the repository's intended `main` contract explicit.
+    # Monday 05:17 UTC. Scheduled workflows run from the default branch.
     - cron: "17 5 * * 1"
   workflow_dispatch:
     inputs:
-      # Blank deliberately starts an upgrade to latest stable; comparison stays red until
-      # Crozier's pinned generator metadata/assets and NOTICE match the resolved tag.
-      fern-version:
-        description: Exact fernapi/fern-python-sdk version (blank resolves latest stable tag)
+      fern-cli-version:
+        description: Exact Fern CLI (npm fern-api) version (blank resolves the newest stable)
         required: false
         type: string
-      fixtures:
-        description: Comma-separated CORPUS.md names (blank refreshes existing corpus goldens, packaged and declared flat)
+      fern-version:
+        description: Exact fernapi/fern-python-sdk version (blank resolves the newest stable tag)
+        required: false
+        type: string
+      items:
+        description: Comma-separated family or family:item subset, a diagnostic run that publishes nothing (blank checks every reference)
         required: false
         type: string
 
-# A branch gets one queued writer. Runs never cancel one another midway through
-# an atomic fixture refresh/push, and different branches remain independent.
+# One writer of `fern-goldens/update` at a time; a run never cancels another
+# midway through publication.
 concurrency:
-  group: fern-goldens-${{ github.repository }}-${{ github.ref }}
+  group: fern-goldens-${{ github.repository }}
   cancel-in-progress: false
 
-# Read-only is the workflow default. Only the generation/publication job can
-# write the selected branch with a normal commit.
 permissions:
   contents: read
 
 jobs:
-  generate_publish:
+  plan:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    timeout-minutes: 30
     outputs:
-      generation: ${{ steps.generation.outcome }}
-      publication: ${{ steps.publication.outcome }}
-      generation_summary: ${{ steps.generation_summary.outcome }}
-      generation_evidence: ${{ steps.generation_evidence.outcome }}
+      run: ${{ steps.resolve.outputs.run }}
+      complete: ${{ steps.resolve.outputs.complete }}
+      cli: ${{ steps.resolve.outputs.cli }}
+      generator: ${{ steps.resolve.outputs.generator }}
+      matrix: ${{ steps.plan.outputs.matrix }}
     steps:
-      - name: Require a supported branch event
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          REF: ${{ github.ref }}
-          REF_TYPE: ${{ github.ref_type }}
-        run: |
-          if [ "$REF_TYPE" != branch ]; then
-            echo "::error::Fern goldens require a branch ref, not a tag." >&2
-            exit 1
-          fi
-          case "$EVENT_NAME" in
-            schedule)
-              if [ "$REF" != refs/heads/main ]; then
-                echo "::error::Scheduled Fern goldens must run from refs/heads/main." >&2
-                exit 1
-              fi
-              ;;
-            workflow_dispatch) ;;
-            *)
-              echo "::error::Unsupported Fern goldens event: $EVENT_NAME" >&2
-              exit 1
-              ;;
-          esac
-
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
 
+      - name: Resolve the pair to check
+        id: resolve
+        env:
+          REF: ${{ github.ref }}
+          # A schedule event has no dispatch inputs: each is blank.
+          CLI_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fern-cli-version || '' }}
+          GENERATOR_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fern-version || '' }}
+          ITEMS: ${{ github.event_name == 'workflow_dispatch' && inputs.items || '' }}
+          TOKEN_PRESENT: ${{ secrets.RELEASE_PLZ_TOKEN != '' }}
+        run: |
+          set --
+          if [ "$TOKEN_PRESENT" = true ]; then
+            set -- --token-present
+          fi
+          python3 tools/fern-goldens/weekly.py resolve --ref "$REF" --cli-version "$CLI_VERSION" \
+            --generator-version "$GENERATOR_VERSION" --items "$ITEMS" "$@" \
+            --github-output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Plan the shards
+        id: plan
+        if: steps.resolve.outputs.run == 'true'
+        env:
+          CLI: ${{ steps.resolve.outputs.cli }}
+          GENERATOR: ${{ steps.resolve.outputs.generator }}
+          ITEMS: ${{ steps.resolve.outputs.items }}
+        run: |
+          python3 tools/fern-goldens/weekly.py plan --items "$ITEMS" --cli "$CLI" --generator "$GENERATOR" \
+            --output .local/fern-goldens-weekly/plan.json \
+            --github-output "$GITHUB_OUTPUT" --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the plan
+        if: steps.resolve.outputs.run == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: fern-goldens-plan
+          path: .local/fern-goldens-weekly/plan.json
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
+
+  shard:
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    # The planner keeps every shard's predicted generation well inside this,
+    # which is itself inside GitHub's six-hour job limit.
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
       - uses: extractions/setup-just@v2
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Install Fern launcher
-        run: npm install -g fern-api
+      - name: Install the Fern CLI under check
+        env:
+          CLI: ${{ needs.plan.outputs.cli }}
+        run: npm install -g "fern-api@$CLI"
 
       - name: Build the comment stripper
         run: cargo build --release --locked --bin crozier
@@ -83,184 +113,146 @@ jobs:
       - name: Install pinned ruff
         run: ./scripts/install-ruff.sh
 
-      - name: Generate every selected fixture independently
-        id: generation
-        continue-on-error: true
-        env:
-          # A schedule event has no workflow_dispatch payload. Explicitly
-          # normalize both absent values to blank so generate resolves latest
-          # Fern and selects every existing managed corpus golden.
-          FERN_VERSION: ${{ github.event_name == 'workflow_dispatch' && inputs.fern-version || '' }}
-          FIXTURES: ${{ github.event_name == 'workflow_dispatch' && inputs.fixtures || '' }}
-        run: |
-          # Unlike an empty array, "$@" expands safely to zero arguments under
-          # the macOS runner's Bash 3.2 when GitHub enables `set -u`.
-          set --
-          if [ -n "$FERN_VERSION" ]; then
-            set -- "$@" --version "$FERN_VERSION"
-          fi
-          if [ -n "$FIXTURES" ]; then
-            set -- "$@" --fixtures "$FIXTURES"
-          fi
-          just fern-goldens-generate "$@"
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-plan
+          path: .local/fern-goldens-weekly
 
-      # Publish complete successful fixtures regardless of sibling failures or
-      # later comparison termination. The tool stages only successful expected/
-      # trees and current expected-flat/ trees (the flat goldens
-      # tests/fixtures/flat-goldens.txt declares, refreshed in the same
-      # generation step), verifies origin still equals this checkout, and
-      # performs a normal push.
-      - name: Publish successful Fern goldens
-        id: publication
-        if: always()
-        continue-on-error: true
+      - name: Generate this shard's items
         env:
-          BRANCH: ${{ github.ref_name }}
+          SHARD: ${{ matrix.shard }}
         run: |
-          git config user.name github-actions[bot]
-          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          just fern-goldens-publish "$BRANCH"
+          python3 tools/fern-goldens/weekly.py shard --plan .local/fern-goldens-weekly/plan.json \
+            --index "$SHARD" --output ".local/fern-goldens-weekly/shard-$SHARD" --summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Write generation summary
-        id: generation_summary
+      - name: Upload this shard's references and logs
         if: always()
-        continue-on-error: true
-        env:
-          GENERATION: ${{ steps.generation.outcome }}
-          PUBLICATION: ${{ steps.publication.outcome }}
-        run: |
-          summary=.local/fern-goldens/generation-summary.txt
-          if [ ! -s "$summary" ]; then
-            echo "::error::Generation summary is missing or empty: $summary" >&2
-            exit 1
-          fi
-          {
-            echo "## Fern golden generation"
-            echo
-            cat "$summary"
-            echo
-            # Markdown backticks must stay literal.
-            # shellcheck disable=SC2016
-            printf -- '- Generation: `%s`\n' "$GENERATION"
-            # shellcheck disable=SC2016
-            printf -- '- Publication: `%s`\n' "$PUBLICATION"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-      # Persist generation evidence before the comparison job starts. Artifact v4
-      # archives are immutable, so comparison gets a separate later artifact.
-      - name: Upload generation evidence
-        id: generation_evidence
-        if: always()
-        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: fern-goldens-generation-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            .local/fern-goldens/fern-version.txt
-            .local/fern-goldens/generated.txt
-            .local/fern-goldens/current.txt
-            .local/fern-goldens/generation-failures.txt
-            .local/fern-goldens/known-upstream-failures.txt
-            .local/fern-goldens/generation-summary.txt
-            .local/fern-goldens/generation-logs/
-            .local/fern-goldens/generated-goldens.tar.gz
-            .local/fern-goldens/fern-goldens.patch
+          name: fern-goldens-shard-${{ matrix.shard }}
+          path: .local/fern-goldens-weekly/shard-${{ matrix.shard }}/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
+          overwrite: true
 
-  compare:
-    needs: generate_publish
-    if: always()
+  assemble:
+    needs: [plan, shard]
+    if: always() && needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      comparison: ${{ steps.comparison.outcome }}
-      comparison_summary: ${{ steps.comparison_summary.outcome }}
-      comparison_evidence: ${{ steps.comparison_evidence.outcome }}
+    timeout-minutes: 30
     steps:
-      # Resolve the branch again after publication so comparison sees the exact
-      # fast-forwarded goldens when publication succeeded.
       - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
         with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 0
+          name: fern-goldens-plan
+          path: .local/fern-goldens-weekly
 
-      - uses: extractions/setup-just@v2
-
-      - name: Install pinned ruff
-        run: ./scripts/install-ruff.sh
-
-      - name: Compare every available golden without fail-fast
-        id: comparison
+      # A shard that uploaded nothing is named by the assembly, not here.
+      - uses: actions/download-artifact@v4
         continue-on-error: true
-        run: just fern-goldens-compare
+        with:
+          pattern: fern-goldens-shard-*
+          path: .local/fern-goldens-weekly/shards
 
-      - name: Write comparison summary
-        id: comparison_summary
-        if: always()
-        continue-on-error: true
-        env:
-          COMPARISON: ${{ steps.comparison.outcome }}
+      - name: Combine every shard into one tree
         run: |
-          summary=.local/fern-goldens/comparison-summary.txt
-          if [ ! -s "$summary" ]; then
-            echo "::error::Comparison summary is missing or empty: $summary" >&2
-            exit 1
-          fi
-          {
-            echo "## Fern golden comparison"
-            echo
-            cat "$summary"
-            echo
-            # Markdown backticks must stay literal.
-            # shellcheck disable=SC2016
-            printf -- '- Comparison: `%s`\n' "$COMPARISON"
-          } >> "$GITHUB_STEP_SUMMARY"
+          python3 tools/fern-goldens/weekly.py assemble --plan .local/fern-goldens-weekly/plan.json \
+            --shards .local/fern-goldens-weekly/shards --output .local/fern-goldens-weekly/bundle \
+            --summary "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload comparison evidence
-        id: comparison_evidence
+      - name: Upload the combined tree
         if: always()
-        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: fern-goldens-comparison-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            .local/fern-goldens/comparison-summary.txt
-            .local/fern-goldens/comparison.log
-            .local/fern-goldens/comparison-fetch-failures.txt
-            .local/fern-goldens/comparison-processing-failures.txt
-            .local/fern-goldens/comparison-known-upstream-failures.txt
+          name: fern-goldens-bundle
+          path: .local/fern-goldens-weekly/bundle/
           include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
+          overwrite: true
 
-  final_status:
-    needs: [generate_publish, compare]
-    if: always()
+  decide:
+    needs: [plan, assemble]
     runs-on: ubuntu-latest
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }}
       - uses: extractions/setup-just@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - name: Install cargo tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      - uses: astral-sh/setup-uv@v8.3.2
 
-      # Defer red status until early publication, required evidence phases, and
-      # the isolated best-effort comparison have all had their attempt.
-      - name: Apply final status
-        env:
-          GENERATION: ${{ needs.generate_publish.outputs.generation }}
-          PUBLICATION: ${{ needs.generate_publish.outputs.publication }}
-          GENERATION_SUMMARY: ${{ needs.generate_publish.outputs.generation_summary }}
-          GENERATION_EVIDENCE: ${{ needs.generate_publish.outputs.generation_evidence }}
-          COMPARISON: ${{ needs.compare.outputs.comparison }}
-          COMPARISON_SUMMARY: ${{ needs.compare.outputs.comparison_summary }}
-          COMPARISON_EVIDENCE: ${{ needs.compare.outputs.comparison_evidence }}
+      # Nx included: `just fixtures-diff`, crozier's per-corpus comparison, runs
+      # through it.
+      - name: Bootstrap
+        run: just bootstrap
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-bundle
+          path: .local/fern-goldens-weekly/bundle
+
+      # The tree the pull request would carry: the regenerated references, the
+      # candidate pair in metadata.json and every statement of it restated.
+      - name: Lay the regenerated references over this checkout
+        run: python3 tools/fern-goldens/weekly.py apply --bundle .local/fern-goldens-weekly/bundle
+
+      - name: Build crozier from that tree
+        run: cargo build --locked --bin crozier
+
+      - name: Decide with crozier's own comparison
         run: |
-          just fern-goldens-result \
-            --generation "$GENERATION" \
-            --publication "$PUBLICATION" \
-            --generation-summary "$GENERATION_SUMMARY" \
-            --generation-evidence "$GENERATION_EVIDENCE" \
-            --comparison "$COMPARISON" \
-            --comparison-summary "$COMPARISON_SUMMARY" \
-            --comparison-evidence "$COMPARISON_EVIDENCE"
+          python3 tools/fern-goldens/weekly.py decide --bundle .local/fern-goldens-weekly/bundle \
+            --output .local/fern-goldens-weekly/decision --summary "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the decision and every comparison's report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fern-goldens-decision
+          path: .local/fern-goldens-weekly/decision/
+          if-no-files-found: error
+          retention-days: 14
+          overwrite: true
+
+  # Only a run over the whole inventory publishes; a diagnostic subset stops at
+  # its decision.
+  publish:
+    needs: [plan, decide]
+    if: needs.plan.outputs.complete == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      # A PAT, as release-plz.yml uses: a pull request opened with the default
+      # GITHUB_TOKEN would trigger none of crozier's required checks.
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.RELEASE_PLZ_TOKEN }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-bundle
+          path: .local/fern-goldens-weekly/bundle
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: fern-goldens-decision
+          path: .local/fern-goldens-weekly/decision
+
+      - name: Open, update or finish the pull request
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
+        run: |
+          python3 tools/fern-goldens/weekly.py publish --bundle .local/fern-goldens-weekly/bundle \
+            --decision .local/fern-goldens-weekly/decision --repo "$GITHUB_REPOSITORY" \
+            --summary "$GITHUB_STEP_SUMMARY"

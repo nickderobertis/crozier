@@ -50,10 +50,9 @@
         "default",
         "cargo",
         "{workspaceRoot}/.github/**/*",
-        "{workspaceRoot}/justfile",
         "{workspaceRoot}/scripts/update-major-tag.sh",
         "{workspaceRoot}/scripts/install.sh",
-        "{workspaceRoot}/tools/fern-goldens/fern-goldens",
+        "{workspaceRoot}/tools/fern-goldens/weekly.py",
         "{workspaceRoot}/release-plz.toml",
         "{workspaceRoot}/src/yaml.rs"
       ]

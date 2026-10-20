@@ -28,3 +28,23 @@ budgets:
     direction: max
     threshold: 2
     timeout_seconds: 10
+  - id: crozier-fern-goldens-weekly-minutes
+    description: >-
+      Maximum wall-clock minutes from the weekly Fern goldens run's start to its
+      pull request, on either path, as the workflow's own shard planner
+      (tools/fern-goldens/weekly.py plan) predicts them over the finished tree's
+      whole reference inventory: per-item seconds from
+      tools/fern-goldens/generation-seconds.tsv, the planned shards scheduled on
+      GitHub's 20-concurrent-job allowance for a free-plan public repository, plus
+      each job's setup and the assembly, decision and publication jobs. Measurement
+      uses the plan telemetry the github-workflows test records only.
+      inner_measure_reason: the real run happens only weekly on GitHub, so the gate
+      measures the plan that run executes, from per-item times earlier real runs
+      recorded. Basis: estimate (run 38208782203's corpus rate, applied to the
+      families no run has timed yet).
+    measure: reported
+    command: [node, fern-goldens-budget.mjs, --telemetry, .telemetry/fern-goldens-plan.json]
+    unit: minutes
+    direction: max
+    threshold: 180
+    timeout_seconds: 10
