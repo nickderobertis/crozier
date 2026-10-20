@@ -8,34 +8,53 @@ rather than carrying a copy.
 
 The rule
 --------
-No call this repository's code makes may take any GitHub REST rate-limit
-bucket past 70% of its limit. Before every call, ``acquire`` reads the bucket
-live and admits the call only while ``(used + cost) / limit <= 0.70``;
-otherwise it sleeps until the ``reset`` that refusing reading named, reads
-again once it has passed, and repeats for as long as that takes. A bucket at
-69 of 100 admits a call costing 1 and waits on a call costing 2.
+No call this repository's code makes may leave any GitHub REST rate-limit
+bucket with less than 40% of its limit remaining, unless that bucket's reset
+arrives before its remaining quota would run out. Before every call,
+``acquire`` reads the bucket live and admits the call while
+``(limit - used - cost) / limit >= 0.40``. A bucket at 59 used of 100 admits a
+call costing 1 (exactly 40 remain after it) and refuses one costing 2.
 
-Waiting is the intended behaviour, never a failure. A bucket reaching its cap
-is never a reason to stop a search, to mark a key searched, to record a source
-``unanswered``, or to conclude anything about the world. The rule is per
-bucket, and a Postman or Sourcegraph throttle or refusal is a wait exactly as
-a GitHub cap is.
+Below that floor the burn-rate exception decides. The guard keeps every
+bucket's readings within the current window (one ``reset``): the first and the
+latest give the burn rate, ``(used_latest - used_first) / elapsed``, the units
+spent per second by every holder of the token. The call is admitted below the
+floor when ``remaining_after / rate`` exceeds the seconds until ``reset``, so the
+window resets before the quota left after the call would be spent at the rate
+measured. The rate needs two readings in the window over a positive elapsed
+time; with one reading there is no rate and the call waits. A measured rate of
+zero (or a ``used`` that fell) means nothing is burning, so the quota never runs
+out and the call is admitted. No call is ever admitted that would take
+``remaining`` below zero, exception or not. A call admitted by the exception is
+logged as a ``probe`` with ``"admitted_by": "burn-rate"`` and the rate,
+seconds to reset and projected seconds to exhaustion it decided on.
 
-What the 70% is a guarantee about
----------------------------------
-The token is shared with everything else on this host. The guard bounds what
-*this repository's* code spends on it and leaves the rest of every bucket as
-headroom for callers it cannot see and does not control. It is not a claim
-about the token's instantaneous total usage: an independent caller can spend
-between any two of the guard's readings, and that headroom is the answer to
-it.
+Otherwise the guard waits: it sleeps until the ``reset`` the refusing reading
+named, reads again once it has passed, and repeats for as long as that takes.
+
+Waiting is the intended behaviour, never a failure. A bucket reaching its
+floor is never a reason to stop a search, to mark a key searched, to record a
+source ``unanswered``, or to conclude anything about the world. The rule is
+per bucket, and a Postman or Sourcegraph throttle or refusal is a wait exactly
+as a GitHub floor is.
+
+What the 40% floor is a guarantee about
+---------------------------------------
+The token is shared with everything else on this host. The floor bounds what
+*this repository's* code spends on it and leaves at least 40% of every bucket
+as headroom for callers it cannot see and does not control, except where the
+measured burn shows the window resetting before that headroom would be needed.
+It is not a claim about the token's instantaneous total usage: an independent
+caller can spend between any two of the guard's readings, and that headroom is
+the answer to it. The burn-rate projection is likewise a projection from the
+guard's own readings, never a promise about callers it cannot see.
 
 Why GitHub REST only, and no GraphQL
 ------------------------------------
 The rule needs limit, used and reset read freely and accurately before each
 call, and only GitHub publishes them: ``GET /rate_limit`` reports every REST
 bucket and GitHub documents it as not counting against any limit. So no
-reading the guard takes spends anything, a bucket already at or above the cap
+reading the guard takes spends anything, a bucket already at or below the floor
 is still readable, and a fresh guard's first reading is safe whatever state
 it finds the bucket in.
 
@@ -45,7 +64,7 @@ reported (``cost: 1``, ``rateLimit(dryRun: true)`` included), while the free
 ``graphql`` block of REST ``/rate_limit`` reported ``used: 0`` against the
 1,274-1,279 that GraphQL's own ``rateLimit`` field and the ``X-Ratelimit-Used``
 header on a GraphQL POST reported. A guard covering GraphQL could not take
-even its first reading without possibly spending past 70%, so this repository
+even its first reading without possibly spending below its floor, so this repository
 makes no GitHub GraphQL call: code and repository search are
 ``/search/code`` and ``/search/repositories``, contents and trees are
 ``/repos/.../contents`` and ``/repos/.../git/trees``. ``acquire("graphql")``
@@ -116,6 +135,7 @@ from __future__ import annotations
 import dataclasses
 import datetime
 import email.utils
+import fractions
 import json
 import os
 import sys
@@ -128,8 +148,11 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-CAP = 0.70
-"""The share of any GitHub REST bucket this repository's calls may reach."""
+FLOOR = fractions.Fraction(2, 5)
+"""The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
+
+A ``Fraction`` so the boundary is exact: 40 remaining of 100 admits, 12 of 30
+admits, with no float rounding either side."""
 
 GITHUB_API_URL = "https://api.github.com"
 
@@ -328,6 +351,15 @@ def _is_graphql(response: Any) -> bool:
     return path.endswith("/graphql") or _header(response, "x-ratelimit-resource") == "graphql"
 
 
+@dataclasses.dataclass(frozen=True)
+class _Reading:
+    """One live reading of a bucket, on the monotonic clock for its elapsed time."""
+
+    at: float
+    used: int
+    reset: int
+
+
 @dataclasses.dataclass
 class _Reservation:
     bucket: str
@@ -363,6 +395,8 @@ class RateLimitGuard:
         self._pending: dict[int, _Reservation] = {}
         self._meta = threading.Lock()
         self._waits: list[dict[str, Any]] = []
+        # Per bucket, the first and latest reading in the current reset window.
+        self._window: dict[str, tuple[_Reading, _Reading]] = {}
 
     def acquire(self, bucket: str, *, cost: int = 1) -> None:
         """Block until ``bucket`` admits a call of ``cost``; see the module docstring."""
@@ -444,32 +478,79 @@ class RateLimitGuard:
                 f"GET /rate_limit reported malformed figures for bucket {bucket!r}: {figures!r} — "
                 "each must be a nonnegative integer; check CROZIER_GITHUB_API_URL points at the GitHub REST API"
             )
+        latest = _Reading(time.monotonic(), reading["used"], reading["reset"])
+        with self._meta:
+            window = self._window.get(bucket)
+            first = window[0] if window is not None and window[0].reset == latest.reset else latest
+            self._window[bucket] = (first, latest)
         return reading
+
+    def _burn(self, bucket: str, reading: dict[str, int], remaining_after: int) -> dict[str, float] | None:
+        """The burn-rate exception's figures when it admits the call, else ``None``.
+
+        Admits when the bucket's window resets before ``remaining_after`` would
+        be spent at the rate measured between the window's first and latest
+        reading; see the module docstring."""
+        with self._meta:
+            window = self._window.get(bucket)
+        if window is None or remaining_after < 0:
+            return None
+        first, latest = window
+        elapsed = latest.at - first.at
+        if latest.reset != reading["reset"] or elapsed <= 0:
+            return None
+        rate = max(latest.used - first.used, 0) / elapsed
+        until_reset = reading["reset"] - time.time()
+        figures = {"rate_per_s": round(rate, 6), "elapsed_s": round(elapsed, 3), "until_reset_s": round(until_reset, 3)}
+        if rate == 0:
+            return figures
+        projected = remaining_after / rate
+        if projected <= until_reset:
+            return None
+        return {**figures, "projected_s": round(projected, 3)}
 
     def _admit(self, bucket: str, cost: int) -> dict[str, int]:
         waiting = False
         while True:
             reading = self._read(bucket)
             limit = reading["limit"]
-            admitted = limit > 0 and (reading["used"] + cost) / limit <= CAP
-            if waiting or not admitted:
-                self._log_wait(
-                    {
-                        "host": "github",
-                        "bucket": bucket,
-                        "kind": "probe",
-                        "reading": reading,
-                        "cost": cost,
-                        "admitted": admitted,
-                    }
-                )
+            remaining_after = limit - reading["used"] - cost
+            burn = None
+            if limit > 0 and remaining_after >= 0 and fractions.Fraction(remaining_after, limit) >= FLOOR:
+                admitted_by = "floor"
+            elif limit > 0 and (burn := self._burn(bucket, reading, remaining_after)) is not None:
+                admitted_by = "burn-rate"
+            else:
+                admitted_by = None
+            admitted = admitted_by is not None
+            if waiting or admitted_by != "floor":
+                probe: dict[str, Any] = {
+                    "host": "github",
+                    "bucket": bucket,
+                    "kind": "probe",
+                    "reading": reading,
+                    "cost": cost,
+                    "admitted": admitted,
+                }
+                if admitted_by is not None:
+                    probe["admitted_by"] = admitted_by
+                if burn is not None:
+                    probe["burn"] = burn
+                self._log_wait(probe)
             if admitted:
                 return reading
             waiting = True
             duration = max(reading["reset"] - time.time(), 0.0) + RESET_MARGIN_S
             self._sleep(
                 duration,
-                {"host": "github", "bucket": bucket, "kind": "wait", "cause": "cap", "reading": reading, "cost": cost},
+                {
+                    "host": "github",
+                    "bucket": bucket,
+                    "kind": "wait",
+                    "cause": "floor",
+                    "reading": reading,
+                    "cost": cost,
+                },
             )
 
     def _wait_backoff(self, bucket: str, state: _Backoff) -> None:
@@ -636,11 +717,13 @@ def status() -> int:
             print("quota-status: check CROZIER_GITHUB_API_URL points at the GitHub REST API", file=sys.stderr)
             return 1
         share = used / limit if limit else 0.0
+        below = limit > 0 and fractions.Fraction(limit - used, limit) < FLOOR
         when = datetime.datetime.fromtimestamp(reset, datetime.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
         guarded = "guarded" if bucket in GITHUB_BUCKETS else "not called here"
-        over = "  OVER CAP" if share > CAP else ""
-        lines.append(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}  {guarded}{over}")
-    print(f"github ({'authenticated' if _token() else 'unauthenticated: set GITHUB_TOKEN'}; cap {CAP:.0%})")
+        flag = "  BELOW FLOOR" if below else ""
+        lines.append(f"  {bucket:<28} limit {limit:>6}  used {used:>6}  {share:>6.1%}  reset {when}  {guarded}{flag}")
+    auth = "authenticated" if _token() else "unauthenticated: set GITHUB_TOKEN"
+    print(f"github ({auth}; floor {float(FLOOR):.0%} remaining, burn-rate exception)")
     print("\n".join(lines))
     print("  graphql: not covered; this repository makes no GraphQL call")
     for lane, pacing in PACED_LANES.items():

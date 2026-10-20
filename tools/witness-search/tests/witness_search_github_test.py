@@ -1220,7 +1220,7 @@ class WitnessSearchGithubTests(WitnessSearchGithubFixture, unittest.TestCase):
         self.assertEqual(1, len(items))
         self.assertEqual(1, self.server.state["searches"])
         waits = self.search.guards["github"].waits()
-        self.assertTrue(any(row.get("cause") == "cap" for row in waits))
+        self.assertTrue(any(row.get("cause") == "floor" for row in waits))
         item = {**items[0], "selector": "schema.additionalProperties=false"}
         verdict = self.search.github_document("closed-object", item)
         self.assertEqual("b" * 40, verdict["commit"])

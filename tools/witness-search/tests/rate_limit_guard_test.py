@@ -65,6 +65,9 @@ class Fixture:
         self.scripted: dict[str, list[tuple[int, dict[str, str]]]] = {}
         self.header_override: dict[str, dict[str, str]] = {}
         self.rate_limit_body: bytes | None = None
+        # Units a guarded call spends, per path: another holder's spend folded
+        # into this one call, to author a fast burn.
+        self.charge: dict[str, int] = {}
         for name in ("core", "search", "code_search", "graphql"):
             self.set(name, limit=100, used=0, reset_in=3600)
 
@@ -111,7 +114,7 @@ class Fixture:
                 if scripted:
                     status, headers = scripted.pop(0)
                 else:
-                    self.buckets[bucket]["used"] += 1
+                    self.buckets[bucket]["used"] += self.charge.get(path, 1)
                     figures = self.buckets[bucket]
                     headers = {
                         "x-ratelimit-limit": str(figures["limit"]),
@@ -253,30 +256,111 @@ class GitHubCapTests(GuardTestCase):
         self.assertEqual(len(calls), 1)
         self.assertGreaterEqual(calls[0].at, reset)
         waits = self.kinds(guard, "wait")
-        self.assertEqual([w["cause"] for w in waits], ["cap"])
+        self.assertEqual([w["cause"] for w in waits], ["floor"])
         self.assertEqual(waits[0]["bucket"], "code_search")
         self.assertEqual(waits[0]["reading"]["used"], 7)
         self.assertGreater(waits[0]["duration_s"], 0)
         probes = self.kinds(guard, "probe")
         self.assertEqual([p["admitted"] for p in probes], [False, True])
 
-    def test_69_of_100_admits_cost_1_and_waits_on_cost_2(self) -> None:
-        self.fixture.set("search", limit=100, used=69, reset_in=3600)
+    def test_59_of_100_admits_cost_1_at_the_40_percent_floor_and_waits_on_cost_2(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=3600)
         guard = self.guard()
         guard.acquire("search", cost=1)
         with urllib.request.urlopen(f"{self.url}/search/repositories", timeout=10) as response:
             guard.record(response)
-        self.assertEqual(guard.waits(), [])
+        self.assertEqual(guard.waits(), [])  # exactly 40 of 100 remain after it: admitted, no probe logged
 
-        self.fixture.set("search", limit=100, used=69, reset_in=1.2)
+        # One unit more and 39 would remain. A fresh window holds one reading, so
+        # no burn rate is measurable and the call waits for the reset.
+        self.fixture.set("search", limit=100, used=59, reset_in=1.2)
         reset = self.fixture.buckets["search"]["reset"]
         admitted_at, _ = self.call(guard, "search", "/search/repositories", cost=2)
         self.assertGreaterEqual(admitted_at, reset)
         refusing = self.kinds(guard, "wait")[0]
-        self.assertEqual((refusing["cause"], refusing["cost"], refusing["reading"]["used"]), ("cap", 2, 69))
+        self.assertEqual((refusing["cause"], refusing["cost"], refusing["reading"]["used"]), ("floor", 2, 59))
+        probes = self.kinds(guard, "probe")
+        self.assertEqual([p["admitted"] for p in probes], [False, True])
+        self.assertNotIn("burn", probes[0])
+        self.assertEqual(probes[1]["admitted_by"], "floor")
+
+    def test_the_floor_is_exact_for_a_limit_whose_share_is_not_a_float(self) -> None:
+        # 12 of 30 is exactly 40%; floating point would put it a hair under.
+        self.fixture.set("core", limit=30, used=17, reset_in=3600)
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(guard.waits(), [])
+
+    def test_a_slow_burn_with_reset_soon_is_admitted_below_the_floor(self) -> None:
+        self.fixture.set("core", limit=100, used=58, reset_in=3)
+        reset = self.fixture.buckets["core"]["reset"]
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents", hold=0.5)  # 41 remain after it: over the floor
+        self.assertEqual(guard.waits(), [])
+        # 59 used: a call costing 2 would leave 39, below the floor. The window's
+        # two readings show 1 unit burned in at least 0.5 s, so the 39 would
+        # last at least 19.5 s against a reset under 3 s away: the window resets
+        # first, and the call is admitted now rather than after the reset.
+        admitted_at, status = self.call(guard, "core", "/repos/o/r/contents", cost=2)
+        self.assertEqual(status, 200)
+        self.assertLess(admitted_at, reset)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual((probe["admitted"], probe["admitted_by"], probe["reading"]["used"]), (True, "burn-rate", 59))
+        self.assertGreater(probe["burn"]["projected_s"], probe["burn"]["until_reset_s"])
+        self.assertGreater(probe["burn"]["rate_per_s"], 0)
+        logged = [e for e in self.evidence_lines(guard_module.WAITS_FILE) if e["kind"] == "probe"]
+        self.assertEqual([e["admitted_by"] for e in logged], ["burn-rate"])
+
+    def test_a_fast_burn_below_the_floor_waits_for_the_reset(self) -> None:
+        self.fixture.set("core", limit=100, used=0, reset_in=2)
+        reset = self.fixture.buckets["core"]["reset"]
+        self.fixture.charge["/repos/o/r/contents"] = 60
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(guard.waits(), [])
+        # 60 burned between two readings a fraction of a second apart: the 39
+        # left after the next call would be spent long before the reset.
+        del self.fixture.charge["/repos/o/r/contents"]
+        admitted_at, status = self.call(guard, "core", "/repos/o/r/contents")
+        self.assertEqual(status, 200)
+        self.assertGreaterEqual(admitted_at, reset)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["floor"])
+        probes = self.kinds(guard, "probe")
+        self.assertEqual([p["admitted"] for p in probes], [False, True])
+        self.assertEqual(probes[0]["reading"]["used"], 60)
+        self.assertNotIn("admitted_by", probes[0])
+        self.assertEqual(probes[1]["admitted_by"], "floor")
+
+    def test_a_zero_burn_below_the_floor_is_admitted(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=3600)
+        self.fixture.charge["/search/repositories"] = 0
+        guard = self.guard()
+        self.call(guard, "search", "/search/repositories", hold=0.1)  # exactly 40 remain after it
+        # Two readings over a measured interval show nothing burning: the 39
+        # left after a call costing 2 never run out before the reset.
+        self.call(guard, "search", "/search/repositories", cost=2)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual((probe["admitted_by"], probe["burn"]["rate_per_s"]), ("burn-rate", 0))
+
+    def test_the_burn_rate_never_admits_a_call_past_the_remaining_quota(self) -> None:
+        self.fixture.set("core", limit=100, used=50, reset_in=1.5)
+        reset = self.fixture.buckets["core"]["reset"]
+        self.fixture.charge["/repos/o/r/contents"] = 0
+        guard = self.guard()
+        self.call(guard, "core", "/repos/o/r/contents", hold=0.1)
+        # Nothing is burning, but a call costing 60 would take remaining to -10.
+        admitted_at, _ = self.call(guard, "core", "/repos/o/r/contents", cost=60)
+        self.assertGreaterEqual(admitted_at, reset)
+        self.assertEqual([w["cause"] for w in self.kinds(guard, "wait")], ["floor"])
+        self.assertFalse(self.kinds(guard, "probe")[0]["admitted"])
 
     def test_concurrent_acquisitions_are_serialized_against_the_first_reservation(self) -> None:
-        self.fixture.set("code_search", limit=100, used=69, reset_in=2)
+        # The first call burns 60 units, fast enough that the 39 left after a
+        # second would run out before the reset: no burn-rate exception for it.
+        self.fixture.set("code_search", limit=100, used=0, reset_in=3)
+        self.fixture.charge["/search/code"] = 60
         reset = self.fixture.buckets["code_search"]["reset"]
         guard = self.guard()
         admitted: list[float] = []
@@ -299,9 +383,9 @@ class GitHubCapTests(GuardTestCase):
         # The second decided on a reading already holding the first's spend.
         refusing = self.kinds(guard, "probe")[0]
         self.assertFalse(refusing["admitted"])
-        self.assertEqual(refusing["reading"]["used"], 70)
+        self.assertEqual(refusing["reading"]["used"], 60)
         reads = self.fixture.requests("/rate_limit")
-        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 70)
+        second_read = next(r for r in reads if r.reading and r.reading["code_search"]["used"] == 60)
         self.assertGreater(second_read.at, calls[0].at)
 
     def test_first_reading_of_an_over_cap_bucket_is_free_and_repeated_until_reset(self) -> None:
@@ -644,7 +728,7 @@ class EvidenceTests(GuardTestCase):
         )
         self.assertEqual(
             {(e["host"], e["kind"], e.get("cause")) for e in on_disk},
-            {("github", "probe", None), ("github", "wait", "cap"), ("postman", "wait", "spacing")},
+            {("github", "probe", None), ("github", "wait", "floor"), ("postman", "wait", "spacing")},
         )
         for entry in on_disk:
             if entry["kind"] == "wait":
@@ -679,7 +763,9 @@ class QuotaStatusTests(GuardTestCase):
         self.assertIn("reset 20", core)
         over = next(line for line in lines if line.strip().startswith("code_search "))
         self.assertIn("90.0%", over)
-        self.assertIn("OVER CAP", over)
+        self.assertIn("BELOW FLOOR", over)
+        self.assertNotIn("BELOW FLOOR", core)
+        self.assertIn("floor 40% remaining", lines[0])
         self.assertTrue(any(line.strip().startswith("search ") for line in lines))
         for lane in ("postman", "sourcegraph"):
             line = next(line for line in lines if line.startswith(f"{lane}:"))

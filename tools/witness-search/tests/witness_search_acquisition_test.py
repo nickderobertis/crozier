@@ -1612,7 +1612,7 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 for line in (evidence / "rate-limit-waits.jsonl").read_text(encoding="utf-8").splitlines()
             ]
             self.assertTrue(
-                any(row["kind"] == "wait" and row["cause"] == "cap" and row["bucket"] == "core" for row in waits)
+                any(row["kind"] == "wait" and row["cause"] == "floor" and row["bucket"] == "core" for row in waits)
             )
             self.assertTrue(any(row["kind"] == "probe" and row["reading"]["used"] == 71 for row in waits))
             refused = subprocess.run(
