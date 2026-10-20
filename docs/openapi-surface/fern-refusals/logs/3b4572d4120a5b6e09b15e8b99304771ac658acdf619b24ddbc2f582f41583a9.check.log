@@ -1,0 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Failed to parse openapi document Gravitino Local Users and Groups REST API
+[api]: Failed to resolve ../openapi.yaml#/components/securitySchemes/BasicAuth 
+       CliError: Failed to resolve ../openapi.yaml#/components/securitySchemes/BasicAuth
+All checks passed
