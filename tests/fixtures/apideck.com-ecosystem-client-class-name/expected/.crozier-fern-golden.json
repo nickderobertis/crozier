@@ -2,5 +2,12 @@
   "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "apideck.com-ecosystem-client-class-name",
   "corpus_spec_ref": "0.0.6",
-  "corpus_spec_url": "https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json"
+  "corpus_spec_url": "https://api.apis.guru/v2/specs/apideck.com/ecosystem/0.0.6/openapi.json",
+  "fern_generator_config": {
+    "audiences": "",
+    "audience_strict": "false",
+    "client_class_name": "EcosystemClient",
+    "extra_fields": "",
+    "organization": ""
+  }
 }
