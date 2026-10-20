@@ -360,8 +360,8 @@ phases.
    - **per item**: each corpus golden and its flat golden, through `just
      fixtures-diff <fixture>` (`report_fixture_diffs`: the parity engine, the
      departure catalog and the golden's ledger rows). A difference outside the
-     corpus's `unmatched` list, or a generation or processing failure, is a
-     diff;
+     corpus's `unmatched` list, or a crozier generation failure, is a diff; a
+     comparison the reporter could not process is one that could not run;
    - **per family**: every other family, through the crozier-e2e suite
      (the tests `just test-e2e` runs, printing only what fails, which hold the overlay, hand-written,
      measurement, probe, authored-probe, departure-evidence and refusal-class

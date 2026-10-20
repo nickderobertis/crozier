@@ -1643,14 +1643,17 @@ SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
 def read_report(code: int, output: str) -> Verdict:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in
-    `unmatched`, a Crozier generation failure or a comparison it could not
-    process is a rejection; a setup failure or a report without its summaries
-    is a comparison that could not run."""
+    `unmatched` or a Crozier generation failure is a rejection; a comparison it
+    could not process (a processing failure), a setup failure or a report
+    without its summaries is a comparison that could not run, which is never a
+    decision, so it fails the run and nothing is published."""
     summaries = [pattern.search(output) for pattern in (DIFFS, GENERATION, PROCESSING)]
     if code != 0 or any(match is None for match in summaries) or SETUP.search(output):
         return Verdict.CANNOT_RUN
     _diffs, generation, processing = (int(match.group(1)) for match in summaries if match is not None)
-    return Verdict.REJECT if REGRESSION.search(output) or generation or processing else Verdict.PASS
+    if processing:
+        return Verdict.CANNOT_RUN
+    return Verdict.REJECT if REGRESSION.search(output) or generation else Verdict.PASS
 
 
 def run_gate(base: Path, gate: Gate, item: str | None) -> GateResult:

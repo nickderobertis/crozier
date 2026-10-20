@@ -364,10 +364,16 @@ class ReportTests(unittest.TestCase):
             ("a regression", 0, self.report(regression, d=1), "reject"),
             ("a crozier generation failure", 0, self.report("  Crozier generation failed: boom\n", g=1), "reject"),
             (
-                "a ledger the comparison rejects",
+                "a comparison it could not process",
                 0,
                 self.report("  Comparison processing failed: ledger\n", p=1),
-                "reject",
+                "cannot-run",
+            ),
+            (
+                "a processing failure beside a regression",
+                0,
+                self.report(regression + "  Comparison processing failed: ledger\n", d=1, p=1),
+                "cannot-run",
             ),
             (
                 "an unregistered corpus",

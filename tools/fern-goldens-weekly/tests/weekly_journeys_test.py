@@ -1042,6 +1042,58 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIsNone(state.publish)
         self.assert_untouched()
 
+    def test_a_corpus_comparison_that_could_not_be_processed_is_red_and_publishes_nothing(self) -> None:
+        """The corpus gate reads `report_fixture_diffs`' report; one that says it
+        could not process an item's comparison is no decision. The report comes
+        from a stand-in for that reporter, which needs the full fixture tree and
+        crozier-e2e's build; everything after it is the real decision."""
+        reporter = self.seed / "stand-in-fixtures-report"
+        write_executable(
+            reporter,
+            r"""
+            #!/usr/bin/env python3
+            import sys
+
+            corpus = sys.argv[1]
+            failed = corpus == "alpha"
+            print(f"=== {corpus} ===")
+            print("  Comparison processing failed: ledger rows disagree" if failed else "  no differences.")
+            print("0 comparison generation failure(s) across the reported corpora.")
+            print(f"{int(failed)} comparison processing failure(s) across the reported corpora.")
+            print("\n0 differing file(s) across the reported corpora.")
+            """,
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                "corpus\titem\tfixtures-report\t{root}/stand-in-fixtures-report {item}"
+                if line.startswith("corpus\t")
+                else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        state = self.run_workflow()
+        decided = state.ran("decide")
+        self.assertEqual(1, decided.returncode)
+        self.assertEqual("failure", state.outcome())
+        self.assertIn("for corpus `alpha` could not run", decided.stderr)
+        self.assertNotIn("for corpus `beta`", decided.stderr)
+        self.assertIn("- **cannot run**: `{root}/stand-in-fixtures-report {item}` for corpus `alpha`", self.summary())
+        self.assertIsNone(state.publish, "the workflow publishes nothing after a red decision")
+        # Nor does the publication phase, run over that decision anyway.
+        refused = self.publish(state.artifacts / "bundle", state.artifacts / "decision")
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("the decision is 'failure'; only a match or a diff is published", refused.stderr)
+        self.assert_untouched()
+        self.assertEqual(
+            "fern_cli_version\tfern_python_sdk_version\tchecked_on\toutcome",
+            self.remote_file("main", "tests/fixtures/fern-pair-checks.tsv"),
+            "no checked pair is recorded",
+        )
+
     def test_a_bundle_is_applied_only_over_the_commit_it_was_planned_on(self) -> None:
         self.publish_seed()
         state = self.run_workflow(stop_after="decide")

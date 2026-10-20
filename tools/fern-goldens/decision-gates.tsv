@@ -5,7 +5,8 @@
 # its report mentions, so the suites print only what failed. `verdict` exit:PASS/REJECT
 # lists the exits that pass and that reject; any other exit is a comparison that could
 # not run. fixtures-report reads `report_fixture_diffs`' own summary (a difference
-# outside the corpus's `unmatched`, or a generation or processing failure, rejects).
+# outside the corpus's `unmatched`, or a generation failure, rejects; a processing
+# failure is a comparison that could not run).
 # docs/fern-goldens.md says which family is compared per item and which per family.
 # llmlint: ignore[changed_behavior_has_e2e] These rows run crozier-e2e's whole suite and its corpus reporter, which need the full 1.9 GB reference tree and the e2e build; tools/fern-goldens-weekly/tests/weekly_journeys_test.py drives the same decision code over a synthetic tree with crozier's engine as `crozier compare` and its refusal path as `crozier generate` (the manager's ruling for this workflow), and weekly_test.py holds these rows to the commands that exist.
 family	scope	verdict	command
