@@ -26,8 +26,9 @@ time; with one reading there is no rate and the call waits. A measured rate of
 zero (or a ``used`` that fell) means nothing is burning, so the quota never runs
 out and the call is admitted. No call is ever admitted that would take
 ``remaining`` below zero, exception or not. A call admitted by the exception is
-logged as a ``probe`` with ``"admitted_by": "burn-rate"`` and the rate,
-seconds to reset and projected seconds to exhaustion it decided on.
+logged as a ``probe`` with ``"admitted_by": "burn-rate"`` and, under ``burn``,
+the rate and seconds to reset it decided on (with the projected seconds to
+exhaustion when the rate is positive).
 
 Otherwise the guard waits: it sleeps until the ``reset`` the refusing reading
 named, reads again once it has passed, and repeats for as long as that takes.
@@ -116,6 +117,44 @@ Interface
     never treat it as a searched or answered source.
 ``UnsupportedBucket``
     A programming error: make the REST call instead.
+``cache_lookup(method, url, headers)`` / ``cache_store(...)``
+    The one shared GitHub response cache; see below.
+
+The shared GitHub response cache
+--------------------------------
+Every GitHub response a witness search, acquisition, screen or refusal fetch
+receives (the REST API, the exact-commit raw lane on raw.githubusercontent.com,
+and the tree downloads of ``witness-acquire-github.py``) is stored once, in one
+cache on the host, outside every worktree:
+``${XDG_CACHE_HOME:-$HOME/.cache}/crozier/github-responses/`` (an
+``XDG_CACHE_HOME`` that is not absolute is ignored, as the XDG spec asks).
+Each caller consults it *before* ``acquire`` or any pacing, so a later request
+for a key already stored, from any node or worktree, is answered from the
+cache: no call, no reading, no wait, no quota spent. Callers log such a hit to
+``github-cache-hits.jsonl`` in their evidence directory, never to the call
+ledgers, which count only calls made.
+
+The key is the SHA-256 of a canonical JSON of the request: its method, its
+full URL, and the request headers that change the answer (``CACHE_KEY_HEADERS``:
+``Accept``, ``X-GitHub-Api-Version``, ``Range``). ``Authorization`` is never part
+of the key and the token is never stored. Each entry is two files under
+``<key[:2]>/``: ``<key>.body`` (the response body's bytes) and ``<key>.json``
+(the status, the response headers callers read, the body's size and SHA-256);
+both are written to a temporary file and published with ``os.replace``, body
+first, so a reader in another process sees a whole entry or none, and an entry
+whose body does not match its recorded digest is a miss.
+
+Only answers are stored. A rate-limit refusal (``429``, or a ``403`` carrying
+``Retry-After``, ``x-ratelimit-remaining: 0`` or a rate-limit message), a
+server-side or transient failure (any ``5xx``, ``408``), an authentication
+failure (``401``, ``407``) and a transport error with no response are not
+answers about the world, so none is stored or served. Entries never expire:
+delete the directory to have every request asked again.
+
+``CROZIER_GITHUB_CACHE_DIR`` overrides the cache root; the offline tests set it
+to a temporary directory so they never write the host's cache. Without it, a
+request to a loopback server (the offline tier standing in for GitHub) bypasses
+the cache entirely.
 
 The token is read from ``GITHUB_TOKEN`` (then ``GH_TOKEN``) and never
 written anywhere. ``CROZIER_GITHUB_API_URL`` overrides the API root, which is
@@ -136,8 +175,11 @@ import dataclasses
 import datetime
 import email.utils
 import fractions
+import hashlib
+import http.client
 import json
 import os
+import shutil
 import sys
 import threading
 import time
@@ -194,6 +236,18 @@ HOSTS = ("github", *PACED_LANES)
 
 WAITS_FILE = "rate-limit-waits.jsonl"
 CALLS_FILE = "rate-limit-calls.jsonl"
+CACHE_HITS_FILE = "github-cache-hits.jsonl"
+"""Where a caller logs a request the shared cache answered: never a call ledger."""
+
+CACHE_DIR_ENV = "CROZIER_GITHUB_CACHE_DIR"
+CACHE_KEY_HEADERS = ("accept", "range", "x-github-api-version")
+"""The request headers that change a GitHub answer, and so are part of its cache key."""
+
+UNCACHED_RESPONSE_HEADERS = frozenset({"set-cookie", "retry-after", "date", "connection", "transfer-encoding"})
+"""Response headers never stored: stale or per-connection once the response is replayed.
+
+Every ``x-ratelimit-*`` header is dropped too: a replayed quota figure is not
+a reading."""
 
 
 class UnsupportedBucket(ValueError):
@@ -688,6 +742,144 @@ class RateLimitGuard:
             return
         with (self.evidence_dir / name).open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(entry, sort_keys=True) + "\n")
+
+
+def github_cache_root(url: str) -> Path | None:
+    """The shared response cache's root for a request to `url`, or ``None`` when it bypasses the cache."""
+    override = os.environ.get(CACHE_DIR_ENV)
+    if override:
+        return Path(override)
+    if urllib.parse.urlsplit(url).hostname in LOOPBACK_HOSTS:
+        return None
+    base = os.environ.get("XDG_CACHE_HOME") or ""
+    root = Path(base) if os.path.isabs(base) else Path.home() / ".cache"
+    return root / "crozier" / "github-responses"
+
+
+def cache_key(method: str, url: str, headers: Any) -> str:
+    """SHA-256 of the request's method, URL and answer-changing headers; never the credential."""
+    kept = {name.lower(): str(value) for name, value in dict(headers).items() if name.lower() in CACHE_KEY_HEADERS}
+    canonical = json.dumps(
+        {"method": method.upper(), "url": url, "headers": kept}, sort_keys=True, separators=(",", ":")
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def is_answer(status: int | None, headers: Any, body: bytes = b"") -> bool:
+    """Whether a GitHub response is an answer to store, not a refusal or transient failure."""
+    if status is None or status >= 500 or status in (401, 407, 408, 429):
+        return False
+    if status == 403:
+        get = getattr(headers, "get", None)
+        if get is not None and (get("Retry-After") is not None or get("x-ratelimit-remaining") == "0"):
+            return False
+        if b"rate limit" in body[:4096].lower():
+            return False
+    return True
+
+
+@dataclasses.dataclass(frozen=True)
+class CachedResponse:
+    """One stored GitHub answer; ``body_path`` holds its bytes."""
+
+    key: str
+    status: int
+    headers: tuple[tuple[str, str], ...]
+    body_path: Path
+    sha256: str
+    size: int
+
+    def body(self) -> bytes:
+        return self.body_path.read_bytes()
+
+    def message(self) -> http.client.HTTPMessage:
+        """The stored headers as the ``HTTPMessage`` a live response carries."""
+        message = http.client.HTTPMessage()
+        for name, value in self.headers:
+            message[name] = value
+        return message
+
+    def ledger(self) -> dict[str, Any]:
+        """The fields a caller's ``github-cache-hits.jsonl`` row records."""
+        return {"cache_key": self.key, "status": self.status, "sha256": self.sha256, "bytes": self.size}
+
+
+def _entry_paths(root: Path, key: str) -> tuple[Path, Path]:
+    directory = root / key[:2]
+    return directory / f"{key}.json", directory / f"{key}.body"
+
+
+def _file_digest(path: Path) -> tuple[str, int]:
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as handle:
+        while chunk := handle.read(1024 * 1024):
+            digest.update(chunk)
+            size += len(chunk)
+    return digest.hexdigest(), size
+
+
+def cache_lookup(method: str, url: str, headers: Any) -> CachedResponse | None:
+    """The stored answer for this request, or ``None`` on a miss (or a torn or unreadable entry)."""
+    root = github_cache_root(url)
+    if root is None:
+        return None
+    key = cache_key(method, url, headers)
+    meta_path, body_path = _entry_paths(root, key)
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        status, stored, sha256, size = meta["status"], meta["headers"], meta["sha256"], meta["bytes"]
+        if _file_digest(body_path) != (sha256, size):
+            return None
+        return CachedResponse(key, int(status), tuple((str(n), str(v)) for n, v in stored), body_path, sha256, size)
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def _publish(path: Path, write: Callable[[Path], object]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(f".{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    try:
+        write(temporary)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+def cache_store(
+    method: str, url: str, headers: Any, status: int | None, response_headers: Any, body: bytes | Path
+) -> CachedResponse | None:
+    """Store an answer (see ``is_answer``) for later requests; ``None`` when it is not one or cannot be stored.
+
+    ``body`` is the bytes, or a file holding them (a large download). A cache
+    that cannot be written is reported on stderr and costs the caller nothing."""
+    root = github_cache_root(url)
+    probe = body if isinstance(body, bytes) else b""
+    if root is None or status is None or not is_answer(status, response_headers, probe):
+        return None
+    key = cache_key(method, url, headers)
+    meta_path, body_path = _entry_paths(root, key)
+    kept = tuple(
+        (str(name), str(value))
+        for name, value in (response_headers.items() if response_headers is not None else ())
+        if name.lower() not in UNCACHED_RESPONSE_HEADERS and not name.lower().startswith("x-ratelimit-")
+    )
+    try:
+        if isinstance(body, bytes):
+            _publish(body_path, lambda path: path.write_bytes(body))
+        else:
+            _publish(body_path, lambda path: shutil.copyfile(body, path))
+        sha256, size = _file_digest(body_path)
+        meta = {"status": status, "headers": [list(pair) for pair in kept], "sha256": sha256, "bytes": size}
+        _publish(meta_path, lambda path: path.write_text(json.dumps(meta, sort_keys=True), encoding="utf-8"))
+    except OSError as error:
+        print(
+            f"rate_limit_guard: could not store a GitHub response in {root}: {error}; "
+            f"the request will be asked again — check {CACHE_DIR_ENV} or that directory's permissions",
+            file=sys.stderr,
+        )
+        return None
+    return CachedResponse(key, status, kept, body_path, sha256, size)
 
 
 def status() -> int:

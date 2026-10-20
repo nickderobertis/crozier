@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """Download a pinned public GitHub tree through the shared REST-bucket guard.
 
+A download the shared GitHub response cache already holds (see
+`rate_limit_guard.py`) is copied from it with no call and no quota spent, and
+logged to `github-cache-hits.jsonl` beside `acquisitions.jsonl`, whose record
+then carries `"cache": "hit"`.
+
 Exit status: 0 when the tree was saved; 1 when the acquisition failed or the
 rate-limit guard refused it (the attempt is still recorded in
 `acquisitions.jsonl`); 2 on a usage error, a URL or bucket it cannot use
@@ -62,6 +67,27 @@ def download_url(value: str) -> str:
     return value
 
 
+def from_cache(cached, temporary: Path, digest, record: dict, evidence_dir: Path) -> bool:
+    """Answer the download from the shared GitHub response cache; whether a 200's bytes are now in `temporary`."""
+    record["cache"] = "hit"
+    record["status"] = cached.status
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    with (evidence_dir / GUARD.CACHE_HITS_FILE).open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps({"url": record["url"], **cached.ledger()}, sort_keys=True) + "\n")
+    if cached.status != 200:
+        record["error"] = cached.body()[:500].decode("utf-8", errors="replace")
+        return False
+    try:
+        with cached.body_path.open("rb") as source, temporary.open("wb") as handle:
+            while chunk := source.read(1024 * 1024):
+                handle.write(chunk)
+                digest.update(chunk)
+    except OSError as error:
+        record["error"] = f"could not copy the cached response {cached.body_path}: {error.strerror or error}"
+        return False
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("url", type=download_url)
@@ -88,38 +114,46 @@ def main() -> int:
     # Success is a completed acquisition: every byte read and written, the
     # reservation closed and the file published. An HTTP 200 alone is not one.
     transferred = acquired = False
+    cached = GUARD.cache_lookup("GET", args.url, headers)
     try:
-        guard.acquire(args.bucket, cost=1)
-        try:
-            with GUARD.open_checked(request, is_download_url, timeout=120) as response:
-                record["status"] = response.status
-                with temporary.open("wb") as handle:
-                    while chunk := response.read(1024 * 1024):
-                        handle.write(chunk)
-                        digest.update(chunk)
-                if response.length:
-                    # read(amt) ends quietly when the connection drops short of
-                    # the declared Content-Length; the bytes it never sent are
-                    # an interrupted transfer, not the end of the file.
-                    raise http.client.IncompleteRead(b"", response.length)
+        if cached is not None:
+            # The shared cache answers before the guard: no reading, no call.
+            transferred = from_cache(cached, temporary, digest, record, args.evidence_dir)
+        else:
+            guard.acquire(args.bucket, cost=1)
+            try:
+                with GUARD.open_checked(request, is_download_url, timeout=120) as response:
+                    record["status"] = response.status
+                    with temporary.open("wb") as handle:
+                        while chunk := response.read(1024 * 1024):
+                            handle.write(chunk)
+                            digest.update(chunk)
+                    if response.length:
+                        # read(amt) ends quietly when the connection drops short of
+                        # the declared Content-Length; the bytes it never sent are
+                        # an interrupted transfer, not the end of the file.
+                        raise http.client.IncompleteRead(b"", response.length)
+                    guard.record(response)
+                    transferred = True
+                    GUARD.cache_store("GET", args.url, headers, response.status, response.headers, temporary)
+            except urllib.error.HTTPError as response:
                 guard.record(response)
-                transferred = True
-        except urllib.error.HTTPError as response:
-            guard.record(response)
-            record["status"] = response.code
-            record["error"] = response.read(500).decode("utf-8", errors="replace")
-        except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
-            # Transport errors have no HTTP response, and a transfer or write
-            # interrupted after the status line has no complete one. Close the
-            # reservation and retain the measured error instead of treating the
-            # source as empty or its partial bytes as acquired.
-            class TransportFailure:
-                status = 503
-                headers: ClassVar[dict[str, str]] = {}
-                url = args.url
+                record["status"] = response.code
+                body = response.read()
+                record["error"] = body[:500].decode("utf-8", errors="replace")
+                GUARD.cache_store("GET", args.url, headers, response.code, response.headers, body)
+            except (OSError, urllib.error.URLError, http.client.HTTPException) as error:
+                # Transport errors have no HTTP response, and a transfer or write
+                # interrupted after the status line has no complete one. Close the
+                # reservation and retain the measured error instead of treating the
+                # source as empty or its partial bytes as acquired.
+                class TransportFailure:
+                    status = 503
+                    headers: ClassVar[dict[str, str]] = {}
+                    url = args.url
 
-            guard.record(TransportFailure())
-            record["error"] = str(error) or type(error).__name__
+                guard.record(TransportFailure())
+                record["error"] = str(error) or type(error).__name__
         if transferred and record.get("status") == 200:
             try:
                 temporary.replace(args.output)

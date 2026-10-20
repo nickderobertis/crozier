@@ -739,6 +739,129 @@ class EvidenceTests(GuardTestCase):
         self.assertTrue(all(r.authorization == f"Bearer {SECRET}" for r in self.fixture.requests("/rate_limit")))
 
 
+class ResponseCacheTests(GuardTestCase):
+    """The shared GitHub response cache, driven over the loopback server's real responses."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.cache = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.cache)
+        saved = {key: os.environ.get(key) for key in (guard_module.CACHE_DIR_ENV, "XDG_CACHE_HOME", "HOME")}
+        os.environ[guard_module.CACHE_DIR_ENV] = str(self.cache)
+
+        def restore() -> None:
+            for key, value in saved.items():
+                if value is None:
+                    os.environ.pop(key, None)
+                else:
+                    os.environ[key] = value
+
+        self.addCleanup(restore)
+
+    def fetch(self, guard: RateLimitGuard, path: str, headers: dict[str, str]) -> tuple[int, bytes, bool]:
+        """One cache-first guarded GET as every GitHub call site makes it; returns (status, body, from_cache)."""
+        url = f"{self.url}{path}"
+        cached = guard_module.cache_lookup("GET", url, headers)
+        if cached is not None:
+            return cached.status, cached.body(), True
+        guard.acquire(GUARDED[path.split("?", 1)[0]])
+        request = urllib.request.Request(url, headers=headers)
+        try:
+            response = urllib.request.urlopen(request, timeout=10)
+        except urllib.error.HTTPError as refusal:
+            response = refusal
+        with response:
+            body = response.read()
+            guard.record(response)
+            guard_module.cache_store("GET", url, headers, response.status, response.headers, body)
+            return response.status or 0, body, False
+
+    def test_a_repeated_fetch_of_a_cached_key_spends_no_quota(self) -> None:
+        headers = {"Accept": "application/vnd.github+json", "Authorization": f"Bearer {SECRET}"}
+        guard = self.guard()
+        first = self.fetch(guard, "/repos/o/r/contents", headers)
+        spent = self.fixture.buckets["core"]["used"]
+        served = len(self.fixture.served)
+
+        # A fresh guard stands in for another node or worktree: same key, same host cache.
+        second = self.fetch(self.guard(), "/repos/o/r/contents", headers)
+
+        self.assertEqual(first[:2], second[:2])
+        self.assertEqual((first[2], second[2]), (False, True))
+        self.assertEqual(self.fixture.buckets["core"]["used"], spent)
+        self.assertEqual(len(self.fixture.served), served)  # no /rate_limit read, no call
+        self.assertEqual(len(self.evidence_lines(guard_module.CALLS_FILE)), 1)
+        for path in self.cache.rglob("*"):
+            if path.is_file():
+                self.assertNotIn(SECRET.encode(), path.read_bytes())
+
+        # Accept changes the answer, so it is another key; the credential does not.
+        self.assertFalse(self.fetch(guard, "/repos/o/r/contents", {"Accept": "application/vnd.github.raw+json"})[2])
+        self.assertTrue(self.fetch(guard, "/repos/o/r/contents", {"Accept": "application/vnd.github+json"})[2])
+
+    def test_refusals_and_transient_failures_are_not_cached(self) -> None:
+        path = "/repos/o/r/contents"
+        self.fixture.scripted[path] = [
+            (429, {}),
+            (503, {}),
+            (403, {"Retry-After": "0", "x-ratelimit-remaining": "99"}),
+            (403, {"x-ratelimit-remaining": "0"}),
+        ]
+        guard_module.SECONDARY_ATTEMPT_BUDGET = 10
+        guard_module.SECONDARY_BACKOFF_BASE_S = 0.01
+        guard = self.guard()
+        statuses = [self.fetch(guard, path, {}) for _ in range(4)]
+        self.assertEqual(
+            [(status, cached) for status, _, cached in statuses], [(s, False) for s in (429, 503, 403, 403)]
+        )
+        self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
+        # The next ask reaches GitHub, and its answer is the one kept.
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
+
+    def test_an_answer_that_is_not_a_success_is_cached(self) -> None:
+        self.fixture.scripted["/repos/o/r/contents"] = [(404, {"x-ratelimit-resource": "core"})]
+        guard = self.guard()
+        self.assertEqual(self.fetch(guard, "/repos/o/r/contents", {})[::2], (404, False))
+        self.assertEqual(self.fetch(guard, "/repos/o/r/contents", {})[::2], (404, True))
+
+    def test_the_key_names_method_url_and_answer_changing_headers_only(self) -> None:
+        key = guard_module.cache_key
+        base = key("GET", "https://api.github.com/x", {"Accept": "a"})
+        self.assertEqual(base, key("get", "https://api.github.com/x", {"accept": "a", "Authorization": "Bearer t"}))
+        self.assertEqual(base, key("GET", "https://api.github.com/x", {"Accept": "a", "User-Agent": "other"}))
+        self.assertNotEqual(base, key("GET", "https://api.github.com/x", {"Accept": "b"}))
+        self.assertNotEqual(base, key("GET", "https://api.github.com/y", {"Accept": "a"}))
+        self.assertNotEqual(base, key("HEAD", "https://api.github.com/x", {"Accept": "a"}))
+
+    def test_the_root_is_the_host_cache_outside_every_worktree(self) -> None:
+        root = guard_module.github_cache_root
+        del os.environ[guard_module.CACHE_DIR_ENV]
+        os.environ["XDG_CACHE_HOME"] = str(self.cache / "xdg")
+        self.assertEqual(root("https://api.github.com/x"), self.cache / "xdg" / "crozier" / "github-responses")
+        os.environ["XDG_CACHE_HOME"] = "relative/cache"  # not absolute: ignored, as the XDG spec asks
+        self.assertEqual(root("https://api.github.com/x"), Path.home() / ".cache" / "crozier" / "github-responses")
+        del os.environ["XDG_CACHE_HOME"]
+        self.assertEqual(root("https://raw.githubusercontent.com/o/r"), Path.home() / ".cache/crozier/github-responses")
+        # A loopback server stands in for GitHub only in tests: without the override it bypasses the cache.
+        self.assertIsNone(root(f"{self.url}/repos/o/r/contents"))
+        self.assertIsNone(guard_module.cache_lookup("GET", f"{self.url}/repos/o/r/contents", {}))
+        self.assertIsNone(guard_module.cache_store("GET", f"{self.url}/repos/o/r/contents", {}, 200, {}, b"x"))
+        self.assertFalse(self.cache.joinpath("xdg").exists())
+
+    def test_a_torn_or_altered_entry_is_a_miss(self) -> None:
+        url = "https://api.github.com/repos/o/r"
+        stored = guard_module.cache_store("GET", url, {}, 200, {"ETag": "x", "x-ratelimit-used": "5"}, b"body")
+        assert stored is not None
+        self.assertEqual(stored.headers, (("ETag", "x"),))  # a replayed quota figure is not a reading
+        self.assertEqual(guard_module.cache_lookup("GET", url, {}), stored)
+        stored.body_path.write_bytes(b"altered")
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        stored.body_path.unlink()
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        self.assertEqual([p.name for p in self.cache.rglob(".*.tmp")], [])
+
+
 class QuotaStatusTests(GuardTestCase):
     def status(self, url: str) -> subprocess.CompletedProcess[str]:
         env = {**os.environ, "CROZIER_GITHUB_API_URL": url}

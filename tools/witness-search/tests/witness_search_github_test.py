@@ -4350,6 +4350,101 @@ components:
         subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
 
 
+class SharedResponseCacheTests(WitnessSearchGithubFixture, unittest.TestCase):
+    """Every GitHub answer the acquirer receives is kept in the shared host cache and served from it."""
+
+    def setUp(self) -> None:
+        super().setUp()
+        # Never the host's cache: each case gets its own.
+        cache = self.root / "github-responses"
+        patcher = patch.dict(os.environ, {guard_module.CACHE_DIR_ENV: str(cache), "GITHUB_TOKEN": "offline-test-token"})
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        self.cache = cache
+
+    def ledger(self, root: Path, name: str) -> list[dict[str, Any]]:
+        path = root / name
+        if not path.exists():
+            return []
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+    def test_a_repeated_api_fetch_is_answered_from_the_cache_without_spending_quota(self) -> None:
+        path = f"/repos/example/api/contents/openapi.yaml?ref={'b' * 40}"
+        first = self.search.github_json("core", path)
+        reads, requests = self.server.state["reads"], list(self.server.state["requests"])
+        self.assertEqual((1, 1), (reads, self.server.state["contents"]))
+
+        # Another node or worktree: a fresh acquirer over its own evidence, the same host cache.
+        other = self.root / "other-worktree"
+        acquirer = SEARCH.Acquirer(other, cache=other / "cache", github_url=self.url, raw_github_url=self.url)
+        for search, evidence in ((self.search, self.root), (acquirer, other)):
+            status, payload, headers = search.github_json("core", path)
+            self.assertEqual((first[0], first[1]), (status, payload))
+            self.assertEqual("application/json", headers.get("Content-Type"))
+            self.assertIsNone(headers.get("X-Ratelimit-Resource"))
+            (hit,) = self.ledger(evidence, guard_module.CACHE_HITS_FILE)
+            self.assertEqual(("github", "core", 200), (hit["host"], hit["bucket"], hit["status"]))
+        # No /rate_limit read, no guard admission, no call: no quota spent.
+        self.assertEqual(requests, self.server.state["requests"])
+        self.assertEqual(1, len(self.ledger(self.root, guard_module.CALLS_FILE)))
+        self.assertEqual([], self.ledger(other, guard_module.CALLS_FILE))
+        self.assertEqual([], self.search.guards["github"].waits() + acquirer.guards["github"].waits())
+        for stored in self.cache.rglob("*"):
+            if stored.is_file():
+                self.assertNotIn(b"offline-test-token", stored.read_bytes())
+
+        # The raw media type is another answer, so another key: it is asked once, then served.
+        self.server.state["large"] = True
+        raw = "application/vnd.github.raw+json"
+        url = self.url + path
+        self.assertEqual(DOCUMENT, self.search.request("github", "core", url, accept=raw)[1])
+        self.assertEqual(DOCUMENT, self.search.request("github", "core", url, accept=raw)[1])
+        self.assertEqual(2, self.server.state["contents"])
+
+    def test_a_refused_or_failed_api_answer_is_not_cached(self) -> None:
+        path = f"/repos/example/api/contents/openapi.yaml?ref={'b' * 40}"
+        with patch.object(guard_module, "SECONDARY_BACKOFF_BASE_S", 0.01):
+            for status in (503, 429, 500):
+                self.server.state["contents_status"] = status
+                self.assertEqual(status, self.search.github_json("core", path)[0])
+        self.assertEqual(3, self.server.state["contents"])
+        self.assertEqual([], [p for p in self.cache.rglob("*") if p.is_file()])
+        self.assertEqual([], self.ledger(self.root, guard_module.CACHE_HITS_FILE))
+        # A 404 is an answer about the world: kept, and served the second time.
+        self.server.state["contents_status"] = 404
+        self.assertEqual(404, self.search.github_json("core", path)[0])
+        self.assertEqual(404, self.search.github_json("core", path)[0])
+        self.assertEqual(4, self.server.state["contents"])
+
+    def test_a_repeated_raw_fetch_is_answered_from_the_cache_without_pacing_or_a_call(self) -> None:
+        url = f"{self.url}/example/api/{'c' * 40}/openapi.yaml"
+        with patch.object(SEARCH, "RAW_SPACING_S", 5.0):
+            self.assertEqual((200, DOCUMENT), self.search.raw_github_get(url, "k", "example/api/openapi.yaml"))
+            started = time.monotonic()
+            self.assertEqual((200, DOCUMENT), self.search.raw_github_get(url, "k", "example/api/openapi.yaml"))
+            self.assertLess(time.monotonic() - started, 2.0)  # the 5 s spacing was never waited
+        self.assertEqual(1, self.server.state["raw_hits"])
+        self.assertEqual(1, len(self.ledger(self.root, SEARCH.RAW_CALLS)))
+        self.assertEqual([], self.ledger(self.root, SEARCH.RAW_WAITS))
+        (hit,) = self.ledger(self.root, guard_module.CACHE_HITS_FILE)
+        self.assertEqual(("raw", url, hashlib.sha256(DOCUMENT).hexdigest()), (hit["lane"], hit["url"], hit["sha256"]))
+
+    def test_a_raw_refusal_is_not_cached(self) -> None:
+        url = f"{self.url}/example/api/{'c' * 40}/openapi.yaml"
+        self.server.state["raw_status"] = 429
+        with (
+            patch.object(SEARCH, "RAW_BACKOFF_BASE_S", 0.001),
+            patch.object(SEARCH, "RAW_SPACING_S", 0),
+            self.assertRaises(SEARCH.SearchStopped),
+        ):
+            self.search.raw_github_get(url, "k", "example/api/openapi.yaml")
+        self.assertEqual([], [p for p in self.cache.rglob("*") if p.is_file()])
+        self.server.state["raw_status"] = 0
+        with patch.object(SEARCH, "RAW_SPACING_S", 0):
+            self.assertEqual((200, DOCUMENT), self.search.raw_github_get(url, "k", "example/api/openapi.yaml"))
+        self.assertEqual(6, self.server.state["raw_hits"])
+
+
 class HandwrittenKeyDerivationTest(unittest.TestCase):
     """A row a hand-written fixture covers stays a search target.
 

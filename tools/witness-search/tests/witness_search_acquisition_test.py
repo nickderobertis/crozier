@@ -1535,6 +1535,91 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertIn("requires key, selector, and census_status", completed.stderr)
             self.assertIn("pass a readable key/selector contract", completed.stderr)
 
+    def test_guarded_acquisition_is_answered_from_the_shared_cache_the_second_time(self) -> None:
+        state: dict[str, list[str]] = {"requests": []}
+
+        class Handler(BaseHTTPRequestHandler):
+            def do_GET(self):
+                state["requests"].append(self.path)
+                if self.path == "/rate_limit":
+                    reading = {"limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 3600}
+                    body = json.dumps({"resources": {"core": reading}}).encode("utf-8")
+                    self.send_response(200)
+                elif self.path == "/tree.tar.gz":
+                    body = b"real local tree archive bytes"
+                    self.send_response(200)
+                    self.send_header("x-ratelimit-resource", "core")
+                else:
+                    body = b"slow down"
+                    self.send_response(429)
+                    self.send_header("x-ratelimit-resource", "core")
+                self.send_header("Content-Length", str(len(body)))
+                self.end_headers()
+                self.wfile.write(body)
+
+            def log_message(self, format: str, *_args: Any) -> None:
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            url = f"http://127.0.0.1:{server.server_port}"
+            env = {
+                **os.environ,
+                "CROZIER_GITHUB_API_URL": url,
+                "GITHUB_TOKEN": "local-test-token",
+                "CROZIER_GITHUB_CACHE_DIR": str(root / "host-cache"),
+            }
+
+            def acquire(source: str, worktree: str) -> tuple[subprocess.CompletedProcess[str], Path]:
+                evidence = root / worktree / "evidence"
+                completed = subprocess.run(
+                    [
+                        sys.executable,
+                        str(GITHUB_ACQUIRE),
+                        f"{url}{source}",
+                        str(root / worktree / "tree.tar.gz"),
+                        "--evidence-dir",
+                        str(evidence),
+                    ],
+                    cwd=REPO,
+                    env=env,
+                    capture_output=True,
+                    text=True,
+                    timeout=30,
+                    encoding="utf-8",
+                )
+                return completed, evidence
+
+            first, _ = acquire("/tree.tar.gz", "one")
+            self.assertEqual(first.returncode, 0, first.stderr)
+            asked = list(state["requests"])
+            self.assertEqual(asked, ["/rate_limit", "/tree.tar.gz"])
+
+            # A second worktree's acquisition of the same URL: no reading, no call.
+            second, evidence = acquire("/tree.tar.gz", "two")
+            self.assertEqual(second.returncode, 0, second.stderr)
+            self.assertEqual(state["requests"], asked)
+            self.assertEqual((root / "two" / "tree.tar.gz").read_bytes(), b"real local tree archive bytes")
+            (record,) = [json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text().splitlines()]
+            self.assertEqual((record["cache"], record["status"], record["bytes"]), ("hit", 200, 29))
+            self.assertEqual(record["sha256"], hashlib.sha256(b"real local tree archive bytes").hexdigest())
+            (hit,) = [json.loads(line) for line in (evidence / "github-cache-hits.jsonl").read_text().splitlines()]
+            self.assertEqual(hit["sha256"], record["sha256"])
+            self.assertFalse((evidence / "rate-limit-calls.jsonl").exists())
+            for stored in (root / "host-cache").rglob("*"):
+                self.assertNotIn(b"local-test-token", stored.read_bytes() if stored.is_file() else b"")
+
+            # A refusal is not an answer: asked every time, never stored.
+            for worktree in ("three", "four"):
+                refused, _ = acquire("/refused", worktree)
+                self.assertEqual(refused.returncode, 1)
+            self.assertEqual(state["requests"].count("/refused"), 2)
+
     def test_guarded_acquisition_waits_for_cap_and_records_refusal(self) -> None:
         state = {"reads": 0, "downloads": 0, "authorized": False}
 
