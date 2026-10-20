@@ -665,6 +665,9 @@ class WeeklyRunTests(unittest.TestCase):
             path for path in changed if path.startswith("tests/fixtures/alpha/") and path.endswith("client_wrapper.py")
         )
         self.assertIn(f'"X-Fern-SDK-Version": "{CANDIDATE[1]}"', self.remote_file(branch, wrapper))
+        # Its bytes differ from the committed tree's, which published no SDK name
+        # or version; crozier's output still matches it.
+        self.assertNotIn("X-Fern-SDK-Version", self.remote_file("main", wrapper))
         self.assertIn(
             f"fern_cli_version: {CANDIDATE[0]}",
             self.remote_file(branch, f"docs/fern-refusals/{REFUSAL_CLASS}/fern-refusal.txt"),
@@ -956,6 +959,33 @@ class WeeklyRunTests(unittest.TestCase):
             if call[:2] == ["pr", "merge"]
         ]
         self.assertEqual(1, len(merges), "an enabled auto-merge is not requested again")
+
+    def test_a_rejected_push_or_label_is_red_and_says_what_completed(self) -> None:
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide")
+        bundle, decision = state["artifacts"] / "bundle", state["artifacts"] / "decision"
+        hook = self.remote / "hooks" / "pre-receive"
+        write_executable(hook, "#!/bin/sh\necho 'protected by the stand-in remote' >&2\nexit 1\n")
+        rejected = self.publish(bundle, decision)
+        self.assertEqual(1, rejected.returncode)
+        summary = self.summary().split("## Fern goldens: publication failed", 1)[1]
+        self.assertIn("pushing fern-goldens/update failed", summary)
+        self.assertIn("protected by the stand-in remote", summary)
+        self.assertIn("- commit:", summary)
+        self.assertNotIn("- push", summary)
+        self.assert_untouched()
+        hook.unlink()
+
+        unlabelled = self.publish(bundle, decision, GH_FAIL="label create")
+        self.assertEqual(1, unlabelled.returncode)
+        self.assertIn("could not create the fern-goldens label", unlabelled.stderr)
+        self.assertEqual([], self.pulls())
+        self.assertEqual(["fern-goldens/update", "main"], self.remote_branches())
+        finished = self.publish(bundle, decision)
+        self.assertEqual(0, finished.returncode, finished.stderr)
+        self.assertIn("label fern-goldens: created", finished.stdout)
+        self.assertIn("already on the remote", finished.stdout)
+        self.assertEqual(1, len(self.pulls()))
 
     def test_a_diff_after_an_adopting_run_turns_auto_merge_off(self) -> None:
         self.publish_seed()
