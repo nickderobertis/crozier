@@ -287,6 +287,20 @@ class ResolveTests(unittest.TestCase):
         subset, values = self.resolve("--ref", "refs/heads/feature", "--items", "probes")
         self.assertEqual((0, "false", "true"), (subset.returncode, values["complete"], values["run"]), subset.stderr)
 
+    def test_a_subset_with_line_breaks_reaches_the_outputs_as_one_line(self) -> None:
+        result, values = self.resolve("--ref", "refs/heads/feature", "--items", "corpus:anchore.io,\nhandwritten\n")
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertEqual(
+            {
+                "run": "true",
+                "complete": "false",
+                "cli": "10.10.0",
+                "generator": "4.10.0",
+                "items": "corpus:anchore.io,handwritten",
+            },
+            values,
+        )
+
     def test_an_unreachable_registry_is_named(self) -> None:
         result, _values = self.resolve("--ref", "refs/heads/main", "--token-present", FAIL="registry.npmjs.org")
         self.assertEqual(1, result.returncode)

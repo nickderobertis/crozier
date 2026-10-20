@@ -911,6 +911,7 @@ def checked_pairs(base: Path) -> dict[Pair, str]:
 def resolve(args: argparse.Namespace) -> int:
     base = root()
     selectors = parse_selectors(args.items)
+    items = ",".join(selector.family + (f":{selector.item}" if selector.item else "") for selector in selectors)
     complete = not selectors
     if complete and args.ref != f"refs/heads/{BASE}":
         raise WeeklyError(
@@ -940,10 +941,12 @@ def resolve(args: argparse.Namespace) -> int:
             "complete": "true" if complete else "false",
             "cli": pair.cli,
             "generator": pair.generator,
-            "items": args.items,
+            # The selectors as parsed, never the raw input, so no line break of
+            # it can add an output of its own.
+            "items": items,
         },
     )
-    scope = "the whole reference inventory" if complete else f"the diagnostic subset `{args.items}`"
+    scope = "the whole reference inventory" if complete else f"the diagnostic subset `{items}`"
     line = reason or f"Checking {pair.label()} over {scope} (certified: {current.label()})."
     summarize(args.summary, ["## Fern goldens: pair", "", line])
     print(f"fern-goldens-weekly: {line}")
