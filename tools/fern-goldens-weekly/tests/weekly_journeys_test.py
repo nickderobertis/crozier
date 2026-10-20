@@ -368,7 +368,9 @@ def write_executable(path: Path, source: str) -> None:
 
 
 @unittest.skipIf(os.name == "nt", "the weekly workflow runs its scripts on Linux")
-@unittest.skipUnless(CROZIER.is_file(), f"build crozier first: {CROZIER} (crozier:build, which test-weekly depends on)")
+@unittest.skipUnless(
+    CROZIER.is_file(), f"build crozier first: {CROZIER} (crozier:build, which this suite's test target depends on)"
+)
 class WeeklyRunTests(unittest.TestCase):
     # The seed tree and the stand-in's Fern trees, built once for the class:
     # every case starts from a copy of the same committed references.
@@ -1361,23 +1363,6 @@ class WeeklyRunTests(unittest.TestCase):
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"])
         self.assertIn("**Diff**", pull["body"])
-
-
-class ReporterContractTests(unittest.TestCase):
-    """The decision reads `report_fixture_diffs`' own report (`just
-    fixtures-diff`); these are the lines it reads, as that reporter prints them."""
-
-    def test_the_reporter_still_prints_what_the_decision_reads(self) -> None:
-        source = (REPO / "crates/crozier-e2e/tests/e2e.rs").read_text(encoding="utf-8")
-        for printed in (
-            "comparison generation failure(s) across the reported corpora.",
-            "comparison processing failure(s) across the reported corpora.",
-            " [REGRESSION — not in `unmatched`]",
-            "Comparison setup failed: ",
-            'println!("\\n--- {rel}{tag} ---");',
-        ):
-            self.assertIn(printed, source)
-        self.assertIn("differing file(s) across the reported corpora", source)
 
 
 if __name__ == "__main__":

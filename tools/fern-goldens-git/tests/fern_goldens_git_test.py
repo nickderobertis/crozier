@@ -2684,5 +2684,22 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             self.assertIn("restore it with git checkout -- tests/fixtures/CORPUS.md", result.stderr)
 
 
+class ReporterContractTests(unittest.TestCase):
+    """The decision reads `report_fixture_diffs`' own report (`just
+    fixtures-diff`); these are the lines it reads, as that reporter prints them."""
+
+    def test_the_reporter_still_prints_what_the_decision_reads(self) -> None:
+        source = (REPO / "crates/crozier-e2e/tests/e2e.rs").read_text(encoding="utf-8")
+        for printed in (
+            "comparison generation failure(s) across the reported corpora.",
+            "comparison processing failure(s) across the reported corpora.",
+            " [REGRESSION — not in `unmatched`]",
+            "Comparison setup failed: ",
+            'println!("\\n--- {rel}{tag} ---");',
+        ):
+            self.assertIn(printed, source)
+        self.assertIn("differing file(s) across the reported corpora", source)
+
+
 if __name__ == "__main__":
     unittest.main()

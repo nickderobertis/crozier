@@ -2,7 +2,7 @@
 real reference inventory and timing table, the pair it resolves (over a
 stood-in `curl`), how it reads crozier's own reports, and the assembly's
 accounting. The journeys that drive the real `git`, the recipe and crozier end
-to end are `tools/fern-goldens-git/tests/weekly_git_test.py`'s.
+to end are `tools/fern-goldens-weekly/tests/weekly_journeys_test.py`'s.
 """
 
 from __future__ import annotations
@@ -295,7 +295,7 @@ class ResolveTests(unittest.TestCase):
 
 class ReportTests(unittest.TestCase):
     """How the decision reads `report_fixture_diffs`' own verdict (`just
-    fixtures-diff`). `weekly_git_test.py` holds these to the strings that
+    fixtures-diff`). `fern_goldens_git_test.py` holds these to the strings that
     reporter prints, since only that project may read crozier-e2e's source."""
 
     SUMMARY = (

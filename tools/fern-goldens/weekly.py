@@ -1621,7 +1621,7 @@ REGRESSION = re.compile(r"(?m)^--- .* \[REGRESSION")
 SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
 
 
-# llmlint: ignore[changed_behavior_has_e2e] `report_fixture_diffs` is crozier-e2e's ignored reporter over a committed corpus golden, so driving it needs the whole fixture tree and the e2e build; tools/fern-goldens/tests/weekly_test.py drives this reader over the reporter's own report shapes, and tools/fern-goldens-git/tests/weekly_git_test.py holds those shapes to the strings the reporter prints.
+# llmlint: ignore[changed_behavior_has_e2e] `report_fixture_diffs` is crozier-e2e's ignored reporter over a committed corpus golden, so driving it needs the whole fixture tree and the e2e build; tools/fern-goldens/tests/weekly_test.py drives this reader over the reporter's own report shapes, and tools/fern-goldens-git/tests/fern_goldens_git_test.py holds those shapes to the strings the reporter prints.
 def read_report(code: int, output: str) -> Verdict:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in

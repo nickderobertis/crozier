@@ -33,51 +33,11 @@
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tests/fixtures/**/*",
         "{workspaceRoot}/justfile",
+        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
         "pythonTooling"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage-data/fern-goldens-git/test-lifecycle"
-      ]
-    },
-    "test-weekly": {
-      "executor": "nx:run-commands",
-      "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens-git/tests/weekly_git_test.py",
-        "env": {
-          "COVERAGE_FILE": ".coverage-data/fern-goldens-git/test-weekly/.coverage"
-        }
-      },
-      "cache": true,
-      "inputs": [
-        "default",
-        "crateSource",
-        "{workspaceRoot}/tools/fern-goldens/weekly.py",
-        "{workspaceRoot}/tools/fern-goldens/fern-references.py",
-        "{workspaceRoot}/tools/fern-goldens/fern-goldens",
-        "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
-        "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
-        "{workspaceRoot}/tools/fern-goldens/certified_pair.py",
-        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
-        "{workspaceRoot}/tools/corpus/corpus-lib.sh",
-        "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
-        "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
-        "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
-        "{workspaceRoot}/scripts/lib.sh",
-        "{workspaceRoot}/assets/scaffolding/metadata.json",
-        "{workspaceRoot}/tests/fixtures/corpus-aliases.tsv",
-        "{workspaceRoot}/tests/fixtures/corpus-remote-ref-pins.tsv",
-        "{workspaceRoot}/docs/fern-refusals/classes.tsv",
-        "{workspaceRoot}/docs/fern-refusals/findings.tsv",
-        "{workspaceRoot}/docs/fern-refusals/default-not-enum-value/probe.yml",
-        "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
-        "{workspaceRoot}/tests/fixtures/calorieninjas.com/known-fern-failure.json",
-        "pythonTooling"
-      ],
-      "dependsOn": [
-        "crozier:build"
-      ],
-      "outputs": [
-        "{workspaceRoot}/.coverage-data/fern-goldens-git/test-weekly"
       ]
     },
     "test-certified-pair": {
@@ -113,6 +73,7 @@
         "{workspaceRoot}/tools/corpus-fetch/**/*",
         "{workspaceRoot}/tools/corpus-licensing/**/*",
         "{workspaceRoot}/tools/fern-goldens/**/*",
+        "{workspaceRoot}/tools/fern-goldens-weekly/**/*",
         "{workspaceRoot}/tools/fern-refusals/**/*",
         "{workspaceRoot}/tools/fern-refusals-strict/**/*",
         "{workspaceRoot}/tools/github-action/**/*",
@@ -137,7 +98,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test-lifecycle",
-        "test-weekly",
         "test-certified-pair"
       ]
     },
