@@ -1636,6 +1636,15 @@ def shapes_path() -> Path:
 
 ShapeRole = Literal["probe", "control"]
 ShapeVerdict = Literal["refused", "generates", "unmeasured"]
+# A Fern stage's outcome: its exit status, or `timeout` when it ran past the bound.
+StageExit = int | Literal["timeout"]
+
+
+def stage_exit(text: str) -> StageExit | None:
+    """`text` as a stage's outcome, or `None` when it is neither an exit status nor `timeout`."""
+    if text == "timeout":
+        return "timeout"
+    return int(text) if _EXIT[0].fullmatch(text) else None
 
 
 class Shape(NamedTuple):
@@ -1646,15 +1655,47 @@ class Shape(NamedTuple):
     role: ShapeRole
 
 
+class Generation(NamedTuple):
+    """A `fern generate` over a shape: its outcome, the files it wrote and its output."""
+
+    exit: StageExit
+    files: int
+    log: str
+
+
 class ShapeRun(NamedTuple):
     """What Fern did over a shape: its check, and its generation unless the check
-    named a class (then `generate_exit` and `generate_files` are empty)."""
+    named a class or ran past the bound."""
 
-    check_exit: str
+    check_exit: StageExit
     check_log: str
-    generate_exit: str
-    generate_files: str
-    generate_log: str
+    generation: Generation | None
+
+
+class ShapeRow(NamedTuple):
+    """A shape's `shapes.tsv` row, typed; `cells` is the row as the table spells it."""
+
+    shape: Shape
+    digest: str
+    run: ShapeRun
+    classes: list[str]
+    verdict: ShapeVerdict
+    log: Path
+
+    def cells(self) -> dict[str, str]:
+        generation = self.run.generation
+        return {
+            "class": self.shape.cls,
+            "shape": self.shape.path.name,
+            "role": self.shape.role,
+            "digest": self.digest,
+            "check_exit": str(self.run.check_exit),
+            "generate_exit": str(generation.exit) if generation else EMPTY,
+            "generate_files": str(generation.files) if generation else EMPTY,
+            "classes": ",".join(self.classes) or EMPTY,
+            "verdict": self.verdict,
+            "log": rel(self.log),
+        }
 
 
 def class_shapes(classes: list[dict[str, str]]) -> list[Shape]:
@@ -1685,8 +1726,8 @@ def shape_log(shape: Shape) -> Path:
 def shape_log_text(run: ShapeRun) -> str:
     """A shape's log: the pair, the check's exit and output, then the generation's when it ran."""
     text = PAIR_LINE + f"check exit: {run.check_exit}\n" + run.check_log
-    if run.generate_exit:
-        text += f"\ngenerate exit: {run.generate_exit}\nfiles: {run.generate_files}\n" + run.generate_log
+    if run.generation:
+        text += f"\ngenerate exit: {run.generation.exit}\nfiles: {run.generation.files}\n" + run.generation.log
     return text
 
 
@@ -1698,53 +1739,39 @@ SHAPE_LOG = re.compile(
 
 
 def read_shape_log(text: str) -> ShapeRun | None:
-    """The run a shape's log records, or `None` when it is not one `shapes` wrote at the pair."""
+    """The run a shape's log records, or `None` when it is not one `shapes` wrote
+    at the pair: each exit an exit status or `timeout`, the file count a count."""
     if not text.startswith(PAIR_LINE):
         return None
     match = SHAPE_LOG.fullmatch(text[len(PAIR_LINE) :])
-    if match is None:
+    check = stage_exit(match["check_exit"]) if match else None
+    if match is None or check is None:
+        return None
+    if match["generate_exit"] is None:
+        return ShapeRun(check, match["check_log"], None)
+    generate = stage_exit(match["generate_exit"])
+    if generate is None or not _COUNT[0].fullmatch(match["generate_files"]):
         return None
     return ShapeRun(
-        match["check_exit"],
-        match["check_log"],
-        match["generate_exit"] or "",
-        match["generate_files"] or "",
-        match["generate_log"] or "",
+        check, match["check_log"], Generation(generate, int(match["generate_files"]), match["generate_log"])
     )
 
 
-def shape_verdict(run: ShapeRun, patterns: list[Template], near: list[Template]) -> tuple[list[str], ShapeVerdict]:
-    """The classes Fern's logs over a shape name, and whether it `refused` the
-    shape, `generates` from it, or left it `unmeasured` past the time bound —
-    by the rule `verdict` holds a real document to."""
-    if "timeout" in (run.check_exit, run.generate_exit):
-        return [], "unmeasured"
+def shape_row(shape: Shape, digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]) -> ShapeRow:
+    """A shape's row, derived from its run alone: the classes Fern's logs name, and
+    whether it `refused` the shape, `generates` from it, or left it `unmeasured`
+    past the time bound — by the rule `verdict` holds a real document to."""
+    log = shape_log(shape)
+    generation = run.generation
+    if run.check_exit == "timeout" or (generation and generation.exit == "timeout"):
+        return ShapeRow(shape, digest, run, [], "unmeasured", log)
     check_classes = classify(diagnostics(run.check_log), patterns, near)[0]
-    if check_classes and run.check_exit != "0":
-        return check_classes, "refused"
-    generate_classes = classify(diagnostics(run.generate_log), patterns, near)[0]
-    if run.generate_exit != "0" or run.generate_files == "0" or generate_classes:
-        return check_classes or generate_classes, "refused"
-    return [], "generates"
-
-
-def shape_row(
-    shape: Shape, digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
-) -> dict[str, str]:
-    """A shape's `shapes.tsv` row, derived from its run alone."""
-    found, outcome = shape_verdict(run, patterns, near)
-    return {
-        "class": shape.cls,
-        "shape": shape.path.name,
-        "role": shape.role,
-        "digest": digest,
-        "check_exit": run.check_exit,
-        "generate_exit": run.generate_exit or EMPTY,
-        "generate_files": run.generate_files or EMPTY,
-        "classes": ",".join(found) or EMPTY,
-        "verdict": outcome,
-        "log": rel(shape_log(shape)),
-    }
+    if check_classes and run.check_exit != 0:
+        return ShapeRow(shape, digest, run, check_classes, "refused", log)
+    generate_classes = classify(diagnostics(generation.log if generation else ""), patterns, near)[0]
+    if generation is None or generation.exit != 0 or generation.files == 0 or generate_classes:
+        return ShapeRow(shape, digest, run, check_classes or generate_classes, "refused", log)
+    return ShapeRow(shape, digest, run, [], "generates", log)
 
 
 def fern_shape(shape: Shape, timeout: int, patterns: list[Template], near: list[Template]) -> ShapeRun:
@@ -1752,19 +1779,22 @@ def fern_shape(shape: Shape, timeout: int, patterns: list[Template], near: list[
     with tempfile.TemporaryDirectory(prefix="fern-refusals-shape-") as scratch:
         workspace = Path(scratch) / "fern"
         fern_workspace(shape.path, workspace)
-        check_exit, check_log = fern_run(["fern", "check"], workspace, timeout)
-        check_log = scrub(check_log)
-        blocked = check_exit != "0" and classify(diagnostics(check_log), patterns, near)[0]
+        status, output = fern_run(["fern", "check"], workspace, timeout)
+        check_exit, check_log = stage_exit(status), scrub(output)
+        assert check_exit is not None, status
+        blocked = check_exit != 0 and classify(diagnostics(check_log), patterns, near)[0]
         if check_exit == "timeout" or blocked:
-            return ShapeRun(check_exit, check_log, "", "", "")
+            return ShapeRun(check_exit, check_log, None)
         preview = Path(scratch) / "preview"
-        generate_exit, generate_log = fern_run(
+        status, output = fern_run(
             ["fern", "generate", "--group", "python-sdk", "--local", "--preview", "--output", str(preview), "--force"],
             workspace,
             timeout,
         )
+        generate_exit = stage_exit(status)
+        assert generate_exit is not None, status
         files = sum(1 for file in preview.rglob("*") if file.is_file()) if preview.is_dir() else 0
-    return ShapeRun(check_exit, check_log, generate_exit, str(files), scrub(generate_log))
+    return ShapeRun(check_exit, check_log, Generation(generate_exit, files, scrub(output)))
 
 
 def shapes(args: argparse.Namespace) -> int:
@@ -1806,7 +1836,7 @@ def shapes(args: argparse.Namespace) -> int:
         )
         recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
         if not args.again and kept and kept["digest"] == digest and kept["log"] == rel(log) and recorded:
-            row = shape_row(shape, digest, recorded, patterns, near)
+            row = shape_row(shape, digest, recorded, patterns, near).cells()
             if row != kept:
                 table[(shape.cls, shape.path.name)] = row
                 write_shapes(path, table)
@@ -1814,7 +1844,7 @@ def shapes(args: argparse.Namespace) -> int:
         run = fern_shape(shape, args.timeout, patterns, near)
         log.parent.mkdir(parents=True, exist_ok=True)
         log.write_text(shape_log_text(run), encoding="utf-8")
-        table[(shape.cls, shape.path.name)] = shape_row(shape, digest, run, patterns, near)
+        table[(shape.cls, shape.path.name)] = shape_row(shape, digest, run, patterns, near).cells()
         write_shapes(path, table)
         taken += 1
     write_shapes(path, table)
@@ -1851,11 +1881,11 @@ def shape_problems() -> list[str]:
         recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
         if recorded is None:
             problems.append(
-                f"{rel(shape.path)}: its log {row['log']} was not taken at Fern CLI {FERN_CLI} with "
+                f"{rel(shape.path)}: its log {row['log']} is not one `shapes` wrote at Fern CLI {FERN_CLI} with "
                 f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
             )
         elif (
-            dict(shape_row(shape, digest, recorded, patterns, near), log=row["log"]) != row
+            dict(shape_row(shape, digest, recorded, patterns, near).cells(), log=row["log"]) != row
             or Path(row["log"]).name != shape_log(shape).name
         ):
             problems.append(f"{rel(shape.path)}: shapes.tsv disagrees with its log {row['log']}; {again}")

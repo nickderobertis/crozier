@@ -1541,22 +1541,23 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         class Handler(BaseHTTPRequestHandler):
             def do_GET(self):
                 state["requests"].append(self.path)
-                if self.path == "/rate_limit":
-                    reading = {"limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 3600}
-                    body = json.dumps({"resources": {"core": reading}}).encode("utf-8")
-                    self.send_response(200)
-                elif self.path == "/tree.tar.gz":
-                    body = b"real local tree archive bytes"
-                    self.send_response(200)
-                    self.send_header("x-ratelimit-resource", "core")
-                elif self.path == "/missing.tar.gz":
-                    body = b"Not Found"
-                    self.send_response(404)
-                    self.send_header("x-ratelimit-resource", "core")
-                else:
-                    body = b"slow down"
-                    self.send_response(429)
-                    self.send_header("x-ratelimit-resource", "core")
+                match self.path:
+                    case "/rate_limit":
+                        reading = {"limit": 100, "used": 0, "remaining": 100, "reset": int(time.time()) + 3600}
+                        body = json.dumps({"resources": {"core": reading}}).encode("utf-8")
+                        self.send_response(200)
+                    case "/tree.tar.gz":
+                        body = b"real local tree archive bytes"
+                        self.send_response(200)
+                        self.send_header("x-ratelimit-resource", "core")
+                    case "/missing.tar.gz":
+                        body = b"Not Found"
+                        self.send_response(404)
+                        self.send_header("x-ratelimit-resource", "core")
+                    case _:
+                        body = b"slow down"
+                        self.send_response(429)
+                        self.send_header("x-ratelimit-resource", "core")
                 self.send_header("Content-Length", str(len(body)))
                 self.end_headers()
                 self.wfile.write(body)

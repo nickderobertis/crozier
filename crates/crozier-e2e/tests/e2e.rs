@@ -23936,8 +23936,9 @@ fn missing_discriminant_refusal_follows_fern_examples_and_recovers_with_a_mapped
 
 /// One example-value class's committed evidence, through the real CLI: the
 /// probe is refused in both modes with `diagnostic`, every other measured
-/// refused shape (`*-probe.yml`) is refused with the class, and every accepted
-/// near miss (`*-control.yml`) generates identical bytes in both modes.
+/// refused shape (`*-probe.yml`/`.json`) is refused with the class, and every
+/// accepted near miss (`*-control.yml`/`.json`) generates identical bytes in
+/// both modes.
 fn example_value_class_holds(id: &str, diagnostic: &str) {
     let class = repo_root().join(FERN_REFUSALS_DIR).join(id);
     for strict in [false, true] {
@@ -23949,7 +23950,11 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
     let mut cases: Vec<_> = std::fs::read_dir(&class)
         .unwrap()
         .map(|entry| entry.unwrap().file_name().into_string().unwrap())
-        .filter(|name| name.ends_with("-probe.yml") || name.ends_with("-control.yml"))
+        .filter(|name| {
+            ["-probe.yml", "-control.yml", "-probe.json", "-control.json"]
+                .iter()
+                .any(|suffix| name.ends_with(suffix))
+        })
         .collect();
     cases.sort();
     assert!(!cases.is_empty(), "{id}: no measured shapes committed");
@@ -23957,7 +23962,7 @@ fn example_value_class_holds(id: &str, diagnostic: &str) {
         let spec = class.join(&case);
         let normal = refusal_run(&crozier, &spec, false).unwrap();
         let strict = refusal_run(&crozier, &spec, true).unwrap();
-        if case.ends_with("-probe.yml") {
+        if case.ends_with("-probe.yml") || case.ends_with("-probe.json") {
             for (run, strict) in [(&normal, false), (&strict, true)] {
                 let failures = refused_failures(id, run, &format!("{id}: "), strict);
                 assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));

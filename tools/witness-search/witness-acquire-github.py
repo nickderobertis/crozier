@@ -26,7 +26,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, Literal, TypedDict
+from typing import Any, ClassVar, Literal, Protocol, TypedDict
 
 
 def load_guard():
@@ -79,7 +79,24 @@ class Acquisition(TypedDict, total=False):
     bytes: int
 
 
-def from_cache(cached: Any, temporary: Path, digest: Any, record: Acquisition, evidence_dir: Path) -> bool:
+class CachedAnswer(Protocol):
+    """What `from_cache` reads of the guard's `CachedResponse`."""
+
+    status: int
+    body_path: Path
+
+    def body(self) -> bytes: ...
+
+    def ledger(self) -> dict[str, Any]: ...
+
+
+class Digest(Protocol):
+    """The incremental hash the downloaded bytes are fed to."""
+
+    def update(self, data: bytes, /) -> None: ...
+
+
+def from_cache(cached: CachedAnswer, temporary: Path, digest: Digest, record: Acquisition, evidence_dir: Path) -> bool:
     """Answer the download from the shared GitHub response cache; whether a 200's bytes are now in `temporary`."""
     record["cache"] = "hit"
     record["status"] = cached.status

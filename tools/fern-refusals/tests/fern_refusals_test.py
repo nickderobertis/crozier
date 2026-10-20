@@ -1090,7 +1090,7 @@ class FernRuns(unittest.TestCase):
         # A log an older pair took says nothing of this one: `check` names it and `shapes` takes it again.
         log = self.root / self.shape_rows()["alpha-probe.yml"]["log"]
         log.write_text("Fern CLI 5.67.1, python-sdk 5.20.0\ncheck exit: 1\n", encoding="utf-8")
-        self.assertIn("was not taken at Fern CLI", self.shape_problems()[0])
+        self.assertIn("is not one `shapes` wrote at Fern CLI", self.shape_problems()[0])
         said = phrase(self.class_row[4])
         result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
         self.assertEqual("fern-refusals: 1 shape(s) measured, 1 on record\n", result.stdout)
@@ -1166,6 +1166,17 @@ class FernRuns(unittest.TestCase):
         self.assertEqual(self.script("shapes").returncode, 0)
         self.assertEqual(len(self.calls_made()), calls)
         self.assertEqual(self.shape_problems(), [])
+        # A log whose exit is no exit status is no measurement at all.
+        written = (self.root / log).read_text(encoding="utf-8")
+        (self.root / log).write_text(written.replace("check exit: 1\n", "check exit: maybe\n"), encoding="utf-8")
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: its log {log} is not one `shapes` wrote at Fern "
+                f"CLI {CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`"
+            ],
+        )
 
     def test_a_shape_past_the_bound_is_unmeasured_never_a_verdict(self) -> None:
         self.shape("alpha-control.yml", "alpha")
