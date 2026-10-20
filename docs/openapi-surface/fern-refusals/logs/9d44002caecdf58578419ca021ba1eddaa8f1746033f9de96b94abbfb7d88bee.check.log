@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 33 errors
+[sdk] 30 errors
     [error]
         path: __package__.yml -> types -> IntegrationViewModelConfigurationEight -> extends -> BaseConfiguration
         issue: Objects can only extend other objects, and BaseConfiguration is not an object.
@@ -19,10 +20,6 @@ Warnings for generators.yml:
 
     [error]
         path: __package__.yml -> types -> IntegrationViewModelConfigurationFourteen -> extends -> BaseConfiguration
-        issue: Objects can only extend other objects, and BaseConfiguration is not an object.
-
-    [error]
-        path: __package__.yml -> types -> IntegrationViewModelConfigurationOne -> extends -> BaseConfiguration
         issue: Objects can only extend other objects, and BaseConfiguration is not an object.
 
     [error]
@@ -66,10 +63,6 @@ Warnings for generators.yml:
         issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
 
     [error]
-        path: integration.yml -> types -> IntegrationPostRequestModelConfigurationOne -> extends -> root.BaseConfiguration
-        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
-
-    [error]
         path: integration.yml -> types -> IntegrationPostRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
         issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
 
@@ -110,10 +103,6 @@ Warnings for generators.yml:
         issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
 
     [error]
-        path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationOne -> extends -> root.BaseConfiguration
-        issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
-
-    [error]
         path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationSeven -> extends -> root.BaseConfiguration
         issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
 
@@ -133,4 +122,4 @@ Warnings for generators.yml:
         path: integration.yml -> types -> IntegrationUpdateRequestModelConfigurationZero -> extends -> root.BaseConfiguration
         issue: Objects can only extend other objects, and root.BaseConfiguration is not an object.
 
-Found 33 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 30 errors and 4 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
