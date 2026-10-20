@@ -233,8 +233,7 @@ step 3 rather than silently pinning nothing.
 ### Exact known upstream failures
 
 `calorieninjas.com` is the single registered exception across the whole corpus,
-recorded at `fernapi/fern-python-sdk:5.20.0` and not re-measured at the certified
-5.41.3 (a registration applies only at its own generator version). Its source
+recorded at the certified `fernapi/fern-python-sdk` version. Its source
 operation has no `operationId`, and Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
 SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
 binds the exception to the exact generator version, corpus name/ref/URL, exit
@@ -257,10 +256,27 @@ hard harness error. When a future Fern version generates a complete valid SDK,
 remove the failure registration and generate its provenanced tree (Route A);
 CalorieNinjas then rejoins normal byte comparison.
 
-In the weekly run that registration is the only generation failure that does
-not fail the run, and only at the version it is bound to: at any other version
-the fixture's failed generation is a failure the run names, until the
-registration is re-measured or Fern generates the fixture.
+Everything above holds at the registration's own version. At any other — the
+candidate pair a weekly run or a `--version` regeneration checks — Fern's outcome
+decides the registration like any other reference, and none of the three ends
+the run:
+
+- the same exit and fingerprint carry it: the registration is restated at the
+  candidate version, and the weekly run counts it as no difference;
+- a different exit or fingerprint rewrites it at the candidate with the failure
+  Fern now gives, and Fern generating the fixture replaces it with the new
+  `expected/` tree. `fern-goldens` lists both in
+  `.local/fern-goldens/known-upstream-failure-changes.txt`, and the weekly run
+  decides each a diff its pull request carries under **Known upstream Fern
+  failures that changed**.
+
+A fingerprint is Fern's own Ruff rejection of the SDK where the log shows one,
+and otherwise the errors Fern's generator printed after `[error]`
+(`fern_errors`), held as strictly at the registration's own version. A failure
+of the machine rather than Fern (no Docker daemon, a full disk, the network, a
+registry refusing a pull: `INFRASTRUCTURE_ERROR` in `fern-goldens`), or a log
+with no Fern error at all, rewrites nothing: it is an ordinary generation
+failure and the registration stands.
 
 ## Regenerating every reference family
 
@@ -407,8 +423,8 @@ the pull request's **Not regenerated** section, which makes the run a diff.
 
 Any failure before publication ends the run red with its step summary naming
 each failure, and touches no branch, pull request or record: a shard that fails
-or uploads nothing, an item whose generation fails (other than the exact known
-upstream failure below), an assembly that cannot account for every planned item
+or uploads nothing, an item whose generation fails (other than a registered known
+upstream failure, above), an assembly that cannot account for every planned item
 or finds two shards writing one file, a comparison that cannot run, or a
 missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any Fern runs).
 

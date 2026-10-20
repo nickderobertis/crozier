@@ -82,7 +82,7 @@ NPM_URL = "https://registry.npmjs.org/fern-api"
 BRANCH = "fern-goldens/update"
 LABEL = "fern-goldens"
 BASE = "main"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 # The budget the planner sizes shards against: `crozier-fern-goldens-weekly-minutes`
 # in `.github/budgets.yaml`, whose test holds the two equal.
@@ -123,6 +123,9 @@ class Status(StrEnum):
 
     OK = "ok"
     KNOWN = "known-upstream-failure"
+    # A registered known failure Fern now fails differently, or generates: its
+    # registration rewritten at the candidate, or replaced by the new golden.
+    KNOWN_CHANGED = "known-upstream-failure-changed"
     UNFETCHABLE = "spec-unfetchable"
     FAILED = "failed"
 
@@ -532,6 +535,16 @@ class FailingItem:
 
 
 @dataclass(frozen=True)
+class KnownFailureChange:
+    """A registered known upstream Fern failure the candidate pair decides
+    otherwise, with what the run now carries in its place."""
+
+    item: str
+    detail: str
+    report: str
+
+
+@dataclass(frozen=True)
 class Unfetchable:
     """A reference whose pinned upstream specification could not be fetched."""
 
@@ -558,6 +571,7 @@ class Decision:
     bundle: str
     failing: dict[str, list[FailingItem]] = field(default_factory=dict)
     unfetchable: list[Unfetchable] = field(default_factory=list)
+    known_changed: list[KnownFailureChange] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
     gates: list[GateRun] = field(default_factory=list)
 
@@ -565,7 +579,7 @@ class Decision:
     def outcome(self) -> Outcome:
         if self.cannot_run:
             return Outcome.FAILURE
-        return Outcome.DIFF if self.failing or self.unfetchable else Outcome.MATCH
+        return Outcome.DIFF if self.failing or self.unfetchable or self.known_changed else Outcome.MATCH
 
     def title(self) -> str:
         return f"test(fern-goldens): regenerate at Fern CLI {self.pair.cli} / fern-python-sdk {self.pair.generator}"
@@ -582,6 +596,8 @@ class Decision:
             "cannot_run": self.cannot_run,
             "gates": [{**vars(run_), "verdict": run_.verdict.value} for run_ in self.gates],
             "title": self.title(),
+            # Optional, and omitted when empty: most runs change no registration.
+            **({"known_changed": [vars(entry) for entry in self.known_changed]} if self.known_changed else {}),
         }
 
 
@@ -594,6 +610,7 @@ class RecordedDecision:
     pair: Pair
     bundle: str
     title: str
+    known_changed: tuple[KnownFailureChange, ...] = ()
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -602,12 +619,28 @@ class RecordedDecision:
         outcome = field_of(record, "outcome", str, where)
         if outcome not in set(Outcome):
             raise WeeklyError(f"{where}: outcome {outcome!r} is none of {', '.join(Outcome)}")
+        changes = (
+            field_of(record, "known_changed", list, where)
+            if isinstance(record, dict) and "known_changed" in record
+            else []
+        )
+        known_changed = tuple(
+            KnownFailureChange(
+                name_of(entry, "item", where),
+                field_of(entry, "detail", str, where),
+                field_of(entry, "report", str, where),
+            )
+            for entry in changes
+        )
+        if known_changed and outcome == Outcome.MATCH:
+            raise WeeklyError(f"{where}: a match changes no known failure; re-run the decision job")
         return cls(
             Outcome(outcome),
             field_of(record, "complete", bool, where),
             Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
             field_of(record, "bundle", str, where),
             field_of(record, "title", str, where),
+            known_changed,
         )
 
 
@@ -1304,14 +1337,18 @@ def generate_item(base: Path, entry: PlannedItem, logs: Path) -> ItemResult:
         )
     log.write_text("".join(parts), encoding="utf-8", newline="\n")
     status, detail = Status.OK, ""
+    report = base / FERN_GOLDENS_REPORT
+    changes = listed_fixtures(report / "known-upstream-failure-changes.txt") if family == "corpus" else {}
     if result.returncode != 0:
-        unfetchable = listed_fixtures(base / FERN_GOLDENS_REPORT / "fetch-failures.txt") if family == "corpus" else {}
+        unfetchable = listed_fixtures(report / "fetch-failures.txt") if family == "corpus" else {}
         if item in unfetchable:
             status, detail = Status.UNFETCHABLE, unfetchable[item]
         else:
             status = Status.FAILED
             detail = (result.stderr.strip() or result.stdout.strip() or f"exit {result.returncode}").splitlines()[-1]
-    elif family == "corpus" and item in listed_fixtures(base / FERN_GOLDENS_REPORT / "known-upstream-failures.txt"):
+    elif item in changes:
+        status, detail = Status.KNOWN_CHANGED, changes[item]
+    elif family == "corpus" and item in listed_fixtures(report / "known-upstream-failures.txt"):
         status, detail = Status.KNOWN, "the exact known upstream Fern failure, reproduced"
     return ItemResult(
         family=family,
@@ -1501,7 +1538,7 @@ def write_timings(base: Path, made: Plan, results: list[ItemResult], destination
     rows of items no longer in the inventory."""
     table, _default = timings(base)
     for entry in results:
-        if entry.status in (Status.OK, Status.KNOWN):
+        if entry.status in (Status.OK, Status.KNOWN, Status.KNOWN_CHANGED):
             table[(entry.family, entry.item)] = entry.seconds
     if made.complete:
         planned = {entry.key() for shard_plan in made.shards for entry in shard_plan.items}
@@ -1734,6 +1771,18 @@ def attribute(
         )
 
 
+def known_change_report(base: Path, entry: ItemResult) -> str:
+    """What the run carries for a known failure the candidate decided otherwise:
+    the rewritten registration's content, or the paths of the golden that
+    replaces it."""
+    registration = PurePosixPath("tests/fixtures") / entry.item / "known-fern-failure.json"
+    path = inside(base, registration.as_posix(), f"corpus {entry.item}")
+    if path.is_file():
+        return f"{registration}:\n{path.read_text(encoding='utf-8')}"
+    written = [changed for changed in entry.changed if (base / changed).is_file()]
+    return f"{registration} removed; the generated reference ({len(written)} file(s)):\n" + "\n".join(written)
+
+
 def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, families: Iterable[str]) -> Decision:
     decision = Decision(bundle.pair, bundle.complete, digest)
     items: dict[str, list[ItemResult]] = {}
@@ -1742,6 +1791,10 @@ def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, famili
             decision.unfetchable.append(Unfetchable(entry.item, entry.detail))
         else:
             items.setdefault(entry.family, []).append(entry)
+        if entry.status == Status.KNOWN_CHANGED:
+            decision.known_changed.append(
+                KnownFailureChange(entry.item, entry.detail, known_change_report(base, entry))
+            )
     reports.mkdir(parents=True, exist_ok=True)
     # A command several family rows name runs once, and its report is split over
     # every family those rows name.
@@ -1806,9 +1859,15 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
         unfetchable = (
             f", and {len(decision.unfetchable)} reference(s) could not be regenerated" if decision.unfetchable else ""
         )
+        changed = (
+            f", and Fern decided {len(decision.known_changed)} registered known failure(s) otherwise"
+            if decision.known_changed
+            else ""
+        )
         lines.append(
-            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}. This carries the regenerated "
-            "references and the new pair; crozier's checks on it show what crozier must change. It is not auto-merged."
+            f"**Diff**: crozier's comparison fails for {failing} item(s){unfetchable}{changed}. This carries the "
+            "regenerated references and the new pair; crozier's checks on it show what crozier must change. "
+            "It is not auto-merged."
         )
     lines += ["", "## Why", "", "Fern released a new version; crozier promises to match the Fern its users run.", ""]
     if decision.failing:
@@ -1823,6 +1882,14 @@ def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
                     report = report[:limit] + "\n… (truncated; the decision artifact holds the whole report)"
                 lines += [f"- `{entry.item}`", "", "<details><summary>report</summary>", "", fenced(report), ""]
                 lines += ["</details>", ""]
+    if decision.known_changed:
+        lines += ["## Known upstream Fern failures that changed", ""]
+        for change in decision.known_changed:
+            report = change.report
+            if len(report) > REPORT_LIMIT:
+                report = report[:REPORT_LIMIT] + "\n… (truncated; the bundle carries the whole file)"
+            lines += [f"- corpus `{change.item}`: {change.detail}", "", "<details><summary>what this carries</summary>"]
+            lines += ["", fenced(report), "", "</details>", ""]
     if decision.unfetchable:
         lines += ["## Not regenerated: upstream specification unavailable", ""]
         lines += [f"- corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable]
@@ -1858,6 +1925,7 @@ def decide(args: argparse.Namespace) -> int:
             + ("" if decision.complete else " (a diagnostic subset: nothing is published)"),
             *(f"- **cannot run**: {line}" for line in decision.cannot_run),
             *(f"- differs: {line}" for line in failing),
+            *(f"- known failure changed: corpus `{change.item}`: {change.detail}" for change in decision.known_changed),
             *(f"- not regenerated: corpus `{entry.item}`: {entry.detail}" for entry in decision.unfetchable),
         ],
     )

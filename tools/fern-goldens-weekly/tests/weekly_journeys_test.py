@@ -29,7 +29,7 @@ import unittest
 import unittest.mock
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, NamedTuple
+from typing import Any, NamedTuple, TypedDict
 
 os.environ["PYTHONUTF8"] = "1"
 
@@ -57,6 +57,37 @@ OLD = Versions(older(CANDIDATE.cli), older(CANDIDATE.generator))
 CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "debug" / "crozier")
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
+TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
+
+
+class RuffDiagnostic(TypedDict):
+    path: str
+    line: int
+    column: int
+    message: str
+    source: str
+
+
+class RuffFingerprint(TypedDict):
+    """A registration's fingerprint of Fern's Ruff pass rejecting the SDK."""
+
+    failed_command: str
+    diagnostics: list[RuffDiagnostic]
+    ruff_summary: str
+
+
+class Registration(TypedDict):
+    """A `known-fern-failure.json`, as `fern-goldens` validates it."""
+
+    schema_version: int
+    generator: str
+    generator_version: str
+    corpus_spec_name: str
+    corpus_spec_ref: str
+    corpus_spec_url: str
+    exit_code: int
+    fingerprint: RuffFingerprint
+
 
 MIRRORED = (
     "tools/fern-goldens/weekly.py",
@@ -1452,14 +1483,14 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("auto-merge: already enabled", finished.stdout)
         self.assertEqual(1, len(self.pulls()))
 
-    def test_an_exact_known_upstream_failure_is_carried_through_to_an_adopting_pull_request(self) -> None:
-        """A corpus row whose generation reproduces its registered upstream Fern
-        failure exactly, at the candidate version, is no failure: the run
-        decides and publishes the rest, and the row keeps no golden."""
-        manifest = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
+    def register_known_failure(self, version: str) -> Registration:
+        """A CORPUS.md row, `gamma`, whose golden is a known upstream Fern
+        failure registered at `version`, published with the seed; the corpus
+        gate compares only the rows with goldens, as crozier-e2e's does."""
+        manifest: Registration = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
         manifest.update(
             {
-                "generator_version": CANDIDATE.generator,
+                "generator_version": version,
                 "corpus_spec_name": "gamma",
                 "corpus_spec_ref": "1",
                 "corpus_spec_url": "https://example.test/gamma/openapi.yaml",
@@ -1489,35 +1520,172 @@ class WeeklyRunTests(unittest.TestCase):
             encoding="utf-8",
         )
         self.publish_seed()
-        fingerprint = manifest["fingerprint"]
+        return manifest
+
+    @staticmethod
+    def fern_failure(fingerprint: RuffFingerprint) -> str:
+        """Fern's log of its own Ruff pass rejecting the SDK, as it prints it."""
         blocks = [
             f"fern/output/{entry['path']}:{entry['line']}:{entry['column']}: {entry['message']}\n"
             f"{entry['line']} | {entry['source']}"
             for entry in fingerprint["diagnostics"]
         ]
         payload = "\n\n".join([*blocks, fingerprint["ruff_summary"]]) + "\n"
-        failure = f"Failed to run command: {fingerprint['failed_command']}\n{payload.encode('utf-8')!r}"
+        return f"Failed to run command: {fingerprint['failed_command']}\n{payload.encode('utf-8')!r}"
+
+    def failing_gamma(self, exit_code: int, fingerprint: RuffFingerprint) -> None:
         self.stand_in(
             {
                 "rules": {
                     "probe": self.refusal_rule,
-                    "Gamma Lanterns": {"generate": [manifest["exit_code"], failure], "raw": True},
+                    "Gamma Lanterns": {"generate": [exit_code, self.fern_failure(fingerprint)], "raw": True},
                 }
             }
         )
+
+    def statuses(self, state: Journey) -> dict[str, str]:
+        bundle = json.loads((state.artifacts / "bundle/bundle.json").read_text(encoding="utf-8"))
+        return {entry["item"]: entry["status"] for entry in bundle["items"]}
+
+    def published_tree(self) -> list[str]:
+        return self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
+
+    def test_an_exact_known_upstream_failure_is_carried_through_to_an_adopting_pull_request(self) -> None:
+        """A corpus row whose generation reproduces its registered upstream Fern
+        failure exactly, at the candidate version, is no failure: the run
+        decides and publishes the rest, and the row keeps no golden."""
+        manifest = self.register_known_failure(CANDIDATE.generator)
+        self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
         state = self.run_workflow()
         self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
-        bundle = json.loads((state.artifacts / "bundle/bundle.json").read_text(encoding="utf-8"))
-        statuses = {entry["item"]: entry["status"] for entry in bundle["items"]}
-        self.assertEqual("known-upstream-failure", statuses["gamma"])
+        self.assertEqual("known-upstream-failure", self.statuses(state)["gamma"])
         self.assertIn("corpus `gamma`: known-upstream-failure", self.summary())
         self.assertEqual("match", state.outcome(), self.summary())
         self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
         (pull,) = self.pulls()
         self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
         self.assertIn("| corpus | 3 |", pull["body"])
-        tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
-        self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in tree))
+        self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in self.published_tree()))
+
+    def test_a_known_failure_reproduced_at_a_candidate_version_is_carried_to_it_and_adopted(self) -> None:
+        """A registration bound to the certified version, which Fern fails
+        exactly the same way at the candidate: no difference, and the adopting
+        pull request carries the registration restated at the candidate."""
+        manifest = self.register_known_failure(OLD.generator)
+        self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual("known-upstream-failure", self.statuses(state)["gamma"])
+        self.assertEqual("match", state.outcome(), self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
+        self.assertNotIn("Known upstream Fern failures that changed", pull["body"])
+        carried = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
+        self.assertEqual({**manifest, "generator_version": CANDIDATE.generator}, carried)
+        self.assertRegex(self.remote_file("fern-goldens/update", TIMINGS), r"(?m)^corpus\tgamma\t[0-9.]+$")
+        self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in self.published_tree()))
+
+    def test_a_known_failure_fern_fails_differently_at_a_candidate_is_a_diff_carrying_its_new_registration(
+        self,
+    ) -> None:
+        """A changed exit status and Ruff summary at the candidate is no crash:
+        the run publishes a diff whose pull request carries the registration
+        rewritten at the candidate with the failure Fern now gives."""
+        manifest = self.register_known_failure(OLD.generator)
+        changed: RuffFingerprint = {
+            **manifest["fingerprint"],
+            "ruff_summary": "Found 12 errors (5 fixed, 7 remaining).",
+        }
+        self.failing_gamma(2, changed)
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual("known-upstream-failure-changed", self.statuses(state)["gamma"])
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual({}, state.failing(), "crozier's own comparison still matches every reference")
+        self.assertIn("known failure changed: corpus `gamma`: Fern fails it differently", self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        self.assertIn("Fern decided 1 registered known failure(s) otherwise", pull["body"])
+        section = pull["body"].split("## Known upstream Fern failures that changed", 1)[1].split("## Inventory")[0]
+        self.assertIn(f"exit 1 -> 2, fingerprint changed); its registration is rewritten from {OLD.generator}", section)
+        self.assertIn("Found 12 errors (5 fixed, 7 remaining).", section)
+        rewritten = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
+        self.assertEqual(
+            {**manifest, "generator_version": CANDIDATE.generator, "exit_code": 2, "fingerprint": changed}, rewritten
+        )
+        self.assertRegex(self.remote_file("fern-goldens/update", TIMINGS), r"(?m)^corpus\tgamma\t[0-9.]+$")
+
+    def test_a_known_failure_fern_generates_at_a_candidate_is_a_diff_whose_golden_replaces_it(self) -> None:
+        """Fern now generates the registered row: the pull request is a diff
+        carrying the new golden in place of the registration, never both."""
+        self.register_known_failure(OLD.generator)
+        self.fern_tree("Gamma Lanterns", self.seed / "tests/fixtures/alpha/openapi.yml")
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual("known-upstream-failure-changed", self.statuses(state)["gamma"])
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        section = pull["body"].split("## Known upstream Fern failures that changed", 1)[1].split("## Inventory")[0]
+        self.assertIn(f"Fern generates it at fernapi/fern-python-sdk:{CANDIDATE.generator}", section)
+        self.assertIn("tests/fixtures/gamma/known-fern-failure.json removed", section)
+        self.assertIn("tests/fixtures/gamma/expected/.crozier-fern-golden.json", section)
+        tree = self.published_tree()
+        self.assertNotIn("tests/fixtures/gamma/known-fern-failure.json", tree)
+        self.assertIn("tests/fixtures/gamma/expected/.crozier-fern-golden.json", tree)
+        golden = json.loads(
+            self.remote_file("fern-goldens/update", "tests/fixtures/gamma/expected/.crozier-fern-golden.json")
+        )
+        self.assertEqual(CANDIDATE.generator, golden["fern_python_sdk_version"])
+
+    def test_a_different_fern_generator_error_at_a_candidate_is_a_diff_carrying_its_new_registration(self) -> None:
+        """Fern's generator now rejects the registered row with an error of its
+        own, not the Ruff rejection the registration fingerprints: a genuine
+        changed failure, so the run publishes a diff whose pull request carries
+        the registration rewritten at the candidate with Fern's own errors."""
+        manifest = self.register_known_failure(OLD.generator)
+        error = "Failed to generate python-sdk: KeyError: 'operationId'"
+        self.stand_in({"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [1, error]}}})
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual("known-upstream-failure-changed", self.statuses(state)["gamma"])
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        section = pull["body"].split("## Known upstream Fern failures that changed", 1)[1].split("## Inventory")[0]
+        self.assertIn("exit 1 -> 1, fingerprint changed", section)
+        self.assertIn(error, section)
+        rewritten = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
+        self.assertEqual(
+            {**manifest, "generator_version": CANDIDATE.generator, "fingerprint": {"fern_errors": [error]}}, rewritten
+        )
+
+    def test_an_infrastructure_failure_at_a_candidate_is_red_and_keeps_the_registration(self) -> None:
+        """A failure of the machine Fern runs on, not of Fern (here, no Docker
+        daemon), rewrites nothing: the shard is red, nothing is published, and
+        a run once Docker is back carries the registration."""
+        manifest = self.register_known_failure(OLD.generator)
+        daemon = "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?"
+        self.stand_in({"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [1, daemon]}}})
+        broken = self.run_workflow()
+        self.assertEqual([1], [shard.returncode for shard in broken.shards])
+        self.assertIn("corpus `gamma`: failed", self.summary())
+        shard = broken.artifacts / "fern-goldens-shard-0"
+        log = (shard / "logs/corpus/gamma.log").read_text(encoding="utf-8")
+        self.assertIn("without a failure a known-failure registration can record", log)
+        result = json.loads((shard / "result.json").read_text(encoding="utf-8"))
+        self.assertNotIn("tests/fixtures/gamma/known-fern-failure.json", result["written"] + result["deleted"])
+        self.assertIsNone(broken.decision)
+        self.assert_untouched()
+        self.failing_gamma(manifest["exit_code"], manifest["fingerprint"])
+        recovered = self.run_workflow()
+        self.assertEqual("match", recovered.outcome(), self.summary())
+        carried = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
+        self.assertEqual(CANDIDATE.generator, carried["generator_version"])
 
     def test_a_failed_listing_or_a_vanished_pull_request_is_red_and_the_next_run_opens_it(self) -> None:
         self.publish_seed()
