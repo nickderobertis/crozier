@@ -470,6 +470,17 @@ class AssemblyTests(unittest.TestCase):
         self.assertEqual(1, result.returncode)
         self.assertIn("docs/shared.tsv was written by shards 0 and 1", result.stderr)
 
+    def test_a_shard_whose_files_disagree_with_its_items_is_a_failure(self) -> None:
+        self.shard(0, "a", ["tests/fixtures/a/x.py"])
+        self.shard(1, "b", [])
+        stray = self.scratch / "artifacts/fern-goldens-shard-1/files/tests/fixtures/b/stray.py"
+        stray.parent.mkdir(parents=True)
+        stray.write_text("unlisted\n", encoding="utf-8")
+        result = self.assemble()
+        self.assertEqual(1, result.returncode)
+        self.assertIn("shard 1's files disagree with what its items wrote", result.stderr)
+        self.assertIn("tests/fixtures/b/stray.py", result.stderr)
+
     def test_a_result_no_planned_shard_accounts_for_is_a_failure(self) -> None:
         self.shard(0, "a", [])
         self.shard(1, "b", [])
@@ -547,6 +558,11 @@ class ArtifactTests(unittest.TestCase):
         fault("shards must be numbered from 0 in order", lambda r: r["shards"][1].update(index=5))
         fault("must be a non-negative number", lambda r: r["estimate"].update(minutes=float("nan")))
         fault("no plan of this tool's schema", lambda r: r.update(schema_version=2))
+        fault("`complete` must say whether it plans the whole inventory", lambda r: r.update(items="probes"))
+        fault(
+            "`complete` must say whether it plans the whole inventory",
+            lambda r: r.update(families={}, shards=[]),
+        )
         for message, record, expected in faults:
             with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
                 weekly.Plan.from_json(record, "plan.json")

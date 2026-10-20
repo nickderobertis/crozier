@@ -117,7 +117,24 @@ family\tscope\tverdict\tcommand
 corpus\titem\texit:0/3\t{root}/target/release/crozier compare {root}/tests/fixtures/{item}/crozier.yml
 handwritten\titem\texit:0/3\t{root}/target/release/crozier compare {root}/docs/openapi-surface/handwritten/{item}/crozier.yml
 refusals\titem\texit:1/0\t{root}/target/release/crozier --no-config generate --spec {root}/docs/fern-refusals/{item}/probe.yml --output {scratch}/out
+measurements\titem\texit:0/3\t{root}/target/release/crozier compare {root}/docs/fern-measurements/{item}/crozier.yml
+probes\titem\texit:0/3\t{root}/target/release/crozier compare {root}/docs/openapi-surface/probes/{item}.crozier.yml
+authored-probes\titem\texit:0/3\t{root}/target/release/crozier compare {root}/docs/openapi-surface/authored-probes/{item}/crozier.yml
+departure-evidence\titem\texit:0/3\t{root}/target/release/crozier compare {root}/docs/departures/evidence/{item}/crozier.yml
 """
+# The items of the families beyond the corpus, hand-written and refusal ones
+# every journey regenerates: each a document of its own, its Fern tree where
+# that family's recipe writes it, and the crozier.yml its gate compares.
+MEASUREMENT = "lantern-measure/plain"
+PROBE = "lantern-probe"
+AUTHORED = "lantern-authored"
+DEPARTURE = "lantern-departure"
+OTHER_FAMILIES = {
+    ("measurements", MEASUREMENT),
+    ("probes", PROBE),
+    ("authored-probes", AUTHORED),
+    ("departure-evidence", DEPARTURE),
+}
 
 # A stand-in for Fern: it answers `fern check` and `fern generate` in the
 # workspace the recipe scaffolds, from rules keyed by the document's title, and
@@ -225,6 +242,9 @@ match command:
         done()
     case "pr list":
         done(json.dumps([p for p in pulls if p["head"] == option("--head") and p["state"] == option("--state")]))
+    case "pr create" if command in os.environ.get("GH_DROP", "").split(","):
+        print("https://example.test/pull/0")
+        sys.exit(0)
     case "pr create":
         if option("--label") not in state["labels"]:
             print("gh: label not found", file=sys.stderr)
@@ -462,15 +482,41 @@ class WeeklyRunTests(unittest.TestCase):
         placeholder = 'fern_cli_version = "0.0.0"\nfern_python_sdk_version = "0.0.0"\n'  # certified-pair: stand-in
         (handwritten / "evidence.toml").write_text(placeholder + 'digest = "0"\n', encoding="utf-8")
         self.fern_tree("Harbour Lanterns", handwritten / "openapi.yml")
-        (root / "docs/fern-measurements").mkdir(parents=True)
+        measured = root / "docs/fern-measurements" / MEASUREMENT
+        measured.mkdir(parents=True)
+        (measured / "openapi.yml").write_text(DOCUMENT.format(title="Measured Lanterns"), encoding="utf-8")
+        (measured / "crozier.yml").write_text(compare.format(tree="fern-expected"), encoding="utf-8")
         (root / "docs/fern-measurements/cases.tsv").write_text(
-            "case\tdocument\tenum_type\tlayout\toverlay\n", encoding="utf-8"
+            "case\tdocument\tenum_type\tlayout\toverlay\n"
+            f"{MEASUREMENT}\tdocs/fern-measurements/{MEASUREMENT}/openapi.yml\tpython-enums\tpackaged\t-\n",
+            encoding="utf-8",
         )
-        (root / "docs/openapi-surface/probes").mkdir(parents=True)
+        self.fern_tree("Measured Lanterns", measured / "openapi.yml")
+        probes = root / "docs/openapi-surface/probes"
+        probes.mkdir(parents=True)
+        (probes / f"{PROBE}.yml").write_text(DOCUMENT.format(title="Probe Lanterns"), encoding="utf-8")
+        (probes / f"{PROBE}.crozier.yml").write_text(
+            f'spec: ./{PROBE}.yml\nreference:\n  command: cp -R ../probe-expected/{PROBE}/. "$CROZIER_REFERENCE_OUTPUT"\n',
+            encoding="utf-8",
+        )
         (root / "docs/openapi-surface/probe-expected").mkdir(parents=True)
         (root / "docs/openapi-surface/probe-expected/MANIFEST.tsv").write_text(
-            "key\tform\tverdict\tartifact\tcontrol\tdigest\n", encoding="utf-8"
+            "key\tform\tverdict\tartifact\tcontrol\tdigest\n"
+            f"{PROBE}\ttree\tmatch\tdocs/openapi-surface/probe-expected/{PROBE}\t—\t0\n",
+            encoding="utf-8",
         )
+        self.fern_tree("Probe Lanterns", probes / f"{PROBE}.yml")
+        authored = root / "docs/openapi-surface/authored-probes" / AUTHORED
+        authored.mkdir(parents=True)
+        (authored / "openapi.yml").write_text(DOCUMENT.format(title="Authored Lanterns"), encoding="utf-8")
+        (authored / "crozier.yml").write_text(compare.format(tree="fern-expected"), encoding="utf-8")
+        self.fern_tree("Authored Lanterns", authored / "openapi.yml")
+        departure = root / "docs/departures/evidence" / DEPARTURE
+        departure.mkdir(parents=True)
+        (departure / "openapi.yml").write_text(DOCUMENT.format(title="Departed Lanterns"), encoding="utf-8")
+        (departure / "fern-reference.json").write_text("{}\n", encoding="utf-8")
+        (departure / "crozier.yml").write_text(compare.format(tree="fern-reference"), encoding="utf-8")
+        self.fern_tree("Departed Lanterns", departure / "openapi.yml")
         registry = root / "docs/fern-refusals"
         (registry / REFUSAL_CLASS).mkdir(parents=True)
         real = REPO / "docs/fern-refusals"
@@ -487,7 +533,15 @@ class WeeklyRunTests(unittest.TestCase):
         (target / "crozier").symlink_to(CROZIER)
         subprocess.run(["git", "init", "-q", str(root)], check=True)
         environment = self.environment(root)
-        for family in ("corpus", "handwritten", "refusals"):
+        for family in (
+            "corpus",
+            "handwritten",
+            "measurements",
+            "probes",
+            "authored-probes",
+            "departure-evidence",
+            "refusals",
+        ):
             generated = subprocess.run(
                 [sys.executable, str(root / "tools/fern-goldens/fern-references.py"), "generate", family],
                 cwd=root,
@@ -718,7 +772,8 @@ class WeeklyRunTests(unittest.TestCase):
         timings = self.seed / "tools/fern-goldens/generation-seconds.tsv"
         timings.write_text(
             "family\titem\tseconds\ncorpus\talpha\t4000.0\ncorpus\tbeta\t10.0\nhandwritten\tlantern\t4000.0\n"
-            f"refusals\t{REFUSAL_CLASS}\t10.0\n",
+            f"refusals\t{REFUSAL_CLASS}\t10.0\n"
+            + "".join(f"{family}\t{item}\t10.0\n" for family, item in sorted(OTHER_FAMILIES)),
             encoding="utf-8",
         )
         self.publish_seed()
@@ -755,6 +810,12 @@ class WeeklyRunTests(unittest.TestCase):
             "docs/openapi-surface/handwritten/lantern/evidence.toml",
             f"docs/fern-refusals/{REFUSAL_CLASS}/fern-refusal.txt",
             "tools/fern-goldens/generation-seconds.tsv",
+            f"docs/fern-measurements/{MEASUREMENT}/fern-expected/.fern/metadata.json",
+            f"docs/openapi-surface/probe-expected/{PROBE}/.fern/metadata.json",
+            "docs/openapi-surface/probe-expected/MANIFEST.tsv",
+            f"docs/openapi-surface/authored-probes/{AUTHORED}/fern-expected/.fern/metadata.json",
+            f"docs/openapi-surface/authored-probes/{AUTHORED}/fern.log",
+            f"docs/departures/evidence/{DEPARTURE}/fern-reference/.fern/metadata.json",
         ):
             self.assertIn(regenerated, changed)
         wrapper = next(
@@ -900,7 +961,9 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertTrue(plan["complete"])
         planned = {(entry["family"], entry["item"]) for shard in plan["shards"] for entry in shard["items"]}
         self.assertEqual(
-            {("corpus", "alpha"), ("corpus", "beta"), ("handwritten", "lantern"), ("refusals", REFUSAL_CLASS)}, planned
+            {("corpus", "alpha"), ("corpus", "beta"), ("handwritten", "lantern"), ("refusals", REFUSAL_CLASS)}
+            | OTHER_FAMILIES,
+            planned,
         )
         self.assertEqual("match", full.outcome())
         self.assertEqual(0, full.ran("publish").returncode, full.ran("publish").stderr)
@@ -1108,7 +1171,7 @@ class WeeklyRunTests(unittest.TestCase):
             "family\tscope\tverdict\tcommand\n"
             f"corpus\tfamily\texit:0/3\t{compare_all}\n"
             f"handwritten\tfamily\texit:0/3\t{compare_all}\n"
-            f"refusals\tfamily\texit:1/0\t{refuse}\n",
+            f"refusals\tfamily\texit:1/0\t{refuse}\n" + "".join(line + "\n" for line in GATES.splitlines()[4:]),
             encoding="utf-8",
         )
         self.add_refused_class()
@@ -1253,6 +1316,28 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("| corpus | 3 |", pull["body"])
         tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
         self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in tree))
+
+    def test_a_failed_listing_or_a_vanished_pull_request_is_red_and_the_next_run_opens_it(self) -> None:
+        self.publish_seed()
+        state = self.run_workflow(stop_after="decide")
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
+        for failing, message in (
+            ("label list", "could not list labels"),
+            ("pr list", "could not list pull requests"),
+        ):
+            with self.subTest(failing):
+                failed = self.publish(bundle, decision, GH_FAIL=failing)
+                self.assertEqual(1, failed.returncode)
+                self.assertIn(message, failed.stderr)
+                self.assertEqual([], self.pulls())
+        vanished = self.publish(bundle, decision, GH_DROP="pr create")
+        self.assertEqual(1, vanished.returncode)
+        self.assertIn("the pull request gh reported opened is not listed open", vanished.stderr)
+        self.assertEqual([], self.pulls())
+        finished = self.publish(bundle, decision)
+        self.assertEqual(0, finished.returncode, finished.stderr)
+        self.assertIn("pull request: opened #1", finished.stdout)
+        self.assertEqual(1, len(self.pulls()))
 
     def test_a_diff_after_an_adopting_run_turns_auto_merge_off(self) -> None:
         self.publish_seed()

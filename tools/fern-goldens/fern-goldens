@@ -756,6 +756,10 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     rows = load_manifest(root)
     version = validate_version(version_arg) if version_arg else resolve_latest_version(root)
     selected = select_rows(root, rows, selectors)
+    # Each row's settings are read before any Fern runs, so a malformed table
+    # stops the generation rather than discarding what it produced.
+    for row in selected:
+        load_generator_config(root, row.fixture)
     report = report_root(root)
     if report.exists():
         shutil.rmtree(report)

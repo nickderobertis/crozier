@@ -848,6 +848,15 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             "0 generated, 1 current", self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha").stdout
         )
 
+        config.write_text(
+            "# fixture|audiences|audience_strict|client_class_name|extra_fields|organization\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        removed = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("1 generated, 0 current", removed.stdout)
+        self.assertNotIn("fern_generator_config", self.state("alpha"))
+
         moved = self.run_tool(
             "generate",
             "--version",
@@ -860,7 +869,22 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("1 generated, 0 current", moved.stdout)
         metadata = self.root / "tests" / "fixtures" / "alpha" / "expected" / ".fern" / "metadata.json"
         self.assertEqual(json.loads(metadata.read_text(encoding="utf-8"))["cliVersion"], "7.1.0")
-        self.assertEqual(len(self.calls()), 4)
+        self.assertEqual(len(self.calls()), 5)
+
+    def test_a_duplicated_or_unreadable_settings_table_fails_before_generating(self) -> None:
+        config = self.root / "tests" / "fixtures" / "fern-generator-config.txt"
+        config.write_text("alpha||false|A|\nalpha||false|B|\n", encoding="utf-8", newline="\n")
+        duplicated = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(2, duplicated.returncode)
+        self.assertIn("line 2: duplicate configuration for 'alpha'", duplicated.stderr)
+        config.unlink()
+        config.mkdir()
+        unreadable = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(2, unreadable.returncode)
+        self.assertIn("could not read generator settings", unreadable.stderr)
+        self.assertEqual([], self.calls(), "nothing was generated under a table it cannot read")
+        config.rmdir()
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
 
     def test_an_unfetchable_pinned_source_is_reported_apart_and_the_rest_still_generate(self) -> None:
         failed = self.run_tool(
