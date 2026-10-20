@@ -505,6 +505,18 @@ def load_known_failure(root: Path, row: CorpusRow, version: str | None = None) -
         raise GoldensError(f"known Fern failure {path} has invalid exit_code {exit_code!r}")
     if not isinstance(fingerprint, dict):
         raise GoldensError(f"known Fern failure {path} has no fingerprint object")
+    # The two forms `extract_fern_failure_fingerprint` writes, and no other.
+    errors = fingerprint.get("fern_errors")
+    if set(fingerprint) != {"failed_command", "diagnostics", "ruff_summary"} and not (
+        set(fingerprint) == {"fern_errors"}
+        and isinstance(errors, list)
+        and errors
+        and all(isinstance(error, str) and error for error in errors)
+    ):
+        raise GoldensError(
+            f"known Fern failure {path} fingerprints neither Fern's Ruff rejection "
+            "(failed_command, diagnostics, ruff_summary) nor its generator's errors (fern_errors)"
+        )
     known = KnownFailure(path, exit_code, fingerprint, generator_version)
     return known if version is None or generator_version == version else None
 
@@ -517,14 +529,46 @@ def rewrite_known_failure(known: KnownFailure, version: str, exit_code: int, fin
     known.path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
+RUFF_COMMAND = "ruff check --fix --no-cache --ignore E741 /fern/output"
+# A message after Fern's `[error]` that is the machine failing, not Fern: no
+# container runtime, a full disk, the network or a registry refusing a pull.
+# Such a failure is no registration's to record, whatever Fern printed.
+INFRASTRUCTURE_ERROR = re.compile(
+    r"docker daemon|docker\.sock|\bdocker: |\bpodman\b|container runtime|no space left on device"
+    r"|\bE(?:NOTFOUND|CONNRESET|CONNREFUSED|TIMEDOUT|AI_AGAIN|NOSPC)\b|socket hang up|network|timed out"
+    r"|toomanyrequests|rate limit|pull access denied|manifest unknown|unauthorized",
+    re.IGNORECASE,
+)
+FERN_ERROR = re.compile(r"\[error\] (.+)")
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
 def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
+    """Fern's failure as a registration fingerprints it: its own Ruff pass
+    rejecting the SDK when the log shows that, otherwise the errors Fern's
+    generator printed after `[error]`. A log with neither, or whose errors are
+    the machine's (`INFRASTRUCTURE_ERROR`), has no fingerprint."""
     try:
         log = log_path.read_text(encoding="utf-8")
     except OSError as error:
         raise GoldensError(f"could not read Fern failure log {log_path}: {error}") from error
-    command = "ruff check --fix --no-cache --ignore E741 /fern/output"
-    if f"Failed to run command: {command}" not in log:
-        raise GoldensError(f"Fern failure log has no failed {command!r} marker")
+    if f"Failed to run command: {RUFF_COMMAND}" in log:
+        return ruff_failure_fingerprint(log)
+    errors: list[str] = []
+    for line in ANSI.sub("", log).splitlines():
+        match = FERN_ERROR.search(line)
+        if match and match.group(1).strip() not in errors:
+            errors.append(match.group(1).strip())
+    if not errors:
+        raise GoldensError(f"Fern failure log has no failed {RUFF_COMMAND!r} marker and no Fern `[error]`")
+    infrastructure = [error for error in errors if INFRASTRUCTURE_ERROR.search(error)]
+    if infrastructure:
+        raise GoldensError(f"Fern failed on its infrastructure, not the document: {infrastructure[0]}")
+    return {"fern_errors": errors}
+
+
+def ruff_failure_fingerprint(log: str) -> dict[str, object]:
+    command = RUFF_COMMAND
     encoded = next(
         (line.strip() for line in log.splitlines() if line.strip().startswith("b'fern/output/")),
         None,

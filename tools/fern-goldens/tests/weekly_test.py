@@ -751,6 +751,36 @@ class TimingTableTests(unittest.TestCase):
                 self.assertIn(message, str(raised.exception))
 
 
+class DecisionRecordTests(unittest.TestCase):
+    """The decision the publication job reads back is the one written."""
+
+    def test_known_changed_is_omitted_when_empty_and_round_trips_when_populated(self) -> None:
+        pair = weekly.Pair("5.170.0", "5.42.0")
+        empty = weekly.Decision(pair, True, "digest")
+        self.assertNotIn("known_changed", empty.to_json())
+        self.assertEqual((), weekly.RecordedDecision.from_json(empty.to_json(), "decision").known_changed)
+
+        populated = weekly.Decision(pair, True, "digest")
+        change = weekly.KnownFailureChange("calorieninjas.com", "Fern generates it", "tests/fixtures/…")
+        populated.known_changed.append(change)
+        record = json.loads(json.dumps(populated.to_json()))
+        self.assertEqual([vars(change)], record["known_changed"])
+        read = weekly.RecordedDecision.from_json(record, "decision")
+        self.assertEqual((weekly.Outcome.DIFF, (change,)), (read.outcome, read.known_changed))
+
+        for message, mutate in (
+            ("`known_changed` must be list", lambda r: r.update(known_changed={})),
+            ("`detail` must be str", lambda r: r["known_changed"][0].pop("detail")),
+            ("is no family or item name", lambda r: r["known_changed"][0].update(item="../x")),
+            ("a match changes no known failure", lambda r: r.update(outcome="match")),
+        ):
+            broken = json.loads(json.dumps(record))
+            mutate(broken)
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.RecordedDecision.from_json(broken, "decision")
+            self.assertIn(message, str(raised.exception))
+
+
 class TitleTests(unittest.TestCase):
     def test_the_pull_request_title_is_a_conventional_commit_naming_both_versions(self) -> None:
         decision = weekly.Decision(weekly.Pair("5.170.0", "5.42.0"), True, "digest")

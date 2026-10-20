@@ -270,8 +270,13 @@ the run:
   decides each a diff its pull request carries under **Known upstream Fern
   failures that changed**.
 
-A failure with no Fern Ruff fingerprint (Docker, the network) rewrites nothing:
-it is an ordinary generation failure and the registration stands.
+A fingerprint is Fern's own Ruff rejection of the SDK where the log shows one,
+and otherwise the errors Fern's generator printed after `[error]`
+(`fern_errors`), held as strictly at the registration's own version. A failure
+of the machine rather than Fern (no Docker daemon, a full disk, the network, a
+registry refusing a pull: `INFRASTRUCTURE_ERROR` in `fern-goldens`), or a log
+with no Fern error at all, rewrites nothing: it is an ordinary generation
+failure and the registration stands.
 
 ## Regenerating every reference family
 

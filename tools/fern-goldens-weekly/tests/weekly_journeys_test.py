@@ -1608,14 +1608,36 @@ class WeeklyRunTests(unittest.TestCase):
         )
         self.assertEqual(CANDIDATE.generator, golden["fern_python_sdk_version"])
 
-    def test_a_failure_no_registration_can_record_at_a_candidate_is_red_and_keeps_the_registration(self) -> None:
-        """A failure without Fern's fingerprintable Ruff rejection (an
-        infrastructure fault, say) rewrites nothing: the shard is red, nothing
-        is published, and a run once Fern behaves carries the registration."""
+    def test_a_different_fern_generator_error_at_a_candidate_is_a_diff_carrying_its_new_registration(self) -> None:
+        """Fern's generator now rejects the registered row with an error of its
+        own, not the Ruff rejection the registration fingerprints: a genuine
+        changed failure, so the run publishes a diff whose pull request carries
+        the registration rewritten at the candidate with Fern's own errors."""
         manifest = self.register_known_failure(OLD.generator)
-        self.stand_in(
-            {"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [125, "docker: no space"]}}}
+        error = "Failed to generate python-sdk: KeyError: 'operationId'"
+        self.stand_in({"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [1, error]}}})
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        self.assertEqual("known-upstream-failure-changed", self.statuses(state)["gamma"])
+        self.assertEqual("diff", state.outcome(), self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertIsNone(pull["autoMergeRequest"])
+        section = pull["body"].split("## Known upstream Fern failures that changed", 1)[1].split("## Inventory")[0]
+        self.assertIn("exit 1 -> 1, fingerprint changed", section)
+        self.assertIn(error, section)
+        rewritten = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
+        self.assertEqual(
+            {**manifest, "generator_version": CANDIDATE.generator, "fingerprint": {"fern_errors": [error]}}, rewritten
         )
+
+    def test_an_infrastructure_failure_at_a_candidate_is_red_and_keeps_the_registration(self) -> None:
+        """A failure of the machine Fern runs on, not of Fern (here, no Docker
+        daemon), rewrites nothing: the shard is red, nothing is published, and
+        a run once Docker is back carries the registration."""
+        manifest = self.register_known_failure(OLD.generator)
+        daemon = "Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?"
+        self.stand_in({"rules": {"probe": self.refusal_rule, "Gamma Lanterns": {"generate": [1, daemon]}}})
         broken = self.run_workflow()
         self.assertEqual([1], [shard.returncode for shard in broken.shards])
         self.assertIn("corpus `gamma`: failed", self.summary())

@@ -593,10 +593,11 @@ class Decision:
             "bundle": self.bundle,
             "failing": {family: [vars(entry) for entry in entries] for family, entries in self.failing.items()},
             "unfetchable": [vars(entry) for entry in self.unfetchable],
-            "known_changed": [vars(entry) for entry in self.known_changed],
             "cannot_run": self.cannot_run,
             "gates": [{**vars(run_), "verdict": run_.verdict.value} for run_ in self.gates],
             "title": self.title(),
+            # Optional, and omitted when empty: most runs change no registration.
+            **({"known_changed": [vars(entry) for entry in self.known_changed]} if self.known_changed else {}),
         }
 
 
@@ -609,6 +610,7 @@ class RecordedDecision:
     pair: Pair
     bundle: str
     title: str
+    known_changed: tuple[KnownFailureChange, ...] = ()
 
     @classmethod
     def from_json(cls, record: object, where: str) -> RecordedDecision:
@@ -617,12 +619,28 @@ class RecordedDecision:
         outcome = field_of(record, "outcome", str, where)
         if outcome not in set(Outcome):
             raise WeeklyError(f"{where}: outcome {outcome!r} is none of {', '.join(Outcome)}")
+        changes = (
+            field_of(record, "known_changed", list, where)
+            if isinstance(record, dict) and "known_changed" in record
+            else []
+        )
+        known_changed = tuple(
+            KnownFailureChange(
+                name_of(entry, "item", where),
+                field_of(entry, "detail", str, where),
+                field_of(entry, "report", str, where),
+            )
+            for entry in changes
+        )
+        if known_changed and outcome == Outcome.MATCH:
+            raise WeeklyError(f"{where}: a match changes no known failure; re-run the decision job")
         return cls(
             Outcome(outcome),
             field_of(record, "complete", bool, where),
             Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
             field_of(record, "bundle", str, where),
             field_of(record, "title", str, where),
+            known_changed,
         )
 
 
