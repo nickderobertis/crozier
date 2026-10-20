@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 9 errors
+[sdk] 5 errors
     [error]
         path: myUser.yml -> service -> endpoints -> getUserInfo -> examples[0] -> response
         issue: Expected example to be an object. Example is: 2
@@ -18,31 +19,7 @@ Warnings for generators.yml:
         issue: Expected example to be an object. Example is: 2
 
     [error]
-        path: video.yml -> service -> endpoints -> uploadResumableInit -> request -> body
-        issue: Object has multiple properties named "thumbnailfile":
-  - <Inlined Request> -> thumbnailfile
-  - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
-
-    [error]
-        path: video.yml -> service -> endpoints -> uploadResumableInit -> request -> body
-        issue: Object has multiple properties named "previewfile":
-  - <Inlined Request> -> previewfile
-  - <Inlined Request> -> (extends) root.VideoUploadRequestCommon -> previewfile
-
-    [error]
-        path: video.yml -> service -> endpoints -> uploadResumableInit
-        issue: Multiple request properties have the name thumbnailfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Body property: <Request Body> -> thumbnailfile
-  - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> thumbnailfile
-
-    [error]
-        path: video.yml -> service -> endpoints -> uploadResumableInit
-        issue: Multiple request properties have the name previewfile. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Body property: <Request Body> -> previewfile
-  - Body property: <Request Body> -> (extends) root.VideoUploadRequestCommon -> previewfile
-
-    [error]
         path: videoDownload.yml -> service -> endpoints -> downloadVideoFile
         issue: Path parameter is unreferenced in endpoint: videoId.
 
-Found 9 errors and 48 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 5 errors and 48 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.

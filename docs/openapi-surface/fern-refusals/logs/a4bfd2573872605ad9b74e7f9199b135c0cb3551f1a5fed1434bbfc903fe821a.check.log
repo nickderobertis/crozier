@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 93 errors
+[sdk] 92 errors
     [error]
         path: __package__.yml -> types -> PackageTypeShippingCarrier
         issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
@@ -488,12 +489,6 @@ Warnings for generators.yml:
         issue: Expected example to be an object. Example is: "PO_PDF_ATTACHMENT"
 
     [error]
-        path: purchaseOrder.yml -> service -> endpoints -> putPurchaseOrderOtherCostsUsingPUT
-        issue: Multiple request properties have the name purchaseOrderId. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "purchaseOrderId"
-  - Query Parameter "purchaseOrderId"
-
-    [error]
         path: shipment.yml -> types -> GetShippingPackagesUsingGetRequestCarrierCodeItem
         issue: Enum name 10Cc for value _10CC is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
 
@@ -549,4 +544,4 @@ Warnings for generators.yml:
         path: shipment.yml -> types -> GetShippingServicesUsingGetRequestCarrierCodeItem
         issue: Enum name 44Sb for value _44SB is not suitable for code generation. It must start with a letter and only contain letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
 
-Found 93 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 92 errors and 10 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
