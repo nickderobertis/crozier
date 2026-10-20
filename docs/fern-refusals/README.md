@@ -38,10 +38,15 @@ caused it.
   the refusal, `;`-separated), `fern_stage`, `fern_exit`, `fern_log` (the
   committed log holding Fern's complete diagnostic list), `classes`
   (`,`-separated, never empty), `crozier_exit`, `crozier_files` (crozier's
-  release build, default mode), `crozier_strict_exit` (the same build under
-  `--fern-strict`; `—` until one of the document's classes is evaluated). All
-  three come from `measurements.jsonl`, which `just fern-refusals-measure`
-  fills, so `build` reproduces them.
+  release build, default mode, as an earlier tree recorded it; `—` where none
+  did), `crozier_strict_exit` (the release build under `--fern-strict`; `—`
+  until one of the document's classes is evaluated). All three come from
+  `measurements.jsonl`, which `just fern-refusals-measure` fills, so `build`
+  reproduces them. `measure` takes only the strict verdict: crozier refuses
+  before it generates, so that run is quick, while a default-mode run writes
+  the whole SDK (up to tens of thousands of files and many minutes on the
+  largest documents), and no classification, table or gate reads its exit or
+  file count — the gate reads `classes` and `crozier_strict_exit` alone.
 - [`unretrievable.tsv`](unretrievable.tsv) — a selected document whose bytes
   could not be read again, or whose Fern run never finished inside `measure`'s
   bound (`unmeasured: …`), with its revision and the reason.
@@ -152,12 +157,14 @@ ended with every process it started; its document gets no generation and is
 listed in `unretrievable.tsv` as unmeasured, with the stage that ran past the
 bound. Fern runs with a 16 GB Node
 heap: at the default 4 GB the largest documents (the GitHub REST descriptions)
-report the host's memory rather than Fern's diagnostics. Every
-`documents.tsv` row's `crozier_exit` and `crozier_files` were last re-measured
-by the release build after `main`'s `layout` setting merged, each run bounded at
+report the host's memory rather than Fern's diagnostics. The
+`crozier_exit` and `crozier_files` on record were last taken by the release
+build after `main`'s `layout` setting merged, each run bounded at
 45 minutes and none reaching it: [`crozier-timings.tsv`](../openapi-surface/fern-refusals/crozier-timings.tsv)
 keeps each document's size, outcome and wall-clock seconds from that run, taken
-with up to eighteen measurement runs at once on a shared, loaded host. `build` classifies
+with up to eighteen measurement runs at once on a shared, loaded host; `measure`
+no longer takes them. `measure --crozier-again` retakes every document's
+strict verdict after crozier changes. `build` classifies
 every diagnostic in a document's logs against `classes.tsv`'s and
 `findings.tsv`'s templates; one that matches no single template fails the
 build, so a new phrase becomes a class or a finding on purpose.

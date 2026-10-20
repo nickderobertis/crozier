@@ -54,7 +54,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
 import urllib.parse
 import urllib.request
 from collections.abc import Iterable
@@ -100,7 +99,6 @@ UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest"
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
 CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
-TIMINGS_HEADER = ("digest", "bytes", "crozier_exit", "crozier_files", "seconds", "bound_seconds")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
     "key",
@@ -719,11 +717,6 @@ def crozier_run(binary: Path, document: Path, timeout: int, log: Path, *flags: s
     return str(run.returncode), str(files)
 
 
-def crozier_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
-    status, files = crozier_run(binary, document, timeout, CACHE / "crozier-logs" / f"{digest}.default.log")
-    return {"crozier_exit": status, "crozier_files": files}
-
-
 def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: int) -> dict[str, str]:
     log = CACHE / "crozier-logs" / f"{digest}.strict.log"
     return {"crozier_strict_exit": crozier_run(binary, document, timeout, log, "--fern-strict")[0]}
@@ -777,8 +770,8 @@ def check_blocks(row: dict[str, str]) -> bool:
 
 
 def missing_measurements(row: dict[str, str]) -> set[str]:
-    """Which of `fetch`, `check`, `generate`, `crozier` and `crozier-strict` a
-    document still needs. Every Fern field is taken at the certified pair: a
+    """Which of `fetch`, `check`, `generate` and `crozier-strict` a document
+    still needs. Every Fern field is taken at the certified pair: a
     record another pair took, or a fetch that failed while another pair was
     certified, is taken again."""
     if row.get("unretrievable"):
@@ -791,10 +784,11 @@ def missing_measurements(row: dict[str, str]) -> set[str]:
         missing.add("check")
     elif row["check_exit"] != "timeout" and not row.get("generate_files") and not check_blocks(row):
         missing.add("generate")
-    if not row.get("crozier_exit"):
-        missing.add("crozier")
+    # crozier's verdict is its `--fern-strict` run, which refuses before it
+    # generates anything; nothing reads a default-mode run's exit or file count,
+    # so `measure` takes none (`crozier_exit` and `crozier_files` stay as an
+    # earlier tree recorded them).
     if not row.get("crozier_strict_exit"):
-        # `build` needs it only for a document carrying an evaluated class.
         missing.add("crozier-strict")
     return missing
 
@@ -807,7 +801,10 @@ def measure(args: argparse.Namespace) -> int:
     todo = [
         entry
         for entry in population()
-        if entry["key"] not in done or missing_measurements(done[entry["key"]]) or args.again
+        if entry["key"] not in done
+        or missing_measurements(done[entry["key"]])
+        or args.again
+        or (args.crozier_again and not done[entry["key"]]["unretrievable"])
     ]
     if args.limit:
         todo = todo[: args.limit]
@@ -832,9 +829,11 @@ def measure(args: argparse.Namespace) -> int:
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = (
             missing_measurements(row) - {"fetch"}
-            if row.get("check_exit") or row.get("crozier_exit")
-            else {"check", "crozier", "crozier-strict"}
+            if row.get("check_exit") or row.get("crozier_strict_exit")
+            else {"check", "crozier-strict"}
         )
+        if args.crozier_again:
+            needed.add("crozier-strict")
         if "check" in needed:
             # The record's Fern fields are another pair's, or none: retake them all.
             for field in ("check_exit", "check_log", "generate_exit", "generate_files", "generate_log"):
@@ -850,33 +849,12 @@ def measure(args: argparse.Namespace) -> int:
         if "generate" in needed:
             with fern_lane:
                 row.update(fern_generate(path, digest, args.timeout))
-        with crozier_lane:
-            if "crozier" in needed:
-                started = time.monotonic()
-                row.update(crozier_measure(binary, path, digest, args.timeout))
-                timing(
-                    {
-                        "digest": digest,
-                        "bytes": str(len(data)),
-                        "crozier_exit": row["crozier_exit"],
-                        "crozier_files": row["crozier_files"],
-                        "seconds": f"{time.monotonic() - started:.1f}",
-                        "bound_seconds": str(args.timeout),
-                    }
-                )
-            if "crozier-strict" in needed:
+        if "crozier-strict" in needed:
+            with crozier_lane:
                 row.update(crozier_strict_measure(binary, path, digest, args.timeout))
         return row
 
     lock = threading.Lock()
-    timings = {row["digest"]: row for row in read_timings()}
-
-    def timing(row: dict[str, str]) -> None:
-        with lock:
-            timings[row["digest"]] = row
-            timings_path().write_text(
-                tsv_text(TIMINGS_HEADER, (timings[key] for key in sorted(timings))), encoding="utf-8"
-            )
 
     def record(result: dict[str, str]) -> None:
         with lock:
@@ -906,15 +884,6 @@ def measure(args: argparse.Namespace) -> int:
             future.result()
     print(f"fern-refusals: {len(todo)} measured, {len(done)} on record")
     return 0
-
-
-def timings_path() -> Path:
-    return EVIDENCE / "crozier-timings.tsv"
-
-
-def read_timings() -> list[dict[str, str]]:
-    """Each document's last crozier run: its size, outcome and wall-clock seconds."""
-    return read_tsv(timings_path(), TIMINGS_HEADER) if timings_path().is_file() else []
 
 
 def write_measurements(done: dict[str, dict[str, str]]) -> None:
@@ -1196,8 +1165,8 @@ def tables() -> tuple[dict[str, str], list[str]]:
             identity,
             digest=digest,
             **refusal,
-            crozier_exit=result["crozier_exit"],
-            crozier_files=result["crozier_files"],
+            crozier_exit=result["crozier_exit"] or EMPTY,
+            crozier_files=result["crozier_files"] or EMPTY,
             crozier_strict_exit=strict,
         )
     for row in classes:
@@ -1637,6 +1606,11 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--timeout", type=positive, default=3600)
     m.add_argument("--limit", type=nonnegative, default=0)
     m.add_argument("--again", action="store_true", help="re-measure documents already on record")
+    m.add_argument(
+        "--crozier-again",
+        action="store_true",
+        help="retake crozier's --fern-strict verdict on every retrievable document (after crozier changes)",
+    )
     m.add_argument(
         "--root",
         type=Path,

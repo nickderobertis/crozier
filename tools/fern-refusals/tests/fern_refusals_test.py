@@ -1103,7 +1103,7 @@ class MeasuredAtThePair(unittest.TestCase):
         self.crozier_calls = root / "crozier-calls"
         crozier = root / "target" / "release" / "crozier"
         crozier.parent.mkdir(parents=True)
-        crozier.write_text(f"#!/bin/sh\necho run >> {shlex.quote(str(self.crozier_calls))}\nexit 1\n", "utf-8")
+        crozier.write_text(f'#!/bin/sh\necho "$*" >> {shlex.quote(str(self.crozier_calls))}\nexit 1\n', "utf-8")
         crozier.chmod(0o755)
         self.calls = root / "fern-calls.jsonl"
         self.env = {key: value for key, value in os.environ.items() if not key.startswith(("CROZIER", "FERN_STUB"))}
@@ -1161,8 +1161,14 @@ class MeasuredAtThePair(unittest.TestCase):
         # The screen taken at the pair keeps its own log; Fern never ran over it.
         current = self.documents["screened-current"]
         self.assertEqual(measured[current]["check_log"], "docs/openapi-surface/scratch/screened-current-check.log")
-        # crozier ran only where no result was on record: the two screened documents, each mode.
-        self.assertEqual(len(self.crozier_calls.read_text(encoding="utf-8").splitlines()), 4)
+        # crozier ran only where no verdict was on record — the two screened documents — and only
+        # its `--fern-strict` run, the verdict the registry reads; no default-mode generation.
+        runs = self.crozier_calls.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(runs), 2, runs)
+        self.assertTrue(all("--fern-strict" in run for run in runs), runs)
+        for name in ("screened-old", "screened-current"):
+            row = measured[self.documents[name]]
+            self.assertEqual((row["crozier_strict_exit"], row["crozier_exit"], row["crozier_files"]), ("1", "", ""))
         # Everything is now at the pair, so a second run measures nothing.
         self.calls.unlink()
         self.assertEqual(self.measure(), measured)
@@ -1196,6 +1202,16 @@ class MeasuredAtThePair(unittest.TestCase):
                 for name in ("screened-old", "measured-old")
             ),
         )
+
+    def test_crozier_again_retakes_only_the_strict_verdict(self) -> None:
+        self.measure()
+        self.crozier_calls.unlink()
+        self.calls.unlink()
+        self.measure("--crozier-again")
+        runs = self.crozier_calls.read_text(encoding="utf-8").splitlines()
+        self.assertEqual(len(runs), 4, runs)
+        self.assertTrue(all("--fern-strict" in run for run in runs), runs)
+        self.assertFalse(self.calls.exists(), "Fern ran again over verdicts already at the pair")
 
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
