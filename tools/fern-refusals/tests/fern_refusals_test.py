@@ -45,6 +45,10 @@ CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmat
 # The certified Fern pair, from its one declaration.
 CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
+# The first line of every log `measure` and `confirm` write, naming the pair.
+PAIR_LINE = (
+    f"fern-refusals: Fern CLI {CERTIFIED['cliVersion']}, fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}\n"
+)
 
 
 def run(
@@ -906,27 +910,253 @@ class FernRuns(unittest.TestCase):
         self.assertEqual("fern-refusals: 0 confirmation(s) taken, 1 on record\n", again.stdout)
         self.assertEqual(len(self.calls_made()), 1)
 
-    def test_confirm_reuses_a_generation_measure_took(self) -> None:
+    def test_confirm_reuses_a_generation_measure_took_at_the_pair(self) -> None:
         digest = self.carrying_document()
         log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
-        (self.evidence / "measurements.jsonl").write_text(
-            json.dumps(
-                {
-                    "key": digest,
-                    "digest": digest,
-                    "check_exit": "0",
-                    "generate_exit": "1",
-                    "generate_files": "0",
-                    "generate_log": log,
-                }
-            )
-            + "\n",
-            encoding="utf-8",
-        )
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(PAIR_LINE + f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        measured = {
+            "key": digest,
+            "digest": digest,
+            "check_exit": "0",
+            "generate_exit": "1",
+            "generate_files": "0",
+            "generate_log": log,
+        }
+        pair = {"fern_cli": CERTIFIED["cliVersion"], "fern_python_sdk": CERTIFIED["generatorVersion"]}
+        (self.evidence / "measurements.jsonl").write_text(json.dumps(dict(measured, **pair)) + "\n", encoding="utf-8")
         result = self.script("confirm")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(self.calls_made(), [])
         self.assertEqual(rows(self.evidence / "confirmations.tsv")[1], [self.CLASS, digest, "acme", "1", "0", log])
+        # A generation an older pair took is no confirmation: `confirm` runs Fern again.
+        (self.evidence / "confirmations.tsv").unlink()
+        (self.evidence / "measurements.jsonl").write_text(json.dumps(measured) + "\n", encoding="utf-8")
+        result = self.script("confirm", generate_exit="1")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
+
+    def test_confirm_retakes_a_confirmation_another_pair_took(self) -> None:
+        digest = self.carrying_document()
+        log = f"docs/openapi-surface/fern-refusals/logs/{digest}.generate.log"
+        (self.root / log).parent.mkdir(parents=True)
+        (self.root / log).write_text(f"[error] {phrase(self.class_row[4])}\n", encoding="utf-8")
+        write_rows(
+            self.evidence / "confirmations.tsv",
+            [
+                ["class", "digest", "publisher", "generate_exit", "generate_files", "generate_log"],
+                [self.CLASS, digest, "acme", "1", "0", log],
+            ],
+        )
+        result = self.script("confirm", generate_exit="1", generate_output=f"[error] {phrase(self.class_row[4])}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual("fern-refusals: 1 confirmation(s) taken, 1 on record\n", result.stdout)
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["generate"])
+        self.assertTrue((self.root / log).read_text(encoding="utf-8").startswith(PAIR_LINE))
+
+
+# What `measure` loads by repository path besides the script: the witness-search
+# GitHub acquirer its fetcher runs (with the modules that pulls in), the census
+# reader and region keys, and the pin reader the census imports.
+MEASURE_LOADS = (
+    *SCRIPT_LOADS,
+    "tools/witness-search/witness-search-github.py",
+    "tools/witness-search/witness-search-github-index.py",
+    "tools/witness-search/witness_screen.py",
+    "tools/witness-search/rate_limit_guard.py",
+    "tools/witness-search/witness-search-redo.py",
+    "tools/surface-census/openapi-surface-census.py",
+    "tools/surface-census/witness-search-region-keys.py",
+    "tools/corpus/corpus_remote_ref_pins.py",
+)
+
+
+@unittest.skipIf(os.name == "nt", "the stand-in `fern` and `crozier` are POSIX shell scripts")
+class MeasuredAtThePair(unittest.TestCase):
+    """`measure` takes every Fern verdict at the certified pair. It runs the REAL
+    script from a scratch checkout over committed records of two kinds — screens
+    whose `fern check` log the screen took, and `measurements.jsonl` rows — one
+    of each taken at an older pair and one at the current pair, with a stand-in
+    `fern` (`FERN_STUB`) and a stand-in `crozier` that count their runs. What was
+    taken at the older pair is measured afresh; what was taken at the current
+    pair is reused, and no Fern runs over it."""
+
+    CLASS = "type-name-collision"
+    OLD = "CLI 5.67.1 with fernapi/fern-python-sdk:5.20.0"
+    CURRENT = f"CLI {CERTIFIED['cliVersion']} with fernapi/fern-python-sdk:{CERTIFIED['generatorVersion']}"
+
+    def setUp(self) -> None:
+        self.scratch = tempfile.TemporaryDirectory()
+        self.root = root = Path(self.scratch.name)
+        shutil.copytree(REPO / "scripts", root / "scripts", ignore=shutil.ignore_patterns("__pycache__"))
+        for relative in MEASURE_LOADS:
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(REPO / relative, root / relative)
+        (root / "tests" / "fixtures").mkdir(parents=True)
+        (root / "tests" / "fixtures" / "CORPUS.md").write_text("", encoding="utf-8")
+        surface = root / "docs" / "openapi-surface"
+        self.evidence = surface / "fern-refusals"
+        self.evidence.mkdir(parents=True)
+        (self.evidence / "dropped-sources.tsv").write_text(
+            "name\tcorpus_line\tsource\tlocator\trevision\tsha256\tevidence\treason\n", encoding="utf-8"
+        )
+        for source in ("jentic", "apis.guru", "vendor-portals", "github-publisher-trees"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            with gzip.open(
+                surface / "golden-reach-witnesses" / source / "enumeration.tsv.gz", "wt", encoding="utf-8"
+            ) as handle:
+                handle.write("walk\tdocument\trevision\tsha256\n")
+        for source in ("github-code-search", "sourcegraph"):
+            (surface / "golden-reach-witnesses" / source).mkdir(parents=True)
+            (surface / "golden-reach-witnesses" / source / "candidates.jsonl").write_text("", encoding="utf-8")
+        registry = root / "docs" / "fern-refusals"
+        registry.mkdir()
+        classes = rows(REGISTRY / "classes.tsv")
+        self.class_row = next(row for row in classes[1:] if row[0] == self.CLASS)
+        write_rows(registry / "classes.tsv", [classes[0], self.class_row])
+        write_rows(registry / "findings.tsv", rows(REGISTRY / "findings.tsv")[:1])
+        # Four documents, each its own bytes, supplied by digest from `--root`.
+        (root / "documents").mkdir()
+        probe = (REGISTRY / self.CLASS / "probe.yml").read_bytes()
+        self.documents = {}
+        for name in ("screened-old", "screened-current", "measured-old", "measured-current"):
+            data = probe + f"\n# {name}\n".encode()
+            (root / "documents" / f"{name}.yml").write_bytes(data)
+            self.documents[name] = hashlib.sha256(data).hexdigest()
+        # Two screens whose check logs refuse the document with the class's phrase.
+        screens = surface / "scratch"
+        screens.mkdir()
+        said = f"issue: {phrase(self.class_row[4])}\n"
+        records = []
+        for name, pair in (("screened-old", self.OLD), ("screened-current", self.CURRENT)):
+            (screens / f"{name}-check.log").write_text(said, encoding="utf-8")
+            records.append(
+                {
+                    "fern": f"failed: `fern check` exit 1 at {pair}",
+                    "source": "scratch",
+                    "repository": "scratch/apis",
+                    "commit": "0" * 40,
+                    "path": f"{name}.yml",
+                    "sha256": self.documents[name],
+                    "fern_logs": [f"{name}-check.log"],
+                }
+            )
+        # Two more screens with no log of their own, measured already: one at an
+        # older pair (no pair recorded), one at the current pair.
+        logs = self.evidence / "logs"
+        logs.mkdir()
+        measured = []
+        for name, pair in (("measured-old", None), ("measured-current", CERTIFIED)):
+            digest = self.documents[name]
+            log = logs / f"{digest}.check.log"
+            log.write_text((PAIR_LINE if pair else "") + said, encoding="utf-8")
+            records.append(
+                {
+                    "fern": "failed: `fern check` refused it",
+                    "source": "scratch",
+                    "repository": "scratch/apis",
+                    "commit": "0" * 40,
+                    "path": f"{name}.yml",
+                    "sha256": digest,
+                }
+            )
+            row = {
+                "key": digest,
+                "digest": digest,
+                "unretrievable": "",
+                "check_exit": "1",
+                "check_log": log.relative_to(root).as_posix(),
+                "crozier_exit": "1",
+                "crozier_files": "0",
+                "crozier_strict_exit": "1",
+            }
+            if pair:
+                row.update(fern_cli=pair["cliVersion"], fern_python_sdk=pair["generatorVersion"])
+            measured.append(row)
+        (screens / "screens.jsonl").write_text("".join(json.dumps(record) + "\n" for record in records), "utf-8")
+        self.measurements = self.evidence / "measurements.jsonl"
+        self.measurements.write_text("".join(json.dumps(row) + "\n" for row in measured), encoding="utf-8")
+        # A stand-in crozier that refuses every document and counts its runs.
+        self.crozier_calls = root / "crozier-calls"
+        crozier = root / "target" / "release" / "crozier"
+        crozier.parent.mkdir(parents=True)
+        crozier.write_text(f"#!/bin/sh\necho run >> {shlex.quote(str(self.crozier_calls))}\nexit 1\n", "utf-8")
+        crozier.chmod(0o755)
+        self.calls = root / "fern-calls.jsonl"
+        self.env = {key: value for key, value in os.environ.items() if not key.startswith(("CROZIER", "FERN_STUB"))}
+        self.env.update(
+            PATH=f"{stub_fern(root / 'bin')}{os.pathsep}{self.env.get('PATH', '')}",
+            FERN_STUB_CALLS=str(self.calls),
+            FERN_STUB_CHECK_EXIT="1",
+            FERN_STUB_CHECK_OUTPUT=said.strip(),
+        )
+
+    def tearDown(self) -> None:
+        self.scratch.cleanup()
+
+    def measure(self) -> dict[str, dict[str, str]]:
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.root / "tools" / "fern-refusals" / "fern-refusals.py"),
+                "measure",
+                "--jobs",
+                "1",
+                "--root",
+                str(self.root / "documents"),
+            ],
+            capture_output=True,
+            text=True,
+            env=self.env,
+            cwd=self.root,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        return {row["key"]: row for row in map(json.loads, self.measurements.read_text(encoding="utf-8").splitlines())}
+
+    def checked(self) -> list[str]:
+        """The documents `fern check` ran over, by name."""
+        if not self.calls.exists():
+            return []
+        names = {self.documents[name]: name for name in self.documents}
+        return [
+            names[hashlib.sha256(call["spec"].encode()).hexdigest()]
+            for call in map(json.loads, self.calls.read_text(encoding="utf-8").splitlines())
+            if call["argv"][0] == "check"
+        ]
+
+    def test_a_verdict_taken_at_an_older_pair_is_measured_afresh_and_one_at_the_pair_reused(self) -> None:
+        measured = self.measure()
+        # Fern ran exactly over the two documents whose verdicts an older pair took.
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-old"])
+        pair = (CERTIFIED["cliVersion"], CERTIFIED["generatorVersion"])
+        for name, row in ((name, measured[digest]) for name, digest in self.documents.items()):
+            with self.subTest(document=name):
+                self.assertEqual((row["fern_cli"], row["fern_python_sdk"]), pair)
+                self.assertEqual(row["check_exit"], "1")
+        # The fresh logs are written at the pair, and say so on their first line.
+        for name in ("screened-old", "measured-old"):
+            digest = self.documents[name]
+            log = f"docs/openapi-surface/fern-refusals/logs/{digest}.check.log"
+            self.assertEqual(measured[digest]["check_log"], log)
+            first = (self.root / log).read_text(encoding="utf-8").splitlines()[0]
+            self.assertEqual(first, f"fern-refusals: Fern CLI {pair[0]}, fernapi/fern-python-sdk {pair[1]}", name)
+        # The screen taken at the pair keeps its own log; Fern never ran over it.
+        current = self.documents["screened-current"]
+        self.assertEqual(measured[current]["check_log"], "docs/openapi-surface/scratch/screened-current-check.log")
+        # crozier ran only where no result was on record: the two screened documents, each mode.
+        self.assertEqual(len(self.crozier_calls.read_text(encoding="utf-8").splitlines()), 4)
+        # Everything is now at the pair, so a second run measures nothing.
+        self.calls.unlink()
+        self.assertEqual(self.measure(), measured)
+        self.assertEqual(self.checked(), [])
+
+    def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
+        screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
+        records = [json.loads(line) for line in screens.read_text(encoding="utf-8").splitlines()]
+        records[1]["fern"] = f"failed: `fern check` exit 1 at CLI {CERTIFIED['cliVersion']}, fern-python-sdk:5.20.0"
+        screens.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
+        self.measure()
+        self.assertEqual(sorted(self.checked()), ["measured-old", "screened-current", "screened-old"])
 
 
 class DiagnosticExtraction(unittest.TestCase):

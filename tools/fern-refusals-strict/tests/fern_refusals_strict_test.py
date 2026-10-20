@@ -28,6 +28,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "fern-refusals" / "tests"))
 
 from fern_refusals_test import (
+    CERTIFIED,
+    MEASURE_LOADS,
     REGISTRY,
     REPO,
     rows,
@@ -35,24 +37,11 @@ from fern_refusals_test import (
     write_rows,
 )
 
-MEASURE_LOADS = (
-    "tools/fern-refusals/fern-refusals.py",
-    "assets/scaffolding/metadata.json",
-    "tools/witness-search/witness-search-github.py",
-    "tools/witness-search/witness-search-github-index.py",
-    "tools/witness-search/witness_screen.py",
-    "tools/witness-search/rate_limit_guard.py",
-    "tools/witness-search/witness-search-redo.py",
-    "tools/surface-census/openapi-surface-census.py",
-    "tools/surface-census/witness-search-region-keys.py",
-    "tools/corpus/corpus_remote_ref_pins.py",
-)
-
 
 @unittest.skipIf(os.name == "nt", "`measure` runs `target/release/crozier`, a path with no `.exe`")
 class ScratchCheckout(unittest.TestCase):
     """A scratch checkout whose population is one class's committed probe,
-    screened by its committed `fern check` log, with the compiled crozier binary
+    screened at the certified pair by its committed `fern check` log, with the compiled crozier binary
     where `measure` looks for it. The suites below run the REAL script in it."""
 
     # An evaluated `names` class whose probe Fern still refuses at the pin, so
@@ -125,7 +114,9 @@ class ScratchCheckout(unittest.TestCase):
         (screens / "screens.jsonl").write_text(
             json.dumps(
                 {
-                    "fern": "failed: check exit 1",
+                    # Taken at the certified pair, so `measure` reuses its log.
+                    "fern": f"failed: check exit 1 at CLI {CERTIFIED['cliVersion']}, "
+                    f"fernapi/fern-python-sdk:{CERTIFIED['generatorVersion']}",
                     "source": "scratch",
                     "repository": "scratch/probes",
                     "commit": "0" * 40,

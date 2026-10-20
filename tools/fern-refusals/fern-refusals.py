@@ -52,6 +52,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import urllib.parse
 import urllib.request
 from collections.abc import Iterable
@@ -97,6 +98,7 @@ UNRETRIEVABLE_HEADER = ("source", "locator", "revision", "recorded_by", "digest"
 GENERATED_HEADER = ("source", "locator", "revision", "recorded_by", "digest", "fern_log", "findings")
 CONFIRMATIONS_HEADER = ("class", "digest", "publisher", "generate_exit", "generate_files", "generate_log")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
+TIMINGS_HEADER = ("digest", "bytes", "crozier_exit", "crozier_files", "seconds", "bound_seconds")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
     "key",
@@ -110,6 +112,10 @@ MEASUREMENT_FIELDS = (
     "crozier_exit",
     "crozier_files",
     "crozier_strict_exit",
+    # The Fern CLI and fern-python-sdk versions the Fern fields were taken at;
+    # empty on a record taken before the pair was recorded.
+    "fern_cli",
+    "fern_python_sdk",
 )
 # What a measured value may be, when it is not empty (not yet taken): an exit
 # is the run's status (negative when a signal ended it) or `timeout`.
@@ -153,6 +159,9 @@ def _certified_pair(path: Path) -> CertifiedPair:
 
 _PAIR = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
 FERN_CLI, FERN_PYTHON_SDK = _PAIR.cli, _PAIR.sdk
+# The first line of every log `measure` and `confirm` write, so the log itself
+# names the pair it was taken at.
+PAIR_LINE = f"fern-refusals: Fern CLI {FERN_CLI}, fernapi/fern-python-sdk {FERN_PYTHON_SDK}\n"
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.
@@ -554,6 +563,20 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
     return str(run.returncode), run.stdout + run.stderr
 
 
+def at_pair(row: dict[str, str]) -> bool:
+    """Whether a measurement's Fern fields were taken at the certified pair."""
+    return (row.get("fern_cli"), row.get("fern_python_sdk")) == (FERN_CLI, FERN_PYTHON_SDK)
+
+
+def logged_at_pair(path: str) -> bool:
+    """Whether a committed log `measure` or `confirm` wrote names the certified pair."""
+    log = REPO / path
+    if not path or not log.is_file():
+        return False
+    with log.open(encoding="utf-8", errors="replace") as handle:
+        return handle.readline() == PAIR_LINE
+
+
 def fern_check(document: Path, digest: str, timeout: int) -> dict[str, str]:
     """`fern check` over one document, its log kept."""
     with tempfile.TemporaryDirectory(prefix="fern-refusals-") as scratch:
@@ -562,8 +585,8 @@ def fern_check(document: Path, digest: str, timeout: int) -> dict[str, str]:
         status, output = fern_run(["fern", "check"], workspace, timeout)
     path = EVIDENCE / "logs" / f"{digest}.check.log"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(scrub(output), encoding="utf-8")
-    return {"check_exit": status, "check_log": rel(path)}
+    path.write_text(PAIR_LINE + scrub(output), encoding="utf-8")
+    return {"check_exit": status, "check_log": rel(path), "fern_cli": FERN_CLI, "fern_python_sdk": FERN_PYTHON_SDK}
 
 
 def fern_generate(document: Path, digest: str, timeout: int) -> dict[str, str]:
@@ -581,7 +604,7 @@ def fern_generate(document: Path, digest: str, timeout: int) -> dict[str, str]:
         files = sum(1 for path in preview.rglob("*") if path.is_file()) if preview.is_dir() else 0
     path = EVIDENCE / "logs" / f"{digest}.generate.log"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(scrub(output), encoding="utf-8")
+    path.write_text(PAIR_LINE + scrub(output), encoding="utf-8")
     return {"generate_exit": status, "generate_files": str(files), "generate_log": rel(path)}
 
 
@@ -598,15 +621,29 @@ def scrub(log: str) -> str:
     return log
 
 
-EXIT = re.compile(r"check(?: exits?| exit) (\d+)")
+# `check exit 1`, or as a screen spells it, `` `fern check` exit 1 ``.
+EXIT = re.compile(r"check`? exits? (\d+)")
+# How a screen's verdict names the Fern it ran: `CLI 5.67.1`, `fern-python-sdk:5.20.0`.
+SCREENED_CLI = re.compile(r"\bCLI v?(\d+\.\d+\.\d+)")
+SCREENED_SDK = re.compile(r"fern-python-sdk[: @]v?(\d+\.\d+\.\d+)")
+
+
+def screened_at_pair(verdict: str) -> bool:
+    """Whether a screen's verdict names the certified CLI, and no generator but the certified one."""
+    clis = set(SCREENED_CLI.findall(verdict))
+    sdks = set(SCREENED_SDK.findall(verdict))
+    return clis == {FERN_CLI} and sdks <= {FERN_PYTHON_SDK}
 
 
 def committed_check(entry: Entry) -> dict[str, str] | None:
-    """A committed screen's `fern check` log, when its record states the exit."""
-    exits = EXIT.findall(entry.get("verdict", ""))
+    """A committed screen's `fern check` log, when its record states the exit and
+    names the certified pair as the Fern it ran: a log another Fern took says
+    nothing about what this one does."""
+    verdict = entry.get("verdict", "")
+    exits = EXIT.findall(verdict)
     log = next((path for path in entry.get("logs", []) if path.endswith("-check.log")), None)
-    if log and exits:
-        return {"check_exit": exits[0], "check_log": log}
+    if log and exits and screened_at_pair(verdict):
+        return {"check_exit": exits[0], "check_log": log, "fern_cli": FERN_CLI, "fern_python_sdk": FERN_PYTHON_SDK}
     return None
 
 
@@ -717,13 +754,15 @@ def check_blocks(row: dict[str, str]) -> bool:
 
 
 def missing_measurements(row: dict[str, str]) -> set[str]:
-    """Which of `check`, `generate`, `crozier` and `crozier-strict` a retrievable
-    document still needs."""
+    """Which of `fetch`, `check`, `generate`, `crozier` and `crozier-strict` a
+    document still needs. Every Fern field is taken at the certified pair: a
+    record another pair took, or a fetch that failed while another pair was
+    certified, is taken again."""
     if row.get("unretrievable"):
-        return set()
+        return set() if at_pair(row) else {"fetch"}
     missing = set()
     log = row.get("check_log")
-    if not row.get("check_exit") or (log and ran_out_below_the_heap(read_log(log))):
+    if not row.get("check_exit") or not at_pair(row) or (log and ran_out_below_the_heap(read_log(log))):
         # A run that ran out of Node's default heap reported the host, not Fern:
         # take it again. One that exhausts `NODE_HEAP` is Fern's own verdict.
         missing.add("check")
@@ -753,31 +792,67 @@ def measure(args: argparse.Namespace) -> int:
     documents = CACHE / "documents"
     documents.mkdir(parents=True, exist_ok=True)
 
+    # Fern runs one lane `--jobs` wide whatever else runs beside it; crozier's
+    # own runs take `--crozier-jobs` lanes of their own.
+    crozier_jobs = args.crozier_jobs or args.jobs
+    fern_lane = threading.BoundedSemaphore(args.jobs)
+    crozier_lane = threading.BoundedSemaphore(crozier_jobs)
+
     def one(entry: Entry, data: bytes) -> dict[str, str]:
         digest = hashlib.sha256(data).hexdigest()
         path = documents / f"{digest}{suffix_of(entry['locator'])}"
         path.write_bytes(data)
         row: dict[str, str] = {} if args.again else dict(done.get(entry["key"], {}))
+        if row.get("digest") not in ("", None, digest):
+            # Other bytes than the record measured: nothing it holds describes these.
+            row = {}
         row.update(key=entry["key"], digest=digest, unretrievable="")
         needed = (
-            missing_measurements(row)
+            missing_measurements(row) - {"fetch"}
             if row.get("check_exit") or row.get("crozier_exit")
             else {"check", "crozier", "crozier-strict"}
         )
         if "check" in needed:
-            committed = None if row.get("check_exit") else committed_check(entry)
-            row.update(committed or fern_check(path, digest, args.timeout))
-            if not row.get("generate_files") and not check_blocks(row):
+            # The record's Fern fields are another pair's, or none: retake them all.
+            for field in ("check_exit", "check_log", "generate_exit", "generate_files", "generate_log"):
+                row[field] = ""
+            committed = committed_check(entry)
+            if committed is None:
+                with fern_lane:
+                    committed = fern_check(path, digest, args.timeout)
+            row.update(committed)
+            if not check_blocks(row):
                 needed.add("generate")
         if "generate" in needed:
-            row.update(fern_generate(path, digest, args.timeout))
-        if "crozier" in needed:
-            row.update(crozier_measure(binary, path, digest, args.timeout))
-        if "crozier-strict" in needed:
-            row.update(crozier_strict_measure(binary, path, digest, args.timeout))
+            with fern_lane:
+                row.update(fern_generate(path, digest, args.timeout))
+        with crozier_lane:
+            if "crozier" in needed:
+                started = time.monotonic()
+                row.update(crozier_measure(binary, path, digest, args.timeout))
+                timing(
+                    {
+                        "digest": digest,
+                        "bytes": str(len(data)),
+                        "crozier_exit": row["crozier_exit"],
+                        "crozier_files": row["crozier_files"],
+                        "seconds": f"{time.monotonic() - started:.1f}",
+                        "bound_seconds": str(args.timeout),
+                    }
+                )
+            if "crozier-strict" in needed:
+                row.update(crozier_strict_measure(binary, path, digest, args.timeout))
         return row
 
     lock = threading.Lock()
+    timings = {row["digest"]: row for row in read_timings()}
+
+    def timing(row: dict[str, str]) -> None:
+        with lock:
+            timings[row["digest"]] = row
+            timings_path().write_text(
+                tsv_text(TIMINGS_HEADER, (timings[key] for key in sorted(timings))), encoding="utf-8"
+            )
 
     def record(result: dict[str, str]) -> None:
         with lock:
@@ -786,12 +861,20 @@ def measure(args: argparse.Namespace) -> int:
 
     # Fetches share one paced lane, so they run in this thread, one at a time;
     # Fern and crozier fan out behind them.
-    with ThreadPoolExecutor(max_workers=args.jobs) as pool:
+    with ThreadPoolExecutor(max_workers=max(args.jobs, crozier_jobs)) as pool:
         futures = []
         for entry in todo:
             data, reason = fetcher.get(entry)
             if data is None:
-                record({"key": entry["key"], "digest": entry["digest"], "unretrievable": reason})
+                record(
+                    {
+                        "key": entry["key"],
+                        "digest": entry["digest"],
+                        "unretrievable": reason,
+                        "fern_cli": FERN_CLI,
+                        "fern_python_sdk": FERN_PYTHON_SDK,
+                    }
+                )
                 continue
             futures.append(pool.submit(one, entry, data))
             futures[-1].add_done_callback(lambda future: record(future.result()))
@@ -799,6 +882,15 @@ def measure(args: argparse.Namespace) -> int:
             future.result()
     print(f"fern-refusals: {len(todo)} measured, {len(done)} on record")
     return 0
+
+
+def timings_path() -> Path:
+    return EVIDENCE / "crozier-timings.tsv"
+
+
+def read_timings() -> list[dict[str, str]]:
+    """Each document's last crozier run: its size, outcome and wall-clock seconds."""
+    return read_tsv(timings_path(), TIMINGS_HEADER) if timings_path().is_file() else []
 
 
 def write_measurements(done: dict[str, dict[str, str]]) -> None:
@@ -1180,10 +1272,15 @@ def confirm(args: argparse.Namespace) -> int:
     """
     documents = read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
-    measured = {row["digest"]: row for row in read_measurements().values() if row["digest"]}
+    measured = {row["digest"]: row for row in read_measurements().values() if row["digest"] and at_pair(row)}
     cached = {path.stem: path for path in (CACHE / "documents").glob("*") if path.is_file()}
     path = confirmations_path()
-    kept = read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else []
+    # A confirmation another pair took confirms nothing about this one.
+    kept = [
+        row
+        for row in (read_tsv(path, CONFIRMATIONS_HEADER) if path.is_file() else [])
+        if logged_at_pair(row["generate_log"])
+    ]
     plan: list[tuple[str, dict[str, str]]] = []
     for row in classes:
         name = row["class"]
@@ -1257,6 +1354,11 @@ def confirmation_problems() -> list[str]:
             )
         elif not (REPO / row["generate_log"]).is_file():
             problems.append(f"confirmations.tsv {row['digest']}: its log {row['generate_log']} is not committed")
+        elif not logged_at_pair(row["generate_log"]):
+            problems.append(
+                f"confirmations.tsv {row['class']} {row['digest']}: its log {row['generate_log']} was not taken at "
+                f"Fern CLI {FERN_CLI} with fernapi/fern-python-sdk {FERN_PYTHON_SDK}; rerun `confirm`"
+            )
         elif row["generate_exit"] == "timeout":
             problems.append(
                 f"{row['class']}: the generation of {row['digest']} timed out, which confirms "
@@ -1483,7 +1585,8 @@ def main(argv: list[str] | None = None) -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("select", help="print the selected population").set_defaults(run=select)
     m = sub.add_parser("measure", help="fetch, run Fern and crozier, record measurements.jsonl")
-    m.add_argument("--jobs", type=positive, default=6)
+    m.add_argument("--jobs", type=positive, default=6, help="how many Fern runs at once")
+    m.add_argument("--crozier-jobs", type=positive, default=0, help="how many crozier runs at once (default: --jobs)")
     m.add_argument("--timeout", type=positive, default=3600)
     m.add_argument("--limit", type=nonnegative, default=0)
     m.add_argument("--again", action="store_true", help="re-measure documents already on record")
