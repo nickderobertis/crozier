@@ -8,8 +8,9 @@ per-golden metadata.
 - **Generation:** Each local fixture's `expected/` tree is generated from its
   own `openapi.yml` by `tools/fern-goldens/generate-fern-fixture.sh`. Numbered publisher
   sources and immutable references live in [`CORPUS.md`](CORPUS.md). The
-  **Fern goldens** workflow checks the latest stable generator from `main`
-  weekly; each managed golden records its exact version in provenance.
+  **Fern goldens** workflow checks the latest stable Fern from `main` weekly and
+  proposes the regenerated references as a pull request; each managed golden
+  records its exact version in provenance.
 - **License / attribution:** [`../../licenses/fern-APACHE-2.0.txt`](../../licenses/fern-APACHE-2.0.txt)
   and [`../../NOTICE`](../../NOTICE) (with the statement of changes required by
   Apache-2.0 §4). Keep them; regeneration must preserve them.

@@ -72,6 +72,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         shutil.copy2(PIN_MANIFEST, self.root / "tests" / "fixtures" / PIN_MANIFEST.name)
         (self.root / "justfile").write_text("default:\n    @true\n", encoding="utf-8", newline="\n")
         (self.root / ".gitignore").write_text("/.local\n", encoding="utf-8", newline="\n")
+        self.write_certified_cli("7.0.0")
         self.write_manifest()
         self.write_executable(
             self.root / "tools" / "fern-goldens" / "generate-fern-fixture.sh",
@@ -93,8 +94,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 prefix = "--layout flat " if layout == "flat" else ""
                 calls.write(f"{prefix}{fixture} {version} {spec} {destination}\n")
             output = pathlib.Path(destination)
+            # Fern stamps the CLI it ran into the tree, as generate-fern-fixture.sh
+            # resolves it: FERN_CLI_VERSION, else the certified pair's cliVersion.
+            cli = os.environ.get("FERN_CLI_VERSION") or json.loads(
+                (root / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8")
+            )["cliVersion"]
+            (output / ".fern").mkdir(parents=True)
+            (output / ".fern" / "metadata.json").write_text(
+                json.dumps({"cliVersion": cli}) + "\n", encoding="utf-8", newline="\n"
+            )
             if layout == "flat":
-                output.mkdir(parents=True)
+                output.mkdir(parents=True, exist_ok=True)
                 if fixture in os.environ.get("FAIL_FLAT_FIXTURES", "").split(","):
                     (output / "partial.py").write_text("partial\n", encoding="utf-8", newline="\n")
                     raise SystemExit(21)
@@ -300,6 +310,17 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             textwrap.dedent(manifest), encoding="utf-8", newline="\n"
         )
 
+    def write_certified_cli(self, cli: str) -> None:
+        """The synthetic tree's certified pair, whose `cliVersion` a generation
+        runs when `FERN_CLI_VERSION` names none."""
+        metadata = self.root / "assets" / "scaffolding" / "metadata.json"
+        metadata.parent.mkdir(parents=True, exist_ok=True)
+        metadata.write_text(
+            json.dumps({"cliVersion": cli, "generatorVersion": "4.9.0"}) + "\n",  # certified-pair: stand-in
+            encoding="utf-8",
+            newline="\n",
+        )
+
     def write_known_failure(self, fixture: str = "alpha", version: str = "5.20.0") -> Path:
         payload = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
         identities = {
@@ -381,6 +402,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
     def state(self, fixture: str, golden: str = "expected") -> dict[str, str]:
         path = self.root / "tests" / "fixtures" / fixture / golden / STATE
         return json.loads(path.read_text(encoding="utf-8"))
+
+    def recorded_settings(self, fixture: str) -> dict[str, str]:
+        """The `fern-generator-config.txt` row a golden's provenance records."""
+        path = self.root / "tests" / "fixtures" / fixture / "expected" / STATE
+        return json.loads(path.read_text(encoding="utf-8"))["fern_generator_config"]
 
     def write_flat_goldens(self, *rows: str) -> None:
         (self.root / "tests" / "fixtures" / "flat-goldens.txt").write_text(
@@ -791,6 +817,86 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(self.state("alpha")["corpus_spec_ref"], "2")
         self.assertTrue((self.root / ".local" / "corpus" / "alpha" / "openapi.yaml").is_file())
         self.assertTrue(all("fetch-corpus --fixture alpha" in call for call in self.fetch_calls()))
+
+    def test_a_changed_generator_setting_or_fern_cli_regenerates_a_current_golden(self) -> None:
+        """A golden is current only for the settings and Fern CLI it was made
+        with: a new `fern-generator-config.txt` row, an edited one, or another
+        CLI at the same generator version each regenerate it rather than skip it."""
+        config = self.root / "tests" / "fixtures" / "fern-generator-config.txt"
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertNotIn("fern_generator_config", self.state("alpha"))
+        current = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("0 generated, 1 current", current.stdout)
+        self.assertEqual(len(self.calls()), 1)
+
+        config.write_text(
+            "# fixture|audiences|audience_strict|client_class_name|extra_fields|organization\n"
+            "alpha||false|AlphaClient|\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        added = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("1 generated, 0 current", added.stdout)
+        self.assertEqual(self.recorded_settings("alpha")["client_class_name"], "AlphaClient")
+        self.assertEqual(self.recorded_settings("alpha")["organization"], "")
+
+        config.write_text("alpha||false|AlphaClient|forbid\n", encoding="utf-8", newline="\n")
+        edited = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("1 generated, 0 current", edited.stdout)
+        self.assertEqual(self.recorded_settings("alpha")["extra_fields"], "forbid")
+        self.assertIn(
+            "0 generated, 1 current", self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha").stdout
+        )
+
+        config.write_text(
+            "# fixture|audiences|audience_strict|client_class_name|extra_fields|organization\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        removed = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+        self.assertIn("1 generated, 0 current", removed.stdout)
+        self.assertNotIn("fern_generator_config", self.state("alpha"))
+
+        moved = self.run_tool(
+            "generate",
+            "--version",
+            "4.9.0",
+            "--fixture",
+            "alpha",
+            check=True,
+            FERN_CLI_VERSION="7.1.0",  # certified-pair: stand-in
+        )
+        self.assertIn("1 generated, 0 current", moved.stdout)
+        metadata = self.root / "tests" / "fixtures" / "alpha" / "expected" / ".fern" / "metadata.json"
+        self.assertEqual(json.loads(metadata.read_text(encoding="utf-8"))["cliVersion"], "7.1.0")
+        self.assertEqual(len(self.calls()), 5)
+
+    def test_a_duplicated_or_unreadable_settings_table_fails_before_generating(self) -> None:
+        config = self.root / "tests" / "fixtures" / "fern-generator-config.txt"
+        config.write_text("alpha||false|A|\nalpha||false|B|\n", encoding="utf-8", newline="\n")
+        duplicated = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(2, duplicated.returncode)
+        self.assertIn("line 2: duplicate configuration for 'alpha'", duplicated.stderr)
+        config.unlink()
+        config.mkdir()
+        unreadable = self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha")
+        self.assertEqual(2, unreadable.returncode)
+        self.assertIn("could not read generator settings", unreadable.stderr)
+        self.assertEqual([], self.calls(), "nothing was generated under a table it cannot read")
+        config.rmdir()
+        self.run_tool("generate", "--version", "4.9.0", "--fixture", "alpha", check=True)
+
+    def test_an_unfetchable_pinned_source_is_reported_apart_and_the_rest_still_generate(self) -> None:
+        failed = self.run_tool(
+            "generate", "--version", "4.9.0", "--fixture", "alpha", "--fixture", "beta", FAIL_FETCH="alpha"
+        )
+        self.assertEqual(failed.returncode, 1)
+        report = self.root / ".local" / "fern-goldens"
+        fetch_failures = (report / "fetch-failures.txt").read_text(encoding="utf-8").splitlines()
+        self.assertEqual([line.split("\t")[0] for line in fetch_failures], ["alpha"])
+        self.assertIn("spec fetch failed", fetch_failures[0])
+        self.assertEqual(self.state("beta")["fern_python_sdk_version"], "4.9.0")
+        self.assertEqual((report / "generated.txt").read_text(encoding="utf-8"), "beta\n")
 
     def test_generation_uses_the_path_reported_by_fetch_corpus(self) -> None:
         self.run_tool(
@@ -2576,6 +2682,23 @@ class GenerateCorpusFixturesTests(unittest.TestCase):
             result = self.run_script()
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("restore it with git checkout -- tests/fixtures/CORPUS.md", result.stderr)
+
+
+class ReporterContractTests(unittest.TestCase):
+    """The decision reads `report_fixture_diffs`' own report (`just
+    fixtures-diff`); these are the lines it reads, as that reporter prints them."""
+
+    def test_the_reporter_still_prints_what_the_decision_reads(self) -> None:
+        source = (REPO / "crates/crozier-e2e/tests/e2e.rs").read_text(encoding="utf-8")
+        for printed in (
+            "comparison generation failure(s) across the reported corpora.",
+            "comparison processing failure(s) across the reported corpora.",
+            " [REGRESSION — not in `unmatched`]",
+            "Comparison setup failed: ",
+            'println!("\\n--- {rel}{tag} ---");',
+        ):
+            self.assertIn(printed, source)
+        self.assertIn("differing file(s) across the reported corpora", source)
 
 
 if __name__ == "__main__":

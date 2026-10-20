@@ -234,6 +234,10 @@ test('the budget wrapper accepts actual telemetry and rejects each exceeded limi
   for (const path of ['screencomp.toml', 'release-plz.toml']) cpSync(resolve(root, path), join(dir, path));
   mkdirSync(join(dir, '.github/.telemetry'));
   writeFileSync(join(dir, '.github/.telemetry/macos-policy.json'), JSON.stringify(recorded));
+  // The weekly Fern goldens budget reads the plan the workflow's real planner makes.
+  const env = { ...process.env }; delete env.CROZIER_FERN_WEEKLY_ROOT;
+  const planned = spawnSync('python3', [resolve(root, 'tools/fern-goldens/weekly.py'), 'plan', '--telemetry', join(dir, '.github/.telemetry/fern-goldens-plan.json')], { cwd: root, env, encoding: 'utf8' });
+  assert.equal(planned.status, 0, planned.stderr);
   const specification = join(dir, '.github/budgets.yaml'), original = readFileSync(specification, 'utf8');
   const invoke = () => spawnSync(process.execPath, [join(dir, '.github/check-budgets.mjs')], { cwd: dir, encoding: 'utf8' });
   const accepted = invoke();

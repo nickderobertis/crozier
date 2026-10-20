@@ -10,7 +10,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens/tests/fern_goldens_test.py tools/fern-goldens/tests/fern_references_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens/tests/fern_goldens_test.py tools/fern-goldens/tests/fern_references_test.py tools/fern-goldens/tests/weekly_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/fern-goldens/test/.coverage"
         }
@@ -24,6 +24,19 @@
         "{workspaceRoot}/tools/surface-census/openapi-surface-census.py",
         "{workspaceRoot}/scripts/lib.sh",
         "{workspaceRoot}/tests/fixtures/**/*",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/tools/fern-refusals/fern-refusals.py",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/*/evidence.toml",
+        "{workspaceRoot}/docs/openapi-surface/handwritten/*/openapi.yml",
+        "{workspaceRoot}/docs/openapi-surface/authored-probes/*/openapi.yml",
+        "{workspaceRoot}/docs/openapi-surface/probe-expected/MANIFEST.tsv",
+        "{workspaceRoot}/docs/fern-measurements/**/*",
+        "{workspaceRoot}/docs/fern-refusals/*.tsv",
+        "{workspaceRoot}/docs/fern-refusals/*/evidence/*",
+        "{workspaceRoot}/docs/departures/evidence/*/fern-reference.json",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/tests/refusal_registry.rs",
+        "{workspaceRoot}/.github/budgets.yaml",
         "pythonTooling"
       ],
       "outputs": [

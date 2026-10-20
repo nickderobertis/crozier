@@ -2,5 +2,12 @@
   "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "aws-mobileanalytics",
   "corpus_spec_ref": "f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49",
-  "corpus_spec_url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml"
+  "corpus_spec_url": "https://raw.githubusercontent.com/APIs-guru/openapi-directory/f04b8d0bcd39c52e1cf3ad7a5fe744709832ae49/APIs/amazonaws.com/mobileanalytics/2014-06-05/openapi.yaml",
+  "fern_generator_config": {
+    "audiences": "",
+    "audience_strict": "false",
+    "client_class_name": "FernApi",
+    "extra_fields": "allow",
+    "organization": ""
+  }
 }

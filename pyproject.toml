@@ -63,6 +63,7 @@ members = [
     "tools/corpus-licensing",
     "tools/fern-goldens",
     "tools/fern-goldens-git",
+    "tools/fern-goldens-weekly",
     "tools/fern-refusals",
     "tools/fern-refusals-strict",
     "tools/llmlint",
@@ -196,6 +197,7 @@ omit = ["*/tests/*", "*/.venv/*", "*/site-packages/*"]
 "corpus-licensing" = ["tools/corpus-licensing/", "*/tools/corpus-licensing/"]
 "fern-goldens" = ["tools/fern-goldens/", "*/tools/fern-goldens/"]
 "fern-goldens-git" = ["tools/fern-goldens-git/", "*/tools/fern-goldens-git/"]
+"fern-goldens-weekly" = ["tools/fern-goldens-weekly/", "*/tools/fern-goldens-weekly/"]
 "fern-refusals" = ["tools/fern-refusals/", "*/tools/fern-refusals/"]
 "fern-refusals-strict" = ["tools/fern-refusals-strict/", "*/tools/fern-refusals-strict/"]
 "llmlint" = ["tools/llmlint/", "*/tools/llmlint/"]

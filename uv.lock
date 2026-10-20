@@ -13,6 +13,7 @@ members = [
     "crozier-corpus-match-selection",
     "crozier-fern-goldens",
     "crozier-fern-goldens-git",
+    "crozier-fern-goldens-weekly",
     "crozier-fern-refusals",
     "crozier-fern-refusals-strict",
     "crozier-live-e2e",
@@ -301,6 +302,25 @@ dependencies = [
 requires-dist = [
     { name = "crozier-corpus", virtual = "tools/corpus" },
     { name = "crozier-fern-goldens", virtual = "tools/fern-goldens" },
+    { name = "crozier-surface-census", virtual = "tools/surface-census" },
+]
+
+[[package]]
+name = "crozier-fern-goldens-weekly"
+version = "0.0.0"
+source = { virtual = "tools/fern-goldens-weekly" }
+dependencies = [
+    { name = "crozier-corpus" },
+    { name = "crozier-fern-goldens" },
+    { name = "crozier-fern-refusals" },
+    { name = "crozier-surface-census" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "crozier-corpus", virtual = "tools/corpus" },
+    { name = "crozier-fern-goldens", virtual = "tools/fern-goldens" },
+    { name = "crozier-fern-refusals", virtual = "tools/fern-refusals" },
     { name = "crozier-surface-census", virtual = "tools/surface-census" },
 ]
 

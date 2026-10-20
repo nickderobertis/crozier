@@ -26,11 +26,17 @@ takes only a `DELEGATED` root, and holds that root's own `project.json` to the
 wiring: a `lint-certified-pair` target running exactly that command, which its
 `lint` depends on.
 
-Usage: certified_pair.py check [ROOT] [--within DIR]
+`restate` is the repair a move of the pair makes: it rewrites every statement
+`check` would report, in every scanned file and every delegated root alike, to
+the declared pair, so moving `metadata.json` and restating leaves `check` green.
 
-Exit status: 0 when every statement names the declared pair; 1 when one names
-another (each printed on stderr), the declaration is unreadable or malformed, or
-a `--within` root is not delegated or not wired; 2 on a usage error.
+Usage: certified_pair.py check [ROOT] [--within DIR]
+       certified_pair.py restate [ROOT]
+
+Exit status: 0 when every statement names the declared pair (`check`) or was
+restated (`restate`); 1 when one names another (each printed on stderr), the
+declaration is unreadable or malformed, a file cannot be rewritten, or a
+`--within` root is not delegated or not wired; 2 on a usage error.
 """
 
 from __future__ import annotations
@@ -154,9 +160,10 @@ def certified(root: Path) -> Pair:
     return Pair(cli=cli, sdk=sdk)
 
 
-def scanned(root: Path, within: str | None = None) -> list[str]:
+def scanned(root: Path, within: str | None = None, *, delegated: bool = False) -> list[str]:
     """The tracked files under `root` that may state the pair: those under
-    `within` when it is given, else every one outside the `DELEGATED` roots."""
+    `within` when it is given, else every one outside the `DELEGATED` roots
+    (inside them too when `delegated`)."""
     listed = subprocess.run(
         ["git", "-C", str(root), "ls-files", "-z"], capture_output=True, check=False, text=True, encoding="utf-8"
     )
@@ -169,12 +176,22 @@ def scanned(root: Path, within: str | None = None) -> list[str]:
         if path
         and not path.startswith(HISTORY_DIRS)
         and path not in HISTORY_FILES
-        and (path.startswith(prefix) if prefix is not None else not path.startswith(DELEGATED))
+        and (path.startswith(prefix) if prefix is not None else delegated or not path.startswith(DELEGATED))
     ]
 
 
-def drifts(path: str, text: str, pair: Pair) -> Iterable[Drift]:
-    """Each statement in `text` naming a version other than `pair`'s."""
+class Stated(NamedTuple):
+    """One version a statement names other than the pair's: where it sits in
+    the text, and the version the pair would have it name."""
+
+    drift: Drift
+    start: int
+    end: int
+    wanted: str
+
+
+def stated(path: str, text: str, pair: Pair) -> Iterable[Stated]:
+    """Each version a statement in `text` names other than `pair`'s, with its span."""
     lines = text.splitlines()
     wanted = {CLI: pair.cli, SDK: pair.sdk}
     for pattern, members in FORMS:
@@ -183,9 +200,46 @@ def drifts(path: str, text: str, pair: Pair) -> Iterable[Drift]:
             line = lines[number - 1] if number <= len(lines) else ""
             if MARKER in line or line.lstrip().startswith(COMMENT):
                 continue
-            for member, stated in zip(members, match.groups(), strict=True):
-                if stated != wanted[member]:
-                    yield Drift(path, number, line.strip(), member, stated)
+            for group, member in enumerate(members, start=1):
+                version = match.group(group)
+                if version != wanted[member]:
+                    yield Stated(
+                        Drift(path, number, line.strip(), member, version),
+                        match.start(group),
+                        match.end(group),
+                        wanted[member],
+                    )
+
+
+def drifts(path: str, text: str, pair: Pair) -> Iterable[Drift]:
+    """Each statement in `text` naming a version other than `pair`'s."""
+    return (statement.drift for statement in stated(path, text, pair))
+
+
+def restate(root: Path) -> tuple[int, list[str]]:
+    """Rewrite every statement of another pair, in every scanned and delegated
+    file, to the declared pair: the number restated and the files changed."""
+    pair = certified(root)
+    count, changed = 0, []
+    for path in scanned(root, delegated=True):
+        try:
+            text = (root / path).read_bytes().decode("utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        spans = sorted({(item.start, item.end, item.wanted) for item in stated(path, text, pair)}, reverse=True)
+        if not spans:
+            continue
+        for start, end, wanted in spans:
+            text = text[:start] + wanted + text[end:]
+        try:
+            (root / path).write_bytes(text.encode("utf-8"))
+        except OSError as error:
+            raise SystemExit(
+                f"certified-pair: cannot rewrite {path} ({error}); make it writable, then re-run"
+            ) from error
+        count += len(spans)
+        changed.append(path)
+    return count, changed
 
 
 def wiring_failures(root: Path, within: str) -> list[str]:
@@ -224,11 +278,20 @@ def check(root: Path, within: str | None = None) -> list[Drift]:
 
 
 def main(argv: list[str]) -> int:
+    if argv[:1] == ["restate"] and len(argv) <= 2:
+        root = Path(argv[1]) if len(argv) == 2 else Path(__file__).resolve().parents[2]
+        count, changed = restate(root)
+        pair = certified(root)
+        print(
+            f"certified-pair: restated {count} statement(s) in {len(changed)} file(s) at "
+            f"Fern CLI {pair.cli}, fern-python-sdk {pair.sdk}"
+        )
+        return 0
     within = None
     if len(argv) >= 2 and argv[-2] == "--within":
         within, argv = argv[-1].removeprefix("./").strip("/"), argv[:-2]
     if not argv or argv[0] != "check" or len(argv) > 2 or within == "":
-        print("usage: certified_pair.py check [ROOT] [--within DIR]", file=sys.stderr)
+        print("usage: certified_pair.py check [ROOT] [--within DIR] | restate [ROOT]", file=sys.stderr)
         return 2
     root = Path(argv[1]) if len(argv) == 2 else Path(__file__).resolve().parents[2]
     if within is not None:

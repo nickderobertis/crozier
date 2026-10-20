@@ -3,5 +3,12 @@
   "corpus_spec_name": "eos.local-extra-fields-forbid",
   "corpus_spec_ref": "1.0.0",
   "corpus_spec_url": "https://api.apis.guru/v2/specs/eos.local/1.0.0/openapi.json",
+  "fern_generator_config": {
+    "audiences": "",
+    "audience_strict": "false",
+    "client_class_name": "",
+    "extra_fields": "forbid",
+    "organization": ""
+  },
   "layout": "flat"
 }

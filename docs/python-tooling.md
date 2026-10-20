@@ -82,7 +82,7 @@ suite and the gate. To read the per-project split after it:
 
     uv run --locked --all-packages python tools/python-workspace/coverage_gate.py --fail-under 88 --by-project
 
-The projects holding only suites (corpus-fetch, fern-goldens-git,
+The projects holding only suites (corpus-fetch, fern-goldens-git, fern-goldens-weekly,
 fern-refusals-strict, llmlint-resolution, surface-reach, witness-search-git) count
 toward the projects whose scripts they drive. Beyond the two files the floor's
 record names, the largest gaps at the recorded measurement were

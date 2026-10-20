@@ -18,14 +18,11 @@ local Docker loop (`just fern-goldens-generate --version "$pin" --fixture
 <name>`, always with the exact pin the goldens' provenance records — never a
 blank, which resolves the latest tag and starts a Fern upgrade), then measure,
 repair Crozier, and repeat; red comparison is expected until Crozier is repaired.
-A dispatched agent cannot use the hosted workflow, because a dispatch needs the
-branch on the remote and publication is the lifecycle's job. A Monday 05:17 UTC
-run from `main` leaves both inputs blank to check the latest Fern against every
-managed golden. Do Fern upgrade work on an expected-red feature branch, retain
-the workflow's best-effort successful commits and exact known-failure evidence,
-then rerun with the resolved exact version until the final run is green with no
-changes to generate or publish. The complete selection, provenance, partial-success,
-publication, and rerun contract is in
+The hosted **Fern goldens** workflow is no route for adding a fixture: every
+Monday it checks the newest Fern from `main` against every reference and
+proposes the result as one pull request on `fern-goldens/update`, never pushing
+to `main`, and a dispatch over one fixture is a diagnostic that publishes
+nothing. Its plan, decision and pull request are in
 [`../../docs/fern-goldens.md`](../../docs/fern-goldens.md).
 
 **One non-default Fern setting is corpus-wide.** Every `expected/` golden — managed or
@@ -110,8 +107,8 @@ operations into one method.
 An optional pre-screen can count, per operation, request bodies without a `$ref`
 schema and `format: date` fields whose example contains a time. Zero of both is a
 good signal, but a real Fern generate is the authoritative check: locally via
-Route A, or via the dispatched workflow, which retains any successful sibling
-results when another selection fails.
+Route A, or a diagnostic dispatch of the workflow (`items=corpus:<name>`), which
+publishes nothing.
 
 ### Specs already tried and REJECTED (do not re-attempt without a fix upstream)
 
@@ -174,8 +171,8 @@ registration is bound to one exact generator version, corpus identity, exit code
 and diagnostic fingerprint, so it cannot be copied onto a corpus that merely
 diverges — see `a_known_fern_failure_registration_cannot_excuse_anything_else`.
 Such a corpus remains a spec-level robustness test until Fern
-succeeds, at which point remove the failure registration and use the managed
-workflow to publish a provenanced golden so it rejoins byte comparison.
+succeeds, at which point remove the failure registration and generate its
+provenanced golden (Route A) so it rejoins byte comparison.
 
 ## Where the goldens are BLIND — `just fixtures-coverage`
 

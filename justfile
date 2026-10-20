@@ -194,8 +194,8 @@ fetch-corpus *args:
     ./tools/corpus/fetch-corpus.sh {{args}}
 
 
-# Legacy local reproduction for issue #77 goldens. Routine generation and safe
-# publication belong to the Fern goldens workflow. Needs Docker + fern.
+# Legacy local reproduction for issue #77 goldens. Routine generation belongs to
+# fern-goldens-generate and fern-references (docs/fern-goldens.md). Needs Docker + fern.
 fixtures-generate-corpus *args:
     ./tools/fern-goldens/generate-corpus-fixtures.sh {{args}}
 
@@ -205,8 +205,8 @@ fixtures-generate-corpus *args:
 fern-goldens *args:
     ./tools/fern-goldens/fern-goldens run "$@"
 
-# Phase recipes used by the workflow so successful goldens can be published
-# before generation/diff failures determine the final status.
+# Generate the selected corpus goldens (Route A; the weekly workflow reaches it
+# through `fern-references corpus`). See docs/fern-goldens.md.
 fern-goldens-generate *args:
     ./tools/fern-goldens/fern-goldens generate "$@"
 
@@ -231,7 +231,7 @@ fern-goldens-result *args:
 
 # Process/filesystem/workflow-boundary coverage for the automation itself.
 test-fern-goldens:
-    @just nx run-many --targets=test --projects=fern-goldens,fern-goldens-git
+    @just nx run-many --targets=test --projects=fern-goldens,fern-goldens-git,fern-goldens-weekly
 
 # Live Fern measurement for the witness-supply probe Fern refuses. Separate
 # from `check`: Fern's pinned Python generator runs in Docker and needs network.
