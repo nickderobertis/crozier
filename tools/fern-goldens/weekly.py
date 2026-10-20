@@ -1913,9 +1913,11 @@ def publish(args: argparse.Namespace) -> int:
         commit_tree(base, Path(args.bundle), decision, checked_on)
         mark(steps, "commit", git(base, "rev-parse", "--short=12", "HEAD"))
         push(base, steps)
-        # Every write reads the remote first and is skipped when already done, so
-        # a run after a failure or a lost response finishes the rest; a write that
-        # fails ends the run red, whatever the remote may since have applied.
+        # Every write reads the remote first: a branch already holding this tree,
+        # a present label and auto-merge already as wanted are left alone, and an
+        # open pull request is updated rather than duplicated, so a run after a
+        # failure or a lost response finishes the rest. A write that fails ends the
+        # run red, whatever the remote may since have applied.
         mark(steps, f"label {LABEL}", ensure_label(args.repo))
         pull = open_or_update(args.repo, decision, str(Path(args.decision) / "body.md"), steps)
         settle_auto_merge(args.repo, decision, pull, steps)

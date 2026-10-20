@@ -710,7 +710,7 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual([], self.pulls())
         self.assertEqual(1, int(self.git(self.remote, "rev-list", "--count", "main")))
 
-    def test_no_diff_adopts_the_pair_through_one_auto_merged_pull_request(self) -> None:
+    def test_no_diff_adopts_the_pair_through_one_pull_request_with_auto_merge_enabled(self) -> None:
         """References that differ from the committed ones only where crozier's
         engine finds no difference — provenance, `generatorConfig`, the SDK
         identity headers — plus a byte difference crozier matches, across two
