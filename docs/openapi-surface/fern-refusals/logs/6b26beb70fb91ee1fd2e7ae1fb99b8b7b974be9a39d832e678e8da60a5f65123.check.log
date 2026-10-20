@@ -1,6 +1,7 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[sdk] 152 errors
+[sdk] 149 errors
     [error]
         path: __package__.yml -> types -> PostApiQuicksearchRequestIncludeInvitees
         issue: PostApiQuicksearchRequestIncludeInvitees is already declared in repoSearch.yml
@@ -597,22 +598,4 @@ Warnings for generators.yml:
         path: discussions.yml -> types -> PostApiRepoTypeNamespaceRepoDiscussionsNumCommentResponseNewMessageDataReactionsItemReaction
         issue: Enum value 🤯 is not suitable for code generation. Add a "name" property that starts with a letter and contains only letters, numbers, and underscores. If your API is defined using OpenAPI, you can use the x-fern-enum extension to specify a valid name: https://buildwithfern.com/learn/api-definitions/openapi/extensions/enum-descriptions-and-names
 
-    [error]
-        path: resourceGroups.yml -> service -> endpoints -> createAResourceGroup
-        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "name"
-  - Body property: <Request Body> -> name
-
-    [error]
-        path: scim.yml -> service -> endpoints -> createAScimUser
-        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "name"
-  - Body property: <Request Body> -> name
-
-    [error]
-        path: scim.yml -> service -> endpoints -> updateAScimUser
-        issue: Multiple request properties have the name name. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.
-  - Path parameter "name"
-  - Body property: <Request Body> -> name
-
-Found 152 errors and 19 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+Found 149 errors and 19 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
