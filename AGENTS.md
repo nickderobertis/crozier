@@ -139,7 +139,8 @@ Use the `just` recipes; do not hand-roll equivalents.
 - `just upgrade` — `cargo update`, then re-run `just check`.
 - `just fern-goldens` / `just fern-goldens-generate` / `just
   fern-goldens-compare` — local diagnostics for the automated Fern lifecycle;
-  normal maintenance uses the manually dispatched **Fern goldens** workflow. See
+  the weekly **Fern goldens** workflow (`tools/fern-goldens/weekly.py`) checks
+  each new Fern against every reference and opens one pull request. See
   [`docs/fern-goldens.md`](docs/fern-goldens.md).
 - `just test-fern-goldens` — exercise the golden automation's process,
   filesystem, publication, and workflow boundaries. Part of `just check`.
@@ -267,11 +268,12 @@ Use the `just` recipes; do not hand-roll equivalents.
   [`docs/licence-rescreening.md`](docs/licence-rescreening.md);
   `just lint-licence-rescreening` derives that candidate set from the region
   ledgers itself, so a grouped or dropped line fails.
-- Maintain numbered corpus goldens one row at a time through the manually
-  dispatched **Fern goldens** workflow. It records exact generator/spec
-  provenance and safely publishes complete results even while comparison is red;
-  direct local commands are diagnostic only. See
-  [`docs/fern-goldens.md`](docs/fern-goldens.md).
+- Add or repair a numbered corpus golden one row at a time, locally (Route A).
+  The weekly **Fern goldens** workflow regenerates every reference at each new
+  Fern, decides with crozier's own comparison and opens or updates one pull
+  request on `fern-goldens/update` — a match auto-merges under
+  `RELEASE_PLZ_TOKEN`, a diff waits for a retarget; it never pushes to `main`.
+  See [`docs/fern-goldens.md`](docs/fern-goldens.md).
 - CalorieNinjas at Fern 5.20 is covered by an exact, always-retried upstream
   failure fingerprint and has no golden until Fern can generate one.
 - A corpus document naming another document by absolute URL is reproducible only

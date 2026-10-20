@@ -1,28 +1,16 @@
 # Maintaining Fern goldens
 
-The **Fern goldens** GitHub Actions workflow is the maintenance path for numbered
-rows in [`tests/fixtures/CORPUS.md`](../tests/fixtures/CORPUS.md). It runs Fern in
-the hosted environment, records reproducible provenance, compares Crozier, and
-safely publishes every complete Fern result back to its branch. Adding or
-repairing a single fixture does not need it: [Route A](#add-or-change-a-fixture)
-below runs the same generation locally and publishes nothing.
+Every committed Fern reference crozier byte-matches against is Fern's output at
+the certified pair `assets/scaffolding/metadata.json` declares. Two things keep
+them current:
 
-It has two trigger contracts:
-
-- Every Monday at 05:17 UTC, the schedule runs from `main`. Scheduled events
-  have no dispatch inputs, so both values are explicitly treated as blank: the
-  run resolves the latest stable Fern version and selects every corpus row with
-  an existing managed golden. Current provenance takes the normal per-fixture
-  skip path; when everything is current and matched, publication is a no-op and
-  the aggregate comparison is green.
-- An operator can use **Actions → Fern goldens → Run workflow**, select any
-  branch, and optionally enter an exact `fern-version` and comma-separated
-  `fixtures` subset. Tag dispatches are rejected. Use a feature branch for new
-  fixtures and expected-red Fern upgrades so the repair cycle remains isolated.
-
-Both events use the selected branch ref for checkout, concurrency, and normal
-fast-forward publication. Runs for one branch queue instead of cancelling a
-writer midway; different branches remain independent.
+- **[Route A](#add-or-change-a-fixture)**, local: adding or repairing one
+  fixture runs Fern on your machine and publishes nothing.
+- **[The weekly run](#the-weekly-run)**, hosted: every Monday the **Fern
+  goldens** workflow checks the newest Fern against every reference, and
+  proposes the result as one pull request. It never pushes to `main`.
+  [Route B](#route-b--a-dispatch-of-the-workflow-operator-only) is an
+  operator's dispatch of it, at pinned versions or over a diagnostic subset.
 
 Publishing a golden redistributes generated output derived from somebody else's
 API document, so the source's licence has to permit it. Which licences do —
@@ -38,32 +26,23 @@ evidence and the pair each measurement ran at, which shapes Fern discards,
 ignores or refuses — a golden cannot pin a style Fern throws away — and which
 candidate pools are exhausted.
 
-Work on one corpus row at a time. There are two routes to the same golden, and
-who can run them differs:
+Work on one corpus row at a time, through
+[Route A](#route-a--the-local-docker-loop-any-agent): any agent or maintainer
+with Docker and the `fern` CLI runs it end to end on one machine, with no push
+and no remote state. The hosted workflow is no route for adding a fixture: it
+publishes only a run over the whole inventory at a new Fern, and a
+[Route B dispatch](#route-b--a-dispatch-of-the-workflow-operator-only) with `items` over one fixture shows what Fern
+writes for it without changing anything.
 
-- **[Route A — the local Docker loop](#route-a--the-local-docker-loop-any-agent).**
-  Any agent or maintainer with Docker and the `fern` CLI can run it end to end on
-  one machine, with no push and no remote state.
-- **[Route B — the hosted workflow dispatch](#route-b--the-hosted-workflow-dispatch-operator-only).**
-  The operator's route: it publishes the golden back to the branch and records
-  run evidence, and it is what the Monday schedule and routine maintenance use.
-
-**A dispatched agent cannot take Route B**, because a `workflow_dispatch` can
-only select a ref that already exists on the remote and publication is the
-lifecycle's job, not the agent's — so an agent that may not push can never
-dispatch a run against its own work. Route A is therefore the procedure to follow
-when adding or repairing a fixture from inside a working tree; Route B is how an
-operator refreshes or republishes one afterwards.
-
-### Both routes resolve the same generator image and configuration
+### Route A and the weekly run resolve the same generator image and configuration
 
 Verify this before trusting a locally generated golden, by naming where each
-route resolves each of the two. They agree because Route B *is* Route A with the
-version supplied from a workflow input:
+resolves each of the two. They agree because the weekly run regenerates every
+item through the recipe Route A runs, with only the pair moved:
 
-| | Route A (local) | Route B (hosted) |
+| | Route A (local) | the weekly run (hosted) |
 |---|---|---|
-| **generator image** | `just fern-goldens-generate --version X` → `tools/fern-goldens/fern-goldens` `generate()`, which validates `X` and passes it to the generator script | the `Generate every selected fixture independently` step of [`fern-goldens.yml`](../.github/workflows/fern-goldens.yml) turns `inputs.fern-version` into that same `just fern-goldens-generate --version X` |
+| **generator image** | `just fern-goldens-generate --version X` → `tools/fern-goldens/fern-goldens` `generate()`, which validates `X` and passes it to the generator script | each shard moves `metadata.json` to the candidate pair and runs `fern-references.py generate <family> <item>`, which runs that same `fern-goldens generate --version X` for a `CORPUS.md` row |
 | **generator config** | `tools/fern-goldens/generate-fern-fixture.sh`, which reads the fixture's row from [`fern-generator-config.txt`](../tests/fixtures/fern-generator-config.txt) and writes `generators.yml` | identical — the workflow has no generator-config input and no second config site |
 
 Both therefore emit one `generators.yml` naming `fernapi/fern-python-sdk` at the
@@ -73,7 +52,10 @@ python_enums` that `generate-fern-fixture.sh` writes for every `expected/` golde
 produces the [literal-enum goldens](#literal-enum-goldens), leaves it unset. A fixture's own non-default settings — audiences,
 `client_class_name`, `extra_fields` — reach the same block from
 `fern-generator-config.txt`, so a golden generated locally is the artifact the
-hosted route would have published.
+hosted run would have regenerated. A `CORPUS.md` row's provenance records that
+row's settings (`fern_generator_config`), and a golden is current only for the
+Fern CLI its own `.fern/metadata.json` records, so a changed setting or a new CLI
+at the same generator version regenerates it rather than skipping it.
 
 ### Route A — the local Docker loop (any agent)
 
@@ -138,71 +120,6 @@ it is usually already done).
    runs, so it is what "byte-matched" means. Then commit the golden and the
    generator fix.
 
-### Route B — the hosted workflow dispatch (operator only)
-
-Push the branch first; a dispatch can only select a ref the remote already has.
-Then, from **Actions → Fern goldens → Run workflow**, or equivalently:
-
-```sh
-gh workflow run fern-goldens.yml --ref <branch> \
-  -f fern-version="$pin" -f fixtures=<name>
-```
-
-`$pin` is the same provenance-derived version Route A step 3 reads; a dispatch
-never guesses it.
-
-Both inputs are optional, and **neither blank is a safe default**:
-
-- `fern-version` — an exact `fernapi/fern-python-sdk` semantic version. Leaving
-  it blank deliberately starts an upgrade to the latest stable image tag; it is
-  not a request to preserve the current shared runtime/scaffolding pin, so a
-  blank turns a fixture add into a Fern-upgrade repair cycle. Give the exact
-  version the goldens record.
-- `fixtures` — comma-separated `CORPUS.md` names. Select the new or changed
-  fixture explicitly; leave this blank only when refreshing all corpus rows that
-  already have committed goldens.
-
-Then:
-
-1. Expect the first run for a new fixture, a changed URL/ref, or a Fern upgrade
-   branch to be red. Generation runs each selection independently. Every
-   successful fixture is installed atomically. Before comparison starts, the
-   `generate_publish` job makes one best-effort commit of all successful fixture
-   trees,
-   pushes it with
-   `expected/.crozier-fern-golden.json`, which records the exact generator
-   version and the manifest name, ref, and URL, and uploads immutable generation
-   evidence. A failed fixture preserves its prior complete golden and provenance;
-   it does not discard successful sibling results.
-2. Inspect the GitHub job summaries and the generation, publication, and
-   comparison logs. The `fern-goldens-generation-<run-id>-<attempt>` artifact
-   contains `generation-summary.txt`, `generation-failures.txt`, the exact known
-   upstream failure list, per-fixture generation logs, and the patch/archive of
-   successful output. The later
-   `fern-goldens-comparison-<run-id>-<attempt>` artifact contains
-   `comparison-summary.txt`, `comparison.log`, and separate known-upstream,
-   spec-fetch, and comparison-process failure reports. Comparison covers every
-   available managed corpus golden, not only the fixtures selected for
-   generation. It runs one fixture per process with progress heartbeats and
-   reports differing paths, Crozier generation failures, processing failures,
-   and fetch failures without fail-fast. Run `just fixtures-diff <fixture>`
-   locally when a full unified diff is needed.
-3. Repair Crozier on the same feature branch. Use `just fixtures-gaps` to
-   re-measure each `unmatched` list; never edit Fern's
-   output to make Crozier pass. Commit and push the repair, then dispatch the
-   workflow again with the same inputs. Repeat until every `unmatched` list is
-   empty again, the aggregate comparison is
-   green, and the final run reports no generated changes and no publication.
-
-Once a fixture's exact generator version and manifest identity are current, a
-rerun fetches the source but skips Fern generation. A fully repaired final rerun
-then compares green with no generated changes, and publication is a no-op. When
-`fern-version` was initially
-blank, the expected repair includes updating Crozier's pinned Fern-derived
-runtime/scaffolding metadata and `NOTICE` when the aggregate diff requires it.
-Use the exact resolved version shown in the run evidence on later reruns so a
-newly released Fern version cannot join the same repair cycle.
-
 ### Flat goldens
 
 A fixture can also carry Fern's **flat** output as `expected-flat/`, beside its
@@ -230,15 +147,13 @@ golden, and `crates/crozier-e2e/tests/e2e.rs::FLAT_GOLDENS` must list exactly it
   <fixture>`. A flat golden whose directory has no spec names the fixture whose
   source it uses in its row's second column
   (`swagger-petstore-organization|swagger-petstore`).
-- **Route B and the schedule** refresh the flat golden of every declared
-  `CORPUS.md` row in the same generation step as its packaged one, from the same
-  fetched spec. The flat golden has its own currency check. A row whose
-  packaged golden is current but whose flat one is stale regenerates only the
-  flat one. A failed flat refresh keeps the prior `expected-flat/` and still
-  publishes the packaged golden that succeeded. Publication commits an
-  `expected-flat/` tree only when it is complete and current. Comparison needs
-  no extra input: `just fixtures-diff <fixture>` reports the fixture's flat
-  golden after its packaged one.
+- **`fern-goldens generate` and the weekly run** refresh the flat golden of
+  every declared `CORPUS.md` row in the same generation as its packaged one,
+  from the same fetched spec. The flat golden has its own currency check. A row
+  whose packaged golden is current but whose flat one is stale regenerates only
+  the flat one. A failed flat refresh keeps the prior `expected-flat/` and fails
+  the item. Comparison needs no extra input: `just fixtures-diff <fixture>`
+  reports the fixture's flat golden after its packaged one.
 - **A fetched-spec flat test needs its `just test-corpus-match` line**, like its
   packaged sibling. `every_registered_corpus_is_wired_into_the_gate` fails without
   it.
@@ -270,9 +185,10 @@ which crozier reproduces with `--enum-type literals`.
   corpus source, or `just fetch-corpus` for a row with pinned remote refs), the
   version its provenance records, and its `fern-generator-config.txt` row. It
   needs what Route A needs and logs to `.local/fern-overlay/`.
-- **Route B and the schedule do not refresh it.** After a Fern upgrade or a
-  regenerated `expected/`, rerun the script for the affected fixtures; the
-  version check above names each stale one.
+- **The weekly run refreshes it** (the `overlays` family), in the same shard as
+  the `expected/` it is reduced against and after it. After a local regeneration
+  of `expected/`, rerun the script for the affected fixtures; the version check
+  above names each stale one.
 - **Other settings use the same mechanism.** `expected-default-max-retries/` is
   Fern with `default_max_retries: 0` for crozier's `default-max-retries: 0`, on
   `enum-query-param` and `openfigi.com`
@@ -304,11 +220,12 @@ So the procedure is the ordinary one, and the manifest is its only input:
    serves (`curl -fsSL <pinned_url> | sha256sum`).
 2. Run `just lint-corpus-remote-ref-pins`. That row's state file no longer matches
    `expected_state`, so the row is stale.
-3. Dispatch the **Fern goldens** workflow with `fixtures=<name>`. It refetches
-   (applying the new pin, verifying the new digest), regenerates, and republishes
-   the tree and its provenance through Route B.
+3. Regenerate the row at the certified pair with `just fern-references corpus
+   <name>` ([Route A](#route-a--the-local-docker-loop-any-agent)). It refetches
+   (applying the new pin, verifying the new digest) and regenerates the tree and
+   its provenance; commit both.
 
-No new workflow input is needed, and no other row is touched. A record whose
+No other row is touched. A record whose
 `mutable_url` the fetched document does not reference fails the fetch rather than
 applying nothing, so a manifest left behind by a root-`$ref` bump surfaces at
 step 3 rather than silently pinning nothing.
@@ -337,18 +254,13 @@ a byte-parity claim. Comparison validates the registration and drives Crozier
 over the real cached spec as a subprocess, including the assertion that Crozier
 names the operation where Fern emits `def (`. A missing golden is otherwise a
 hard harness error. When a future Fern version generates a complete valid SDK,
-remove the failure registration and let the managed workflow publish its
-provenanced tree; CalorieNinjas then rejoins normal byte comparison.
+remove the failure registration and generate its provenanced tree (Route A);
+CalorieNinjas then rejoins normal byte comparison.
 
-Red is expected during an upgrade loop. Successful fixtures are committed on a
-best-effort basis and remain usable even when another selection fails generation
-or Crozier still differs. Publication, the generation summary, and generation
-evidence complete before the isolated comparison job can start, so a terminated
-comparison runner cannot lose successful Fern output. The final status job
-accounts for generation, publication, both job summaries, comparison, and both
-required evidence uploads; a missing/failed phase stays red. If the comparison
-runner is terminated before its upload step, the comparison artifact may be
-absent, but the earlier generation artifact and published fixture commit remain.
+In the weekly run that registration is the only generation failure that does
+not fail the run, and only at the version it is bound to: at any other version
+the fixture's failed generation is a failure the run names, until the
+registration is re-measured or Fern generates the fixture.
 
 ## Regenerating every reference family
 
@@ -400,26 +312,154 @@ decision reads as a measurement; a candidate is re-measured at the new pair by
 screening it again (`golden-reach-search.py screen`, or `witness_screen.py
 screen`).
 
+## The weekly run
+
+[`fern-goldens.yml`](../.github/workflows/fern-goldens.yml) runs every Monday at
+05:17 UTC from `main`, and on **Actions → Fern goldens → Run workflow**. Each of
+its jobs is one phase of [`tools/fern-goldens/weekly.py`](../tools/fern-goldens/weekly.py),
+which holds every decision, so the YAML stays thin and the tests drive the real
+phases.
+
+1. **Resolve** (`plan` job). The pair to check is the newest stable Fern CLI
+   (the npm `fern-api` package) and the newest stable `fernapi/fern-python-sdk`
+   Docker Hub tag. A dispatch's `fern-cli-version` and `fern-version` pin
+   either exactly. A run over the whole inventory whose pair is the certified
+   one, or is already a row of
+   [`fern-pair-checks.tsv`](../tests/fixtures/fern-pair-checks.tsv), ends green
+   here with a summary line saying so, and changes nothing.
+2. **Plan** (`plan` job). Every family `fern-references.py list` names — corpus
+   goldens and their flat golden, the literal and default-max-retries
+   overlays, hand-written `fern-expected/` trees, measurement cases, probes,
+   authored probes, departure evidence and the refusal registry's class,
+   finding and evidence records — grouped into units that must generate in one
+   shard: an overlay after the golden it is reduced against, a measurement after
+   the hand-written tree it overlays, and every item of a family that rewrites
+   one shared table (`probes`' `MANIFEST.tsv`, `refusals`' `classes.tsv` and
+   `findings.tsv`). The units are packed into the **fewest shards** whose
+   predicted generation fits the
+   [`crozier-fern-goldens-weekly-minutes`](../.github/budgets.yaml) budget with a
+   25% margin, each predicted from
+   [`generation-seconds.tsv`](../tools/fern-goldens/generation-seconds.tsv) (an
+   item no run has timed yet is planned at the mean corpus rate). The shard
+   count therefore grows with the inventory, never from a hand-edited constant.
+3. **Shard** (one `shard` job per planned shard, at most 20 at once, each with a
+   `timeout-minutes` inside GitHub's six-hour limit). The shard moves
+   `metadata.json` to the candidate pair and regenerates each item through
+   `fern-references.py generate <family> <item>`, timing it. Its artifact,
+   `fern-goldens-shard-<n>`, carries every file each item wrote, each item's log
+   and the shard's `result.json` (per item: its seconds, outcome and files).
+4. **Assemble** (`assemble` job). One job combines every shard into one tree,
+   the `fern-goldens-bundle` artifact, with the measured seconds written back
+   into `generation-seconds.tsv` and the candidate pair into `metadata.json`.
+5. **Decide** (`decide` job). The bundle is laid over a checkout and every
+   statement of the pair restated (`certified_pair.py restate`), so the tree is
+   the one the pull request would carry; crozier is built from it, so its own
+   version stamps are the candidate pair's. Every item is then decided by
+   crozier's own comparison and nothing else, through the gates
+   [`decision-gates.tsv`](../tools/fern-goldens/decision-gates.tsv) names:
+   - **per item**: each corpus golden and its flat golden, through `just
+     fixtures-diff <fixture>` (`report_fixture_diffs`: the parity engine, the
+     departure catalog and the golden's ledger rows). A difference outside the
+     corpus's `unmatched` list, or a generation or processing failure, is a
+     diff;
+   - **per family**: every other family, through the crozier-e2e suite
+     (`cargo nextest run -p crozier-e2e`, which holds the overlay, hand-written,
+     measurement, probe, authored-probe, departure-evidence and refusal-class
+     gates, and every corpus golden's own test), and for the refusal registry
+     also `tests/refusal_registry.rs` and `fern-refusals.py check`. A failing
+     gate is a diff, and the pull request lists under that family every item
+     whose name or regenerated files its report names, with the report's lines
+     for it (or the report's tail, when it names none).
+
+   A comparison that cannot run is a failure, never a pass. The
+   `fern-goldens-decision` artifact holds the decision and every gate's report.
+6. **Publish** (`publish` job, a run over the whole inventory only), under
+   `RELEASE_PLZ_TOKEN` — the PAT `release-plz.yml` uses, since a pull request
+   the default `GITHUB_TOKEN` opens triggers none of crozier's required checks.
+
+### The pull request it opens
+
+There is one, on the branch **`fern-goldens/update`**, labelled
+**`fern-goldens`** (created when missing), titled `test(fern-goldens):
+regenerate at Fern CLI <cli> / fern-python-sdk <generator>` — a Conventional
+Commit, as the required `commitlint` check asks. A later run updates it rather
+than opening another, and pushes the branch only with a lease on what it read.
+
+- **Diff** — crozier's comparison fails for at least one item, or a reference
+  could not be regenerated. The pull request carries every regenerated
+  reference, the new pair in `metadata.json` and the measured seconds; its body
+  lists the failing items per family, each with the comparison's own report. It
+  is not auto-merged: crozier's checks on it show what crozier must change, and
+  the retarget is a person's.
+- **No diff** — every comparison passes. The pull request adopts the pair:
+  `metadata.json` at the new pair, every regenerated reference, crozier's
+  matching version stamps wherever the tree states the pair (so the pair drift
+  check stays green), the measured seconds and one `fern-pair-checks.tsv` row
+  (`fern_cli_version`, `fern_python_sdk_version`, `checked_on`, `outcome`). It
+  is auto-merged once crozier's required checks pass.
+
+A reference whose pinned upstream specification can no longer be fetched (a
+404, as subsloth's source now returns) is never skipped silently and never stops
+the rest: it keeps its committed tree, and is named in the run's summary and in
+the pull request's **Not regenerated** section, which makes the run a diff.
+
+### How a failure shows
+
+Any failure before publication ends the run red with its step summary naming
+each failure, and touches no branch, pull request or record: a shard that fails
+or uploads nothing, an item whose generation fails (other than the exact known
+upstream failure below), an assembly that cannot account for every planned item
+or finds two shards writing one file, a comparison that cannot run, or a
+missing `RELEASE_PLZ_TOKEN` (which the `plan` job checks before any Fern runs).
+
+A failure during publication — pushing the branch, labelling, opening or
+updating the pull request, or enabling auto-merge — also ends the run red; its
+summary lists the steps that completed. Every write reads the remote first, so
+the next run reuses the branch and pull request, skips what is done, and
+finishes the rest.
+
+### Route B — a dispatch of the workflow (operator only)
+
+From **Actions → Fern goldens → Run workflow**, or equivalently:
+
+```sh
+gh workflow run fern-goldens.yml --ref main \
+  -f fern-cli-version=<cli> -f fern-version=<generator> [-f items=<subset>]
+```
+
+Every input is optional; a blank version resolves the newest stable one, as the
+schedule does.
+
+- **Without `items`** the dispatch is a weekly run at the pair it names: it runs
+  from `main`, checks every reference and publishes as above.
+- **With `items`** — comma-separated `family` or `family:item`, such as
+  `handwritten,corpus:anchore.io` — it is a diagnostic: it plans, generates and
+  decides exactly that subset and reports the result in its summary and
+  artifacts, from any branch. It never opens a pull request, adopts a pair or
+  records one as checked, so the next run over the whole inventory still
+  regenerates and decides everything for that pair.
+
+**A dispatched agent cannot take Route B**: a dispatch selects a ref already on
+the remote, and publication is the lifecycle's job, not the agent's. Route A is
+the procedure from inside a working tree.
+
 ## Publication safety
 
-Each fixture is generated into a same-filesystem staging directory and replaces
-`expected/` only after the complete packaged SDK and provenance are ready. The
-workflow stages only fixtures listed as successfully generated; it never commits
-unrelated branch changes or a partial failed tree.
-
-Before committing, publication fetches the selected remote branch and requires
-its head to equal the workflow checkout. If the branch advanced while generation
-was running, publication refuses to commit or push. Let the other branch update
-finish and dispatch again. Successful publication uses an ordinary fast-forward
-push—never force-push—and same-branch workflow runs are queued so two workflow
-writers do not race.
+Each item is generated into a same-filesystem staging directory and replaces its
+committed reference only after the complete tree and its provenance are ready;
+a failed item keeps the prior one. The weekly run publishes only what one
+assembly accounted for, item by item, and only from a decision crozier's
+comparison made over that exact tree. It pushes nothing but
+`fern-goldens/update`, with `--force-with-lease` on the commit it read there,
+so a change made to the branch since is never overwritten, and runs of the
+workflow queue rather than race (`concurrency`, never cancelled).
 
 ## Local diagnostics
 
 Route A above is the local generation procedure; the commands here are the wider
-local surface around it. GitHub Actions still owns routine maintenance and is the
-only thing that publishes: every local command requires the same Fern, Docker,
-Rust, and Ruff prerequisites as the workflow and writes nothing to a branch.
+local surface around it. The weekly run is the only thing that opens a pull
+request: every local command requires the same Fern, Docker, Rust, and Ruff
+prerequisites as the workflow and writes nothing to a branch.
 
 Generate selected fixtures and then run the aggregate comparison:
 

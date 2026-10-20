@@ -30,10 +30,11 @@ ignores, refuses or matches only by coincidence — with the probe, the emitted
 output and the exit code behind each. Read it before choosing what a new fixture
 should contain.
 
-Numbered real-world corpus goldens are maintained through the manually
-dispatched **Fern goldens** workflow, not by running the generator scripts by
-hand. The fixture/upgrade loop, exact provenance, partial-success behavior, and
-local diagnostic recipes are documented in
+Numbered real-world corpus goldens are generated through the Fern goldens
+tooling, never edited by hand: a fixture is added or repaired locally, and the
+weekly **Fern goldens** workflow regenerates every reference at each new Fern
+and proposes the result as a pull request. The fixture loop, the weekly run,
+exact provenance and the local diagnostic recipes are documented in
 [`fern-goldens.md`](fern-goldens.md).
 
 ## How the comparison works
