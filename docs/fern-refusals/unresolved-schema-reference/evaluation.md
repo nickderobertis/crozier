@@ -91,6 +91,6 @@ and generating identically in both modes. A required pointer without the word
 still fails Fern when it reaches nothing:
 [`Named/items` on an object with no `items`](evaluation-logs/fern-nested-items-required.log)
 is a false success like the probe's, and
-[`nested-items-required-control.yml`](nested-items-required-control.yml) is
+[`nested-items-required-probe.yml`](nested-items-required-probe.yml) is
 refused in both modes. No population document's refusal names a `properties`
 pointer, so no population row moves.

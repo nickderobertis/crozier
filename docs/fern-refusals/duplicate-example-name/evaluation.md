@@ -54,7 +54,7 @@ Every case below was run through pinned `fern check`; each refused shape is a
   falls back to the key ([control](request-null-summary-control.yml)). Values
   compare with their YAML type: `1` and `1` collide
   ([probe](numeric-summaries-probe.yml)) but `1` and `"1"` do not
-  ([control](number-vs-string-summary-control.yml)). Comparison is
+  ([control](number-vs-string-summary-probe.yml)). Comparison is
   case- and whitespace-exact ([different case](different-case-control.yml),
   [trailing space](trailing-space-control.yml)). A `$ref` example takes its
   target's summary ([probe](referenced-summary-probe.yml)) and ignores a

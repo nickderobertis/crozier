@@ -22972,19 +22972,37 @@ fn response_parameter_reference_recovers_with_inline_response() {
     }
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a `default` response
+/// aliasing `#/x-fragment/…` through `components/responses` generates, as the
+/// Groupe PSA golden does, where a success response doing so fails to resolve.
 #[test]
-fn response_component_fragment_is_not_an_operation_reference() {
-    let control = repo_root()
+fn response_component_fragment_is_refused_only_on_a_success_response() {
+    let class = repo_root()
         .join(FERN_REFUSALS_DIR)
-        .join("unresolved-reference/response-fragment-control.yml");
+        .join("unresolved-reference");
     for strict in [false, true] {
-        let run = refusal_run(&crozier, &control, strict).unwrap();
+        let run = refusal_run(
+            &crozier,
+            &class.join("response-fragment-default-control.yml"),
+            strict,
+        )
+        .unwrap();
         assert_eq!(run.code, Some(0), "{}", run.stderr);
         assert!(!run.files.is_empty());
+        let run =
+            refusal_run(&crozier, &class.join("response-fragment-probe.yml"), strict).unwrap();
+        let failures = refused_failures(
+            "unresolved-reference",
+            &run,
+            "components/responses/Empty: #/x-fragment/base",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
     }
     let dir = tempfile::tempdir().unwrap();
     let direct = dir.path().join("direct.yml");
-    let text = std::fs::read_to_string(control).unwrap();
+    let text = std::fs::read_to_string(class.join("response-fragment-probe.yml")).unwrap();
     std::fs::write(
         &direct,
         text.replace(
@@ -25225,13 +25243,13 @@ fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes(
 fn parameters_in_different_locations_refuse_and_declared_names_recover_classification() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
-    let mut document = serde_json::json!({
+    let mut document = with_a_headerless_operation(serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "name", "in": "query", "schema": {"type": "string"}},
             {"name": "name", "in": "header", "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
-    });
+    }));
     for declared in [false, true] {
         if declared {
             document["paths"]["/probe"]["get"]["parameters"][1]["x-fern-parameter-name"] =
@@ -25271,6 +25289,19 @@ fn parameters_in_different_locations_refuse_and_declared_names_recover_classific
             }
         }
     }
+}
+
+/// Adds an operation carrying none of `document`'s headers, so a header on its
+/// other operation rides too few of them for Fern to lift it to the client:
+/// measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a header beside a
+/// query parameter of its name collides only then (the
+/// `request-property-name-collision` and `request-property-camelcase-collision`
+/// `*-subset` probes; on every operation, their `*-every-operation` controls).
+fn with_a_headerless_operation(mut document: serde_json::Value) -> serde_json::Value {
+    document["paths"]["/health"] = serde_json::json!({"get": {
+        "operationId": "health", "responses": {"204": {"description": "Done"}}
+    }});
+    document
 }
 
 /// Runs `crozier generate python` over `document` in both modes, asserting each
@@ -25319,7 +25350,7 @@ fn assert_generates_under_fern_strict(document: &serde_json::Value) {
 
 #[test]
 fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_collisions() {
-    let mut document = serde_json::json!({
+    let mut document = with_a_headerless_operation(serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "q", "in": "query", "x-fern-parameter-name": "filter",
@@ -25327,7 +25358,7 @@ fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_col
             {"name": "F", "in": "header", "x-crozier-parameter-name": "filter",
              "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
-    });
+    }));
     assert_name_refusal_in_both_modes(&document, "request-property-name-collision", "\"filter\"");
     document["paths"]["/probe"]["get"]["parameters"][1]["x-crozier-parameter-name"] =
         serde_json::json!("headerFilter");
@@ -25336,13 +25367,16 @@ fn parameters_with_different_wire_names_but_one_declared_name_refuse_as_name_col
 
 #[test]
 fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed() {
-    let mut document = serde_json::json!({
+    let lifted = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "paths": {"/probe": {"get": {"operationId": "probe", "parameters": [
             {"name": "requestId", "in": "query", "schema": {"type": "string"}},
             {"name": "X-Request-Id", "in": "header", "schema": {"type": "string"}}
         ], "responses": {"204": {"description": "Done"}}}}}
     });
+    // On its one operation the header is a client field, and collides with nothing.
+    assert_generates_under_fern_strict(&lifted);
+    let mut document = with_a_headerless_operation(lifted);
     assert_name_refusal_in_both_modes(
         &document,
         "request-property-name-collision",
@@ -25352,8 +25386,12 @@ fn x_prefixed_headers_collide_under_fern_header_naming_and_recover_when_renamed(
     assert_generates_under_fern_strict(&document);
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: an inline body whose
+/// `allOf` member redeclares its parent's property generates (this class's
+/// `inline-body-member-redeclared` control), where 5.67.1 refused it; an own
+/// property beside the `allOf` still collides.
 #[test]
-fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
+fn inherited_body_properties_an_allof_member_redeclares_generate_and_own_ones_refuse() {
     let mut document = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "components": {"schemas": {
@@ -25366,14 +25404,17 @@ fn duplicate_inherited_body_properties_refuse_in_a_cleanly_parsed_document() {
             ]}}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
+    assert_generates_under_fern_strict(&document);
+    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"] = serde_json::json!({
+        "type": "object",
+        "properties": {"name": {"type": "string"}},
+        "allOf": [{"$ref": "#/components/schemas/Base"}]
+    });
     assert_name_refusal_in_both_modes(
         &document,
         "request-property-name-collision",
         "body property \"name\"",
     );
-    document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
-        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
-    assert_generates_under_fern_strict(&document);
 }
 
 #[test]
@@ -25387,10 +25428,11 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
             "Malformed": {"type": "string", "nullable": 1}
         }},
         "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
-            "application/json": {"schema": {"allOf": [
-                {"$ref": "#/components/schemas/Base"},
-                {"type": "object", "properties": {"name": {"type": "string"}}}
-            ]}}
+            "application/json": {"schema": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "allOf": [{"$ref": "#/components/schemas/Base"}]
+            }}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
     for strict in [false, true] {
@@ -25493,7 +25535,7 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
         .unwrap()
         .remove("x-crozier-ignore");
     document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]["schema"]
-        ["allOf"][1]["properties"] = serde_json::json!({"otherName": {"type": "string"}});
+        ["properties"] = serde_json::json!({"otherName": {"type": "string"}});
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
     crozier_clean_env()
         .args(["--no-config", "generate", "python", "--spec"])
@@ -25535,7 +25577,7 @@ fn generate_strict_with_big_integers(
 #[test]
 fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refusals() {
     let dir = tempfile::tempdir().unwrap();
-    // `Base.name` collides with the inline `name` an inheriting body redeclares,
+    // `Base.name` collides with the body's own `name` beside its `allOf`,
     // and `Base.count`'s example is an integer YAML's reader rejects.
     let mut document = serde_json::json!({
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
@@ -25547,10 +25589,11 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
             "ReadOnlyName": {"type": "string", "readOnly": true}
         }},
         "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
-            "application/json": {"schema": {"allOf": [
-                {"$ref": "#/components/schemas/Base"},
-                {"type": "object", "properties": {"name": {"type": "string"}}}
-            ]}}
+            "application/json": {"schema": {
+                "type": "object",
+                "properties": {"name": {"type": "string"}},
+                "allOf": [{"$ref": "#/components/schemas/Base"}]
+            }}
         }}, "responses": {"204": {"description": "Done"}}}}}
     });
     // The oversized integer does not hide the collision from the detector.
@@ -25560,21 +25603,29 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
         stderr.contains("request-property-name-collision: POST /probe body property \"name\""),
         "{stderr}"
     );
-    // A readOnly property is never sent, so it collides with nothing in the
-    // request: declared on the property, or on the component it references.
+    // A readOnly own property is never sent, so it collides with nothing in the
+    // request: declared on the property, or on the component it references (an
+    // own readOnly field shadowing the parent's generates at Fern CLI 5.163.1:
+    // the `inline-body-readonly-own-overlap` handwritten fixture).
+    let own = |document: &mut serde_json::Value, name: serde_json::Value| {
+        document["paths"]["/probe"]["post"]["requestBody"]["content"]["application/json"]
+            ["schema"]["properties"]["name"] = name;
+    };
     for read_only in [
         serde_json::json!({"type": "string", "readOnly": true}),
         serde_json::json!({"$ref": "#/components/schemas/ReadOnlyName"}),
     ] {
-        document["components"]["schemas"]["Base"]["properties"]["name"] = read_only;
+        own(&mut document, read_only);
         let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
         assert_eq!(code, Some(0), "{stderr}");
         assert!(dir.path().join("sdk/pyproject.toml").is_file());
     }
     // The source-level fallback, reached when another field fails to parse,
     // skips the readOnly property too, leaving the parser's own diagnostic.
-    document["components"]["schemas"]["Base"]["properties"]["name"] =
-        serde_json::json!({"type": "string", "readOnly": true});
+    own(
+        &mut document,
+        serde_json::json!({"type": "string", "readOnly": true}),
+    );
     document["components"]["schemas"]["Malformed"] =
         serde_json::json!({"type": "string", "nullable": 1});
     let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
@@ -25586,8 +25637,7 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
     );
     assert!(!dir.path().join("sdk").exists());
     // Without readOnly the fallback still refuses the collision.
-    document["components"]["schemas"]["Base"]["properties"]["name"] =
-        serde_json::json!({"type": "string"});
+    own(&mut document, serde_json::json!({"type": "string"}));
     let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
     assert_eq!(code, Some(1), "{stderr}");
     assert!(
@@ -26933,10 +26983,12 @@ print('ok')
     }
 }
 
-/// The largest committed document must reach its example refusal, rather than
-/// silently losing the structure check to the parser's default node budget.
+/// The largest committed document must reach its refusal, rather than silently
+/// losing the checks to the parser's default node budget. At Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3 its classes are enum and type names (`documents.tsv`);
+/// the example refusal 5.67.1 reported is gone.
 #[test]
-fn github_corpus_retains_its_example_refusal_with_parser_budgets() {
+fn github_corpus_retains_its_refusal_with_parser_budgets() {
     let spec = repo_root().join("tests/fixtures/corpus-sources/github.com/openapi.json");
     let temp = tempfile::tempdir().unwrap();
     for strict in [false, true] {
@@ -26952,7 +27004,9 @@ fn github_corpus_retains_its_example_refusal_with_parser_budgets() {
         let assertion = command.assert().failure().code(1);
         let stderr = String::from_utf8_lossy(&assertion.get_output().stderr);
         assert!(
-            stderr.contains("example-type-mismatch: PUT /orgs/{org}/outside_collaborators/{username} requestBody examples"),
+            stderr.contains(
+                "enum-name-unsuitable: #/components/schemas/reaction/properties/content enum value \"+1\""
+            ),
             "{stderr}"
         );
         assert_eq!(stderr.contains("fern-strict"), strict, "{stderr}");

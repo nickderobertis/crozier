@@ -1559,8 +1559,12 @@ fn check_schema(
         }
     }
     // Fern renders a string enum with no non-null member as an enum class whose
-    // `visit` method has no body, which its own `ruff check` cannot parse.
-    if schema.get("type").and_then(serde_json::Value::as_str) == Some("string")
+    // `visit` method has no body, which its own `ruff check` cannot parse; an
+    // untyped one too, measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+    // (`untyped-null-only-enum` probe; tunarr's `userId`).
+    if schema
+        .get("type")
+        .is_none_or(|kind| kind.as_str() == Some("string"))
         && schema
             .get("enum")
             .and_then(serde_json::Value::as_array)
@@ -2833,6 +2837,26 @@ mod tests {
         let error = registry_shape_refusal("duplicate-example-name/numeric-summaries-probe.yml")
             .unwrap_or_default();
         assert!(error.contains("duplicate-example-name"), "{error}");
+    }
+
+    #[test]
+    fn a_string_or_untyped_enum_with_no_non_null_value_is_a_lint_failure() {
+        for probe in [
+            "inline-null-only-enum-probe.yml",
+            "untyped-null-only-enum-probe.yml",
+        ] {
+            let error = registry_shape_refusal(&format!("generator-lint-failure/{probe}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains("generator-lint-failure")
+                    && error.contains("enum has no non-null value"),
+                "{probe}: {error}"
+            );
+        }
+        assert_eq!(
+            registry_shape_refusal("generator-lint-failure/null-and-value-enum-control.yml"),
+            None
+        );
     }
 
     #[test]

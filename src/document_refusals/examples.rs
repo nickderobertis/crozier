@@ -40,7 +40,8 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
             .or_else(|| doc.media_scalar_example(&operation))
             .or_else(|| doc.shadowed_union_property(&operation))
             .or_else(|| doc.fern_examples(&operation))
-            .or_else(|| doc.error_examples(&operation));
+            .or_else(|| doc.error_examples(&operation))
+            .or_else(|| doc.non_object_error_examples(&operation));
         if let Some((class, detail)) = found {
             return Some((class, format!("{element} {detail}")));
         }
@@ -874,6 +875,55 @@ impl<'a> Doc<'a> {
             })
     }
 
+    /// A written example that is no object, media-level or named, of a `4xx`/`5xx`
+    /// JSON response (a range like `4XX` included) whose schema is an object:
+    /// measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, `fern check` and
+    /// `fern generate` refuse it with `Expected example to be an object`
+    /// (`error-*-string-example` probes; Gumlet's JSON-in-a-string `401`
+    /// examples). An object example there generates.
+    fn non_object_error_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
+        operation
+            .op
+            .get("responses")
+            .and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+            .find_map(|(code, response)| {
+                if code.len() != 3 || !(code.starts_with('4') || code.starts_with('5')) {
+                    return None;
+                }
+                let media = json_media(self.resolve(response)?.get("content"))?;
+                let schema = self.resolve(media.get("schema")?)?;
+                if !(is_type(schema, "object")
+                    || (schema.get("type").is_none() && schema.get("properties").is_some()))
+                    || has_composition(schema)
+                {
+                    return None;
+                }
+                let named = media
+                    .get("examples")
+                    .and_then(Value::as_object)
+                    .into_iter()
+                    .flatten()
+                    .filter_map(|(name, example)| {
+                        Some((
+                            format!("examples/{name}"),
+                            self.resolve(example)?.get("value")?,
+                        ))
+                    });
+                std::iter::once(("example".to_owned(), media.get("example")))
+                    .filter_map(|(name, value)| Some((name, value?)))
+                    .chain(named)
+                    .find(|(_, value)| !value.is_object() && !value.is_null())
+                    .map(|(name, value)| {
+                        (
+                            Class::ExampleTypeMismatch,
+                            format!("response {code} {name} {}", literal(value)),
+                        )
+                    })
+            })
+    }
+
     /// Every JSON body schema the document declares for one error status code.
     fn error_bodies(&self, code: &str) -> impl Iterator<Item = &'a Value> + '_ {
         let code = code.to_owned();
@@ -1354,6 +1404,40 @@ mod tests {
             ),
             "{:?}",
             first_violation(&probe).map(|(_, detail)| detail)
+        );
+    }
+
+    #[test]
+    fn a_non_object_example_of_an_object_error_body_is_a_type_mismatch() {
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            first_violation(&yaml(&std::fs::read_to_string(class.join(shape)).unwrap()))
+        };
+        for (shape, detail) in [
+            (
+                "error-named-string-example-probe.json",
+                "response 401 examples/Result",
+            ),
+            (
+                "error-media-string-example-probe.json",
+                "response 401 example",
+            ),
+            (
+                "error-range-string-example-probe.json",
+                "response 4XX examples/Result",
+            ),
+        ] {
+            let found = verdict(shape);
+            assert!(
+                matches!(&found, Some((Class::ExampleTypeMismatch, text)) if text.contains(detail)),
+                "{shape}: {:?}",
+                found.map(|(_, text)| text)
+            );
+        }
+        assert_eq!(
+            verdict("error-object-example-control.json").map(|(_, text)| text),
+            None
         );
     }
 

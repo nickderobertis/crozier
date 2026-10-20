@@ -1,0 +1,37 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "probe",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/probe": {
+      "get": {
+        "operationId": "probe",
+        "responses": {
+          "204": {
+            "description": "Done"
+          }
+        },
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "x-fern-parameter-name": "filter",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "F",
+            "in": "header",
+            "x-crozier-parameter-name": "filter",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

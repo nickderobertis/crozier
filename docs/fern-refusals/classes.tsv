@@ -11,11 +11,11 @@ example-missing-required-property	documents	check	1	Example is missing required 
 example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
 example-summary-not-string	documents	generate	1	Cannot use 'in' operator to search for 'wireValue' in <…>	0	refuse	POST /notes request example first summary 1	0/0
-example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	201	refuse	GET /probe response example	201/201
+example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	201	refuse	GET /probe response example	200/201
 example-unexpected-property	documents	check	1	Unexpected property <…>	195	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	195/195
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2
 generated-file-name-too-long	names	generate	1	OSError: [Errno 36] File name too long: <…>	1	refuse	thing_level5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx	1/1
-generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	11/11
+generator-lint-failure	documents	generate	1	Failed to run command: ruff check <…>	11	refuse	are both Event_UserAccountDeleted	10/11
 generator-missing-type	documents	generate	1	KeyError: <…>	1	refuse	Api-Version	1/1
 head-request-body	documents	check	1	Endpoint is a HEAD, so it cannot have a request body.	1	refuse	HEAD /patina	1/1
 header-default-differs-across-operations	documents	check	1	Expected example to be "<…>". Example is: "<…>"	0	refuse	header X-Projection	0/0
