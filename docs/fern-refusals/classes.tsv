@@ -23,12 +23,12 @@ list-default-not-array	documents	check	1	Default value for list type must be an 
 missing-discriminant-property	documents	check	1	Missing discriminant property (<…>)	13	refuse	GET /pets response 200 components/schemas/Pet discriminator kind	13/13
 named-type-default	documents	check	1	Default values are not supported for the named type	10	refuse	ticket/properties/type/default	10/10
 object-extends-non-object	documents	check	1	Objects can only extend other objects, and <…> is not an object.	114	refuse	Tagged/allOf	114/114
-object-property-name-collision	names	check	1	Object has multiple properties named <…>:	9	refuse	#/components/schemas/FileConflict property "sha1"	9/9
+object-property-name-collision	names	check	1	Object has multiple properties named <…>:	9	refuse	GET /hostnames response 200 property "errors"	9/9
 paginated-nullable-response	documents	generate	1	Response must be an object in order to return property <…> as a response.	0	refuse	paginated-nullable-response: GET /jobs pagination reads $response.next off nullable JobPage	0/0
 path-parameter-unreferenced	documents	check	1	Path parameter is unreferenced in endpoint: <…>.	29	refuse	GET /things parameter id	29/29
 path-without-leading-slash	documents	check	1	Path must start with a slash.	4	refuse	paths/things	4/4
 request-property-camelcase-collision	names	check	1	Multiple request properties resolve to the same generated name <…> after camelCase normalization. This causes broken generated code. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to disambiguate.	30	refuse	GET /accounts parameters "account_id" and "accountId"	30/30
-request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	8	refuse	PATCH /repos/{name} body property "name"	8/8
+request-property-name-collision	names	check	1	Multiple request properties have the name <…>. This is not suitable for code generation. Use the "name" property (or "x-fern-parameter-name" in OpenAPI) to deconflict.	8	refuse	PATCH /requests/{id} body property "id"	8/8
 sdk-method-collision	names	check	1	SDK method <…> already exists (x-fern-sdk-group-name: <…>, x-fern-sdk-method-name: <…>)	2	refuse	SDK method analytics.create	2/2
 service-auth-undefined	documents	check	1	Service requires auth, but no auth is defined.	26	refuse	security/session	26/26
 type-name-collision	names	check	1	<…> is already declared in <…>	199	refuse	type GetThingResponse	199/199

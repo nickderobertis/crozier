@@ -1,0 +1,43 @@
+openapi: 3.1.0
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /calls:
+    post:
+      operationId: runCall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallRequest'
+      responses:
+        '200':
+          description: OK
+components:
+  schemas:
+    CallRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        arguments:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/CallRequest/$defs/__value'
+      required:
+      - name
+      $defs:
+        __value:
+          anyOf:
+          - type: string
+          - type: number
+          - type: boolean
+          - type: 'null'
+          - type: array
+            items:
+              $ref: '#/components/schemas/CallRequest/$defs/__value'
+          - type: object
+            additionalProperties:
+              $ref: '#/components/schemas/CallRequest/$defs/__value'

@@ -8799,7 +8799,7 @@ fn rename_claimed_path_params(
                     let resolved = resolve_multipart_ref(schema, Some(schemas));
                     let mut properties = std::collections::HashSet::new();
                     if is_object_type(resolved) || resolved.all_of.is_some() {
-                        claimed_property_names(resolved, schemas, &mut properties, 0);
+                        reserved_body_property_names(resolved, schemas, &mut properties);
                     }
                     // Whether a response reaches the schema is a whole-document
                     // walk, so it is asked only when a property would rename.
@@ -8867,6 +8867,51 @@ fn claimed_property_names(
             out,
             depth + 1,
         );
+    }
+}
+
+/// The property names Fern's importer reserves for an inlined JSON or form body
+/// before it renames a path parameter: the body's own properties and each
+/// `allOf` parent's own, but not a grandparent's. Measured at Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3: a path `id` beside an inline body extending `Request`,
+/// which extends `CommonRequest` declaring `id`, keeps its name and Fern refuses
+/// the collision (`request-property-name-collision`'s probe).
+fn reserved_body_property_names(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    out: &mut std::collections::HashSet<String>,
+) {
+    own_property_names(schema, schemas, out, 0, true);
+}
+
+/// A schema's own property names, with its inline `allOf` members' merged in as
+/// Fern's parser merges them; a `$ref` member is a parent, whose own names count
+/// only while `parents` holds.
+fn own_property_names(
+    schema: &Schema,
+    schemas: &IndexMap<String, Schema>,
+    out: &mut std::collections::HashSet<String>,
+    depth: usize,
+    parents: bool,
+) {
+    if depth > 32 {
+        return;
+    }
+    for (key, property) in &schema.properties {
+        out.insert(property.property_name().unwrap_or(key).to_string());
+    }
+    for member in schema.all_of.iter().flatten() {
+        if member.reference.is_none() {
+            own_property_names(member, schemas, out, depth + 1, parents);
+        } else if parents {
+            own_property_names(
+                resolve_multipart_ref(member, Some(schemas)),
+                schemas,
+                out,
+                depth + 1,
+                false,
+            );
+        }
     }
 }
 

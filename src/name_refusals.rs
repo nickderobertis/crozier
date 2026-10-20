@@ -13,6 +13,7 @@ enum Class {
     EnumNameUnsuitable,
     EnumValueUnnameable,
     GeneratedFileNameTooLong,
+    ObjectPropertyNameCollision,
     RequestPropertyCamelcaseCollision,
     RequestPropertyNameCollision,
     SdkMethodCollision,
@@ -29,6 +30,7 @@ impl Class {
             Self::EnumNameUnsuitable => "enum-name-unsuitable",
             Self::EnumValueUnnameable => "enum-value-unnameable",
             Self::GeneratedFileNameTooLong => "generated-file-name-too-long",
+            Self::ObjectPropertyNameCollision => "object-property-name-collision",
             Self::RequestPropertyCamelcaseCollision => "request-property-camelcase-collision",
             Self::RequestPropertyNameCollision => "request-property-name-collision",
             Self::SdkMethodCollision => "sdk-method-collision",
@@ -243,6 +245,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             &doc.components.schemas,
         )?;
     }
+    check_shared_parent_properties(doc, path)?;
     let mut methods = std::collections::HashSet::new();
     for (route, item) in &doc.paths {
         for (method, op) in item.operations() {
@@ -297,16 +300,49 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             // 5.67.1 refused every such pair. The cross-location pairs below
             // are held as 5.67.1 measured them: no probe at the new pair
             // measures them yet.
+            // The rename reaches only the names Fern reserves (the body's own and
+            // its `allOf` parents' own), so a path parameter the endpoint keeps
+            // under its own name still collides with a grandparent's property:
+            // measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3 (this
+            // class's probe).
+            let kept = |wire: &str| {
+                ir.endpoints
+                    .iter()
+                    .find(|endpoint| endpoint.path == *route && endpoint.http_method == method)
+                    .and_then(|endpoint| {
+                        endpoint
+                            .path_params
+                            .iter()
+                            .find(|param| param.wire_name == wire)
+                    })
+                    .is_some_and(|param| param.py_name == crate::naming::field_name(wire))
+            };
             let path_names: std::collections::HashSet<String> = (0..op.parameters.len())
                 .filter(|&index| {
                     op.parameters[index].location == Some(crate::openapi::ParameterLocation::Path)
-                        && declared[index]
+                        && (declared[index] || kept(&op.parameters[index].name))
                 })
                 .map(|index| names[index].clone())
                 .collect();
+            // A header the client wrapper carries is no request property, so it
+            // claims no name: measured at Fern CLI 5.163.1 / fern-python-sdk
+            // 5.41.3, `X-Namespace` beside a `namespace` query parameter
+            // collides only on a document where the header rides too few
+            // operations to be promoted (this class's `header-query-*` shapes).
+            let promoted = |parameter: &crate::openapi::Parameter| {
+                parameter.location == Some(crate::openapi::ParameterLocation::Header)
+                    && ir
+                        .global_headers
+                        .iter()
+                        .any(|header| header.wire_name == parameter.name)
+            };
             for (index, parameter) in op.parameters.iter().enumerate() {
                 for (other_index, other) in op.parameters.iter().enumerate().take(index) {
-                    if parameter.location != other.location && names[index] == names[other_index] {
+                    if parameter.location != other.location
+                        && names[index] == names[other_index]
+                        && !promoted(parameter)
+                        && !promoted(other)
+                    {
                         let class = if parameter.name == other.name {
                             Class::RequestPropertyCamelcaseCollision
                         } else {
@@ -584,6 +620,113 @@ fn source_property_names(
 fn request_property_name(property: &serde_json::Value) -> Option<&str> {
     crate::openapi::refusal_property_name(property)
         .or_else(|| crate::openapi::refusal_parameter_name(property))
+}
+
+/// Refuse an `allOf` whose `$ref` parents Fern flattens into one object that
+/// redeclares a property one of them inherits. Measured at Fern CLI 5.163.1 /
+/// fern-python-sdk 5.41.3 (this class's probe and shapes): a response
+/// `allOf: [CollectionResponse, CommonFailure]`, where both parents declare
+/// `result` and `CollectionResponse` also inherits it from its own `$ref`
+/// parent, fails `fern check` and `fern generate` with `Object has multiple
+/// properties named "result"`. Two parents declaring it with no inheritance, a
+/// second parent not declaring it, a single parent, and an object redeclaring
+/// its one parent's property all generate.
+fn check_shared_parent_properties(doc: &OpenApi, path: &Path) -> Result<()> {
+    let schemas = &doc.components.schemas;
+    let refuse = |schema: &Schema, location: &str| {
+        match shared_parent_property(schema, schemas) {
+        Some(name) => Err(refusal(path, Class::ObjectPropertyNameCollision, format!("{location} property {name:?} is declared by two `allOf` parents and inherited by one; give the parents distinct property names"))),
+        None => Ok(()),
+    }
+    };
+    for (name, schema) in schemas {
+        refuse(schema, &format!("#/components/schemas/{name}"))?;
+    }
+    for (route, item) in &doc.paths {
+        for (method, op) in item.operations() {
+            for (code, response) in &op.responses {
+                for media in response.content.values() {
+                    if let Some(schema) = &media.schema {
+                        refuse(schema, &format!("{method} {route} response {code}"))?;
+                    }
+                }
+            }
+            for media in op
+                .request_body
+                .iter()
+                .flat_map(|body| body.content.values())
+            {
+                if let Some(schema) = &media.schema {
+                    refuse(schema, &format!("{method} {route} request body"))?;
+                }
+            }
+        }
+    }
+    Ok(())
+}
+
+/// The property two or more of `schema`'s `$ref` parents declare (at any depth)
+/// where one of them reaches it through a `$ref` parent of its own.
+fn shared_parent_property(
+    schema: &Schema,
+    schemas: &indexmap::IndexMap<String, Schema>,
+) -> Option<String> {
+    let parents: Vec<&Schema> = schema
+        .all_of
+        .iter()
+        .flatten()
+        .filter_map(|member| {
+            schemas.get(
+                member
+                    .reference
+                    .as_deref()?
+                    .strip_prefix("#/components/schemas/")?,
+            )
+        })
+        .collect();
+    if parents.len() < 2 {
+        return None;
+    }
+    let declared: Vec<Vec<&str>> = parents
+        .iter()
+        .map(|parent| {
+            let mut names = Vec::new();
+            collect_property_names(
+                parent,
+                schemas,
+                &mut std::collections::HashSet::new(),
+                &mut names,
+                false,
+            );
+            names
+        })
+        .collect();
+    for (index, parent) in parents.iter().enumerate() {
+        let mut inherited = Vec::new();
+        for member in parent
+            .all_of
+            .iter()
+            .flatten()
+            .filter(|member| member.reference.is_some())
+        {
+            collect_property_names(
+                member,
+                schemas,
+                &mut std::collections::HashSet::new(),
+                &mut inherited,
+                false,
+            );
+        }
+        if let Some(name) = inherited.into_iter().find(|name| {
+            declared
+                .iter()
+                .enumerate()
+                .any(|(other, names)| other != index && names.contains(name))
+        }) {
+            return Some(name.to_owned());
+        }
+    }
+    None
 }
 
 fn collect_property_names<'a>(
@@ -1310,6 +1453,95 @@ mod tests {
         );
     }
 
+    /// `validate`'s refusal line over a committed registry shape, or `None` when it generates.
+    fn shape_refusal(shape: &str) -> Option<String> {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals")
+            .join(shape);
+        let doc = crate::openapi::load(&path).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            path.clone(),
+            "out".into(),
+            Some("fern".into()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        validate(&doc, &path, false, &crate::ir::build(&doc, &config))
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_property_two_allof_parents_share_and_one_inherits_is_refused() {
+        for (shape, location) in [
+            ("probe.yml", "GET /hostnames response 200"),
+            (
+                "error-response-two-parents-probe.yml",
+                "GET /hostnames response 4XX",
+            ),
+        ] {
+            let error = shape_refusal(&format!("object-property-name-collision/{shape}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains(&format!(
+                    "object-property-name-collision: {location} property \"errors\""
+                )),
+                "{shape}: {error}"
+            );
+        }
+        for control in [
+            "two-direct-parents-control.yml",
+            "second-parent-unrelated-control.yml",
+            "single-parent-control.yml",
+            "redeclared-non-nullable-base-control.yml",
+            "inherited-required-control.yml",
+        ] {
+            assert_eq!(
+                shape_refusal(&format!("object-property-name-collision/{control}")),
+                None,
+                "{control}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_path_parameter_keeps_its_name_against_a_grandparents_body_property() {
+        for shape in ["probe.yml", "path-reference-inline-body-probe.yml"] {
+            let error = shape_refusal(&format!("request-property-name-collision/{shape}"))
+                .unwrap_or_default();
+            assert!(
+                error.contains(
+                    "request-property-name-collision: PATCH /requests/{id} body property \"id\""
+                ),
+                "{shape}: {error}"
+            );
+        }
+        // A referenced body is sent whole, so its `id` claims no request name.
+        assert_eq!(
+            shape_refusal("request-property-name-collision/path-referenced-body-control.yml"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_header_the_client_carries_claims_no_request_name() {
+        let error = shape_refusal("request-property-name-collision/header-query-subset-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains("parameters \"X-Namespace\" and \"namespace\" in different locations"),
+            "{error}"
+        );
+        assert_eq!(
+            shape_refusal(
+                "request-property-name-collision/header-query-every-operation-control.yml"
+            ),
+            None
+        );
+    }
+
     #[test]
     fn every_class_id_is_a_registered_names_class() {
         let registry = std::fs::read_to_string(
@@ -1331,6 +1563,7 @@ mod tests {
             Class::EnumNameUnsuitable,
             Class::EnumValueUnnameable,
             Class::GeneratedFileNameTooLong,
+            Class::ObjectPropertyNameCollision,
             Class::RequestPropertyCamelcaseCollision,
             Class::RequestPropertyNameCollision,
             Class::SdkMethodCollision,

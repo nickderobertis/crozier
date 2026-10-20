@@ -1,0 +1,46 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /schedules:
+    get:
+      operationId: listSchedules
+      parameters:
+      - name: namespace
+        in: query
+        schema:
+          type: string
+      - name: X-Namespace
+        in: header
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+  /schedules/{name}:
+    get:
+      operationId: getSchedule
+      parameters:
+      - name: name
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: namespace
+        in: query
+        schema:
+          type: string
+      - name: X-Namespace
+        in: header
+        schema:
+          type: string
+      responses:
+        '204':
+          description: No Content
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        '204':
+          description: No Content

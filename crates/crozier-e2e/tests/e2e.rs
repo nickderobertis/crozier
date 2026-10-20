@@ -25153,9 +25153,9 @@ fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes(
     assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
-    let probe = std::fs::read_to_string(
-        repo_root().join("docs/fern-refusals/request-property-name-collision/probe.yml"),
-    )
+    let probe = std::fs::read_to_string(repo_root().join(
+        "docs/openapi-surface/authored-probes/549-request-property-name-collision/openapi.yml",
+    ))
     .unwrap();
     for location in ["path", "query", "header"] {
         let mut document: serde_json::Value = crate::yaml::from_str(&probe).unwrap();
@@ -25684,7 +25684,7 @@ fn nullable_inherited_property_redeclarations_generate_in_both_modes() {
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
-        "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
+        "../../../docs/openapi-surface/authored-probes/549-object-property-name-collision/openapi.yml"
     ))
     .unwrap();
     document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);

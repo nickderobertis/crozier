@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /hostnames:
+    get:
+      operationId: listHostnames
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CollectionResponse'
+        4XX:
+          description: Failure
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/Common'
+                - $ref: '#/components/schemas/CommonFailure'
+components:
+  schemas:
+    Messages:
+      type: array
+      items:
+        type: object
+        properties:
+          code:
+            type: integer
+          message:
+            type: string
+        required:
+        - code
+        - message
+    Common:
+      type: object
+      properties:
+        errors:
+          $ref: '#/components/schemas/Messages'
+        result:
+          type: object
+        success:
+          type: boolean
+      required:
+      - success
+      - errors
+      - result
+    ApiCollection:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Common'
+      - properties:
+          result:
+            type: array
+            nullable: true
+            items: {}
+    CollectionResponse:
+      allOf:
+      - $ref: '#/components/schemas/ApiCollection'
+      - properties:
+          result:
+            type: array
+            items:
+              $ref: '#/components/schemas/Hostname'
+    CommonFailure:
+      type: object
+      properties:
+        errors:
+          allOf:
+          - $ref: '#/components/schemas/Messages'
+        result:
+          type: object
+          nullable: true
+          enum:
+          - null
+        success:
+          type: boolean
+      required:
+      - success
+      - errors
+      - result
+    Hostname:
+      type: object
+      properties:
+        id:
+          type: string

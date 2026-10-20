@@ -3,24 +3,52 @@ info:
   title: probe
   version: 1.0.0
 paths:
-  /repos/{name}:
+  /requests/{id}:
+    parameters:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
     patch:
-      operationId: updateRepo
-      parameters:
-        - name: name
-          in: path
-          required: true
-          schema:
-            type: string
+      operationId: updateRequest
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                name:
-                  type: string
+              allOf:
+              - properties:
+                  level:
+                    readOnly: true
+              - $ref: '#/components/schemas/Request'
       responses:
-        '204':
-          description: No Content
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Request'
+components:
+  parameters:
+    resourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    CommonRequest:
+      type: object
+      properties:
+        id:
+          type: string
+        note:
+          type: string
+    Request:
+      allOf:
+      - $ref: '#/components/schemas/CommonRequest'
+      - type: object
+        properties:
+          level:
+            type: integer

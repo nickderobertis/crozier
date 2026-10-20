@@ -669,11 +669,27 @@ fn check_named_type_defaults(
             }
             let name = crate::naming::child_class_name(parent, key);
             let child_element = format!("{element}/properties/{key}");
-            let enumeration = child
-                .get("enum")
-                .and_then(serde_json::Value::as_array)
-                .is_some_and(|values| !values.is_empty())
-                || child.get("const").is_some();
+            // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a boolean
+            // `enum` or `const` is no enum declaration, and generates
+            // (`boolean-enum-collision` and `const-boolean-collision` shapes;
+            // Mistral's `stream`), where a string `const` is refused as a
+            // string `enum` is (`const-string-collision`).
+            let boolean = child.get("type").and_then(serde_json::Value::as_str) == Some("boolean")
+                || child
+                    .get("const")
+                    .is_some_and(serde_json::Value::is_boolean)
+                || child
+                    .get("enum")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|values| {
+                        !values.is_empty() && values.iter().all(serde_json::Value::is_boolean)
+                    });
+            let enumeration = !boolean
+                && (child
+                    .get("enum")
+                    .and_then(serde_json::Value::as_array)
+                    .is_some_and(|values| !values.is_empty())
+                    || child.get("const").is_some());
             if child.get("default").is_some_and(|value| !value.is_null())
                 && enumeration
                 && context.default_names.get(&name).copied().unwrap_or(false)
@@ -1311,9 +1327,17 @@ fn expanding_union_cycle(
         let Some(target) = yaml_pointer(root, pointer) else {
             return false;
         };
+        // A pointer into a component's `$defs` names a schema of its own, which
+        // Fern follows as it does a component: measured at Fern CLI 5.163.1 /
+        // fern-python-sdk 5.41.3, a JSON-value union recursing through
+        // `$defs/__value` generates (`defs-json-value` shape).
         let partial = reference
             .strip_prefix("#/components/schemas/")
-            .is_some_and(|suffix| suffix.split('/').count() > 1);
+            .is_some_and(|suffix| {
+                let mut segments = suffix.split('/');
+                segments.next();
+                segments.next().is_some_and(|segment| segment != "$defs")
+            });
         let union_base = extends
             && ["oneOf", "anyOf"].iter().any(|key| {
                 target
@@ -2555,6 +2579,85 @@ mod tests {
         )
         .unwrap();
         promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
+    }
+
+    /// `check_document_schemas`'s verdict on `schemas`, as the refusal line it prints.
+    fn schema_refusal(schemas: serde_json::Value) -> Option<String> {
+        let root = serde_json::json!({
+            "openapi": "3.1.0",
+            "info": {"title": "t", "version": "1"},
+            "paths": {},
+            "components": {"schemas": schemas},
+        });
+        check_document_schemas(&root, Path::new("api.yml"), false)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_named_default_refuses_string_enums_and_consts_but_not_booleans() {
+        // `ticket.type`'s inline schema is named `TicketType`, as `ticket_type` is.
+        let collision = |property: serde_json::Value| {
+            schema_refusal(serde_json::json!({
+                "ticket": {"type": "object", "properties": {"type": property}},
+                "ticket_type": {"type": "object", "properties": {"id": {"type": "string"}}},
+            }))
+        };
+        for refused in [
+            serde_json::json!({"type": "string", "enum": ["ticket"], "default": "ticket"}),
+            serde_json::json!({"type": "string", "const": "ticket", "default": "ticket"}),
+        ] {
+            let error = collision(refused.clone()).unwrap_or_default();
+            assert!(
+                error.contains(
+                    "named-type-default: components/schemas/ticket/properties/type/default"
+                ),
+                "{refused}: {error}"
+            );
+        }
+        for generated in [
+            serde_json::json!({"type": "boolean", "const": false, "default": false}),
+            serde_json::json!({"type": "boolean", "enum": [false], "default": false}),
+            serde_json::json!({"const": true, "default": true}),
+            serde_json::json!({"type": "string", "enum": ["ticket"]}),
+        ] {
+            assert_eq!(collision(generated.clone()), None, "{generated}");
+        }
+    }
+
+    #[test]
+    fn a_union_recursing_through_component_defs_is_no_expanding_cycle() {
+        let json_value = serde_json::json!({
+            "anyOf": [
+                {"type": "string"},
+                {"type": "null"},
+                {"type": "array", "items": {"$ref": "#/components/schemas/Call/$defs/value"}},
+                {"type": "object", "additionalProperties": {"$ref": "#/components/schemas/Call/$defs/value"}},
+            ]
+        });
+        assert_eq!(
+            schema_refusal(serde_json::json!({"Call": {
+                "type": "object",
+                "properties": {"arguments": {"$ref": "#/components/schemas/Call/$defs/value"}},
+                "$defs": {"value": json_value},
+            }})),
+            None
+        );
+        // The same union reached through a property pointer still expands.
+        let error = schema_refusal(serde_json::json!({"Tool": {
+            "type": "object",
+            "properties": {"composition": {"anyOf": [
+                {"type": "object", "properties": {
+                    "child": {"$ref": "#/components/schemas/Tool/properties/composition"},
+                }},
+                {"type": "string"},
+            ]}},
+        }}))
+        .unwrap_or_default();
+        assert!(
+            error.contains("heap-exhausted: components/schemas/Tool/properties/composition"),
+            "{error}"
+        );
     }
 
     #[test]
