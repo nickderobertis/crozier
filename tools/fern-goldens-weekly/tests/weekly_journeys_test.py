@@ -918,6 +918,87 @@ class WeeklyRunTests(unittest.TestCase):
         record = self.remote_file("fern-goldens/update", "docs/fern-refusals/lantern-refused/fern-refusal.txt")
         self.assertIn("diagnostic: Lantern 'harbour' cannot be lit", record)
 
+    def test_measurements_over_a_hand_written_tree_regenerate_after_it_in_its_shard(self) -> None:
+        """A parameter-literals case and an overlay case both read the
+        hand-written tree that same run regenerates. Each is too long to share a
+        shard by time alone, so only the planner's grouping keeps them with it:
+        a shard of their own would read the committed base, fail the literals
+        claim and leave the overlay carrying files the new base already has."""
+        literals = self.seed / "docs/fern-measurements/parameter-literals"
+        literals.mkdir(parents=True)
+        (literals / "certified-trees.json").write_text(json.dumps({"lantern": "0" * 64}) + "\n", encoding="utf-8")
+        (literals / "lantern").mkdir()
+        (literals / "lantern/crozier.yml").write_text(
+            "spec: ../../../openapi-surface/handwritten/lantern/openapi.yml\nreference:\n"
+            '  command: cp -R ../../../openapi-surface/handwritten/lantern/fern-expected/. "$CROZIER_REFERENCE_OUTPUT"\n',
+            encoding="utf-8",
+        )
+        overlay = "lantern-literals"
+        cases = self.seed / "docs/fern-measurements/cases.tsv"
+        base = "docs/openapi-surface/handwritten/lantern"
+        cases.write_text(
+            cases.read_text(encoding="utf-8")
+            + f"{overlay}\t{base}/openapi.yml\tliterals\tpackaged\texpected:{base}/fern-expected\n",
+            encoding="utf-8",
+        )
+        (self.seed / "docs/fern-measurements" / overlay).mkdir()
+        (self.seed / "docs/fern-measurements" / overlay / "crozier.yml").write_text(
+            f"spec: ../../../{base}/openapi.yml\nreference:\n"
+            f'  command: cp -R ../../../{base}/fern-expected/. "$CROZIER_REFERENCE_OUTPUT" && '
+            'cp -R fern-expected/. "$CROZIER_REFERENCE_OUTPUT" && rm "$CROZIER_REFERENCE_OUTPUT/.crozier-overlay.json"\n',
+            encoding="utf-8",
+        )
+        for item in ("parameter-literals/lantern", overlay):
+            generated = subprocess.run(
+                [
+                    sys.executable,
+                    str(self.seed / "tools/fern-goldens/fern-references.py"),
+                    "generate",
+                    "measurements",
+                    item,
+                ],
+                cwd=self.seed,
+                env=self.environment(self.seed),
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            self.assertEqual(0, generated.returncode, generated.stderr)
+        shutil.rmtree(self.seed / ".local", ignore_errors=True)
+        (self.seed / "tools/fern-goldens/generation-seconds.tsv").write_text(
+            "family\titem\tseconds\ncorpus\talpha\t10.0\ncorpus\tbeta\t10.0\nhandwritten\tlantern\t4000.0\n"
+            f"measurements\tparameter-literals/lantern\t4000.0\nmeasurements\t{overlay}\t4000.0\n"
+            f"refusals\t{REFUSAL_CLASS}\t10.0\n"
+            + "".join(f"{family}\t{item}\t10.0\n" for family, item in sorted(OTHER_FAMILIES)),
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        # Fern now names the SDK in its identity headers: the hand-written tree's
+        # client wrapper changes, in bytes crozier's output still matches.
+        self.stand_in({"rules": {"probe": self.refusal_rule}, "sdk_headers": True})
+        state = self.run_workflow()
+        self.assertEqual(
+            [0] * len(state.shards), [shard.returncode for shard in state.shards], [s.stderr for s in state.shards]
+        )
+        self.assertEqual("match", state.outcome(), state.ran("decide").stdout + self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
+        branch = "fern-goldens/update"
+        tree = self.git(self.remote, "ls-tree", "-r", "--name-only", branch).splitlines()
+        wrapper = next(
+            path for path in tree if path.startswith(f"{base}/fern-expected/") and path.endswith("client_wrapper.py")
+        )
+        self.assertIn('"X-Fern-SDK-Version"', self.remote_file(branch, wrapper))
+        self.assertNotIn('"X-Fern-SDK-Version"', self.remote_file("main", wrapper))
+        # The overlay was reduced against the regenerated base, so it no longer
+        # carries the client wrapper, which the committed base did not have.
+        held = f"docs/fern-measurements/{overlay}/fern-expected/"
+        self.assertTrue(any(path.startswith(held) for path in tree), tree)
+        self.assertFalse(any(path.startswith(held) and path.endswith("client_wrapper.py") for path in tree), tree)
+        # The literals claim held against the regenerated base and records its tree.
+        certified = "docs/fern-measurements/parameter-literals/certified-trees.json"
+        before, after = (json.loads(self.remote_file(ref, certified))["lantern"] for ref in ("main", branch))
+        self.assertNotEqual(before, after, "the literals claim was re-measured over the new tree")
+
     def test_an_unfetchable_specification_is_named_and_the_rest_still_regenerate(self) -> None:
         self.publish_seed()
         self.stand_in({"rules": {"probe": self.refusal_rule}, "generator_config": {"stand_in_revision": 2}})
