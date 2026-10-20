@@ -52,10 +52,10 @@ parameter-use checks so its class is not masked.
 
 A [hand-written isolated probe](named-example-probe.yml) and its
 [direct-example control](named-example-control.yml) establish the boundary.
-The [Fern check/generation log](evaluation-logs/fern-named-example.log), taken
-at Fern CLI 5.163.1 with fern-python-sdk 5.41.3 (`shapes.tsv`), prints the
-undefined diagnostic and writes a false-success SDK of 35 files for the probe;
-the control generates. Its extra [Contract A record](named-example-fern-refusal.txt)
+The [probe's Fern check/generation log](evaluation-logs/fern-named-example-probe.log),
+taken at Fern CLI 5.163.1 with fern-python-sdk 5.41.3 (`shapes.tsv`), prints the
+undefined diagnostic and writes a false-success SDK of 35 files; the
+[control's](evaluation-logs/fern-named-example-control.log) generates. Its extra [Contract A record](named-example-fern-refusal.txt)
 records that measured result at the same pair. The two baseline logs below are
 crozier's output and are not Fern's.
 

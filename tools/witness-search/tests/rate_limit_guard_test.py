@@ -12,9 +12,11 @@ for transport and refusal behaviour alone.
 
 from __future__ import annotations
 
+import contextlib
 import dataclasses
 import email.utils
 import http.server
+import io
 import itertools
 import json
 import os
@@ -767,6 +769,7 @@ class ResponseCacheTests(GuardTestCase):
         guard.acquire(GUARDED[path.split("?", 1)[0]])
         request = urllib.request.Request(url, headers=headers)
         try:
+            # llmlint: ignore[async_typed_clients_at_boundaries] This reproduces the witness tooling's own call sites, which AGENTS.md keeps stdlib-only and synchronous so they run installless; an async client here would test a call shape no caller makes.
             response = urllib.request.urlopen(request, timeout=10)
         except urllib.error.HTTPError as refusal:
             response = refusal
@@ -816,6 +819,47 @@ class ResponseCacheTests(GuardTestCase):
         )
         self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
         # The next ask reaches GitHub, and its answer is the one kept.
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
+
+    def test_a_tampered_or_refused_cache_entry_is_a_miss_and_asked_again(self) -> None:
+        path = "/repos/o/r/contents"
+        guard = self.guard()
+        self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        [meta] = list(self.cache.rglob("*.json"))
+        good = json.loads(meta.read_text(encoding="utf-8"))
+        for broken in (
+            dict(good, status="200"),
+            dict(good, status=True),
+            dict(good, status=99),
+            dict(good, headers=[["Content-Type", 1]]),
+            dict(good, headers=[["Content-Type"]]),
+            dict(good, sha256="not-a-digest"),
+            dict(good, bytes=-1),
+            # A refusal no `cache_store` would keep is no answer.
+            dict(good, status=403, headers=[["x-ratelimit-remaining", "0"]]),
+            ["not", "an", "object"],
+        ):
+            with self.subTest(broken=broken):
+                meta.write_text(json.dumps(broken), encoding="utf-8")
+                served = len(self.fixture.served)
+                self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+                self.assertGreater(len(self.fixture.served), served)
+                # The live answer replaced the entry, which serves the next ask.
+                self.assertTrue(self.fetch(guard, path, {})[2])
+
+    def test_a_cache_that_cannot_be_written_costs_the_caller_nothing(self) -> None:
+        path = "/repos/o/r/contents"
+        self.cache.chmod(0o500)
+        self.addCleanup(self.cache.chmod, 0o700)
+        guard = self.guard()
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
+        self.assertIn("rate_limit_guard: could not store a GitHub response in", stderr.getvalue())
+        self.assertIn(guard_module.CACHE_DIR_ENV, stderr.getvalue())
+        # Nothing was stored, so the next ask reaches GitHub again, and is kept once it can be.
+        self.cache.chmod(0o700)
         self.assertEqual(self.fetch(guard, path, {})[::2], (200, False))
         self.assertEqual(self.fetch(guard, path, {})[::2], (200, True))
 

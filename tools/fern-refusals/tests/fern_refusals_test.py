@@ -1017,8 +1017,6 @@ class FernRuns(unittest.TestCase):
             rows(self.evidence / "confirmations.tsv"), [header, [self.CLASS, carrying, "acme", "1", "0", log]]
         )
 
-    # `shapes` over a class's committed probe and control shapes.
-
     def shape(self, name: str, marker: str) -> Path:
         """A shape file in the scratch class directory: the class probe's bytes plus `marker`."""
         path = self.registry / self.CLASS / name
@@ -1130,6 +1128,44 @@ class FernRuns(unittest.TestCase):
                 "make it a probe of the class that names it"
             ],
         )
+
+    def test_a_name_both_roles_share_keeps_a_log_per_role(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "probe")
+        self.shape("alpha-control.yml", "control")
+        self.assertEqual(self.script("shapes", check_exit="1", check_output=f"issue: {said}").returncode, 0)
+        logs = {name: row["log"] for name, row in self.shape_rows().items()}
+        self.assertEqual(
+            logs,
+            {
+                "alpha-control.yml": f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha-control.log",
+                "alpha-probe.yml": f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha-probe.log",
+            },
+        )
+        for log in logs.values():
+            self.assertIn(said, (self.root / log).read_text(encoding="utf-8"))
+
+    def test_check_names_a_row_its_log_does_not_derive(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        self.assertEqual(self.script("shapes", check_exit="1", check_output=f"issue: {said}").returncode, 0)
+        self.assertEqual(self.shape_problems(), [])
+        table = rows(self.evidence / "shapes.tsv")
+        table[1][table[0].index("check_exit")] = "0"
+        write_rows(self.evidence / "shapes.tsv", table)
+        log = f"docs/fern-refusals/{self.CLASS}/evaluation-logs/fern-alpha.log"
+        self.assertEqual(
+            self.shape_problems(),
+            [
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: shapes.tsv disagrees with its log {log}; "
+                f"run `tools/fern-refusals/fern-refusals.py shapes {self.CLASS}`"
+            ],
+        )
+        # `shapes` re-derives the row from its log, with no Fern run.
+        calls = len(self.calls_made())
+        self.assertEqual(self.script("shapes").returncode, 0)
+        self.assertEqual(len(self.calls_made()), calls)
+        self.assertEqual(self.shape_problems(), [])
 
     def test_a_shape_past_the_bound_is_unmeasured_never_a_verdict(self) -> None:
         self.shape("alpha-control.yml", "alpha")
@@ -1343,6 +1379,35 @@ class MeasuredAtThePair(unittest.TestCase):
         self.calls.unlink()
         self.assertEqual(self.measure(), measured)
         self.assertEqual(self.checked(), [])
+
+    def test_crozier_runs_in_lanes_of_its_own_beside_one_fern_lane(self) -> None:
+        # A stand-in crozier that holds each run open long enough for lanes to overlap.
+        spans = self.root / "crozier-spans"
+        (self.root / "target" / "release" / "crozier").write_text(
+            "#!/bin/sh\n"
+            f'echo "start $(date +%s.%N)" >> {shlex.quote(str(spans))}\n'
+            "sleep 0.5\n"
+            f'echo "end $(date +%s.%N)" >> {shlex.quote(str(spans))}\n'
+            "exit 1\n",
+            encoding="utf-8",
+        )
+
+        def widest(lanes: str) -> int:
+            spans.unlink(missing_ok=True)
+            self.measure("--crozier-jobs", lanes, "--crozier-again")
+            open_runs, most = 0, 0
+            events = sorted(
+                (float(at), kind) for kind, at in (line.split() for line in spans.read_text("utf-8").splitlines())
+            )
+            for _at, kind in events:
+                open_runs += 1 if kind == "start" else -1
+                most = max(most, open_runs)
+            self.assertEqual(sum(kind == "start" for _at, kind in events), len(self.documents))
+            return most
+
+        # Fern keeps its one `--jobs` lane while crozier takes `--crozier-jobs` of its own.
+        self.assertEqual(widest("2"), 2)
+        self.assertEqual(widest("1"), 1)
 
     def test_a_check_past_the_time_bound_is_recorded_unmeasured_and_not_generated(self) -> None:
         self.env["FERN_STUB_HANG"] = str(self.root / "fern-pids")

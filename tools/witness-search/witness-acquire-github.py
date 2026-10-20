@@ -26,7 +26,7 @@ import urllib.parse
 import urllib.request
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import ClassVar
+from typing import Any, ClassVar, Literal, TypedDict
 
 
 def load_guard():
@@ -67,7 +67,19 @@ def download_url(value: str) -> str:
     return value
 
 
-def from_cache(cached, temporary: Path, digest, record: dict, evidence_dir: Path) -> bool:
+class Acquisition(TypedDict, total=False):
+    """One `acquisitions.jsonl` record: the download asked for, when, and what came of it."""
+
+    url: str
+    taken_utc: str
+    cache: Literal["hit"]
+    status: int
+    error: str
+    sha256: str
+    bytes: int
+
+
+def from_cache(cached: Any, temporary: Path, digest: Any, record: Acquisition, evidence_dir: Path) -> bool:
     """Answer the download from the shared GitHub response cache; whether a 200's bytes are now in `temporary`."""
     record["cache"] = "hit"
     record["status"] = cached.status
@@ -107,7 +119,7 @@ def main() -> int:
         if token:
             headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(args.url, headers=headers)
-    record = {"url": args.url, "taken_utc": datetime.now(UTC).isoformat(timespec="seconds")}
+    record: Acquisition = {"url": args.url, "taken_utc": datetime.now(UTC).isoformat(timespec="seconds")}
     temporary = args.output.with_suffix(args.output.suffix + ".part")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     digest = hashlib.sha256()

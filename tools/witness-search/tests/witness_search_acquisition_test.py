@@ -1549,6 +1549,10 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                     body = b"real local tree archive bytes"
                     self.send_response(200)
                     self.send_header("x-ratelimit-resource", "core")
+                elif self.path == "/missing.tar.gz":
+                    body = b"Not Found"
+                    self.send_response(404)
+                    self.send_header("x-ratelimit-resource", "core")
                 else:
                     body = b"slow down"
                     self.send_response(429)
@@ -1619,6 +1623,33 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
                 refused, _ = acquire("/refused", worktree)
                 self.assertEqual(refused.returncode, 1)
             self.assertEqual(state["requests"].count("/refused"), 2)
+
+            # A 404 is an answer: the second worktree is told it from the cache,
+            # fails as the first did, and writes no tree.
+            for worktree in ("five", "six"):
+                missing, evidence = acquire("/missing.tar.gz", worktree)
+                self.assertEqual(missing.returncode, 1)
+                self.assertIn("/missing.tar.gz: 404: Not Found", missing.stderr)
+                self.assertFalse((root / worktree / "tree.tar.gz").exists())
+            self.assertEqual(state["requests"].count("/missing.tar.gz"), 1)
+            (record,) = [json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text().splitlines()]
+            self.assertEqual((record["cache"], record["status"], record["error"]), ("hit", 404, "Not Found"))
+
+            # A cached tree that cannot be copied out is a failed acquisition, recorded with its cause.
+            blocked = root / "seven"
+            (blocked / "evidence").mkdir(parents=True)
+            blocked.chmod(0o500)
+            try:
+                stuck, evidence = acquire("/tree.tar.gz", "seven")
+            finally:
+                blocked.chmod(0o700)
+            self.assertEqual(stuck.returncode, 1)
+            self.assertIn("could not copy the cached response", stuck.stderr)
+            self.assertFalse((blocked / "tree.tar.gz").exists())
+            (record,) = [json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text().splitlines()]
+            self.assertEqual((record["cache"], record["status"]), ("hit", 200))
+            self.assertNotIn("sha256", record)
+            self.assertEqual(state["requests"].count("/tree.tar.gz"), 1)
 
     def test_guarded_acquisition_waits_for_cap_and_records_refusal(self) -> None:
         state = {"reads": 0, "downloads": 0, "authorized": False}

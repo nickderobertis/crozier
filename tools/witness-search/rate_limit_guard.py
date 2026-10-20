@@ -179,6 +179,7 @@ import hashlib
 import http.client
 import json
 import os
+import re
 import shutil
 import sys
 import threading
@@ -188,7 +189,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import Any, NamedTuple
 
 FLOOR = fractions.Fraction(2, 5)
 """The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
@@ -405,6 +406,22 @@ def _is_graphql(response: Any) -> bool:
     return path.endswith("/graphql") or _header(response, "x-ratelimit-resource") == "graphql"
 
 
+class Burn(NamedTuple):
+    """The burn-rate exception's measurement of a bucket: the units spent per
+    second over the guard's readings, the seconds they span and until the reset,
+    and, when the call is admitted while spending, the seconds the remaining
+    quota would last at that rate."""
+
+    rate_per_s: float
+    elapsed_s: float
+    until_reset_s: float
+    projected_s: float | None = None
+
+    def logged(self) -> dict[str, float]:
+        """The figures a ``probe`` record carries under ``burn``."""
+        return {key: value for key, value in self._asdict().items() if value is not None}
+
+
 @dataclasses.dataclass(frozen=True)
 class _Reading:
     """One live reading of a bucket, on the monotonic clock for its elapsed time."""
@@ -539,7 +556,7 @@ class RateLimitGuard:
             self._window[bucket] = (first, latest)
         return reading
 
-    def _burn(self, bucket: str, reading: dict[str, int], remaining_after: int) -> dict[str, float] | None:
+    def _burn(self, bucket: str, reading: dict[str, int], remaining_after: int) -> Burn | None:
         """The burn-rate exception's figures when it admits the call, else ``None``.
 
         Admits when the bucket's window resets before ``remaining_after`` would
@@ -555,13 +572,13 @@ class RateLimitGuard:
             return None
         rate = max(latest.used - first.used, 0) / elapsed
         until_reset = reading["reset"] - time.time()
-        figures = {"rate_per_s": round(rate, 6), "elapsed_s": round(elapsed, 3), "until_reset_s": round(until_reset, 3)}
+        burn = Burn(round(rate, 6), round(elapsed, 3), round(until_reset, 3))
         if rate == 0:
-            return figures
+            return burn
         projected = remaining_after / rate
         if projected <= until_reset:
             return None
-        return {**figures, "projected_s": round(projected, 3)}
+        return burn._replace(projected_s=round(projected, 3))
 
     def _admit(self, bucket: str, cost: int) -> dict[str, int]:
         waiting = False
@@ -589,7 +606,7 @@ class RateLimitGuard:
                 if admitted_by is not None:
                     probe["admitted_by"] = admitted_by
                 if burn is not None:
-                    probe["burn"] = burn
+                    probe["burn"] = burn.logged()
                 self._log_wait(probe)
             if admitted:
                 return reading
@@ -828,11 +845,32 @@ def cache_lookup(method: str, url: str, headers: Any) -> CachedResponse | None:
     meta_path, body_path = _entry_paths(root, key)
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        status, stored, sha256, size = meta["status"], meta["headers"], meta["sha256"], meta["bytes"]
-        if _file_digest(body_path) != (sha256, size):
+        if not isinstance(meta, dict):
             return None
-        return CachedResponse(key, int(status), tuple((str(n), str(v)) for n, v in stored), body_path, sha256, size)
-    except (OSError, ValueError, KeyError, TypeError):
+        status, stored, sha256, size = meta.get("status"), meta.get("headers"), meta.get("sha256"), meta.get("bytes")
+        # Only a record `cache_store` could have written is replayed: an HTTP
+        # status, string header pairs, a SHA-256 and a byte count.
+        if (
+            type(status) is not int
+            or not 100 <= status <= 599
+            or not isinstance(stored, list)
+            or not all(
+                isinstance(pair, list) and len(pair) == 2 and all(isinstance(part, str) for part in pair)
+                for pair in stored
+            )
+            or not isinstance(sha256, str)
+            or re.fullmatch(r"[0-9a-f]{64}", sha256) is None
+            or type(size) is not int
+            or size < 0
+            or _file_digest(body_path) != (sha256, size)
+        ):
+            return None
+        cached = CachedResponse(key, status, tuple((name, value) for name, value in stored), body_path, sha256, size)
+        with body_path.open("rb") as handle:
+            head = handle.read(4096)
+        # A refusal is never an answer, however it was stored.
+        return cached if is_answer(status, cached.message(), head) else None
+    except (OSError, ValueError):
         return None
 
 
