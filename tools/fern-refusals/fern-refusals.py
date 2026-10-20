@@ -50,6 +50,7 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
@@ -566,13 +567,28 @@ def fern_run(command: list[str], workspace: Path, timeout: int) -> tuple[str, st
         errors="replace",
         start_new_session=os.name == "posix",
     ) as run:
+        RUNNING.add(run)
         try:
             stdout, stderr = run.communicate(timeout=timeout)
         except subprocess.TimeoutExpired:
             end_tree(run)
             run.communicate()
             return "timeout", ""
+        finally:
+            RUNNING.discard(run)
     return str(run.returncode), stdout + stderr
+
+
+# The Fern runs in flight. Each leads a session of its own, so a signal to the
+# script's process group never reaches them: `terminated` ends them itself.
+RUNNING: set[subprocess.Popen[str]] = set()
+
+
+def terminated(signum: int, _frame: object) -> NoReturn:
+    """End every Fern run in flight, then exit as the signal asked."""
+    for run in list(RUNNING):
+        end_tree(run)
+    raise SystemExit(128 + signum)
 
 
 def end_tree(run: subprocess.Popen[str]) -> None:
@@ -1597,6 +1613,7 @@ def nonnegative(text: str) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    signal.signal(signal.SIGTERM, terminated)
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("select", help="print the selected population").set_defaults(run=select)

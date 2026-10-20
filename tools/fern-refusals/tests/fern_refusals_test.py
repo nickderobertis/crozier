@@ -28,9 +28,11 @@ import json
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from types import ModuleType
@@ -837,6 +839,28 @@ class FernRuns(unittest.TestCase):
                 if state.exists():
                     self.assertIn(state.read_text().split(") ", 1)[1][0], "ZX", f"process {pid} still runs")
                 else:
+                    self.fail(f"process {pid} still runs")
+
+    def test_a_terminated_run_ends_the_fern_session_it_started(self) -> None:
+        pids = self.root / "fern-pids"
+        env = dict(self.env, FERN_STUB_HANG=str(pids))
+        script = self.root / "tools" / "fern-refusals" / "fern-refusals.py"
+        with subprocess.Popen(
+            [sys.executable, str(script), "probe", self.CLASS], env=env, cwd=self.root, stderr=subprocess.PIPE
+        ) as run:
+            deadline = time.monotonic() + 60
+            while not pids.exists() and time.monotonic() < deadline:
+                time.sleep(0.1)
+            run.terminate()
+            run.wait(timeout=30)
+        self.assertEqual(run.returncode, 128 + signal.SIGTERM)
+        started = list(map(int, pids.read_text(encoding="utf-8").split()))
+        time.sleep(0.5)
+        for pid in started:
+            with self.subTest(pid=pid), contextlib.suppress(ProcessLookupError):
+                os.kill(pid, 0)
+                state = Path(f"/proc/{pid}/stat")
+                if not state.exists() or state.read_text().split(") ", 1)[1][0] not in "ZX":
                     self.fail(f"process {pid} still runs")
 
     def test_without_fern_on_path_the_setup_recipe_is_named(self) -> None:
