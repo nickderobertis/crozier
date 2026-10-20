@@ -866,10 +866,11 @@ class WeeklyRunTests(unittest.TestCase):
                 },
             }
         )
-        state = self.run_workflow()
+        state = self.run_workflow(GITHUB_RUN_ID="77", GITHUB_REPOSITORY="owner/crozier")
         self.assertEqual("diff", state.outcome())
         self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr + self.summary())
         (pull,) = self.pulls()
+        self.assertIn("Run: https://github.com/owner/crozier/actions/runs/77", pull["body"])
         self.assertIsNone(pull["autoMergeRequest"], "a diff is never auto-merged")
         self.assertEqual("fern-goldens/update", pull["head"])
         self.assertEqual([{"name": "fern-goldens"}], pull["labels"])

@@ -1436,8 +1436,10 @@ def assemble(args: argparse.Namespace) -> int:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(shard_dir / "files" / path, target)
         deleted += record.deleted
-        if (shard_dir / "logs").is_dir():
-            shutil.copytree(shard_dir / "logs", output / "logs", dirs_exist_ok=True)
+        for source in regular_files(shard_dir / "logs", f"shard {index} logs"):
+            target = inside(output / "logs", source.relative_to(shard_dir / "logs").as_posix(), f"shard {index} logs")
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
         for entry in record.items:
             results.append(replace(entry, shard=index))
             if entry.status == Status.FAILED:
@@ -1754,6 +1756,7 @@ def fenced(text: str) -> str:
     return f"{fence}text\n{text}\n{fence}"
 
 
+# llmlint: ignore[changed_behavior_has_e2e] The weekly journeys publish this body from a real decision and assert its sections, failing items, crozier's report and the run link; fence escaping and the truncation limits need reports far larger, or with backtick runs, that crozier's comparison of a small synthetic tree never prints, so tools/fern-goldens/tests/weekly_test.py drives them through this same function.
 def body(decision: Decision, bundle: Bundle, current: Pair) -> str:
     run_url = ""
     if os.environ.get("GITHUB_RUN_ID") and os.environ.get("GITHUB_REPOSITORY"):
