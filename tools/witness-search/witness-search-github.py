@@ -1363,6 +1363,7 @@ class Acquirer:
                     self._raw_wait(duration, "spacing", key, subject)
             request = urllib.request.Request(url, headers=user_agent)
             try:
+                # llmlint: ignore[async_typed_clients_at_boundaries] AGENTS.md keeps the witness tooling stdlib-only and synchronous so it runs installless; the raw lane is paced one request at a time, which an async client would not speed up.
                 response = urllib.request.urlopen(request, timeout=90)
             except urllib.error.HTTPError as error:
                 response = error

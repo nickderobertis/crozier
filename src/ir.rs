@@ -8881,18 +8881,27 @@ fn reserved_body_property_names(
     schemas: &IndexMap<String, Schema>,
     out: &mut std::collections::HashSet<String>,
 ) {
-    own_property_names(schema, schemas, out, 0, true);
+    own_property_names(schema, schemas, out, 0, Parents::Counted);
+}
+
+/// Whether a schema's `$ref` `allOf` parents add their own property names.
+#[derive(Clone, Copy)]
+enum Parents {
+    /// The body itself: each parent's own names are reserved too.
+    Counted,
+    /// A parent: its own parents (the body's grandparents) reserve nothing.
+    Skipped,
 }
 
 /// A schema's own property names, with its inline `allOf` members' merged in as
 /// Fern's parser merges them; a `$ref` member is a parent, whose own names count
-/// only while `parents` holds.
+/// as `parents` says.
 fn own_property_names(
     schema: &Schema,
     schemas: &IndexMap<String, Schema>,
     out: &mut std::collections::HashSet<String>,
     depth: usize,
-    parents: bool,
+    parents: Parents,
 ) {
     if depth > 32 {
         return;
@@ -8903,13 +8912,13 @@ fn own_property_names(
     for member in schema.all_of.iter().flatten() {
         if member.reference.is_none() {
             own_property_names(member, schemas, out, depth + 1, parents);
-        } else if parents {
+        } else if matches!(parents, Parents::Counted) {
             own_property_names(
                 resolve_multipart_ref(member, Some(schemas)),
                 schemas,
                 out,
                 depth + 1,
-                false,
+                Parents::Skipped,
             );
         }
     }

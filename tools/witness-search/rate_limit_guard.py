@@ -189,7 +189,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, Protocol, TypedDict
+from typing import Any, Literal, NamedTuple, NotRequired, Protocol, TypedDict
 
 FLOOR = fractions.Fraction(2, 5)
 """The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
@@ -414,17 +414,35 @@ class ResponseHeaders(Protocol):
     def items(self) -> Iterable[tuple[str, str]]: ...
 
 
+class QuotaReading(TypedDict):
+    """One bucket's figures as ``GET /rate_limit`` reports them."""
+
+    limit: int
+    used: int
+    reset: int
+    remaining: NotRequired[int]
+
+
+class BurnFigures(TypedDict):
+    """A burn-rate measurement as the ledger records it; ``projected_s`` only when the bucket was spending."""
+
+    rate_per_s: float
+    elapsed_s: float
+    until_reset_s: float
+    projected_s: NotRequired[float]
+
+
 class AdmissionProbe(TypedDict, total=False):
     """One ``probe`` row of the wait ledger: a reading taken to admit a call, and the decision."""
 
     host: Literal["github"]
     bucket: str
     kind: Literal["probe"]
-    reading: dict[str, int]
+    reading: QuotaReading
     cost: int
     admitted: bool
     admitted_by: Literal["floor", "burn-rate"]
-    burn: dict[str, float]
+    burn: BurnFigures
 
 
 class CacheHit(TypedDict):
@@ -456,9 +474,16 @@ class Burn(NamedTuple):
     until_reset_s: float
     projected_s: float | None = None
 
-    def logged(self) -> dict[str, float]:
+    def logged(self) -> BurnFigures:
         """The figures a ``probe`` record carries under ``burn``."""
-        return {key: value for key, value in self._asdict().items() if value is not None}
+        figures: BurnFigures = {
+            "rate_per_s": self.rate_per_s,
+            "elapsed_s": self.elapsed_s,
+            "until_reset_s": self.until_reset_s,
+        }
+        if self.projected_s is not None:
+            figures["projected_s"] = self.projected_s
+        return figures
 
 
 @dataclasses.dataclass(frozen=True)
@@ -474,7 +499,7 @@ class _Reading:
 class _Reservation:
     bucket: str
     cost: int
-    reading: dict[str, int] | None
+    reading: QuotaReading | None
     lock: threading.Lock
 
 
@@ -577,17 +602,20 @@ class RateLimitGuard:
             raise UnsupportedBucket(f"{self.host} has one paced lane, named {self.host!r}; got {bucket!r}")
         return self.host
 
-    def _read(self, bucket: str) -> dict[str, int]:
+    def _read(self, bucket: str) -> QuotaReading:
         resources = read_rate_limit()
         figures = resources.get(bucket)
         if not isinstance(figures, dict) or not {"limit", "used", "reset"} <= figures.keys():
             raise UnsupportedBucket(f"GET /rate_limit reports no figures for bucket {bucket!r}")
-        reading = {key: figures[key] for key in ("limit", "used", "remaining", "reset") if key in figures}
-        if not all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in reading.values()):
+        values = {key: figures[key] for key in ("limit", "used", "remaining", "reset") if key in figures}
+        if not all(isinstance(value, int) and not isinstance(value, bool) and value >= 0 for value in values.values()):
             raise RuntimeError(
                 f"GET /rate_limit reported malformed figures for bucket {bucket!r}: {figures!r} — "
                 "each must be a nonnegative integer; check CROZIER_GITHUB_API_URL points at the GitHub REST API"
             )
+        reading: QuotaReading = {"limit": values["limit"], "used": values["used"], "reset": values["reset"]}
+        if "remaining" in values:
+            reading["remaining"] = values["remaining"]
         latest = _Reading(time.monotonic(), reading["used"], reading["reset"])
         with self._meta:
             window = self._window.get(bucket)
@@ -595,7 +623,7 @@ class RateLimitGuard:
             self._window[bucket] = (first, latest)
         return reading
 
-    def _burn(self, bucket: str, reading: dict[str, int], remaining_after: int) -> Burn | None:
+    def _burn(self, bucket: str, reading: QuotaReading, remaining_after: int) -> Burn | None:
         """The burn-rate exception's figures when it admits the call, else ``None``.
 
         Admits when the bucket's window resets before ``remaining_after`` would
@@ -619,7 +647,7 @@ class RateLimitGuard:
             return None
         return burn._replace(projected_s=round(projected, 3))
 
-    def _admit(self, bucket: str, cost: int) -> dict[str, int]:
+    def _admit(self, bucket: str, cost: int) -> QuotaReading:
         waiting = False
         while True:
             reading = self._read(bucket)

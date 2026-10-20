@@ -4362,7 +4362,7 @@ class SharedResponseCacheTests(WitnessSearchGithubFixture, unittest.TestCase):
         self.addCleanup(patcher.stop)
         self.cache = cache
 
-    def ledger(self, root: Path, name: str) -> list[dict[str, Any]]:
+    def ledger(self, root: Path, name: str) -> list[dict[str, object]]:
         path = root / name
         if not path.exists():
             return []

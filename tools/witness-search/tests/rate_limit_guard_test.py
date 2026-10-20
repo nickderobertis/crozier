@@ -804,18 +804,18 @@ class ResponseCacheTests(GuardTestCase):
 
     def test_refusals_and_transient_failures_are_not_cached(self) -> None:
         path = "/repos/o/r/contents"
+        refused = (429, 503, 401, 407, 408)
         self.fixture.scripted[path] = [
-            (429, {}),
-            (503, {}),
+            *((status, {}) for status in refused),
             (403, {"Retry-After": "0", "x-ratelimit-remaining": "99"}),
             (403, {"x-ratelimit-remaining": "0"}),
         ]
         guard_module.SECONDARY_ATTEMPT_BUDGET = 10
         guard_module.SECONDARY_BACKOFF_BASE_S = 0.01
         guard = self.guard()
-        statuses = [self.fetch(guard, path, {}) for _ in range(4)]
+        statuses = [self.fetch(guard, path, {}) for _ in range(len(refused) + 2)]
         self.assertEqual(
-            [(status, cached) for status, _, cached in statuses], [(s, False) for s in (429, 503, 403, 403)]
+            [(status, cached) for status, _, cached in statuses], [(s, False) for s in (*refused, 403, 403)]
         )
         self.assertEqual([p for p in self.cache.rglob("*") if p.is_file()], [])
         # The next ask reaches GitHub, and its answer is the one kept.
