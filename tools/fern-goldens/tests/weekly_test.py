@@ -594,7 +594,8 @@ class ArtifactTests(unittest.TestCase):
         weekly.Plan.from_json(good, "plan.json")
         faults: list[tuple[str, object, str]] = []
 
-        # A mutation of the plan's JSON record, whose values are of every JSON type.
+        # A mutation of the plan's JSON record, whose values are of every JSON type
+        # (hence `Any`: each mutation reaches into whichever field it corrupts).
         def fault(message: str, change: Callable[[dict[str, Any]], object]) -> None:
             record = json.loads(json.dumps(good))
             change(record)
