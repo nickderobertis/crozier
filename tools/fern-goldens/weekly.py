@@ -802,7 +802,7 @@ def gh(repo: str, *args: str) -> subprocess.CompletedProcess[str]:
 
 def gh_objects(listed: subprocess.CompletedProcess[str], what: str) -> list[dict[str, object]]:
     try:
-        found = json.loads(listed.stdout or "[]")
+        found = json.loads(listed.stdout)
     except ValueError as error:
         raise WeeklyError(f"gh printed no JSON listing {what} ({error})") from error
     if not isinstance(found, list) or not all(isinstance(entry, dict) for entry in found):

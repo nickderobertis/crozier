@@ -781,6 +781,19 @@ class BodyTests(unittest.TestCase):
         self.assertIn("Run: https://github.com/owner/crozier/actions/runs/77", text)
 
 
+class GitHubListingTests(unittest.TestCase):
+    def listing(self, stdout: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(["gh"], 0, stdout, "")
+
+    def test_only_a_json_list_of_objects_is_a_listing(self) -> None:
+        self.assertEqual([], weekly.gh_objects(self.listing("[]\n"), "labels"))
+        self.assertEqual([{"name": "x"}], weekly.gh_objects(self.listing('[{"name": "x"}]'), "labels"))
+        for stdout, message in (("", "printed no JSON"), ("{}", "no list of objects"), ("[1]", "no list of objects")):
+            with self.subTest(stdout=stdout), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.gh_objects(self.listing(stdout), "labels")
+            self.assertIn(message, str(raised.exception))
+
+
 class PublicationGuardTests(unittest.TestCase):
     """`publish` refuses, before any remote step, what it must never publish."""
 
