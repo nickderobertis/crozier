@@ -400,23 +400,24 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                             .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
                             .and_then(|name| doc.components.schemas.get(name))
                             .unwrap_or(schema);
-                        let inherited = resolved
-                            .all_of
-                            .iter()
-                            .flatten()
-                            .any(|member| member.reference.is_some());
+                        // A property an `allOf` member or a second parent
+                        // redeclares is one request property: measured at Fern
+                        // CLI 5.163.1 / fern-python-sdk 5.41.3 (this class's
+                        // `body-*` controls; Mistral's `stream`), where 5.67.1
+                        // refused it. An own property beside a parent's is
+                        // refused below.
                         let mut body_names = std::collections::HashSet::new();
                         for name in properties {
                             let name = body_hints
                                 .get(name)
                                 .cloned()
                                 .unwrap_or_else(|| name.to_owned());
-                            if path_names.contains(&name)
-                                || (!body_names.insert(name.clone()) && inherited)
-                            {
+                            if path_names.contains(&name) {
                                 return Err(refusal(path, Class::RequestPropertyNameCollision, format!("{location} body property {name:?} collides with another request property; give the properties distinct declared names")));
                             }
-                            names.push(name);
+                            if body_names.insert(name.clone()) {
+                                names.push(name);
+                            }
                         }
                         // An inline body with its own properties flattens its
                         // `$ref` parents' fields beside them. Fern refuses an own
@@ -1524,6 +1525,20 @@ mod tests {
             shape_refusal("request-property-name-collision/path-referenced-body-control.yml"),
             None
         );
+    }
+
+    #[test]
+    fn a_body_property_a_member_or_second_parent_redeclares_is_one_request_property() {
+        for control in [
+            "body-allof-member-redeclared-control.yml",
+            "body-two-parents-shared-control.yml",
+        ] {
+            assert_eq!(
+                shape_refusal(&format!("request-property-name-collision/{control}")),
+                None,
+                "{control}"
+            );
+        }
     }
 
     #[test]

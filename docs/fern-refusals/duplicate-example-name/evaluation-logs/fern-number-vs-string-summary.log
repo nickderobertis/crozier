@@ -1,5 +1,17 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 All checks passed
+
+generate exit: 1
+files: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk ✓ All checks passed
+[api]: python-sdk fernapi/fern-python-sdk Cannot use 'in' operator to search for 'wireValue' in 1
+[api]: python-sdk fernapi/fern-python-sdk Failed.
+[api]: python-sdk Failed.

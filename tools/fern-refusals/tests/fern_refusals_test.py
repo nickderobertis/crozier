@@ -1085,8 +1085,8 @@ class FernRuns(unittest.TestCase):
         self.assertEqual(
             self.shape_problems(),
             [
-                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: Fern generates from the probe, not refusing it "
-                f"with {self.CLASS}; make it a control and narrow crozier's detector to match"
+                f"docs/fern-refusals/{self.CLASS}/alpha-probe.yml: Fern generates from the probe; make it a "
+                "control and narrow crozier's detector to match"
             ],
         )
         # A log an older pair took says nothing of this one: `check` names it and `shapes` takes it again.

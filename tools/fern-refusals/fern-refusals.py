@@ -1757,7 +1757,8 @@ def write_shapes(path: Path, table: dict[tuple[str, str], dict[str, str]]) -> No
 
 def shape_problems() -> list[str]:
     """Every committed shape is measured at the pair over its own bytes, and Fern's
-    verdict is its role's: a probe refused with its class, a control generated."""
+    verdict is its role's: a probe refused (its class's phrase or another's, as its
+    evaluation explains), a control generated."""
     classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
     every = class_shapes(classes)
     path = shapes_path()
@@ -1777,11 +1778,9 @@ def shape_problems() -> list[str]:
             )
         elif row["verdict"] == "unmeasured":
             continue
-        elif role == "probe" and (row["verdict"] != "refused" or name not in row["classes"].split(",")):
+        elif role == "probe" and row["verdict"] != "refused":
             problems.append(
-                f"{rel(shape)}: Fern {'generates from' if row['verdict'] == 'generates' else 'refuses'} the probe"
-                + (f" with {row['classes']}" if row["verdict"] == "refused" else "")
-                + f", not refusing it with {name}; make it a control and narrow crozier's detector to match"
+                f"{rel(shape)}: Fern generates from the probe; make it a control and narrow crozier's detector to match"
             )
         elif role == "control" and row["verdict"] != "generates":
             problems.append(

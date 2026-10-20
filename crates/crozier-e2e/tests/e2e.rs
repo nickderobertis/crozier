@@ -23277,18 +23277,18 @@ fn inline_header_enum_refusal_recovers_with_a_named_schema() {
         .join("generator-missing-type");
     for case in [
         "probe.yml",
-        "optional-singleton-control.yml",
-        "two-values-control.yml",
-        "other-header-control.yml",
-        "accept-header-control.yml",
-        "inferred-type-control.yml",
-        "const-header-control.yml",
-        "two-operations-control.yml",
-        "three-of-four-control.yml",
-        "second-declaration-control.yml",
-        "referenced-header-control.yml",
-        "path-header-control.yml",
-        "ignored-operation-control.yml",
+        "optional-singleton-probe.yml",
+        "two-values-probe.yml",
+        "other-header-probe.yml",
+        "accept-header-probe.yml",
+        "inferred-type-probe.yml",
+        "const-header-probe.yml",
+        "two-operations-probe.yml",
+        "three-of-four-probe.yml",
+        "second-declaration-probe.yml",
+        "referenced-header-probe.yml",
+        "path-header-probe.yml",
+        "ignored-operation-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23368,8 +23368,8 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
         .join("named-type-default");
     for case in [
         "probe.yml",
-        "union-declaration-control.yml",
-        "multiple-values-collision-control.yml",
+        "union-declaration-probe.yml",
+        "multiple-values-collision-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23660,8 +23660,8 @@ fn recursive_inline_union_refusal_preserves_named_recursion() {
     let class = repo_root().join(FERN_REFUSALS_DIR).join("heap-exhausted");
     for case in [
         "probe.yml",
-        "single-child-control.yml",
-        "recursive-union-allof-control.json",
+        "single-child-probe.yml",
+        "recursive-union-allof-probe.json",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();

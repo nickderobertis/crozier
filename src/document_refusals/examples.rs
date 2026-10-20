@@ -47,7 +47,6 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
         }
     }
     doc.colliding_component()
-        .or_else(|| doc.required_beside_definitions_member())
         .or_else(|| doc.colliding_property())
         .or_else(|| doc.scalar_taken_by_inline_object())
         .or_else(|| doc.merged_member_enum())
@@ -1101,58 +1100,6 @@ impl<'a> Doc<'a> {
         Some(flat.into())
     }
 
-    /// A component declaring a required property beside an `allOf` with a
-    /// member referenced into a component's own `definitions`/`$defs` (an
-    /// NSwag document's, as CommunityToolkit Datasync's `KitchenSink`): Fern
-    /// does not follow that member, and its example of the component, reached
-    /// from a response, carries the required property no member it reads
-    /// declares, which is unexpected. Measured accepted: the member referencing
-    /// a component, an absent reference, an optional or no top-level property.
-    fn required_beside_definitions_member(&self) -> Option<(Class, String)> {
-        for (key, schema) in self.component_schemas() {
-            let Some(members) = schema.get("allOf").and_then(Value::as_array) else {
-                continue;
-            };
-            let into_definitions = |member: &Value| {
-                str_of(member, "$ref")
-                    .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
-                    .is_some_and(|pointer| {
-                        pointer
-                            .split('/')
-                            .skip(1)
-                            .any(|part| matches!(part, "definitions" | "$defs"))
-                    })
-            };
-            if !members.iter().any(into_definitions) {
-                continue;
-            }
-            let read: Vec<&Value> = members
-                .iter()
-                .filter(|member| !into_definitions(member))
-                .filter_map(|member| self.resolve(member))
-                .collect();
-            let Some(property) = required_names(schema).into_iter().find(|name| {
-                schema
-                    .get("properties")
-                    .is_some_and(|properties| properties.get(*name).is_some())
-                    && !read.iter().any(|member| {
-                        member
-                            .get("properties")
-                            .is_some_and(|properties| properties.get(*name).is_some())
-                    })
-            }) else {
-                continue;
-            };
-            if let Some(element) = self.response_reaching(schema) {
-                return Some((
-                    Class::ExampleUnexpectedProperty,
-                    format!("{element} components/schemas/{key} property {property}"),
-                ));
-            }
-        }
-        None
-    }
-
     /// A component object's inline property schema named (owner + property)
     /// like a component object declared after it: that component is the one
     /// type, and Fern's example of the inline schema, reached from a response, is
@@ -1423,6 +1370,37 @@ mod tests {
 
     fn yaml(text: &str) -> Value {
         crate::yaml::from_str(text).unwrap()
+    }
+
+    #[test]
+    fn a_required_property_beside_a_definitions_member_is_no_unexpected_property() {
+        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: Fern follows an
+        // `allOf` member referenced into a component's own `definitions`, so
+        // these shapes (and CommunityToolkit Datasync's `KitchenSink`) generate.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-unexpected-property");
+        for shape in [
+            "definitions-member-control.yml",
+            "definitions-member-direct-control.yml",
+            "definitions-open-member-control.yml",
+        ] {
+            let root = yaml(&std::fs::read_to_string(class.join(shape)).unwrap());
+            assert_eq!(
+                first_violation(&root).map(|(_, detail)| detail),
+                None,
+                "{shape}"
+            );
+        }
+        // The class's probe is still refused.
+        let probe = yaml(&std::fs::read_to_string(class.join("probe.yml")).unwrap());
+        assert!(
+            matches!(
+                first_violation(&probe),
+                Some((Class::ExampleUnexpectedProperty, _))
+            ),
+            "{:?}",
+            first_violation(&probe).map(|(_, detail)| detail)
+        );
     }
 
     #[test]
