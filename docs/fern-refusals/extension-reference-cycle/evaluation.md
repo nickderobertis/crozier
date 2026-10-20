@@ -1,5 +1,13 @@
 # extension-reference-cycle: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 10 probe and 9 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 2 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses both under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: The shapes the older naming filed as controls but Fern refuses are probes; none changed verdict.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair.
 Measurements use CPython 3.12.3, mypy 1.13.0 and the generated
 `pyproject.toml` configuration with its declared dependencies.
@@ -70,3 +78,9 @@ check. The CLI controls preserve each accepted SDK's bytes between modes.
 Remeasured with the corrected detector, both population documents still
 refuse in both modes with the unchanged lines in the population refusal log:
 Stripe's `x-stripeProperty` nests its reference under `referenced_resource`.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-bungie-full.check.log`](evaluation-logs/fern-bungie-full.check.log)

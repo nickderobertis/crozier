@@ -1,5 +1,11 @@
 # Repeated path parameter names
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 6 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 6 of the 6 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
 
@@ -22,3 +28,11 @@ and [distinct placeholders](evidence/path-valid.pinned-fern.log).
 The detector counts placeholders in the document's route, rather than declarations.
 
 All six retrievable population documents refuse under strict mode with no output: [run](evidence/population-strict.log).
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/path-declarations.pinned-fern.log`](evidence/path-declarations.pinned-fern.log)
+- [`evidence/path-repeated.pinned-fern.log`](evidence/path-repeated.pinned-fern.log)
+- [`evidence/path-valid.pinned-fern.log`](evidence/path-valid.pinned-fern.log)

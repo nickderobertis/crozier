@@ -1,5 +1,11 @@
 # type-name-not-letter-led
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 6 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 6 of the 6 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
 
@@ -24,3 +30,37 @@ A blank declaration declares nothing: Fern falls back to the key and refuses it
 ([probe](evidence/376-350-declared-type-name-blank-digit-led.yml),
 [pinned Fern](evidence/376-350-declared-type-name-blank-digit-led.pinned-fern.log)),
 and crozier refuses it in both modes, naming `123456`.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/component-type-ref-defs.pinned-fern.log`](evidence/component-type-ref-defs.pinned-fern.log)
+- [`evidence/component-type-ref-local.pinned-fern.log`](evidence/component-type-ref-local.pinned-fern.log)
+- [`evidence/component-type-ref-relative.pinned-fern.log`](evidence/component-type-ref-relative.pinned-fern.log)
+- [`evidence/object-type-ref-definitions.pinned-fern.log`](evidence/object-type-ref-definitions.pinned-fern.log)
+- [`evidence/object-type-ref-defs.pinned-fern.log`](evidence/object-type-ref-defs.pinned-fern.log)
+- [`evidence/object-type-ref-ordinary.pinned-fern.log`](evidence/object-type-ref-ordinary.pinned-fern.log)
+- [`evidence/object-type-ref-relative-definitions.pinned-fern.log`](evidence/object-type-ref-relative-definitions.pinned-fern.log)
+- [`evidence/object-type-ref-relative-defs.pinned-fern.log`](evidence/object-type-ref-relative-defs.pinned-fern.log)
+- [`evidence/object-type-ref-relative.pinned-fern.log`](evidence/object-type-ref-relative.pinned-fern.log)
+- [`evidence/object-type-ref-response-short.pinned-fern.log`](evidence/object-type-ref-response-short.pinned-fern.log)
+- [`evidence/object-type-ref-response.pinned-fern.log`](evidence/object-type-ref-response.pinned-fern.log)
+- [`evidence/object-type-ref-unknown.pinned-fern.log`](evidence/object-type-ref-unknown.pinned-fern.log)
+- [`evidence/object-type-ref-webhook.pinned-fern.log`](evidence/object-type-ref-webhook.pinned-fern.log)
+- [`evidence/type-led-digit-word.pinned-fern.log`](evidence/type-led-digit-word.pinned-fern.log)
+- [`evidence/type-led-name-override.pinned-fern.log`](evidence/type-led-name-override.pinned-fern.log)
+- [`evidence/type-led-punctuation.pinned-fern.log`](evidence/type-led-punctuation.pinned-fern.log)
+- [`evidence/type-led-type-override.pinned-fern.log`](evidence/type-led-type-override.pinned-fern.log)
+- [`evidence/type-led-underscore.pinned-fern.log`](evidence/type-led-underscore.pinned-fern.log)
+- [`evidence/type-numeric-0.pinned-fern.log`](evidence/type-numeric-0.pinned-fern.log)
+- [`evidence/type-numeric-00001.pinned-fern.log`](evidence/type-numeric-00001.pinned-fern.log)
+- [`evidence/type-numeric-1.pinned-fern.log`](evidence/type-numeric-1.pinned-fern.log)
+- [`evidence/type-numeric-10000.pinned-fern.log`](evidence/type-numeric-10000.pinned-fern.log)
+- [`evidence/type-numeric-10001.pinned-fern.log`](evidence/type-numeric-10001.pinned-fern.log)
+- [`evidence/type-numeric-12345.pinned-fern.log`](evidence/type-numeric-12345.pinned-fern.log)
+- [`evidence/type-numeric-9999.pinned-fern.log`](evidence/type-numeric-9999.pinned-fern.log)
+- [`evidence/type-ref-definitions.pinned-fern.log`](evidence/type-ref-definitions.pinned-fern.log)
+- [`evidence/type-ref-defs.pinned-fern.log`](evidence/type-ref-defs.pinned-fern.log)
+- [`evidence/type-ref-ordinary.pinned-fern.log`](evidence/type-ref-ordinary.pinned-fern.log)
+- [`evidence/type-ref-response.pinned-fern.log`](evidence/type-ref-response.pinned-fern.log)

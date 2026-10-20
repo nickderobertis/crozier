@@ -47,3 +47,18 @@ The PayPal representative imports but reports 36 mypy errors under its own gener
 All 41 retrievable population documents refuse with exit 1 and no output under strict mode: [measurements](evidence/population-strict.log).
 
 Pinned Fern controls: [object-body-inline.pinned-fern](evidence/object-body-inline.pinned-fern.log), [object-body-reference.pinned-fern](evidence/object-body-reference.pinned-fern.log), [object-change-constraint.pinned-fern](evidence/object-change-constraint.pinned-fern.log), [object-change-description.pinned-fern](evidence/object-change-description.pinned-fern.log), [object-change-enum.pinned-fern](evidence/object-change-enum.pinned-fern.log), [object-change-required.pinned-fern](evidence/object-change-required.pinned-fern.log), [object-change-type.pinned-fern](evidence/object-change-type.pinned-fern.log), [object-nonnullable.pinned-fern](evidence/object-nonnullable.pinned-fern.log), [object-nullable.pinned-fern](evidence/object-nullable.pinned-fern.log), [object-typed.pinned-fern](evidence/object-typed.pinned-fern.log).
+
+## Dated history
+
+No claim about Fern CLI 5.163.1 rests on these. Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/object-body-inline.pinned-fern.log`](evidence/object-body-inline.pinned-fern.log)
+- [`evidence/object-body-reference.pinned-fern.log`](evidence/object-body-reference.pinned-fern.log)
+- [`evidence/object-change-constraint.pinned-fern.log`](evidence/object-change-constraint.pinned-fern.log)
+- [`evidence/object-change-description.pinned-fern.log`](evidence/object-change-description.pinned-fern.log)
+- [`evidence/object-change-enum.pinned-fern.log`](evidence/object-change-enum.pinned-fern.log)
+- [`evidence/object-change-required.pinned-fern.log`](evidence/object-change-required.pinned-fern.log)
+- [`evidence/object-change-type.pinned-fern.log`](evidence/object-change-type.pinned-fern.log)
+- [`evidence/object-nonnullable.pinned-fern.log`](evidence/object-nonnullable.pinned-fern.log)
+- [`evidence/object-nullable.pinned-fern.log`](evidence/object-nullable.pinned-fern.log)
+- [`evidence/object-typed.pinned-fern.log`](evidence/object-typed.pinned-fern.log)

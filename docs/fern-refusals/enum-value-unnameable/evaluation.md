@@ -1,5 +1,11 @@
 # Enum values that cannot be named
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 331 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 331 of the 331 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Evaluated on baseline `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`, before
 adding detectors. Decision: **refuse**. No generator repair is made.
 
@@ -54,3 +60,17 @@ The exemption is restricted to that root position; singleton body
 [map values](evidence/body-single-enum-map.pinned-fern.log) still refuse.
 
 A measured lead falls outside this registered refusal class: Fern accepts the enum values 10001+ and 20000+ ([pinned generation](evidence/enum-undefined-duplicate-undefined.pinned-fern-generate.log)) and emits only the first UNDEFINED member ([generated SDK artifact](evidence/accepted-undefined-fern-sdk.log)). The no-Fern-accepted-document-refused contract prevents classifying that accepted shape as enum-value-unnameable. It is left unchanged and reported to the manager; the registered numeric probe and population above determine this class.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/body-single-enum-array.pinned-fern.log`](evidence/body-single-enum-array.pinned-fern.log)
+- [`evidence/body-single-enum-map.pinned-fern.log`](evidence/body-single-enum-map.pinned-fern.log)
+- [`evidence/body-single-enum-nested.pinned-fern.log`](evidence/body-single-enum-nested.pinned-fern.log)
+- [`evidence/body-single-enum-property.pinned-fern.log`](evidence/body-single-enum-property.pinned-fern.log)
+- [`evidence/cjk.fern-check.log`](evidence/cjk.fern-check.log)
+- [`evidence/emoji.fern-check.log`](evidence/emoji.fern-check.log)
+- [`evidence/enum-undefined-duplicate-undefined.pinned-fern-generate.log`](evidence/enum-undefined-duplicate-undefined.pinned-fern-generate.log)
+- [`evidence/override-fallback.fern.log`](evidence/override-fallback.fern.log)
+- [`evidence/single-enum-body.pinned-fern.log`](evidence/single-enum-body.pinned-fern.log)

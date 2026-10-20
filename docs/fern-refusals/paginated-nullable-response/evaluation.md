@@ -1,5 +1,11 @@
 # paginated-nullable-response: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. No document in the population carries the class, at this pair or at Fern CLI 5.67.1.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's.
+
 Evaluated on starting commit `c14284cdffff6a3190934b97e35acf0552cd5dac`.
 
 The [probe](probe.yml) declares cursor pagination (`x-fern-pagination`:

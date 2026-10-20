@@ -1,5 +1,11 @@
 # path-without-leading-slash: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 4 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 4 of the 4 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No generated SDK was
 repaired to qualify it. Logs use CPython 3.12.3 and the generated project's
 mypy 1.13.0 configuration and dependencies.
@@ -39,3 +45,9 @@ accept the malformed path when its only operation has `x-fern-ignore: true`,
 writing 28 Python files. An added CLI recovery assertion was [observed
 failing](evaluation-logs/ignored-path-e2e-red.log) before the raw detector
 respected the canonical ignore accessor; it now preserves this accepted case.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-ignored-path.log`](evaluation-logs/fern-ignored-path.log)

@@ -1,5 +1,11 @@
 # example-missing-required-property: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 9 probe and 9 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 130 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 130 of the 130 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was
 made to qualify this class. Checks use CPython 3.12, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -95,3 +101,12 @@ both modes, as `request-property-camelcase-collision` (its schedule
 operation's `maxResults` and `MaxResults`, a class Fern also reports for it),
 and the planner ruled that this integration supersedes the exclusion. The
 inline-request-name collision itself remains a `names` follow-up.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-medialive-reduced.log`](evaluation-logs/fern-medialive-reduced.log)
+- [`evaluation-logs/fern-readonly-shadow-optional-parent-literals.generate.log`](evaluation-logs/fern-readonly-shadow-optional-parent-literals.generate.log)
+- [`evaluation-logs/fern-readonly-shadow-optional-parent.generate.log`](evaluation-logs/fern-readonly-shadow-optional-parent.generate.log)
+- [`evaluation-logs/fern-request-name-collision.log`](evaluation-logs/fern-request-name-collision.log)

@@ -73,3 +73,19 @@ Fern refuses an own property the parent redeclares even when the parent's is
 [read-only](../../fern-measurements/bodies-responses/inline-body-overlap-refusals/readonly-parent.fern.log)).
 The detector counts the read-only parent field for that shape alone, in both
 modes and in the source-level fallback.
+
+## Dated history
+
+No claim about Fern CLI 5.163.1 rests on these. Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/request-header.pinned-fern.log`](evidence/request-header.pinned-fern.log)
+- [`evidence/request-inline-allof-duplicates.pinned-fern.log`](evidence/request-inline-allof-duplicates.pinned-fern.log)
+- [`evidence/request-path.pinned-fern.log`](evidence/request-path.pinned-fern.log)
+- [`evidence/request-query.pinned-fern.log`](evidence/request-query.pinned-fern.log)
+- [`evidence/request-readonly-reference.pinned-fern.log`](evidence/request-readonly-reference.pinned-fern.log)
+- [`evidence/request-readonly.pinned-fern.log`](evidence/request-readonly.pinned-fern.log)
+- [`evidence/request-reference.pinned-fern.log`](evidence/request-reference.pinned-fern.log)
+- [`evidence/same-parameter-path-header.pinned-fern.log`](evidence/same-parameter-path-header.pinned-fern.log)
+- [`evidence/same-parameter-path-query.pinned-fern.log`](evidence/same-parameter-path-query.pinned-fern.log)
+- [`evidence/same-parameter-query-header.pinned-fern.log`](evidence/same-parameter-query-header.pinned-fern.log)
+- [`evidence/same-parameter-query-query.pinned-fern.log`](evidence/same-parameter-query-query.pinned-fern.log)

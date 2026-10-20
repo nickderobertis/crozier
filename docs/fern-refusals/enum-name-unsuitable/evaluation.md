@@ -1,5 +1,11 @@
 # Unsuitable enum names
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. The population carries the class on 368 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 368 of the 368 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**;
 no generator repair is made.
 
@@ -49,3 +55,16 @@ labels its two measurement phases: 307 documents already refused through the
 enum-value detector at `e95eefa21`; the remaining 61 were measured through the
 enum-name detector. Adding this detector preserves those earlier refusal
 outcomes. Each corresponding `crozier_strict_exit` is 1.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evidence/letter-digit.fern-check.log`](evidence/letter-digit.fern-check.log)
+- [`evidence/named-digit.fern-check.log`](evidence/named-digit.fern-check.log)
+- [`evidence/named-hyphen.fern-check.log`](evidence/named-hyphen.fern-check.log)
+- [`evidence/named-underscore.fern-check.log`](evidence/named-underscore.fern-check.log)
+- [`evidence/plus.fern-check.log`](evidence/plus.fern-check.log)
+- [`evidence/punctuation.fern-check.log`](evidence/punctuation.fern-check.log)
+- [`evidence/space.fern-check.log`](evidence/space.fern-check.log)
+- [`evidence/underscore.fern-check.log`](evidence/underscore.fern-check.log)

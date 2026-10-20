@@ -1,5 +1,13 @@
 # generator-lint-failure: refuse
 
+## At Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+
+Decision: **refuse**, unchanged. The [probe record](fern-refusal.txt) is measured at this pair. Its 17 probe and 10 control shapes are measured at this pair too ([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): a `-probe` is a shape Fern refuses, a `-control` one it generates from, and each `evaluation-logs/fern-<shape>.log` holds that measurement. The population carries the class on 11 documents at this pair, as at Fern CLI 5.67.1. crozier's release build refuses 11 of the 11 retrievable ones under `--fern-strict` ([`documents.tsv`](../documents.tsv)).
+
+What moved: `server-unbound-placeholder` generates at this pair (fern-python-sdk 5.41.3 formats the server template through a variable) and is a control; crozier already generated it.
+
+The evaluation below was written at Fern CLI 5.67.1 / fern-python-sdk 5.20.0. Where it cites a committed shape, that shape's log is now the 5.163.1 measurement and its verdict is its role's; a population count or a Fern log named there is that pair's. The Fern logs listed under *Dated history* were taken at 5.67.1 and are kept as that record; no claim about 5.163.1 rests on them.
+
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. No SDK repair was made
 to qualify this class. Checks use CPython 3.12.3, mypy 1.13.0 and the
 generated `pyproject.toml`'s own configuration with its dependencies installed.
@@ -114,3 +122,15 @@ the operation, the header and the argument, and never renames one. The
 `x-crozier-idempotency-headers` spelling refuses the same way and wins over a
 conflicting `x-fern-*` list. The independently authored Parcel Courier Desk
 complete golden remains the adjacent valid idempotency control.
+
+## Dated history
+
+Taken at Fern CLI 5.67.1 / fern-python-sdk 5.20.0, over a document never committed or one since re-measured in `shapes.tsv`:
+
+- [`evaluation-logs/fern-discriminant-collision.log`](evaluation-logs/fern-discriminant-collision.log)
+- [`evaluation-logs/fern-tag-suffix-single.log`](evaluation-logs/fern-tag-suffix-single.log)
+- [`evaluation-logs/global-header-empty-name.generate.log`](evaluation-logs/global-header-empty-name.generate.log)
+- [`evaluation-logs/global-header-punctuation-name.generate.log`](evaluation-logs/global-header-punctuation-name.generate.log)
+- [`evaluation-logs/idempotency-header-empty-name.generate.log`](evaluation-logs/idempotency-header-empty-name.generate.log)
+- [`evaluation-logs/idempotency-header-parameter-collision.generate.log`](evaluation-logs/idempotency-header-parameter-collision.generate.log)
+- [`evaluation-logs/idempotency-header-shared-name.generate.log`](evaluation-logs/idempotency-header-shared-name.generate.log)
