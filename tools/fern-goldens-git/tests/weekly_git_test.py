@@ -56,6 +56,7 @@ def older(version: str) -> str:
 OLD = Versions(older(CANDIDATE.cli), older(CANDIDATE.generator))
 CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "debug" / "crozier")
 REFUSAL_CLASS = "default-not-enum-value"
+KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
 
 MIRRORED = (
     "tools/fern-goldens/weekly.py",
@@ -140,7 +141,7 @@ if args[0] == "check":
     sys.exit(code)
 code, message = rule.get("generate", [0, ""])
 if code:
-    print(f"[api]: python-sdk [error] {message}")
+    print(message if rule.get("raw") else f"[api]: python-sdk [error] {message}")
     sys.exit(code)
 cli = json.loads((workspace / "fern.config.json").read_text(encoding="utf-8"))["version"]
 generator = re.search(r"(?m)^\s+version: (\S+)$", (workspace / "generators.yml").read_text(encoding="utf-8")).group(1)
@@ -622,6 +623,8 @@ class WeeklyRunTests(unittest.TestCase):
             values["cli"],
             "--generator",
             values["generator"],
+            "--base",
+            self.git(planner, "rev-parse", "HEAD"),
             "--output",
             str(plan),
             **env,
@@ -1122,6 +1125,94 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertIn("pull request: updated #1", finished.stdout)
         self.assertEqual(1, len(self.pulls()))
 
+    def test_a_refused_or_lost_pull_request_update_is_red_and_the_next_run_updates_it(self) -> None:
+        self.publish_seed()
+        first = self.run_workflow()
+        self.assertEqual(0, first.ran("publish").returncode, first.ran("publish").stderr)
+        self.stand_in({"rules": {"probe": self.refusal_rule}, "generator_config": {"stand_in_revision": 3}})
+        state = self.run_workflow(stop_after="decide")
+        bundle, decision = state.artifacts / "bundle", state.artifacts / "decision"
+        refused = self.publish(bundle, decision, GH_FAIL="pr edit")
+        self.assertEqual(1, refused.returncode)
+        summary = self.summary().rsplit("## Fern goldens: publication failed", 1)[1]
+        self.assertIn("updating pull request #1 failed", summary)
+        self.assertIn("- push fern-goldens/update: pushed", summary)
+        self.assertIn("- label fern-goldens: present", summary)
+        lost = self.publish(bundle, decision, GH_LOSE="pr edit")
+        self.assertEqual(1, lost.returncode)
+        finished = self.publish(bundle, decision)
+        self.assertEqual(0, finished.returncode, finished.stderr)
+        self.assertIn("pull request: updated #1", finished.stdout)
+        self.assertIn("auto-merge: already enabled", finished.stdout)
+        self.assertEqual(1, len(self.pulls()))
+
+    def test_an_exact_known_upstream_failure_is_carried_through_to_an_adopting_pull_request(self) -> None:
+        """A corpus row whose generation reproduces its registered upstream Fern
+        failure exactly, at the candidate version, is no failure: the run
+        decides and publishes the rest, and the row keeps no golden."""
+        manifest = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
+        manifest.update(
+            {
+                "generator_version": CANDIDATE.generator,
+                "corpus_spec_name": "gamma",
+                "corpus_spec_ref": "1",
+                "corpus_spec_url": "https://example.test/gamma/openapi.yaml",
+            }
+        )
+        fixtures = self.seed / "tests/fixtures"
+        (fixtures / "gamma").mkdir()
+        (fixtures / "gamma/known-fern-failure.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        corpus = fixtures / "CORPUS.md"
+        corpus.write_text(
+            corpus.read_text(encoding="utf-8")
+            + "| 2 | `gamma` | test | https://example.test/gamma/openapi.yaml | `1` | MIT | link-ok | gamma |\n",
+            encoding="utf-8",
+        )
+        self.served["example.test/gamma/"] = DOCUMENT.format(title="Gamma Lanterns")
+        compare_corpus = (
+            "{root}/target/release/crozier compare {root}/tests/fixtures/alpha/crozier.yml "
+            "{root}/tests/fixtures/beta/crozier.yml"
+        )
+        gates = self.seed / "tools/fern-goldens/decision-gates.tsv"
+        gates.write_text(
+            "\n".join(
+                f"corpus\tfamily\texit:0/3\t{compare_corpus}" if line.startswith("corpus\t") else line
+                for line in gates.read_text(encoding="utf-8").splitlines()
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        self.publish_seed()
+        fingerprint = manifest["fingerprint"]
+        blocks = [
+            f"fern/output/{entry['path']}:{entry['line']}:{entry['column']}: {entry['message']}\n"
+            f"{entry['line']} | {entry['source']}"
+            for entry in fingerprint["diagnostics"]
+        ]
+        payload = "\n\n".join([*blocks, fingerprint["ruff_summary"]]) + "\n"
+        failure = f"Failed to run command: {fingerprint['failed_command']}\n{payload.encode('utf-8')!r}"
+        self.stand_in(
+            {
+                "rules": {
+                    "probe": self.refusal_rule,
+                    "Gamma Lanterns": {"generate": [manifest["exit_code"], failure], "raw": True},
+                }
+            }
+        )
+        state = self.run_workflow()
+        self.assertEqual([0], [shard.returncode for shard in state.shards], state.shards[0].stderr)
+        bundle = json.loads((state.artifacts / "bundle/bundle.json").read_text(encoding="utf-8"))
+        statuses = {entry["item"]: entry["status"] for entry in bundle["items"]}
+        self.assertEqual("known-upstream-failure", statuses["gamma"])
+        self.assertIn("corpus `gamma`: known-upstream-failure", self.summary())
+        self.assertEqual("match", state.outcome(), self.summary())
+        self.assertEqual(0, state.ran("publish").returncode, state.ran("publish").stderr)
+        (pull,) = self.pulls()
+        self.assertEqual({"mergeMethod": "SQUASH"}, pull["autoMergeRequest"])
+        self.assertIn("| corpus | 3 |", pull["body"])
+        tree = self.git(self.remote, "ls-tree", "-r", "--name-only", "fern-goldens/update").splitlines()
+        self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in tree))
+
     def test_a_diff_after_an_adopting_run_turns_auto_merge_off(self) -> None:
         self.publish_seed()
         matched = self.run_workflow()
@@ -1132,8 +1223,15 @@ class WeeklyRunTests(unittest.TestCase):
                 "tweaks": {"Alpha Lanterns": [["types/lantern.py", "lit:", "lit_state:"]]},
             }
         )
-        differing = self.run_workflow()
-        self.assertEqual(0, differing.ran("publish").returncode, differing.ran("publish").stderr)
+        # The remote turns auto-merge off, but the response is lost: red, and the
+        # next run finds it off and leaves it so.
+        differing = self.run_workflow(GH_LOSE="pr merge")
+        self.assertEqual(1, differing.ran("publish").returncode)
+        self.assertIn("turning off auto-merge on #1 failed", self.summary())
+        bundle, decision = differing.artifacts / "bundle", differing.artifacts / "decision"
+        finished = self.publish(bundle, decision)
+        self.assertEqual(0, finished.returncode, finished.stderr)
+        self.assertIn("auto-merge: off: a diff waits for a person", finished.stdout)
         (pull,) = self.pulls()
         self.assertIsNone(pull["autoMergeRequest"])
         self.assertIn("**Diff**", pull["body"])

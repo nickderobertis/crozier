@@ -387,7 +387,7 @@ class AssemblyTests(unittest.TestCase):
         plan = weekly.Plan(
             complete=True,
             items="",
-            base="abc",
+            base="a" * 40,
             pair=self.pair,
             budget_minutes=weekly.BUDGET_MINUTES,
             shard_limit_minutes=94.5,
@@ -408,7 +408,7 @@ class AssemblyTests(unittest.TestCase):
             "schema_version": 1,
             "index": index,
             "pair": self.pair.to_json(),
-            "base": "abc",
+            "base": "a" * 40,
             "items": [
                 {
                     "family": "corpus",

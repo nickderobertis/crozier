@@ -11,6 +11,7 @@ import importlib.machinery
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -127,10 +128,18 @@ class GeneratorConfigColumnsTests(unittest.TestCase):
         table = (REPO / "tests/fixtures/fern-generator-config.txt").read_text(encoding="utf-8").splitlines()
         header = next(line for line in table if line.startswith("# fixture|"))
         self.assertEqual(("fixture", *tool.GENERATOR_CONFIG_FIELDS), tuple(header.removeprefix("# ").split("|")))
+        # The script reads a row's cells into shell variables in order, then
+        # names each `configured_<column>` after the variable holding it.
         script = (REPO / "tools/fern-goldens/generate-fern-fixture.sh").read_text(encoding="utf-8")
         reader = next(line for line in script.splitlines() if "while IFS='|' read -r configured_fixture" in line)
-        names = reader.split("read -r ", 1)[1].split(";", 1)[0].split()
-        self.assertEqual(len(tool.GENERATOR_CONFIG_FIELDS) + 1, len(names), reader)
+        cells = reader.split("read -r ", 1)[1].split(";", 1)[0].split()[1:]
+        columns = []
+        for cell in cells:
+            assigned = re.search(rf'(?m)^\s*configured_(\w+)="\${cell}"$', script)
+            self.assertIsNotNone(assigned, f"no configured_<column> takes ${cell}")
+            assert assigned is not None
+            columns.append(assigned.group(1))
+        self.assertEqual(list(tool.GENERATOR_CONFIG_FIELDS), columns)
 
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")

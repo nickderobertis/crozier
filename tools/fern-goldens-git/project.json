@@ -70,6 +70,7 @@
         "{workspaceRoot}/docs/fern-refusals/findings.tsv",
         "{workspaceRoot}/docs/fern-refusals/default-not-enum-value/probe.yml",
         "{workspaceRoot}/crates/crozier-e2e/tests/e2e.rs",
+        "{workspaceRoot}/tests/fixtures/calorieninjas.com/known-fern-failure.json",
         "pythonTooling"
       ],
       "dependsOn": [

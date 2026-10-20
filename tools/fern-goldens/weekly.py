@@ -162,6 +162,15 @@ def seconds_of(record: object, key: str, where: str) -> float:
     return float(value)
 
 
+def base_of(record: object, where: str) -> str | None:
+    """The commit an artifact was made over: a full hex object name, or null
+    when it records none (a plan made outside a checkout)."""
+    value = record.get("base") if isinstance(record, dict) else None
+    if value is not None and not (isinstance(value, str) and re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", value)):
+        raise WeeklyError(f"{where}: `base` must be a commit's full name or null, not {value!r}")
+    return value
+
+
 def stable(version: object) -> bool:
     return isinstance(version, str) and VERSION.fullmatch(version) is not None
 
@@ -307,12 +316,11 @@ class Plan:
             raise WeeklyError(f"{where} plans an item twice; re-run the plan job")
         estimate = field_of(record, "estimate", dict, where)
         stages = field_of(estimate, "stages", dict, where)
-        base = record.get("base")
         pair = record.get("pair")
         return cls(
             complete=field_of(record, "complete", bool, where),
             items=field_of(record, "items", str, where),
-            base=base if isinstance(base, str) else None,
+            base=base_of(record, where),
             pair=Pair.from_json(pair, where) if pair is not None else None,
             budget_minutes=seconds_of(record, "budget_minutes", where),
             shard_limit_minutes=seconds_of(record, "shard_limit_minutes", where),
@@ -410,11 +418,10 @@ class ShardResult:
     def from_json(cls, record: object, where: str) -> ShardResult:
         if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
             raise WeeklyError(f"{where} is no shard result of this tool's schema")
-        base = record.get("base") if isinstance(record, dict) else None
         return cls(
             index=field_of(record, "index", int, where),
             pair=Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
-            base=base if isinstance(base, str) else None,
+            base=base_of(record, where),
             items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
             written=tuple(safe_path(path, where) for path in field_of(record, "written", list, where)),
             deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
@@ -447,10 +454,9 @@ class Bundle:
     def from_json(cls, record: object, where: str) -> Bundle:
         if field_of(record, "schema_version", int, where) != SCHEMA_VERSION:
             raise WeeklyError(f"{where} holds no bundle of this tool's schema; re-run the assembly job")
-        base = record.get("base") if isinstance(record, dict) else None
         return cls(
             pair=Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
-            base=base if isinstance(base, str) else None,
+            base=base_of(record, where),
             complete=field_of(record, "complete", bool, where),
             items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
             deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
@@ -490,6 +496,7 @@ class GateRun:
 class Decision:
     pair: Pair
     complete: bool
+    bundle: str
     failing: dict[str, list[FailingItem]] = field(default_factory=dict)
     unfetchable: list[Unfetchable] = field(default_factory=list)
     cannot_run: list[str] = field(default_factory=list)
@@ -510,6 +517,7 @@ class Decision:
             "outcome": self.outcome.value,
             "complete": self.complete,
             "pair": self.pair.to_json(),
+            "bundle": self.bundle,
             "failing": {family: [vars(entry) for entry in entries] for family, entries in self.failing.items()},
             "unfetchable": [vars(entry) for entry in self.unfetchable],
             "cannot_run": self.cannot_run,
@@ -525,6 +533,7 @@ class RecordedDecision:
     outcome: Outcome
     complete: bool
     pair: Pair
+    bundle: str
     title: str
 
     @classmethod
@@ -538,6 +547,7 @@ class RecordedDecision:
             Outcome(outcome),
             field_of(record, "complete", bool, where),
             Pair.from_json(record.get("pair") if isinstance(record, dict) else None, where),
+            field_of(record, "bundle", str, where),
             field_of(record, "title", str, where),
         )
 
@@ -1119,7 +1129,8 @@ def plan(args: argparse.Namespace) -> int:
     if bool(args.cli) != bool(args.generator):
         raise WeeklyError("--cli and --generator name the pair together; pass both or neither")
     pair = Pair.from_json({"cli": args.cli, "generator": args.generator}, "--cli/--generator") if args.cli else None
-    made = make_plan(base, args.items, pair, git(base, "rev-parse", "HEAD", check=False) or None)
+    commit = base_of({"base": args.base or None}, "--base")
+    made = make_plan(base, args.items, pair, commit)
     for destination in (args.output, args.telemetry):
         if destination:
             write_json(Path(destination), made.to_json())
@@ -1398,6 +1409,15 @@ def write_timings(base: Path, made: Plan, results: list[ItemResult], destination
     )
 
 
+def bundle_digest(path: Path) -> str:
+    """The digest of a bundle's record, which a decision names to bind itself
+    to the one tree it decided."""
+    try:
+        return hashlib.sha256((path / "bundle.json").read_bytes()).hexdigest()
+    except OSError as error:
+        raise WeeklyError(f"cannot read {path / 'bundle.json'} ({error}); re-run the assembly job") from error
+
+
 def read_bundle(path: Path) -> Bundle:
     bundle = Bundle.from_json(read_json(path / "bundle.json", "assembled bundle"), str(path / "bundle.json"))
     if bundle.failures:
@@ -1485,6 +1505,7 @@ REGRESSION = re.compile(r"(?m)^--- .* \[REGRESSION")
 SETUP = re.compile(r"(?m)^  Comparison setup failed: ")
 
 
+# llmlint: ignore[changed_behavior_has_e2e] `report_fixture_diffs` is crozier-e2e's ignored reporter over a committed corpus golden, so driving it needs the whole fixture tree and the e2e build; tools/fern-goldens/tests/weekly_test.py drives this reader over the reporter's own report shapes, and tools/fern-goldens-git/tests/weekly_git_test.py holds those shapes to the strings the reporter prints.
 def read_report(code: int, output: str) -> Verdict:
     """The verdict `report_fixture_diffs` (`just fixtures-diff`) states for its
     corpus, read off its own summary: a difference its corpus does not list in
@@ -1573,8 +1594,8 @@ def attribute(
         )
 
 
-def decide_bundle(base: Path, bundle: Bundle, reports: Path, families: Iterable[str]) -> Decision:
-    decision = Decision(bundle.pair, bundle.complete)
+def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, families: Iterable[str]) -> Decision:
+    decision = Decision(bundle.pair, bundle.complete, digest)
     items: dict[str, list[ItemResult]] = {}
     for entry in bundle.items:
         if entry.status == Status.UNFETCHABLE:
@@ -1585,7 +1606,11 @@ def decide_bundle(base: Path, bundle: Bundle, reports: Path, families: Iterable[
     # A command several family rows name runs once, and its report is split over
     # every family those rows name.
     shared: dict[str, tuple[Gate, list[str]]] = {}
-    for gate in gates(base, families):
+    table = gates(base, families)
+    undecided = sorted(set(items) - {family for gate in table for family in gate.families})
+    if undecided:
+        raise WeeklyError(f"{GATES} names no comparison for {', '.join(undecided)}; add the gate that decides it")
+    for gate in table:
         decided = [family for family in gate.families if family in items]
         if not decided:
             continue
@@ -1676,7 +1701,9 @@ def decide(args: argparse.Namespace) -> int:
     current = certified_at_base(base)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=True)
-    decision = decide_bundle(base, bundle, output / "reports", load_references(base).FAMILY)
+    decision = decide_bundle(
+        base, bundle, bundle_digest(Path(args.bundle)), output / "reports", load_references(base).FAMILY
+    )
     write_json(output / "decision.json", decision.to_json())
     (output / "body.md").write_text(body(decision, bundle, current), encoding="utf-8", newline="\n")
     failing = [f"{family} `{entry.item}`" for family, entries in decision.failing.items() for entry in entries]
@@ -1806,8 +1833,8 @@ def publish(args: argparse.Namespace) -> int:
             raise WeeklyError(f"the decision is {decision.outcome.value!r}; only a match or a diff is published")
         if not decision.complete or not bundle.complete:
             raise WeeklyError("a diagnostic subset run never publishes, adopts or records a pair")
-        if decision.pair != bundle.pair:
-            raise WeeklyError(f"the decision is at {decision.pair.label()}, the bundle at {bundle.pair.label()}")
+        if decision.bundle != bundle_digest(Path(args.bundle)):
+            raise WeeklyError("the decision was made over another bundle than this one; re-run the decision job")
         if not os.environ.get("GH_TOKEN"):
             raise WeeklyError(
                 "GH_TOKEN (the workflow's RELEASE_PLZ_TOKEN) is not set; add the secret, then re-run. Nothing was pushed."
@@ -1872,6 +1899,7 @@ def main(argv: list[str] | None = None) -> int:
     phase.add_argument("--cli", default="")
     phase.add_argument("--generator", default="")
     phase.add_argument("--output")
+    phase.add_argument("--base", default="", help="the commit every shard checks out (the workflow's github.sha)")
     phase.add_argument("--telemetry", help="also write the plan where the weekly budget reads it")
     phase = commands.add_parser("shard", help="generate one shard's items")
     phase.add_argument("--plan", required=True)
