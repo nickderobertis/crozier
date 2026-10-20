@@ -1765,10 +1765,11 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertEqual(first.returncode, 0, first.stderr)
         self.assertEqual([declared["cliVersion"]], versions())
         # Written as the declaration is, one key per line, which is how the script reads it.
-        metadata.write_text(json.dumps({**declared, "cliVersion": "7.7.7"}, indent=2), encoding="utf-8")
+        moved_to = "7.7.7"
+        metadata.write_text(json.dumps({**declared, "cliVersion": moved_to}, indent=2), encoding="utf-8")
         moved = run()
         self.assertEqual(moved.returncode, 0, moved.stderr)
-        self.assertEqual([declared["cliVersion"], "7.7.7"], versions())
+        self.assertEqual([declared["cliVersion"], moved_to], versions())
         for broken in ("{not json", json.dumps({**declared, "cliVersion": "latest"}, indent=2)):
             with self.subTest(metadata=broken):
                 metadata.write_text(broken, encoding="utf-8")
@@ -1777,7 +1778,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 self.assertIn("cannot read cliVersion from", refused.stderr)
                 self.assertIn("or set FERN_CLI_VERSION", refused.stderr)
                 self.assertEqual(2, len(versions()), "Fern ran under an unreadable declaration")
-        recovered = run(FERN_CLI_VERSION="8.8.8")
+        recovered = run(FERN_CLI_VERSION="8.8.8")  # certified-pair: stand-in
         self.assertEqual(recovered.returncode, 0, recovered.stderr)
         self.assertEqual("8.8.8", versions()[-1])
 
