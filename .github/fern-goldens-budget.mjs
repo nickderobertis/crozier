@@ -6,7 +6,7 @@ import { report } from '@onebudgetspec/sdk';
 // shard planner recorded; it never plans anything itself.
 // Exit 0 reports existing telemetry; 1 is telemetry/IO/report failure; 2 is invalid invocation.
 class InvocationError extends Error {}
-const finite = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
+const nonNegative = value => typeof value === 'number' && Number.isFinite(value) && value >= 0;
 try {
   const [flag, path, ...extra] = process.argv.slice(2);
   if (flag !== '--telemetry' || !path || extra.length) throw new InvocationError('usage: fern-goldens-budget.mjs --telemetry JSON');
@@ -17,14 +17,14 @@ try {
   const estimate = plan?.estimate;
   if (plan?.schema_version !== 1 || plan.complete !== true) incomplete('it is no plan of the whole inventory');
   if (!families || typeof families !== 'object' || !Object.keys(families).length) incomplete('it names no family');
-  if (!Object.values(families).every(family => Number.isInteger(family?.items) && family.items > 0 && finite(family.seconds))) incomplete('a family has no items or no seconds');
-  if (!Array.isArray(shards) || !shards.length || !shards.every(shard => finite(shard?.minutes) && Array.isArray(shard.items))) incomplete('it plans no shard');
+  if (!Object.values(families).every(family => Number.isInteger(family?.items) && family.items > 0 && nonNegative(family.seconds))) incomplete('a family has no items or no seconds');
+  if (!Array.isArray(shards) || !shards.length || !shards.every(shard => nonNegative(shard?.minutes) && Array.isArray(shard.items))) incomplete('it plans no shard');
   const named = value => typeof value === 'string' && value.length > 0;
-  if (!finite(estimate?.minutes) || !finite(estimate.longest_shard_minutes) || !finite(estimate.setup_minutes_per_job)
-    || !finite(estimate.assembly_minutes) || !Number.isInteger(estimate.waves) || estimate.waves < 1
-    || !estimate.stages || typeof estimate.stages !== 'object' || !Object.values(estimate.stages).every(finite)) incomplete('its estimate lacks a figure');
+  if (!nonNegative(estimate?.minutes) || !nonNegative(estimate.longest_shard_minutes) || !nonNegative(estimate.setup_minutes_per_job)
+    || !nonNegative(estimate.assembly_minutes) || !Number.isInteger(estimate.waves) || estimate.waves < 1
+    || !estimate.stages || typeof estimate.stages !== 'object' || !Object.values(estimate.stages).every(nonNegative)) incomplete('its estimate lacks a figure');
   const planned = shards.flatMap(shard => shard.items);
-  if (!planned.every(entry => named(entry?.family) && named(entry?.item) && finite(entry.seconds))) incomplete('a planned item has no family, name or seconds');
+  if (!planned.every(entry => named(entry?.family) && named(entry?.item) && nonNegative(entry.seconds))) incomplete('a planned item has no family, name or seconds');
   const keys = new Set(planned.map(entry => `${entry?.family}\t${entry?.item}`));
   if (keys.size !== planned.length) incomplete('it plans an item twice');
   for (const [name, family] of Object.entries(families)) {
