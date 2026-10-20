@@ -505,20 +505,47 @@ def load_known_failure(root: Path, row: CorpusRow, version: str | None = None) -
         raise GoldensError(f"known Fern failure {path} has invalid exit_code {exit_code!r}")
     if not isinstance(fingerprint, dict):
         raise GoldensError(f"known Fern failure {path} has no fingerprint object")
-    # The two forms `extract_fern_failure_fingerprint` writes, and no other.
-    errors = fingerprint.get("fern_errors")
-    if set(fingerprint) != {"failed_command", "diagnostics", "ruff_summary"} and not (
-        set(fingerprint) == {"fern_errors"}
-        and isinstance(errors, list)
-        and errors
-        and all(isinstance(error, str) and error for error in errors)
-    ):
+    if not (is_ruff_fingerprint(fingerprint) or is_generator_fingerprint(fingerprint)):
         raise GoldensError(
             f"known Fern failure {path} fingerprints neither Fern's Ruff rejection "
             "(failed_command, diagnostics, ruff_summary) nor its generator's errors (fern_errors)"
         )
     known = KnownFailure(path, exit_code, fingerprint, generator_version)
     return known if version is None or generator_version == version else None
+
+
+def is_ruff_fingerprint(fingerprint: dict[str, object]) -> bool:
+    """The form `ruff_failure_fingerprint` writes: Fern's Ruff command, its
+    summary, and each syntax diagnostic's place, message and source line."""
+    diagnostics = fingerprint.get("diagnostics")
+    summary = fingerprint.get("ruff_summary")
+    places = {"path": str, "line": int, "column": int, "message": str, "source": str}
+    return (
+        set(fingerprint) == {"failed_command", "diagnostics", "ruff_summary"}
+        and fingerprint["failed_command"] == RUFF_COMMAND
+        and isinstance(summary, str)
+        and re.fullmatch(r"Found [0-9]+ errors \(.+\)\.", summary) is not None
+        and isinstance(diagnostics, list)
+        and bool(diagnostics)
+        and all(
+            isinstance(entry, dict)
+            and set(entry) == set(places)
+            and all(isinstance(entry[key], kind) and not isinstance(entry[key], bool) for key, kind in places.items())
+            for entry in diagnostics
+        )
+    )
+
+
+def is_generator_fingerprint(fingerprint: dict[str, object]) -> bool:
+    """The form a Fern generator error is fingerprinted in: its distinct
+    `[error]` messages, in the order Fern printed them."""
+    errors = fingerprint.get("fern_errors")
+    return (
+        set(fingerprint) == {"fern_errors"}
+        and isinstance(errors, list)
+        and bool(errors)
+        and all(isinstance(error, str) and error for error in errors)
+    )
 
 
 def rewrite_known_failure(known: KnownFailure, version: str, exit_code: int, fingerprint: dict[str, object]) -> None:

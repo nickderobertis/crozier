@@ -138,7 +138,8 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 print(repr(payload.encode("utf-8")))
                 raise SystemExit(int(os.environ.get("KNOWN_FAILURE_EXIT_CODE", "1")))
             if fixture in os.environ.get("FERN_ERROR_FIXTURES", "").split(","):
-                print(f"[api]: python-sdk [error] {os.environ['FERN_ERROR']}")
+                for message in os.environ["FERN_ERROR"].split("\n"):
+                    print(f"[api]: python-sdk [error] {message}")
                 raise SystemExit(1)
             if fixture in os.environ.get("FAIL_FIXTURES", "").split(","):
                 (output / "src" / "fern" / "partial.py").write_text("partial\n", encoding="utf-8", newline="\n")
@@ -1142,6 +1143,20 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                 ("5.21.0", {"fern_errors": [genuine]}), (rewritten["generator_version"], rewritten["fingerprint"])
             )
 
+        with self.subTest("colored and repeated generator errors"):
+            path = self.write_known_failure()
+            colored = (
+                "\x1b[31mFailed to generate python-sdk\x1b[39m\nKeyError: 'operationId'\nFailed to generate python-sdk"
+            )
+            result = self.run_tool(
+                "generate", "--version", "5.21.0", "--fixture", "alpha", FERN_ERROR_FIXTURES="alpha", FERN_ERROR=colored
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(
+                {"fern_errors": ["Failed to generate python-sdk", "KeyError: 'operationId'"]},
+                json.loads(path.read_text(encoding="utf-8"))["fingerprint"],
+            )
+
         with self.subTest("an infrastructure error"):
             path = self.write_known_failure()
             before = path.read_bytes()
@@ -1186,11 +1201,21 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         self.assertIn("unexpectedly succeeded", succeeded.stderr)
         self.assertEqual(registered, path.read_bytes())
 
-        payload["fingerprint"] = {"fern_errors": []}
-        path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
-        refused = self.run_tool(*at_own)
-        self.assertEqual(refused.returncode, 1)
-        self.assertIn("fingerprints neither Fern's Ruff rejection", refused.stderr)
+        ruff = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))["fingerprint"]
+        for name, fingerprint in (
+            ("no generator errors", {"fern_errors": []}),
+            ("another command", {**ruff, "failed_command": "ruff check ."}),
+            ("no Ruff summary", {**ruff, "ruff_summary": 11}),
+            ("no diagnostics", {**ruff, "diagnostics": []}),
+            ("a diagnostic without its line", {**ruff, "diagnostics": [{**ruff["diagnostics"][0], "line": "83"}]}),
+            ("both forms", {**ruff, "fern_errors": [genuine]}),
+        ):
+            with self.subTest(name):
+                payload["fingerprint"] = fingerprint
+                path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
+                refused = self.run_tool(*at_own)
+                self.assertEqual(refused.returncode, 1)
+                self.assertIn("fingerprints neither Fern's Ruff rejection", refused.stderr)
 
     def test_compare_aggregates_differences_and_generation_failures(self) -> None:
         green = self.run_tool("compare")
