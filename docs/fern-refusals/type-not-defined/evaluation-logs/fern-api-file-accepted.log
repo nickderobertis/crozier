@@ -1,4 +1,4 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -11,9 +11,10 @@ Warnings for generators.yml:
 All checks passed
 
 generate exit: 0
+files: 40
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-ab59950dea2aacb53/.local/S/agents/type-not-defined/runs/api-tag-accepted/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk Skipping cookie parameter, f, in POST /cookie
@@ -23,8 +24,8 @@ Warnings for generators.yml:
 [api]: python-sdk No error name found for status code 520
 [api]: python-sdk No error name found for status code 599
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
-[api]: python-sdk fernapi/fern-python-sdk Wrote files to /home/whoop/.onevcs/workspaces/github.com-nickderobertis-crozier-df91302d473a/pool/1/clone/.claude/worktrees/agent-ab59950dea2aacb53/.local/S/agents/type-not-defined/runs/api-tag-accepted/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
 [api]: python-sdk fernapi/fern-python-sdk Finished.
 [api]: python-sdk Finished.

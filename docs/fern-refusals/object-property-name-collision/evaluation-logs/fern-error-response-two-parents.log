@@ -1,0 +1,24 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 3 errors
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "result":
+  - ClientRequestErrorBody -> result
+  - ClientRequestErrorBody -> (extends) ApiCollection -> result
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "errors":
+  - ClientRequestErrorBody -> errors
+  - ClientRequestErrorBody -> (extends) ApiCollection -> errors
+
+    [error]
+        path: __package__.yml -> types -> ClientRequestErrorBody
+        issue: Object has multiple properties named "success":
+  - ClientRequestErrorBody -> success
+  - ClientRequestErrorBody -> (extends) ApiCollection -> success
+
+Found 3 errors and 0 warnings in <n> seconds.

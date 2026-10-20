@@ -139,23 +139,9 @@ fn source_refusals(source: &serde_json::Value, args: &crate::GenerateArgs) -> Re
                 .into_iter()
                 .flat_map(|mapping| mapping.values())
             {
-                let mut fields = Vec::new();
-                source_request_properties(
-                    source,
-                    &media["schema"],
-                    &mut std::collections::HashSet::new(),
-                    &mut fields,
-                    true,
-                );
-                let inherited = source_target(source, &media["schema"])["allOf"]
-                    .as_array()
-                    .is_some_and(|members| members.iter().any(|member| member["$ref"].is_string()));
-                let mut names = std::collections::HashSet::new();
-                for (_, name) in fields {
-                    if !names.insert(name.clone()) && inherited {
-                        return Err(refusal(&args.spec, Class::RequestPropertyNameCollision, format!("{} {route} body property {name:?} collides with another request property; give the properties distinct declared names", method.to_ascii_uppercase())));
-                    }
-                }
+                // A property an `allOf` member or a second parent redeclares is
+                // one request property at Fern CLI 5.163.1, as `validate_names`
+                // holds; only an own property beside a parent's collides.
                 // The flattened inline shape also refuses a readOnly parent field
                 // an own property redeclares, as `validate_names` does.
                 let target = source_target(source, &media["schema"]);

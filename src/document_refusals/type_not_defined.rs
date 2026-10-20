@@ -104,12 +104,16 @@ fn api_file_reference(root: &Value, item: &Value, operation: &Value) -> Option<S
 }
 
 /// The statuses Fern names an error for, measured one operation per status
-/// from 100 to 599; any other status (`427`, `520`, `4XX`, …) is skipped.
+/// from 100 to 599 at Fern CLI 5.67.1; any other status (`427`, `520`, …) is
+/// skipped. At Fern CLI 5.163.1 / fern-python-sdk 5.41.3 the `4XX` range is
+/// named too (`ClientRequestError`, the `api-file-4xx` probe), while `427`,
+/// `432`, `460`, `520` and `599` stay skipped (`api-file-accepted` control).
 fn fern_error_status(code: &str) -> bool {
-    code.len() == 3
-        && code.parse::<u16>().is_ok_and(
-            |status| matches!(status, 400..=426 | 428..=431 | 444 | 449..=451 | 498..=511),
-        )
+    code.eq_ignore_ascii_case("4XX")
+        || code.len() == 3
+            && code.parse::<u16>().is_ok_and(
+                |status| matches!(status, 400..=426 | 428..=431 | 444 | 449..=451 | 498..=511),
+            )
 }
 
 /// The response Fern types the endpoint with: `200` when present, otherwise
@@ -403,6 +407,7 @@ mod tests {
         for (body, expected) in [
             ("      responses: {'403': {description: F}}\n", "POST /users responses/403"),
             ("      responses: {499: {description: F}}\n", "POST /users responses/499"),
+            ("      responses: {4XX: {description: F}}\n", "POST /users responses/4XX"),
             ("      responses: {'200': {description: OK, content: {application/json: {schema: {$ref: '#/components/schemas/Thing'}}}}}\n", "POST /users responses/200"),
             ("      responses: {default: {description: OK, content: {application/json: {schema: {oneOf: [{type: string}, {type: integer}]}}}}}\n", "POST /users responses/default"),
             ("      parameters: [{name: f, in: query, schema: {type: array, items: {enum: [a]}}}]\n      responses: {}\n", "POST /users parameter f"),
@@ -418,7 +423,7 @@ mod tests {
     #[test]
     fn api_file_near_misses_are_accepted() {
         for body in [
-            "      responses: {'204': {description: N}, '427': {description: R}, '520': {description: R}, 4XX: {description: R}, default: {description: R}}\n",
+            "      responses: {'204': {description: N}, '427': {description: R}, '432': {description: R}, '520': {description: R}, '599': {description: R}, default: {description: R}}\n",
             "      responses: {'200': {description: OK, content: {application/json: {schema: {type: object, additionalProperties: {type: string}}}}}}\n",
             "      responses: {'200': {description: OK, content: {application/json: {schema: {anyOf: [{type: string}, {type: 'null'}]}}}}}\n",
             "      responses: {'200': {description: OK, content: {text/plain: {schema: {$ref: '#/components/schemas/Color'}}}}}\n",

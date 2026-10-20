@@ -32,7 +32,6 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
         let found = doc
             .version_header_redeclared(&operation)
             .or_else(|| doc.header_default_override(&operation))
-            .or_else(|| doc.empty_body_request_examples(&operation))
             .or_else(|| doc.header_name_fallback(&operation))
             .or_else(|| doc.nullable_parent_example(&operation))
             .or_else(|| doc.read_only_shadows_required_parent(&operation))
@@ -398,51 +397,6 @@ impl<'a> Doc<'a> {
             }
         }
         None
-    }
-
-    /// GitHub's `convertMemberToOutsideCollaborator`: two or more named request
-    /// examples, a `204`, and another `2XX` whose JSON body is an object with an
-    /// explicitly empty `properties` map. Fern pairs the request examples so that
-    /// `examples[0] -> request` is `undefined` (*Expected example to be an
-    /// object. Example is: undefined*), whatever the examples hold. One named
-    /// example, no `204`, a `205`/`201` in its place, `type: object` without
-    /// `properties`, a declared property or `additionalProperties: true` are
-    /// each measured accepted.
-    fn empty_body_request_examples(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
-        let named = self
-            .request_media(operation)?
-            .get("examples")
-            .and_then(Value::as_object)?;
-        if named.len() < 2 {
-            return None;
-        }
-        let successes = self.successes(operation);
-        if !successes.iter().any(|(code, _)| code == "204") {
-            return None;
-        }
-        successes
-            .iter()
-            .filter(|(code, _)| code != "204")
-            .filter_map(|(_, response)| json_media(response.get("content"))?.get("schema"))
-            .filter_map(|schema| self.resolve(schema))
-            .any(|schema| {
-                schema
-                    .get("properties")
-                    .and_then(Value::as_object)
-                    .is_some_and(serde_json::Map::is_empty)
-                    && matches!(
-                        schema.get("additionalProperties"),
-                        None | Some(Value::Bool(false))
-                    )
-                    && object_or_untyped(schema)
-                    && !has_composition(schema)
-            })
-            .then(|| {
-                (
-                    Class::ExampleTypeMismatch,
-                    "requestBody examples".to_owned(),
-                )
-            })
     }
 
     /// A tagged operation answering a `$ref`'d JSON object, with an optional

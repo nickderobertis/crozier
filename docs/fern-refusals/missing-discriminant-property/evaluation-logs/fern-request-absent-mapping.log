@@ -1,8 +1,9 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
-$ fern check
-exit: 1
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 1
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Cat" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
+[api]: Discriminated union "Pet (Pet)" lists "#/components/schemas/Dog" in its oneOf/anyOf, but it is not present in the discriminator mapping. This variant will be omitted from the generated union, so payloads using it will fail to serialize or deserialize. Add it to the discriminator mapping to include it.
 [sdk] 1 error
     [error]
         path: __package__.yml -> service -> endpoints -> createPet -> examples[0] -> request

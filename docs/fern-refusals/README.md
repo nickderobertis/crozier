@@ -1,8 +1,11 @@
 # Fern refusal registry
 
-The classes of input Fern (CLI 5.67.1, `fernapi/fern-python-sdk` 5.20.0)
-refuses, crashes on, or falsely reports success over, and what crozier does with
-each. crozier's default is to generate wherever its output is valid and useful;
+The classes of input Fern (CLI 5.163.1, `fernapi/fern-python-sdk` 5.41.3, the
+certified pair `assets/scaffolding/metadata.json` declares) refuses, crashes on,
+or falsely reports success over, and what crozier does with each. The whole
+population, every class's probe and committed shapes, and each class's
+confirmations are measured at that pair.
+crozier's default is to generate wherever its output is valid and useful;
 `fern-strict` refuses as Fern does. This directory is the one statement of which inputs that covers. The gate
 (`crates/crozier-e2e/tests/e2e.rs::fern_refusal_classes_hold`, in `just check`) reads it, and
 nothing but the steps below writes it.
@@ -61,6 +64,12 @@ caused it.
   `check-only` phrases `fern check` refuses while `fern generate` writes an SDK
   past them, and `generates` shapes neither stage objects to.
 - `<class>/probe.yml` — a minimal hand-written document isolating the class.
+- `<class>/*-probe.yml` and `<class>/*-control.yml` — the class's other
+  measured shapes: a `-probe` is one Fern refuses, a `-control` a near miss it
+  generates from. `shapes` measures each at the pin into
+  `evaluation-logs/fern-<name>.log` and
+  [`shapes.tsv`](../openapi-surface/fern-refusals/shapes.tsv), and `check`
+  fails when a shape's verdict is not its role's or its log is another pair's.
 - `<class>/fern-refusal.txt` — Fern's measured outcome on the probe in Contract
   A's five fields (`fern_cli_version`, `fern_python_sdk_version`,
   `generate_exit`, `diagnostic`, `output_tree`). A false success records
@@ -137,6 +146,7 @@ tools/fern-refusals/fern-refusals.py select            # the population, offline
 just fern-refusals-measure                 # rebuild the release binary, then measure: fetch, run Fern and crozier (network, Docker)
 tools/fern-refusals/fern-refusals.py build             # rewrite documents.tsv, generated.tsv, unretrievable.tsv, class counts
 tools/fern-refusals/fern-refusals.py confirm           # sample each class's real documents through fern generate
+tools/fern-refusals/fern-refusals.py shapes            # measure every class's probe and control shapes (Fern, one at a time)
 tools/fern-refusals/fern-refusals.py check             # offline drift check; tools/fern-refusals/tests/fern_refusals_test.py runs it
 ```
 
@@ -178,8 +188,24 @@ refuses. Both keep Fern's logs under
 
 ## What the measurement settled
 
-- **GitHub's duplicate request names** are `request-property-name-collision`:
-  a path parameter and a body property both called `name`.
+- **GitHub's duplicate request names no longer collide.** None of the 276
+  GitHub REST descriptions in the population carries
+  `request-property-name-collision` at the pin: Fern's importer renames a path
+  parameter a body property shares to `{name}PathParam` (the finding
+  `request-property-name-collision-generates`). It reserves only the body's own
+  properties and its `allOf` parents' own, so a path `id` beside an inline body
+  whose grandparent declares `id` keeps its name and is refused (the class's
+  probe; Rebilly's KYC requests). A header collides with a query parameter of
+  its name (`X-Namespace` with `namespace`) only where it rides too few
+  operations for Fern to lift it to the client, as crozier's `global_headers`
+  decides (`header-query-*` shapes).
+- **A redeclared property is mostly generated.** An object or request body
+  redeclaring a property of its one `allOf` parent, or two parents sharing one,
+  generates (`object-property-name-collision-generates`; Mistral's
+  conversations). `object-property-name-collision` remains for an `allOf` of
+  two `$ref` parents that share a property one of them inherits (the class's
+  probe; Cloudflare's error bodies), and `request-property-name-collision` for
+  an inline body's own property beside a parent's.
 - **`appng-rest-api`** does not fail after a passing check at the pin: its
   `fern check` exits 1 with `Service requires auth, but no auth is defined.`,
   because its only security scheme is an `apiKey` in a cookie, which Fern does
@@ -190,10 +216,9 @@ refuses. Both keep Fern's logs under
   way (`enum-value-unnameable`, e.g. `10080`) or names with a leading digit
   (`enum-name-unsuitable`, e.g. `#0094FF` → `0094Ff`).
 - **A security scheme `$ref` into another document** is `unresolved-reference`,
-  a false success: `fern check` and `fern generate` exit 0 over a document Fern
-  never parsed. With the referenced document placed beside the probe,
-  `fern check` resolves it and passes, so the class is a reference Fern cannot
-  follow, not the scheme. `fern generate` then keeps the referenced scheme's
+  a false success: `fern generate` exits 0 over a document Fern never parsed,
+  printing `Failed to resolve ./components.yaml#/components/securitySchemes/…`.
+  Where the referenced document is present Fern keeps the referenced scheme's
   credential, and crozier resolves it the same way: corpus row 309
   (`huatuo-node-tree`) is a real tree whose `BearerAuth` names
   `../components.yaml`, and its golden byte-matches (issue #351).
@@ -205,7 +230,14 @@ refuses. Both keep Fern's logs under
   `generated-file-name-too-long`. The `Failed to format …` lines printed before
   a lint failure only say which snippet did not parse; they were never seen
   without the failure they precede. `heap-exhausted` is Fern's check running
-  out of a 16 GB heap on a document a few hundred kilobytes long.
+  out of a 16 GB heap on a document of 120 to 150 kilobytes (both of its
+  documents); a union recursing through a component's `$defs` is followed as a
+  schema of its own and generates (`defs-json-value` shape).
+- **Shapes Fern stopped refusing.** A required property beside an `allOf`
+  member referenced into a component's own `definitions` (NSwag's
+  `KitchenSink`) is no `example-unexpected-property`; a boolean `enum` or
+  `const` with a default is no `named-type-default`, where a string `const` is.
+  Each is a control of its class, and crozier generates it.
 - **Contract A's refusal rows** (`header-array`, `header-object`,
   `nonascii-operationId`, `ref-pointer-unnamed-segment` in
   [`../openapi-surface/probe-expected/MANIFEST.tsv`](../openapi-surface/probe-expected/MANIFEST.tsv))

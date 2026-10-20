@@ -19809,7 +19809,7 @@ fn nested_items_required_control_failures(
 ) -> Vec<String> {
     let control = registry
         .join("unresolved-schema-reference")
-        .join("nested-items-required-control.yml");
+        .join("nested-items-required-probe.yml");
     let mut failures = Vec::new();
     for strict in [false, true] {
         let run = match refusal_run(generator, &control, strict) {
@@ -23103,11 +23103,11 @@ fn primitive_default_refusal_recovers_with_declared_types() {
         .join("default-not-valid-for-type");
     for case in [
         "probe.yml",
-        "number-string-control.yml",
-        "integer-fraction-control.yml",
-        "integer-boolean-control.yml",
-        "number-boolean-control.yml",
-        "unused-property-control.yml",
+        "number-string-probe.yml",
+        "integer-fraction-probe.yml",
+        "integer-boolean-probe.yml",
+        "number-boolean-probe.yml",
+        "unused-property-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23126,7 +23126,7 @@ fn primitive_default_refusal_recovers_with_declared_types() {
     )
     .unwrap();
     for label in ["shared-parameter", "referenced-parameter"] {
-        let text = std::fs::read_to_string(class.join(format!("{label}-control.yml"))).unwrap();
+        let text = std::fs::read_to_string(class.join(format!("{label}-probe.yml"))).unwrap();
         let spec = dir.path().join(format!("{label}.yml"));
         std::fs::write(&spec, &text).unwrap();
         for strict in [false, true] {
@@ -23187,7 +23187,7 @@ fn list_default_refusal_recovers_with_an_array() {
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
         .join("list-default-not-array");
-    for case in ["probe.yml", "boolean-default-control.yml"] {
+    for case in ["probe.yml", "boolean-default-probe.yml"] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
             let failures = refused_failures(
@@ -23229,11 +23229,11 @@ fn object_extension_refusal_preserves_scalar_aliases_and_object_bases() {
         .join("object-extends-non-object");
     for case in [
         "probe.yml",
-        "array-base-control.yml",
-        "empty-object-base-control.yml",
-        "map-base-control.yml",
-        "two-scalar-refs-control.yml",
-        "ordered-shadowed-object-control.yml",
+        "array-base-probe.yml",
+        "empty-object-base-probe.yml",
+        "map-base-probe.yml",
+        "two-scalar-refs-probe.yml",
+        "ordered-shadowed-object-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23450,32 +23450,29 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
         .join("extension-reference-cycle");
     for (case, diagnostic) in [
         ("probe.yml", "schemas/Node/x-"),
-        ("other-extension-control.yml", "schemas/Node/x-"),
-        ("two-schema-cycle-control.yml", "schemas/Node/x-"),
-        ("direct-link-control.json", "schemas/Node/x-link"),
+        ("other-extension-probe.yml", "schemas/Node/x-"),
+        ("two-schema-cycle-probe.yml", "schemas/Node/x-"),
+        ("direct-link-probe.json", "schemas/Node/x-link"),
         (
-            "direct-mapped-control.json",
+            "direct-mapped-probe.json",
             "schemas/Node/x-mapped-definition",
         ),
         (
-            "nested-mapped-control.json",
+            "nested-mapped-probe.json",
             "schemas/Node/x-mapped-definition",
         ),
+        ("direct-stripe-probe.json", "schemas/Node/x-stripeProperty"),
+        ("qualified-root-probe.json", "schemas/My.Node/x-link"),
         (
-            "direct-stripe-control.json",
-            "schemas/Node/x-stripeProperty",
-        ),
-        ("qualified-root-control.json", "schemas/My.Node/x-link"),
-        (
-            "field-integer-control.json",
+            "field-integer-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
         (
-            "field-string-control.json",
+            "field-string-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
         (
-            "field-boolean-control.json",
+            "field-boolean-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
     ] {
@@ -23545,15 +23542,15 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
         .join("unresolved-schema-reference");
     for case in [
         "probe.yml",
-        "deep-definitions-field-control.yml",
-        "deep-defs-field-control.yml",
-        "required-response-field-control.yml",
-        "nullable-required-field-control.yml",
-        "nullable-root-control.yml",
-        "optional-known-child-control.yml",
-        "union-first-member-control.yml",
-        "anyof-first-member-control.yml",
-        "nested-items-required-control.yml",
+        "deep-definitions-field-probe.yml",
+        "deep-defs-field-probe.yml",
+        "required-response-field-probe.yml",
+        "nullable-required-field-probe.yml",
+        "nullable-root-probe.yml",
+        "optional-known-child-probe.yml",
+        "union-first-member-probe.yml",
+        "anyof-first-member-probe.yml",
+        "nested-items-required-probe.yml",
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -24251,7 +24248,7 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         "server-placeholder-without-variables-control.yml",
         // fern-python-sdk 5.41.3 formats the server template through a
         // variable, so the unbound placeholder no longer trips Fern's F524.
-        "server-unbound-placeholder-probe.yml",
+        "server-unbound-placeholder-control.yml",
         "slash-prefixed-property-control.yml",
         "null-and-value-enum-control.yml",
     ] {
@@ -24398,7 +24395,6 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
         "multipart-request-dupe",
         "second-json-media-type-dupe",
         "req-xml-dupe-only",
-        "number-vs-string-summary",
         "request-null-summary",
         "ref-no-summary-same-target",
         "x-fern-examples-plus-openapi-dupe",
@@ -24413,6 +24409,24 @@ fn duplicate_example_name_refusal_follows_the_examples_fern_names() {
         "trailing-space",
     ] {
         assert_generates_in_both_modes(&class.join(format!("{control}-control.yml")), control);
+    }
+    // A numeric summary beside a string one names no duplicate, but
+    // fern-python-sdk 5.41.3 crashes on the numeric one: measured at Fern CLI
+    // 5.163.1, refused under `example-summary-not-string`.
+    for strict in [false, true] {
+        let run = refusal_run(
+            &crozier,
+            &class.join("number-vs-string-summary-probe.yml"),
+            strict,
+        )
+        .unwrap();
+        let failures = refused_failures(
+            "example-summary-not-string",
+            &run,
+            "POST /probe request example a summary 1",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
     }
 }
 

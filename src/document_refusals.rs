@@ -38,6 +38,7 @@ enum Class {
     TypeNotDefined,
     MissingDiscriminantProperty,
     DuplicateExampleName,
+    ExampleSummaryNotString,
     ExampleMissingRequiredQueryParameter,
     ExampleTypeMismatch,
     ExampleNotEnumValue,
@@ -72,6 +73,7 @@ impl Class {
             Self::TypeNotDefined => "type-not-defined",
             Self::MissingDiscriminantProperty => "missing-discriminant-property",
             Self::DuplicateExampleName => "duplicate-example-name",
+            Self::ExampleSummaryNotString => "example-summary-not-string",
             Self::ExampleMissingRequiredQueryParameter => {
                 "example-missing-required-query-parameter"
             }
@@ -183,6 +185,52 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
                         strict,
                         &format!("paths/{route}/{name}"),
                     )?;
+                }
+            }
+        }
+        // A success response Fern builds a type from follows its response
+        // component's own `$ref`, which must stay among the response
+        // components: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3, a
+        // `204` aliasing `#/x-fragment/base` through `components/responses`
+        // fails to resolve (`response-fragment` probe), where a `default`
+        // response aliasing it generates (`response-fragment-default` control;
+        // the Groupe PSA golden).
+        for item in paths.values() {
+            for method in [
+                "get", "put", "post", "delete", "options", "head", "patch", "trace",
+            ] {
+                let Some(operation) = item.get(method) else {
+                    continue;
+                };
+                if ignored_reference_node(operation) {
+                    continue;
+                }
+                for (code, response) in operation
+                    .get("responses")
+                    .and_then(serde_json::Value::as_object)
+                    .into_iter()
+                    .flatten()
+                {
+                    let Some(name) = code
+                        .starts_with('2')
+                        .then(|| response.get("$ref").and_then(serde_json::Value::as_str))
+                        .flatten()
+                        .and_then(|reference| reference.strip_prefix("#/components/responses/"))
+                    else {
+                        continue;
+                    };
+                    if let Some(component) =
+                        yaml_pointer(&root, &format!("/components/responses/{name}"))
+                            .filter(|component| component.get("$ref").is_some())
+                    {
+                        check_reference_objects(
+                            component,
+                            &root,
+                            path,
+                            strict,
+                            &format!("components/responses/{name}"),
+                        )?;
+                    }
                 }
             }
         }
@@ -1163,6 +1211,11 @@ fn check_bound_schemas(
                         })
                         && !ignored_reference_node(value)
                         && value.get("$ref").is_none()
+                        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3:
+                        // a header enum with a default generates (the
+                        // `*-default` shapes; AgenticDriver's
+                        // `Accept-Optional-Events`).
+                        && value.get("default").is_none()
                         && value
                             .get("type")
                             .is_none_or(|kind| kind.as_str() == Some("string"))
@@ -1211,6 +1264,24 @@ fn check_bound_schemas(
     Ok(())
 }
 
+/// Whether `schema` admits `null`: a `null` type, `nullable: true`, or a
+/// `oneOf`/`anyOf` member that does.
+fn admits_null(schema: &serde_json::Value) -> bool {
+    let typed_null = match schema.get("type") {
+        Some(serde_json::Value::String(kind)) => kind == "null",
+        Some(serde_json::Value::Array(kinds)) => kinds.iter().any(|kind| kind == "null"),
+        _ => false,
+    };
+    typed_null
+        || schema.get("nullable") == Some(&serde_json::Value::Bool(true))
+        || ["oneOf", "anyOf"].iter().any(|key| {
+            schema
+                .get(key)
+                .and_then(serde_json::Value::as_array)
+                .is_some_and(|members| members.iter().any(admits_null))
+        })
+}
+
 fn check_schema_resolution(
     schema: &serde_json::Value,
     context: &SchemaContext<'_>,
@@ -1250,10 +1321,16 @@ fn check_schema_resolution(
         // `358-undeclared-head-properties-required` and
         // `356-defs-required-property` authored probes).
         let walked = reference.contains("properties");
+        // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a definition
+        // that admits `null` leaves its required property nullable, which Fern
+        // never resolves, so it generates (`defs-nullable-target` shape;
+        // AgenticDriver's `$defs/__schema0`). A definition that does not is
+        // still refused (`deep-defs-field`).
+        let nullable_definition = unsupported_definition && target.is_some_and(admits_null);
         if required
             && !walked
             && schema_reference.is_some()
-            && (target.is_none() || unsupported_definition)
+            && (target.is_none() || (unsupported_definition && !nullable_definition))
         {
             return refusal(
                 context.path,
@@ -2350,6 +2427,35 @@ fn check_example_names(root: &serde_json::Value, path: &Path, strict: bool) -> R
             }
         }
     }
+    // fern-python-sdk 5.41.3 crashes on a request example named by a summary
+    // that is no string (`Cannot use 'in' operator to search for 'wireValue'
+    // in 1`), after a clean `fern check`: measured at Fern CLI 5.163.1 (the
+    // class's probe, and `duplicate-example-name`'s `number-vs-string-summary`
+    // shape). OpenAPI declares `summary` a string, so the document is at fault.
+    for (method, route, operation) in imported_operations(root) {
+        if operation
+            .get("x-fern-examples")
+            .and_then(serde_json::Value::as_array)
+            .is_some_and(|examples| !examples.is_empty())
+        {
+            continue;
+        }
+        let Some(examples) =
+            request_examples(root, operation).and_then(serde_json::Value::as_object)
+        else {
+            continue;
+        };
+        for (key, example) in examples {
+            if let Some(name) = example_name(root, key, example).filter(|name| !name.is_string()) {
+                let element = format!(
+                    "{} {route} request example {key} summary {}",
+                    method.to_ascii_uppercase(),
+                    name_label(&name)
+                );
+                return refusal(path, strict, Class::ExampleSummaryNotString, &element);
+            }
+        }
+    }
     Ok(())
 }
 
@@ -2658,6 +2764,93 @@ mod tests {
             error.contains("heap-exhausted: components/schemas/Tool/properties/composition"),
             "{error}"
         );
+    }
+
+    /// `check_structure_file`'s and `check_document`'s refusal over a committed
+    /// registry shape, or `None` when it passes both.
+    fn registry_shape_refusal(shape: &str) -> Option<String> {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals")
+            .join(shape);
+        let root: serde_json::Value =
+            crate::yaml::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        check_structure_file(&path, false)
+            .and_then(|()| check_document_schemas(&root, &path, false))
+            .and_then(|()| check_example_names(&root, &path, false))
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_required_reference_to_a_nullable_definition_is_resolved() {
+        for control in [
+            "defs-nullable-target-control.yml",
+            "definitions-nullable-target-control.yml",
+        ] {
+            assert_eq!(
+                registry_shape_refusal(&format!("unresolved-schema-reference/{control}")),
+                None,
+                "{control}"
+            );
+        }
+        let error = registry_shape_refusal("unresolved-schema-reference/deep-defs-field-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains("unresolved-schema-reference: paths//contacts/post/requestBody"),
+            "{error}"
+        );
+    }
+
+    #[test]
+    fn a_success_response_follows_its_response_components_reference() {
+        let error = registry_shape_refusal("unresolved-reference/response-fragment-probe.yml")
+            .unwrap_or_default();
+        assert!(
+            error.contains("unresolved-reference: components/responses/Empty: #/x-fragment/base"),
+            "{error}"
+        );
+        assert_eq!(
+            registry_shape_refusal("unresolved-reference/response-fragment-default-control.yml"),
+            None
+        );
+    }
+
+    #[test]
+    fn a_non_string_request_example_summary_is_refused_after_duplicate_names() {
+        let error =
+            registry_shape_refusal("example-summary-not-string/probe.yml").unwrap_or_default();
+        assert!(
+            error.contains(
+                "example-summary-not-string: POST /notes request example first summary 1"
+            ),
+            "{error}"
+        );
+        assert_eq!(
+            registry_shape_refusal("example-summary-not-string/string-summary-control.yml"),
+            None
+        );
+        // Two numeric summaries that match are the duplicate Fern's check reports first.
+        let error = registry_shape_refusal("duplicate-example-name/numeric-summaries-probe.yml")
+            .unwrap_or_default();
+        assert!(error.contains("duplicate-example-name"), "{error}");
+    }
+
+    #[test]
+    fn an_inline_header_enum_with_a_default_is_declared() {
+        for control in [
+            "two-values-default-control.yml",
+            "optional-default-control.yml",
+            "singleton-default-control.yml",
+        ] {
+            assert_eq!(
+                registry_shape_refusal(&format!("generator-missing-type/{control}")),
+                None,
+                "{control}"
+            );
+        }
+        let error = registry_shape_refusal("generator-missing-type/optional-two-values-probe.yml")
+            .unwrap_or_default();
+        assert!(error.contains("generator-missing-type"), "{error}");
     }
 
     #[test]

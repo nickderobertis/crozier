@@ -1,4 +1,4 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
@@ -8,11 +8,11 @@ generate exit: 1
 files: 0
 Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to /home/whoop/ai-orchestrator/runs/Close-crozier-s-remaining-Fern-parity-gaps-and-decide-where-crozier-may-out-generate-Fern/scratch/37723-26/agents/generator-lint/runs/empty-enum/preview
+[api]: Writing preview to <tmp>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk ✓ All checks passed
-[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.20.0
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
 [api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
 [api]: python-sdk fernapi/fern-python-sdk Container execution failed: Container exited with code 1.
                                           Output mode: downloadFiles
@@ -88,7 +88,7 @@ Warnings for generators.yml:
                                                   ^^^^^^^^^^^^^^^^^^^^^^^^
                                               )
                                               ^
-                                            File "/src/fern_python/cli/abstract_generator.py", line 225, in generate_project
+                                            File "/src/fern_python/cli/abstract_generator.py", line 230, in generate_project
                                               publisher.run_ruff_check_fix("/fern/output", cwd="/")
                                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
                                             File "/src/fern_python/cli/publisher.py", line 31, in run_ruff_check_fix

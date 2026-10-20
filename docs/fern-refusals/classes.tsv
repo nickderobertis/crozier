@@ -10,6 +10,7 @@ enum-value-unnameable	names	check	1	Enum value <…> is not suitable for code ge
 example-missing-required-property	documents	check	1	Example is missing required property <…>	130	refuse	GET /requests/{id} response extends nullable	130/130
 example-missing-required-query-parameter	documents	check	1	Example is missing required query parameter <…>	2	refuse	GET /collections x-fern-examples/0 query parameter f	2/2
 example-not-enum-value	documents	check	1	<…> is not a valid example for this enum. Enum values are:	50	refuse	GET /activities x-fern-examples response	50/50
+example-summary-not-string	documents	generate	1	Cannot use 'in' operator to search for 'wireValue' in <…>	0	refuse	POST /notes request example first summary 1	0/0
 example-type-mismatch	documents	check	1	Expected example to be <…>. Example is: <…>	201	refuse	GET /probe response example	201/201
 example-unexpected-property	documents	check	1	Unexpected property <…>	195	refuse	GET /probe components/schemas/Thing_Item collides with ThingItem	195/195
 extension-reference-cycle	documents	check	0	Maximum call stack size exceeded	2	refuse	components/schemas/Node/x-link	2/2

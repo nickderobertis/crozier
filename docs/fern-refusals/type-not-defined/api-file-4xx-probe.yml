@@ -1,0 +1,12 @@
+openapi: 3.1.0
+info: {title: probe, version: 1.0.0}
+paths:
+  /statuses:
+    post:
+      operationId: statuses
+      tags: [api]
+      responses:
+        "204":
+          description: No Content
+        "4XX":
+          description: R

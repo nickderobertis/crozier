@@ -1,26 +1,38 @@
 # object-property-name-collision
 
-## Retiring: measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+## Re-measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: refuse
 
-Fern generates from the probe: `fern check` and `fern generate` both exit 0
+Decision: **refuse**, in both modes. The shape the class names changed; its
+refusal rule did not.
+
+The probe's response is `allOf: [CollectionResponse, CommonFailure]`: both
+parents declare `errors` and `result`, and `CollectionResponse` also inherits
+them from `Common` through its own `$ref` parent. Fern flattens the two parents
+into one object that extends `Common`, and both `fern check` and
+`fern generate` exit 1 with `Object has multiple properties named "result"`
 ([check](../../openapi-surface/fern-refusals/probe-logs/object-property-name-collision.check.log),
 [generate](../../openapi-surface/fern-refusals/probe-logs/object-property-name-collision.generate.log)).
-Its tree is the authored-probe case
-[`549-object-property-name-collision`](../../openapi-surface/authored-probes/549-object-property-name-collision/):
-`FileConflict` keeps one `sha1: typing.Optional[str]` field beside its nullable
-`FileMini` base.
+The population's nine documents at the pair carry this phrase (Cloudflare,
+whose `ClientRequestErrorBody` is this shape, Telnyx, Realcube and Gcore), and
+every one of them carries another class too; all nine refuse under strict mode
+([`documents.tsv`](../documents.tsv)).
 
-crozier generates too, in default mode and under `--fern-strict`, and
-byte-matches Fern's tree in both (`authored_probe_measurements_match_fern`,
-`nullable_inherited_property_redeclarations_generate_in_both_modes`). The
-`findings.tsv` row `object-property-name-collision-generates` names this
-class's probe, which makes the class **retiring**: `fern_refusal_failures`
-holds crozier to generating the probe in both modes, and `fern-refusal.txt`
-stays as the class's last refusal record (Fern CLI 5.67.1). The `classes.tsv`
-row (whose `status` still reads `refuse`) and its `documents.tsv` references
-stay until the population is measured again at the new pair.
+crozier refuses the probe and the
+[`error-response-two-parents`](error-response-two-parents-probe.yml) shape in
+both modes, naming the response and the property. A generated SDK would have to
+pick one of the two declarations for the flattened field, which no Fern output
+shows, so there is no reference to match and the refusal stands. Fern generates,
+and crozier generates byte for byte in both modes, the near misses
+([`shapes.tsv`](../../openapi-surface/fern-refusals/shapes.tsv)): two parents
+declaring the property with no inheritance (`two-direct-parents`), a second
+parent not declaring it (`second-parent-unrelated`), a single parent
+(`single-parent`), an object redeclaring its one parent's property
+(`redeclared-non-nullable-base`; the nullable base of the class's former probe
+is the finding `object-property-name-collision-generates`, authored probe
+[`549-object-property-name-collision`](../../openapi-surface/authored-probes/549-object-property-name-collision/)),
+and a `required` naming an inherited property (`inherited-required`).
 
-## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0
+## Evaluation at Fern CLI 5.67.1 / fern-python-sdk 5.20.0 (dated history)
 
 Baseline: `2b046a72f1fb687c5ef2399d492a5fd2b57cab3b`. Decision: **refuse**.
 No generator repair is made.
