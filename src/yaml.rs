@@ -11,6 +11,11 @@ pub(crate) fn from_str<T: serde::de::DeserializeOwned>(text: &str) -> Result<T, 
     // and the remaining parser protections at their defaults.
     budget.max_nodes = usize::MAX;
     budget.max_events = usize::MAX;
+    // A dereferenced description shares a schema by more than ten aliases per
+    // anchor (GitHub's: 4,574 aliases of 412 anchors), which the parser's
+    // alias/anchor ratio pre-scan refuses; the replay bound below caps what
+    // aliases may expand to, so the ratio adds no protection of its own.
+    budget.enforce_alias_anchor_ratio = false;
     options.budget = Some(budget);
     // A dereferenced description (GitHub's Enterprise Server releases) shares
     // each repeated schema by alias, and replays more events than the default
@@ -33,8 +38,8 @@ mod tests {
     use super::*;
 
     /// A document of 1,100 anchored lists of 100 members, each list replayed
-    /// by ten aliases (the most the parser's alias/anchor ratio admits), beside
-    /// `padding` unique descriptions of 600 bytes each.
+    /// by eleven aliases, beside `padding` unique descriptions of 600 bytes
+    /// each.
     fn shared_lists(padding: usize) -> String {
         let members = (0..100)
             .map(|m| m.to_string())
@@ -46,7 +51,7 @@ mod tests {
         }
         text.push_str("uses:\n");
         for list in 0..1_100 {
-            for _ in 0..10 {
+            for _ in 0..11 {
                 text.push_str(&format!("  - *s{list}\n"));
             }
         }
@@ -59,13 +64,14 @@ mod tests {
 
     #[test]
     fn a_large_document_replaying_more_than_a_million_events_parses() {
-        // About 1.1 million replayed events in a 1.6 MB document, the ratio a
-        // dereferenced description shows (GitHub's: 1.8 million in 9.3 MB).
+        // About 1.2 million replayed events in a 1.6 MB document, more aliases
+        // per anchor than ten, as a dereferenced description shows (GitHub's:
+        // 1.8 million events in 9.3 MB; 4,574 aliases of 412 anchors).
         let text = shared_lists(2_000);
-        assert!(text.len() > 1_200_000, "{}", text.len());
+        assert!(text.len() > 1_300_000, "{}", text.len());
         let value: serde_json::Value = from_str(&text).unwrap();
-        assert_eq!(value["uses"].as_array().unwrap().len(), 11_000);
-        assert_eq!(value["uses"][10_999][99], 99);
+        assert_eq!(value["uses"].as_array().unwrap().len(), 12_100);
+        assert_eq!(value["uses"][12_099][99], 99);
     }
 
     #[test]
