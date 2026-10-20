@@ -460,7 +460,7 @@ class AssemblyTests(unittest.TestCase):
             (directory / "files" / path).parent.mkdir(parents=True, exist_ok=True)
             (directory / "files" / path).write_text(f"{item}\n", encoding="utf-8")
         record = {
-            "schema_version": 1,
+            "schema_version": 2,
             "index": index,
             "pair": self.pair.to_json(),
             "base": "a" * 40,
@@ -610,7 +610,7 @@ class ArtifactTests(unittest.TestCase):
         )
         fault("shards must be numbered from 0 in order", lambda r: r["shards"][1].update(index=5))
         fault("must be a non-negative number", lambda r: r["estimate"].update(minutes=float("nan")))
-        fault("no plan of this tool's schema", lambda r: r.update(schema_version=2))
+        fault("no plan of this tool's schema", lambda r: r.update(schema_version=1))
         fault("`complete` must say whether it plans the whole inventory", lambda r: r.update(items="probes"))
         fault(
             "`complete` must say whether it plans the whole inventory",
@@ -632,7 +632,7 @@ class ArtifactTests(unittest.TestCase):
             "log": "x",
         }
         shard = {
-            "schema_version": 1,
+            "schema_version": 2,
             "index": 0,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
@@ -653,7 +653,7 @@ class ArtifactTests(unittest.TestCase):
             weekly.ShardResult.from_json({**shard, "items": [{**item, "status": "skipped"}]}, "result.json")
         self.assertIn("status 'skipped' is none of", str(raised.exception))
         bundle = {
-            "schema_version": 1,
+            "schema_version": 2,
             "pair": shard["pair"],
             "base": None,
             "complete": True,
@@ -814,7 +814,7 @@ class PublicationGuardTests(unittest.TestCase):
         (self.bundle / "files").mkdir(parents=True)
         (self.bundle / "files/x.txt").write_text("x\n", encoding="utf-8")
         record = {
-            "schema_version": 1,
+            "schema_version": 2,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},
             "base": None,
             "complete": True,
@@ -830,7 +830,7 @@ class PublicationGuardTests(unittest.TestCase):
         self, outcome: str = "match", *, digest: str | None = None, checked_on: str = "2026-10-19"
     ) -> subprocess.CompletedProcess[str]:
         record = {
-            "schema_version": 1,
+            "schema_version": 2,
             "outcome": outcome,
             "complete": True,
             "pair": {"cli": "2.0.0", "generator": "3.0.0"},

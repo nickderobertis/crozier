@@ -509,6 +509,14 @@ def load_known_failure(root: Path, row: CorpusRow, version: str | None = None) -
     return known if version is None or generator_version == version else None
 
 
+def rewrite_known_failure(known: KnownFailure, version: str, exit_code: int, fingerprint: dict[str, object]) -> None:
+    """Restate a registration at another generator version, with the failure
+    Fern gave there; its corpus and generator identity stay as they were."""
+    payload = json.loads(known.path.read_text(encoding="utf-8"))
+    payload.update({"generator_version": version, "exit_code": exit_code, "fingerprint": fingerprint})
+    known.path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
+
+
 def extract_fern_failure_fingerprint(log_path: Path) -> dict[str, object]:
     try:
         log = log_path.read_text(encoding="utf-8")
@@ -769,6 +777,7 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     generated: list[str] = []
     current: list[str] = []
     known_upstream_failures: list[str] = []
+    known_failure_changes: list[str] = []
     failures: list[str] = []
     fetch_failures: list[str] = []
     cli = requested_cli_version(root)
@@ -789,11 +798,16 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                 # no longer be had, which no regeneration of the golden repairs.
                 fetch_failures.append(f"{row.fixture}\t{str(error).splitlines()[0]}")
                 raise
-            known_failure = load_known_failure(root, row, version)
-            if known_failure is not None and is_current(root, row, version, cli=cli):
-                raise GoldensError(f"{known_failure.path} is stale because a complete current golden exists")
+            registered = load_known_failure(root, row)
+            if registered is not None and is_current(root, row, version, cli=cli):
+                raise GoldensError(f"{registered.path} is stale because a complete current golden exists")
+            # A registration binds at its own version. At any other (a candidate
+            # pair) Fern's outcome decides it: the same failure carries it to the
+            # candidate, and a different failure or a success replaces it.
+            known_failure = registered if registered is not None and registered.generator_version == version else None
+            candidate_failure = registered if known_failure is None else None
             packaged_generated = False
-            if known_failure is None and is_current(root, row, version, cli=cli):
+            if registered is None and is_current(root, row, version, cli=cli):
                 log_path.write_text(
                     f"current: {row.fixture} at {GENERATOR}:{version}\n", encoding="utf-8", newline="\n"
                 )
@@ -831,6 +845,38 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                                 f"reproduced for {row.fixture} at {GENERATOR}:{version}"
                             )
                             continue
+                        if candidate_failure is not None:
+                            # A failure no fingerprint describes (Docker, the network) is
+                            # no new registration: it fails here, and the old one stands.
+                            try:
+                                actual_fingerprint = extract_fern_failure_fingerprint(log_path)
+                            except GoldensError as error:
+                                raise GoldensError(
+                                    f"generator exited {result.returncode} without a failure a known-failure "
+                                    f"registration can record ({error}); kept {candidate_failure.path}; see {log_path}"
+                                ) from error
+                            rewrite_known_failure(candidate_failure, version, result.returncode, actual_fingerprint)
+                            if (
+                                result.returncode == candidate_failure.exit_code
+                                and actual_fingerprint == candidate_failure.fingerprint
+                            ):
+                                known_upstream_failures.append(row.fixture)
+                                print(
+                                    f"fern-goldens: warning: exact known upstream Fern failure reproduced for "
+                                    f"{row.fixture} at {GENERATOR}:{version}; carried its registration from "
+                                    f"{candidate_failure.generator_version}"
+                                )
+                            else:
+                                same = actual_fingerprint == candidate_failure.fingerprint
+                                change = (
+                                    f"Fern fails it differently at {GENERATOR}:{version} (exit "
+                                    f"{candidate_failure.exit_code} -> {result.returncode}, fingerprint "
+                                    f"{'unchanged' if same else 'changed'}); its registration is rewritten "
+                                    f"from {candidate_failure.generator_version}"
+                                )
+                                known_failure_changes.append(f"{row.fixture}\t{change}")
+                                print(f"fern-goldens: warning: {row.fixture}: {change}")
+                            continue
                         raise GoldensError(f"generator exited {result.returncode}; see {log_path}")
                     if known_failure is not None:
                         raise GoldensError(
@@ -846,6 +892,15 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
                     packaged_generated = True
                     generated.append(row.fixture)
                     print(f"fern-goldens: generated {row.fixture} at {GENERATOR}:{version}")
+                    if candidate_failure is not None:
+                        # The golden replaces the registration: never both.
+                        candidate_failure.path.unlink()
+                        change = (
+                            f"Fern generates it at {GENERATOR}:{version}; its golden replaces the registration "
+                            f"from {candidate_failure.generator_version}"
+                        )
+                        known_failure_changes.append(f"{row.fixture}\t{change}")
+                        print(f"fern-goldens: warning: {row.fixture}: {change}")
                 finally:
                     shutil.rmtree(stage, ignore_errors=True)
 
@@ -881,6 +936,9 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     (report / "known-upstream-failures.txt").write_text(
         "".join(f"{fixture}\n" for fixture in known_upstream_failures), encoding="utf-8", newline="\n"
     )
+    (report / "known-upstream-failure-changes.txt").write_text(
+        "".join(f"{change}\n" for change in known_failure_changes), encoding="utf-8", newline="\n"
+    )
     (report / "generation-failures.txt").write_text(
         "".join(f"{failure}\n" for failure in failures), encoding="utf-8", newline="\n"
     )
@@ -890,7 +948,8 @@ def generate(root: Path, version_arg: str | None, selectors: list[str]) -> int:
     summary = (
         f"Fern generation summary: {len(generated)} generated, {len(current)} current, "
         f"{len(failures)} failed, {len(known_upstream_failures)} exact known upstream "
-        f"Fern failure(s) at {GENERATOR}:{version}.\n"
+        f"Fern failure(s), {len(known_failure_changes)} changed known upstream Fern failure(s) "
+        f"at {GENERATOR}:{version}.\n"
     )
     (report / "generation-summary.txt").write_text(summary, encoding="utf-8", newline="\n")
     write_deterministic_archive(root, generated, report / "generated-goldens.tar.gz")
