@@ -31,7 +31,7 @@ caused it.
   `refuse`), `crozier_diagnostic` (the literal substring crozier's refusal line
   must contain; `—` while `unevaluated`), `population_strict`
   (`<refused>/<total>` over the retrievable documents carrying the class; `—`
-  while `unevaluated`).
+  while `unevaluated`). `build` writes `documents` and `population_strict`.
 - [`documents.tsv`](documents.tsv) — one row per distinct refused document,
   sorted by `digest` (lower-hex SHA-256 of its exact bytes): `source`,
   `locator`, `revision` (immutable), `recorded_by` (the committed records naming

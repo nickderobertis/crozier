@@ -25,8 +25,9 @@ Subcommands, in the order a refresh runs them:
     appending one line per document to ``measurements.jsonl``. Needs network,
     Docker, ``fern`` and ``target/release/crozier``.
 ``build``
-    Rewrite ``documents.tsv``, ``unretrievable.tsv`` and ``classes.tsv``'s
-    ``documents`` column from the committed inputs alone (offline).
+    Rewrite ``documents.tsv``, ``generated.tsv``, ``unretrievable.tsv`` and
+    ``classes.tsv``'s ``documents`` and ``population_strict`` columns from the
+    committed inputs alone (offline).
 ``check``
     Fail when a committed table differs from what ``build`` writes, or when its
     header or cross references drift from the registry contract (offline).
@@ -1201,6 +1202,12 @@ def tables() -> tuple[dict[str, str], list[str]]:
         )
     for row in classes:
         row["documents"] = str(counts[row["class"]])
+        if row["status"] != "unevaluated":
+            # Of the documents carrying an evaluated class, how many crozier's
+            # `--fern-strict` run refuses.
+            carrying = [doc for doc in documents.values() if row["class"] in doc["classes"].split(",")]
+            refused = sum(1 for doc in carrying if doc["crozier_strict_exit"] == "1")
+            row["population_strict"] = f"{refused}/{len(carrying)}"
     return (
         {
             "documents.tsv": tsv_text(DOCUMENTS_HEADER, (documents[key] for key in sorted(documents))),

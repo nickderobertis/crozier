@@ -1181,6 +1181,9 @@ class MeasuredAtThePair(unittest.TestCase):
         built = self.script("build")
         self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
         self.assertEqual("fern-refusals: 2 refused, 0 generated, 2 unretrievable\n", built.stdout)
+        # The class counts, and how many of them crozier's strict run refuses, come from the same rows.
+        [row] = rows(self.root / "docs" / "fern-refusals" / "classes.tsv")[1:]
+        self.assertEqual((row[5], row[8]), ("2", "2/2"))
         unretrievable = rows(self.root / "docs" / "fern-refusals" / "unretrievable.tsv")[1:]
         self.assertEqual(
             sorted((row[4], row[5]) for row in unretrievable),
