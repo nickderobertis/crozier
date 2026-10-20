@@ -421,6 +421,10 @@ class ItemResult:
         if status not in set(Status):
             raise WeeklyError(f"{where}: status {status!r} is none of {', '.join(Status)}")
         shard = record.get("shard") if isinstance(record, dict) else None
+        if shard is not None:
+            shard = field_of(record, "shard", int, where)
+            if shard < 0:
+                raise WeeklyError(f"{where}: `shard` must be a shard's index, not {shard}")
         return cls(
             family=name_of(record, "family", where),
             item=name_of(record, "item", where),
@@ -429,7 +433,7 @@ class ItemResult:
             seconds=seconds_of(record, "seconds", where),
             changed=tuple(safe_path(path, where) for path in field_of(record, "changed", list, where)),
             log=field_of(record, "log", str, where),
-            shard=shard if isinstance(shard, int) and not isinstance(shard, bool) else None,
+            shard=shard,
         )
 
 
@@ -469,6 +473,13 @@ class ShardResult:
         )
 
 
+def failures_of(record: object, where: str) -> list[str]:
+    failures = field_of(record, "failures", list, where)
+    if not all(isinstance(failure, str) for failure in failures):
+        raise WeeklyError(f"{where}: `failures` must be a list of strings; re-run the assembly job")
+    return failures
+
+
 @dataclass(frozen=True)
 class Bundle:
     """Every shard combined: the one tree a decision and a pull request read."""
@@ -501,7 +512,7 @@ class Bundle:
             complete=field_of(record, "complete", bool, where),
             items=tuple(ItemResult.from_json(item, where) for item in field_of(record, "items", list, where)),
             deleted=tuple(safe_path(path, where) for path in field_of(record, "deleted", list, where)),
-            failures=tuple(str(failure) for failure in field_of(record, "failures", list, where)),
+            failures=tuple(failures_of(record, where)),
         )
 
 

@@ -605,6 +605,14 @@ class ArtifactTests(unittest.TestCase):
         }
         with self.assertRaises(weekly.WeeklyError):
             weekly.Bundle.from_json(bundle, "bundle.json")
+        for faulty, message in (
+            ({**bundle, "deleted": [], "failures": [{"why": "x"}]}, "`failures` must be a list of strings"),
+            ({**bundle, "deleted": [], "items": [{**item, "shard": "0"}]}, "`shard` must be int"),
+            ({**bundle, "deleted": [], "items": [{**item, "shard": -1}]}, "`shard` must be a shard's index"),
+        ):
+            with self.subTest(message), self.assertRaises(weekly.WeeklyError) as raised:
+                weekly.Bundle.from_json(faulty, "bundle.json")
+            self.assertIn(message, str(raised.exception))
 
     def test_a_phase_reading_a_faulty_artifact_fails_naming_it(self) -> None:
         with tempfile.TemporaryDirectory() as scratch:
