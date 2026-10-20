@@ -57,6 +57,7 @@ OLD = Versions(older(CANDIDATE.cli), older(CANDIDATE.generator))
 CROZIER = Path(os.environ.get("CROZIER_WEEKLY_TEST_BIN") or REPO / "target" / "debug" / "crozier")
 REFUSAL_CLASS = "default-not-enum-value"
 KNOWN_FAILURE = REPO / "tests/fixtures/calorieninjas.com/known-fern-failure.json"
+TIMINGS = "tools/fern-goldens/generation-seconds.tsv"
 
 MIRRORED = (
     "tools/fern-goldens/weekly.py",
@@ -1552,6 +1553,7 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertNotIn("Known upstream Fern failures that changed", pull["body"])
         carried = json.loads(self.remote_file("fern-goldens/update", "tests/fixtures/gamma/known-fern-failure.json"))
         self.assertEqual({**manifest, "generator_version": CANDIDATE.generator}, carried)
+        self.assertRegex(self.remote_file("fern-goldens/update", TIMINGS), r"(?m)^corpus\tgamma\t[0-9.]+$")
         self.assertFalse(any(path.startswith("tests/fixtures/gamma/expected") for path in self.published_tree()))
 
     def test_a_known_failure_fern_fails_differently_at_a_candidate_is_a_diff_carrying_its_new_registration(
@@ -1580,6 +1582,7 @@ class WeeklyRunTests(unittest.TestCase):
         self.assertEqual(
             {**manifest, "generator_version": CANDIDATE.generator, "exit_code": 2, "fingerprint": changed}, rewritten
         )
+        self.assertRegex(self.remote_file("fern-goldens/update", TIMINGS), r"(?m)^corpus\tgamma\t[0-9.]+$")
 
     def test_a_known_failure_fern_generates_at_a_candidate_is_a_diff_whose_golden_replaces_it(self) -> None:
         """Fern now generates the registered row: the pull request is a diff

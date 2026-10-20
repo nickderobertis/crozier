@@ -1762,8 +1762,7 @@ def known_change_report(base: Path, entry: ItemResult) -> str:
     if path.is_file():
         return f"{registration}:\n{path.read_text(encoding='utf-8')}"
     written = [changed for changed in entry.changed if (base / changed).is_file()]
-    shown = "\n".join(written[:40]) + (f"\n… and {len(written) - 40} more" if len(written) > 40 else "")
-    return f"{registration} removed; the generated reference ({len(written)} file(s)):\n{shown}"
+    return f"{registration} removed; the generated reference ({len(written)} file(s)):\n" + "\n".join(written)
 
 
 def decide_bundle(base: Path, bundle: Bundle, digest: str, reports: Path, families: Iterable[str]) -> Decision:

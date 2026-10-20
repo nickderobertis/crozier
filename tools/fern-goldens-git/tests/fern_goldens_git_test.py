@@ -37,6 +37,8 @@ from fern_goldens_test import (
     mirror,
 )
 
+GENERATOR = "fernapi/fern-python-sdk"
+
 
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FernGoldensBoundaryTests(unittest.TestCase):
@@ -1078,6 +1080,62 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             path.relative_to(expected).as_posix(): path.read_bytes() for path in expected.rglob("*") if path.is_file()
         }
         self.assertEqual(after, before)
+
+    def test_a_candidate_version_decides_a_registration_by_what_fern_does_there(self) -> None:
+        """At a version other than the registration's own, Fern's outcome
+        decides it: the same failure carries it, an exit-only or
+        fingerprint-only change rewrites it, a success replaces it with the
+        golden, and a failure no fingerprint describes leaves it as it was."""
+        report = self.root / ".local" / "fern-goldens"
+        original = json.loads(KNOWN_FAILURE.read_text(encoding="utf-8"))
+        cases = (
+            ("carried", {"KNOWN_FAILURE_FIXTURES": "alpha"}, "1 exact known upstream Fern failure(s), 0 changed", ""),
+            (
+                "exit only",
+                {"KNOWN_FAILURE_FIXTURES": "alpha", "KNOWN_FAILURE_EXIT_CODE": "2"},
+                "0 exact known upstream Fern failure(s), 1 changed",
+                f"alpha\tFern fails it differently at {GENERATOR}:5.21.0 (exit 1 -> 2, fingerprint "
+                "unchanged); its registration is rewritten from 5.20.0\n",
+            ),
+            (
+                "fingerprint only",
+                {"KNOWN_FAILURE_FIXTURES": "alpha", "MUTATE_KNOWN_FAILURE": "1"},
+                "0 exact known upstream Fern failure(s), 1 changed",
+                f"alpha\tFern fails it differently at {GENERATOR}:5.21.0 (exit 1 -> 1, fingerprint "
+                "changed); its registration is rewritten from 5.20.0\n",
+            ),
+        )
+        for name, env, summary, change in cases:
+            with self.subTest(name):
+                path = self.write_known_failure()
+                result = self.run_tool("generate", "--version", "5.21.0", "--fixture", "alpha", check=False, **env)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn(f"{summary} known upstream Fern failure(s) at {GENERATOR}:5.21.0", result.stdout)
+                self.assertEqual(change, (report / "known-upstream-failure-changes.txt").read_text(encoding="utf-8"))
+                rewritten = json.loads(path.read_text(encoding="utf-8"))
+                self.assertEqual("5.21.0", rewritten["generator_version"])
+                self.assertEqual(int(env.get("KNOWN_FAILURE_EXIT_CODE", "1")), rewritten["exit_code"])
+                mutated = "MUTATE_KNOWN_FAILURE" in env
+                self.assertEqual(mutated, rewritten["fingerprint"] != original["fingerprint"])
+
+        with self.subTest("unfingerprintable failure"):
+            path = self.write_known_failure()
+            before = path.read_bytes()
+            failed = self.run_tool("generate", "--version", "5.21.0", "--fixture", "alpha", FAIL_FIXTURES="alpha")
+            self.assertEqual(failed.returncode, 1)
+            self.assertIn("without a failure a known-failure registration can record", failed.stderr)
+            self.assertEqual(before, path.read_bytes())
+
+        with self.subTest("generated"):
+            path = self.write_known_failure()
+            generated = self.run_tool("generate", "--version", "5.21.0", "--fixture", "alpha")
+            self.assertEqual(generated.returncode, 0, generated.stderr)
+            self.assertFalse(path.exists(), "the golden replaces the registration")
+            self.assertEqual("5.21.0", self.state("alpha")["fern_python_sdk_version"])
+            self.assertIn(
+                "Fern generates it", (report / "known-upstream-failure-changes.txt").read_text(encoding="utf-8")
+            )
+            self.assertIn("1 generated, 0 current, 0 failed", generated.stdout)
 
     def test_compare_aggregates_differences_and_generation_failures(self) -> None:
         green = self.run_tool("compare")

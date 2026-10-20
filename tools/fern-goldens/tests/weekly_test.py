@@ -781,6 +781,16 @@ class BodyTests(unittest.TestCase):
         many = weekly.body(self.decision(["y" * 5000] * 400), self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
         self.assertLessEqual(len(many), weekly.BODY_LIMIT + 5000)
 
+    def test_a_changed_known_failure_is_a_diff_whose_long_report_is_truncated(self) -> None:
+        decision = weekly.Decision(weekly.Pair("2.0.0", "3.0.0"), True, "digest")
+        decision.known_changed.append(weekly.KnownFailureChange("gamma", "Fern generates it", "z" * 20000))
+        self.assertEqual(weekly.Outcome.DIFF, decision.outcome)
+        text = weekly.body(decision, self.bundle(), weekly.Pair("1.0.0", "1.0.0"))
+        self.assertIn("Fern decided 1 registered known failure(s) otherwise", text)
+        self.assertIn("- corpus `gamma`: Fern generates it", text)
+        self.assertIn("… (truncated; the bundle carries the whole file)", text)
+        self.assertLess(len(text), weekly.REPORT_LIMIT + 2000)
+
     def test_the_run_is_linked_when_the_workflow_names_it(self) -> None:
         with unittest.mock.patch.dict(
             os.environ,
