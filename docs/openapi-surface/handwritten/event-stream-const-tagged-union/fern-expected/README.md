@@ -61,9 +61,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.stations.follow_levels(
-        station_id="stationId",
-    )
+    async for chunk in client.stations.follow_levels(...):
+        print(chunk)
 
 
 asyncio.run(main())

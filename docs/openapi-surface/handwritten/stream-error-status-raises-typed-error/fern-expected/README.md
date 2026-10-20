@@ -59,7 +59,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.sails.stream_rotations()
+    async for chunk in client.sails.stream_rotations():
+        print(chunk)
 
 
 asyncio.run(main())

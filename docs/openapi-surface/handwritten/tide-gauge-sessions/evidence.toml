@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "0c39f3d7d26466706eec27cac0e223e5723f7e5a5173ed62a1c477e3b783ea1a"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "e69b3c653a3df44fd89e3e878beda5ca5682344139f521a17a4605ff718594cf"
 
 [[covers]]
 key = "security-scheme-capitalised-http"

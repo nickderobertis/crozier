@@ -5,15 +5,23 @@ import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .created_at_field import CreatedAtField
 from .monitor_id import MonitorId
 from .monitor_ref_links import MonitorRefLinks
 from .monitor_status import MonitorStatus
 
 
-class MonitorRef(CreatedAtField):
+class MonitorRef(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     updated_at: typing_extensions.Annotated[
         dt.datetime, FieldMetadata(alias="updatedAt"), pydantic.Field(alias="updatedAt")
     ]

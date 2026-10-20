@@ -1064,7 +1064,7 @@ fn object_fields_render_with_fern_conventions() {
     // Described field: pydantic.Field(default=None) + docstring line.
     assert!(widget.contains("described: typing.Optional[str] = pydantic.Field(default=None)"));
     assert!(widget.contains("A described optional field."));
-    // Reserved name is munged and aliased; Fern 5.20 carries the wire alias in
+    // Reserved name is munged and aliased; Fern carries the wire alias in
     // both its serialization metadata and pydantic's field metadata.
     assert!(widget.contains(
         "list_: typing_extensions.Annotated[\n        typing.Optional[typing.List[str]], FieldMetadata(alias=\"list\"), pydantic.Field(alias=\"list\")\n    ] = None"
@@ -1412,7 +1412,7 @@ fn nullable_scalar_alias_is_optional() {
 
 #[test]
 fn unknown_schema_maps_to_any_with_field_absence_modeled_separately() {
-    // Fern 5.20 renders an empty alias and a required unknown field as bare `Any`.
+    // Fern renders an empty alias and a required unknown field as bare `Any`.
     // A containing field adds one Optional only when the property may be absent.
     let files = render(
         "openapi: 3.0.0\ninfo:\n  title: U\ncomponents:\n  schemas:\n    Unknown: {}\n    Holder:\n      type: object\n      required: [value]\n      properties:\n        value: {}\n        other: {}\n    Patch:\n      type: object\n      properties:\n        value: {}\n",
@@ -3464,7 +3464,9 @@ components:
 
 /// A property whose schema node is a JSON array (a `required` list misplaced
 /// inside `properties`) degrades to `Optional[Any]` rather than synthesizing a
-/// bogus type and a dangling import (issue #86).
+/// bogus type and a dangling import (issue #86). Every other non-schema scalar
+/// node degrades the same way, field by field — except a bare boolean, which
+/// Fern 5.163.1 reads as making the whole object unknown.
 #[test]
 fn malformed_property_schema_degrades_to_any() {
     let spec = r##"
@@ -3487,7 +3489,6 @@ paths:
                     items: { type: string }
                   required: [widgets]
                   stringNode: not-a-schema
-                  boolNode: true
                   negativeNode: -1
                   positiveNode: 1
                   floatNode: 1.5
@@ -3506,7 +3507,6 @@ paths:
     );
     for (field, wire_name) in [
         ("string_node", "stringNode"),
-        ("bool_node", "boolNode"),
         ("negative_node", "negativeNode"),
         ("positive_node", "positiveNode"),
         ("float_node", "floatNode"),
@@ -3519,6 +3519,22 @@ paths:
             "the malformed scalar property {field} must degrade independently:\n{resp}"
         );
     }
+
+    // A bare *boolean* property is the one malformed node that does not degrade
+    // alone: Fern 5.163.1 reads the whole object as unknown, the way its
+    // fern-python-sdk 5.41.3 `webflow-v2` golden types the object member of
+    // `validations.additionalProperties`.
+    let with_boolean = render(&spec.replace(
+        "nullNode: null",
+        "nullNode: null\n                  boolNode: true",
+    ));
+    assert!(
+        !with_boolean.contains_key("src/acme/types/search_response.py")
+            && with_boolean["src/acme/client.py"].contains(
+                "def search(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.Any:"
+            ),
+        "a bare-boolean property makes the object unknown"
+    );
 }
 
 /// A root-operation nested type reaches the package-root `core` package at the
@@ -3736,11 +3752,12 @@ fn catalog_spec_resolves_refs_hoists_inline_schemas_and_promotes_headers() {
     assert!(reference.contains("active=True"), "{reference}");
     assert!(reference.contains("count=5"), "{reference}");
     // `limit`'s example is declared on the *parameter*, not its schema, and the
-    // parameter is `type: integer` — Fern 5.20.0 discards a parameter-level example
-    // on anything but a `type: string` parameter, then fills the required argument
-    // with its synthesized integer instead (probed directly; a schema-level example
-    // on the same parameter would have been used verbatim, as `limit=7` and
-    // `limit=15` below are).
+    // parameter is `type: integer` — Fern 5.20.0 discarded a parameter-level
+    // example on anything but a `type: string` parameter, then filled the
+    // required argument with its synthesized integer instead (probed directly,
+    // not re-measured at the certified pair; a schema-level example on the same
+    // parameter would have been used verbatim, as `limit=7` and `limit=15`
+    // below are).
     assert!(reference.contains("limit=1"), "{reference}");
 }
 
@@ -4172,10 +4189,14 @@ paths:
     assert!(
         raw.contains(
             r#""payload": json.dumps(jsonable_encoder(payload)) if payload is not OMIT else OMIT"#
-        ) && raw.contains(
-            r#""labels": json.dumps(jsonable_encoder(labels)) if labels is not OMIT else OMIT"#
         ),
-        "unknown and collection form values must be JSON encoded: {raw}"
+        "unknown form values must be JSON encoded: {raw}"
+    );
+    // A list of primitives is handed to httpx as the list itself, so the field
+    // repeats per item (fern-python-sdk 5.41.3).
+    assert!(
+        raw.contains(r#""labels": jsonable_encoder(labels) if labels is not OMIT else OMIT"#),
+        "a primitive list form value must repeat its field: {raw}"
     );
     assert!(
         raw.contains(r#""note": note"#),
@@ -4435,10 +4456,18 @@ components:
             && !raw_example.contains("request=b\"string\""),
         "Fern's high-level bytes contract keeps its string example: {raw_example}"
     );
+    // At fern-python-sdk 5.41.3 the reference writer types an inline `*/*`
+    // binary body as `bytes`, as the `apideck.com-file-storage` 5.41.3 golden
+    // documents `files.upload`'s request.
     let reference = &files["reference.md"];
+    let raw_reference = reference
+        .split("src/acme/widgets/client.py\">raw</a>")
+        .nth(1)
+        .expect("raw reference entry");
     assert!(
-        reference.contains("**request:** `str`"),
-        "Fern's reference writer retains the OpenAPI string type: {reference}"
+        raw_reference.contains("**request:** `bytes`")
+            && !raw_reference.contains("**request:** `str`"),
+        "Fern's reference writer types the inline binary body as bytes: {reference}"
     );
     assert!(
         raw.contains("@contextlib.contextmanager"),
@@ -5816,8 +5845,9 @@ components:
     let client = &files["src/acme/events/client.py"];
     // The body schema's own `example` supplies every field, the object-typed one
     // included: corpus row 110's `GroupUserUpdate` declares a schema-level
-    // example whose `accessRights` is an object, and its Fern 5.20.0 golden
-    // renders that object's declared values rather than synthesized placeholders.
+    // example whose `accessRights` is an object, and its fern-python-sdk 5.41.3
+    // golden renders that object's declared values rather than synthesized
+    // placeholders.
     assert!(client.contains("location=Location("), "{client}");
     assert!(client.contains("city=\"Paris\""), "{client}");
     assert!(client.contains("coordinates=[48.8566, 2.3522]"), "{client}");
@@ -6025,6 +6055,10 @@ fn formatter_reports_missing_permission_and_non_utf8_process_failures() {
     );
 }
 
+/// Server variables are documented and resolved together; at fern-python-sdk
+/// 5.41.3 the resolved values fill the selected environment's URL template
+/// (`_environment_url_templates`), as the `volview-backend-contract` 5.41.3
+/// golden shows.
 #[test]
 fn server_variable_defaults_expand_into_environment_urls() {
     let files = render(
@@ -6061,9 +6095,8 @@ paths:
             && client.contains("if region is not None or version is not None:")
             && client.contains("_region = region if region is not None else \"us-east\"")
             && client.contains("_version = version if version is not None else \"v2\"")
-            && client.contains(
-                "base_url = \"https://{region}.example.com/{version}\".format(region=_region, version=_version)"
-            ),
+            && client.contains("AcmeApiEnvironment.DEFAULT: \"https://{region}.example.com/{version}\",")
+            && client.contains("base_url = _url_template.format(region=_region, version=_version)"),
         "all server variables should be documented and resolved together: {client}"
     );
 }
@@ -6071,11 +6104,12 @@ paths:
 /// The `title` on `Message` is load bearing, for the reason
 /// `anonymous_request_metadata_and_schema_examples_drive_fern_shapes` records: a
 /// flattened body over an untitled surviving schema loses its explicit
-/// `content-type`, which SFTPGo, Audiobookshelf and LORIS each measure against
-/// Fern 5.20.0. A titled one keeps it whatever else holds: measured at Fern CLI
-/// 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on this document, the
-/// unauthenticated echo whose request and response share `Message`, the
-/// Bearer-secured one, and both Basic-auth bodies, described or not, all send it.
+/// `content-type`, which SFTPGo's, Audiobookshelf's and LORIS's goldens each
+/// measure. A titled one keeps it whatever else holds: measured at Fern CLI
+/// 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on this document (not re-measured
+/// at the certified pair), the unauthenticated echo whose request and response
+/// share `Message`, the Bearer-secured one, and both Basic-auth bodies, described
+/// or not, all send it.
 #[test]
 fn titled_bodies_keep_the_content_type_whatever_their_auth_or_response() {
     let files = render(
@@ -6252,7 +6286,7 @@ components:
 "#,
     );
     let maybe = &files["src/acme/types/maybe_scalar.py"];
-    // Fern 5.20 keeps a nullable union of plain scalars bare, as the
+    // Fern keeps a nullable union of plain scalars bare, as the
     // `pharmacy-nullable-scalar-unions` golden measures; the nullability lands
     // on the fields that reference it instead.
     assert!(
@@ -6287,7 +6321,7 @@ components:
         let module = &files[&path];
         assert!(
             module.contains(alias),
-            "{name} must use the Fern 5.20 unknown fallback: {module}"
+            "{name} must use Fern's unknown fallback: {module}"
         );
     }
 }
@@ -6604,10 +6638,11 @@ paths:
     );
     assert!(client.contains("ids=\"ids\""), "{client}");
     // Every example here is declared on the *parameter* rather than its schema, and
-    // no parameter is `type: string` — Fern 5.20.0 discards a parameter-level example
-    // in that case and synthesizes the required argument instead, identically for
-    // query, header and path parameters (probed directly against the generator). A
-    // schema-level example on the same parameter is used verbatim, whatever its type.
+    // no parameter is `type: string` — Fern 5.20.0 discarded a parameter-level
+    // example in that case and synthesized the required argument instead, identically
+    // for query, header and path parameters (probed directly against the generator,
+    // not re-measured at the certified pair). A schema-level example on the same
+    // parameter is used verbatim, whatever its type.
     assert!(client.contains("page=1"), "{client}");
     assert!(client.contains("ratio=1.1"), "{client}");
     assert!(client.contains("limit=1"), "{client}");
@@ -6669,7 +6704,7 @@ paths:
 /// The `title` on `Echo` is load bearing. A body whose referenced schema survives
 /// in the public type layer and declares no `title` loses its explicit
 /// `content-type` — SFTPGo's `Admin`, Audiobookshelf's `Podcast` and LORIS's
-/// `QueryObject` all measure that against Fern 5.20.0 — so an untitled echo would
+/// `QueryObject` all measure that in their goldens — so an untitled echo would
 /// drop the header before the authenticated-echo carve-out this test pins could
 /// reach it. A titled one is the shape that carve-out still governs.
 #[test]
@@ -7149,8 +7184,9 @@ components:
         raw.contains("\"content-type\": \"application/ndjson\""),
         "{raw}"
     );
-    // Fern 5.20.0, probed with this document's `/vendor` operation, sends a
-    // vendor JSON body's own media type as its `content-type`.
+    // Fern 5.20.0, probed with this document's `/vendor` operation, sent a
+    // vendor JSON body's own media type as its `content-type` (not re-measured
+    // at the certified pair).
     assert!(
         raw.contains("\"content-type\": \"application/vnd.acme+json\""),
         "{raw}"
@@ -8086,7 +8122,7 @@ fn oauth_admin_shapes_pin_the_basic_auth_header_and_documentation_list_paths() {
     // and flattened field by field keeps the JSON content-type header, while a
     // bare `type: object` body carries it only where the schema is documented,
     // and a status two operations both declare downgrades its error class to
-    // `typing.Any` while the merged body model keeps both operations' fields.
+    // `typing.Any` while the shared body model is the last declaration's.
     // Beside them the example writer's two list paths: a map example whose value
     // is a JSON array, and a list of a string alias whose example carries `null`.
     let files = render(
@@ -8215,28 +8251,31 @@ components:
     );
 
     // Two operations declare `400`, so the error class's body is `typing.Any`
-    // while the merged `BadRequestErrorBody` still carries both their fields.
+    // while one shared `BadRequestErrorBody` model is still emitted.
     assert!(
         raw.contains("                        type_=typing.Any,\n"),
         "{raw}"
     );
     let body = &files["src/acme/types/bad_request_error_body.py"];
-    // The second operation's `required` merges in, so `error_description` is the
-    // one non-optional field on the shared model.
+    // At Fern CLI 5.163.1 the shared model is the last declaration whole, not
+    // the union of both: the second operation's required `errorDescription`
+    // alone, without the first's `error` — as the `short-io` fern-python-sdk
+    // 5.41.3 golden's `InternalServerErrorBody` holds only its final `500`'s
+    // `message`.
     assert!(
         body.contains(concat!(
-            "    error: typing.Optional[str] = None\n",
             "    error_description: typing_extensions.Annotated[\n",
             "        str, FieldMetadata(alias=\"errorDescription\"), pydantic.Field(alias=\"errorDescription\")\n",
             "    ]\n",
-        )),
+        )) && !body.contains("    error: "),
         "{body}"
     );
 
     // A `null` in a list whose items are a string alias is filled from the field
     // name; the same `null` in a list of an enum is not — it takes the enum's own
     // synthesized member. A map example whose value is a JSON array keeps that
-    // array, wrapped as a list the way Fern 5.20.0 wraps it for this fragment.
+    // array, wrapped as a list the way Fern 5.20.0 wrapped it for this fragment
+    // (not re-measured at the certified pair).
     let reference = &files["reference.md"];
     assert!(
         reference.contains(concat!(
@@ -8298,6 +8337,9 @@ components:
 /// A server URL variable whose snake-case spelling collides with the root
 /// client's own `base_url` parameter is prefixed `server_url_`, the way Fern
 /// names VolView's `{baseUrl}` template; a non-colliding one is left alone.
+/// The value fills the environment's URL template through
+/// `_environment_url_templates`, as VolView's fern-python-sdk 5.41.3 golden
+/// (`volview-backend-contract`) resolves it.
 #[test]
 fn a_server_variable_colliding_with_base_url_is_prefixed() {
     let files = render(
@@ -8324,7 +8366,10 @@ paths:
         "{client}"
     );
     assert!(
-        client.contains("base_url = \"{baseUrl}\".format(baseUrl=_server_url_base_url)"),
+        client.contains(
+            "_server_url_base_url = server_url_base_url if server_url_base_url is not None else \"/\""
+        ) && client.contains("_url_template = _environment_url_templates.get(environment, \"{baseUrl}\")")
+            && client.contains("base_url = _url_template.format(baseUrl=_server_url_base_url)"),
         "{client}"
     );
 
@@ -8677,10 +8722,10 @@ components:
 /// carried by three quarters of the operations becomes a client-wrapper field.
 ///
 /// Corpus row 112, `flowdapt`, declares both: its `update_config` body is
-/// `{"oneOf": [{"$ref": …}]}` and its Fern 5.20.0 golden spreads the referenced
-/// component's properties as method arguments with no union alias beside them,
-/// and its `x-api-version` header rides 24 of its 26 operations and is
-/// promoted as an optional constructor argument.
+/// `{"oneOf": [{"$ref": …}]}` and its fern-python-sdk 5.41.3 golden spreads the
+/// referenced component's properties as method arguments with no union alias
+/// beside them, and its `x-api-version` header rides 24 of its 26 operations
+/// and is promoted as an optional constructor argument.
 #[test]
 fn a_sole_composition_member_body_inlines_and_a_prevalent_header_promotes() {
     let files = render(
@@ -8989,7 +9034,7 @@ paths:
         "{size}"
     );
     // An optional, non-null query composition is declared in the package root
-    // whatever its `title`: measured at Fern 5.20.0 in
+    // whatever its `title`: measured at fern-python-sdk 5.41.3 in
     // `docs/fern-measurements/parameter-lowering/` (oSPARC's own `product_name`
     // is a required path parameter, which stays in its tag).
     let product = &files["src/acme/types/files_upload_request_product_name.py"];
@@ -9145,9 +9190,9 @@ paths:
 /// `x-fern-enum` declaration wins over it for the same value.
 ///
 /// Corpus row 113's `Error.type` enumerates seven RFC 9457 problem-type URIs and
-/// names them `INVALIDARGUMENT`, `NOTFOUND`, … that way; its Fern 5.20.0 golden
-/// emits those members rather than the identifiers derived from the URIs, which
-/// would spell the whole scheme and host.
+/// names them `INVALIDARGUMENT`, `NOTFOUND`, … that way; its fern-python-sdk
+/// 5.41.3 golden emits those members rather than the identifiers derived from
+/// the URIs, which would spell the whole scheme and host.
 #[test]
 fn an_enum_takes_its_member_names_from_x_enum_varnames() {
     let files = render(
@@ -9221,7 +9266,8 @@ components:
 /// Corpus row 113's `create_container` sends a `Container` whose six `readOnly`
 /// properties surround the single required `spec`, and whose request and 201
 /// response name the same component — two shapes that each otherwise drop the
-/// header — and its Fern 5.20.0 golden sends `content-type: application/json`.
+/// header — and its fern-python-sdk 5.41.3 golden sends
+/// `content-type: application/json`.
 #[test]
 fn a_documented_resource_envelope_keeps_its_content_type_header() {
     let files = render(
@@ -10127,10 +10173,10 @@ components:
 
 // The tests below each take a fragment of the opencode server API as
 // `lehhair/OpenCodeUI` publishes it (`openapi_doc.json` at
-// 8a6d4eae9424317f01e88f3819b14b24e57bab10) and assert lines of the Fern 5.20.0
-// output measured for that document. The whole document is corpus row 196
-// (`opencodeui`), whose golden needs the network; these fragments hold each
-// repair offline, one shape at a time.
+// 8a6d4eae9424317f01e88f3819b14b24e57bab10) and assert lines of the
+// fern-python-sdk 5.41.3 output measured for that document. The whole document
+// is corpus row 196 (`opencodeui`), whose golden needs the network; these
+// fragments hold each repair offline, one shape at a time.
 
 /// An untagged dotted `operationId` names no sub-client: `global.health` is the
 /// root client's `global_health`, and no `global` package is generated.
@@ -10740,6 +10786,73 @@ components:
     );
 }
 
+/// A `4XX`/`5XX` range response is an error class of its own, raised for any
+/// status in the range after every concrete status, and carrying the actual
+/// status; a component schema named for a range's class is renamed whether or
+/// not the document declares that range (bunq's `ServerError` request body is
+/// `ServerErrorBody`). Measured at Fern CLI 5.163.1 with fern-python-sdk 5.41.3.
+#[test]
+fn a_status_range_raises_its_own_error_class_with_the_actual_status() {
+    let files = render(
+        r##"openapi: 3.0.3
+info: { title: Acme, version: 1.0.0 }
+paths:
+  /widgets:
+    post:
+      operationId: createWidget
+      tags: [widgets]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ServerError' } } }
+      responses:
+        '200': { description: ok, content: { application/json: { schema: { type: string } } } }
+        4xx:
+          description: rejected
+          content: { application/json: { schema: { $ref: '#/components/schemas/Problem' } } }
+        '404': { description: missing }
+components:
+  schemas:
+    Problem:
+      type: object
+      properties: { detail: { type: string } }
+    ServerError:
+      type: object
+"##,
+    );
+    let range = &files["src/acme/errors/client_request_error.py"];
+    assert!(
+        range.contains("class ClientRequestError(ApiError):"),
+        "{range}"
+    );
+    assert!(
+        range.contains("status_code: typing.Optional[int] = None"),
+        "{range}"
+    );
+    assert!(
+        range.contains(
+            "super().__init__(status_code=status_code if status_code is not None else 400, headers=headers, body=body)"
+        ),
+        "{range}"
+    );
+    let concrete = &files["src/acme/errors/not_found_error.py"];
+    assert!(!concrete.contains("status_code: typing"), "{concrete}");
+
+    let raw = &files["src/acme/widgets/raw_client.py"];
+    let missing = raw.find("if _response.status_code == 404:").expect(raw);
+    let rejected = raw
+        .find("if 400 <= _response.status_code < 500:\n                raise ClientRequestError(")
+        .expect(raw);
+    assert!(missing < rejected, "{raw}");
+    assert!(
+        raw.contains("                    status_code=_response.status_code,\n                )"),
+        "{raw}"
+    );
+    assert!(raw.contains("request: ServerErrorBody"), "{raw}");
+    assert!(files.contains_key("src/acme/types/server_error_body.py"));
+    assert!(!files.contains_key("src/acme/types/server_error.py"));
+    assert!(!files.contains_key("src/acme/errors/server_error.py"));
+}
+
 /// Three TrueForge shapes in one document: a package that owns endpoints *and*
 /// nests a sub-client, a one-member `oneOf` tagged by a single-valued `enum`,
 /// and an ignored operation whose body schema nothing else references.
@@ -10833,7 +10946,7 @@ components:
     );
 }
 
-/// The Fergus shapes, each the way Fern 5.20.0 generates it.
+/// The Fergus shapes, each the way its fern-python-sdk 5.41.3 golden generates it.
 #[test]
 fn fergus_shaped_compositions_generate_like_fern() {
     let files = render(
@@ -10993,7 +11106,7 @@ components:
     );
 }
 
-/// The Groupe PSA shapes, each the way Fern 5.20.0 generates it.
+/// The Groupe PSA shapes, each the way its fern-python-sdk 5.41.3 golden generates it.
 #[test]
 fn groupe_psa_shaped_documents_generate_like_fern() {
     let files = render(
@@ -11148,10 +11261,14 @@ components:
     );
     // A lone-`allOf` response is its `$ref`.
     assert!(vehicles.contains("HttpResponse[Vehicle]"), "{vehicles}");
-    // Fern's importer gives up on this body, so its fallback lists two items.
+    // Fern's importer gives up on this body, so its fallback example builds
+    // the list; at Fern 5.163.1 that fallback lists one item, as the
+    // `groupe-psa` fern-python-sdk 5.41.3 golden's `set_fleet_vehicle_remote`
+    // shows (`remote_types=[RemoteType.THERMAL_PRECONDITIONING]`).
     let remote = &files["src/acme/remote/client.py"];
     assert!(
-        remote.contains("kinds=[RemoteSubscribeKindsItem.HORN, RemoteSubscribeKindsItem.HORN],"),
+        remote.contains("kinds=[RemoteSubscribeKindsItem.HORN],")
+            && !remote.contains("RemoteSubscribeKindsItem.HORN, RemoteSubscribeKindsItem.HORN"),
         "{remote}"
     );
 }
@@ -11328,7 +11445,8 @@ components:
 /// Skool's `GET …/comments/` answers `$ref: SuccessResponse`, a component the
 /// document never declares. Fern types the body `typing.Any` and guards an empty
 /// response, and a written `{}` success schema in a 3.0 document is typed and
-/// guarded the same: measured at Fern 5.20.0, the version does not gate the guard.
+/// guarded the same: measured at Fern 5.20.0 (not re-measured at the certified
+/// pair), the version does not gate the guard.
 #[test]
 fn an_undeclared_success_component_guards_the_empty_body_like_skool() {
     let files = render(
@@ -11656,7 +11774,7 @@ components:
     assert!(files.contains_key("src/acme/types/ground_truth_list_one_item_item.py"));
 }
 
-/// Zulip's shapes, each checked against its Fern 5.20.0 golden (corpus row 164).
+/// Zulip's shapes, each checked against its fern-python-sdk 5.41.3 golden (corpus row 164).
 #[test]
 fn zulip_shapes_generate_like_fern() {
     let files = render(
@@ -11842,21 +11960,32 @@ components:
     assert!(status.contains("A user's status."), "{status}");
     // An annotated `$ref` to a composed target is a flat copy, and an empty
     // restatement over a property the parent declares inside its own `allOf`
-    // stays an undocumented unknown.
+    // stays an undocumented unknown. At Fern CLI 5.163.1 it keeps the base's
+    // `required`: the `zulip` fern-python-sdk 5.41.3 golden's
+    // `InvalidApiKeyError` declares `code: typing.Any` (5.20.0 had it optional),
+    // while `result`, which no `required` names here, stays optional.
     let invalid = &files["src/acme/types/invalid_api_key_error.py"];
     assert!(
         invalid.contains("class InvalidApiKeyError(UniversalBaseModel):"),
         "{invalid}"
     );
     assert!(
-        invalid.contains("    code: typing.Optional[typing.Any] = None\n"),
+        invalid.contains("    code: typing.Any\n")
+            && invalid.contains("    result: typing.Optional[typing.Any] = None\n")
+            && !invalid.contains("identifies the error"),
         "{invalid}"
     );
     // Error bodies: the last declaration of a status wins, an earlier `oneOf`
     // leaves its variant models behind, and a one-member `oneOf` is its member.
+    // At Fern CLI 5.163.1 the earlier `oneOf`'s two annotated `CodedError`s
+    // compare alike, so only its last survives, under its own index — as the
+    // `zulip` fern-python-sdk 5.41.3 golden declares only
+    // `BadRequestErrorBodyThree` for `/users/me/avatar`'s four annotated
+    // `CodedError`s.
     assert!(files["src/acme/types/bad_request_error_body.py"]
         .contains("BadRequestErrorBody = typing.Union[InvalidApiKeyError, RateLimitedError]"));
-    assert!(files["src/acme/types/bad_request_error_body_zero.py"].contains("The queue is gone."));
+    assert!(files["src/acme/types/bad_request_error_body_one.py"].contains("The queue is stale."));
+    assert!(!files.contains_key("src/acme/types/bad_request_error_body_zero.py"));
     assert!(files["src/acme/errors/too_many_requests_error.py"].contains("body: RateLimitedError,"));
     // A bare object component is a map whatever its example.
     assert!(files["src/acme/types/profile_data.py"]
@@ -11988,15 +12117,21 @@ components:
                   id: { type: integer }
 "##,
     );
-    // `stream_id` restates the base's unchanged and required, so it is the base's
-    // field, last and optional; the nullable `creator_id` conflicts and stays first.
+    // At Fern CLI 5.163.1 a restatement keeps the base's field order and takes
+    // the restatement's `required`: `stream_id` is first and required, the
+    // nullable `creator_id` keeps its base position, and the restatement's own
+    // `weekly_traffic` follows — the `zulip` fern-python-sdk 5.41.3 golden's
+    // `BasicChannel` opens `stream_id: int = pydantic.Field()` and ends with
+    // `stream_weekly_traffic`.
     let channel = &files["src/acme/types/basic_channel.py"];
-    let creator = channel.find("    creator_id:").expect(channel);
-    let traffic = channel.find("    weekly_traffic:").expect(channel);
     let stream = channel
-        .find("    stream_id: typing.Optional[int]")
+        .find("    stream_id: int = pydantic.Field()")
         .expect(channel);
-    assert!(creator < traffic && traffic < stream, "{channel}");
+    let creator = channel
+        .find("    creator_id: typing.Optional[int]")
+        .expect(channel);
+    let traffic = channel.find("    weekly_traffic:").expect(channel);
+    assert!(stream < creator && creator < traffic, "{channel}");
     assert!(channel.contains("The channel ID."), "{channel}");
     // The message keeps its own description and the parent's union.
     let message = &files["src/acme/messages/types/get_message_response_message.py"];
@@ -12124,10 +12259,11 @@ fn a_null_servers_list_reads_as_no_servers() {
 }
 
 /// Fragments of `vfarcic/dot-ai`'s `schema/openapi.json` (corpus row 219), with the
-/// bytes its Fern 5.20.0 golden holds: a `Dict[str, Any]` field whose media example
-/// is `{}` is exampled `{"key": "value"}`, as an empty array is synthesized; and a
-/// client built with neither auth nor a base URL — the document declares a server
-/// — is constructed on one line in the README's streaming section.
+/// bytes its fern-python-sdk 5.41.3 golden holds: a `Dict[str, Any]` field whose
+/// media example is `{}` is exampled `{"key": "value"}`, as an empty array is
+/// synthesized; and a client built with neither auth nor a base URL — the document
+/// declares a server — is constructed on one line in the README's streaming
+/// section.
 #[test]
 fn dot_ai_empty_map_examples_and_an_argument_free_client() {
     let files = render(
@@ -12236,7 +12372,7 @@ paths:
 }
 
 /// Fragments of marimo's `frontend/plugins.openapi.yaml` (corpus row 221), each
-/// assertion a line of its Fern 5.20.0 golden:
+/// assertion a line of its fern-python-sdk 5.41.3 golden:
 /// - a `type: "null"` component is `Optional[Any]`; reading it returns it
 ///   optionally, and writing it takes an optional request with no example argument
 ///   and no `content-type`, documented optional in `reference.md`;
@@ -12426,7 +12562,7 @@ components:
 }
 
 /// Fragments of Sim's `apps/docs/openapi-v2-tables.json` (corpus row 217), each
-/// assertion a line of its Fern 5.20.0 golden:
+/// assertion a line of its fern-python-sdk 5.41.3 golden:
 /// - a `$ref` union whose members each require a string `const` `method` is
 ///   discriminated on it, so the standalone models drop `method`;
 /// - a body component's 3.1 `examples` array fills its fields, optional ones too;
@@ -12514,7 +12650,7 @@ fn sim_tables_examples_arrays_const_tags_and_parameter_order() {
 }
 
 /// Fragments of Otoroshi's own `otoroshi/conf/schemas/openapi.json` (corpus row
-/// 222), each assertion a line of its Fern 5.20.0 golden:
+/// 222), each assertion a line of its fern-python-sdk 5.41.3 golden:
 /// - `application/x-ndjson` is JSON to Fern's `MediaType.isJSON`, so the bulk
 ///   bodies are sent `json=` with that content type;
 /// - a `$ref` to an undeclared component is Fern's unknown, with no field docs;
@@ -12557,8 +12693,8 @@ fn otoroshi_ndjson_unresolved_refs_and_described_ref_bodies() {
 }
 
 /// Fragments of the hand-written `composition-index-pointer` fixture
-/// (`docs/openapi-surface/handwritten/`), each assertion a line of the tree Fern
-/// 5.20.0 generated from it:
+/// (`docs/openapi-surface/handwritten/`), each assertion a line of the tree
+/// fern-python-sdk 5.41.3 generated from it:
 /// - a schema `$ref` into a component parameter's schema is that schema, copied
 ///   at the reference with its description;
 /// - a binary download that declares no error response has no worked example,
@@ -12600,9 +12736,10 @@ fn parameter_schema_refs_and_errorless_downloads() {
 
 /// OneVoice (corpus row 227): a requirement naming only schemes Fern does not
 /// support — a cookie `apiKey` beside `mutualTLS` — leaves the client with no
-/// credential at all, as its Fern 5.20.0 golden's client does. Its path items
-/// name other files Fern never loads, so no operation requires that auth; one
-/// that did would be refused as `service-auth-undefined`, as pinned Fern does.
+/// credential at all, as its fern-python-sdk 5.41.3 golden's client does. Its
+/// path items name other files Fern never loads, so no operation requires that
+/// auth; one that did would be refused as `service-auth-undefined`, as pinned
+/// Fern does.
 #[test]
 fn onevoice_unsupported_schemes_define_no_auth() {
     let files = render(
@@ -12625,7 +12762,7 @@ components:
 
 /// The Eclipse XFSC OIDC identity resolver (corpus row 228): an `openIdConnect`
 /// scheme is a bearer token to Fern, optional unless every operation requires
-/// it, as its Fern 5.20.0 golden's client takes an optional `token`.
+/// it, as its fern-python-sdk 5.41.3 golden's client takes an optional `token`.
 #[test]
 fn openid_connect_schemes_are_bearer_tokens() {
     let files = render(
@@ -12658,12 +12795,14 @@ components:
 }
 
 /// Fragments of the People Data Labs API 5.0 (corpus row 230), each assertion a
-/// line of its Fern 5.20.0 golden: a tab in a description is four spaces, as
-/// Fern's code writer writes every tab; a body union of `required`-only
-/// fragments is `Union[typing.Any]` once its identical members collapse; and the
-/// README passes that body's placeholder on one line.
+/// line of its fern-python-sdk 5.41.3 golden: a tab in a description is four
+/// spaces, as Fern's code writer writes every tab; a body whose `oneOf` holds
+/// only `required` fragments is read for its own `properties` — an inlined
+/// request of optional fields (`company_search`'s `query` and `sql`), not the
+/// `Union[typing.Any]` alias fern-python-sdk 5.20.0 emitted; and the README's
+/// example of it passes no arguments.
 #[test]
-fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
+fn peopledatalabs_tabs_optional_request_fields_and_an_argument_free_readme_call() {
     let files = render(
         "openapi: 3.0.3\ninfo: { title: api.peopledatalabs.com, version: '5.0' }\npaths:\n  /v5/company/search:\n    post:\n      tags: [Company Endpoints]\n      operationId: company_search\n      requestBody:\n        required: true\n        content:\n          application/json:\n            schema:\n              type: object\n              properties:\n                query: { type: string }\n                sql: { type: string }\n              oneOf: [{ required: [query] }, { required: [sql] }]\n      responses:\n        '200':\n          description: ok\n          content: { application/json: { schema: { $ref: '#/components/schemas/CompanyLocation' } } }\ncomponents:\n  schemas:\n    CompanyLocation:\n      type: object\n      properties:\n        country: { type: string, description: \"The company's current HQ country\\tunited states\" }\n",
     );
@@ -12672,23 +12811,37 @@ fn peopledatalabs_tabs_unknown_unions_and_readme_placeholders() {
         location.contains("The company's current HQ country    united states"),
         "{location}"
     );
-    let request = &files["src/acme/company_endpoints/types/company_search_request.py"];
+    // The golden's `company_endpoints/client.py` takes `query` and `sql` as
+    // optional keyword fields — no `CompanySearchRequest` union alias.
     assert!(
-        request.contains("CompanySearchRequest = typing.Union[typing.Any]"),
-        "{request}"
+        !files.contains_key("src/acme/company_endpoints/types/company_search_request.py"),
+        "{:?}",
+        files.keys()
     );
+    let client = &files["src/acme/company_endpoints/client.py"];
+    assert!(
+        client.contains(concat!(
+            "        query: typing.Optional[str] = OMIT,\n",
+            "        sql: typing.Optional[str] = OMIT,\n",
+            "        request_options: typing.Optional[RequestOptions] = None,\n",
+        )),
+        "{client}"
+    );
+    // With every field optional, the README's example passes nothing, as the
+    // golden's `client.person_endpoints.person_search()` does.
     let readme = &files["README.md"];
     assert!(
-        readme.contains("    request={\"key\": \"value\"},\n"),
+        readme.contains("client.company_endpoints.company_search()\n")
+            && !readme.contains("request={"),
         "{readme}"
     );
 }
 
 /// Fragments of the StandRig Modeling Tools core API (corpus row 231), each
-/// assertion a line of its Fern 5.20.0 golden: a typeless `const` of any kind is
-/// `str`; an inline object's property whose alternatives are all booleans is one
-/// `bool`; and a body closed with `additionalProperties: false` but declaring no
-/// `properties` is a `Dict[str, Any]` request.
+/// assertion a line of its fern-python-sdk 5.41.3 golden: a typeless `const` of
+/// any kind is `str`; an inline object's property whose alternatives are all
+/// booleans is one `bool`; and a body closed with `additionalProperties: false`
+/// but declaring no `properties` is a `Dict[str, Any]` request.
 #[test]
 fn standrig_typeless_consts_boolean_unions_and_closed_bodies() {
     let files = render(
@@ -12790,7 +12943,7 @@ components:
 }
 
 /// Fragments of the Primula Tracker API V3 (corpus row 226), each assertion a
-/// line of its Fern 5.20.0 golden:
+/// line of its fern-python-sdk 5.41.3 golden:
 /// - an `anyOf` variant that is one member beside `null` is that member made
 ///   optional, not a union of its own;
 /// - an array body and a `$ref` to a union body take the media type's example,
@@ -12891,8 +13044,8 @@ components:
 }
 
 /// Fragments of the hand-written `ref-pointer-walk` fixture
-/// (`docs/openapi-surface/handwritten/`), each assertion a line of the tree Fern
-/// 5.20.0 generated from it:
+/// (`docs/openapi-surface/handwritten/`), each assertion a line of the tree
+/// fern-python-sdk 5.41.3 generated from it:
 /// - Fern's importer converts any reference whose text names `properties` as a
 ///   copy at the reference — a plain `route_properties` component included —
 ///   and names a discriminated-union variant so copied after the reference
@@ -13096,7 +13249,9 @@ components:
 }
 
 /// Fragments of YourBrand's Ticketing API (corpus row 308), each assertion a
-/// line of its Fern 5.20.0 golden or of the 3.0 probe measured beside it:
+/// line of its fern-python-sdk 5.41.3 golden or of the 3.0 probe measured
+/// beside it at Fern 5.20.0 (`docs/fern-measurements/yourbrand-repairs/`, not
+/// re-measured at the certified pair):
 /// - a query parameter whose sole `oneOf` member is a nullable `oneOf` of one
 ///   `$ref` is that `$ref`, optional once;
 /// - a `$ref` body field colliding with a query parameter keeps Fern's prefixed
@@ -13214,8 +13369,8 @@ fn measured_yourbrand_repair_probe_matches_its_fern_output() {
         .any(|departure| departure.id == "body-query-parameter-value"));
 }
 
-/// Fragments of MockServer (corpus row 232), each assertion a line of its Fern
-/// 5.20.0 golden:
+/// Fragments of MockServer (corpus row 232), each assertion a line of its
+/// fern-python-sdk 5.41.3 golden:
 /// - the lazy sub-client imports sort case-insensitively (`AsyncapiClient`
 ///   first), and a summary's one-letter words join as camel-casing joins them;
 /// - a string example holding `"` is spelled single-quoted, and a binary
@@ -13417,7 +13572,7 @@ components:
 }
 
 /// MockServer's worked examples (corpus row 232), each assertion a line of its
-/// Fern 5.20.0 golden:
+/// fern-python-sdk 5.41.3 golden:
 /// - an undiscriminated union's example is built for the alternative Fern's
 ///   heuristic ranks highest, narrowed to what it declares, then rendered with
 ///   the first alternative that takes it — so `{path}` against
@@ -14251,7 +14406,11 @@ fn hasura_shaped_maps_unions_and_names_generate_like_fern() {
         "{holder}"
     );
     assert!(file("types/value.py").contains("Value = typing.Dict[str, typing.Any]\n"));
-    assert!(file("types/arguments.py").contains("Arguments = typing.Dict[str, Value]\n"));
+    // A map whose value references a nullable alternative is a map of
+    // optionals at Fern 5.163.1: the `hasura-metadata` fern-python-sdk 5.41.3
+    // golden's `RemoteArguments = typing.Dict[str, typing.Optional[GraphQlValueName]]`.
+    assert!(file("types/arguments.py")
+        .contains("Arguments = typing.Dict[str, typing.Optional[Value]]\n"));
     assert!(file("types/return_type.py").contains("ReturnType = typing.Any\n"));
     assert!(file("types/table_response.py").contains("    type: TableResponseType\n"));
     assert!(
@@ -14266,12 +14425,13 @@ fn hasura_shaped_maps_unions_and_names_generate_like_fern() {
     );
 }
 
-/// Zoonk's shapes, as Fern 5.20.0 generates them: a map whose value is a `oneOf`
-/// of objects each tagging itself `kind` is a discriminated union; an `allOf`
-/// member that is such a `oneOf` lends the model no properties; a request body
-/// component that is only `allOf` one `$ref` stays in the type layer as an alias
-/// and is what `reference.md` documents; and a `nullable` beside a response's
-/// lone `allOf` `$ref` makes the method return it optionally.
+/// Zoonk's shapes, as its fern-python-sdk 5.41.3 golden generates them: a map
+/// whose value is a `oneOf` of objects each tagging itself `kind` is a
+/// discriminated union; an `allOf` member that is such a `oneOf` lends the model
+/// no properties; a request body component that is only `allOf` one `$ref` stays
+/// in the type layer as an alias and is what `reference.md` documents; and a
+/// `nullable` beside a response's lone `allOf` `$ref` makes the method return it
+/// optionally.
 #[test]
 fn zoonk_shaped_tagged_unions_aliases_and_nullable_responses_generate_like_fern() {
     let files = render_json(
@@ -14922,11 +15082,11 @@ fn worked_example_goldens_match_in_process() {
 }
 
 /// A request example's `null`, as Fern's example writers read it (measured on
-/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0): a required nullable
-/// member's `null` is `None` in `reference.md` and the README, at the top level
-/// and nested, and absent from the docstring; a required member that is not
-/// nullable takes its synthesized value, as if the example had not named it,
-/// at either depth.
+/// Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0; not re-measured at
+/// the certified pair): a required nullable member's `null` is `None` in
+/// `reference.md` and the README, at the top level and nested, and absent from
+/// the docstring; a required member that is not nullable takes its synthesized
+/// value, as if the example had not named it, at either depth.
 #[test]
 fn request_example_nulls_follow_fern_per_writer() {
     let files = render(
@@ -15092,8 +15252,9 @@ fn union_literals_tree(fixture: &Path, overlay: &Path) -> Vec<(String, String)> 
     )
     .unwrap();
     assert_eq!(manifest["enum_type"], "literals", "{}", overlay.display());
-    assert_eq!(manifest["fern_cli_version"], "5.67.1");
-    assert_eq!(manifest["fern_python_sdk_version"], "5.20.0");
+    let pair = crozier::emit::certified_fern_pair();
+    assert_eq!(manifest["fern_cli_version"], pair.cli);
+    assert_eq!(manifest["fern_python_sdk_version"], pair.python_sdk);
     let removed: Vec<&str> = manifest["removed"]
         .as_array()
         .unwrap()
@@ -15280,10 +15441,12 @@ fn stream_framing(raw: &str) -> Option<&'static str> {
     }
 }
 
-/// Every form of the streaming extension frames the stream as Fern 5.20.0 does,
+/// Every form of the streaming extension frames the stream as Fern 5.20.0 did,
 /// in both spellings: the boolean `true` and `format: json` stream JSON lines
 /// over any media, `format: sse` decodes events over any media, and `false` or a
-/// mapping naming no format leaves the response's media to decide.
+/// mapping naming no format leaves the response's media to decide. Only the
+/// boolean and `format: sse` forms are re-verified at the certified pair, by the
+/// hand-written `streaming-extension-*` fixtures.
 #[test]
 fn streaming_extension_forms_frame_the_stream_as_declared() {
     for spelling in ["x-fern-streaming", "x-crozier-streaming"] {
@@ -15295,8 +15458,9 @@ fn streaming_extension_forms_frame_the_stream_as_declared() {
             ("{ format: sse }", JSON_MEDIA, Some("sse")),
             ("{}", SSE_MEDIA, Some("sse")),
             ("{}", JSON_MEDIA, None),
-            // `false` declares no stream, so an SSE-only response still
-            // streams events on its media type, as Fern 5.20.0 does.
+            // `false` declares no stream, so an SSE-only response still streams
+            // events on its media type, as Fern 5.20.0 did (not re-measured at
+            // the certified pair).
             ("false", SSE_MEDIA, Some("sse")),
         ] {
             let files = render(&streaming_operation(
@@ -15457,8 +15621,9 @@ fn event_stream_schemas_decide_download_item_type_and_heading() {
         "{}",
         shared["src/acme/client.py"]
     );
-    // `itemSchema` on a buffered JSON body is not read: Fern 5.20.0 types it
-    // `typing.Any`, as a media type declaring no schema.
+    // `itemSchema` on a buffered JSON body is not read: Fern 5.20.0 typed it
+    // `typing.Any`, as a media type declaring no schema (not re-measured at the
+    // certified pair).
     let json_item = render(&streaming_operation(
         "",
         r##"{ application/json: { itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
@@ -15468,7 +15633,8 @@ fn event_stream_schemas_decide_download_item_type_and_heading() {
         "{}",
         json_item["src/acme/client.py"]
     );
-    // A `schema` declared beside `itemSchema` types the events, as at Fern 5.20.0.
+    // A `schema` declared beside `itemSchema` types the events, as at Fern 5.20.0
+    // (not re-measured at the certified pair).
     let both = render(&streaming_operation(
         "",
         r##"{ text/event-stream: { schema: { $ref: "#/components/schemas/Chunk" }, itemSchema: { $ref: "#/components/schemas/Item" } } }"##,
@@ -15534,7 +15700,8 @@ fn an_event_discriminated_stream_dispatches_on_the_sse_event() {
     let departed = raw.find(r#"elif _sse.event == "departed":"#).expect(raw);
     assert!(arrived < departed, "{raw}");
     assert!(
-        raw.contains("type_=Departure,") && raw.contains("object_=json.loads(_sse.data),"),
+        raw.contains("type_=Departure,")
+            && raw.contains(r#"object_={"data": json.loads(_sse.data)},"#),
         "{raw}"
     );
     assert!(raw.contains("Failed to parse SSE event 'arrived'"), "{raw}");
@@ -15609,7 +15776,7 @@ const PLAN_BODY: &str = "    PlanBody:\n      type: object\n      properties:\n 
 /// A `stream-condition` split with no `format`, or `format: json`, over a
 /// success that declares only `application/json`: the streaming half reads that
 /// media as JSON lines and the buffered half returns the model, as measured at
-/// Fern 5.20.0.
+/// Fern 5.20.0 (not re-measured at the certified pair).
 #[test]
 fn a_json_stream_condition_streams_its_json_media_as_lines() {
     for format in ["", "\n        format: json"] {

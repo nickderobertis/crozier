@@ -12,8 +12,8 @@ from .tab_links import TabLinks
 
 class StolenCollection(UniversalBaseModel):
     embedded: typing_extensions.Annotated[
-        typing.Optional[StolenCollectionEmbedded], FieldMetadata(alias="_embedded"), pydantic.Field(alias="_embedded")
-    ] = None
+        StolenCollectionEmbedded, FieldMetadata(alias="_embedded"), pydantic.Field(alias="_embedded")
+    ]
     links: typing_extensions.Annotated[TabLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     total: int
     total_page: typing_extensions.Annotated[int, FieldMetadata(alias="totalPage"), pydantic.Field(alias="totalPage")]

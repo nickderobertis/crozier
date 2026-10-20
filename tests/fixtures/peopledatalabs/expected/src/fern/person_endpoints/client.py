@@ -8,7 +8,6 @@ from ..types.person import Person
 from ..types.person_retrieve import PersonRetrieve
 from ..types.person_retrieve_bulk import PersonRetrieveBulk
 from .raw_client import AsyncRawPersonEndpointsClient, RawPersonEndpointsClient
-from .types.post_v5person_search_request import PostV5PersonSearchRequest
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -367,12 +366,48 @@ class PersonEndpointsClient:
         return _response.data
 
     def person_search(
-        self, *, request: PostV5PersonSearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        dataset: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        data_include: typing.Optional[str] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> Person:
         """
         Parameters
         ----------
-        request : PostV5PersonSearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference.
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM person WHERE XXX, where XXX is a standard SQL boolean query involving our person fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        dataset : typing.Optional[str]
+            Specifies which dataset(s) the API should search against
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        data_include : typing.Optional[str]
+            A comma-separated string of fields that you would like the response to include. Begin the string with a - if you would instead like to exclude the specified fields. If you would like to exclude all data from being returned, use data_include=""
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -389,11 +424,20 @@ class PersonEndpointsClient:
         client = FernApi(
             api_key="YOUR_API_KEY",
         )
-        client.person_endpoints.person_search(
-            request={"key": "value"},
-        )
+        client.person_endpoints.person_search()
         """
-        _response = self._raw_client.person_search(request=request, request_options=request_options)
+        _response = self._raw_client.person_search(
+            query=query,
+            sql=sql,
+            size=size,
+            from_=from_,
+            scroll_token=scroll_token,
+            dataset=dataset,
+            titlecase=titlecase,
+            data_include=data_include,
+            pretty=pretty,
+            request_options=request_options,
+        )
         return _response.data
 
     def person_retrieve(
@@ -842,12 +886,48 @@ class AsyncPersonEndpointsClient:
         return _response.data
 
     async def person_search(
-        self, *, request: PostV5PersonSearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        dataset: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        data_include: typing.Optional[str] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> Person:
         """
         Parameters
         ----------
-        request : PostV5PersonSearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference.
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM person WHERE XXX, where XXX is a standard SQL boolean query involving our person fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        dataset : typing.Optional[str]
+            Specifies which dataset(s) the API should search against
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        data_include : typing.Optional[str]
+            A comma-separated string of fields that you would like the response to include. Begin the string with a - if you would instead like to exclude the specified fields. If you would like to exclude all data from being returned, use data_include=""
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -869,14 +949,23 @@ class AsyncPersonEndpointsClient:
 
 
         async def main() -> None:
-            await client.person_endpoints.person_search(
-                request={"key": "value"},
-            )
+            await client.person_endpoints.person_search()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.person_search(request=request, request_options=request_options)
+        _response = await self._raw_client.person_search(
+            query=query,
+            sql=sql,
+            size=size,
+            from_=from_,
+            scroll_token=scroll_token,
+            dataset=dataset,
+            titlecase=titlecase,
+            data_include=data_include,
+            pretty=pretty,
+            request_options=request_options,
+        )
         return _response.data
 
     async def person_retrieve(

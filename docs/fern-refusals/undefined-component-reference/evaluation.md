@@ -50,6 +50,10 @@ The [pinned Fern check/generation log](evaluation-logs/fern-named-example.log)
 prints the undefined diagnostic and writes a false-success empty SDK for the
 probe; the control passes and writes 31 Python files. Its extra
 [Contract A record](named-example-fern-refusal.txt) records that measured result.
+That record, its log and the two baseline logs below are **historical evidence
+of the earlier pair** (Fern CLI 5.67.1 with fern-python-sdk 5.20.0), kept as the
+record of that run: the extra probe was not re-run at the certified pair, whose
+measurement of this class is the class's own [record](fern-refusal.txt).
 
 Crozier's [baseline output on the extra probe](evaluation-logs/named-example-baseline.log)
 imports and has **zero mypy errors**. Its [wire journey](evaluation-logs/named-example-baseline.wire.log)

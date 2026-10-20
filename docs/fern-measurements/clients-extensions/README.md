@@ -1,7 +1,7 @@
 # Client and package construction, measured under other settings
 
-Each directory here is a tree Fern generated at Fern CLI 5.67.1 with
-`fernapi/fern-python-sdk` 5.20.0 under a setting other than the one its
+Each directory here is a tree Fern generated at Fern CLI 5.163.1 with
+`fernapi/fern-python-sdk` 5.41.3 under a setting other than the one its
 document's own gate uses, comment-stripped by `crozier internal-strip`. The
 trees are Fern's output as measured; nothing in them was edited. The workspace
 is the one `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of
@@ -40,10 +40,10 @@ and settles no coverage row.
 | `auction-house-bids-literals` | [`auction-house-bids`](../../openapi-surface/handwritten/auction-house-bids/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | no `bid_placed` method and an ordinary `Bid` type beside `list_lots`, with the `Lot.state` enum an open `Literal` union |
 | `ledger-records-offset-literals` | [`ledger-records-offset`](../../openapi-surface/handwritten/ledger-records-offset/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the offset pager over `list_entries` beside the unpaginated `list_accounts`, with the `Entry.side` enum an open `Literal` union |
 | `beacon-registry-pages-literals` | [`beacon-registry-pages`](../../openapi-surface/handwritten/beacon-registry-pages/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the root offset contract applied to `list_beacons` through `x-fern-pagination: true`, its scalar items paging as `str` |
-| `ledger-records-offset-flat` | [`ledger-records-offset`](../../openapi-surface/handwritten/ledger-records-offset/openapi.yml) | Fern: token-less `fern generate --local` (its flat tree); crozier: `--layout flat` | the offset-paginated `list_entries` returning its page model while the pagination runtime and its `core` exports still ship; Fern's README documents a pager the method does not return, the `flat-pagination-pager-docs` departure |
+| `ledger-records-offset-flat` | [`ledger-records-offset`](../../openapi-surface/handwritten/ledger-records-offset/openapi.yml) | Fern: token-less `fern generate --local` (its flat tree); crozier: `--layout flat` | the offset-paginated `list_entries` in the flat tree, returning a pager as the packaged tree's does at fern-python-sdk 5.41.3 |
 | `beacon-registry-pages-flat` | [`beacon-registry-pages`](../../openapi-surface/handwritten/beacon-registry-pages/openapi.yml) | Fern: token-less `fern generate --local`; crozier: `--layout flat` | the same for the root contract `x-fern-pagination: true` takes |
 | `crane-hire-cursor` | [`crane-hire-cursor`](crane-hire-cursor/openapi.yml) | the defaults (packaged, `python_enums`) | a cursor pager whose next cursor sits at the top of the page model, assigned outright with no `_has_next = False` guard |
-| `crane-hire-cursor-flat` | [`crane-hire-cursor`](crane-hire-cursor/openapi.yml) | Fern: token-less `fern generate --local`; crozier: `--layout flat` | the cursor-paginated `list_cranes` returning its page model in the flat tree, with the `flat-pagination-pager-docs` departure |
+| `crane-hire-cursor-flat` | [`crane-hire-cursor`](crane-hire-cursor/openapi.yml) | Fern: token-less `fern generate --local`; crozier: `--layout flat` | the cursor-paginated `list_cranes` in the flat tree, returning a pager as the packaged tree's does at fern-python-sdk 5.41.3 |
 | `weather-buoy-feeds` | [`weather-buoy-feeds`](weather-buoy-feeds/openapi.yml) | the defaults (packaged, `python_enums`) | an SSE stream (`stream_readings`) and a binary download (`download_logbook`), each with retries disabled and sent to its named `live` operation server, beside the ordinary `list_buoys` sent to `base` |
 | `dock-yard-bookings-literals` | [`dock-yard-bookings`](../../openapi-surface/handwritten/dock-yard-bookings/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | `yard/__init__.py` exporting the hoisted `BookYardRequestSlot` and the child `cranes` group, with the slot enum an open `Literal` union |
 | `vineyard-cellar-glossary-literals` | [`vineyard-cellar-glossary`](../../openapi-surface/handwritten/vineyard-cellar-glossary/openapi.yml) | Fern: `enum_type` unset; crozier: `--enum-type literals` | the `Phrase` type in `glossary/types/` and the `Batch` type in `fermentation/types/` beside the root `Tank` |

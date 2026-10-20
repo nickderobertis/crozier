@@ -9,7 +9,7 @@ from .text_message_type import TextMessageType
 
 
 class Text(BaseMessageType):
-    message_type: typing.Optional[TextMessageType] = pydantic.Field(default=None)
+    message_type: TextMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `text` in this field
     """

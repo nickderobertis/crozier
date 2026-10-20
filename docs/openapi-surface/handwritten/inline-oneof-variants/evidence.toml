@@ -4,9 +4,9 @@
 # request-body `oneOf` (plain, with `title`, with `description`, and with
 # 3.1 `examples`), a `oneOf` under an inline property, and a component union
 # (the measured probe `oneof-bare-object-example-variant`).
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "9f9a0f007cc4dea6d58bcccf8d7711b020b6cabfa9a65e901b5bd01e4227780e"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "632e79f5953c125a0ffee6327974d6948590f845ad21433adf72524a715d88cd"
 
 [[covers]]
 key = "oneof-array-variant-annotated-ref-item"
@@ -38,12 +38,6 @@ verdict = "exhausted"
 key = "oneof-array-variant-anyof-item"
 arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = item.one_of]'
 search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-array-variant-anyof-item.md#witness-search-exhaustive"
-verdict = "exhausted"
-
-[[covers]]
-key = "oneof-string-const-variant"
-arm = 'src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]'
-search = "docs/openapi-surface/golden-reach-witnesses/searches/oneof-string-const-variant.md#witness-search-exhaustive"
 verdict = "exhausted"
 
 [[covers]]

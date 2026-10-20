@@ -1,8 +1,8 @@
 # `Hidden` is declared but `x-fern-ignore`d, so the pointer walk reaches a head
 # that is gone; the cited record holds the measurements and the verdict's basis.
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "452fe88929436bb183c7705ad0813ff737ca47b5df6347ca61ce5738b1813b4a"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "b0ec50688ae4fa526321decb6e2f56b47832603e62b905faf0ce92a2b66dd484"
 
 [[covers]]
 key = "ref-pointer-undeclared-component-head"

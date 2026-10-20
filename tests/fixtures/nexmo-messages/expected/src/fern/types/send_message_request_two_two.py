@@ -3,16 +3,27 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.serialization import FieldMetadata
 from .base_message_type import BaseMessageType
-from .channel_options_whatsapp import ChannelOptionsWhatsapp
+from .channel_options_whatsapp_channel import ChannelOptionsWhatsappChannel
+from .from_number import FromNumber
 from .image_message_type import ImageMessageType
 from .send_message_request_two_two_image import SendMessageRequestTwoTwoImage
+from .to_number import ToNumber
 
 
-class SendMessageRequestTwoTwo(ChannelOptionsWhatsapp, BaseMessageType):
-    image: typing.Optional[SendMessageRequestTwoTwoImage] = None
-    message_type: typing.Optional[ImageMessageType] = pydantic.Field(default=None)
+class SendMessageRequestTwoTwo(BaseMessageType):
+    to: ToNumber
+    from_: typing_extensions.Annotated[FromNumber, FieldMetadata(alias="from"), pydantic.Field(alias="from")]
+    channel: ChannelOptionsWhatsappChannel = pydantic.Field()
+    """
+    The channel to send to. You must provide `whatsapp` in this field
+    """
+
+    image: SendMessageRequestTwoTwoImage
+    message_type: ImageMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `image` in this field
     """

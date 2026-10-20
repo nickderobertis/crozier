@@ -1,7 +1,7 @@
 # Examples and docs shapes, measured outside the hand-written fixtures
 
-Each directory here is a complete tree Fern generated at Fern CLI 5.67.1 with
-`fernapi/fern-python-sdk` 5.20.0, comment-stripped by `crozier internal-strip`
+Each directory here is a complete tree Fern generated at Fern CLI 5.163.1 with
+`fernapi/fern-python-sdk` 5.41.3, comment-stripped by `crozier internal-strip`
 and never edited. The workspace is the one
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (packaged preview
 layout, organization and package `fern`, project `default_package_name`),

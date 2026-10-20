@@ -8,8 +8,8 @@ from ...types.profile_data import ProfileData
 
 
 class GetOwnUserResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     avatar_url: typing.Optional[str] = pydantic.Field(default=None)
     """

@@ -124,7 +124,6 @@ client = FernApi(
 )
 
 client.products.create(
-    prefer="return=minimal",
     name="Video Streaming Service",
     description="Video streaming service",
     type=ProductRequestPostType.SERVICE,

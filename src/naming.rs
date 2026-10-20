@@ -1273,8 +1273,9 @@ mod tests {
         // Fern refuses a name led by one; crozier keeps it as written.
         assert_eq!(enum_member_name("_01_00_AM"), "_01_00_AM");
         // A value that *starts* with the run has it spelled, so nothing is left
-        // leading and the rest collapses: Fern 5.20.0 names `01_00_AM`'s member
-        // `ONE00AM` (the `enum-leading-zero-member-refused-control` probe).
+        // leading and the rest collapses: Fern 5.20.0 named `01_00_AM`'s member
+        // `ONE00AM` (the `enum-leading-zero-member-refused-control` probe,
+        // not re-measured at the certified pair).
         assert_eq!(enum_member_name("01_00_AM"), "ONE00AM");
         assert_eq!(enum_visit_param("01_00_AM"), "one00am");
         // A zero-led value that is a number whole is spelled as that number

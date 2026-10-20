@@ -1719,7 +1719,7 @@ client.commands.get_command_by_id(
 <dl>
 <dd>
 
-**command_id:** `int` 
+**command_id:** `int` — The ID of the command
     
 </dd>
 </dl>
@@ -1791,7 +1791,7 @@ client.commands.delete_command_by_id(
 <dl>
 <dd>
 
-**command_id:** `int` 
+**command_id:** `int` — The ID of the command
     
 </dd>
 </dl>
@@ -2335,7 +2335,7 @@ client.alarms.deactivate_alarm(
 <dl>
 <dd>
 
-**alarm_id:** `int` 
+**alarm_id:** `int` — The ID of the alarm
     
 </dd>
 </dl>

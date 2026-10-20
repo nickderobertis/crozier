@@ -23,7 +23,7 @@ class RemoteCallbackSubscribe(UniversalBaseModel):
     The retry policy to apply when notification failed.
     """
 
-    callback: typing.Optional[RemoteCallbackSubscribeCallback] = None
+    callback: RemoteCallbackSubscribeCallback
     remote_types: typing_extensions.Annotated[
         RemoteTypes, FieldMetadata(alias="remoteTypes"), pydantic.Field(alias="remoteTypes")
     ]

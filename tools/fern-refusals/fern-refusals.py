@@ -2,8 +2,8 @@
 """Build the refused-document population of `docs/fern-refusals/`.
 
 The registry's population is every document crozier's committed records name as
-refused, crashed on, or falsely reported successful by Fern (CLI 5.67.1,
-`fernapi/fern-python-sdk` 5.20.0):
+refused, crashed on, or falsely reported successful by Fern (the certified CLI
+and `fernapi/fern-python-sdk` pair `assets/scaffolding/metadata.json` declares):
 
 * the `DROPPED` rows of `tests/fixtures/CORPUS.md` whose reason is a Fern
   failure — a reason that names Fern; rows dropped for redundancy never do —
@@ -126,8 +126,33 @@ MEASUREMENT_GRAMMAR = {
     "generate_files": _COUNT,
     "crozier_files": _COUNT,
 }
-FERN_CLI = "5.67.1"
-FERN_PYTHON_SDK = "5.20.0"
+
+
+# The certified pair, read from its one declaration.
+class CertifiedPair(NamedTuple):
+    """The Fern CLI and fern-python-sdk versions `assets/scaffolding/metadata.json` declares."""
+
+    cli: str
+    sdk: str
+
+
+def _certified_pair(path: Path) -> CertifiedPair:
+    """The pair's declaration, each member an exact version."""
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        raise SystemExit(f"fern-refusals: cannot read {path} ({error}); restore it from git") from None
+    cli = record.get("cliVersion") if isinstance(record, dict) else None
+    sdk = record.get("generatorVersion") if isinstance(record, dict) else None
+    if not all(isinstance(value, str) and re.fullmatch(r"\d+\.\d+\.\d+", value) for value in (cli, sdk)):
+        raise SystemExit(
+            f"fern-refusals: {path} must give cliVersion and generatorVersion as exact versions, not {cli!r} and {sdk!r}"
+        )
+    return CertifiedPair(cli=str(cli), sdk=str(sdk))
+
+
+_PAIR = _certified_pair(REPO / "assets" / "scaffolding" / "metadata.json")
+FERN_CLI, FERN_PYTHON_SDK = _PAIR.cli, _PAIR.sdk
 EMPTY = "—"
 # Enumerated golden-reach sources name a document by its enumeration subject;
 # searched ones by `<repository>:<path>@<commit>` in their `candidates.jsonl`.
@@ -1100,6 +1125,17 @@ def cross_reference_problems() -> list[str]:
             problems.append(
                 f"classes.tsv {row['class']}: documents is {row['documents']}, but "
                 f"{carried.get(row['class'], 0)} documents.tsv row(s) carry it"
+            )
+    # A finding may name a class's own probe: Fern now generates from it, so the
+    # class is retiring (the e2e gate then holds crozier to generating it). Any
+    # other probe inside the registry names no class.
+    class_probes = {f"docs/fern-refusals/{name}/probe.yml" for name in names}
+    for row in read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER):
+        if row["probe"].startswith("docs/fern-refusals/") and row["probe"] not in class_probes:
+            problems.append(
+                f"findings.tsv {row['finding']}: its probe {row['probe']} is inside the registry but is no "
+                "classes.tsv row's probe.yml; name a class's probe (retiring that class) or a probe under "
+                "docs/openapi-surface/fern-refusals/findings/"
             )
     return problems
 

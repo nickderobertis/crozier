@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "248e11f8634d78818977c786b2b154f308c79716e6b85df0bf3cb712896ae23b"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "20acf5493567b1c5420570dc351de7b38f92fcd19e5029cae29b30963c7fd6ca"
 
 [[covers]]
 key = "operation-id-untagged-list-or-set"

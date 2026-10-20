@@ -273,7 +273,7 @@ class AsyncWorkflowsClient:
 
 
         async def main() -> None:
-            response = await client.workflows.stream_generation_events(
+            response = client.workflows.stream_generation_events(
                 generation_id="generationId",
             )
             async for chunk in response:

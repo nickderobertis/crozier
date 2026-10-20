@@ -16,12 +16,12 @@ from .to_number import ToNumber
 
 
 class MessageStatusViber(UniversalBaseModel):
-    channel: typing.Optional[MessageStatusViberChannel] = pydantic.Field(default=None)
+    channel: MessageStatusViberChannel = pydantic.Field()
     """
     The channel sending to.
     """
 
-    status: typing.Optional[MessageStatusViberStatus] = pydantic.Field(default=None)
+    status: MessageStatusViberStatus = pydantic.Field()
     """
     The status of the message.
     """

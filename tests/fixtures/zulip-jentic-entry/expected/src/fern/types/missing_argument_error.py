@@ -7,9 +7,9 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class MissingArgumentError(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
-    code: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
+    code: typing.Any
     var_name: typing.Optional[str] = pydantic.Field(default=None)
     """
     It contains the information about the missing parameter.

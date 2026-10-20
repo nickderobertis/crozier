@@ -120,13 +120,10 @@ if typing.TYPE_CHECKING:
     from .send_message_request_four_zero import SendMessageRequestFourZero
     from .send_message_request_one import SendMessageRequestOne
     from .send_message_request_one_one import SendMessageRequestOneOne
-    from .send_message_request_one_one_vcard import SendMessageRequestOneOneVcard
     from .send_message_request_one_three import SendMessageRequestOneThree
-    from .send_message_request_one_three_message_type import SendMessageRequestOneThreeMessageType
     from .send_message_request_one_three_video import SendMessageRequestOneThreeVideo
     from .send_message_request_one_two import SendMessageRequestOneTwo
     from .send_message_request_one_two_audio import SendMessageRequestOneTwoAudio
-    from .send_message_request_one_two_message_type import SendMessageRequestOneTwoMessageType
     from .send_message_request_one_zero import SendMessageRequestOneZero
     from .send_message_request_one_zero_image import SendMessageRequestOneZeroImage
     from .send_message_request_three import SendMessageRequestThree
@@ -155,12 +152,7 @@ if typing.TYPE_CHECKING:
     from .send_message_request_two_two_image import SendMessageRequestTwoTwoImage
     from .send_message_request_two_zero import SendMessageRequestTwoZero
     from .send_message_request_zero import SendMessageRequestZero
-    from .send_message_response import SendMessageResponse
     from .send_message_response_message_uuid import SendMessageResponseMessageUuid
-    from .send_message_response_one import SendMessageResponseOne
-    from .send_message_response_three import SendMessageResponseThree
-    from .send_message_response_two import SendMessageResponseTwo
-    from .send_message_response_zero import SendMessageResponseZero
     from .template import Template
     from .template_message_type import TemplateMessageType
     from .template_parameters import TemplateParameters
@@ -309,13 +301,10 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SendMessageRequestFourZero": ".send_message_request_four_zero",
     "SendMessageRequestOne": ".send_message_request_one",
     "SendMessageRequestOneOne": ".send_message_request_one_one",
-    "SendMessageRequestOneOneVcard": ".send_message_request_one_one_vcard",
     "SendMessageRequestOneThree": ".send_message_request_one_three",
-    "SendMessageRequestOneThreeMessageType": ".send_message_request_one_three_message_type",
     "SendMessageRequestOneThreeVideo": ".send_message_request_one_three_video",
     "SendMessageRequestOneTwo": ".send_message_request_one_two",
     "SendMessageRequestOneTwoAudio": ".send_message_request_one_two_audio",
-    "SendMessageRequestOneTwoMessageType": ".send_message_request_one_two_message_type",
     "SendMessageRequestOneZero": ".send_message_request_one_zero",
     "SendMessageRequestOneZeroImage": ".send_message_request_one_zero_image",
     "SendMessageRequestThree": ".send_message_request_three",
@@ -344,12 +333,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SendMessageRequestTwoTwoImage": ".send_message_request_two_two_image",
     "SendMessageRequestTwoZero": ".send_message_request_two_zero",
     "SendMessageRequestZero": ".send_message_request_zero",
-    "SendMessageResponse": ".send_message_response",
     "SendMessageResponseMessageUuid": ".send_message_response_message_uuid",
-    "SendMessageResponseOne": ".send_message_response_one",
-    "SendMessageResponseThree": ".send_message_response_three",
-    "SendMessageResponseTwo": ".send_message_response_two",
-    "SendMessageResponseZero": ".send_message_response_zero",
     "Template": ".template",
     "TemplateMessageType": ".template_message_type",
     "TemplateParameters": ".template_parameters",
@@ -518,13 +502,10 @@ __all__ = [
     "SendMessageRequestFourZero",
     "SendMessageRequestOne",
     "SendMessageRequestOneOne",
-    "SendMessageRequestOneOneVcard",
     "SendMessageRequestOneThree",
-    "SendMessageRequestOneThreeMessageType",
     "SendMessageRequestOneThreeVideo",
     "SendMessageRequestOneTwo",
     "SendMessageRequestOneTwoAudio",
-    "SendMessageRequestOneTwoMessageType",
     "SendMessageRequestOneZero",
     "SendMessageRequestOneZeroImage",
     "SendMessageRequestThree",
@@ -553,12 +534,7 @@ __all__ = [
     "SendMessageRequestTwoTwoImage",
     "SendMessageRequestTwoZero",
     "SendMessageRequestZero",
-    "SendMessageResponse",
     "SendMessageResponseMessageUuid",
-    "SendMessageResponseOne",
-    "SendMessageResponseThree",
-    "SendMessageResponseTwo",
-    "SendMessageResponseZero",
     "Template",
     "TemplateMessageType",
     "TemplateParameters",

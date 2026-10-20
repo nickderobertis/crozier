@@ -10,7 +10,7 @@ from .reply_reply import ReplyReply
 
 
 class Reply(BaseMessageType):
-    message_type: typing.Optional[ReplyMessageType] = pydantic.Field(default=None)
+    message_type: ReplyMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `custom` in this field.
     """

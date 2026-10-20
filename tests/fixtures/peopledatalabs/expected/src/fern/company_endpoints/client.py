@@ -6,7 +6,6 @@ from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from ..core.request_options import RequestOptions
 from ..types.company import Company
 from .raw_client import AsyncRawCompanyEndpointsClient, RawCompanyEndpointsClient
-from .types.post_v5company_search_request import PostV5CompanySearchRequest
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -140,12 +139,40 @@ class CompanyEndpointsClient:
         return _response.data
 
     def company_search(
-        self, *, request: PostV5CompanySearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> Company:
         """
         Parameters
         ----------
-        request : PostV5CompanySearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM company WHERE XXX, where XXX is a standard SQL boolean query involving our company fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -162,11 +189,18 @@ class CompanyEndpointsClient:
         client = FernApi(
             api_key="YOUR_API_KEY",
         )
-        client.company_endpoints.company_search(
-            request={"key": "value"},
-        )
+        client.company_endpoints.company_search()
         """
-        _response = self._raw_client.company_search(request=request, request_options=request_options)
+        _response = self._raw_client.company_search(
+            query=query,
+            sql=sql,
+            size=size,
+            from_=from_,
+            scroll_token=scroll_token,
+            titlecase=titlecase,
+            pretty=pretty,
+            request_options=request_options,
+        )
         return _response.data
 
 
@@ -306,12 +340,40 @@ class AsyncCompanyEndpointsClient:
         return _response.data
 
     async def company_search(
-        self, *, request: PostV5CompanySearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> Company:
         """
         Parameters
         ----------
-        request : PostV5CompanySearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM company WHERE XXX, where XXX is a standard SQL boolean query involving our company fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -333,12 +395,19 @@ class AsyncCompanyEndpointsClient:
 
 
         async def main() -> None:
-            await client.company_endpoints.company_search(
-                request={"key": "value"},
-            )
+            await client.company_endpoints.company_search()
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.company_search(request=request, request_options=request_options)
+        _response = await self._raw_client.company_search(
+            query=query,
+            sql=sql,
+            size=size,
+            from_=from_,
+            scroll_token=scroll_token,
+            titlecase=titlecase,
+            pretty=pretty,
+            request_options=request_options,
+        )
         return _response.data

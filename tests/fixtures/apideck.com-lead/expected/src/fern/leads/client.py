@@ -219,6 +219,7 @@ class LeadsClient:
             api_key="YOUR_API_KEY",
         )
         client.leads.add(
+            company_name="Spacex",
             name="Elon Musk",
         )
         """
@@ -458,6 +459,7 @@ class LeadsClient:
         )
         client.leads.update(
             id_="id",
+            company_name="Spacex",
             name="Elon Musk",
         )
         """
@@ -702,6 +704,7 @@ class AsyncLeadsClient:
 
         async def main() -> None:
             await client.leads.add(
+                company_name="Spacex",
                 name="Elon Musk",
             )
 
@@ -965,6 +968,7 @@ class AsyncLeadsClient:
         async def main() -> None:
             await client.leads.update(
                 id_="id",
+                company_name="Spacex",
                 name="Elon Musk",
             )
 

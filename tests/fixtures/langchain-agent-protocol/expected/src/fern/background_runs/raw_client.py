@@ -458,12 +458,12 @@ class RawBackgroundRunsClient:
     def create_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -476,6 +476,9 @@ class RawBackgroundRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -490,9 +493,6 @@ class RawBackgroundRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -521,6 +521,7 @@ class RawBackgroundRunsClient:
             "runs",
             method="POST",
             json={
+                "metadata": metadata,
                 "stream_mode": convert_and_respect_annotation_metadata(
                     object_=stream_mode, annotation=RunStreamStreamMode, direction="write"
                 ),
@@ -532,7 +533,6 @@ class RawBackgroundRunsClient:
                 "messages": convert_and_respect_annotation_metadata(
                     object_=messages, annotation=typing.Sequence[Message], direction="write"
                 ),
-                "metadata": metadata,
                 "config": convert_and_respect_annotation_metadata(
                     object_=config, annotation=RunCreateConfig, direction="write"
                 ),
@@ -1027,12 +1027,12 @@ class AsyncRawBackgroundRunsClient:
     async def create_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -1045,6 +1045,9 @@ class AsyncRawBackgroundRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -1059,9 +1062,6 @@ class AsyncRawBackgroundRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -1090,6 +1090,7 @@ class AsyncRawBackgroundRunsClient:
             "runs",
             method="POST",
             json={
+                "metadata": metadata,
                 "stream_mode": convert_and_respect_annotation_metadata(
                     object_=stream_mode, annotation=RunStreamStreamMode, direction="write"
                 ),
@@ -1101,7 +1102,6 @@ class AsyncRawBackgroundRunsClient:
                 "messages": convert_and_respect_annotation_metadata(
                     object_=messages, annotation=typing.Sequence[Message], direction="write"
                 ),
-                "metadata": metadata,
                 "config": convert_and_respect_annotation_metadata(
                     object_=config, annotation=RunCreateConfig, direction="write"
                 ),

@@ -8,8 +8,8 @@ from ...types.realm_export import RealmExport
 
 
 class GetRealmExportsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     exports: typing.Optional[typing.List[RealmExport]] = pydantic.Field(default=None)
     """

@@ -10,7 +10,7 @@
     "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens/tests/fern_goldens_test.py",
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens/tests/fern_goldens_test.py tools/fern-goldens/tests/fern_references_test.py",
         "env": {
           "COVERAGE_FILE": ".coverage-data/fern-goldens/test/.coverage"
         }

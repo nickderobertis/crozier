@@ -59,7 +59,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.plan_stream()
+    async for chunk in client.plan_stream(...):
+        print(chunk)
 
 
 asyncio.run(main())

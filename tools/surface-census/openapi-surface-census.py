@@ -2131,6 +2131,7 @@ CASES: dict[str, tuple[Case, ...]] = {
         ),
     ),
     "hoist_union_variant": (
+        Case("0", hole="H-sibling-identity"),
         Case("1", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.$ref"),
         Case("2", block="hoist_union_variant/anyOf", selector="schema.anyOf>schema.$ref"),
         Case("2a", block="hoist_union_variant/oneOf", selector="schema.oneOf>schema.enum:string-valued"),
@@ -2318,6 +2319,7 @@ CASES: dict[str, tuple[Case, ...]] = {
             block="hoist_union_variant/anyOf",
             selector="schema.anyOf>!schema.properties:non-empty&schema.type:primary=object&schema.additionalProperties>!schema.$ref&!schema.oneOf&schema.anyOf:several-non-null-members",
         ),
+        Case("15", hole="H-boolean-value"),
         Case(
             "12a",
             block="hoist_union_variant/oneOf",
@@ -2521,8 +2523,8 @@ CASES: dict[str, tuple[Case, ...]] = {
 BLIND_FUNCTION_DIGESTS: dict[str, str] = {
     "resolve_schema_pointer": "39ffff07e088a992",
     "nested_array_element": "db8c83a404e0417c",
-    "hoist_union_variant": "66aacc37a6f8f5a7",
-    "prop_type_ref": "6deb59aa47072ec0",
+    "hoist_union_variant": "791d82643902a74a",
+    "prop_type_ref": "94f307f9a0883f21",
     "ref_to_class": "45d0e7ca7b0473f4",
     "path_group": "3730d67e0c2f068d",
 }

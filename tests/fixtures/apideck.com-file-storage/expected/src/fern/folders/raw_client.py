@@ -388,7 +388,7 @@ class RawFoldersClient:
 
     def update(
         self,
-        id: str,
+        id_path_param: str,
         *,
         raw: typing.Optional[bool] = None,
         description: typing.Optional[str] = OMIT,
@@ -401,7 +401,7 @@ class RawFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         raw : typing.Optional[bool]
@@ -424,7 +424,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{encode_path_param(id)}",
+            f"file-storage/folders/{encode_path_param(id_path_param)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -516,7 +516,7 @@ class RawFoldersClient:
 
     def copy(
         self,
-        id: str,
+        id_path_param: str,
         *,
         parent_folder_id: ParentFolderId,
         raw: typing.Optional[bool] = None,
@@ -529,7 +529,7 @@ class RawFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         parent_folder_id : ParentFolderId
@@ -552,7 +552,7 @@ class RawFoldersClient:
             Folders
         """
         _response = self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{encode_path_param(id)}/copy",
+            f"file-storage/folders/{encode_path_param(id_path_param)}/copy",
             method="POST",
             params={
                 "raw": raw,
@@ -1000,7 +1000,7 @@ class AsyncRawFoldersClient:
 
     async def update(
         self,
-        id: str,
+        id_path_param: str,
         *,
         raw: typing.Optional[bool] = None,
         description: typing.Optional[str] = OMIT,
@@ -1013,7 +1013,7 @@ class AsyncRawFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         raw : typing.Optional[bool]
@@ -1036,7 +1036,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{encode_path_param(id)}",
+            f"file-storage/folders/{encode_path_param(id_path_param)}",
             method="PATCH",
             params={
                 "raw": raw,
@@ -1128,7 +1128,7 @@ class AsyncRawFoldersClient:
 
     async def copy(
         self,
-        id: str,
+        id_path_param: str,
         *,
         parent_folder_id: ParentFolderId,
         raw: typing.Optional[bool] = None,
@@ -1141,7 +1141,7 @@ class AsyncRawFoldersClient:
 
         Parameters
         ----------
-        id : str
+        id_path_param : str
             ID of the record you are acting upon.
 
         parent_folder_id : ParentFolderId
@@ -1164,7 +1164,7 @@ class AsyncRawFoldersClient:
             Folders
         """
         _response = await self._client_wrapper.httpx_client.request(
-            f"file-storage/folders/{encode_path_param(id)}/copy",
+            f"file-storage/folders/{encode_path_param(id_path_param)}/copy",
             method="POST",
             params={
                 "raw": raw,

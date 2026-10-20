@@ -13,7 +13,7 @@ a crozier-authored document whose `scheduleFiring` request body requires
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (the certified pair), in
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 (the certified pair), in
 the workspace [`../../openapi-surface/probes/AGENTS.md`](../../openapi-surface/probes/AGENTS.md#re-running-one)
 prescribes, generates the tree committed, comment-stripped, as the fixture's
 [`fern-expected/`](../../openapi-surface/handwritten/closed-empty-inline-objects/fern-expected/).
@@ -25,8 +25,9 @@ free-form placeholder:
 - `src/fern/firings/client.py` lines 65 and 167 (the sync and async method
   docstrings) write `profile={"key": "value"},`.
 
-An explicit `example: {}` on the property does not change it: Fern writes the
-same placeholder.
+An explicit `example: {}` on the property did not change it at the previous
+certified pair (Fern wrote the same placeholder); that variant is not
+re-measured at this one.
 
 ## Why it is a defect
 
@@ -64,8 +65,8 @@ The same departure applies to a registered real specification: cradl's
 `post_models` requires `field_config`, a property closed with
 `additionalProperties: false` that declares no `properties` and whose one
 `patternProperties` pattern holds only objects (a `oneOf` of two object
-schemas). Its golden examples it `{"key": "value"}` in `reference.md` and in
-`client.py`'s two docstrings, and validating against the document's own schema
+schemas). Its golden examples it `{"key": "value"}` in `reference.md` (line
+3542) and in `client.py`'s two docstrings (lines 2113 and 5839), and validating against the document's own schema
 fails the same way:
 
 ```text

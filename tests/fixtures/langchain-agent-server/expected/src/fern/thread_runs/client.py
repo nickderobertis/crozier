@@ -16,7 +16,6 @@ from ..types.run_create_stateful_interrupt_before import RunCreateStatefulInterr
 from ..types.run_create_stateful_multitask_strategy import RunCreateStatefulMultitaskStrategy
 from ..types.run_create_stateful_stream_mode import RunCreateStatefulStreamMode
 from ..types.run_create_streaming_stateful_on_disconnect import RunCreateStreamingStatefulOnDisconnect
-from ..types.runs_cancel import RunsCancel
 from .raw_client import AsyncRawThreadRunsClient, RawThreadRunsClient
 from .types.cancel_run_http_threads_thread_id_runs_run_id_cancel_post_request_action import (
     CancelRunHttpThreadsThreadIdRunsRunIdCancelPostRequestAction,
@@ -28,6 +27,7 @@ from .types.list_runs_http_threads_thread_id_runs_get_request_select_item import
 from .types.list_runs_http_threads_thread_id_runs_get_request_status import (
     ListRunsHttpThreadsThreadIdRunsGetRequestStatus,
 )
+from .types.runs_cancel_status import RunsCancelStatus
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -78,6 +78,7 @@ class ThreadRunsClient:
         status : typing.Optional[ListRunsHttpThreadsThreadIdRunsGetRequestStatus]
 
         select : typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]
+            Specify which fields to return. If not provided, all fields are returned.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -623,6 +624,7 @@ class ThreadRunsClient:
             The ID of the run.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -671,10 +673,13 @@ class ThreadRunsClient:
             The ID of the run.
 
         stream_mode : typing.Optional[str]
+            The mode to stream the run in. If not provided, the default mode will be used.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Set to -1 if you want to stream all events. Requires `stream_resumable=true` to be set when creating the run.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -761,8 +766,10 @@ class ThreadRunsClient:
     def cancel_runs_post(
         self,
         *,
-        request: RunsCancel,
         action: typing.Optional[CancelRunsPostRequestAction] = None,
+        status: typing.Optional[RunsCancelStatus] = OMIT,
+        thread_id: typing.Optional[str] = OMIT,
+        run_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -770,10 +777,17 @@ class ThreadRunsClient:
 
         Parameters
         ----------
-        request : RunsCancel
-
         action : typing.Optional[CancelRunsPostRequestAction]
             Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
+
+        status : typing.Optional[RunsCancelStatus]
+            Filter runs by status to cancel. Must be one of 'pending', 'running', or 'all'.
+
+        thread_id : typing.Optional[str]
+            The ID of the thread containing runs to cancel.
+
+        run_ids : typing.Optional[typing.Sequence[str]]
+            List of run IDs to cancel.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -789,11 +803,11 @@ class ThreadRunsClient:
         client = FernApi(
             base_url="https://yourhost.com/path/to/api",
         )
-        client.thread_runs.cancel_runs_post(
-            request={"key": "value"},
-        )
+        client.thread_runs.cancel_runs_post()
         """
-        _response = self._raw_client.cancel_runs_post(request=request, action=action, request_options=request_options)
+        _response = self._raw_client.cancel_runs_post(
+            action=action, status=status, thread_id=thread_id, run_ids=run_ids, request_options=request_options
+        )
         return _response.data
 
 
@@ -842,6 +856,7 @@ class AsyncThreadRunsClient:
         status : typing.Optional[ListRunsHttpThreadsThreadIdRunsGetRequestStatus]
 
         select : typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]
+            Specify which fields to return. If not provided, all fields are returned.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1138,7 +1153,7 @@ class AsyncThreadRunsClient:
 
 
         async def main() -> None:
-            response = await client.thread_runs.stream_run(
+            response = client.thread_runs.stream_run(
                 thread_id="thread_id",
                 assistant_id="assistant_id",
             )
@@ -1436,6 +1451,7 @@ class AsyncThreadRunsClient:
             The ID of the run.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1492,10 +1508,13 @@ class AsyncThreadRunsClient:
             The ID of the run.
 
         stream_mode : typing.Optional[str]
+            The mode to stream the run in. If not provided, the default mode will be used.
 
         cancel_on_disconnect : typing.Optional[bool]
+            If true, the run will be cancelled if the client disconnects.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Set to -1 if you want to stream all events. Requires `stream_resumable=true` to be set when creating the run.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1517,7 +1536,7 @@ class AsyncThreadRunsClient:
 
 
         async def main() -> None:
-            response = await client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
+            response = client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
                 thread_id="thread_id",
                 run_id="run_id",
             )
@@ -1597,8 +1616,10 @@ class AsyncThreadRunsClient:
     async def cancel_runs_post(
         self,
         *,
-        request: RunsCancel,
         action: typing.Optional[CancelRunsPostRequestAction] = None,
+        status: typing.Optional[RunsCancelStatus] = OMIT,
+        thread_id: typing.Optional[str] = OMIT,
+        run_ids: typing.Optional[typing.Sequence[str]] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> None:
         """
@@ -1606,10 +1627,17 @@ class AsyncThreadRunsClient:
 
         Parameters
         ----------
-        request : RunsCancel
-
         action : typing.Optional[CancelRunsPostRequestAction]
             Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
+
+        status : typing.Optional[RunsCancelStatus]
+            Filter runs by status to cancel. Must be one of 'pending', 'running', or 'all'.
+
+        thread_id : typing.Optional[str]
+            The ID of the thread containing runs to cancel.
+
+        run_ids : typing.Optional[typing.Sequence[str]]
+            List of run IDs to cancel.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1630,14 +1658,12 @@ class AsyncThreadRunsClient:
 
 
         async def main() -> None:
-            await client.thread_runs.cancel_runs_post(
-                request={"key": "value"},
-            )
+            await client.thread_runs.cancel_runs_post()
 
 
         asyncio.run(main())
         """
         _response = await self._raw_client.cancel_runs_post(
-            request=request, action=action, request_options=request_options
+            action=action, status=status, thread_id=thread_id, run_ids=run_ids, request_options=request_options
         )
         return _response.data

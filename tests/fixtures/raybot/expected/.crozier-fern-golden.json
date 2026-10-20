@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "raybot",
   "corpus_spec_ref": "4428dea2f79b833aead4c89df5bd8d9e32b7b0c8",
   "corpus_spec_url": "https://raw.githubusercontent.com/tbe-team/raybot/4428dea2f79b833aead4c89df5bd8d9e32b7b0c8/api/openapi/openapi.yml",

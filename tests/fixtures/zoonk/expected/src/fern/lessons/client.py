@@ -748,7 +748,7 @@ class AsyncLessonsClient:
 
 
         async def main() -> None:
-            response = await client.lessons.create_lesson_question_answer(
+            response = client.lessons.create_lesson_question_answer(
                 question_id="questionId",
             )
             async for chunk in response:

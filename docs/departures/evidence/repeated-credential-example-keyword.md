@@ -26,7 +26,7 @@ headers, both named `token` by `x-fern-header`, and Fern's examples pass
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization: fern`,
 `pydantic_config.enum_type: python_enums`, `fern generate --group python-sdk
 --local --preview`), exits 0 on both; each comment-stripped tree is the
@@ -34,16 +34,20 @@ document's `fern-expected/`.
 
 In `twin-key-relay`, `src/fern/client.py`'s `FernApi.__init__` and
 `AsyncFernApi.__init__` each declare one `api_key: str` (lines 76 and 234), and
-`core/client_wrapper.py` writes the `X-Api-Key` header from it twice. Yet every
-constructor example passes `api_key` twice: `README.md` lines 41–42 and 74–75,
+`core/client_wrapper.py` writes the `X-Api-Key` header from it twice (lines
+44–45). Yet every constructor example passes `api_key` twice: `README.md` lines
+41–42 and 74–75 (`api_key="<value>"` then `api_key="<X-Api-Key>"`),
 `reference.md` lines 19–20, and `src/fern/client.py` lines 66–67, 145–146,
-224–225 and 303–304. `grid-valve-console`'s `README.md`, `reference.md` and
-`src/fern/client.py` do the same.
+224–225 and 303–304 (`api_key="YOUR_API_KEY"` twice). `grid-valve-console`'s
+`README.md` (lines 41–42, `api_key="<token>"` then `api_key="<X-Api-Key>"`),
+`reference.md` (lines 19–20) and `src/fern/client.py` (lines 63–64, 130–131,
+209–210 and 278–279) do the same.
 
 ## Why it is a defect
 
 A call that repeats a keyword argument does not bind. Compiling the `README.md`
-snippet of `twin-key-relay`'s tree, with no dependency needed:
+snippet of `twin-key-relay`'s tree (lines 38–48), with no dependency needed,
+re-run at the new pair on 2026-10-18 under Python 3.14.7:
 
 ```text
 $ python3 -c 'import sys; compile(open(sys.argv[1]).read(), "README.md", "exec")' readme-snippet.py
@@ -51,10 +55,11 @@ $ python3 -c 'import sys; compile(open(sys.argv[1]).read(), "README.md", "exec")
 SyntaxError: keyword argument repeated: api_key
 ```
 
-The client docstring's example (`src/fern/client.py` lines 63–68, dedented)
-fails the same way, and so do `grid-valve-console`'s `README.md` snippet and
-`openepcis-dpp-ready`'s (`tests/fixtures/openepcis-dpp-ready/expected/README.md`
-lines 40–45, `api_key="<X-API-KEY>"` then `api_key="<API-KEY>"`):
+The client docstring's example (`src/fern/client.py` lines 64–68, dedented)
+fails the same way, and so do `grid-valve-console`'s `README.md` snippet (lines
+38–44) and `openepcis-dpp-ready`'s (`tests/fixtures/openepcis-dpp-ready/expected/README.md`
+lines 38–51, `api_key="<X-API-KEY>"` then `api_key="<API-KEY>"` at lines
+42–43):
 `SyntaxError: keyword argument repeated: api_key`. The examples contradict the
 generated constructor, which takes the keyword once; that is a defect under the
 defect rule. Fern's code — the one parameter, the header written twice, the
@@ -64,8 +69,8 @@ bearer reading the shared field — is behaviour, and crozier matches it.
 
 crozier writes the same trees but for those lines: each constructor example
 passes the shared keyword once, keeping the first. Its `README.md` snippet for
-`twin-key-relay` runs, with `httpx` and `pydantic` installed beside the
-generated `src/`:
+`twin-key-relay` compiles and runs, with `httpx` and `pydantic` installed beside
+the generated `src/`:
 
 ```text
 $ python -c 'import inspect; from fern import FernApi; print(list(inspect.signature(FernApi).parameters)[:3]); client = FernApi(api_key="<value>", base_url="https://relay.keys.test"); print(client._client_wrapper.get_headers()["X-Api-Key"])'
@@ -77,5 +82,8 @@ $ python -c 'import inspect; from fern import FernApi; print(list(inspect.signat
 departure to each golden's `repeated-credential-example-keyword` rows in
 `tests/fixtures/departures-ledger.tsv`, one per file at the first line of its
 differing window; `clients_extensions_measurements_match_fern` does the same
-for their literals-mode trees, and `openepcis_dpp_ready_matches_fern_output`
-for that golden's `README.md`, `reference.md` and four `client.py` files.
+for their literals-mode trees and `relay-station-shared-name`, and
+`openepcis_dpp_ready_matches_fern_output` for that golden's `README.md`,
+`reference.md` and four `client.py` files. At the new pair the departure
+applies at `README.md:42`, `reference.md:20` and `src/fern/client.py:67`
+(`twin-key-relay`) or `:64` (`grid-valve-console`).

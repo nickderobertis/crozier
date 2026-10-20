@@ -101,7 +101,7 @@ that kill most specs:
 
 A clean generate is still not enough on its own: check the shape you are buying
 against [`../../docs/fern-limitations.md`](../../docs/fern-limitations.md), which
-records what Fern 5.20.0 was measured to discard, ignore, refuse or match only by
+records what Fern was measured to discard, ignore, refuse or match only by
 coincidence — a golden cannot pin a shape Fern throws away — plus the two
 exit-0-and-nothing-happened failure modes no exit code reveals: a check that
 passes over an unparsed document, and a duplicate `operationId` that collapses
@@ -152,14 +152,14 @@ duplicate its batch ledger here.
 ## Shrinking `unmatched` — don't diff by hand
 
 Most of the corpus is at full byte parity, and an empty `unmatched` is the target
-for every row. Three rows are registered with a **measured residual** instead —
-`komga`, `short-io` and `webflow-v2`, `CORPUS.md`'s batch 14 — because Fern
-accepted each of those documents, so nothing removes them from the registration
+for every row. Two rows are registered with a **measured residual** instead —
+`komga` and `webflow-v2`, `CORPUS.md`'s batch 14 (its third, `short-io`, reached
+full parity at fern-python-sdk 5.41.3) — because Fern accepted each of those documents, so nothing removes them from the registration
 route, and a deleted tree would leave no measured reason for the gap. A residual
 is enumerated, never suppressed: every divergent file is named in that corpus's
 `unmatched`, every file crozier emits that its golden lacks is named in
 `crates/crozier-e2e/tests/e2e.rs`'s `crozier_only_files`, and both lists fail the gate the moment one
-of their entries starts matching or stops being emitted. Outside those three, a
+of their entries starts matching or stops being emitted. Outside those two, a
 non-empty list means work in flight rather than an accepted state.
 `just fixtures-gaps` generates every available corpus and reports the exact
 divergent files as ready-to-paste `unmatched` arrays; land the generator fix and

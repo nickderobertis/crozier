@@ -61,7 +61,7 @@ class FernApi:
     from fern import FernApi
 
     client = FernApi(
-        "spring",
+        season="spring",
     )
     """
 
@@ -174,7 +174,7 @@ class AsyncFernApi:
     from fern import AsyncFernApi
 
     client = AsyncFernApi(
-        "spring",
+        season="spring",
     )
     """
 

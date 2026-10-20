@@ -15,6 +15,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.address import Address
 from ..types.amount import Amount
 from ..types.avatar import Avatar
+from ..types.bad_request_error_body import BadRequestErrorBody
 from ..types.billing_contract_subscription import BillingContractSubscription
 from ..types.customer import Customer
 from ..types.customer_limit import CustomerLimit
@@ -74,9 +75,9 @@ class RawUserCompanyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -331,9 +332,9 @@ class RawUserCompanyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -390,9 +391,9 @@ class AsyncRawUserCompanyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -647,9 +648,9 @@ class AsyncRawUserCompanyClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

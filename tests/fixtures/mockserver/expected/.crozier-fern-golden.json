@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "mockserver",
   "corpus_spec_ref": "ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037",
   "corpus_spec_url": "https://raw.githubusercontent.com/mock-server/mockserver-monorepo/ff83158d204c5eb7ab5fabc8ba74ffd3a76f5037/jekyll-www.mock-server.com/mockserver-openapi.yaml",

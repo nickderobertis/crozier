@@ -529,7 +529,10 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.connector_docs.one()
+client.connector_docs.one(
+    id="id",
+    doc_id="doc_id",
+)
 
 ```
 </dd>

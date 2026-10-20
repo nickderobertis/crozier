@@ -92,7 +92,7 @@ class AsyncMessagesClient:
 
 
         async def main() -> None:
-            response = await client.messages.streammessages()
+            response = client.messages.streammessages()
             async for chunk in response:
                 yield chunk
 

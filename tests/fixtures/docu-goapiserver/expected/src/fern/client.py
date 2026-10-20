@@ -120,7 +120,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if host is not None:
             _host = host if host is not None else "api.example.com"
-            base_url = "https://{host}/primula/api/v3".format(host=_host)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{host}/primula/api/v3",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{host}/primula/api/v3")
+            if base_url is None:
+                base_url = _url_template.format(host=_host)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,
@@ -532,7 +537,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if host is not None:
             _host = host if host is not None else "api.example.com"
-            base_url = "https://{host}/primula/api/v3".format(host=_host)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "https://{host}/primula/api/v3",
+            }
+            _url_template = _environment_url_templates.get(environment, "https://{host}/primula/api/v3")
+            if base_url is None:
+                base_url = _url_template.format(host=_host)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,

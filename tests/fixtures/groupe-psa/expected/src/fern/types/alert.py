@@ -12,12 +12,20 @@ from .alert_links import AlertLinks
 from .alert_msg_enum import AlertMsgEnum
 from .alert_severity import AlertSeverity
 from .alert_start_position import AlertStartPosition
-from .created_at_field import CreatedAtField
 from .updated_at_field import UpdatedAtField
 from .vin import Vin
 
 
-class Alert(CreatedAtField, UpdatedAtField):
+class Alert(UpdatedAtField):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     links: typing_extensions.Annotated[AlertLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     id: str
     vin: Vin

@@ -2392,7 +2392,7 @@ client.threads.join_thread_stream(
 <dl>
 <dd>
 
-**stream_modes:** `typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]` 
+**stream_modes:** `typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]` — Stream modes to control which events are returned. 'lifecycle' returns only run start/end events, 'run_modes' returns all run events (default behavior), 'state_update' returns only state update events.
     
 </dd>
 </dl>
@@ -2400,7 +2400,7 @@ client.threads.join_thread_stream(
 <dl>
 <dd>
 
-**last_event_id:** `typing.Optional[str]` 
+**last_event_id:** `typing.Optional[str]` — The ID of the last event received. Used to resume streaming from a specific point. Pass '-' to resume from the beginning.
     
 </dd>
 </dl>
@@ -2477,7 +2477,7 @@ client.streaming.protocol_thread_events_post(
 <dl>
 <dd>
 
-**thread_id:** `str` 
+**thread_id:** `str` — The ID of the thread to observe.
     
 </dd>
 </dl>
@@ -2586,7 +2586,7 @@ client.streaming.protocol_thread_command_post(
 <dl>
 <dd>
 
-**thread_id:** `str` 
+**thread_id:** `str` — The ID of the thread the command applies to.
     
 </dd>
 </dl>
@@ -2714,7 +2714,7 @@ client.thread_runs.list_runs_http(
 <dl>
 <dd>
 
-**select:** `typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]` 
+**select:** `typing.Optional[typing.Union[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem, typing.Sequence[ListRunsHttpThreadsThreadIdRunsGetRequestSelectItem]]]` — Specify which fields to return. If not provided, all fields are returned.
     
 </dd>
 </dl>
@@ -3202,7 +3202,7 @@ client.thread_runs.join_run_http(
 <dl>
 <dd>
 
-**cancel_on_disconnect:** `typing.Optional[bool]` 
+**cancel_on_disconnect:** `typing.Optional[bool]` — If true, the run will be cancelled if the client disconnects.
     
 </dd>
 </dl>
@@ -3290,7 +3290,7 @@ client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
 <dl>
 <dd>
 
-**stream_mode:** `typing.Optional[str]` 
+**stream_mode:** `typing.Optional[str]` — The mode to stream the run in. If not provided, the default mode will be used.
     
 </dd>
 </dl>
@@ -3298,7 +3298,7 @@ client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
 <dl>
 <dd>
 
-**cancel_on_disconnect:** `typing.Optional[bool]` 
+**cancel_on_disconnect:** `typing.Optional[bool]` — If true, the run will be cancelled if the client disconnects.
     
 </dd>
 </dl>
@@ -3306,7 +3306,7 @@ client.thread_runs.stream_run_http_threads_thread_id_runs_run_id_join_get(
 <dl>
 <dd>
 
-**last_event_id:** `typing.Optional[str]` 
+**last_event_id:** `typing.Optional[str]` — The ID of the last event received. Set to -1 if you want to stream all events. Requires `stream_resumable=true` to be set when creating the run.
     
 </dd>
 </dl>
@@ -3441,9 +3441,7 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.thread_runs.cancel_runs_post(
-    request={"key": "value"},
-)
+client.thread_runs.cancel_runs_post()
 
 ```
 </dd>
@@ -3459,7 +3457,7 @@ client.thread_runs.cancel_runs_post(
 <dl>
 <dd>
 
-**request:** `RunsCancel` 
+**action:** `typing.Optional[CancelRunsPostRequestAction]` — Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
     
 </dd>
 </dl>
@@ -3467,7 +3465,23 @@ client.thread_runs.cancel_runs_post(
 <dl>
 <dd>
 
-**action:** `typing.Optional[CancelRunsPostRequestAction]` — Action to take when cancelling the run. Possible values are `interrupt` or `rollback`. `interrupt` will simply cancel the run. `rollback` will cancel the run and delete the run and associated checkpoints afterwards.
+**status:** `typing.Optional[RunsCancelStatus]` — Filter runs by status to cancel. Must be one of 'pending', 'running', or 'all'.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**thread_id:** `typing.Optional[str]` — The ID of the thread containing runs to cancel.
+    
+</dd>
+</dl>
+
+<dl>
+<dd>
+
+**run_ids:** `typing.Optional[typing.List[str]]` — List of run IDs to cancel.
     
 </dd>
 </dl>
@@ -5653,7 +5667,7 @@ client.system.system_metrics()
 <dl>
 <dd>
 
-**format:** `typing.Optional[SystemMetricsMetricsGetRequestFormat]` 
+**format:** `typing.Optional[SystemMetricsMetricsGetRequestFormat]` — Response format: prometheus (default) or json
     
 </dd>
 </dl>
@@ -5783,7 +5797,7 @@ client.system.health_check()
 <dl>
 <dd>
 
-**check_db:** `typing.Optional[int]` 
+**check_db:** `typing.Optional[int]` — Whether to check database connectivity (0=false, 1=true)
     
 </dd>
 </dl>

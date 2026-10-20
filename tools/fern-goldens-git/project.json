@@ -4,15 +4,16 @@
   "projectType": "library",
   "tags": [
     "type:tooling",
+    "measures:crozier-e2e",
     "lang:python"
   ],
   "targets": {
-    "test": {
+    "test-lifecycle": {
       "executor": "nx:run-commands",
       "options": {
         "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens-git/tests/fern_goldens_git_test.py",
         "env": {
-          "COVERAGE_FILE": ".coverage-data/fern-goldens-git/test/.coverage"
+          "COVERAGE_FILE": ".coverage-data/fern-goldens-git/test-lifecycle/.coverage"
         }
       },
       "cache": true,
@@ -21,7 +22,10 @@
         "{workspaceRoot}/tools/fern-goldens/fern-goldens",
         "{workspaceRoot}/tools/fern-goldens/generate-corpus-fixtures.sh",
         "{workspaceRoot}/tools/fern-goldens/generate-fern-fixture.sh",
+        "{workspaceRoot}/tools/fern-goldens/fern-references.py",
+        "{workspaceRoot}/tools/fern-goldens/golden_overlay.py",
         "{workspaceRoot}/tools/fern-goldens/tests/fern_goldens_test.py",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
         "{workspaceRoot}/tools/corpus/corpus-lib.sh",
         "{workspaceRoot}/tools/corpus/corpus_remote_ref_pins.py",
         "{workspaceRoot}/tools/corpus/fetch-corpus.sh",
@@ -32,7 +36,67 @@
         "pythonTooling"
       ],
       "outputs": [
-        "{workspaceRoot}/.coverage-data/fern-goldens-git/test"
+        "{workspaceRoot}/.coverage-data/fern-goldens-git/test-lifecycle"
+      ]
+    },
+    "test-certified-pair": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "uv run --locked --all-packages pytest --cov --cov-report= tools/fern-goldens-git/tests/certified_pair_test.py",
+        "env": {
+          "COVERAGE_FILE": ".coverage-data/fern-goldens-git/test-certified-pair/.coverage"
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "{workspaceRoot}/assets/scaffolding/metadata.json",
+        "{workspaceRoot}/*",
+        "{workspaceRoot}/.*",
+        "{workspaceRoot}/.cargo/**/*",
+        "{workspaceRoot}/.claude/**/*",
+        "{workspaceRoot}/assets/**/*",
+        "{workspaceRoot}/licenses/**/*",
+        "{workspaceRoot}/llmlint-plugins/**/*",
+        "{workspaceRoot}/pool-maintenance/**/*",
+        "{workspaceRoot}/screenshots/**/*",
+        "{workspaceRoot}/shots/**/*",
+        "{workspaceRoot}/templates/**/*",
+        "{workspaceRoot}/src/**/*",
+        "{workspaceRoot}/crates/**/*",
+        "{workspaceRoot}/tests/*",
+        "{workspaceRoot}/tests/support/**/*",
+        "{workspaceRoot}/tools/ci/**/*",
+        "{workspaceRoot}/tools/ci-journeys/**/*",
+        "{workspaceRoot}/tools/corpus/**/*",
+        "{workspaceRoot}/tools/corpus-fetch/**/*",
+        "{workspaceRoot}/tools/corpus-licensing/**/*",
+        "{workspaceRoot}/tools/fern-goldens/**/*",
+        "{workspaceRoot}/tools/fern-refusals/**/*",
+        "{workspaceRoot}/tools/fern-refusals-strict/**/*",
+        "{workspaceRoot}/tools/github-action/**/*",
+        "{workspaceRoot}/tools/llmlint/**/*",
+        "{workspaceRoot}/tools/llmlint-resolution/**/*",
+        "{workspaceRoot}/tools/python-workspace/**/*",
+        "{workspaceRoot}/tools/surface-census/**/*",
+        "{workspaceRoot}/tools/surface-reach/**/*",
+        "{workspaceRoot}/tools/witness-search/**/*",
+        "{workspaceRoot}/tools/witness-search-git/**/*",
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/.github/**/*",
+        "{workspaceRoot}/justfile",
+        "{workspaceRoot}/action.yml",
+        "pythonTooling"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage-data/fern-goldens-git/test-certified-pair"
+      ]
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test-lifecycle",
+        "test-certified-pair"
       ]
     },
     "lint-boundaries": {

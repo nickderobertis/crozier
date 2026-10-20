@@ -3,6 +3,7 @@
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
 from ..types.create_schedule_run_response import CreateScheduleRunResponse
 from ..types.delete_schedule_response import DeleteScheduleResponse
@@ -10,6 +11,7 @@ from ..types.get_schedule_response import GetScheduleResponse
 from ..types.list_schedule_runs_response import ListScheduleRunsResponse
 from ..types.list_schedules_response import ListSchedulesResponse
 from ..types.resource_name import ResourceName
+from ..types.schedule import Schedule
 from ..types.schedule_manifest import ScheduleManifest
 from .raw_client import AsyncRawSchedulesClient, RawSchedulesClient
 
@@ -39,7 +41,7 @@ class SchedulesClient:
         page_token: typing.Optional[str] = None,
         agent_names: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSchedulesResponse:
+    ) -> SyncPager[Schedule, ListSchedulesResponse]:
         """
         List schedules for the tenant, newest first. Optionally filter by `agent_names`.
 
@@ -59,7 +61,7 @@ class SchedulesClient:
 
         Returns
         -------
-        ListSchedulesResponse
+        SyncPager[Schedule, ListSchedulesResponse]
             Paginated matching schedules.
 
         Examples
@@ -70,12 +72,16 @@ class SchedulesClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.schedules.list()
+        response = client.schedules.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit, page_token=page_token, agent_names=agent_names, request_options=request_options
         )
-        return _response.data
 
     def create(
         self,
@@ -331,7 +337,7 @@ class AsyncSchedulesClient:
         page_token: typing.Optional[str] = None,
         agent_names: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSchedulesResponse:
+    ) -> AsyncPager[Schedule, ListSchedulesResponse]:
         """
         List schedules for the tenant, newest first. Optionally filter by `agent_names`.
 
@@ -351,7 +357,7 @@ class AsyncSchedulesClient:
 
         Returns
         -------
-        ListSchedulesResponse
+        AsyncPager[Schedule, ListSchedulesResponse]
             Paginated matching schedules.
 
         Examples
@@ -367,15 +373,20 @@ class AsyncSchedulesClient:
 
 
         async def main() -> None:
-            await client.schedules.list()
+            response = await client.schedules.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit, page_token=page_token, agent_names=agent_names, request_options=request_options
         )
-        return _response.data
 
     async def create(
         self,

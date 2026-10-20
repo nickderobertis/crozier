@@ -1,8 +1,7 @@
 //! The union shapes the hand-written union fixtures prove, driven through the
 //! real binary: each fixture's complete certified tree in both enum modes, the
-//! two union extensions under both spellings and with conflicting values, the
-//! `union-value-wrapper-docs-example` departure's scope, and the refusals
-//! beside the shapes that now generate.
+//! two union extensions under both spellings and with conflicting values, and
+//! the refusals beside the shapes that now generate.
 
 use std::path::{Path, PathBuf};
 
@@ -68,11 +67,12 @@ fn literals_tree(name: &str) -> Result<(tempfile::TempDir, GoldenLedger), String
         .map_err(|error| format!("{name}: cannot read its literals manifest: {error}"))?;
     let manifest: serde_json::Value = serde_json::from_str(&text)
         .map_err(|error| format!("{name}: invalid literals manifest: {error}"))?;
+    let pair = crozier::emit::certified_fern_pair();
     for (key, value) in [
         ("enum_type", "literals"),
         ("base", "fern-expected"),
-        ("fern_cli_version", "5.67.1"),
-        ("fern_python_sdk_version", "5.20.0"),
+        ("fern_cli_version", pair.cli),
+        ("fern_python_sdk_version", pair.python_sdk),
     ] {
         if manifest[key] != value {
             return Err(format!(

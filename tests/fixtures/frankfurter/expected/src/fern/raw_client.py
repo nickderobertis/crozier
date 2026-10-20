@@ -18,8 +18,10 @@ from .types.currency_detail import CurrencyDetail
 from .types.get_currencies_request_scope import GetCurrenciesRequestScope
 from .types.get_rates_request_expand import GetRatesRequestExpand
 from .types.get_rates_request_group import GetRatesRequestGroup
+from .types.not_found_error_body import NotFoundErrorBody
 from .types.provider import Provider
 from .types.rate import Rate
+from .types.unprocessable_entity_error_body import UnprocessableEntityErrorBody
 from pydantic import ValidationError
 
 
@@ -106,9 +108,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -117,9 +119,9 @@ class RawFernApi:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -188,9 +190,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -199,9 +201,9 @@ class RawFernApi:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -252,9 +254,9 @@ class RawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -446,9 +448,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -457,9 +459,9 @@ class AsyncRawFernApi:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -528,9 +530,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -539,9 +541,9 @@ class AsyncRawFernApi:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -592,9 +594,9 @@ class AsyncRawFernApi:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),

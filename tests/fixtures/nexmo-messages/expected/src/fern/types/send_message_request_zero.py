@@ -3,19 +3,26 @@
 import typing
 
 import pydantic
+import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.serialization import FieldMetadata
 from .base_message_type import BaseMessageType
-from .channel_options_sms import ChannelOptionsSms
+from .channel_options_sms_channel import ChannelOptionsSmsChannel
+from .from_number import FromNumber
 from .text_message_type import TextMessageType
+from .to_number import ToNumber
 
 
-class SendMessageRequestZero(ChannelOptionsSms, BaseMessageType):
-    text: typing.Optional[typing.Any] = pydantic.Field(default=None)
+class SendMessageRequestZero(BaseMessageType):
+    to: ToNumber
+    from_: typing_extensions.Annotated[FromNumber, FieldMetadata(alias="from"), pydantic.Field(alias="from")]
+    channel: ChannelOptionsSmsChannel = pydantic.Field()
     """
-    The text of message to send; limited to 1000 characters. The Messages API automatically detects unicode characters when sending SMS and sends the message as a unicode SMS. For more information on how concatenation and encoding please visit: [developer.nexmo.com/messaging/sms/guides/concatenation-and-encoding](https://developer.nexmo.com/messaging/sms/guides/concatenation-and-encoding).
+    The channel to send to. You must provide `sms` in this field
     """
 
-    message_type: typing.Optional[TextMessageType] = pydantic.Field(default=None)
+    text: typing.Any
+    message_type: TextMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `text` in this field
     """

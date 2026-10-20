@@ -210,6 +210,16 @@ fern-goldens *args:
 fern-goldens-generate *args:
     ./tools/fern-goldens/fern-goldens generate "$@"
 
+# Needs Docker and the Fern CLI; see docs/fern-goldens.md. `--version` and
+# `--cli-version` name a pair other than assets/scaffolding/metadata.json's.
+# Regenerate a Fern reference family (all items, or the named ones), one Fern run at a time.
+fern-references *args:
+    python3 tools/fern-goldens/fern-references.py generate "$@"
+
+# Print one Fern reference family's item names, one per line.
+fern-references-list family:
+    python3 tools/fern-goldens/fern-references.py list "$1"
+
 fern-goldens-compare:
     ./tools/fern-goldens/fern-goldens compare
 
@@ -311,7 +321,7 @@ golden-reach-arms:
     python3 tools/surface-census/golden-reach.py arms
 
 # Which generated files each `golden` row resting only on a residual golden
-# (komga, short-io, webflow-v2) lands in, split by whether that golden test
+# (komga, webflow-v2) lands in, split by whether that golden test
 # byte-compares them: renders the witness with the feature perturbed and diffs
 # crozier's two outputs. Restated in docs/openapi-surface-coverage.md. Outside
 # `check`: it needs a built crozier and ruff.

@@ -128,7 +128,7 @@ class AsyncWidgetsClient:
 
 
         async def main() -> None:
-            response = await client.widgets.watch_stream()
+            response = client.widgets.watch_stream()
             async for chunk in response:
                 yield chunk
 

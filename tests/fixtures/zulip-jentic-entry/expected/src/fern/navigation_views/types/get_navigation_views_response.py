@@ -9,8 +9,8 @@ from ...types.navigation_view import NavigationView
 
 
 class GetNavigationViewsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     navigation_views: typing.Optional[typing.List[NavigationView]] = pydantic.Field(default=None)
     """
     An array of dictionaries containing the user's navigation views.

@@ -8,6 +8,7 @@ The offline suites, and the helpers both share, are
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 import shutil
@@ -652,7 +653,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             (
                 json.dumps(
                     {
-                        "fern_python_sdk_version": "4.9.0",
+                        "fern_python_sdk_version": "4.9.0",  # certified-pair: stand-in
                         "corpus_spec_name": "alpha",
                         "corpus_spec_ref": "1",
                         "corpus_spec_url": "https://example.test/alpha/openapi.json",
@@ -1269,6 +1270,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
             root,
             "tools/fern-goldens/generate-fern-fixture.sh",
             "scripts/lib.sh",
+            "assets/scaffolding/metadata.json",
             "tools/corpus/corpus_remote_ref_pins.py",
             "tools/surface-census/openapi-surface-census.py",
         )
@@ -1413,7 +1415,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (scripts, fixture, fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         (fixture / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8", newline="\n")
         (root / "tests" / "fixtures" / "fern-generator-config.txt").write_text(
             "beta|public|true|AcmeClient|ignore\n", encoding="utf-8", newline="\n"
@@ -1514,7 +1518,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         (fixtures / "corpus-sources" / "zeta" / "openapi.yaml").write_text(
             "openapi: 3.0.3 # zeta\n", encoding="utf-8", newline="\n"
         )
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         for fixture in ("beta", "delta"):
             (fixtures / fixture / "openapi.yml").write_text(
                 f"openapi: 3.0.3 # {fixture}\n", encoding="utf-8", newline="\n"
@@ -1669,7 +1675,9 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         target = root / "target" / "release"
         for directory in (root / "scripts", fixtures / "beta", fake_bin, target):
             directory.mkdir(parents=True, exist_ok=True)
-        mirror(root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh")
+        mirror(
+            root, "tools/fern-goldens/generate-fern-fixture.sh", "scripts/lib.sh", "assets/scaffolding/metadata.json"
+        )
         (fixtures / "beta" / "openapi.yml").write_text("openapi: 3.0.3\n", encoding="utf-8")
         self.write_executable(
             fake_bin / "fern",
@@ -1714,6 +1722,123 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         return root, root / "tools/fern-goldens/generate-fern-fixture.sh", environment
 
+    def test_the_fern_cli_defaults_to_the_declared_cli_version_and_an_override_recovers(self) -> None:
+        """With FERN_CLI_VERSION unset, the CLI the workspace selects is metadata.json's
+        cliVersion, read afresh each run; a declaration it cannot read stops the run
+        before Fern, and an explicit FERN_CLI_VERSION still runs."""
+        root, script, environment = self.generator_repo("cli default repo")
+        recorded = root / "configs.jsonl"
+        self.write_executable(
+            root / "fake bin" / "fern",
+            f"""
+            #!/usr/bin/env python3
+            import json, pathlib, sys
+            arguments = sys.argv[1:]
+            with open({str(recorded)!r}, "a") as log:
+                log.write((pathlib.Path.cwd() / "fern.config.json").read_text().strip() + "\\n")
+            generated = pathlib.Path(arguments[arguments.index("--output") + 1]) / "fern-python-sdk" / "src" / "fern"
+            generated.mkdir(parents=True)
+            (generated / "version.py").write_text("generated\\n", encoding="utf-8")
+            """,
+        )
+        environment.pop("FERN_CLI_VERSION", None)
+        metadata = root / "assets/scaffolding/metadata.json"
+        declared = json.loads(metadata.read_text(encoding="utf-8"))
+
+        def run(**updates: str) -> subprocess.CompletedProcess[str]:
+            return subprocess.run(
+                self.script_command(script, "beta", "6.5.4"),
+                cwd=root,
+                env={**environment, **updates},
+                text=True,
+                encoding="utf-8",
+                capture_output=True,
+                check=False,
+            )
+
+        def versions() -> list[str]:
+            if not recorded.is_file():
+                return []
+            return [json.loads(line)["version"] for line in recorded.read_text(encoding="utf-8").splitlines()]
+
+        first = run()
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertEqual([declared["cliVersion"]], versions())
+        # Written as the declaration is, one key per line, which is how the script reads it.
+        moved_to = "7.7.7"
+        metadata.write_text(json.dumps({**declared, "cliVersion": moved_to}, indent=2), encoding="utf-8")
+        moved = run()
+        self.assertEqual(moved.returncode, 0, moved.stderr)
+        self.assertEqual([declared["cliVersion"], moved_to], versions())
+        for broken in ("{not json", json.dumps({**declared, "cliVersion": "latest"}, indent=2)):
+            with self.subTest(metadata=broken):
+                metadata.write_text(broken, encoding="utf-8")
+                refused = run()
+                self.assertEqual(refused.returncode, 1, refused.stderr)
+                self.assertIn("cannot read cliVersion from", refused.stderr)
+                self.assertIn("or set FERN_CLI_VERSION", refused.stderr)
+                self.assertEqual(2, len(versions()), "Fern ran under an unreadable declaration")
+        recovered = run(FERN_CLI_VERSION="8.8.8")  # certified-pair: stand-in
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual("8.8.8", versions()[-1])
+
+    def test_the_reference_families_scaffold_the_workspace_the_fixture_script_does(self) -> None:
+        """`fern-references.py` writes its own Fern workspace rather than calling
+        `generate-fern-fixture.sh`, so the two are held to one contract here: for
+        the same document and settings, Fern reads the same `fern.config.json`
+        and `generators.yml` from each, under the same invocation identity."""
+        root, script, environment = self.generator_repo("contract repo")
+        recorded = root / "workspaces.jsonl"
+        self.write_executable(
+            root / "fake bin" / "fern",
+            f"""
+            #!/usr/bin/env python3
+            import json, os, pathlib, sys
+            workspace = pathlib.Path.cwd()
+            with open({str(recorded)!r}, "a") as log:
+                log.write(json.dumps({{
+                    "argv": sys.argv[1:2],
+                    "config": (workspace / "fern.config.json").read_text(),
+                    "generators": (workspace / "generators.yml").read_text(),
+                    "identity": [os.environ.get("CI"), os.environ.get("GITHUB_ACTIONS")],
+                }}) + "\\n")
+            sys.exit(9)
+            """,
+        )
+        settings = {"FERN_AUDIENCES": "public", "CLIENT_CLASS_NAME": "Acme", "EXTRA_FIELDS": "forbid"}
+        subprocess.run(
+            self.script_command(script, "beta", "6.5.4"),
+            cwd=root,
+            env={**environment, **settings, "FERN_CLI_VERSION": "9.8.7"},
+            capture_output=True,
+            check=False,
+        )
+        spec = importlib.util.spec_from_file_location("fern_references", REPO / "tools/fern-goldens/fern-references.py")
+        assert spec is not None and spec.loader is not None
+        references = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = references
+        spec.loader.exec_module(references)
+        with (
+            unittest.mock.patch.dict(os.environ, {"PATH": environment["PATH"]}),
+            references.run_fern(
+                root / "tests/fixtures/beta/openapi.yml",
+                references.Pair(cli="9.8.7", generator="6.5.4"),
+                audiences=("public",),
+                client_class_name="Acme",
+                extra_fields="forbid",
+            ),
+        ):
+            pass
+        script_run, tool_run = [json.loads(line) for line in recorded.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(["generate"], script_run["argv"], "the fixture script reached Fern")
+        # Fern parses fern.config.json, so it is compared as the JSON it reads.
+        self.assertEqual(json.loads(script_run["config"]), json.loads(tool_run["config"]))
+        for field in ("generators", "identity"):
+            with self.subTest(field=field):
+                self.assertEqual(script_run[field], tool_run[field])
+        self.assertIn("client_class_name: Acme", tool_run["generators"])
+        self.assertIn("extra_fields: forbid", tool_run["generators"])
+
     def test_real_generator_script_success_is_one_summary_line(self) -> None:
         root, script, environment = self.generator_repo("quiet repo")
         # A sandbox proxy with no CA bundle used to add two more lines of its own.
@@ -1736,7 +1861,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         lines = result.stderr.splitlines()
         self.assertEqual(len(lines), 1, result.stderr)
         self.assertIn("wrote 2 files to", lines[0])
-        self.assertIn("(python-sdk@5.20.0, packaged)", lines[0])
+        self.assertIn("(python-sdk@5.20.0, packaged)", lines[0])  # certified-pair: stand-in
         self.assertIn("review, then wire them into the e2e manifest", lines[0])
 
         # What the quiet run withheld is reported when Fern fails, with Fern's
@@ -1752,7 +1877,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
         )
         self.assertEqual(failed.returncode, 7, failed.stderr)
         self.assertIn("simulated generator failure", failed.stderr)
-        self.assertIn("fern generate (python-sdk@5.20.0, packaged) exited 7", failed.stderr)
+        self.assertIn("fern generate (python-sdk@5.20.0, packaged) exited 7", failed.stderr)  # certified-pair: stand-in
         self.assertIn("fix the cause Fern printed above, then re-run", failed.stderr)
         self.assertIn("CROZIER_FERN_NO_DOCKER_SHIM=1", failed.stderr)
         self.assertIn("set CROZIER_FERN_DOCKER_CA to the bundle", failed.stderr)
@@ -1807,7 +1932,7 @@ class FernGoldensBoundaryTests(unittest.TestCase):
                     "  path: openapi/openapi.yml\n"
                     "groups:\n"
                     "  python-sdk:\n" + ("    audiences:\n" + audience_lines if audiences else "") + "    generators:\n"
-                    "      - name: fernapi/fern-python-sdk\n"
+                    "      - name: fernapi/fern-python-sdk\n"  # certified-pair: stand-in
                     "        version: 5.20.0\n"
                     "        config:\n"
                     + (f"          client_class_name: {client_class_name}\n" if client_class_name else "")

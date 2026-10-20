@@ -120,15 +120,17 @@ class TroubleshootingClient:
 
         Examples
         --------
-        from fern import FernApi
+        from fern import Expectation, FernApi, HttpResponse
 
         client = FernApi()
         client.troubleshooting.diff_a_baseline_set_of_expectations_against_another(
             baseline=[
-                {
-                    "httpRequest": {"method": "GET", "path": "/api/orders"},
-                    "httpResponse": {"statusCode": 200, "body": '{"orders":[]}'},
-                }
+                Expectation(
+                    http_response=HttpResponse(
+                        body='{"orders":[]}',
+                        status_code=200,
+                    ),
+                )
             ],
         )
         """
@@ -303,7 +305,7 @@ class AsyncTroubleshootingClient:
         --------
         import asyncio
 
-        from fern import AsyncFernApi
+        from fern import AsyncFernApi, Expectation, HttpResponse
 
         client = AsyncFernApi()
 
@@ -311,10 +313,12 @@ class AsyncTroubleshootingClient:
         async def main() -> None:
             await client.troubleshooting.diff_a_baseline_set_of_expectations_against_another(
                 baseline=[
-                    {
-                        "httpRequest": {"method": "GET", "path": "/api/orders"},
-                        "httpResponse": {"statusCode": 200, "body": '{"orders":[]}'},
-                    }
+                    Expectation(
+                        http_response=HttpResponse(
+                            body='{"orders":[]}',
+                            status_code=200,
+                        ),
+                    )
                 ],
             )
 

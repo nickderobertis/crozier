@@ -1232,8 +1232,10 @@ class RawThreadsClient:
             The ID of the thread.
 
         stream_modes : typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]
+            Stream modes to control which events are returned. 'lifecycle' returns only run start/end events, 'run_modes' returns all run events (default behavior), 'state_update' returns only state update events.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Used to resume streaming from a specific point. Pass '-' to resume from the beginning.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1268,6 +1270,8 @@ class RawThreadsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -2517,8 +2521,10 @@ class AsyncRawThreadsClient:
             The ID of the thread.
 
         stream_modes : typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]
+            Stream modes to control which events are returned. 'lifecycle' returns only run start/end events, 'run_modes' returns all run events (default behavior), 'state_update' returns only state update events.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Used to resume streaming from a specific point. Pass '-' to resume from the beginning.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -2553,6 +2559,8 @@ class AsyncRawThreadsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,

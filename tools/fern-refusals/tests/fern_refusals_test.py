@@ -38,8 +38,12 @@ from typing import Any
 
 REPO = Path(__file__).resolve().parents[3]
 SCRIPT = REPO / "tools" / "fern-refusals" / "fern-refusals.py"
+# The script and the record it reads the certified pair from, as a scratch root mirrors them.
+SCRIPT_LOADS = ("tools/fern-refusals/fern-refusals.py", "assets/scaffolding/metadata.json")
 REGISTRY = REPO / "docs" / "fern-refusals"
 CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmations.tsv"
+# The certified Fern pair, from its one declaration.
+CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
 
 
@@ -251,6 +255,26 @@ class Drift(unittest.TestCase):
         write_rows(self.registry / "classes.tsv", table)
         self.assert_check_fails_naming(f"classes.tsv {row[0]}: documents is {row[5]}")
 
+    def test_a_finding_naming_a_class_probe_holds_and_one_naming_no_class_fails(self) -> None:
+        # A `generates` finding whose probe is a class's own probe.yml retires
+        # that class; the class's rows stay until the population is re-measured.
+        table = rows(self.registry / "findings.tsv")
+        classes = [row[0] for row in rows(self.registry / "classes.tsv")[1:]]
+        retiring = [row for row in table[1:] if row[5] == f"docs/fern-refusals/{classes[0]}/probe.yml"]
+        if not retiring:
+            table.append(
+                [f"{classes[0]}-generates", "generates", "0", "0", "—", f"docs/fern-refusals/{classes[0]}/probe.yml"]
+            )
+            write_rows(self.registry / "findings.tsv", table)
+        result = run("check", registry=self.registry)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        table.append(["stray-generates", "generates", "0", "0", "—", "docs/fern-refusals/no-such-class/probe.yml"])
+        write_rows(self.registry / "findings.tsv", table)
+        self.assert_check_fails_naming(
+            "findings.tsv stray-generates: its probe docs/fern-refusals/no-such-class/probe.yml is inside the "
+            "registry but is no classes.tsv row's probe.yml"
+        )
+
     def test_unsorted_documents_fail(self) -> None:
         table = rows(self.registry / "documents.tsv")
         table[1], table[2] = table[2], table[1]
@@ -388,7 +412,7 @@ class MissingInputs(unittest.TestCase):
     def assert_select_names_missing(self, missing: str) -> None:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
+            for relative in (*SCRIPT_LOADS, *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 if relative != missing:
                     shutil.copy(REPO / relative, root / relative)
@@ -414,7 +438,7 @@ class MissingInputs(unittest.TestCase):
         """`select` from a scratch checkout whose `source` enumeration is `text`."""
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *self.INPUTS):
+            for relative in (*SCRIPT_LOADS, *self.INPUTS):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             with gzip.open(root / self.enumeration(source), "wt", encoding="utf-8") as handle:
@@ -479,7 +503,7 @@ class MalformedInputs(unittest.TestCase):
     def select_over(self, edit: tuple[str, str]) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as scratch:
             root = Path(scratch)
-            for relative in ("tools/fern-refusals/fern-refusals.py", *MissingInputs.INPUTS, *self.CANDIDATES):
+            for relative in (*SCRIPT_LOADS, *MissingInputs.INPUTS, *self.CANDIDATES):
                 (root / relative).parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(REPO / relative, root / relative)
             relative, line = edit
@@ -687,7 +711,9 @@ class FernRuns(unittest.TestCase):
         self.scratch = tempfile.TemporaryDirectory()
         self.root = root = Path(self.scratch.name)
         (root / "tools" / "fern-refusals").mkdir(parents=True)
-        shutil.copy(SCRIPT, root / "tools" / "fern-refusals" / "fern-refusals.py")
+        for relative in SCRIPT_LOADS:
+            (root / relative).parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(REPO / relative, root / relative)
         self.registry = root / "docs" / "fern-refusals"
         self.evidence = root / "docs" / "openapi-surface" / "fern-refusals"
         (self.registry / self.CLASS).mkdir(parents=True)
@@ -750,8 +776,8 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in calls], ["check", "generate"])
         self.assertTrue(
             all(
-                call["cli"] == "5.67.1"
-                and "version: 5.20.0" in call["generators"]
+                call["cli"] == CERTIFIED["cliVersion"]
+                and f"version: {CERTIFIED['generatorVersion']}" in call["generators"]
                 and call["node_options"] == "--max-old-space-size=16384"
                 for call in calls
             )
@@ -806,6 +832,18 @@ class FernRuns(unittest.TestCase):
         self.assertEqual("fern-refusals: 1 finding(s) recorded\n", result.stdout)
         [row] = rows(self.registry / "findings.tsv")[1:]
         self.assertEqual(row[2:4], ["1", "0"])
+
+    def test_finding_measures_a_class_probe_fern_now_generates_from(self) -> None:
+        # The retiring case: a `generates` finding whose probe is the class's own.
+        retiring = [f"{self.CLASS}-generates", "generates", "", "", "—", f"docs/fern-refusals/{self.CLASS}/probe.yml"]
+        header = rows(self.registry / "findings.tsv")[0]
+        write_rows(self.registry / "findings.tsv", [header, self.finding_row, retiring])
+        result = self.script("finding", retiring[0], generate_files="3")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(rows(self.registry / "findings.tsv")[2][2:4], ["0", "0"])
+        calls = self.calls_made()
+        probe = (self.registry / self.CLASS / "probe.yml").read_text(encoding="utf-8")
+        self.assertTrue(calls and all(call["spec"] == probe for call in calls), calls)
 
     def test_a_finding_fern_refuses_is_refused_as_a_class(self) -> None:
         result = self.script("finding", self.FINDING, check_exit="1", generate_exit="1")

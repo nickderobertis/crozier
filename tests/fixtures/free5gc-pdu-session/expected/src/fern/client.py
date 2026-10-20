@@ -91,7 +91,12 @@ class FernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if api_root is not None:
             _api_root = api_root if api_root is not None else "https://example.com"
-            base_url = "{apiRoot}/nsmf-pdusession/v1".format(apiRoot=_api_root)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "{apiRoot}/nsmf-pdusession/v1",
+            }
+            _url_template = _environment_url_templates.get(environment, "{apiRoot}/nsmf-pdusession/v1")
+            if base_url is None:
+                base_url = _url_template.format(apiRoot=_api_root)
         self._client_wrapper = SyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,
@@ -242,7 +247,12 @@ class AsyncFernApi:
         _defaulted_max_retries = max_retries if max_retries is not None else 2
         if api_root is not None:
             _api_root = api_root if api_root is not None else "https://example.com"
-            base_url = "{apiRoot}/nsmf-pdusession/v1".format(apiRoot=_api_root)
+            _environment_url_templates = {
+                FernApiEnvironment.DEFAULT: "{apiRoot}/nsmf-pdusession/v1",
+            }
+            _url_template = _environment_url_templates.get(environment, "{apiRoot}/nsmf-pdusession/v1")
+            if base_url is None:
+                base_url = _url_template.format(apiRoot=_api_root)
         self._client_wrapper = AsyncClientWrapper(
             base_url=_get_base_url(base_url=base_url, environment=environment),
             token=token,

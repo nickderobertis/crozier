@@ -14,14 +14,18 @@ version.
   [`../licenses/fern-APACHE-2.0.txt`](../licenses/fern-APACHE-2.0.txt); both must
   be retained, and they cover this vendored runtime as redistributed product
   (not only the test fixtures).
-- **Source:** produced by `fernapi/fern-python-sdk:5.20.0` over the managed Corpus
+- **Source:** produced by `fernapi/fern-python-sdk:5.41.3` over the managed Corpus
   fixtures via `tools/fern-goldens/generate-fern-fixture.sh`.
 - **Change made (Apache-2.0 §4(c)):** Python comments are stripped with the same
   string-safe normalizer used for fixtures, except Fern's `# type: ignore`
   pragmas, which stay at the lines Fern's own output carries them so a generated
   SDK type-checks clean under its pinned `mypy`. The auth-shaped
   `client_wrapper.py` is assembled by Crozier and is not one of the verbatim
-  runtime assets.
+  runtime assets, and `http_client.py`'s empty `_AUTH_HEADERS` set is filled
+  per SDK with its `apiKey` header's name, as Fern fills it.
+- **Conditional files:** `pagination.py` ships only with an SDK that has a
+  paginated endpoint and `xml_utilities.py` only with one that has an XML model,
+  as Fern ships them.
 - **Judged lint:** the verbatim runtime files here, and the three Python
   scaffolding copies below, are excluded from `llmlint` in `llmlint.yml` as
   vendored Fern output, as `tests/fixtures/**` is; the byte-match and the

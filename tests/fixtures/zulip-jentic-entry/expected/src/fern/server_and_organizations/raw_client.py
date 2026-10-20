@@ -17,6 +17,7 @@ from ..types.ignored_parameters_success import IgnoredParametersSuccess
 from ..types.json_success import JsonSuccess
 from ..types.linkifier_pattern import LinkifierPattern
 from ..types.linkifier_url_template import LinkifierUrlTemplate
+from ..types.not_found_error_body import NotFoundErrorBody
 from .types.add_code_playground_response import AddCodePlaygroundResponse
 from .types.add_linkifier_response import AddLinkifierResponse
 from .types.create_custom_profile_field_response import CreateCustomProfileFieldResponse
@@ -156,9 +157,9 @@ class RawServerAndOrganizationsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -1965,9 +1966,9 @@ class AsyncRawServerAndOrganizationsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),

@@ -1,0 +1,6 @@
+{
+  "fern_python_sdk_version": "5.41.3",
+  "corpus_spec_name": "offchain-metadata-tools",
+  "corpus_spec_ref": "91eba72d6e5e3b17cd49f625c9546f2c82df5a65",
+  "corpus_spec_url": "https://raw.githubusercontent.com/input-output-hk/offchain-metadata-tools/91eba72d6e5e3b17cd49f625c9546f2c82df5a65/docs/api/0.5.0.0/openapi.yaml"
+}

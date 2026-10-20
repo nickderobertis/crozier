@@ -50,7 +50,10 @@ class ConnectorDocsClient:
             apideck_app_id="YOUR_APIDECK_APP_ID",
             api_key="YOUR_API_KEY",
         )
-        client.connector_docs.one()
+        client.connector_docs.one(
+            id="id",
+            doc_id="doc_id",
+        )
         """
         _response = self._raw_client.one(id, doc_id, request_options=request_options)
         return _response.data
@@ -104,7 +107,10 @@ class AsyncConnectorDocsClient:
 
 
         async def main() -> None:
-            await client.connector_docs.one()
+            await client.connector_docs.one(
+                id="id",
+                doc_id="doc_id",
+            )
 
 
         asyncio.run(main())

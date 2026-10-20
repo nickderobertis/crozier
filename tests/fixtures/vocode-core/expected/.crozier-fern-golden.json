@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "vocode-core",
   "corpus_spec_ref": "e054c33a72787b6a4920f91eb8598ad0bafb4240",
   "corpus_spec_url": "https://raw.githubusercontent.com/vocodedev/vocode-core/e054c33a72787b6a4920f91eb8598ad0bafb4240/docs/openapi.json"

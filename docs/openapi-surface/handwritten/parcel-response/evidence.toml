@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "88e774388db9b54874af4a55fec6f0e38c7629a24b000ad84e4e84c0fd516ea4"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "c9648282242b2e58b4c65838f4870ade8efbfadb81d23e07b3a4db8e73a6b413"
 
 [[covers]]
 key = "ref-into-component-response-schema-named-by-last-segment"

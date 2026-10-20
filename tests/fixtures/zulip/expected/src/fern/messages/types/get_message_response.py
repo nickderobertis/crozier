@@ -8,8 +8,8 @@ from .get_message_response_message import GetMessageResponseMessage
 
 
 class GetMessageResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     raw_content: typing.Optional[str] = pydantic.Field(default=None)
     """

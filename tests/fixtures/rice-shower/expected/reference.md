@@ -62,7 +62,7 @@ client.query.get_thermo_metrics(
 <dl>
 <dd>
 
-**time_start:** `GetThermoMetricsRequestTimeStart` 
+**time_start:** `GetThermoMetricsRequestTimeStart` — Start time for the query in ISO format
     
 </dd>
 </dl>
@@ -70,7 +70,7 @@ client.query.get_thermo_metrics(
 <dl>
 <dd>
 
-**time_end:** `GetThermoMetricsRequestTimeEnd` 
+**time_end:** `GetThermoMetricsRequestTimeEnd` — End time for the query in ISO format
     
 </dd>
 </dl>
@@ -78,7 +78,7 @@ client.query.get_thermo_metrics(
 <dl>
 <dd>
 
-**interval:** `float` 
+**interval:** `float` — Interval in seconds for time bucketing
     
 </dd>
 </dl>
@@ -86,7 +86,7 @@ client.query.get_thermo_metrics(
 <dl>
 <dd>
 
-**channels:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` 
+**channels:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` — List of channel numbers to retrieve
     
 </dd>
 </dl>
@@ -168,7 +168,7 @@ client.query.get_heater_metrics(
 <dl>
 <dd>
 
-**time_start:** `GetHeaterMetricsRequestTimeStart` 
+**time_start:** `GetHeaterMetricsRequestTimeStart` — Start time for the query in ISO format
     
 </dd>
 </dl>
@@ -176,7 +176,7 @@ client.query.get_heater_metrics(
 <dl>
 <dd>
 
-**time_end:** `GetHeaterMetricsRequestTimeEnd` 
+**time_end:** `GetHeaterMetricsRequestTimeEnd` — End time for the query in ISO format
     
 </dd>
 </dl>
@@ -184,7 +184,7 @@ client.query.get_heater_metrics(
 <dl>
 <dd>
 
-**interval:** `float` 
+**interval:** `float` — Interval in seconds for time bucketing
     
 </dd>
 </dl>
@@ -192,7 +192,7 @@ client.query.get_heater_metrics(
 <dl>
 <dd>
 
-**channels:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` 
+**channels:** `typing.Optional[typing.Union[float, typing.Sequence[float]]]` — List of heater channel numbers to retrieve
     
 </dd>
 </dl>
@@ -581,11 +581,13 @@ client.systems.create_system(
     thermos=[
         CreateSystemRequestThermosItem(
             channel=1.1,
+            label=None,
         )
     ],
     heaters=[
         CreateSystemRequestHeatersItem(
             channel=1.1,
+            label=None,
         )
     ],
 )

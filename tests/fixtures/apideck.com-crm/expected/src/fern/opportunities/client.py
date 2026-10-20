@@ -293,6 +293,7 @@ class OpportunitiesClient:
             api_key="YOUR_API_KEY",
         )
         client.opportunities.add(
+            primary_contact_id="12345",
             title="New Rocket",
         )
         """
@@ -624,6 +625,7 @@ class OpportunitiesClient:
         )
         client.opportunities.update(
             id_="id",
+            primary_contact_id="12345",
             title="New Rocket",
         )
         """
@@ -960,6 +962,7 @@ class AsyncOpportunitiesClient:
 
         async def main() -> None:
             await client.opportunities.add(
+                primary_contact_id="12345",
                 title="New Rocket",
             )
 
@@ -1315,6 +1318,7 @@ class AsyncOpportunitiesClient:
         async def main() -> None:
             await client.opportunities.update(
                 id_="id",
+                primary_contact_id="12345",
                 title="New Rocket",
             )
 

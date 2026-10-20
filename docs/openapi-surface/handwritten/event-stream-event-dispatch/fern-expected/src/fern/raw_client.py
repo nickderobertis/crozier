@@ -59,13 +59,15 @@ class RawFernApi:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 if _sse.event == "departed":
                                     try:
                                         yield typing.cast(
                                             Departure,
                                             parse_obj_as(
                                                 type_=Departure,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -76,7 +78,7 @@ class RawFernApi:
                                             Arrival,
                                             parse_obj_as(
                                                 type_=Arrival,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -133,13 +135,15 @@ class RawFernApi:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 if _sse.event == "lowered":
                                     try:
                                         yield typing.cast(
                                             Lowered,
                                             parse_obj_as(
                                                 type_=Lowered,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -150,7 +154,7 @@ class RawFernApi:
                                             Raised,
                                             parse_obj_as(
                                                 type_=Raised,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -212,13 +216,15 @@ class AsyncRawFernApi:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 if _sse.event == "departed":
                                     try:
                                         yield typing.cast(
                                             Departure,
                                             parse_obj_as(
                                                 type_=Departure,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -229,7 +235,7 @@ class AsyncRawFernApi:
                                             Arrival,
                                             parse_obj_as(
                                                 type_=Arrival,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -286,13 +292,15 @@ class AsyncRawFernApi:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 if _sse.event == "lowered":
                                     try:
                                         yield typing.cast(
                                             Lowered,
                                             parse_obj_as(
                                                 type_=Lowered,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:
@@ -303,7 +311,7 @@ class AsyncRawFernApi:
                                             Raised,
                                             parse_obj_as(
                                                 type_=Raised,
-                                                object_=json.loads(_sse.data),
+                                                object_={"data": json.loads(_sse.data)},
                                             ),
                                         )
                                     except Exception as e:

@@ -16,8 +16,8 @@ under.
 
 ## Certified versions
 
-crozier certifies one pair: **Fern CLI 5.67.1** with **`fernapi/fern-python-sdk`
-5.20.0** (the pair recorded in crozier's
+crozier certifies one pair: **Fern CLI 5.163.1** with **`fernapi/fern-python-sdk`
+5.41.3** (the pair recorded in crozier's
 [`assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json)). The
 script defaults to it. Each version can be overridden through the script's own
 environment variables, `FERN_REFERENCE_CLI_VERSION` and
@@ -52,7 +52,7 @@ Then run `crozier compare`. Pull the generator image first so a one-time
 download is not counted in the first generator's reference time:
 
 ```sh
-docker pull fernapi/fern-python-sdk:5.20.0
+docker pull fernapi/fern-python-sdk:5.41.3
 crozier compare
 ```
 
@@ -92,7 +92,7 @@ holding a control character (a line break, say) is refused before `fern` runs.
 
 ### Names
 
-Measured with Fern CLI 5.67.1 and `fernapi/fern-python-sdk` 5.20.0:
+Measured with Fern CLI 5.163.1 and `fernapi/fern-python-sdk` 5.41.3:
 
 - **Packaged.** Fern emits its packaged tree with a placeholder token only for
   the organization `fern`: with `acme` it falls back to the flat module tree. Its
@@ -168,8 +168,8 @@ control does the same for the version extension.
 set -euo pipefail
 
 # The Fern CLI and generator versions crozier certifies; override either here.
-FERN_CLI_VERSION="${FERN_REFERENCE_CLI_VERSION:-5.67.1}"
-FERN_PYTHON_SDK_VERSION="${FERN_REFERENCE_PYTHON_SDK_VERSION:-5.20.0}"
+FERN_CLI_VERSION="${FERN_REFERENCE_CLI_VERSION:-5.163.1}"
+FERN_PYTHON_SDK_VERSION="${FERN_REFERENCE_PYTHON_SDK_VERSION:-5.41.3}"
 
 fail() {
   echo "fern-reference: $*" >&2

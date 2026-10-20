@@ -3,18 +3,20 @@
 Registering `yourbrand-ticketing` (corpus row 308) exposed two places crozier
 diverged from its Fern 5.20.0 golden. Each repair rests on what Fern does, so
 this directory holds the run that measured it, re-runnable rather than taken on
-trust:
+trust (`just fern-references measurements yourbrand-repairs`). It was re-taken at
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, where Fern's
+`raw_client.py` is byte-identical to the 5.20.0 run's:
 
 - [`probe.yaml`](probe.yaml) — a locally authored 3.0 document. `CreateA` posts
   a schema no other operation uses; `CreateD` posts one `GetD` also answers;
   `CreateE` posts one `PutE` also posts. Each body's `owner` collides with a
   query parameter `owner`. `ListSorted` takes `sortDirection` as
   `oneOf: [{nullable: true, oneOf: [$ref SortDirection]}]`, YourBrand's shape.
-- [`measurement.json`](measurement.json) — the pinned run
-  `tools/witness-search/witness_screen.py`'s `fern_screen_document` took: Fern CLI and
-  `fernapi/fern-python-sdk` versions, both exit statuses, and the SHA-256 of
-  each redacted log.
-- [`fern.log`](fern.log) — those redacted logs.
+- [`measurement.json`](measurement.json) — the pinned run's record, as
+  `tools/fern-goldens/fern-references.py` writes it: Fern CLI and
+  `fernapi/fern-python-sdk` versions, both exit statuses, the SHA-256 of each
+  log and of the probe.
+- [`fern.log`](fern.log) — those logs.
 - [`fern-raw_client.py.txt`](fern-raw_client.py.txt) — Fern's generated
   `src/fern/raw_client.py`, its bytes unedited, kept as text: it is evidence,
   not code this repository runs.

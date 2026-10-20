@@ -109,7 +109,7 @@ pub struct OpenApi {
 #[derive(Debug, Clone, Deserialize)]
 pub struct GlobalHeaderExtension {
     /// The header name sent on the wire.
-    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.67.1/SDK 5.20.0): docs/fern-measurements/header-token-alias/README.md.
+    pub header: String, // llmlint: ignore[boundary_inputs_validated, invalid_states_unrepresentable] Deliberate certified pass-through (CLI 5.163.1/SDK 5.41.3): docs/fern-measurements/header-token-alias/README.md.
     /// The client constructor argument name.
     pub name: String, // llmlint: ignore[invalid_states_unrepresentable] The shared deserialized contract remains String; document_refusals::check_sdk rejects an empty normalized constructor name before emission.
 }
@@ -1096,7 +1096,9 @@ impl Streaming {
     /// Whether the stream is Server-Sent Events rather than newline-delimited
     /// JSON. Measured at Fern 5.20.0, only `format: sse` is SSE: `format: json`,
     /// a `stream-condition` naming no format and the boolean `true` all stream
-    /// JSON lines, whatever media types the response declares.
+    /// JSON lines, whatever media types the response declares. The hand-written
+    /// `streaming-extension-*` fixtures re-verify the boolean and `format: sse`
+    /// forms at the certified pair; the others are not re-measured.
     #[must_use]
     pub fn is_sse(&self) -> bool {
         self.mapping()
@@ -1798,6 +1800,10 @@ pub struct Schema {
     /// bogus `$ref` (issue #86).
     #[serde(skip)]
     pub malformed: bool,
+    /// Set when a boolean stood where this schema object was expected. Not a
+    /// wire field; see [`normalize_boolean_property_objects`].
+    #[serde(skip)]
+    pub(crate) boolean_stand_in: bool,
     /// Set when this node's `$ref` named a component schema the document never
     /// declares, which `normalize_unresolvable_schema_refs` degraded to the
     /// unknown type. Not a wire field. Fern guards such a success body against an
@@ -1821,6 +1827,39 @@ pub struct Schema {
     pub(crate) dynamic_ref: bool,
     #[serde(rename = "$recursiveRef", default, deserialize_with = "de_present")]
     pub(crate) recursive_ref: bool,
+    /// The OpenAPI XML Object (`name`, `namespace`, `prefix`, `attribute`,
+    /// `wrapped`), kept as written and read through [`Schema::xml_object`]: an
+    /// object schema carrying one is an XML model (see [`crate::ir::XmlEncoding`]).
+    #[serde(default)]
+    pub(crate) xml: Option<serde_json::Value>,
+    /// `x-crozier-xml-text`: the property is its element's text content
+    /// (canonical spelling). Read via [`Schema::xml_text`], which also honours
+    /// `x-fern-xml-text` per the [dual-header policy](self#fern-compatible-extensions).
+    #[serde(rename = "x-crozier-xml-text", default)]
+    pub(crate) xml_text_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-xml-text", default)]
+    pub(crate) xml_text_fern: Option<serde_json::Value>,
+    /// `x-crozier-xml-list-separator`: the delimiter a list-valued XML attribute
+    /// or text is joined with (canonical spelling). Read via
+    /// [`Schema::xml_list_separator`], which also honours
+    /// `x-fern-xml-list-separator`.
+    #[serde(rename = "x-crozier-xml-list-separator", default)]
+    pub(crate) xml_list_separator_crozier: Option<serde_json::Value>,
+    #[serde(rename = "x-fern-xml-list-separator", default)]
+    pub(crate) xml_list_separator_fern: Option<serde_json::Value>,
+}
+
+/// A JSON value's truth as JavaScript reads it — the test Fern's importer
+/// applies to the XML Object's flags and `x-fern-xml-text`.
+#[must_use]
+pub fn json_truthy(value: &serde_json::Value) -> bool {
+    match value {
+        serde_json::Value::Null => false,
+        serde_json::Value::Bool(flag) => *flag,
+        serde_json::Value::Number(number) => number.as_f64().is_some_and(|n| n != 0.0),
+        serde_json::Value::String(text) => !text.is_empty(),
+        serde_json::Value::Array(_) | serde_json::Value::Object(_) => true,
+    }
 }
 
 /// Record only that a keyword is present, whatever its value.
@@ -1876,6 +1915,35 @@ impl Schema {
             .or(self.property_name_fern.as_deref())
             .map(str::trim)
             .filter(|name| !name.is_empty())
+    }
+
+    /// The XML Object, when the node carries one as a JSON object.
+    #[must_use]
+    pub fn xml_object(&self) -> Option<&serde_json::Map<String, serde_json::Value>> {
+        self.xml.as_ref().and_then(serde_json::Value::as_object)
+    }
+
+    /// The `x-crozier-xml-text` / `x-fern-xml-text` flag, canonicalizing on the
+    /// crozier spelling. `None` when neither is written; a written value is read
+    /// for its truth, as Fern's importer reads it.
+    #[must_use]
+    pub fn xml_text(&self) -> Option<bool> {
+        self.xml_text_crozier
+            .as_ref()
+            .or(self.xml_text_fern.as_ref())
+            .filter(|value| !value.is_null())
+            .map(json_truthy)
+    }
+
+    /// The `x-crozier-xml-list-separator` / `x-fern-xml-list-separator` string,
+    /// canonicalizing on the crozier spelling.
+    #[must_use]
+    pub fn xml_list_separator(&self) -> Option<&str> {
+        self.xml_list_separator_crozier
+            .as_ref()
+            .filter(|value| !value.is_null())
+            .or(self.xml_list_separator_fern.as_ref())
+            .and_then(serde_json::Value::as_str)
     }
 
     /// Whether this `oneOf`/`anyOf` declares itself a discriminated union,
@@ -2042,6 +2110,27 @@ impl Schema {
                             member.ty.as_ref().and_then(TypeField::primary) == Some("null")
                         })
                     })
+    }
+
+    /// Whether a `$ref` to this schema is nullable at the reference. Fern's
+    /// importer (measured at CLI 5.163.1) reads the target's `nullable`, a 3.1
+    /// `type` list of two or more naming `null`, or a `type: null` alternative
+    /// in its `oneOf`/`anyOf` — the last now even beside an open map, which
+    /// [`Self::explicitly_nullable`] leaves unread for the declaration itself:
+    /// Hasura's `GraphQLValue_Name` stays a bare `Dict[str, Any]`, and the
+    /// `RemoteArguments` map naming it is `Dict[str, Optional[GraphQlValueName]]`.
+    #[must_use]
+    pub fn nullable_at_references(&self) -> bool {
+        self.explicitly_nullable()
+            || self
+                .one_of
+                .iter()
+                .chain(self.any_of.iter())
+                .flatten()
+                .any(|member| {
+                    member.reference.is_none()
+                        && matches!(&member.ty, Some(TypeField::Single(ty)) if ty == "null")
+                })
     }
 }
 
@@ -2427,7 +2516,10 @@ impl<'de> serde::de::Visitor<'de> for MaybeSchemaVisitor {
 
     // Any other scalar standing in for a schema degrades to the unknown node.
     fn visit_bool<E>(self, _v: bool) -> std::result::Result<Self::Value, E> {
-        Ok(MaybeSchema(malformed_schema()))
+        Ok(MaybeSchema(Schema {
+            boolean_stand_in: true,
+            ..malformed_schema()
+        }))
     }
     fn visit_i64<E>(self, _v: i64) -> std::result::Result<Self::Value, E> {
         Ok(MaybeSchema(malformed_schema()))
@@ -2676,6 +2768,8 @@ pub fn load(path: &Path) -> Result<OpenApi> {
     normalize_inline_declared_type_names(&mut doc);
     normalize_schema_pointer_refs(&mut doc);
     normalize_empty_compositions(&mut doc);
+    normalize_sibling_one_of_constraints(&mut doc);
+    normalize_boolean_property_objects(&mut doc);
     normalize_unresolvable_schema_refs(&mut doc);
     normalize_unresolved_schema_pointers(&mut doc);
     normalize_error_class_schema_names(&mut doc);
@@ -2863,14 +2957,14 @@ fn media_schemas<F: FnMut(&mut Schema)>(content: &mut IndexMap<String, MediaType
     }
 }
 
-/// Break every `*/` in a description into `* /`, as Fern does before writing
-/// any description: the broken spelling is what its docstrings, raw clients,
-/// model fields and `reference.md` all show. Measured at Fern 5.20.0 on schema,
-/// property, operation, parameter (operation, path-level and component),
-/// response (inline and component) and binary request body (inline and
-/// component) descriptions alike: each location is a `*/` in
-/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held
-/// whole to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
+/// Break every `*/` in a description into `* /`, as Fern does before writing any
+/// description: the broken spelling is what its docstrings, raw clients, model fields
+/// and `reference.md` all show. Measured at fern-python-sdk 5.41.3 on schema,
+/// property, operation, parameter (operation, path-level and component), response
+/// (inline and component) and binary request body (inline and component) descriptions
+/// alike: each location is a `*/` in
+/// `docs/fern-measurements/examples-docs/archive-glob-rules/openapi.yml`, held whole
+/// to Fern's tree in both enum modes by `examples_docs_measurements_match_fern`.
 fn normalize_comment_close_descriptions(doc: &mut OpenApi) {
     fn split(description: &mut Option<String>) {
         if let Some(text) = description.as_mut().filter(|text| text.contains("*/")) {
@@ -2967,6 +3061,163 @@ fn normalize_empty_compositions(doc: &mut OpenApi) {
             }
         });
     });
+}
+
+/// Read a `oneOf` whose branches only constrain the schema's own sibling
+/// `properties` as that constraint, not a union: the node becomes its object,
+/// requiring every property all branches require. Fern's importer (measured at
+/// CLI 5.163.1) converts such a schema as an object, so sigstore-rekor's
+/// `DSSESchema` branch — `properties: {proposedContent, signatures, …}` with
+/// `oneOf: [{required: [proposedContent]}, {required: [signatures, …]}]` — and
+/// free5gc's `GlobalRanNodeId` (`oneOf: [{required: [n3IwfId]}, {required:
+/// [gNbId]}, …]` beside `plmnId` and the three ids) are object models. A
+/// branch qualifies only when it is an inline object declaring nothing but
+/// `type`, `properties` and `required` (annotations aside), names something,
+/// and names only sibling properties it does not re-type; an `allOf` beside the
+/// `oneOf`, an `anyOf`, or `x-crozier-discriminated: true` keeps the union.
+fn normalize_sibling_one_of_constraints(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            let Some(branches) = node.one_of.as_deref() else {
+                return;
+            };
+            if node.any_of.is_some()
+                || node.all_of.is_some()
+                || node.properties.is_empty()
+                || node.required.is_unlisted()
+                || node.discriminated() == Some(true)
+                || !node.ty.as_ref().is_none_or(is_object_type_field)
+                || !branches
+                    .iter()
+                    .all(|branch| constrains_siblings(branch, &node.properties))
+            {
+                return;
+            }
+            let lists: Vec<Vec<String>> = branches
+                .iter()
+                .map(|branch| match &branch.required {
+                    RequiredNames::Listed(names) => names.clone(),
+                    RequiredNames::Unlisted => Vec::new(),
+                })
+                .collect();
+            let (first, rest) = lists.split_first().expect("a non-empty oneOf");
+            for name in first {
+                let shared = rest.iter().all(|names| names.contains(name));
+                let listed =
+                    matches!(&node.required, RequiredNames::Listed(names) if names.contains(name));
+                if shared && !listed {
+                    node.required.push(name.clone());
+                }
+            }
+            node.one_of = None;
+        });
+    });
+}
+
+/// Read an object one of whose `properties` is a bare boolean as Fern's unknown
+/// type. Fern's importer (measured at CLI 5.163.1) cannot convert such an
+/// object, and the node it stands in is `typing.Any`: Webflow's field
+/// `validations.additionalProperties` offers `oneOf: [string, number, boolean,
+/// integer, {type: object, properties: {additionalProperties: true}}]`, and the
+/// golden alias is `typing.Union[str, float, bool, int, typing.Any]`.
+fn normalize_boolean_property_objects(doc: &mut OpenApi) {
+    for_each_root_schema(doc, &mut |schema| {
+        for_each_schema_in(schema, &mut |node| {
+            if node
+                .properties
+                .values()
+                .any(|property| property.boolean_stand_in)
+            {
+                *node = Schema {
+                    description: node.description.take(),
+                    ..Schema::default()
+                };
+            }
+        });
+    });
+}
+
+/// `type: object`, or a 3.1 list of `object` and `null`.
+fn is_object_type_field(ty: &TypeField) -> bool {
+    match ty {
+        TypeField::Single(name) => name == "object",
+        TypeField::Multiple(names) => {
+            let mut named = names.iter().filter(|name| *name != "null");
+            named.next().is_some_and(|name| name == "object") && named.next().is_none()
+        }
+    }
+}
+
+/// Whether a `oneOf` branch only constrains `siblings`, the schema's own
+/// properties (see [`normalize_sibling_one_of_constraints`]).
+fn constrains_siblings(branch: &Schema, siblings: &SchemaProperties) -> bool {
+    let mut rest = annotations_cleared(branch);
+    let ty = rest.ty.take();
+    let properties = std::mem::take(&mut rest.properties);
+    let required = std::mem::take(&mut rest.required);
+    let RequiredNames::Listed(required) = required else {
+        return false;
+    };
+    if rest != Schema::default() || !ty.as_ref().is_none_or(is_object_type_field) {
+        return false;
+    }
+    if properties.is_empty() && required.is_empty() {
+        return false;
+    }
+    required.iter().all(|name| siblings.contains_key(name))
+        && properties.iter().all(|(name, restated)| {
+            siblings
+                .get(name)
+                .is_some_and(|sibling| restates_sibling(restated, sibling))
+        })
+}
+
+/// Whether every keyword a branch's property writes, annotations aside, is the
+/// sibling property's own value for it: Fern accepts a restatement only as a
+/// subset of what the sibling already says.
+fn restates_sibling(restated: &Schema, sibling: &Schema) -> bool {
+    let mut rest = annotations_cleared(restated);
+    let sibling = annotations_cleared(sibling);
+    macro_rules! same {
+        ($($field:ident),*) => {
+            $(
+                if rest.$field.is_some() {
+                    if rest.$field != sibling.$field {
+                        return false;
+                    }
+                    rest.$field = None;
+                }
+            )*
+        };
+    }
+    same!(
+        reference,
+        ty,
+        format,
+        enum_values,
+        const_value,
+        pattern,
+        min_length,
+        max_length,
+        minimum,
+        items,
+        nullable
+    );
+    rest == Schema::default()
+}
+
+/// `schema` without the annotation keywords that never constrain a value.
+fn annotations_cleared(schema: &Schema) -> Schema {
+    Schema {
+        title: None,
+        description: None,
+        default: None,
+        deprecated: false,
+        example: None,
+        examples: Vec::new(),
+        read_only: None,
+        ..schema.clone()
+    }
 }
 
 /// Preserve the response component's identity when its inline media schema is
@@ -3372,33 +3623,86 @@ pub(crate) fn normalize_undiscriminated_unions(doc: &mut OpenApi) {
     });
 }
 
-/// Rename a component schema whose class name is an error class the document
-/// raises, to `{Name}Body`, rewriting every reference to it.
+/// Every name Fern's OpenAPI importer can give an error: one per status it
+/// names, then `ClientRequestError` and `ServerError` for the `4XX` and `5XX`
+/// ranges. Spelled as the importer spells them (`URITooLongError`), since a
+/// component schema is matched against them by its exact key.
+const FERN_ERROR_NAMES: &[&str] = &[
+    "BadRequestError",
+    "UnauthorizedError",
+    "PaymentRequiredError",
+    "ForbiddenError",
+    "NotFoundError",
+    "MethodNotAllowedError",
+    "NotAcceptableError",
+    "ProxyAuthenticationRequiredError",
+    "RequestTimeoutError",
+    "ConflictError",
+    "GoneError",
+    "LengthRequiredError",
+    "PreconditionFailedError",
+    "ContentTooLargeError",
+    "URITooLongError",
+    "UnsupportedMediaTypeError",
+    "RangeNotSatisfiableError",
+    "ExpectationFailedError",
+    "ImATeapotError",
+    "AuthenticationTimeoutError",
+    "MethodFailureError",
+    "MisdirectedRequestError",
+    "UnprocessableEntityError",
+    "LockedError",
+    "FailedDependencyError",
+    "TooEarlyError",
+    "UpgradeRequiredError",
+    "PreconditionError",
+    "TooManyRequestsError",
+    "RequestHeaderFieldsTooLargeError",
+    "NoResponseError",
+    "RetryWithError",
+    "BlockedByWindowsParentalControlsError",
+    "UnavailableForLegalReasonsError",
+    "InvalidTokenError",
+    "ClientClosedRequestError",
+    "InternalServerError",
+    "NotImplementedError",
+    "BadGatewayError",
+    "ServiceUnavailableError",
+    "GatewayTimeoutError",
+    "HTTPVersionNotSupportedError",
+    "VariantAlsoNegotiatesError",
+    "InsufficientStorageError",
+    "LoopDetectedError",
+    "BandwidthLimitExceededError",
+    "NotExtendedError",
+    "NetworkAuthenticationRequiredError",
+    "ClientRequestError",
+    "ServerError",
+];
+
+/// Rename a component schema whose key is a name Fern can give an error, to
+/// `{Name}Body`, rewriting every reference to it.
 ///
-/// Fern's error class and the model it would generate for the schema would share
-/// one Python name, and Fern keeps the error class: OpenCodeUI declares
-/// `BadRequestError` and `NotFoundError` schemas as the bodies of its `400` and
-/// `404` responses, and its golden generates `errors/bad_request_error.py`'s
-/// `BadRequestError` over `types/bad_request_error_body.py`'s
-/// `BadRequestErrorBody`, the renamed schema's own hoisted members following it
-/// (`NotFoundErrorBodyData`). A schema named for an error class no response of the
-/// document raises collides with nothing and keeps its name.
+/// Fern's importer renames such a schema before it reads a single response, so
+/// the model can never share a Python name with an error class: OpenCodeUI
+/// declares `BadRequestError` and `NotFoundError` schemas as the bodies of its
+/// `400` and `404` responses, and its golden generates
+/// `errors/bad_request_error.py`'s `BadRequestError` over
+/// `types/bad_request_error_body.py`'s `BadRequestErrorBody`, the renamed
+/// schema's own hoisted members following it (`NotFoundErrorBodyData`). Whether
+/// the document raises that error does not matter: bunq's `ServerError` schema
+/// is only a request body, and no response of it is a `5XX` range, yet it is
+/// `ServerErrorBody` — measured at Fern CLI 5.163.1, the first to name the
+/// `5XX` range `ServerError`. A schema that is itself a `$ref` keeps its key.
 fn normalize_error_class_schema_names(doc: &mut OpenApi) {
-    let raised: std::collections::BTreeSet<&str> = doc
-        .paths
-        .values()
-        .flat_map(PathItem::operations)
-        .flat_map(|(_, operation)| operation.responses.keys())
-        .filter(|code| !code.starts_with('2'))
-        .filter_map(|code| crate::ir::response_key_status(code))
-        .filter_map(crate::ir::error_class_name)
-        .collect();
     let renames: IndexMap<String, String> = doc
         .components
         .schemas
-        .keys()
-        .filter(|name| raised.contains(crate::naming::class_name(name).as_str()))
-        .map(|name| (name.clone(), format!("{name}Body")))
+        .iter()
+        .filter(|(name, schema)| {
+            schema.reference.is_none() && FERN_ERROR_NAMES.contains(&name.as_str())
+        })
+        .map(|(name, _)| (name.clone(), format!("{name}Body")))
         .filter(|(_, renamed)| !doc.components.schemas.contains_key(renamed))
         .collect();
     rename_component_schemas(doc, &renames);
@@ -3406,13 +3710,13 @@ fn normalize_error_class_schema_names(doc: &mut OpenApi) {
 
 /// A component schema whose `oneOf`/`anyOf` alternatives all convert to one
 /// primitive is that primitive under its LAST alternative's name, as Fern
-/// declares it: `ShelfCode: anyOf: [two pattern strings]` is `ShelfCodeOne =
-/// str`, which every use site names and a request body sends unconverted. So
-/// the component is renamed `{name} {Ordinal}` (a space is a word break to
-/// [`crate::naming::class_name`]) and becomes that alternative. Measured at
-/// 5.20.0 on the hand-written `same-primitive-union-components` fixture; a
-/// `null` alternative, or alternatives converting to different types, leave
-/// the component its name.
+/// declares it: `ShelfCode: anyOf: [two pattern strings]` is
+/// `ShelfCodeOne = str`, which every use site names and a request body sends
+/// unconverted. So the component is renamed `{name} {Ordinal}` (a space is a
+/// word break to [`crate::naming::class_name`]) and becomes that alternative.
+/// Measured at fern-python-sdk 5.41.3 on the hand-written
+/// `same-primitive-union-components` fixture; a `null` alternative, or
+/// alternatives converting to different types, leave the component its name.
 fn normalize_same_primitive_unions(doc: &mut OpenApi) {
     let mut renames = IndexMap::new();
     for (name, schema) in &doc.components.schemas {
@@ -3671,7 +3975,7 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
         // marimo-plugins' `marimo-chatbot.cancel_prompt.output` answers
         // `typing.Optional[MarimoChatbotCancelPromptOutput]`.
         .filter(|(_, schema)| {
-            schema.explicitly_nullable()
+            schema.nullable_at_references()
                 || matches!(&schema.ty, Some(TypeField::Single(ty)) if ty == "null")
         })
         .map(|(name, _)| name.clone())
@@ -3705,11 +4009,12 @@ fn normalize_nullable_schema_refs(doc: &mut OpenApi) {
 ///
 /// **The remote origin is the whole of the rule, and it was measured.** A local
 /// alias to an ordinary local schema is *not* followed. Probed at
-/// `fernapi/fern-python-sdk:5.20.0` on four spellings — `AliasOfThing: {$ref:
-/// Thing}` bare, and the same `$ref` beside a `title`, a `description` and an
-/// `unevaluatedProperties` — with the alias declared before and after its target
-/// and with the target referenced elsewhere as well: every one exits 0 at both
-/// stages and returns `AliasOfThing`. So the rewrite is confined to the names
+/// `fernapi/fern-python-sdk:5.20.0` (not re-measured at the certified pair) on
+/// four spellings — `AliasOfThing: {$ref: Thing}` bare, and the same `$ref`
+/// beside a `title`, a `description` and an `unevaluatedProperties` — with the
+/// alias declared before and after its target and with the target referenced
+/// elsewhere as well: every one exits 0 at both stages and returns
+/// `AliasOfThing`. So the rewrite is confined to the names
 /// [`crate::refs::resolve`] reports as remotely declared. A reference from inside
 /// another schema keeps the alias name in either case (Airbyte's
 /// `DestinationAuthSpecification` stays itself on the property that carries it),
@@ -4161,9 +4466,10 @@ fn normalize_request_bodies(doc: &mut OpenApi) {
 ///
 /// A one-member `allOf` naming a component is that component the same way:
 /// FastAPI writes `{allOf: [$ref: SSMLParams], title: Params, description: …}`
-/// for an annotated body parameter, and Fern 5.20.0 flattens `SSMLParams`'s
+/// for an annotated body parameter, and Fern 5.20.0 flattened `SSMLParams`'s
 /// properties into the method's arguments, exactly as for `$ref: SSMLParams`,
-/// whatever `title`, `description` or `default` sits beside it. A nullable
+/// whatever `title`, `description` or `default` sits beside it (not re-measured
+/// at the certified pair). A nullable
 /// wrapper is left to the request-body resolver, which reads the nullability,
 /// and a form body's wrapper is left alone: no measurement reaches it.
 fn collapse_sole_composition_member(schema: &mut Schema, json: bool) {
@@ -4227,7 +4533,7 @@ fn resolve_response(response: &Response, defs: &IndexMap<String, Response>) -> R
 }
 
 /// Type a `text/event-stream` response declaring only an `itemSchema` from that
-/// item schema, as Fern 5.20.0 types each streamed event; a `schema` beside it
+/// item schema, as Fern types each streamed event; a `schema` beside it
 /// wins, and any other media type's `itemSchema` is not read at all.
 fn normalize_event_stream_item_schemas(doc: &mut OpenApi) {
     let fold = |response: &mut Response| {
@@ -4389,7 +4695,7 @@ pub fn filter_by_audience(doc: &mut OpenApi, audiences: &[String], strict: bool)
 /// `/api/internal/import/*` operations, and Fern's golden still declares
 /// `ImportAgentsRequest`, `ImportSessionRequest` and every schema they reach,
 /// though nothing else references them. Removing a schema keeps the schemas it
-/// referenced the same way: Fern 5.20.0 still declares `LegacyPart` when its one
+/// referenced the same way: Fern still declares `LegacyPart` when its one
 /// referrer `LegacyWidget` is ignored (the hand-written fixture
 /// `x-fern-ignore-schema`). So the ignore is inert on a spec with no markers and
 /// never changes a full, unfiltered generation.
@@ -4491,7 +4797,7 @@ fn expand_schema_closure(
 /// node (the node itself if it is a `$ref`, plus nested properties, array items,
 /// `additionalProperties`, `allOf`/`oneOf`/`anyOf` members, and discriminator
 /// mappings), inserting each target's schema key into `out`.
-fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<String>) {
+pub(crate) fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<String>) {
     const PREFIX: &str = "#/components/schemas/";
     if let Some(key) = schema
         .reference
@@ -4526,6 +4832,56 @@ fn collect_schema_refs(schema: &Schema, out: &mut std::collections::BTreeSet<Str
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `FERN_ERROR_NAMES` is the importer's spelling of the error names, kept
+    /// apart from `ir::error_class_name` because the importer writes acronyms
+    /// whole (`URITooLongError` where the Python class is `UriTooLongError`).
+    /// This holds the two to each other: every class crozier names is one of
+    /// them, case aside, and the only names left over are the five the importer
+    /// gives statuses crozier's table leaves unnamed (419, 420, 444, 449, 450).
+    #[test]
+    fn fern_error_names_are_the_error_classes_crozier_names_and_five_more() {
+        use std::collections::BTreeSet;
+        let fern: BTreeSet<String> = FERN_ERROR_NAMES
+            .iter()
+            .map(|name| name.to_ascii_lowercase())
+            .collect();
+        assert_eq!(fern.len(), FERN_ERROR_NAMES.len(), "a name is listed twice");
+        let mut named: BTreeSet<String> = (100..=599)
+            .filter_map(crate::ir::error_class_name)
+            .map(str::to_ascii_lowercase)
+            .collect();
+        for range in [
+            crate::ir::ErrorStatus::ClientRange,
+            crate::ir::ErrorStatus::ServerRange,
+        ] {
+            named.insert(
+                range
+                    .class_name()
+                    .expect("a named range")
+                    .to_ascii_lowercase(),
+            );
+        }
+        let missing: Vec<&String> = named.difference(&fern).collect();
+        assert!(
+            missing.is_empty(),
+            "crozier names errors the importer list lacks: {missing:?}"
+        );
+        let importer_only: BTreeSet<String> = [
+            "AuthenticationTimeoutError",
+            "MethodFailureError",
+            "NoResponseError",
+            "RetryWithError",
+            "BlockedByWindowsParentalControlsError",
+        ]
+        .iter()
+        .map(|name| name.to_ascii_lowercase())
+        .collect();
+        assert_eq!(
+            fern.difference(&named).cloned().collect::<BTreeSet<_>>(),
+            importer_only
+        );
+    }
 
     #[test]
     fn a_component_reads_its_group_and_placement_tag() {
@@ -4835,7 +5191,8 @@ mod tests {
                 },
             ]
         );
-        // A list of Parameter Objects names no default, measured at Fern 5.20.0.
+        // A list of Parameter Objects names no default, measured at
+        // fern-python-sdk 5.41.3 (`docs/fern-measurements/parameter-lowering/`).
         let list: BasePath = serde_json::from_value(serde_json::json!({
             "path": "/{edition}",
             "parameters": [{"name": "edition", "in": "path", "schema": {"default": "v2"}}]
@@ -5341,7 +5698,7 @@ components:
 
     #[test]
     fn schema_level_ignore_keeps_the_schemas_only_it_referenced() {
-        // Fern 5.20.0 keeps `LegacyPart`, whose one referrer is the ignored
+        // Fern keeps `LegacyPart`, whose one referrer is the ignored
         // `LegacyWidget` (the hand-written fixture `x-fern-ignore-schema`).
         let mut doc = parse(
             r##"
@@ -5999,6 +6356,128 @@ components:
         assert!(nested.all_of.is_none() && nested.any_of.is_none());
     }
 
+    /// free5gc's `GlobalRanNodeId` and sigstore-rekor's DSSE branch (measured at
+    /// Fern CLI 5.163.1): a `oneOf` of branches that only constrain sibling
+    /// properties is that constraint, so the node is its object, requiring what
+    /// every branch requires.
+    #[test]
+    fn normalize_sibling_one_of_constraints_reads_the_constraint_as_an_object() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    RanNode:
+      type: object
+      required: [plmn]
+      properties:
+        plmn: { type: string }
+        gnb: { type: string, pattern: "^[0-9]+$" }
+        ngeNb: { type: string }
+      oneOf:
+        - required: [gnb, plmn]
+        - { required: [ngeNb, plmn], properties: { ngeNb: { type: string, description: Restated. } } }
+    Wrapper:
+      type: object
+      properties:
+        envelope:
+          properties:
+            content: { type: string }
+            hash: { type: string }
+          oneOf:
+            - required: [content, hash]
+            - required: [hash]
+    UnknownSibling:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }, { required: [b] }]
+    Retyped:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ properties: { a: { type: integer } } }, { required: [a] }]
+    Referenced:
+      type: object
+      properties: { a: { type: string } }
+      oneOf: [{ $ref: '#/components/schemas/RanNode' }, { required: [a] }]
+    Discriminated:
+      type: object
+      x-crozier-discriminated: true
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }]
+    Scalar:
+      type: string
+      properties: { a: { type: string } }
+      oneOf: [{ required: [a] }]
+    Bare:
+      oneOf: [{ required: [a] }]
+"##,
+        );
+        normalize_sibling_one_of_constraints(&mut doc);
+        let schemas = &doc.components.schemas;
+        let node = &schemas["RanNode"];
+        assert!(node.one_of.is_none());
+        assert_eq!(node.required.iter().collect::<Vec<_>>(), ["plmn"]);
+        let envelope = &schemas["Wrapper"].properties["envelope"];
+        assert!(envelope.one_of.is_none());
+        assert_eq!(envelope.required.iter().collect::<Vec<_>>(), ["hash"]);
+        for kept in [
+            "UnknownSibling",
+            "Retyped",
+            "Referenced",
+            "Discriminated",
+            "Scalar",
+            "Bare",
+        ] {
+            assert!(schemas[kept].one_of.is_some(), "{kept} stays a union");
+        }
+    }
+
+    /// Webflow's shape (measured at Fern CLI 5.163.1): an object one of whose
+    /// properties is a bare boolean is the unknown type.
+    #[test]
+    fn normalize_boolean_property_objects_reads_the_object_as_unknown() {
+        let mut doc = parse(
+            r##"
+openapi: 3.0.0
+info: { title: T }
+paths: {}
+components:
+  schemas:
+    Validations:
+      type: object
+      properties:
+        additionalProperties:
+          oneOf:
+            - type: string
+            - type: object
+              description: Open.
+              properties:
+                additionalProperties: true
+    Listed:
+      type: object
+      properties:
+        tags: [a, b]
+"##,
+        );
+        normalize_boolean_property_objects(&mut doc);
+        let members = doc.components.schemas["Validations"].properties["additionalProperties"]
+            .one_of
+            .as_ref()
+            .expect("the union stays");
+        assert_eq!(
+            members[1],
+            Schema {
+                description: Some("Open.".to_string()),
+                ..Schema::default()
+            }
+        );
+        assert!(doc.components.schemas["Listed"]
+            .properties
+            .contains_key("tags"));
+    }
+
     #[test]
     fn only_unquoted_yaml_dates_are_recorded_as_timestamps() {
         let text = "a: 2022-01-23T19:00:00.000Z\nb: \"1909-04-05\"\nc: {x: 2001-02-03, y: 'x'}\nid: v2022-01-01\n";
@@ -6103,21 +6582,21 @@ components:
     /// A component schema that is nothing but a *local* `$ref` keeps its own name
     /// everywhere, including where an operation response names it.
     ///
-    /// Probed directly at `fernapi/fern-python-sdk:5.20.0`: on a document
-    /// declaring `AliasOfThing: {$ref: Thing}` and a response naming
-    /// `AliasOfThing`, Fern generates `-> AliasOfThing` at exit 0 — with a
-    /// sibling `title`, `description` or `unevaluatedProperties` on the alias
-    /// too, with the alias declared either side of its target, and with the
+    /// Probed directly at `fernapi/fern-python-sdk:5.20.0` (not re-measured at the
+    /// certified pair): on a document declaring `AliasOfThing: {$ref: Thing}` and
+    /// a response naming `AliasOfThing`, Fern generates `-> AliasOfThing` at exit
+    /// 0 — with a sibling `title`, `description` or `unevaluatedProperties` on the
+    /// alias too, with the alias declared either side of its target, and with the
     /// target referenced elsewhere as well. The response-alias rewrite is
     /// therefore confined to aliases of a *remotely* declared schema, which
     /// `a_response_alias_of_a_fetched_schema_resolves_to_the_fetched_name` covers.
     #[test]
     fn an_in_document_security_scheme_ref_resolves_to_the_scheme_it_names() {
-        // Measured at fernapi/fern-python-sdk:5.20.0 on
-        // docs/openapi-surface/probes/securityscheme-ref.yml: Fern follows a
-        // `#/components/securitySchemes/…` reference and imports the referenced
-        // scheme under the REFERENCING key, so the probe's two map entries emit two
-        // credentials where its control's one entry emits one.
+        // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the
+        // certified pair) on docs/openapi-surface/probes/securityscheme-ref.yml:
+        // Fern follows a `#/components/securitySchemes/…` reference and imports the
+        // referenced scheme under the REFERENCING key, so the probe's two map
+        // entries emit two credentials where its control's one entry emits one.
         let mut doc = parse(
             r##"
 openapi: 3.0.3

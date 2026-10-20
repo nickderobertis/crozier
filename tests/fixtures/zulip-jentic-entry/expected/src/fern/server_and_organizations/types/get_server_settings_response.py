@@ -11,8 +11,8 @@ from .get_server_settings_response_external_authentication_methods_item import (
 
 
 class GetServerSettingsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     authentication_methods: typing.Optional[GetServerSettingsResponseAuthenticationMethods] = pydantic.Field(
         default=None

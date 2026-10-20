@@ -41,6 +41,7 @@ class RawTidesClient:
         step : float
 
         gauges : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            Gauge numbers to read
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -160,6 +161,7 @@ class AsyncRawTidesClient:
         step : float
 
         gauges : typing.Optional[typing.Union[float, typing.Sequence[float]]]
+            Gauge numbers to read
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

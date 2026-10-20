@@ -537,7 +537,7 @@ if typing.TYPE_CHECKING:
     from .schedule_payment_update import SchedulePaymentUpdate
     from .schedule_read import ScheduleRead
     from .schedule_user_listing import ScheduleUserListing
-    from .server_error import ServerError
+    from .server_error_body import ServerErrorBody
     from .server_error_create import ServerErrorCreate
     from .session_delete import SessionDelete
     from .session_server_create import SessionServerCreate
@@ -1134,7 +1134,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "SchedulePaymentUpdate": ".schedule_payment_update",
     "ScheduleRead": ".schedule_read",
     "ScheduleUserListing": ".schedule_user_listing",
-    "ServerError": ".server_error",
+    "ServerErrorBody": ".server_error_body",
     "ServerErrorCreate": ".server_error_create",
     "SessionDelete": ".session_delete",
     "SessionServerCreate": ".session_server_create",
@@ -1753,7 +1753,7 @@ __all__ = [
     "SchedulePaymentUpdate",
     "ScheduleRead",
     "ScheduleUserListing",
-    "ServerError",
+    "ServerErrorBody",
     "ServerErrorCreate",
     "SessionDelete",
     "SessionServerCreate",

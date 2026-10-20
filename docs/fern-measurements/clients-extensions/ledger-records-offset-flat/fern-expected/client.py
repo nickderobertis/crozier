@@ -5,9 +5,11 @@ import typing
 import httpx
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
+from .core.pagination import AsyncPager, SyncPager
 from .core.request_options import RequestOptions
 from .environment import FernApiEnvironment
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.entry import Entry
 from .types.entry_page import EntryPage
 
 
@@ -109,7 +111,7 @@ class FernApi:
         page: typing.Optional[int] = None,
         account: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> EntryPage:
+    ) -> SyncPager[Entry, EntryPage]:
         """
         Parameters
         ----------
@@ -122,7 +124,7 @@ class FernApi:
 
         Returns
         -------
-        EntryPage
+        SyncPager[Entry, EntryPage]
             One page of entries.
 
         Examples
@@ -130,10 +132,14 @@ class FernApi:
         from fern import FernApi
 
         client = FernApi()
-        client.list_entries()
+        response = client.list_entries()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_entries(page=page, account=account, request_options=request_options)
-        return _response.data
+        return self._raw_client.list_entries(page=page, account=account, request_options=request_options)
 
     def list_accounts(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[str]:
         """
@@ -272,7 +278,7 @@ class AsyncFernApi:
         page: typing.Optional[int] = None,
         account: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> EntryPage:
+    ) -> AsyncPager[Entry, EntryPage]:
         """
         Parameters
         ----------
@@ -285,7 +291,7 @@ class AsyncFernApi:
 
         Returns
         -------
-        EntryPage
+        AsyncPager[Entry, EntryPage]
             One page of entries.
 
         Examples
@@ -298,13 +304,18 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            await client.list_entries()
+            response = await client.list_entries()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_entries(page=page, account=account, request_options=request_options)
-        return _response.data
+        return await self._raw_client.list_entries(page=page, account=account, request_options=request_options)
 
     async def list_accounts(self, *, request_options: typing.Optional[RequestOptions] = None) -> typing.List[str]:
         """

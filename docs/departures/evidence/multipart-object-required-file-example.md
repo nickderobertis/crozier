@@ -4,17 +4,18 @@ Two independently authored sources retain the exact combinations:
 [an aliased object](../../openapi-surface/handwritten/multipart-alias-object/openapi.yml)
 and [an object argument named `json`](../../openapi-surface/handwritten/multipart-json-module/openapi.yml).
 Their unedited complete certified trees sit beside them. Each uses Fern CLI
-5.67.1, `fernapi/fern-python-sdk` 5.20.0, packaged preview layout,
+5.163.1, `fernapi/fern-python-sdk` 5.41.3, packaged preview layout,
 organization/package `fern`, project `default_package_name`, no audience filter
 and `pydantic_config.enum_type: python_enums`. The separate certified literals
 trees use those same sources with `enum_type` unset.
 
 The alias method takes `plan: PlanAlias` and `attachment: core.File`; its
-client docstring constructs `Plan(bearing=1)` but omits `attachment`. The
-JSON-named method takes `json: StoreSurveyRequestJson` and the same required
-file; its client docstring omits that file too. Both sync and async examples
-fail binding. The README and reference examples already include the file and
-remain unchanged.
+client docstring (`src/fern/client.py` lines 133–137) constructs
+`Plan(bearing=1)` but omits `attachment`. The JSON-named method takes
+`json: StoreSurveyRequestJson` and the same required file; its client docstring
+(lines 138–142) omits that file too. Both sync and async examples fail binding.
+The README (lines 43 and 77) and `reference.md` (line 23) examples already pass
+`attachment="example_attachment"` and remain unchanged.
 
 ## Executed certified-output evidence
 
@@ -30,7 +31,15 @@ python docs/departures/evidence/multipart-object-required-file-example.py \
   json --examples invalid --wire
 ```
 
-Both commands exited 0 in Python 3.14. Their literals counterparts, using
+Re-run at the new pair on 2026-10-18 (Python 3.12, HTTPX and Pydantic 2.14),
+both commands exited 0, the alias one printing:
+
+```text
+{"examples": {"AsyncFernApi.store_plan": "missing a required argument: 'attachment'", "FernApi.store_plan": "missing a required argument: 'attachment'"}, "shape": "alias", "wire": true}
+```
+
+and the JSON-named one reporting the same for `store_survey` and `example
+binds` for `store_metadata`. Their literals counterparts, using
 `docs/fern-measurements/bodies-responses/<shape>-literals/fern-expected/src`,
 also exited 0 with the same binding failures and passing wire assertions. Each imported the actual certified
 package, decoded its actual sync/async requests through local HTTP transports,
@@ -56,13 +65,14 @@ The fault does not depend on the object part. The independently authored
 source posts a plain multipart body requiring `title`, `wall` and the binary
 `image`; its complete unedited certified tree uses the same pair, layout,
 names and `python_enums`, with the literals overlay under
-`docs/fern-measurements/literals-mode/poster-upload`. Its `hang_poster`
-signature requires `image: core.File`, its README and `reference.md` pass
-`image="example_image"`, and both client docstrings call
-`client.hang_poster(title="title", wall=1)`. The
+`docs/fern-measurements/literals-mode/poster-upload` (which inherits every
+compared file unchanged). Its `hang_poster` signature (`src/fern/client.py`
+line 101) requires `image: core.File`, its README (lines 44 and 66) and
+`reference.md` (line 22) pass `image="example_image"`, and both client
+docstrings call `client.hang_poster(title="title", wall=1)` (line 127). The
 [`passport-scan`](../../openapi-surface/handwritten/passport-scan/openapi.yml)
-source's docstrings likewise call `client.submit_application()` for a method
-requiring `photo`.
+source's docstrings likewise call `client.submit_application()` (lines 133 and
+279) for a method requiring `photo`.
 
 ```sh
 PYTHONDONTWRITEBYTECODE=1 python docs/departures/evidence/multipart-object-required-file-example.py \
@@ -70,12 +80,20 @@ PYTHONDONTWRITEBYTECODE=1 python docs/departures/evidence/multipart-object-requi
   plain --examples invalid --wire
 ```
 
-Executed on 2026-10-10 with Python 3.14 and the repository environment's
-HTTPX/Pydantic, it exited 0, reporting `missing a required argument: 'image'`
+Executed at the new pair on 2026-10-18 with Python 3.12, HTTPX and Pydantic
+2.14, it exited 0, reporting `missing a required argument: 'image'`
 for the sync and async docstring calls, after its local HTTP transport verified
 the actual multipart parts `title`, `wall` and `image` and that the call without
 the file sends nothing. With `plain --examples valid --wire` over a tree the
-compiled crozier binary generated from the same source, both examples bind.
+compiled crozier binary generated from the same source, both examples bind
+(`"example binds"` for both, exit 0); so do the alias and JSON-named shapes'
+`--examples valid --wire` runs over crozier's trees.
+
+The departure fires at the new pair in the six hand-written and literals
+trees above (`src/fern/client.py` at line 137 for the alias shape, 142 for the
+JSON-named one, 130 for `poster-upload`, 133 for `passport-scan`) and at
+22 places in 18 corpus goldens' client docstrings, from `anchore.io` to
+`zylon-private-gpt`.
 
 So the correction is one rule for one root cause: every multipart method's
 docstring example passes each required file part, as

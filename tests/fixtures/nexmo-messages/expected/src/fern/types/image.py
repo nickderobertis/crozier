@@ -11,7 +11,7 @@ from .image_message_type import ImageMessageType
 
 class Image(BaseMessageType):
     image: ImageImage
-    message_type: typing.Optional[ImageMessageType] = pydantic.Field(default=None)
+    message_type: ImageMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `image` in this field
     """

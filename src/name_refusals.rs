@@ -13,7 +13,6 @@ enum Class {
     EnumNameUnsuitable,
     EnumValueUnnameable,
     GeneratedFileNameTooLong,
-    ObjectPropertyNameCollision,
     RequestPropertyCamelcaseCollision,
     RequestPropertyNameCollision,
     SdkMethodCollision,
@@ -30,7 +29,6 @@ impl Class {
             Self::EnumNameUnsuitable => "enum-name-unsuitable",
             Self::EnumValueUnnameable => "enum-value-unnameable",
             Self::GeneratedFileNameTooLong => "generated-file-name-too-long",
-            Self::ObjectPropertyNameCollision => "object-property-name-collision",
             Self::RequestPropertyCamelcaseCollision => "request-property-camelcase-collision",
             Self::RequestPropertyNameCollision => "request-property-name-collision",
             Self::SdkMethodCollision => "sdk-method-collision",
@@ -256,7 +254,7 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
             }
             let location = format!("{method} {route}");
             let raw_operation = &source["paths"][route][method.to_ascii_lowercase()];
-            let mut names: Vec<String> = op
+            let (mut names, declared): (Vec<String>, Vec<bool>) = op
                 .parameters
                 .iter()
                 .map(|parameter| {
@@ -279,26 +277,32 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                                 .ok()
                                     == parameter.location
                         });
-                    raw.and_then(crate::openapi::refusal_parameter_name)
-                        .map(str::to_owned)
-                        .unwrap_or_else(|| {
-                            if parameter.location == Some(crate::openapi::ParameterLocation::Header)
-                            {
-                                fern_header_declaration_name(&parameter.name)
-                            } else {
-                                parameter.name.clone()
-                            }
-                        })
+                    let declared = raw.and_then(crate::openapi::refusal_parameter_name);
+                    let name = declared.map(str::to_owned).unwrap_or_else(|| {
+                        if parameter.location == Some(crate::openapi::ParameterLocation::Header) {
+                            fern_header_declaration_name(&parameter.name)
+                        } else {
+                            parameter.name.clone()
+                        }
+                    });
+                    (name, declared.is_some())
                 })
-                .collect();
-            let mut path_names: std::collections::HashSet<String> = op
-                .parameters
-                .iter()
-                .zip(&names)
-                .filter(|(parameter, _)| {
-                    parameter.location == Some(crate::openapi::ParameterLocation::Path)
+                .unzip();
+            // Fern's OpenAPI importer renames a path parameter that declares no
+            // name of its own to `{name}PathParam` when a body property claims
+            // its name (`ir::rename_claimed_path_params`), so only a path
+            // parameter with a declared name still collides with a body
+            // property. Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3
+            // (authored probe 549-request-property-name-collision); Fern CLI
+            // 5.67.1 refused every such pair. The cross-location pairs below
+            // are held as 5.67.1 measured them: no probe at the new pair
+            // measures them yet.
+            let path_names: std::collections::HashSet<String> = (0..op.parameters.len())
+                .filter(|&index| {
+                    op.parameters[index].location == Some(crate::openapi::ParameterLocation::Path)
+                        && declared[index]
                 })
-                .map(|(_, name)| name.clone())
+                .map(|index| names[index].clone())
                 .collect();
             for (index, parameter) in op.parameters.iter().enumerate() {
                 for (other_index, other) in op.parameters.iter().enumerate().take(index) {
@@ -312,11 +316,11 @@ fn validate_names(doc: &OpenApi, path: &Path, ir: &crate::ir::Ir) -> Result<()> 
                     }
                 }
             }
+            // A placeholder no parameter declares has no declared name either.
             for segment in route.split('{').skip(1) {
                 if let Some((name, _)) = segment.split_once('}') {
                     if !op.parameters.iter().any(|parameter| parameter.name == name) {
                         names.push(name.to_owned());
-                        path_names.insert(name.to_owned());
                     }
                 }
             }
@@ -635,30 +639,9 @@ fn check_schema_names(
     schemas: &indexmap::IndexMap<String, Schema>,
     check_enum: bool,
 ) -> Result<()> {
-    let nullable_base = schema.all_of.iter().flatten().any(|member| {
-        member
-            .reference
-            .as_deref()
-            .and_then(|reference| reference.strip_prefix("#/components/schemas/"))
-            .and_then(|name| schemas.get(name))
-            .is_some_and(|base| base.nullable == Some(true))
-    });
-    if nullable_base {
-        let mut fields = Vec::new();
-        collect_property_names(
-            schema,
-            schemas,
-            &mut std::collections::HashSet::new(),
-            &mut fields,
-            false,
-        );
-        let mut seen = std::collections::HashSet::new();
-        for field in fields {
-            if !seen.insert(field) {
-                return Err(refusal(path, Class::ObjectPropertyNameCollision, format!("{location} property {field:?} redeclares a nullable inherited property; give the declarations distinct names")));
-            }
-        }
-    }
+    // An object redeclaring a property its nullable `allOf` base declares is
+    // generated, one field per name, since Fern CLI 5.163.1 (authored probe
+    // 549-object-property-name-collision); Fern CLI 5.67.1 refused it.
     let explicit = schema.discriminator.as_ref().filter(|_| {
         schema.ty.as_ref().map_or(
             schema.enum_values.is_none() && (schema.any_of.is_none() || schema.one_of.is_some()),
@@ -680,8 +663,9 @@ fn check_schema_names(
                 "{location} discriminant {discriminant:?}; use a letter-led identifier containing letters, numbers and underscores"
             )));
     }
-    // Measured at Fern 5.67.1: invalid overrides warn and fall back to the
-    // original value, so they cannot rescue a value Fern cannot name.
+    // Measured at Fern CLI 5.67.1 (not re-measured at the certified pair):
+    // invalid overrides warn and fall back to the original value, so they
+    // cannot rescue a value Fern cannot name.
     let names: std::collections::BTreeMap<_, _> = schema
         .enum_member_names()
         .filter(|(_, name)| usable_name(name))
@@ -863,7 +847,7 @@ pub(crate) fn validate_ir(
             // A `stream-condition` operation's two halves each take a request
             // type Fern synthesizes: `{Ctx}Request` and `{Ctx}StreamRequest`. A
             // component schema of either name, the body's own or any other, is
-            // "already declared in this file" to pinned Fern 5.67.1, which
+            // "already declared in this file" to pinned Fern, which
             // refuses rather than renames:
             // docs/fern-refusals/type-name-collision/evidence/stream-split-*.
             if op.request_body.is_some()
@@ -943,7 +927,7 @@ pub(crate) fn validate_ir(
             }
         }
     }
-    // Pinned Fern 5.67.1 accepts a header parameter's enum named like a root
+    // Pinned Fern accepts a header parameter's enum named like a root
     // schema (it checks and generates), while a query parameter's is "already
     // declared": docs/fern-refusals/type-name-collision/evidence/
     // namespaced-header-enum-*.pinned-fern.log.
@@ -1347,7 +1331,6 @@ mod tests {
             Class::EnumNameUnsuitable,
             Class::EnumValueUnnameable,
             Class::GeneratedFileNameTooLong,
-            Class::ObjectPropertyNameCollision,
             Class::RequestPropertyCamelcaseCollision,
             Class::RequestPropertyNameCollision,
             Class::SdkMethodCollision,

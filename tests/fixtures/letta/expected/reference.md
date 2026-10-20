@@ -16273,7 +16273,9 @@ client = FernApi(
 
 client.mcp_servers.mcp_update_mcp_server(
     mcp_server_id="mcp_server_id",
-    config=UpdateMcpServerRequestConfig_Sse(),
+    config=UpdateMcpServerRequestConfig_Sse(
+        server_url=None,
+    ),
 )
 
 ```

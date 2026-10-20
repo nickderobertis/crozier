@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "986b73b3dd7f476cac7ae7cc0d944afca756972daf94d5700db679e4e30798ab"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "5d5905e925f751446334ec21ecb51d7809d3f466903fa83defac9c3425bd67db"
 
 [[covers]]
 key = "request-example-deprecated-property"

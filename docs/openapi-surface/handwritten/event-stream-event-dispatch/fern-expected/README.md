@@ -61,9 +61,8 @@ client = AsyncFernApi(
 
 
 async def main() -> None:
-    await client.watch_movements(
-        route_id="routeId",
-    )
+    async for chunk in client.watch_movements(...):
+        print(chunk)
 
 
 asyncio.run(main())

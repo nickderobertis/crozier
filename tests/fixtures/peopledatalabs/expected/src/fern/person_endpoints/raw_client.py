@@ -10,7 +10,6 @@ from ..core.jsonable_encoder import encode_path_param
 from ..core.parse_error import ParsingError
 from ..core.pydantic_utilities import parse_obj_as
 from ..core.request_options import RequestOptions
-from ..core.serialization import convert_and_respect_annotation_metadata
 from ..errors.bad_request_error import BadRequestError
 from ..errors.method_not_allowed_error import MethodNotAllowedError
 from ..errors.not_found_error import NotFoundError
@@ -20,7 +19,6 @@ from ..errors.unauthorized_error import UnauthorizedError
 from ..types.person import Person
 from ..types.person_retrieve import PersonRetrieve
 from ..types.person_retrieve_bulk import PersonRetrieveBulk
-from .types.post_v5person_search_request import PostV5PersonSearchRequest
 from pydantic import ValidationError
 
 
@@ -483,12 +481,48 @@ class RawPersonEndpointsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     def person_search(
-        self, *, request: PostV5PersonSearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        dataset: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        data_include: typing.Optional[str] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[Person]:
         """
         Parameters
         ----------
-        request : PostV5PersonSearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference.
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM person WHERE XXX, where XXX is a standard SQL boolean query involving our person fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        dataset : typing.Optional[str]
+            Specifies which dataset(s) the API should search against
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        data_include : typing.Optional[str]
+            A comma-separated string of fields that you would like the response to include. Begin the string with a - if you would instead like to exclude the specified fields. If you would like to exclude all data from being returned, use data_include=""
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -501,9 +535,20 @@ class RawPersonEndpointsClient:
         _response = self._client_wrapper.httpx_client.request(
             "v5/person/search",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=PostV5PersonSearchRequest, direction="write"
-            ),
+            json={
+                "query": query,
+                "sql": sql,
+                "size": size,
+                "from": from_,
+                "scroll_token": scroll_token,
+                "dataset": dataset,
+                "titlecase": titlecase,
+                "data_include": data_include,
+                "pretty": pretty,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )
@@ -1290,12 +1335,48 @@ class AsyncRawPersonEndpointsClient:
         raise ApiError(status_code=_response.status_code, headers=dict(_response.headers), body=_response_json)
 
     async def person_search(
-        self, *, request: PostV5PersonSearchRequest, request_options: typing.Optional[RequestOptions] = None
+        self,
+        *,
+        query: typing.Optional[str] = OMIT,
+        sql: typing.Optional[str] = OMIT,
+        size: typing.Optional[int] = OMIT,
+        from_: typing.Optional[int] = OMIT,
+        scroll_token: typing.Optional[str] = OMIT,
+        dataset: typing.Optional[str] = OMIT,
+        titlecase: typing.Optional[bool] = OMIT,
+        data_include: typing.Optional[str] = OMIT,
+        pretty: typing.Optional[bool] = OMIT,
+        request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[Person]:
         """
         Parameters
         ----------
-        request : PostV5PersonSearchRequest
+        query : typing.Optional[str]
+            An Elasticsearch (v7.7) query. See our underlying Elasticsearch mapping for reference.
+
+        sql : typing.Optional[str]
+            A SQL query of the format: SELECT * FROM person WHERE XXX, where XXX is a standard SQL boolean query involving our person fields
+
+        size : typing.Optional[int]
+            The number of matched records to return for this query if they exist*. Must be between 1 and 100
+
+        from_ : typing.Optional[int]
+            An offset value for pagination. Can be a number between 0 and 9999. Pagination can be executed up to a maximum of 10,000 records per query. Be sure to use the "total" response field to help discover how many total records exist in the dataset for your query
+
+        scroll_token : typing.Optional[str]
+            Each search API response returns a scroll_token. Include it in the next request to fetch the next size matching records
+
+        dataset : typing.Optional[str]
+            Specifies which dataset(s) the API should search against
+
+        titlecase : typing.Optional[bool]
+            Setting titlecase to true will titlecase any records returned
+
+        data_include : typing.Optional[str]
+            A comma-separated string of fields that you would like the response to include. Begin the string with a - if you would instead like to exclude the specified fields. If you would like to exclude all data from being returned, use data_include=""
+
+        pretty : typing.Optional[bool]
+            Whether the output should have human-readable indentation.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1308,9 +1389,20 @@ class AsyncRawPersonEndpointsClient:
         _response = await self._client_wrapper.httpx_client.request(
             "v5/person/search",
             method="POST",
-            json=convert_and_respect_annotation_metadata(
-                object_=request, annotation=PostV5PersonSearchRequest, direction="write"
-            ),
+            json={
+                "query": query,
+                "sql": sql,
+                "size": size,
+                "from": from_,
+                "scroll_token": scroll_token,
+                "dataset": dataset,
+                "titlecase": titlecase,
+                "data_include": data_include,
+                "pretty": pretty,
+            },
+            headers={
+                "content-type": "application/json",
+            },
             request_options=request_options,
             omit=OMIT,
         )

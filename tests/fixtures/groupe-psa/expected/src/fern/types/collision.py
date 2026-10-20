@@ -9,11 +9,19 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.serialization import FieldMetadata
 from .collision_links import CollisionLinks
 from .collision_obj import CollisionObj
-from .created_at_field import CreatedAtField
 from .vin import Vin
 
 
-class Collision(CreatedAtField, CollisionObj):
+class Collision(CollisionObj):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     id: str
     vin: Vin
     tipped_over: typing_extensions.Annotated[

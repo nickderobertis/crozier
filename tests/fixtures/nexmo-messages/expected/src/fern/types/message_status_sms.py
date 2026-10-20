@@ -9,7 +9,7 @@ from .message_status_sms_channel import MessageStatusSmsChannel
 
 
 class MessageStatusSms(MessageStatusBase):
-    channel: typing.Optional[MessageStatusSmsChannel] = pydantic.Field(default=None)
+    channel: MessageStatusSmsChannel = pydantic.Field()
     """
     The channel sending to.
     """

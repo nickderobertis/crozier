@@ -8,7 +8,7 @@ from .generic_property import GenericProperty
 
 
 class PropertyLogo(GenericProperty):
-    value: typing.Optional[typing.Any] = None
+    value: typing.Any
 
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)

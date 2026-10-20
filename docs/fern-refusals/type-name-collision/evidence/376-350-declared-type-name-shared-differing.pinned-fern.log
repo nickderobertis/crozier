@@ -1,4 +1,4 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+Fern CLI 5.163.1, python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
@@ -13,8 +13,8 @@ Warnings for generators.yml:
         path: __package__.yml -> service -> endpoints -> getThing -> examples[0] -> response
         issue: Unexpected property "count"
 
-Found 2 errors and 0 warnings in 0.001 seconds.
-::error::Found 2 errors and 0 warnings in 0.001 seconds.
+Found 2 errors and 0 warnings in 0.003 seconds.
+::error::Found 2 errors and 0 warnings in 0.003 seconds.
 
 generate exit: 1
 Warnings for generators.yml:
@@ -34,7 +34,7 @@ Warnings for generators.yml:
                   [error] Unexpected property "count"
                   
 ::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> getThing -> examples[0] -> response%0A__package__.yml%0A[error] Unexpected property "count"
-[api]: python-sdk Found 2 errors and 0 warnings in 0.621 seconds.
-::error title=[api]%3A python-sdk::Found 2 errors and 0 warnings in 0.621 seconds.
+[api]: python-sdk Found 2 errors and 0 warnings in 0.391 seconds.
+::error title=[api]%3A python-sdk::Found 2 errors and 0 warnings in 0.391 seconds.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.

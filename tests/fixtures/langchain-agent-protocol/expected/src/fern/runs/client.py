@@ -36,12 +36,12 @@ class RunsClient:
     def create_and_stream_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -54,6 +54,9 @@ class RunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -68,9 +71,6 @@ class RunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -102,17 +102,19 @@ class RunsClient:
         client = FernApi(
             base_url="https://yourhost.com/path/to/api",
         )
-        response = client.runs.create_and_stream_run()
+        response = client.runs.create_and_stream_run(
+            metadata={"key": "value"},
+        )
         for chunk in response:
             yield chunk
         """
         with self._raw_client.create_and_stream_run(
+            metadata=metadata,
             stream_mode=stream_mode,
             thread_id=thread_id,
             agent_id=agent_id,
             input=input,
             messages=messages,
-            metadata=metadata,
             config=config,
             webhook=webhook,
             on_completion=on_completion,
@@ -223,12 +225,12 @@ class AsyncRunsClient:
     async def create_and_stream_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -241,6 +243,9 @@ class AsyncRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -255,9 +260,6 @@ class AsyncRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -294,7 +296,9 @@ class AsyncRunsClient:
 
 
         async def main() -> None:
-            response = await client.runs.create_and_stream_run()
+            response = client.runs.create_and_stream_run(
+                metadata={"key": "value"},
+            )
             async for chunk in response:
                 yield chunk
 
@@ -302,12 +306,12 @@ class AsyncRunsClient:
         asyncio.run(main())
         """
         async with self._raw_client.create_and_stream_run(
+            metadata=metadata,
             stream_mode=stream_mode,
             thread_id=thread_id,
             agent_id=agent_id,
             input=input,
             messages=messages,
-            metadata=metadata,
             config=config,
             webhook=webhook,
             on_completion=on_completion,

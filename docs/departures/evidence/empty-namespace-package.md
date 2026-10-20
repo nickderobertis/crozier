@@ -20,7 +20,7 @@ Two documents carry the construct:
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization: fern`,
 `pydantic_config.enum_type: python_enums`, `fern generate --group python-sdk
 --local --preview`), exits 0 on `lamp-room-log`; the comment-stripped tree is
@@ -46,21 +46,22 @@ the `_` package's files:
 
 ## Why it is a defect
 
-Running the documented import over each tree, with Python 3.14.7, `httpx`
-0.28.1 and `pydantic` 2.14.0 installed in a fresh virtual environment and the
-tree's `src/` as the working directory:
+Running the documented import over a copy of each tree, with Python 3.12.14,
+`httpx` 0.28.1 and `pydantic` 2.14.1 installed in a fresh virtual environment
+and the copy's `src/` as the working directory (re-run at this pair on
+2026-10-18):
 
 ```text
 $ python -c 'from fern import FernApi'
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
     from fern import FernApi
-ImportError: cannot import name 'FernApi' from 'fern' (./fern/__init__.py)
+ImportError: cannot import name 'FernApi' from 'fern' (<copy>/src/fern/__init__.py)
 $ python -c 'import fern.client'
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
     import fern.client
-  File "./fern/client.py", line 5, in <module>
+  File "<copy>/src/fern/client.py", line 5, in <module>
     from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 ImportError: attempted relative import beyond top-level package
 ```
@@ -72,7 +73,7 @@ $ python -c 'import fern.types.get_available_locales_response'
 Traceback (most recent call last):
   File "<string>", line 1, in <module>
     import fern.types.get_available_locales_response
-  File "./fern/types/get_available_locales_response.py", line 7, in <module>
+  File "<copy>/src/fern/types/get_available_locales_response.py", line 7, in <module>
     from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 ImportError: attempted relative import beyond top-level package
 ```

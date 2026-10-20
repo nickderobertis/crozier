@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 use assert_cmd::Command;
 use crozier::departures::Context;
+use crozier::emit::certified_fern_pair as certified_pair;
 use crozier::parity::{self, Difference};
 use predicates::prelude::*;
 
@@ -118,179 +119,6 @@ struct Corpus {
     extra_fields: Option<&'static str>,
     unmatched: &'static [&'static str],
 }
-
-/// Files crozier emits that this corpus's Fern golden does not carry — the
-/// file-set half of a declared residual, the mirror of `Corpus::unmatched`.
-///
-/// The comparison is bidirectional precisely so a crozier-only file cannot hide
-/// behind Fern's tree lacking it, and this does not relax that: every such file is
-/// **named here**, and the assertions that read this list fail if one of them
-/// appears in the golden (it must enter byte comparison) or stops being emitted
-/// (the list is stale). What it allows is registering a corpus whose measured
-/// divergence includes names as well as bytes, which is the state
-/// [`CORPUS.md`](../tests/fixtures/CORPUS.md)'s batch 14 records for `webflow-v2`:
-/// 148 modules Fern names differently for a `oneOf` request body's hoisted
-/// variants, listed rather than deleted so the next change to that naming has an
-/// exact set to shorten.
-fn crozier_only_files(c: &Corpus) -> &'static [&'static str] {
-    if c.api == WEBFLOW_V2.api {
-        WEBFLOW_V2_CROZIER_ONLY
-    } else {
-        &[]
-    }
-}
-
-/// See [`crozier_only_files`]. Measured against the Fern 5.20.0 golden.
-const WEBFLOW_V2_CROZIER_ONLY: &[&str] = &[
-    "src/fern/collections/fields/types/create_fields_request_body_display_name_metadata.py",
-    "src/fern/collections/fields/types/create_fields_request_body_display_name.py",
-    "src/fern/collections/fields/types/create_fields_request_body_display_name_type.py",
-    "src/fern/collections/fields/types/create_fields_request_body_one_metadata_options_item.py",
-    "src/fern/collections/fields/types/create_fields_request_body_one_metadata.py",
-    "src/fern/collections/fields/types/create_fields_request_body_one.py",
-    "src/fern/collections/fields/types/create_fields_request_body_one_type.py",
-    "src/fern/collections/fields/types/create_fields_request_body_zero.py",
-    "src/fern/collections/fields/types/create_fields_request_body_zero_type.py",
-    "src/fern/collections/fields/types/create_fields_response_display_name_metadata.py",
-    "src/fern/collections/fields/types/create_fields_response_display_name.py",
-    "src/fern/collections/fields/types/create_fields_response_display_name_type.py",
-    "src/fern/collections/fields/types/create_fields_response_one_metadata_options_item.py",
-    "src/fern/collections/fields/types/create_fields_response_one_metadata.py",
-    "src/fern/collections/fields/types/create_fields_response_one.py",
-    "src/fern/collections/fields/types/create_fields_response_one_type.py",
-    "src/fern/collections/fields/types/create_fields_response_zero.py",
-    "src/fern/collections/fields/types/create_fields_response_zero_type.py",
-    "src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py",
-    "src/fern/collections/items/types/create_item_items_request_body_cms_locale_id_field_data.py",
-    "src/fern/collections/items/types/create_item_items_request_body_cms_locale_id.py",
-    "src/fern/collections/items/types/create_item_items_request_body_items_items_item_field_data.py",
-    "src/fern/collections/items/types/create_item_items_request_body_items_items_item.py",
-    "src/fern/collections/items/types/create_item_items_request_body_items.py",
-    "src/fern/collections/items/types/create_item_live_items_request_body_cms_locale_id_field_data.py",
-    "src/fern/collections/items/types/create_item_live_items_request_body_cms_locale_id.py",
-    "src/fern/collections/items/types/create_item_live_items_request_body_items_items_item_field_data.py",
-    "src/fern/collections/items/types/create_item_live_items_request_body_items_items_item.py",
-    "src/fern/collections/items/types/create_item_live_items_request_body_items.py",
-    "src/fern/collections/items/types/create_items_items_request_field_data_name.py",
-    "src/fern/collections/items/types/create_items_items_request_field_data_one_item.py",
-    "src/fern/collections/items/types/publish_item_items_request_body_item_ids.py",
-    "src/fern/collections/items/types/publish_item_items_request_body_items_items_item.py",
-    "src/fern/collections/items/types/publish_item_items_request_body_items.py",
-    "src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py",
-    "src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py",
-    "src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py",
-    "src/fern/types/post_collection_item_changed_payload_payload_field_data.py",
-    "src/fern/types/post_collection_item_changed_payload_payload.py",
-    "src/fern/types/post_collection_item_changed_payload.py",
-    "src/fern/types/post_collection_item_changed_payload_trigger_type.py",
-    "src/fern/types/post_collection_item_created_payload_payload_field_data.py",
-    "src/fern/types/post_collection_item_created_payload_payload.py",
-    "src/fern/types/post_collection_item_created_payload.py",
-    "src/fern/types/post_collection_item_created_payload_trigger_type.py",
-    "src/fern/types/post_collection_item_deleted_payload_payload_field_data.py",
-    "src/fern/types/post_collection_item_deleted_payload_payload.py",
-    "src/fern/types/post_collection_item_deleted_payload.py",
-    "src/fern/types/post_collection_item_published_payload_payload_field_data.py",
-    "src/fern/types/post_collection_item_published_payload_payload.py",
-    "src/fern/types/post_collection_item_published_payload.py",
-    "src/fern/types/post_collection_item_unpublished_payload_payload_field_data.py",
-    "src/fern/types/post_collection_item_unpublished_payload_payload.py",
-    "src/fern/types/post_collection_item_unpublished_payload.py",
-    "src/fern/types/post_comment_created_payload_payload_author.py",
-    "src/fern/types/post_comment_created_payload_payload_mentioned_users_item.py",
-    "src/fern/types/post_comment_created_payload_payload.py",
-    "src/fern/types/post_comment_created_payload_payload_type.py",
-    "src/fern/types/post_comment_created_payload.py",
-    "src/fern/types/post_ecomm_inventory_changed_payload_payload_inventory_type.py",
-    "src/fern/types/post_ecomm_inventory_changed_payload_payload.py",
-    "src/fern/types/post_ecomm_inventory_changed_payload.py",
-    "src/fern/types/post_ecomm_inventory_changed_payload_trigger_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_all_addresses_item_japan_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_all_addresses_item.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_all_addresses_item_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_application_fee.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_billing_address_japan_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_billing_address.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_billing_address_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_customer_info.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_customer_paid.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_dispute_last_status.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_download_files_item.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_metadata.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_net_amount.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_paypal_details.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item_row_total.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item_variant_image_file.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item_variant_image_file_variants_item.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item_variant_image.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_purchased_items_item_variant_price.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_shipping_address_japan_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_shipping_address.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_shipping_address_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_status.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_stripe_card_brand.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_stripe_card_expires.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_stripe_card.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_stripe_details.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals_extras_item_price.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals_extras_item.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals_extras_item_type.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals_subtotal.py",
-    "src/fern/types/post_ecomm_new_order_payload_payload_totals_total.py",
-    "src/fern/types/post_ecomm_new_order_payload.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_all_addresses_item_japan_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_all_addresses_item.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_all_addresses_item_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_application_fee.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_billing_address_japan_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_billing_address.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_billing_address_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_customer_info.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_customer_paid.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_dispute_last_status.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_download_files_item.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_metadata.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_net_amount.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_paypal_details.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item_row_total.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item_variant_image_file.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item_variant_image_file_variants_item.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item_variant_image.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_purchased_items_item_variant_price.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_shipping_address_japan_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_shipping_address.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_shipping_address_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_status.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_stripe_card_brand.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_stripe_card_expires.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_stripe_card.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_stripe_details.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals_extras_item_price.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals_extras_item.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals_extras_item_type.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals_subtotal.py",
-    "src/fern/types/post_ecomm_order_changed_payload_payload_totals_total.py",
-    "src/fern/types/post_ecomm_order_changed_payload.py",
-    "src/fern/types/post_form_submission_payload_payload.py",
-    "src/fern/types/post_form_submission_payload_payload_schema_item_field_type.py",
-    "src/fern/types/post_form_submission_payload_payload_schema_item.py",
-    "src/fern/types/post_form_submission_payload.py",
-    "src/fern/types/post_page_created_payload_payload.py",
-    "src/fern/types/post_page_created_payload.py",
-    "src/fern/types/post_page_deleted_payload_payload.py",
-    "src/fern/types/post_page_deleted_payload.py",
-    "src/fern/types/post_page_metadata_updated_payload_payload.py",
-    "src/fern/types/post_page_metadata_updated_payload.py",
-    "src/fern/types/post_site_publish_payload_payload_publish_scope.py",
-    "src/fern/types/post_site_publish_payload_payload.py",
-    "src/fern/types/post_site_publish_payload.py",
-];
 
 /// Feature-coverage target specs: hand-authored OpenAPI documents that each pin
 /// one shape (see docs/matching.md) — auth schemes beyond bearer, inline
@@ -928,10 +756,7 @@ fn compared_goldens(root: &Path) -> departures_ledger::Inventory {
 /// Corpus `c`'s file-level carve-outs, each as its slug in
 /// [`departures_ledger::CARVE_OUT_KINDS`] and the files it covers.
 fn corpus_carve_outs(c: &Corpus) -> Vec<(&'static str, Vec<&'static str>)> {
-    vec![
-        ("unmatched", c.unmatched.to_vec()),
-        ("crozier-only", crozier_only_files(c).to_vec()),
-    ]
+    vec![("unmatched", c.unmatched.to_vec())]
 }
 
 /// Nonempty corpus carve-outs, as recorded in the inventory.
@@ -1043,7 +868,10 @@ fn validate_known_fern_failure(
     let exact_values = [
         ("schema_version", serde_json::json!(1)),
         ("generator", serde_json::json!("fernapi/fern-python-sdk")),
-        ("generator_version", serde_json::json!("5.20.0")),
+        (
+            "generator_version",
+            serde_json::json!(certified_pair().python_sdk),
+        ),
         ("corpus_spec_name", serde_json::json!(api)),
         ("corpus_spec_ref", serde_json::json!("1.0.0")),
         (
@@ -1278,7 +1106,7 @@ fn assert_generated_tree_matches(
     // The comparison is bidirectional: a newly emitted Crozier file cannot hide
     // merely because the golden lacks it.
     for rel in walk_files(out) {
-        if expected_root.join(&rel).is_file() || crozier_only_files(c).contains(&rel.as_str()) {
+        if expected_root.join(&rel).is_file() {
             continue;
         }
         let id =
@@ -1289,21 +1117,6 @@ fn assert_generated_tree_matches(
     }
     let failures = ledger.check(&observed, &|_| true);
     assert!(failures.is_empty(), "{}", failures.join("\n"));
-
-    // The declared crozier-only set is held to the same staleness contract as
-    // `unmatched`: a listed file that reached the golden must enter byte
-    // comparison, and one crozier no longer emits must leave the list.
-    let emitted: std::collections::BTreeSet<String> = walk_files(out).into_iter().collect();
-    for rel in crozier_only_files(c) {
-        assert!(
-            !expected_root.join(rel).is_file(),
-            "{rel} is now in the Fern golden — remove it from the crozier-only list"
-        );
-        assert!(
-            emitted.contains(*rel),
-            "{rel} is no longer emitted — remove it from the crozier-only list"
-        );
-    }
 
     for rel in c.unmatched {
         let expected = std::fs::read_to_string(expected_root.join(rel))
@@ -1390,8 +1203,9 @@ fn refused_probe_inputs_report_the_unsupported_shape() {
 /// The member Fern names for an enum value that starts with a zero-led digit
 /// run: the run is spelled and the rest collapses, so `01_00_AM` is `ONE00AM`.
 /// `FERN` is the module Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0
-/// generated from this probe, comment-stripped (the control of
-/// `docs/fern-limitations.md`'s *Arms only a refused document reaches*).
+/// generated from this probe (not re-measured at the certified pair),
+/// comment-stripped (the control of `docs/fern-limitations.md`'s *Arms only a
+/// refused document reaches*).
 #[test]
 fn zero_led_enum_value_names_its_member_as_fern_does() {
     const FERN: &str = r#"
@@ -2402,9 +2216,9 @@ fn naming_authored_probes_match_pinned_fern() {
         let evidence = root.join(FERN_REFUSALS_DIR).join(class).join("evidence");
         let log = std::fs::read_to_string(evidence.join(format!("{stem}.pinned-fern.log")))
             .unwrap_or_default();
-        if !log.starts_with("Fern CLI 5.67.1, python-sdk 5.20.0\n")
-            || !log.contains("\ngenerate exit: 1\n")
-        {
+        let pair = certified_pair();
+        let header = format!("Fern CLI {}, python-sdk {}\n", pair.cli, pair.python_sdk);
+        if !log.starts_with(&header) || !log.contains("\ngenerate exit: 1\n") {
             failures.push(format!(
                 "{stem}: its pinned-fern.log is no refusal measured at the pin"
             ));
@@ -2973,8 +2787,11 @@ fn schema_shape_arms_match_complete_certified_trees() {
             if fixture_dir == SCHEMA_SHAPES_DIR && mode == "python-enums" {
                 let evidence = std::fs::read_to_string(fixture.join("evidence.toml")).unwrap();
                 for field in [
-                    "fern_cli_version = \"5.67.1\"".to_owned(),
-                    "fern_python_sdk_version = \"5.20.0\"".to_owned(),
+                    format!("fern_cli_version = \"{}\"", certified_pair().cli),
+                    format!(
+                        "fern_python_sdk_version = \"{}\"",
+                        certified_pair().python_sdk
+                    ),
                     format!("digest = \"{}\"", probe_artifact_digest(&expected).unwrap()),
                     format!(
                         "source_digest = \"{}\"",
@@ -8467,14 +8284,21 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
         openapi.join("openapi.yml"),
     )
     .expect("copy refused probe into Fern workspace");
+    let pair = certified_pair();
     std::fs::write(
         fern_root.join("fern.config.json"),
-        "{ \"organization\": \"fern\", \"version\": \"5.67.1\" }\n",
+        format!(
+            "{{ \"organization\": \"fern\", \"version\": \"{}\" }}\n",
+            pair.cli
+        ),
     )
     .expect("write pinned Fern CLI configuration");
     std::fs::write(
         fern_root.join("generators.yml"),
-        "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: 5.20.0\n        config:\n          pydantic_config:\n            enum_type: python_enums\n        output:\n          location: local-file-system\n          path: ../generated/python\n",
+        format!(
+            "api:\n  path: openapi/openapi.yml\ngroups:\n  python-sdk:\n    generators:\n      - name: fernapi/fern-python-sdk\n        version: {}\n        config:\n          pydantic_config:\n            enum_type: python_enums\n        output:\n          location: local-file-system\n          path: ../generated/python\n",
+            pair.python_sdk
+        ),
     )
     .expect("write pinned Fern generator configuration");
 
@@ -8511,7 +8335,10 @@ fn fern_ref_pointer_unnamed_segment_refusal_matches_measurement() {
         "Fern must not write an SDK output tree for a refused probe"
     );
 
-    let observed = "fern_cli_version: 5.67.1\nfern_python_sdk_version: 5.20.0\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n";
+    let observed = format!(
+        "fern_cli_version: {}\nfern_python_sdk_version: {}\ngenerate_exit: 1\ndiagnostic: Type name must begin with a letter\noutput_tree: none\n",
+        pair.cli, pair.python_sdk
+    );
     let expected =
         std::fs::read_to_string(root.join(
             "docs/openapi-surface/probe-expected/ref-pointer-unnamed-segment.fern-refusal.txt",
@@ -9032,7 +8859,7 @@ const CALORIENINJAS: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    // Fern 5.20 cannot produce a valid tree for this spec. Its exact registered
+    // Fern cannot produce a valid tree for this spec. Its exact registered
     // upstream failure is covered at the process boundary, with no golden.
     unmatched: &[],
 };
@@ -9927,7 +9754,7 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     }
     let known = known_fern_failure(&CALORIENINJAS)
         .expect("known Fern failure contract must be valid")
-        .expect("CalorieNinjas must register its Fern 5.20 failure");
+        .expect("CalorieNinjas must register its Fern failure");
     let out = generate_corpus(&CALORIENINJAS);
     let client = std::fs::read_to_string(out.path().join("src/fern/client.py"))
         .expect("Crozier generated a valid CalorieNinjas client");
@@ -9940,7 +9767,10 @@ fn calorieninjas_reproduces_the_exact_known_fern_failure_boundary() {
     );
     assert_eq!(
         known_fern_failure_marker(&CALORIENINJAS, &known),
-        "KNOWN UPSTREAM FERN FAILURE: calorieninjas.com at fernapi/fern-python-sdk:5.20.0; Crozier generation succeeded."
+        format!(
+            "KNOWN UPSTREAM FERN FAILURE: calorieninjas.com at fernapi/fern-python-sdk:{}; Crozier generation succeeded.",
+            certified_pair().python_sdk
+        )
     );
 }
 
@@ -11180,7 +11010,6 @@ const KOMGA: Corpus = Corpus {
 /// `short-io`: the Short.io link API is the corpus's third declarer of two path
 /// templates that normalize to one — `/links/{link_id}` beside `/links/{linkId}`,
 /// both `GET` — and the first whose colliding pair shares an HTTP method.
-/// Registered with the measured `unmatched` set below rather than at full parity.
 const SHORT_IO: Corpus = Corpus {
     api: "short-io",
     package_name: "fern",
@@ -11189,68 +11018,7 @@ const SHORT_IO: Corpus = Corpus {
     audience_strict: false,
     client_class_name: None,
     extra_fields: None,
-    unmatched: &[
-        "reference.md",
-        "src/fern/__init__.py",
-        "src/fern/link_management/__init__.py",
-        "src/fern/link_management/client.py",
-        "src/fern/link_management/types/__init__.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_created_at.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_expires_at.py",
-        "src/fern/link_management/types/post_links_bulk_request_links_item_ttl.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_expires_at.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_source.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_duplicate_link_id_response_user.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_expires_at.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_redirect_type.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_source.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_ttl.py",
-        "src/fern/link_management/types/post_links_examples_response_links_item_user.py",
-        "src/fern/link_management/types/post_links_link_id_request_created_at.py",
-        "src/fern/link_management/types/post_links_link_id_request_expires_at.py",
-        "src/fern/link_management/types/post_links_link_id_request_ttl.py",
-        "src/fern/link_management/types/post_links_link_id_response_expires_at.py",
-        "src/fern/link_management/types/post_links_link_id_response_ttl.py",
-        "src/fern/link_management/types/post_links_public_request_created_at.py",
-        "src/fern/link_management/types/post_links_public_request_expires_at.py",
-        "src/fern/link_management/types/post_links_public_request_ttl.py",
-        "src/fern/link_management/types/post_links_public_response.py",
-        "src/fern/link_management/types/post_links_public_response_expires_at.py",
-        "src/fern/link_management/types/post_links_public_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_public_response_source.py",
-        "src/fern/link_management/types/post_links_public_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_public_response_ttl.py",
-        "src/fern/link_management/types/post_links_public_response_user.py",
-        "src/fern/link_management/types/post_links_request_created_at.py",
-        "src/fern/link_management/types/post_links_request_expires_at.py",
-        "src/fern/link_management/types/post_links_request_ttl.py",
-        "src/fern/link_management/types/post_links_response.py",
-        "src/fern/link_management/types/post_links_response_expires_at.py",
-        "src/fern/link_management/types/post_links_response_redirect_type.py",
-        "src/fern/link_management/types/post_links_response_source.py",
-        "src/fern/link_management/types/post_links_response_split_urlv2item.py",
-        "src/fern/link_management/types/post_links_response_ttl.py",
-        "src/fern/link_management/types/post_links_response_user.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_expires_at.py",
-        "src/fern/link_queries/types/get_api_links_response_links_item_ttl.py",
-        "src/fern/link_queries/types/get_links_expand_response_expires_at.py",
-        "src/fern/link_queries/types/get_links_expand_response_ttl.py",
-        "src/fern/link_queries/types/get_links_link_id_response_expires_at.py",
-        "src/fern/link_queries/types/get_links_link_id_response_ttl.py",
-        "src/fern/types/bad_request_error_body.py",
-        "src/fern/types/conflict_error_body.py",
-        "src/fern/types/forbidden_error_body.py",
-        "src/fern/types/internal_server_error_body.py",
-        "src/fern/types/not_found_error_body.py",
-        "src/fern/types/payment_required_error_body.py",
-        "src/fern/types/unauthorized_error_body.py",
-    ],
+    unmatched: &[],
 };
 
 /// `webflow-v2`: Webflow's Data API v2 is the corpus's third declarer of a
@@ -11277,31 +11045,11 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/analyze/reports/types/top_pages_reports_request_sort_by.py",
         "src/fern/collections/__init__.py",
         "src/fern/collections/client.py",
-        "src/fern/collections/fields/__init__.py",
         "src/fern/collections/fields/client.py",
-        "src/fern/collections/fields/types/__init__.py",
-        "src/fern/collections/fields/types/create_fields_request_body.py",
-        "src/fern/collections/fields/types/create_fields_response.py",
-        "src/fern/collections/fields/types/option_field.py",
-        "src/fern/collections/fields/types/option_field_metadata.py",
-        "src/fern/collections/fields/types/option_field_metadata_options_item.py",
-        "src/fern/collections/fields/types/option_field_type.py",
-        "src/fern/collections/fields/types/reference_field.py",
-        "src/fern/collections/fields/types/reference_field_metadata.py",
-        "src/fern/collections/fields/types/reference_field_type.py",
-        "src/fern/collections/fields/types/static_field.py",
-        "src/fern/collections/fields/types/static_field_type.py",
-        "src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py",
         "src/fern/collections/items/__init__.py",
         "src/fern/collections/items/client.py",
         "src/fern/collections/items/raw_client.py",
         "src/fern/collections/items/types/__init__.py",
-        "src/fern/collections/items/types/create_item_items_request_body.py",
-        "src/fern/collections/items/types/create_item_live_items_request_body.py",
-        "src/fern/collections/items/types/create_items_items_request_field_data.py",
-        "src/fern/collections/items/types/item_i_ds.py",
-        "src/fern/collections/items/types/item_i_ds_with_locales.py",
-        "src/fern/collections/items/types/item_i_ds_with_locales_items_item.py",
         "src/fern/collections/items/types/list_items_items_request_filter_value.py",
         "src/fern/collections/items/types/list_items_items_request_filter_value_exists.py",
         "src/fern/collections/items/types/list_items_items_request_filter_value_in.py",
@@ -11312,40 +11060,17 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_in.py",
         "src/fern/collections/items/types/list_items_live_items_request_filter_value_nin.py",
         "src/fern/collections/items/types/list_items_live_items_request_sort_value.py",
-        "src/fern/collections/items/types/multiple_cms_items_item.py",
-        "src/fern/collections/items/types/multiple_items.py",
-        "src/fern/collections/items/types/multiple_items_items_item.py",
-        "src/fern/collections/items/types/multiple_items_items_item_field_data.py",
-        "src/fern/collections/items/types/multiple_live_items.py",
-        "src/fern/collections/items/types/multiple_live_items_items_item.py",
-        "src/fern/collections/items/types/multiple_live_items_items_item_field_data.py",
-        "src/fern/collections/items/types/publish_item_items_request_body.py",
-        "src/fern/collections/items/types/single_cms_item.py",
-        "src/fern/collections/items/types/single_item.py",
-        "src/fern/collections/items/types/single_item_field_data.py",
-        "src/fern/collections/items/types/single_live_item.py",
-        "src/fern/collections/items/types/single_live_item_field_data.py",
         "src/fern/collections/types/__init__.py",
         "src/fern/collections/types/create_collections_request_fields_item.py",
-        "src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py",
-        "src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties.py",
         "src/fern/collections/types/option_field.py",
         "src/fern/collections/types/option_field_metadata.py",
         "src/fern/collections/types/option_field_metadata_options_item.py",
         "src/fern/collections/types/option_field_type.py",
-        "src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties.py",
         "src/fern/collections/types/reference_field.py",
         "src/fern/collections/types/reference_field_metadata.py",
         "src/fern/collections/types/reference_field_type.py",
         "src/fern/collections/types/static_field.py",
         "src/fern/collections/types/static_field_type.py",
-        "src/fern/comments/__init__.py",
-        "src/fern/comments/types/__init__.py",
-        "src/fern/comments/types/comment_created_payload.py",
-        "src/fern/comments/types/comment_created_payload_payload.py",
-        "src/fern/comments/types/comment_created_payload_payload_author.py",
-        "src/fern/comments/types/comment_created_payload_payload_mentioned_users_item.py",
-        "src/fern/comments/types/comment_created_payload_payload_type.py",
         "src/fern/components/__init__.py",
         "src/fern/components/client.py",
         "src/fern/components/types/__init__.py",
@@ -11359,114 +11084,9 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/components/types/update_content_components_request_nodes_item_property_overrides_property_overrides_item.py",
         "src/fern/components/types/update_content_components_request_nodes_item_text.py",
         "src/fern/components/types/update_content_components_request_nodes_item_waiting_text.py",
-        "src/fern/forms/__init__.py",
         "src/fern/forms/client.py",
         "src/fern/forms/raw_client.py",
-        "src/fern/forms/types/__init__.py",
-        "src/fern/forms/types/form_submission_payload.py",
-        "src/fern/forms/types/form_submission_payload_payload.py",
-        "src/fern/forms/types/form_submission_payload_payload_schema_item.py",
-        "src/fern/forms/types/form_submission_payload_payload_schema_item_field_type.py",
         "src/fern/forms/types/list_submissions_forms_response.py",
-        "src/fern/inventory/__init__.py",
-        "src/fern/inventory/types/__init__.py",
-        "src/fern/inventory/types/ecomm_inventory_changed_payload.py",
-        "src/fern/inventory/types/ecomm_inventory_changed_payload_payload.py",
-        "src/fern/inventory/types/ecomm_inventory_changed_payload_payload_inventory_type.py",
-        "src/fern/inventory/types/ecomm_inventory_changed_payload_trigger_type.py",
-        "src/fern/items/__init__.py",
-        "src/fern/items/types/__init__.py",
-        "src/fern/items/types/collection_item_changed_payload.py",
-        "src/fern/items/types/collection_item_changed_payload_payload.py",
-        "src/fern/items/types/collection_item_changed_payload_payload_field_data.py",
-        "src/fern/items/types/collection_item_changed_payload_trigger_type.py",
-        "src/fern/items/types/collection_item_created_payload.py",
-        "src/fern/items/types/collection_item_created_payload_payload.py",
-        "src/fern/items/types/collection_item_created_payload_payload_field_data.py",
-        "src/fern/items/types/collection_item_created_payload_trigger_type.py",
-        "src/fern/items/types/collection_item_deleted_payload.py",
-        "src/fern/items/types/collection_item_deleted_payload_payload.py",
-        "src/fern/items/types/collection_item_deleted_payload_payload_field_data.py",
-        "src/fern/items/types/collection_item_published_payload.py",
-        "src/fern/items/types/collection_item_published_payload_payload.py",
-        "src/fern/items/types/collection_item_published_payload_payload_field_data.py",
-        "src/fern/items/types/collection_item_unpublished_payload.py",
-        "src/fern/items/types/collection_item_unpublished_payload_payload.py",
-        "src/fern/items/types/collection_item_unpublished_payload_payload_field_data.py",
-        "src/fern/orders/__init__.py",
-        "src/fern/orders/types/__init__.py",
-        "src/fern/orders/types/ecomm_new_order_payload.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_all_addresses_item.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_all_addresses_item_japan_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_all_addresses_item_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_application_fee.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_billing_address.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_billing_address_japan_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_billing_address_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_customer_info.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_customer_paid.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_dispute_last_status.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_download_files_item.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_metadata.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_net_amount.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_paypal_details.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item_row_total.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item_variant_image.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item_variant_image_file.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item_variant_image_file_variants_item.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_purchased_items_item_variant_price.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_shipping_address.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_shipping_address_japan_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_shipping_address_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_status.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_stripe_card.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_stripe_card_brand.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_stripe_card_expires.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_stripe_details.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals_extras_item.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals_extras_item_price.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals_extras_item_type.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals_subtotal.py",
-        "src/fern/orders/types/ecomm_new_order_payload_payload_totals_total.py",
-        "src/fern/orders/types/ecomm_order_changed_payload.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_all_addresses_item.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_all_addresses_item_japan_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_all_addresses_item_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_application_fee.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_billing_address.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_billing_address_japan_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_billing_address_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_customer_info.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_customer_paid.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_dispute_last_status.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_download_files_item.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_metadata.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_net_amount.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_paypal_details.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item_row_total.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item_variant_image.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item_variant_image_file.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item_variant_image_file_variants_item.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_purchased_items_item_variant_price.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_shipping_address.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_shipping_address_japan_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_shipping_address_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_status.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_stripe_card.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_stripe_card_brand.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_stripe_card_expires.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_stripe_details.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_extras_item.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_extras_item_price.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_extras_item_type.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_subtotal.py",
-        "src/fern/orders/types/ecomm_order_changed_payload_payload_totals_total.py",
         "src/fern/pages/__init__.py",
         "src/fern/pages/client.py",
         "src/fern/pages/scripts/client.py",
@@ -11478,12 +11098,6 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/scripts/types/upsert_custom_code_scripts_response_scripts_item.py",
         "src/fern/pages/types/__init__.py",
         "src/fern/pages/types/get_content_pages_response_nodes_item_component_instance_property_overrides_item.py",
-        "src/fern/pages/types/page_created_payload.py",
-        "src/fern/pages/types/page_created_payload_payload.py",
-        "src/fern/pages/types/page_deleted_payload.py",
-        "src/fern/pages/types/page_deleted_payload_payload.py",
-        "src/fern/pages/types/page_metadata_updated_payload.py",
-        "src/fern/pages/types/page_metadata_updated_payload_payload.py",
         "src/fern/pages/types/update_static_content_request_nodes_item.py",
         "src/fern/pages/types/update_static_content_request_nodes_item_choices.py",
         "src/fern/pages/types/update_static_content_request_nodes_item_choices_choices_item.py",
@@ -11495,17 +11109,11 @@ const WEBFLOW_V2: Corpus = Corpus {
         "src/fern/pages/types/update_static_content_request_nodes_item_waiting_text.py",
         "src/fern/products/client.py",
         "src/fern/products/types/create_products_request_product.py",
-        "src/fern/sites/__init__.py",
         "src/fern/sites/redirects/client.py",
         "src/fern/sites/redirects/raw_client.py",
         "src/fern/sites/robots_txt/client.py",
         "src/fern/sites/scripts/client.py",
         "src/fern/sites/scripts/raw_client.py",
-        "src/fern/sites/types/__init__.py",
-        "src/fern/sites/types/site_publish_payload.py",
-        "src/fern/sites/types/site_publish_payload_payload.py",
-        "src/fern/sites/types/site_publish_payload_payload_publish_scope.py",
-        "src/fern/types/__init__.py",
         "src/fern/webhooks/client.py",
         "src/fern/webhooks/raw_client.py",
         "src/fern/workspaces/__init__.py",
@@ -12203,8 +11811,10 @@ const AWS_MOBILEANALYTICS: Corpus = Corpus {
     project_name: "default_package_name",
     audiences: &[],
     audience_strict: false,
-    client_class_name: None,
-    extra_fields: None,
+    // Its golden was generated with these spelled out (`fern-generator-config.txt`);
+    // each is the value crozier derives anyway.
+    client_class_name: Some("FernApi"),
+    extra_fields: Some("allow"),
     unmatched: &[],
 };
 
@@ -13785,9 +13395,8 @@ const FLAT_GOLDENS: &[FlatGolden] = &[
         }),
     },
     // A registered real document declaring cursor pagination: Fern's flat tree
-    // returns each paginated method's page model, the pagination runtime still
-    // shipped, and its README documents the pager the method does not return
-    // (the `flat-pagination-pager-docs` departure).
+    // returns a pager from each paginated method, as its packaged tree does
+    // (measured at fern-python-sdk 5.41.3; 5.20.0's returned the page model).
     FlatGolden {
         fixture: "truefoundry-trueforge",
         corpus: None,
@@ -14030,7 +13639,8 @@ fn flat_goldens_are_the_declared_set() {
             golden.fixture
         );
         assert_eq!(
-            state["fern_python_sdk_version"], "5.20.0",
+            state["fern_python_sdk_version"],
+            certified_pair().python_sdk,
             "{}",
             golden.fixture
         );
@@ -15316,11 +14926,11 @@ fn generate_ok(spec: &str) -> (tempfile::TempDir, std::path::PathBuf) {
 
 #[test]
 fn a_security_scheme_reference_emits_the_credential_it_names() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 on
-    // docs/openapi-surface/probes/securityscheme-ref.yml and its control: a
+    // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the certified
+    // pair) on docs/openapi-surface/probes/securityscheme-ref.yml and its control: a
     // Reference Object in the `components.securitySchemes` position is resolved
-    // in-document, and the referenced scheme is imported under the REFERENCING key
-    // — so a document whose map holds a reference beside its target takes two
+    // in-document, and the referenced scheme is imported under the REFERENCING key —
+    // so a document whose map holds a reference beside its target takes two
     // credentials, where the control's single inline scheme takes one. crozier used
     // to deserialize the reference to the default scheme and drop it, which diverged
     // from Fern in `client.py`, `core/client_wrapper.py`, `reference.md` and
@@ -15349,16 +14959,16 @@ fn a_security_scheme_reference_emits_the_credential_it_names() {
 
 #[test]
 fn a_pure_ref_component_names_the_response_it_types() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 while probing the documents under
-    // docs/openapi-surface/probes/: a component schema that is nothing but a LOCAL
-    // `$ref` types an operation response under its OWN name, not its target's.
-    // crozier used to follow every such alias, which diverged from Fern on all
-    // four spellings probed — the bare `$ref`, and the same `$ref` beside a
-    // `title`, a `description` or an `unevaluatedProperties`. The rewrite is now
-    // confined to an alias of a *remotely* declared schema, which is the form
-    // helios-verifiable-api's `BlockResponse` over its fetched `Block` carries and
-    // the only form Fern was measured to follow (openapi.rs's
-    // `normalize_fetched_response_alias_refs`).
+    // Measured at fernapi/fern-python-sdk:5.20.0 (not re-measured at the certified
+    // pair) while probing the documents under docs/openapi-surface/probes/: a
+    // component schema that is nothing but a LOCAL `$ref` types an operation
+    // response under its OWN name, not its target's. crozier used to follow every
+    // such alias, which diverged from Fern on all four spellings probed — the bare
+    // `$ref`, and the same `$ref` beside a `title`, a `description` or an
+    // `unevaluatedProperties`. The rewrite is now confined to an alias of a
+    // *remotely* declared schema, which is the form helios-verifiable-api's
+    // `BlockResponse` over its fetched `Block` carries and the only form Fern was
+    // measured to follow (openapi.rs's `normalize_fetched_response_alias_refs`).
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\npaths:\n  /a:\n    \
          get:\n      operationId: getA\n      responses:\n        '200': { description: OK, \
@@ -15390,7 +15000,7 @@ fn a_pure_ref_component_names_the_response_it_types() {
 
 #[test]
 fn an_object_typed_path_parameter_is_converted_into_the_url_and_documented_by_its_type() {
-    // Measured at fernapi/fern-python-sdk:5.20.0 on
+    // Measured at fernapi/fern-python-sdk:5.41.3 on
     // docs/openapi-surface/probes/parameter-style-simple-path-object.yml, the
     // probe that settles the `parameter-style-simple-path-object` row: no
     // registered corpus source declares a path parameter over an object schema,
@@ -15722,7 +15332,7 @@ fn omitted_schema_type_infers_enum_and_open_map_shapes() {
     );
     assert!(
         widget.contains("target: typing.Dict[str, typing.Any]"),
-        "Fern 5.20 keeps an unconstrained open-map value bare: {widget}"
+        "Fern keeps an unconstrained open-map value bare: {widget}"
     );
     assert!(
         widget.contains("extra: typing.Optional[typing.Any] = None"),
@@ -15742,7 +15352,7 @@ fn unknown_metadata_fields_are_single_optional() {
         std::fs::read_to_string(out.join("src/acme/types/widget.py")).expect("Widget model");
     assert!(
         widget.contains("metadata: typing.Optional[typing.Any] = None"),
-        "Fern 5.20 models field absence once around unknown metadata: {widget}"
+        "Fern models field absence once around unknown metadata: {widget}"
     );
     assert!(
         widget.contains("unknown: typing.Optional[typing.Any] = None"),
@@ -15868,7 +15478,7 @@ fn unknown_array_items_are_bare_any_elements() {
         .expect("Widget model is generated");
     assert!(
         widget.contains("values: typing.Optional[typing.List[typing.Any]] = None"),
-        "Fern 5.20 keeps unknown array elements intrinsically non-nullable: {widget}"
+        "Fern keeps unknown array elements intrinsically non-nullable: {widget}"
     );
 }
 
@@ -15916,7 +15526,7 @@ fn array_item_enums_hoist_to_tag_types() {
         reference.contains(
             "**status:** `typing.Optional[typing.Union[ListWidgetsRequestStatusItem, typing.Sequence[ListWidgetsRequestStatusItem]]]`"
         ),
-        "reference tables should preserve Fern 5.20's flat scalar-or-sequence annotation: {reference}"
+        "reference tables should preserve Fern's flat scalar-or-sequence annotation: {reference}"
     );
 }
 
@@ -16067,7 +15677,7 @@ fn openapi_31_null_only_array_items_collapse_to_bare_any() {
         .expect("inline response model is generated");
     assert!(
         model.contains("values: typing.List[typing.Any]"),
-        "Fern 5.20 collapses null-only array elements to bare unknowns: {model}"
+        "Fern collapses null-only array elements to bare unknowns: {model}"
     );
 }
 
@@ -16080,7 +15690,7 @@ fn arrays_without_items_use_bare_any_elements() {
         .expect("inline response model is generated");
     assert!(
         model.contains("values: typing.List[typing.Any]"),
-        "Fern 5.20 keeps unconstrained array elements as bare unknowns: {model}"
+        "Fern keeps unconstrained array elements as bare unknowns: {model}"
     );
 }
 
@@ -16402,7 +16012,7 @@ fn binary_success_responses_stream_bytes() {
         reference.contains(
             "**request_options:** `typing.Optional[RequestOptions]` — Request-specific configuration."
         ),
-        "binary response reference docs should use Fern 5.20's standard request_options prose: {reference}"
+        "binary response reference docs should use Fern's standard request_options prose: {reference}"
     );
 }
 
@@ -16478,11 +16088,14 @@ fn wildcard_binary_requests_with_path_params_omit_json_content_type() {
             && !client.contains("request=b\"string\""),
         "the high-level bytes method should use Fern's string example: {client}"
     );
+    // fern-python-sdk 5.41.3 documents the body by the signature's `bytes`
+    // (apideck.com-file-storage's `upload_sessions.upload`, a `*/*` binary
+    // body beside an `id` path parameter); 5.20.0 wrote the schema's `str`.
     let reference =
         std::fs::read_to_string(out.join("reference.md")).expect("reference is generated");
     assert!(
-        reference.contains("**request:** `str`"),
-        "reference docs should retain Fern's source-schema type: {reference}"
+        reference.contains("**request:** `bytes`"),
+        "reference docs should document the body as the signature's bytes: {reference}"
     );
 }
 
@@ -16654,7 +16267,8 @@ fn all_of_request_bodies_flatten_inherited_fields() {
 /// A single-use `allOf` body Fern drops from the type layer is flattened into the
 /// method like any dropped `$ref` body, and keeps the JSON content-type header
 /// that a surviving schema's body leaves to httpx: measured at Fern 5.20.0 on this
-/// document, with the `$ref` member first, last, or under a `type: object`.
+/// document (not re-measured at the certified pair), with the `$ref` member first,
+/// last, or under a `type: object`.
 #[test]
 fn pathless_single_use_all_of_bodies_send_the_content_type() {
     let (_dir, out) = generate_ok(
@@ -17026,6 +16640,11 @@ fn server_url_variables_are_exposed_by_the_root_client() {
     let (_dir, out) = generate_ok(
         "openapi: 3.0.3\ninfo: { title: Widget API, version: 1.0.0 }\nservers:\n  - url: https://api.example.com/{basePath}\n    variables:\n      basePath: { default: v1 }\npaths:\n  /widgets:\n    get:\n      operationId: listWidgets\n      responses:\n        '200': { description: OK }\n",
     );
+    // fern-python-sdk 5.41.3 formats the variable into the selected
+    // environment's URL template, falling back to the server's own
+    // (docu-goapiserver's `host`: `_environment_url_templates.get(environment,
+    // "https://{host}/primula/api/v3")`, then `_url_template.format(host=_host)`
+    // when no `base_url` is given); 5.20.0 formatted the server URL directly.
     let client =
         std::fs::read_to_string(out.join("src/acme/client.py")).expect("root client is generated");
     assert!(
@@ -17036,8 +16655,18 @@ fn server_url_variables_are_exposed_by_the_root_client() {
             && client.matches("_base_path = base_path if base_path is not None else \"v1\"").count()
                 == 2
             && client
+                .matches("AcmeApiEnvironment.DEFAULT: \"https://api.example.com/{basePath}\",")
+                .count()
+                == 2
+            && client
                 .matches(
-                    "base_url = \"https://api.example.com/{basePath}\".format(basePath=_base_path)"
+                    "_url_template = _environment_url_templates.get(environment, \"https://api.example.com/{basePath}\")"
+                )
+                .count()
+                == 2
+            && client
+                .matches(
+                    "if base_url is None:\n                base_url = _url_template.format(basePath=_base_path)"
                 )
                 .count()
                 == 2,
@@ -17187,7 +16816,7 @@ fn nested_nullability_is_preserved_and_a_nullable_scalar_union_stays_bare() {
     assert!(
         model.contains("typing.List[typing.Optional[str]]")
             && model.contains("typing.List[typing.Optional[WidgetRolesItem]]")
-            // A nullable union of plain scalars stays bare in Fern 5.20, as the
+            // A nullable union of plain scalars stays bare in Fern, as the
             // `pharmacy-nullable-scalar-unions` golden measures.
             && alias.contains("Schedule = typing.Union[int, str]"),
         "nested nullability should be retained at the schema node that declares it: {model}\n{alias}"
@@ -20399,6 +20028,7 @@ fn fern_refusal_failures(
     }
 
     let carried = refusal_document_class_counts(registry, &known, &mut failures);
+    let retiring = retiring_refusal_classes(registry, &mut failures);
     for class in &classes {
         let recorded = carried.get(class.class.as_str());
         let count = recorded.map_or(0, |recorded| recorded.carried);
@@ -20421,9 +20051,58 @@ fn fern_refusal_failures(
                 ));
             }
         }
-        failures.extend(refusal_class_failures(registry, class, generator, wire));
+        let retiring = retiring.contains(class.class.as_str());
+        failures.extend(refusal_class_failures(
+            registry, class, retiring, generator, wire,
+        ));
     }
     failures
+}
+
+/// The classes the registry is retiring: each whose own `probe.yml` is the
+/// probe of a `generates` or `check-only` row of `findings.tsv`, because Fern
+/// at the pin writes an SDK from it. Its `classes.tsv` and `documents.tsv` rows
+/// stay until the population is measured again; meanwhile the gate holds
+/// crozier to generating its probe in both modes. A registry without
+/// `findings.tsv` retires nothing (`fern-refusals.py check` owns that file's
+/// presence and header).
+fn retiring_refusal_classes(
+    registry: &Path,
+    failures: &mut Vec<String>,
+) -> std::collections::BTreeSet<String> {
+    let mut retiring = std::collections::BTreeSet::new();
+    let Ok(text) = std::fs::read_to_string(registry.join("findings.tsv")) else {
+        return retiring;
+    };
+    let mut lines = text.lines();
+    let header: Vec<&str> = lines.next().unwrap_or_default().split('\t').collect();
+    let column = |name: &str| header.iter().position(|cell| *cell == name);
+    let (Some(kind), Some(probe)) = (column("kind"), column("probe")) else {
+        failures.push(
+            "findings.tsv: its header names no `kind` and `probe` columns, so no retiring \
+             class can be read from it"
+                .to_owned(),
+        );
+        return retiring;
+    };
+    for line in lines {
+        let fields: Vec<&str> = line.split('\t').collect();
+        let (Some(kind), Some(probe)) = (fields.get(kind), fields.get(probe)) else {
+            continue;
+        };
+        if !["generates", "check-only"].contains(kind) {
+            continue;
+        }
+        if let Some(class) = probe
+            .strip_prefix(FERN_REFUSALS_DIR)
+            .and_then(|rest| rest.strip_prefix('/'))
+            .and_then(|rest| rest.strip_suffix("/probe.yml"))
+            .filter(|class| !class.contains('/'))
+        {
+            retiring.insert(class.to_owned());
+        }
+    }
+    retiring
 }
 
 /// The header, the column count, the sort order and each cell's vocabulary.
@@ -20600,9 +20279,13 @@ fn refusal_document_class_counts<'a>(
 }
 
 /// One class's files, record and — once evaluated — crozier's behaviour over its probe.
+/// A `retiring` class (see [`retiring_refusal_classes`]) keeps its last refusal
+/// record, which need not be at the pin, and its probe must generate in both
+/// modes rather than be refused.
 fn refusal_class_failures(
     registry: &Path,
     class: &RefusalClass,
+    retiring: bool,
     generator: &dyn Fn() -> Command,
     wire: WireTests,
 ) -> Vec<String> {
@@ -20615,7 +20298,12 @@ fn refusal_class_failures(
         failures.push(format!("{id}: its probe {id}/probe.yml is missing"));
     }
     match std::fs::read_to_string(&record) {
-        Ok(text) => failures.extend(refusal_record_failures(id, &text, &class.fern_exit)),
+        Ok(text) => failures.extend(refusal_record_failures(
+            id,
+            &text,
+            &class.fern_exit,
+            !retiring,
+        )),
         Err(_) => failures.push(format!(
             "{id}: its Fern record {id}/fern-refusal.txt is missing"
         )),
@@ -20636,6 +20324,15 @@ fn refusal_class_failures(
         ));
     }
     if class.status == "unevaluated" || !probe.is_file() {
+        return failures;
+    }
+    if retiring {
+        failures.extend(retiring_class_failures(
+            id,
+            &probe,
+            (class.status == "generate" && wire == WireTests::Run).then_some(wire_test.as_path()),
+            generator,
+        ));
         return failures;
     }
 
@@ -20674,11 +20371,60 @@ fn refusal_class_failures(
     failures
 }
 
-/// A class's `fern-refusal.txt`: Contract A's five fields in order, at the
-/// corpus pin, with Fern's non-empty phrase and the exit `classes.tsv` states.
-/// A false success records exit 0, so the exit is held to the row rather than
-/// to non-zero.
-fn refusal_record_failures(id: &str, text: &str, fern_exit: &str) -> Vec<String> {
+/// A retiring class's probe: Fern generates from it at the pin, so crozier
+/// generates too, with and without `--fern-strict`, and strict mode writes the
+/// same bytes (it only ever decides whether an SDK is written). `wire_test`,
+/// when given, runs against the default SDK.
+fn retiring_class_failures(
+    id: &str,
+    probe: &Path,
+    wire_test: Option<&Path>,
+    generator: &dyn Fn() -> Command,
+) -> Vec<String> {
+    let mut failures = Vec::new();
+    let mut runs = Vec::new();
+    for strict in [false, true] {
+        let mode = if strict {
+            "under --fern-strict"
+        } else {
+            "by default"
+        };
+        match refusal_run(generator, probe, strict) {
+            Ok(run) if run.code == Some(0) && !run.files.is_empty() => runs.push(run),
+            Ok(run) => failures.push(format!(
+                "{id}: a retiring class's probe (findings.tsv records Fern generating from it) \
+                 is refused {mode} (exit {}), where crozier should generate: {}",
+                exit_label(run.code),
+                run.stderr.trim()
+            )),
+            Err(error) => failures.push(format!("{id}: {error}")),
+        }
+    }
+    if let [default, strict] = &runs[..] {
+        let differs = default.files != strict.files
+            || default.files.iter().any(|file| {
+                std::fs::read(default.target.join(file)).ok()
+                    != std::fs::read(strict.target.join(file)).ok()
+            });
+        if differs {
+            failures.push(format!(
+                "{id}: a retiring class's probe generates different files under --fern-strict; \
+                 strict mode only decides whether an SDK is written"
+            ));
+        }
+        if let Some(wire_test) = wire_test {
+            failures.extend(wire_test_failures(id, wire_test, &default.target, probe));
+        }
+    }
+    failures
+}
+
+/// A class's `fern-refusal.txt`: Contract A's five fields in order, with Fern's
+/// non-empty phrase and the exit `classes.tsv` states — at the corpus pin when
+/// `at_pin`, which a retiring class's last refusal record need not be. A false
+/// success records exit 0, so the exit is held to the row rather than to
+/// non-zero.
+fn refusal_record_failures(id: &str, text: &str, fern_exit: &str, at_pin: bool) -> Vec<String> {
     let mut failures = Vec::new();
     let fields: Vec<(&str, &str)> = text
         .lines()
@@ -20702,7 +20448,13 @@ fn refusal_record_failures(id: &str, text: &str, fern_exit: &str) -> Vec<String>
         ("fern_cli_version", cli_pin.as_str()),
         ("fern_python_sdk_version", sdk_pin.as_str()),
     ] {
-        if value(name) != Some(pin) {
+        if !at_pin {
+            if value(name).is_none_or(str::is_empty) {
+                failures.push(format!(
+                    "{id}: fern-refusal.txt's {name} is empty; it names the version that refused"
+                ));
+            }
+        } else if value(name) != Some(pin) {
             failures.push(format!(
                 "{id}: fern-refusal.txt's {name} is `{}`, but the corpus pins `{pin}`",
                 value(name).unwrap_or("")
@@ -20948,23 +20700,14 @@ fn sdk_python_env(pyproject: &Path) -> Result<PathBuf, String> {
     sdk_python_env_in(&python_env_root(), pyproject, uv_available())
 }
 
-/// The one requirement the SDK environment adds to what the SDK declares: a test
-/// environment constraint, never part of the emitted `pyproject.toml`. pydantic
-/// 2.14.0 (published 2026-10-08) makes the SDK's pinned mypy 1.13 report
-/// `var-annotated` at Fern's vendored `core/pydantic_utilities.py:39-40`, which
-/// crozier emits byte for byte. Remove it once Fern's core file changes, or once
-/// the checked mypy and pydantic pairing stops reporting it.
-const SDK_ENV_PYDANTIC_CEILING: &str = "pydantic<2.14";
-
 /// [`sdk_python_env`] under `root`, building with `uv` or with `venv` + `pip`.
 fn sdk_python_env_in(root: &Path, pyproject: &Path, use_uv: bool) -> Result<PathBuf, String> {
     let text = std::fs::read_to_string(pyproject)
         .map_err(|error| format!("cannot read {}: {error}", pyproject.display()))?;
-    let mut requirements = pyproject_requirements(&text);
+    let requirements = pyproject_requirements(&text);
     if !requirements.iter().any(|r| r.starts_with("mypy==")) {
         return Err(format!("{} declares no pinned mypy", pyproject.display()));
     }
-    requirements.push(SDK_ENV_PYDANTIC_CEILING.to_string());
     cached_python_env(root, "crozier-sdk-env", &requirements, use_uv)
 }
 
@@ -21251,6 +20994,227 @@ fn sdk_env_generated_sdk_typechecks_clean_under_its_own_mypy_pin() {
     assert!(
         output.status.success() && report.contains("Success: no issues found"),
         "mypy reports errors in crozier's SDK under its own pin:\n{report}{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+/// Each generated `tests/xml` module's outcomes for an SDK tree, run under the
+/// SDK's own pins: `(test id, PASSED|FAILED)`, sorted.
+fn xml_suite_outcomes(py: &Path, sdk: &Path) -> Vec<(String, String)> {
+    let output = std::process::Command::new(py)
+        .args([
+            "-m",
+            "pytest",
+            "-q",
+            "-rA",
+            // Plain text whatever the caller's colour settings (nx forces
+            // colour), so each outcome line and the summary parse as written.
+            "--color=no",
+            "-p",
+            "no:cacheprovider",
+            "tests/xml",
+        ])
+        .current_dir(sdk)
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the SDK's generated XML suite");
+    let report = String::from_utf8_lossy(&output.stdout);
+    let mut outcomes: Vec<(String, String)> = report
+        .lines()
+        .filter_map(|line| {
+            let (outcome, rest) = line.split_once(' ')?;
+            matches!(outcome, "PASSED" | "FAILED").then(|| {
+                (
+                    rest.split(" - ").next().unwrap_or(rest).to_string(),
+                    outcome.to_string(),
+                )
+            })
+        })
+        .collect();
+    outcomes.sort();
+    // A completed run exits 0 (all passed) or 1 (some failed); a collection
+    // error, an interrupted run or a usage error is no outcome to compare.
+    let summary: Vec<&str> = report
+        .lines()
+        .last()
+        .unwrap_or_default()
+        .split_whitespace()
+        .collect();
+    let counted = |word: &str| -> usize {
+        summary
+            .windows(2)
+            .find(|pair| pair[1].trim_end_matches(',') == word)
+            .and_then(|pair| pair[0].parse().ok())
+            .unwrap_or(0)
+    };
+    assert!(
+        matches!(output.status.code(), Some(0 | 1))
+            && !report.lines().any(|line| line.starts_with("ERROR "))
+            && !outcomes.is_empty()
+            && counted("passed") + counted("failed") == outcomes.len(),
+        "the XML suite under {} did not complete with one outcome per test (exit {:?}):\n{report}{}",
+        sdk.display(),
+        output.status.code(),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    outcomes
+}
+
+/// The XML models crozier generates behave at run time as Fern's do: over
+/// corpus row `swagger-petstore`, whose models declare `xml` objects, each test
+/// of the generated `tests/xml` suite — round trips, unknown attributes and
+/// children kept, a wrong root and malformed XML refused — has the outcome it
+/// has in Fern's committed golden, under exactly the dependencies the SDK's
+/// `pyproject.toml` declares. Fern's own suite fails the round trip of a model
+/// whose required child its sample leaves out (`docs/matching.md`'s *XML
+/// models*), and crozier matches that too.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_generated_xml_models_behave_as_fern_s_own() {
+    let spec = corpus_spec("swagger-petstore").expect("the committed swagger-petstore source");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args([
+            "--package-name",
+            "fern",
+            "--project-name",
+            "default_package_name",
+        ])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the XML suite needs the SDK's Python env: {reason}"));
+    let crozier = xml_suite_outcomes(&py, &sdk);
+    let fern = xml_suite_outcomes(&py, &fixture_dir("swagger-petstore").join("expected"));
+    assert_eq!(
+        crozier, fern,
+        "crozier's XML suite outcomes differ from Fern's"
+    );
+    assert!(
+        crozier.iter().any(|(_, outcome)| outcome == "PASSED"),
+        "no generated XML test passes: {crozier:?}"
+    );
+}
+
+/// The names crozier gives colliding XML child builders hold at run time:
+/// a builder named after its tag moves a same-named text field to `note_`, two
+/// children sharing a tag fall back to their class names, a tag naming
+/// pydantic's `copy` gains `add_` (pydantic's own method still answers), and an
+/// inherited text field keeps its name while the builder yields. The document
+/// is authored for these four collisions; the SDK runs under its own pins.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_xml_builder_name_collisions_resolve_through_the_sdk() {
+    let journeys = repo_root().join("crates/crozier-e2e/tests/e2e");
+    let dir = tempfile::tempdir().expect("tempdir");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(journeys.join("xml_builder_collisions.yml"))
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "dock"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&sdk.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let output = std::process::Command::new(&py)
+        .arg(journeys.join("xml_builder_collisions.py"))
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("run the XML builder journey");
+    assert!(
+        output.status.success() && String::from_utf8_lossy(&output.stdout).trim() == "ok",
+        "the XML builder names do not hold at run time:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+}
+
+/// No child builder shadows pydantic: over the installed pydantic's every
+/// public `BaseModel` attribute, a document whose XML model holds a list child
+/// tagged with each name generates an SDK in which each child's builder is
+/// `add_<name>`, and the name itself still resolves to pydantic rather than to a
+/// method crozier wrote. The names are read from the SDK's own environment, so
+/// a pydantic release that adds an attribute fails here until crozier reserves it.
+#[test]
+#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
+fn sdk_env_no_xml_child_builder_shadows_a_pydantic_attribute() {
+    let dir = tempfile::tempdir().expect("tempdir");
+    let base = dir.path().join("base");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(repo_root().join("crates/crozier-e2e/tests/e2e/xml_builder_collisions.yml"))
+        .arg("--output")
+        .arg(&base)
+        .args(["--package-name", "dock"])
+        .assert()
+        .success();
+    let py = sdk_python_env(&base.join("pyproject.toml"))
+        .unwrap_or_else(|reason| panic!("the journey needs the SDK's Python env: {reason}"));
+    let listed = std::process::Command::new(&py)
+        .args(["-c", "import pydantic\nprint('\\n'.join(n for n in dir(pydantic.BaseModel) if not n.startswith('_')))"])
+        .output()
+        .expect("list pydantic.BaseModel's attributes");
+    let names: Vec<String> = String::from_utf8_lossy(&listed.stdout)
+        .lines()
+        .map(str::to_owned)
+        .collect();
+    assert!(
+        listed.status.success() && !names.is_empty(),
+        "pydantic lists no attribute"
+    );
+    let properties: serde_json::Map<String, serde_json::Value> = names
+        .iter()
+        .map(|name| {
+            (
+                format!("{name}_items"),
+                serde_json::json!({"type": "array", "items": {"type": "object", "xml": {"name": name},
+                    "properties": {"mark": {"type": "string", "xml": {"attribute": true}}}}}),
+            )
+        })
+        .collect();
+    let document = serde_json::json!({
+        "openapi": "3.0.3",
+        "info": {"title": "Holders", "version": "1"},
+        "paths": {"/holder": {"get": {"operationId": "getHolder", "responses": {"200": {
+            "description": "The holder.",
+            "content": {"application/xml": {"schema": {"$ref": "#/components/schemas/Holder"}}}
+        }}}}},
+        "components": {"schemas": {"Holder": {"type": "object", "xml": {"name": "holder"}, "properties": properties}}}
+    });
+    let spec = dir.path().join("holders.json");
+    std::fs::write(&spec, serde_json::to_vec(&document).expect("serialize"))
+        .expect("write the document");
+    let sdk = dir.path().join("sdk");
+    crozier_clean_env()
+        .args(["--no-config", "generate", "python", "--spec"])
+        .arg(&spec)
+        .arg("--output")
+        .arg(&sdk)
+        .args(["--package-name", "holders"])
+        .assert()
+        .success();
+    let check = "import sys\nfrom holders.types.holder import Holder\nbad = []\nfor name in sys.argv[1:]:\n    own = Holder.__dict__.get(name)\n    if own is not None and getattr(own, '__qualname__', '').startswith('Holder.'):\n        bad.append(name)\n    builder = getattr(Holder(), 'add_' + name, None)\n    if builder is None or builder(mark='m').mark != 'm':\n        bad.append('add_' + name)\nprint(bad)\nsys.exit(1 if bad else 0)";
+    let output = std::process::Command::new(&py)
+        .arg("-c")
+        .arg(check)
+        .args(&names)
+        .env("PYTHONPATH", sdk.join("src"))
+        .env("PYTHONDONTWRITEBYTECODE", "1")
+        .output()
+        .expect("check the generated builders");
+    assert!(
+        output.status.success(),
+        "a child builder shadows pydantic or is missing:\n{}{}",
+        String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
 }
@@ -22529,6 +22493,109 @@ fn fern_refusal_gate_reports_a_refusal_that_wrote_output() {
                 && line.contains("wrote 1 file(s) to the output directory (partial.py)")),
         "a refusal that wrote output was not reported:\n{}",
         failures.join("\n")
+    );
+}
+
+/// A class whose probe `findings.tsv` records Fern generating from is retiring:
+/// over the real binary, one whose probe crozier generates in both modes holds
+/// even though its last refusal record predates the pin, one whose probe crozier
+/// still refuses fails naming that, and a `refuse` class no finding names is
+/// held to refusing exactly as before — its stale record still fails.
+#[test]
+fn fern_refusal_gate_holds_a_retiring_class_to_generating() {
+    let scratch = tempfile::tempdir().expect("tempdir");
+    let registry = scratch.path().join("fern-refusals");
+    let refused = header_array_probe();
+    write_scratch_registry(
+        &registry,
+        &[
+            ScratchClass {
+                id: "retiring-generated",
+                status: "refuse",
+                crozier_diagnostic: "GET /thing: the scratch element",
+                probe: TINY_SPEC_WITH_OP,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "retiring-still-refused",
+                status: "refuse",
+                crozier_diagnostic: "GET /probe header probeParam",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            },
+            ScratchClass {
+                id: "example-type-mismatch",
+                status: "refuse",
+                crozier_diagnostic: "GET /probe header probeParam",
+                probe: &refused,
+                wire_test: None,
+                record: true,
+            },
+        ],
+        &[],
+    );
+    std::fs::write(
+        registry.join("findings.tsv"),
+        format!(
+            "finding\tkind\tcheck_exit\tgenerate_exit\tdiagnostic\tprobe\n\
+             retiring-generated-generates\tgenerates\t0\t0\t—\t{FERN_REFUSALS_DIR}/retiring-generated/probe.yml\n\
+             retiring-still-refused-check-only\tcheck-only\t1\t0\tA scratch phrase about <…>\t{FERN_REFUSALS_DIR}/retiring-still-refused/probe.yml\n\
+             elsewhere\tgenerates\t0\t0\t—\tdocs/openapi-surface/fern-refusals/findings/example-type-mismatch.yml\n"
+        ),
+    )
+    .unwrap();
+    // Each record as the pin before last wrote it.
+    for id in [
+        "retiring-generated",
+        "retiring-still-refused",
+        "example-type-mismatch",
+    ] {
+        std::fs::write(
+            registry.join(id).join("fern-refusal.txt"),
+            concat!(
+                "fern_cli_version: 0.0.1\n", // certified-pair: stand-in for an earlier pin
+                "fern_python_sdk_version: 0.0.2\n", // certified-pair: stand-in for an earlier pin
+                "generate_exit: 1\ndiagnostic: A scratch phrase about x\noutput_tree: none\n",
+            ),
+        )
+        .unwrap();
+    }
+    let failures = fern_refusal_failures(&registry, &crozier, WireTests::Skip);
+    let report = failures.join("\n");
+    assert!(
+        !failures
+            .iter()
+            .any(|line| line.starts_with("retiring-generated:")),
+        "a retiring class crozier generates from was refused:\n{report}"
+    );
+    for mode in ["by default", "under --fern-strict"] {
+        assert!(
+            failures.iter().any(|line| line
+                .starts_with("retiring-still-refused:")
+                && line.contains(&format!("a retiring class's probe (findings.tsv records Fern generating from it) is refused {mode}"))),
+            "no failure names the retiring class crozier still refuses {mode}:\n{report}"
+        );
+    }
+    assert!(
+        !failures
+            .iter()
+            .any(|line| line.starts_with("retiring-still-refused:") && line.contains("pins")),
+        "a retiring class's last refusal record was held to the pin:\n{report}"
+    );
+    // The class no finding names is unaffected: refused as before, and its
+    // stale record fails. (A finding probe outside the registry retires nothing.)
+    let unaffected: Vec<&String> = failures
+        .iter()
+        .filter(|line| line.starts_with("example-type-mismatch:"))
+        .collect();
+    assert_eq!(unaffected.len(), 2, "{report}");
+    assert!(
+        unaffected
+            .iter()
+            .all(|line| line.contains("but the corpus pins")),
+        "{report}"
     );
 }
 
@@ -24158,7 +24225,6 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         ("server-hyphen-probe.yml", "variable \"api-version\""),
         ("server-dot-probe.yml", "variable \"api.version\""),
         ("server-keyword-probe.yml", "variable \"class\""),
-        ("server-unbound-placeholder-probe.yml", "placeholder \"extra\""),
         ("slash-property-probe.yml", "type Result property \"/\""),
         ("empty-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
         ("null-only-enum-probe.yml", "components/schemas/Result enum has no non-null value"),
@@ -24183,6 +24249,9 @@ fn generator_lint_refusals_name_each_shape_and_spare_measured_near_misses() {
         "server-identifier-control.yml",
         "server-secondary-hyphen-control.yml",
         "server-placeholder-without-variables-control.yml",
+        // fern-python-sdk 5.41.3 formats the server template through a
+        // variable, so the unbound placeholder no longer trips Fern's F524.
+        "server-unbound-placeholder-probe.yml",
         "slash-prefixed-property-control.yml",
         "null-and-value-enum-control.yml",
     ] {
@@ -25042,8 +25111,46 @@ fn declared_parameter_names_deconflict_refusals_and_generation() {
     }
 }
 
+/// Every way crozier's `--fern-strict` tree for the authored-probe `case`
+/// differs from the tree Fern generated from it: the authored-probe gate holds
+/// the default mode, and a retired refusal class's probe must match in both.
+fn authored_probe_strict_failures(case: &str) -> Vec<String> {
+    let root = repo_root().join(AUTHORED_PROBES_DIR).join(case);
+    let spec = root.join("openapi.yml");
+    let expected = root.join("fern-expected");
+    let out = tempfile::tempdir().expect("probe output tempdir");
+    let result = probe_command(&spec, out.path())
+        .arg("--fern-strict")
+        .output()
+        .expect("run crozier");
+    if !result.status.success() {
+        return vec![format!(
+            "{case}: crozier refused under --fern-strict: {}",
+            String::from_utf8_lossy(&result.stderr)
+        )];
+    }
+    let ledger = match departure_ledger().golden(&authored_golden(&expected), &[]) {
+        Ok(ledger) => ledger,
+        Err(failures) => return failures,
+    };
+    golden_tree_failures(
+        case,
+        &spec.display().to_string(),
+        &ledger,
+        &expected,
+        out.path(),
+    )
+}
+
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: a path parameter a
+/// body property shares its name with is renamed `{name}PathParam`, so the
+/// `request-property-name-collision` probe generates — byte for byte as Fern
+/// does under `--fern-strict` too — where 5.67.1 refused it. A path parameter
+/// that declares its own name is not renamed, and still collides.
 #[test]
-fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_generate() {
+fn body_names_colliding_with_path_names_rename_the_path_parameter_in_both_modes() {
+    let failures = authored_probe_strict_failures("549-request-property-name-collision");
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.yml");
     let probe = std::fs::read_to_string(
@@ -25072,30 +25179,32 @@ fn body_names_colliding_with_path_names_refuse_but_query_and_header_names_genera
             if strict {
                 command.arg("--fern-strict");
             }
-            if location == "path" {
-                command
-                    .assert()
-                    .code(1)
-                    .stderr(predicates::str::contains("request-property-name-collision"));
-                assert!(!output.exists());
-            } else {
-                command.assert().success();
-                assert!(output.join("pyproject.toml").is_file());
-            }
+            command.assert().success();
+            assert!(output.join("pyproject.toml").is_file());
         }
     }
-    let recovered = probe
-        .replace("name: name", "name: repo_name")
-        .replace("{name}", "{repo_name}");
-    std::fs::write(&spec, recovered).unwrap();
-    crozier_clean_env()
-        .args(["--no-config", "generate", "python", "--spec"])
-        .arg(&spec)
-        .arg("--output")
-        .arg(dir.path().join("recovered"))
-        .arg("--fern-strict")
-        .assert()
-        .success();
+    let declared = probe.replace(
+        "          in: path\n",
+        "          in: path\n          x-fern-parameter-name: name\n",
+    );
+    assert_ne!(declared, probe, "the probe's path parameter moved");
+    std::fs::write(&spec, declared).unwrap();
+    for strict in [false, true] {
+        let output = dir.path().join(format!("declared-{strict}"));
+        let mut command = crozier_clean_env();
+        command
+            .args(["--no-config", "generate", "python", "--spec"])
+            .arg(&spec)
+            .arg("--output")
+            .arg(&output);
+        if strict {
+            command.arg("--fern-strict");
+        }
+        command.assert().code(1).stderr(predicates::str::contains(
+            "request-property-name-collision: PATCH /repos/{name} body property \"name\"",
+        ));
+        assert!(!output.exists());
+    }
 }
 
 #[test]
@@ -25563,44 +25672,28 @@ fn explicit_sdk_method_collisions_refuse_and_distinct_names_recover() {
         .success();
 }
 
+/// Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: an object that
+/// redeclares a property its nullable `allOf` base declares generates one field
+/// per name — byte for byte as Fern does under `--fern-strict` too — where 5.67.1
+/// refused it (`object-property-name-collision`). A non-nullable base generates
+/// as it always did.
 #[test]
-fn nullable_inherited_property_collisions_refuse_and_nonnullable_recover() {
+fn nullable_inherited_property_redeclarations_generate_in_both_modes() {
+    let failures = authored_probe_strict_failures("549-object-property-name-collision");
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
     let dir = tempfile::tempdir().unwrap();
     let spec = dir.path().join("api.json");
     let mut document: serde_json::Value = crate::yaml::from_str(include_str!(
         "../../../docs/fern-refusals/object-property-name-collision/probe.yml"
     ))
     .unwrap();
-    std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
-    for strict in [false, true] {
-        let output = dir.path().join(format!("bad-{strict}"));
-        let mut command = crozier_clean_env();
-        command
-            .args(["--no-config", "generate", "python", "--spec"])
-            .arg(&spec)
-            .arg("--output")
-            .arg(&output);
-        if strict {
-            command.arg("--fern-strict");
-        }
-        let result = command.output().unwrap();
-        let stderr = String::from_utf8(result.stderr).unwrap();
-        assert_eq!(result.status.code(), Some(1), "{stderr}");
-        assert!(
-            stderr.contains("object-property-name-collision"),
-            "{stderr}"
-        );
-        assert!(stderr.contains("sha1"), "{stderr}");
-        assert_eq!(stderr.contains("fern-strict"), strict);
-        assert!(!output.exists());
-    }
     document["components"]["schemas"]["FileMini"]["nullable"] = serde_json::json!(false);
     std::fs::write(&spec, serde_json::to_string(&document).unwrap()).unwrap();
     crozier_clean_env()
         .args(["--no-config", "generate", "python", "--spec"])
         .arg(&spec)
         .arg("--output")
-        .arg(dir.path().join("recovered"))
+        .arg(dir.path().join("nonnullable"))
         .arg("--fern-strict")
         .assert()
         .success();
@@ -26288,77 +26381,6 @@ fn sdk_env_stream_reference_heading_states_the_returned_iterator() {
             String::from_utf8_lossy(&run.stderr)
         );
     }
-}
-
-#[test]
-#[ignore = "SDK Python-environment tier (builds a venv from PyPI, runs mypy/pytest); run via `just test-sdk-env`"]
-fn sdk_env_union_value_wrapper_docs_examples_compile_only_in_crozier() {
-    let fixture =
-        repo_root().join("docs/openapi-surface/handwritten/kitchen-nested-mapping-target");
-    let script = repo_root().join("docs/departures/evidence/union-value-wrapper-docs-example.py");
-    let directory = tempfile::tempdir().expect("crozier tree");
-    let sdk = directory.path().join("sdk");
-    crozier_clean_env()
-        .args(["--no-config", "generate", "python", "--spec"])
-        .arg(fixture.join("openapi.yml"))
-        .arg("--output")
-        .arg(&sdk)
-        .args([
-            "--package-name",
-            "fern",
-            "--project-name",
-            "default_package_name",
-        ])
-        .assert()
-        .success();
-    let python = runtime_python_env().expect("SDK runtime environment");
-    let run = std::process::Command::new(python)
-        .arg(&script)
-        .arg(fixture.join("fern-expected"))
-        .arg(&sdk)
-        .env("PYTHONDONTWRITEBYTECODE", "1")
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8_lossy(&run.stdout);
-    assert!(
-        run.status.success(),
-        "{stdout}{}",
-        String::from_utf8_lossy(&run.stderr)
-    );
-    // Fern's three Markdown snippets pass the wrapper an empty argument;
-    // crozier's three compile and bind to the generated method.
-    let lines: Vec<&str> = stdout.lines().collect();
-    let fern: Vec<&&str> = lines
-        .iter()
-        .filter(|line| line.starts_with("fern "))
-        .collect();
-    let crozier: Vec<&&str> = lines
-        .iter()
-        .filter(|line| line.starts_with("crozier "))
-        .collect();
-    assert_eq!(3, fern.len(), "{stdout}");
-    assert!(
-        fern.iter()
-            .all(|line| line.contains("SyntaxError") && line.contains("'grill=,'")),
-        "{stdout}"
-    );
-    assert_eq!(3, crozier.len(), "{stdout}");
-    assert!(
-        crozier.iter().all(|line| line
-            .contains("compiles; request=Course_Grill(value=SteakOrder(")
-            && line.ends_with("binds fire_ticket")),
-        "{stdout}"
-    );
-
-    // The script refuses a call missing a tree rather than indexing past it.
-    let python = runtime_python_env().expect("SDK runtime environment");
-    let refused = std::process::Command::new(python)
-        .arg(&script)
-        .arg(fixture.join("fern-expected"))
-        .output()
-        .unwrap();
-    assert!(!refused.status.success());
-    assert!(String::from_utf8_lossy(&refused.stderr).contains("usage:"));
 }
 
 #[test]

@@ -6,8 +6,8 @@ Warnings for generators.yml:
 
 <--- Last few GCs --->
 
-[980510:0x2ea7c000]  1206296 ms: Scavenge (during sweeping) 16356.7 (16384.6) -> 16342.8 (16385.4) MB, pooled: 0.0 MB, 50.78 / 0.00 ms (average mu = 0.243, current mu = 0.186) allocation failure; 
-[980510:0x2ea7c000]  1219169 ms: Incremental Mark-Compact (reduce) 16344.0 (16385.4) -> 16342.4 (16355.6) MB, pooled: 0.0 MB, 11733.80 / 0.00 ms (+ 99.0 ms in 19 steps since start of marking, biggest step 7.6 ms, walltime since start of marking 11956 ms) 
+[459232:0x42d0c000]  2264968 ms: Scavenge (during sweeping) 16357.0 (16377.2) -> 16349.5 (16377.5) MB, pooled: 0.0 MB, 43.89 / 0.00 ms (average mu = 0.254, current mu = 0.190) allocation failure; 
+[459232:0x42d0c000]  2297552 ms: Incremental Mark-Compact (reduce) 16351.2 (16377.5) -> 16349.0 (16362.2) MB, pooled: 0.0 MB, 32127.66 / 0.00 ms (+ 150.2 ms in 28 steps since start of marking, biggest step 16.4 ms, walltime since start of marking 32425 ms
 FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
 ----- Native stack trace -----
 
@@ -17,6 +17,7 @@ FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaS
  4: 0xf02b05  [node]
  5: 0xf00d0c  [node]
  6: 0xe4160f  [node]
- 7: 0x138c7a5  [node]
- 8: 0x7e87efe7ea76 
+ 7: 0x1362c17  [node]
+ 8: 0x197ec3f  [node]
+ 9: 0x7c23ff8a67ba 
 Aborted (core dumped)

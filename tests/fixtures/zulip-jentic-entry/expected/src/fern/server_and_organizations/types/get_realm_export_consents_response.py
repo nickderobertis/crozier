@@ -8,8 +8,8 @@ from .get_realm_export_consents_response_export_consents_item import GetRealmExp
 
 
 class GetRealmExportConsentsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     export_consents: typing.Optional[typing.List[GetRealmExportConsentsResponseExportConsentsItem]] = pydantic.Field(
         default=None

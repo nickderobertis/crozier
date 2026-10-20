@@ -8,6 +8,8 @@ from importlib import import_module
 if typing.TYPE_CHECKING:
     from .bad_request_error_body import BadRequestErrorBody
     from .bad_request_error_body_code import BadRequestErrorBodyCode
+    from .client_request_error_body import ClientRequestErrorBody
+    from .client_request_error_body_code import ClientRequestErrorBodyCode
     from .conflict_error_body import ConflictErrorBody
     from .conflict_error_body_code import ConflictErrorBodyCode
     from .forbidden_error_body import ForbiddenErrorBody
@@ -23,6 +25,8 @@ if typing.TYPE_CHECKING:
     from .not_found_error_body import NotFoundErrorBody
     from .not_found_error_body_code import NotFoundErrorBodyCode
     from .oauth_scope import OauthScope
+    from .server_error_body import ServerErrorBody
+    from .server_error_body_code import ServerErrorBodyCode
     from .service_unavailable_error_body import ServiceUnavailableErrorBody
     from .service_unavailable_error_body_code import ServiceUnavailableErrorBodyCode
     from .time_on_page_reports_request_filter import TimeOnPageReportsRequestFilter
@@ -201,6 +205,8 @@ if typing.TYPE_CHECKING:
 _dynamic_imports: typing.Dict[str, str] = {
     "BadRequestErrorBody": ".bad_request_error_body",
     "BadRequestErrorBodyCode": ".bad_request_error_body_code",
+    "ClientRequestErrorBody": ".client_request_error_body",
+    "ClientRequestErrorBodyCode": ".client_request_error_body_code",
     "ConflictErrorBody": ".conflict_error_body",
     "ConflictErrorBodyCode": ".conflict_error_body_code",
     "ForbiddenErrorBody": ".forbidden_error_body",
@@ -216,6 +222,8 @@ _dynamic_imports: typing.Dict[str, str] = {
     "NotFoundErrorBody": ".not_found_error_body",
     "NotFoundErrorBodyCode": ".not_found_error_body_code",
     "OauthScope": ".oauth_scope",
+    "ServerErrorBody": ".server_error_body",
+    "ServerErrorBodyCode": ".server_error_body_code",
     "ServiceUnavailableErrorBody": ".service_unavailable_error_body",
     "ServiceUnavailableErrorBodyCode": ".service_unavailable_error_body_code",
     "TimeOnPageReportsRequestFilter": ".time_on_page_reports_request_filter",
@@ -406,6 +414,8 @@ def __dir__():
 __all__ = [
     "BadRequestErrorBody",
     "BadRequestErrorBodyCode",
+    "ClientRequestErrorBody",
+    "ClientRequestErrorBodyCode",
     "ConflictErrorBody",
     "ConflictErrorBodyCode",
     "ForbiddenErrorBody",
@@ -421,6 +431,8 @@ __all__ = [
     "NotFoundErrorBody",
     "NotFoundErrorBodyCode",
     "OauthScope",
+    "ServerErrorBody",
+    "ServerErrorBodyCode",
     "ServiceUnavailableErrorBody",
     "ServiceUnavailableErrorBodyCode",
     "TimeOnPageReportsRequestFilter",

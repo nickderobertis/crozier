@@ -8,8 +8,8 @@ from ...types.reminder import Reminder
 
 
 class GetRemindersResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     reminders: typing.Optional[typing.List[Reminder]] = pydantic.Field(default=None)
     """

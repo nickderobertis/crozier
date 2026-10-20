@@ -299,6 +299,7 @@ if typing.TYPE_CHECKING:
         UsersResponseDataItemStatus,
         UsersResponseDataItemUserType,
     )
+    from .errors import ClientRequestError, ServerError
     from . import (
         calendar_events,
         company,
@@ -452,6 +453,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "ChargeUpJobFinancialSummaryCostsIncurred": ".types",
     "ChargeUpJobFinancialSummaryLabourHours": ".types",
     "ChargeUpJobFinancialSummaryTotalBilled": ".types",
+    "ClientRequestError": ".errors",
     "Company": ".types",
     "CompanyContact": ".types",
     "CompanyContactContactItemsItem": ".types",
@@ -749,6 +751,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "RedirectResponse": ".types",
     "SearchPricebooksResponse": ".types",
     "SectionConfig": ".types",
+    "ServerError": ".errors",
     "Site": ".types",
     "SiteByIdResponse": ".types",
     "SitesResponse": ".types",
@@ -879,6 +882,7 @@ __all__ = [
     "ChargeUpJobFinancialSummaryCostsIncurred",
     "ChargeUpJobFinancialSummaryLabourHours",
     "ChargeUpJobFinancialSummaryTotalBilled",
+    "ClientRequestError",
     "Company",
     "CompanyContact",
     "CompanyContactContactItemsItem",
@@ -1176,6 +1180,7 @@ __all__ = [
     "RedirectResponse",
     "SearchPricebooksResponse",
     "SectionConfig",
+    "ServerError",
     "Site",
     "SiteByIdResponse",
     "SitesResponse",

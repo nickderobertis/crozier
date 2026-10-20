@@ -1493,7 +1493,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.get_proxy_events()
+            response = client.get_proxy_events()
             async for chunk in response:
                 yield chunk
 

@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "3948c4c05fbd065f3e26cc9e2d2560f8d48796cfb3498cc1a99ebae149fe0746"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "34b39d7a6ea186affc7bcabaaac5d72d86a32b065649730529959b8c5557714b"
 
 [[covers]]
 key = "ref-pointer-composition-index"

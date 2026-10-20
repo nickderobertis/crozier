@@ -13,7 +13,7 @@
 <dd>
 
 ```python
-from fern import FernApi
+from fern import FernApi, Expectation
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -21,7 +21,9 @@ client = FernApi(
 )
 
 client.expectation.create_expectation(
-    request={"httpRequest": {"method": "GET", "path": "/api/users", "queryStringParameters": {"page": ["1"], "limit": ["10"]}}, "httpResponse": {"statusCode": 200, "headers": {"Content-Type": ["application/json"]}, "body": "{\"users\":[{\"id\":1,\"name\":\"John Doe\"}],\"total\":1}"}},
+    request=[
+        Expectation()
+    ],
 )
 
 ```
@@ -6481,7 +6483,7 @@ Compares a "baseline" array of expectations against a "current" array and return
 <dd>
 
 ```python
-from fern import FernApi
+from fern import FernApi, Expectation, HttpResponse
 from fern.environment import FernApiEnvironment
 
 client = FernApi(
@@ -6490,7 +6492,12 @@ client = FernApi(
 
 client.troubleshooting.diff_a_baseline_set_of_expectations_against_another(
     baseline=[
-        {"httpRequest": {"method": "GET", "path": "/api/orders"}, "httpResponse": {"statusCode": 200, "body": "{\"orders\":[]}"}}
+        Expectation(
+            http_response=HttpResponse(
+                body="{\"orders\":[]}",
+                status_code=200,
+            ),
+        )
     ],
 )
 

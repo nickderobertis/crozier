@@ -8,8 +8,8 @@ from ...types.realm_domain import RealmDomain
 
 
 class GetRealmDomainsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     domains: typing.Optional[typing.List[RealmDomain]] = pydantic.Field(default=None)
     """

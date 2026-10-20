@@ -44,9 +44,6 @@ client.beds.list_beds(
     section="section",
     lamp_watts=1,
     vent_mode=ListBedsRequestXVentMode.OPEN,
-    valve_mode="drip",
-    mist_mode="fine",
-    hatch_mode="down",
 )
 ```
 
@@ -81,9 +78,6 @@ async def main() -> None:
         section="section",
         lamp_watts=1,
         vent_mode=ListBedsRequestXVentMode.OPEN,
-        valve_mode="drip",
-        mist_mode="fine",
-        hatch_mode="down",
     )
 
 

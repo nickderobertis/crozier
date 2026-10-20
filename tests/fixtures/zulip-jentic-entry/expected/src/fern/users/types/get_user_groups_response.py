@@ -8,8 +8,8 @@ from .get_user_groups_response_user_groups_item import GetUserGroupsResponseUser
 
 
 class GetUserGroupsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     user_groups: typing.Optional[typing.List[GetUserGroupsResponseUserGroupsItem]] = pydantic.Field(default=None)
     """

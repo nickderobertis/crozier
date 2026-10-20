@@ -80,7 +80,7 @@ def validate_fixture(value: str) -> str:
 
 def validate_version(value: str) -> str:
     if not VERSION_RE.fullmatch(value):
-        raise GoldensError(f"invalid Fern version {value!r}; expected an exact semantic version such as 5.20.0")
+        raise GoldensError(f"invalid Fern version {value!r}; expected an exact semantic version (MAJOR.MINOR.PATCH)")
     return value
 
 

@@ -9,7 +9,7 @@ from .remote_attribute_value import RemoteAttributeValue
 
 
 class RemoteAttribute(UniversalBaseModel):
-    value: typing.Optional[RemoteAttributeValue] = None
+    value: RemoteAttributeValue
     type: AttributeType = pydantic.Field()
     """
     3 attributes type:

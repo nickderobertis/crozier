@@ -144,6 +144,8 @@ class IndividualPduSessionHSmfClient:
             Ecgi,
             EutraLocation,
             FernApi,
+            GlobalRanNodeId,
+            GNbId,
             N3GaLocation,
             Ncgi,
             NgApCause,
@@ -201,12 +203,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_ngenb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_ngenb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 nr_location=NrLocation(
                     tai=Tai(
@@ -229,12 +237,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_gnb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_gnb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 n3ga_location=N3GaLocation(
                     n3gpp_tai=Tai(
@@ -273,12 +287,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_ngenb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_ngenb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 nr_location=NrLocation(
                     tai=Tai(
@@ -301,12 +321,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_gnb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_gnb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 n3ga_location=N3GaLocation(
                     n3gpp_tai=Tai(
@@ -502,6 +528,8 @@ class IndividualPduSessionHSmfClient:
             Ecgi,
             EutraLocation,
             FernApi,
+            GlobalRanNodeId,
+            GNbId,
             N3GaLocation,
             Ncgi,
             NgApCause,
@@ -546,12 +574,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_ngenb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_ngenb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 nr_location=NrLocation(
                     tai=Tai(
@@ -574,12 +608,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_gnb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_gnb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 n3ga_location=N3GaLocation(
                     n3gpp_tai=Tai(
@@ -618,12 +658,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_ngenb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_ngenb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 nr_location=NrLocation(
                     tai=Tai(
@@ -646,12 +692,18 @@ class IndividualPduSessionHSmfClient:
                     ),
                     geographical_information="geographicalInformation",
                     geodetic_information="geodeticInformation",
-                    global_gnb_id={
-                        "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                        "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                        "n3IwfId": "n3IwfId",
-                        "ngeNbId": "ngeNbId",
-                    },
+                    global_gnb_id=GlobalRanNodeId(
+                        plmn_id=PlmnId(
+                            mcc="mcc",
+                            mnc="mnc",
+                        ),
+                        n3iwf_id="n3IwfId",
+                        g_nb_id=GNbId(
+                            bit_length=28,
+                            g_nb_value="gNBValue",
+                        ),
+                        nge_nb_id="ngeNbId",
+                    ),
                 ),
                 n3ga_location=N3GaLocation(
                     n3gpp_tai=Tai(
@@ -858,6 +910,8 @@ class AsyncIndividualPduSessionHSmfClient:
             AsyncFernApi,
             Ecgi,
             EutraLocation,
+            GlobalRanNodeId,
+            GNbId,
             N3GaLocation,
             Ncgi,
             NgApCause,
@@ -918,12 +972,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_ngenb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_ngenb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     nr_location=NrLocation(
                         tai=Tai(
@@ -946,12 +1006,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_gnb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_gnb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     n3ga_location=N3GaLocation(
                         n3gpp_tai=Tai(
@@ -990,12 +1056,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_ngenb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_ngenb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     nr_location=NrLocation(
                         tai=Tai(
@@ -1018,12 +1090,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_gnb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_gnb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     n3ga_location=N3GaLocation(
                         n3gpp_tai=Tai(
@@ -1223,6 +1301,8 @@ class AsyncIndividualPduSessionHSmfClient:
             AsyncFernApi,
             Ecgi,
             EutraLocation,
+            GlobalRanNodeId,
+            GNbId,
             N3GaLocation,
             Ncgi,
             NgApCause,
@@ -1270,12 +1350,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_ngenb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_ngenb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     nr_location=NrLocation(
                         tai=Tai(
@@ -1298,12 +1384,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_gnb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_gnb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     n3ga_location=N3GaLocation(
                         n3gpp_tai=Tai(
@@ -1342,12 +1434,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_ngenb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_ngenb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     nr_location=NrLocation(
                         tai=Tai(
@@ -1370,12 +1468,18 @@ class AsyncIndividualPduSessionHSmfClient:
                         ),
                         geographical_information="geographicalInformation",
                         geodetic_information="geodeticInformation",
-                        global_gnb_id={
-                            "gNbId": {"bitLength": 28, "gNBValue": "gNBValue"},
-                            "plmnId": {"mnc": "mnc", "mcc": "mcc"},
-                            "n3IwfId": "n3IwfId",
-                            "ngeNbId": "ngeNbId",
-                        },
+                        global_gnb_id=GlobalRanNodeId(
+                            plmn_id=PlmnId(
+                                mcc="mcc",
+                                mnc="mnc",
+                            ),
+                            n3iwf_id="n3IwfId",
+                            g_nb_id=GNbId(
+                                bit_length=28,
+                                g_nb_value="gNBValue",
+                            ),
+                            nge_nb_id="ngeNbId",
+                        ),
                     ),
                     n3ga_location=N3GaLocation(
                         n3gpp_tai=Tai(

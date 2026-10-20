@@ -22,16 +22,25 @@ sides example as the unknown placeholder `{"key": "value"}`:
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds, exits 0; the
 comment-stripped tree is the case's `fern-expected/`. Both signatures read
 `gauges: typing.Optional[typing.Union[float, typing.Sequence[float]]] = None`,
-and every worked call of `get_surge` omits `gauges`, declared example or not.
+and every worked call of `get_surge` omits `gauges`, declared example or not:
+`src/fern/tides/client.py` lines 108–111 (sync) and 224–227 (async), and
+`reference.md` lines 105–108. `README.md` works only `get_tides`, so it carries
+no `get_surge` call on either side.
+
+Re-generating with crozier at the new pair, the trees differ there alone:
+crozier adds `gauges=[3.0, 7.0],` after line 109 and 225 of the client, and
+`gauges=[` / `3,` / `7` / `],` after line 106 of `reference.md` (crozier's
+lines 107–110).
 
 ## Both sides are valid; crozier's documents the declared example
 
 Binding every worked call of `get_surge` in each tree's client docstrings and
-`reference.md` to the package's own method:
+`reference.md` to the package's own sync and async method
+(`inspect.signature(...).bind`, re-run at the new pair on 2026-10-18):
 
 ```text
 fern     {"station_id": "'station_id'", "since": "{'key': 'value'}"}                         binds

@@ -30,7 +30,7 @@ class BaseClientWrapper:
         self._max_stream_reconnection_attempts = max_stream_reconnection_attempts
         self._logging = logging
 
-    def get_headers(self) -> typing.Dict[str, str]:
+    def get_headers(self, *, include_token: bool = True) -> typing.Dict[str, str]:
         import platform
 
         headers: typing.Dict[str, str] = {
@@ -42,9 +42,10 @@ class BaseClientWrapper:
             **(self.get_custom_headers() or {}),
         }
         headers["X-Api-Key"] = self._api_key
-        api_key = self._get_api_key()
-        if api_key is not None:
-            headers["Authorization"] = f"Bearer {api_key}"
+        if include_token:
+            api_key = self._get_api_key()
+            if api_key is not None:
+                headers["Authorization"] = f"Bearer {api_key}"
         return headers
 
     def _get_api_key(self) -> typing.Optional[str]:
@@ -143,7 +144,7 @@ class AsyncClientWrapper(BaseClientWrapper):
         )
 
     async def async_get_headers(self) -> typing.Dict[str, str]:
-        headers = self.get_headers()
+        headers = self.get_headers(include_token=self._async_token is None)
         if self._async_token is not None:
             token = await self._async_token()
             headers["Authorization"] = f"Bearer {token}"

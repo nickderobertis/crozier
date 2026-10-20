@@ -389,7 +389,9 @@ class FilesClient:
             apideck_service_id="YOUR_APIDECK_SERVICE_ID",
             api_key="YOUR_API_KEY",
         )
-        client.files.download()
+        client.files.download(
+            id="id",
+        )
         """
         with self._raw_client.download(id, fields=fields, request_options=request_options) as r:
             yield from r.data
@@ -818,7 +820,9 @@ class AsyncFilesClient:
 
 
         async def main() -> None:
-            await client.files.download()
+            await client.files.download(
+                id="id",
+            )
 
 
         asyncio.run(main())

@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "bb86475d7f51737c111927f5c3601ef2b59d9e571cbfa3bb302daac8aafeaca0"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "1c851c5538ed54ec3e4cec1759269c8dd01a3c637cb8bc85fff14970fd5c163e"
 
 [[covers]]
 key = "discriminator-property-name-extension"

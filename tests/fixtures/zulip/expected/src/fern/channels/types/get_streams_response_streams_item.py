@@ -7,6 +7,40 @@ from ...core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 
 
 class GetStreamsResponseStreamsItem(UniversalBaseModel):
+    stream_id: int = pydantic.Field()
+    """
+    The unique ID of the channel.
+    """
+
+    name: str = pydantic.Field()
+    """
+    The name of the channel.
+    """
+
+    is_archived: bool = pydantic.Field()
+    """
+    A boolean indicating whether the channel is [archived](/help/archive-a-channel).
+    
+    **Changes**: New in Zulip 10.0 (feature level 315).
+    Previously, this endpoint never returned archived channels.
+    """
+
+    description: str = pydantic.Field()
+    """
+    The short description of the channel in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format,
+    intended to be used to prepopulate UI for editing a channel's
+    description.
+    
+    See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
+    """
+
+    date_created: int = pydantic.Field()
+    """
+    The UNIX timestamp for when the channel was created, in UTC seconds.
+    
+    **Changes**: New in Zulip 4.0 (feature level 30).
+    """
+
     creator_id: typing.Optional[int] = pydantic.Field(default=None)
     """
     The ID of the user who created this channel.
@@ -20,113 +54,13 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     [management-commands]: https://zulip.readthedocs.io/en/latest/production/management-commands.html
     """
 
-    message_retention_days: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    Number of days that messages sent to this channel will be stored
-    before being automatically deleted by the [message retention
-    policy](/help/message-retention-policy). There are two special values:
-    
-    - `null`, the default, means the channel will inherit the organization
-      level setting.
-    - `-1` encodes retaining messages in this channel forever.
-    
-    **Changes**: New in Zulip 3.0 (feature level 17).
-    """
-
-    default_push_notifications: typing.Any
-    topics_policy: typing.Optional[typing.Any] = None
-    first_message_id: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    The ID of the first message in the channel.
-    
-    Intended to help clients determine whether they need to display
-    UI like the "show all topics" widget that would suggest the channel
-    has older history that can be accessed.
-    
-    Is `null` for channels with no message history.
-    
-    **Changes**: New in Zulip 2.1.0.
-    """
-
-    folder_id: typing.Optional[typing.Any] = None
-    can_add_subscribers_group: typing.Optional[typing.Any] = None
-    can_remove_subscribers_group: typing.Any
-    can_administer_channel_group: typing.Optional[typing.Any] = None
-    can_delete_any_message_group: typing.Optional[typing.Any] = None
-    can_delete_own_message_group: typing.Optional[typing.Any] = None
-    can_move_messages_out_of_channel_group: typing.Optional[typing.Any] = None
-    can_move_messages_within_channel_group: typing.Optional[typing.Any] = None
-    can_send_message_group: typing.Optional[typing.Any] = None
-    can_resolve_topics_group: typing.Optional[typing.Any] = None
-    can_subscribe_group: typing.Any
-    can_create_topic_group: typing.Optional[typing.Any] = None
-    stream_weekly_traffic: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    The average number of messages sent to the channel per week, as
-    estimated based on recent weeks, rounded to the nearest integer.
-    
-    If `null`, no information is provided on the average traffic.
-    This can be because the channel was recently created and there
-    is insufficient data to make an estimate, or because the server
-    wishes to omit this information for this client, this realm, or
-    this endpoint or type of event.
-    
-    **Changes**: New in Zulip 8.0 (feature level 199). Previously,
-    this statistic was available only in subscription objects.
-    """
-
-    is_default: typing.Optional[bool] = pydantic.Field(default=None)
-    """
-    Only present when [`include_default`][include_default]
-    parameter is `true`.
-    
-    Whether the given channel is a
-    [default channel](/help/set-default-channels-for-new-users).
-    
-    [include_default]: /api/get-streams#parameter-include_default
-    """
-
-    stream_id: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    The unique ID of the channel.
-    """
-
-    name: typing.Optional[str] = pydantic.Field(default=None)
-    """
-    The name of the channel.
-    """
-
-    is_archived: typing.Optional[bool] = pydantic.Field(default=None)
-    """
-    A boolean indicating whether the channel is [archived](/help/archive-a-channel).
-    
-    **Changes**: New in Zulip 10.0 (feature level 315).
-    Previously, this endpoint never returned archived channels.
-    """
-
-    description: typing.Optional[str] = pydantic.Field(default=None)
-    """
-    The short description of the channel in [Zulip-flavored Markdown](/help/format-your-message-using-markdown) format,
-    intended to be used to prepopulate UI for editing a channel's
-    description.
-    
-    See [Markdown message formatting](/api/message-formatting) for details on Zulip's HTML format.
-    """
-
-    date_created: typing.Optional[int] = pydantic.Field(default=None)
-    """
-    The UNIX timestamp for when the channel was created, in UTC seconds.
-    
-    **Changes**: New in Zulip 4.0 (feature level 30).
-    """
-
-    invite_only: typing.Optional[bool] = pydantic.Field(default=None)
+    invite_only: bool = pydantic.Field()
     """
     Specifies whether the channel is private or not.
     Only people who have been invited can access a private channel.
     """
 
-    rendered_description: typing.Optional[str] = pydantic.Field(default=None)
+    rendered_description: str = pydantic.Field()
     """
     The short description of the channel rendered as HTML, intended to
     be used when displaying the channel description in a UI.
@@ -138,7 +72,7 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     this HTML as though it were the body of a Zulip message.
     """
 
-    is_web_public: typing.Optional[bool] = pydantic.Field(default=None)
+    is_web_public: bool = pydantic.Field()
     """
     Whether the channel has been configured to allow unauthenticated
     access to its message history from the web.
@@ -146,7 +80,7 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     **Changes**: New in Zulip 2.1.0.
     """
 
-    stream_post_policy: typing.Optional[int] = pydantic.Field(default=None)
+    stream_post_policy: int = pydantic.Field()
     """
     A deprecated representation of a superset of the users who
     have permission to post messages to the channel available
@@ -172,7 +106,21 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     [calc-full-member]: /api/roles-and-permissions#determining-if-a-user-is-a-full-member
     """
 
-    history_public_to_subscribers: typing.Optional[bool] = pydantic.Field(default=None)
+    message_retention_days: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    Number of days that messages sent to this channel will be stored
+    before being automatically deleted by the [message retention
+    policy](/help/message-retention-policy). There are two special values:
+    
+    - `null`, the default, means the channel will inherit the organization
+      level setting.
+    - `-1` encodes retaining messages in this channel forever.
+    
+    **Changes**: New in Zulip 3.0 (feature level 17).
+    """
+
+    default_push_notifications: typing.Any
+    history_public_to_subscribers: bool = pydantic.Field()
     """
     Whether the history of the channel is public to its subscribers.
     
@@ -181,7 +129,22 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     assumption, as we may change that behavior in the future.
     """
 
-    is_recently_active: typing.Optional[bool] = pydantic.Field(default=None)
+    topics_policy: typing.Optional[typing.Any] = None
+    first_message_id: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The ID of the first message in the channel.
+    
+    Intended to help clients determine whether they need to display
+    UI like the "show all topics" widget that would suggest the channel
+    has older history that can be accessed.
+    
+    Is `null` for channels with no message history.
+    
+    **Changes**: New in Zulip 2.1.0.
+    """
+
+    folder_id: typing.Optional[typing.Any] = None
+    is_recently_active: bool = pydantic.Field()
     """
     Whether the channel has recent message activity. Clients should use this to implement
     [hide inactive channels](/help/manage-inactive-channels) if
@@ -192,7 +155,7 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     experience.
     """
 
-    is_announcement_only: typing.Optional[bool] = pydantic.Field(default=None)
+    is_announcement_only: bool = pydantic.Field()
     """
     Whether the given channel is announcement only or not.
     
@@ -200,7 +163,18 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     should use `stream_post_policy` instead.
     """
 
-    subscriber_count: typing.Optional[float] = pydantic.Field(default=None)
+    can_add_subscribers_group: typing.Optional[typing.Any] = None
+    can_remove_subscribers_group: typing.Any
+    can_administer_channel_group: typing.Optional[typing.Any] = None
+    can_delete_any_message_group: typing.Optional[typing.Any] = None
+    can_delete_own_message_group: typing.Optional[typing.Any] = None
+    can_move_messages_out_of_channel_group: typing.Optional[typing.Any] = None
+    can_move_messages_within_channel_group: typing.Optional[typing.Any] = None
+    can_send_message_group: typing.Optional[typing.Any] = None
+    can_resolve_topics_group: typing.Optional[typing.Any] = None
+    can_subscribe_group: typing.Any
+    can_create_topic_group: typing.Optional[typing.Any] = None
+    subscriber_count: float = pydantic.Field()
     """
     The total number of non-deactivated users (including bots) who
     are subscribed to the channel. Clients are responsible for updating
@@ -220,6 +194,32 @@ class GetStreamsResponseStreamsItem(UniversalBaseModel):
     server.
     
     **Changes**: New in Zulip 11.0 (feature level 394).
+    """
+
+    stream_weekly_traffic: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The average number of messages sent to the channel per week, as
+    estimated based on recent weeks, rounded to the nearest integer.
+    
+    If `null`, no information is provided on the average traffic.
+    This can be because the channel was recently created and there
+    is insufficient data to make an estimate, or because the server
+    wishes to omit this information for this client, this realm, or
+    this endpoint or type of event.
+    
+    **Changes**: New in Zulip 8.0 (feature level 199). Previously,
+    this statistic was available only in subscription objects.
+    """
+
+    is_default: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    Only present when [`include_default`][include_default]
+    parameter is `true`.
+    
+    Whether the given channel is a
+    [default channel](/help/set-default-channels-for-new-users).
+    
+    [include_default]: /api/get-streams#parameter-include_default
     """
 
     if IS_PYDANTIC_V2:

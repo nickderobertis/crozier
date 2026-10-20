@@ -5,9 +5,11 @@ import typing
 import httpx
 from .core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
 from .core.logging import LogConfig, Logger
+from .core.pagination import AsyncPager, SyncPager
 from .core.request_options import RequestOptions
 from .environment import FernApiEnvironment
 from .raw_client import AsyncRawFernApi, RawFernApi
+from .types.crane import Crane
 from .types.crane_page import CranePage
 
 
@@ -105,7 +107,7 @@ class FernApi:
 
     def list_cranes(
         self, *, after: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
-    ) -> CranePage:
+    ) -> SyncPager[Crane, CranePage]:
         """
         Parameters
         ----------
@@ -116,7 +118,7 @@ class FernApi:
 
         Returns
         -------
-        CranePage
+        SyncPager[Crane, CranePage]
             One page of cranes.
 
         Examples
@@ -124,10 +126,14 @@ class FernApi:
         from fern import FernApi
 
         client = FernApi()
-        client.list_cranes()
+        response = client.list_cranes()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_cranes(after=after, request_options=request_options)
-        return _response.data
+        return self._raw_client.list_cranes(after=after, request_options=request_options)
 
 
 def _make_default_async_client(
@@ -240,7 +246,7 @@ class AsyncFernApi:
 
     async def list_cranes(
         self, *, after: typing.Optional[str] = None, request_options: typing.Optional[RequestOptions] = None
-    ) -> CranePage:
+    ) -> AsyncPager[Crane, CranePage]:
         """
         Parameters
         ----------
@@ -251,7 +257,7 @@ class AsyncFernApi:
 
         Returns
         -------
-        CranePage
+        AsyncPager[Crane, CranePage]
             One page of cranes.
 
         Examples
@@ -264,13 +270,18 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            await client.list_cranes()
+            response = await client.list_cranes()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_cranes(after=after, request_options=request_options)
-        return _response.data
+        return await self._raw_client.list_cranes(after=after, request_options=request_options)
 
 
 def _get_base_url(*, base_url: typing.Optional[str] = None, environment: FernApiEnvironment) -> str:

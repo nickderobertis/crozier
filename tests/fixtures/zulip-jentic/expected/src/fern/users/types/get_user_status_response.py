@@ -8,8 +8,8 @@ from .get_user_status_response_status import GetUserStatusResponseStatus
 
 
 class GetUserStatusResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     status: typing.Optional[GetUserStatusResponseStatus] = pydantic.Field(default=None)
     """

@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
+  "fern_python_sdk_version": "5.41.3",
   "corpus_spec_name": "fiware-context-generator",
   "corpus_spec_ref": "354bf6920d20955aabb55f4778a4d8a3d855440b",
   "corpus_spec_url": "https://raw.githubusercontent.com/live-buildings/context-generator/354bf6920d20955aabb55f4778a4d8a3d855440b/swaggers/swagger.yaml",

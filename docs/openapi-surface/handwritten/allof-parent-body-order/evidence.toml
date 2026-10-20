@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "4f71ab6c8810fc3d78fff1b1b30b7a4db6b7294b918b7ca322a597fb8521acae"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "a2dd1d4cca0ba70d0f17973e70c7b6a776e3022bd0efd4d5423bfc97415868a2"
 
 [[covers]]
 key = "allof-parent-request-body"

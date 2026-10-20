@@ -8,8 +8,8 @@ from ...types.channel_folder import ChannelFolder
 
 
 class GetChannelFoldersResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     channel_folders: typing.Optional[typing.List[ChannelFolder]] = pydantic.Field(default=None)
     """

@@ -7,6 +7,7 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .course import Course, Course_Grill, Course_Pastry
+    from .course_grill import CourseGrill
     from .grill_course import GrillCourse
     from .pastry_course import PastryCourse
     from .skewer_order import SkewerOrder
@@ -15,6 +16,7 @@ if typing.TYPE_CHECKING:
     from .steak_order_station import SteakOrderStation
 _dynamic_imports: typing.Dict[str, str] = {
     "Course": ".course",
+    "CourseGrill": ".course_grill",
     "Course_Grill": ".course",
     "Course_Pastry": ".course",
     "GrillCourse": ".grill_course",
@@ -49,6 +51,7 @@ def __dir__():
 
 __all__ = [
     "Course",
+    "CourseGrill",
     "Course_Grill",
     "Course_Pastry",
     "GrillCourse",

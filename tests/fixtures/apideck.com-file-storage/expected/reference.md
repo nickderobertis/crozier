@@ -1103,7 +1103,7 @@ client.files.upload(
 <dl>
 <dd>
 
-**request:** `str` 
+**request:** `bytes` 
     
 </dd>
 </dl>
@@ -1550,7 +1550,9 @@ client = FernApi(
     environment=FernApiEnvironment.DEFAULT,
 )
 
-client.files.download()
+client.files.download(
+    id="id",
+)
 
 ```
 </dd>
@@ -1925,7 +1927,7 @@ client = FernApi(
 )
 
 client.folders.update(
-    id="id",
+    id_path_param="id",
 )
 
 ```
@@ -1942,7 +1944,7 @@ client.folders.update(
 <dl>
 <dd>
 
-**id:** `str` — ID of the record you are acting upon.
+**id_path_param:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -2032,7 +2034,7 @@ client = FernApi(
 )
 
 client.folders.copy(
-    id="id",
+    id_path_param="id",
     fields="id,updated_at",
     parent_folder_id="1234",
 )
@@ -2051,7 +2053,7 @@ client.folders.copy(
 <dl>
 <dd>
 
-**id:** `str` — ID of the record you are acting upon.
+**id_path_param:** `str` — ID of the record you are acting upon.
     
 </dd>
 </dl>
@@ -2829,7 +2831,7 @@ client.upload_sessions.upload(
 <dl>
 <dd>
 
-**request:** `str` 
+**request:** `bytes` 
     
 </dd>
 </dl>

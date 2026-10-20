@@ -4,6 +4,7 @@ import datetime as dt
 import typing
 
 from ..core.client_wrapper import AsyncClientWrapper, SyncClientWrapper
+from ..core.pagination import AsyncPager, SyncPager
 from ..core.request_options import RequestOptions
 from ..types.cancel_session_response import CancelSessionResponse
 from ..types.create_session_agent import CreateSessionAgent
@@ -16,8 +17,12 @@ from ..types.list_turn_events_order import ListTurnEventsOrder
 from ..types.list_turn_events_response import ListTurnEventsResponse
 from ..types.list_turns_response import ListTurnsResponse
 from ..types.previous_turn_id_input import PreviousTurnIdInput
+from ..types.session import Session
 from ..types.session_agent_spec_body import SessionAgentSpecBody
+from ..types.session_event import SessionEvent
+from ..types.session_event_item import SessionEventItem
 from ..types.session_metadata import SessionMetadata
+from ..types.turn import Turn
 from ..types.turn_input_item import TurnInputItem
 from ..types.turn_streaming_event import TurnStreamingEvent
 from .raw_client import AsyncRawSessionsClient, RawSessionsClient
@@ -51,7 +56,7 @@ class SessionsClient:
         end_timestamp: typing.Optional[dt.datetime] = None,
         agent_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSessionsResponse:
+    ) -> SyncPager[Session, ListSessionsResponse]:
         """
         List the caller's sessions (newest first by default), token-paginated. Results are scoped to the authenticated identity via the session store's `created_by_subject.subject_id` filter (not a client query param). Optional `agent_id` filters to sessions bound to that named agent. Pass `page_token` to fetch the next page, keeping the other query params constant.
 
@@ -80,7 +85,7 @@ class SessionsClient:
 
         Returns
         -------
-        ListSessionsResponse
+        SyncPager[Session, ListSessionsResponse]
             Paginated sessions.
 
         Examples
@@ -91,9 +96,14 @@ class SessionsClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.sessions.list()
+        response = client.sessions.list()
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list(
+        return self._raw_client.list(
             limit=limit,
             order=order,
             page_token=page_token,
@@ -102,7 +112,6 @@ class SessionsClient:
             agent_id=agent_id,
             request_options=request_options,
         )
-        return _response.data
 
     def create(
         self,
@@ -293,7 +302,7 @@ class SessionsClient:
         last_turn_id: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSessionEventsResponse:
+    ) -> SyncPager[SessionEventItem, ListSessionEventsResponse]:
         """
         List session events as `{ turn_id, event }` across the active turn branch (newest first), including persisted events from a running tip. Each turn contributes turn.created, content events (model.message, tool.call, …), and turn.done when terminal; streaming deltas are not included. Use `page_token` to paginate backward toward older events while retaining the original branch anchor. Only the session creator may list events.
 
@@ -316,7 +325,7 @@ class SessionsClient:
 
         Returns
         -------
-        ListSessionEventsResponse
+        SyncPager[SessionEventItem, ListSessionEventsResponse]
             Paginated session events.
 
         Examples
@@ -327,14 +336,18 @@ class SessionsClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.sessions.list_events(
+        response = client.sessions.list_events(
             session_id="session_id",
         )
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_events(
+        return self._raw_client.list_events(
             session_id, page_token=page_token, last_turn_id=last_turn_id, limit=limit, request_options=request_options
         )
-        return _response.data
 
     def list_turns(
         self,
@@ -343,7 +356,7 @@ class SessionsClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTurnsResponse:
+    ) -> SyncPager[Turn, ListTurnsResponse]:
         """
         List turns for a session (newest first by default), token-paginated. Only the session creator may list turns.
 
@@ -363,7 +376,7 @@ class SessionsClient:
 
         Returns
         -------
-        ListTurnsResponse
+        SyncPager[Turn, ListTurnsResponse]
             Paginated turns.
 
         Examples
@@ -374,14 +387,18 @@ class SessionsClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.sessions.list_turns(
+        response = client.sessions.list_turns(
             session_id="session_id",
         )
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_turns(
+        return self._raw_client.list_turns(
             session_id, limit=limit, page_token=page_token, request_options=request_options
         )
-        return _response.data
 
     def create_turn_stream(
         self,
@@ -576,7 +593,7 @@ class SessionsClient:
         page_token: typing.Optional[str] = None,
         order: typing.Optional[ListTurnEventsOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTurnEventsResponse:
+    ) -> SyncPager[SessionEvent, ListTurnEventsResponse]:
         """
         Paginated persisted events for a turn (insertion order by default). Only the session creator may list events.
 
@@ -602,7 +619,7 @@ class SessionsClient:
 
         Returns
         -------
-        ListTurnEventsResponse
+        SyncPager[SessionEvent, ListTurnEventsResponse]
             Paginated turn events.
 
         Examples
@@ -613,15 +630,19 @@ class SessionsClient:
             token="YOUR_TOKEN",
             base_url="https://yourhost.com/path/to/api",
         )
-        client.sessions.list_turn_events(
+        response = client.sessions.list_turn_events(
             session_id="session_id",
             turn_id="turn_id",
         )
+        for item in response:
+            yield item
+        # alternatively, you can paginate page-by-page
+        for page in response.iter_pages():
+            yield page
         """
-        _response = self._raw_client.list_turn_events(
+        return self._raw_client.list_turn_events(
             session_id, turn_id, limit=limit, page_token=page_token, order=order, request_options=request_options
         )
-        return _response.data
 
     def subscribe_to_turn(
         self,
@@ -699,7 +720,7 @@ class AsyncSessionsClient:
         end_timestamp: typing.Optional[dt.datetime] = None,
         agent_id: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSessionsResponse:
+    ) -> AsyncPager[Session, ListSessionsResponse]:
         """
         List the caller's sessions (newest first by default), token-paginated. Results are scoped to the authenticated identity via the session store's `created_by_subject.subject_id` filter (not a client query param). Optional `agent_id` filters to sessions bound to that named agent. Pass `page_token` to fetch the next page, keeping the other query params constant.
 
@@ -728,7 +749,7 @@ class AsyncSessionsClient:
 
         Returns
         -------
-        ListSessionsResponse
+        AsyncPager[Session, ListSessionsResponse]
             Paginated sessions.
 
         Examples
@@ -744,12 +765,18 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            await client.sessions.list()
+            response = await client.sessions.list()
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list(
+        return await self._raw_client.list(
             limit=limit,
             order=order,
             page_token=page_token,
@@ -758,7 +785,6 @@ class AsyncSessionsClient:
             agent_id=agent_id,
             request_options=request_options,
         )
-        return _response.data
 
     async def create(
         self,
@@ -993,7 +1019,7 @@ class AsyncSessionsClient:
         last_turn_id: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListSessionEventsResponse:
+    ) -> AsyncPager[SessionEventItem, ListSessionEventsResponse]:
         """
         List session events as `{ turn_id, event }` across the active turn branch (newest first), including persisted events from a running tip. Each turn contributes turn.created, content events (model.message, tool.call, …), and turn.done when terminal; streaming deltas are not included. Use `page_token` to paginate backward toward older events while retaining the original branch anchor. Only the session creator may list events.
 
@@ -1016,7 +1042,7 @@ class AsyncSessionsClient:
 
         Returns
         -------
-        ListSessionEventsResponse
+        AsyncPager[SessionEventItem, ListSessionEventsResponse]
             Paginated session events.
 
         Examples
@@ -1032,17 +1058,22 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            await client.sessions.list_events(
+            response = await client.sessions.list_events(
                 session_id="session_id",
             )
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_events(
+        return await self._raw_client.list_events(
             session_id, page_token=page_token, last_turn_id=last_turn_id, limit=limit, request_options=request_options
         )
-        return _response.data
 
     async def list_turns(
         self,
@@ -1051,7 +1082,7 @@ class AsyncSessionsClient:
         limit: typing.Optional[int] = None,
         page_token: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTurnsResponse:
+    ) -> AsyncPager[Turn, ListTurnsResponse]:
         """
         List turns for a session (newest first by default), token-paginated. Only the session creator may list turns.
 
@@ -1071,7 +1102,7 @@ class AsyncSessionsClient:
 
         Returns
         -------
-        ListTurnsResponse
+        AsyncPager[Turn, ListTurnsResponse]
             Paginated turns.
 
         Examples
@@ -1087,17 +1118,22 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            await client.sessions.list_turns(
+            response = await client.sessions.list_turns(
                 session_id="session_id",
             )
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_turns(
+        return await self._raw_client.list_turns(
             session_id, limit=limit, page_token=page_token, request_options=request_options
         )
-        return _response.data
 
     async def create_turn_stream(
         self,
@@ -1145,7 +1181,7 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            response = await client.sessions.create_turn_stream(
+            response = client.sessions.create_turn_stream(
                 session_id="session_id",
             )
             async for chunk in response:
@@ -1326,7 +1362,7 @@ class AsyncSessionsClient:
         page_token: typing.Optional[str] = None,
         order: typing.Optional[ListTurnEventsOrder] = None,
         request_options: typing.Optional[RequestOptions] = None,
-    ) -> ListTurnEventsResponse:
+    ) -> AsyncPager[SessionEvent, ListTurnEventsResponse]:
         """
         Paginated persisted events for a turn (insertion order by default). Only the session creator may list events.
 
@@ -1352,7 +1388,7 @@ class AsyncSessionsClient:
 
         Returns
         -------
-        ListTurnEventsResponse
+        AsyncPager[SessionEvent, ListTurnEventsResponse]
             Paginated turn events.
 
         Examples
@@ -1368,18 +1404,23 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            await client.sessions.list_turn_events(
+            response = await client.sessions.list_turn_events(
                 session_id="session_id",
                 turn_id="turn_id",
             )
+            async for item in response:
+                yield item
+
+            # alternatively, you can paginate page-by-page
+            async for page in response.iter_pages():
+                yield page
 
 
         asyncio.run(main())
         """
-        _response = await self._raw_client.list_turn_events(
+        return await self._raw_client.list_turn_events(
             session_id, turn_id, limit=limit, page_token=page_token, order=order, request_options=request_options
         )
-        return _response.data
 
     async def subscribe_to_turn(
         self,
@@ -1424,7 +1465,7 @@ class AsyncSessionsClient:
 
 
         async def main() -> None:
-            response = await client.sessions.subscribe_to_turn(
+            response = client.sessions.subscribe_to_turn(
                 session_id="session_id",
                 turn_id="turn_id",
             )

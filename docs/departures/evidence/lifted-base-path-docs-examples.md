@@ -22,7 +22,7 @@ document-level `x-fern-base-path` object whose `path` is `/{edition}`:
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 (the certified pair), in
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3 (the certified pair), in
 the workspace `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization:
 fern`, `pydantic_config.enum_type: python_enums`, `fern generate --group
 python-sdk --local --preview`), exits 0 on each. The trees, comment-stripped,
@@ -41,10 +41,15 @@ typing.Optional[str] = "v2"` with the default, `edition: str` without. Yet:
 | `README.md` | 40, 64 | `client = FernApi()` / `AsyncFernApi()`, with the argument left out even where it is required |
 | `reference.md` | 19–21, 86–88 | `client = FernApi(environment=…)`, likewise |
 
+Its own client docstrings, by contrast, construct the client with the lifted
+argument by keyword (`edition="v2"`, `src/fern/client.py:64` and `:177`, and
+every `src/fern/layers/client.py` example), so only the Markdown is wrong.
+
 ## Why it is a defect
 
 With each tree's `src/` on `PYTHONPATH` beside `httpx` and `pydantic` (a copy,
-so no bytecode is written into the committed tree):
+so no bytecode is written into the committed tree; re-run at this pair on
+2026-10-18 with Python 3.12.14, `httpx` 0.28.1 and `pydantic` 2.14.1):
 
 ```text
 $ python -c 'from fern import FernApi; FernApi(edition="v2").layers.create_layer(edition="v2", title="title")'

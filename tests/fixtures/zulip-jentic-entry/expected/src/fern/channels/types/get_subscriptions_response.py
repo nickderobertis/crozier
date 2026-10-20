@@ -8,8 +8,8 @@ from ...types.subscription import Subscription
 
 
 class GetSubscriptionsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     subscriptions: typing.List[Subscription] = pydantic.Field()
     """

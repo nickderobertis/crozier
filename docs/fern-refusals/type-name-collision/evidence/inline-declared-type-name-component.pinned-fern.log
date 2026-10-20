@@ -1,10 +1,23 @@
-Fern CLI 5.67.1, python-sdk 5.20.0
+Fern CLI 5.163.1, python-sdk 5.41.3
+check exit: 1
+Warnings for generators.yml:
+::warning::Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[sdk] 1 error
+    [error]
+        path: __package__.yml -> service -> endpoints -> getGlaze -> examples[0] -> response
+        issue: Expected example to be an object. Example is: "satin"
+
+Found 1 error and 0 warnings in 0.002 seconds.
+::error::Found 1 error and 0 warnings in 0.002 seconds.
+
 generate exit: 1
 Warnings for generators.yml:
 ::warning::Warnings for generators.yml:
 	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
 ::warning::	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
-[api]: Writing preview to <tmp>/preview
+[api]: Writing preview to <workspace>/preview
 [api]: python-sdk Started.
 [api]: python-sdk fernapi/fern-python-sdk Started.
 [api]: python-sdk __package__.yml -> service -> endpoints -> getGlaze -> examples[0] -> response
@@ -12,8 +25,7 @@ Warnings for generators.yml:
                   [error] Expected example to be an object. Example is: "satin"
                   
 ::error title=[api]%3A python-sdk::__package__.yml -> service -> endpoints -> getGlaze -> examples[0] -> response%0A__package__.yml%0A[error] Expected example to be an object. Example is: "satin"
-[api]: python-sdk Found 1 errors and 0 warnings in 0.640 seconds.
-::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.640 seconds.
+[api]: python-sdk Found 1 errors and 0 warnings in 0.400 seconds.
+::error title=[api]%3A python-sdk::Found 1 errors and 0 warnings in 0.400 seconds.
 [api]: python-sdk Failed.
 [api]: python-sdk fernapi/fern-python-sdk Failed.
-generate-fern-fixture: fern generate (python-sdk@5.20.0, packaged) exited 1 — fix the cause Fern printed above, then re-run

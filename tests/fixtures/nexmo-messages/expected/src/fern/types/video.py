@@ -10,7 +10,7 @@ from .video_video import VideoVideo
 
 
 class Video(BaseMessageType):
-    message_type: typing.Optional[VideoMessageType] = pydantic.Field(default=None)
+    message_type: VideoMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `video` in this field
     """

@@ -53,7 +53,7 @@ class LayersClient:
         from fern import FernApi
 
         client = FernApi(
-            "v2",
+            edition="v2",
         )
         client.layers.create_layer(
             title="title",
@@ -81,7 +81,7 @@ class LayersClient:
         from fern import FernApi
 
         client = FernApi(
-            "v2",
+            edition="v2",
         )
         client.layers.get_layer(
             layer_id="layer_id",
@@ -135,7 +135,7 @@ class AsyncLayersClient:
         from fern import AsyncFernApi
 
         client = AsyncFernApi(
-            "v2",
+            edition="v2",
         )
 
 
@@ -171,7 +171,7 @@ class AsyncLayersClient:
         from fern import AsyncFernApi
 
         client = AsyncFernApi(
-            "v2",
+            edition="v2",
         )
 
 

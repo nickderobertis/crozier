@@ -121,10 +121,10 @@ class RawRemoteClient:
         self,
         fid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CallbackRef]:
@@ -136,14 +136,14 @@ class RawRemoteClient:
         fid : str
             Resource is related to this fleet ID only.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -252,10 +252,10 @@ class RawRemoteClient:
         fid: str,
         cbid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> HttpResponse[CallbackRef]:
@@ -271,14 +271,14 @@ class RawRemoteClient:
         cbid : str
             The remote callback ID.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -780,10 +780,10 @@ class AsyncRawRemoteClient:
         self,
         fid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CallbackRef]:
@@ -795,14 +795,14 @@ class AsyncRawRemoteClient:
         fid : str
             Resource is related to this fleet ID only.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 
@@ -911,10 +911,10 @@ class AsyncRawRemoteClient:
         fid: str,
         cbid: str,
         *,
+        callback: RemoteCallbackSubscribeCallback,
         remote_types: RemoteTypes,
         label: typing.Optional[str] = OMIT,
         retry_policy: typing.Optional[RemoteCallbackSubscribeRetryPolicy] = OMIT,
-        callback: typing.Optional[RemoteCallbackSubscribeCallback] = OMIT,
         batch_notify: typing.Optional[CallbackSubscribeBatchNotify] = OMIT,
         request_options: typing.Optional[RequestOptions] = None,
     ) -> AsyncHttpResponse[CallbackRef]:
@@ -930,14 +930,14 @@ class AsyncRawRemoteClient:
         cbid : str
             The remote callback ID.
 
+        callback : RemoteCallbackSubscribeCallback
+
         remote_types : RemoteTypes
 
         label : typing.Optional[str]
 
         retry_policy : typing.Optional[RemoteCallbackSubscribeRetryPolicy]
             The retry policy to apply when notification failed.
-
-        callback : typing.Optional[RemoteCallbackSubscribeCallback]
 
         batch_notify : typing.Optional[CallbackSubscribeBatchNotify]
 

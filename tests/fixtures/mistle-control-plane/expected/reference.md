@@ -197,6 +197,7 @@ client.internal.post_internal_integration_credentials_resolve_target_secrets(
     targets=[
         PostInternalIntegrationCredentialsResolveTargetSecretsRequestTargetsItem(
             target_key="targetKey",
+            encrypted_secrets=None,
         )
     ],
 )

@@ -16,12 +16,13 @@ its `/v1/branches/{branch_id_or_ref}` operations.
 
 ## Fern's output
 
-Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in the workspace
+Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in the workspace
 `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (`organization: fern`,
 `pydantic_config.enum_type: python_enums`, `fern generate --group python-sdk
 --local --preview`), exits 0; the comment-stripped tree is the case's
-`fern-expected/`. Its `README.md`, `reference.md` and both `get_dock`
-docstrings pass `dock_id_or_code="dock_id_or_code"`.
+`fern-expected/`. Its `README.md` (lines 44 and 64), `reference.md` (line 23)
+and both `get_dock` docstrings (`src/fern/docks/client.py` lines 50 and 101)
+pass `dock_id_or_code="dock_id_or_code"`.
 
 ## Both sides are valid; crozier's documents the declared example
 
@@ -39,7 +40,7 @@ Validating the declared example against the parameter's schema with
 `jsonschema` 4.26.0:
 
 ```text
-dock_id_or_code example 'northbasin' valid against {"anyOf": [{"type": "string", "minLength": 4, "maxLength": 16, "pattern": "^[a-z]+$", "example": "northbasin"}, {"type": "string", "format": "uuid"}]}
+dock_id_or_code example 'northbasin' valid against {"example": "northbasin", "anyOf": [{"type": "string", "minLength": 4, "maxLength": 16, "pattern": "^[a-z]+$", "example": "northbasin"}, {"type": "string", "format": "uuid"}]}
 ```
 
 Fern's placeholder also binds to the `str` annotation, so neither call is a

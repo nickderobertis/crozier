@@ -8,8 +8,8 @@ from ...types.scheduled_message import ScheduledMessage
 
 
 class GetScheduledMessagesResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     scheduled_messages: typing.Optional[typing.List[ScheduledMessage]] = pydantic.Field(default=None)
     """

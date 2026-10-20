@@ -43,7 +43,6 @@ client = FernApi(
 )
 
 client.products.create(
-    prefer="return=minimal",
     name="Video Streaming Service",
     description="Video streaming service",
     type=ProductRequestPostType.SERVICE,
@@ -83,7 +82,6 @@ client = AsyncFernApi(
 
 async def main() -> None:
     await client.products.create(
-        prefer="return=minimal",
         name="Video Streaming Service",
         description="Video streaming service",
         type=ProductRequestPostType.SERVICE,

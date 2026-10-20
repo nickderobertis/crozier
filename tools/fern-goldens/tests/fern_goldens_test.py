@@ -282,6 +282,12 @@ class GoldenOverlayReductionTests(unittest.TestCase):
                 self.assertTrue((self.tree / "src" / "client.py").is_file(), "a refused run reduced the tree")
 
 
+# The overlay suite's goldens record these stand-in generator versions, not the
+# certified pair: the script copies whatever version a golden records.
+STAND_IN = "4.3.17"
+NEWER_STAND_IN = "4.4.0"
+
+
 @unittest.skipIf(os.name == "nt", "Fern golden workflow scripts run on Linux")
 class FernOverlayGoldensTests(unittest.TestCase):
     """`tools/fern-goldens/fern-overlay-goldens.sh` over a synthetic repository root: the
@@ -295,7 +301,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         scripts = self.root / "scripts"
         scripts.mkdir(parents=True)
         mirror(self.root, "tools/fern-goldens/fern-overlay-goldens.sh", "scripts/lib.sh")
-        pin = {"fern_python_sdk_version": "4.3.17"}
+        pin = {"fern_python_sdk_version": STAND_IN}
         for fixture in ("eos.local", "alpha", "beta"):
             expected = self.root / "tests" / "fixtures" / fixture / "expected"
             expected.mkdir(parents=True)
@@ -349,7 +355,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             result.stdout,
-            "generated alpha/expected-literals, beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n",
+            f"generated alpha/expected-literals, beta/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n",
         )
         for fixture in ("alpha", "beta"):
             golden = self.root / "tests" / "fixtures" / fixture / "expected-literals"
@@ -367,7 +373,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn(f"(mv {stage}/expected-literals ", result.stderr)
         self.assertIn(f"discard it (rm -rf {stage})", result.stderr)
         self.assertFalse((self.root / "tests" / "fixtures" / "alpha" / "expected-literals").exists())
-        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
+        self.assertEqual(result.stdout, f"generated beta/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
 
     def test_a_failed_generation_names_its_log_and_the_command_that_retries_it(self) -> None:
         result = self.run_overlay("alpha", "beta", fail_generate="alpha")
@@ -382,7 +388,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
             result.stderr,
         )
         self.assertFalse(list((self.root / "tests" / "fixtures" / "alpha").glob(".fern-overlay-stage.*")))
-        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
+        self.assertEqual(result.stdout, f"generated beta/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
 
     def test_a_stage_that_cannot_be_made_names_the_step_and_the_fix(self) -> None:
         """The failing `mktemp` runs in an `xargs` worker, a child shell: the report
@@ -399,13 +405,13 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertRegex(result.stderr, r"fern-overlay-goldens: line \d+: 'mktemp -d [^']*' failed \(exit 1\)")
         self.assertIn("then re-run this script for the fixtures that failed", result.stderr)
-        self.assertEqual(result.stdout, "generated beta/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
+        self.assertEqual(result.stdout, f"generated beta/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
 
     def test_a_pinned_rows_fetch_that_fails_reports_its_cause_and_the_retry(self) -> None:
         fixtures = self.root / "tests" / "fixtures"
         pinned = fixtures / "pinned" / "expected"
         pinned.mkdir(parents=True)
-        (pinned / STATE).write_text(json.dumps({"fern_python_sdk_version": "4.3.17"}), encoding="utf-8")
+        (pinned / STATE).write_text(json.dumps({"fern_python_sdk_version": STAND_IN}), encoding="utf-8")
         (fixtures / "corpus-remote-ref-pins.tsv").write_text("pinned\tpinned\n", encoding="utf-8")
         stubs = self.root / "stub-bin"
         stubs.mkdir()
@@ -434,14 +440,14 @@ class FernOverlayGoldensTests(unittest.TestCase):
 
     def test_fixtures_at_different_fern_pins_name_each_pin_in_the_summary(self) -> None:
         (self.root / "tests" / "fixtures" / "beta" / "expected" / STATE).write_text(
-            json.dumps({"fern_python_sdk_version": "4.4.0"}), encoding="utf-8"
+            json.dumps({"fern_python_sdk_version": NEWER_STAND_IN}), encoding="utf-8"
         )
         result = self.run_overlay("alpha", "beta")
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(
             result.stdout,
-            "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17,"
-            " beta/expected-literals at fernapi/fern-python-sdk:4.4.0\n",
+            f"generated alpha/expected-literals at fernapi/fern-python-sdk:{STAND_IN},"
+            f" beta/expected-literals at fernapi/fern-python-sdk:{NEWER_STAND_IN}\n",
         )
 
     def test_a_refused_traversal_name_is_never_read_as_a_result(self) -> None:
@@ -452,7 +458,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         result = self.run_overlay("../planted", "alpha", TMPDIR=str(scratch))
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn("../planted: invalid fixture name", result.stderr)
-        self.assertEqual(result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
+        self.assertEqual(result.stdout, f"generated alpha/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
 
     def test_each_refused_fixture_names_its_fix_and_the_rest_still_generate(self) -> None:
         fixtures = self.root / "tests" / "fixtures"
@@ -470,7 +476,7 @@ class FernOverlayGoldensTests(unittest.TestCase):
         self.assertIn("tools/fern-goldens/generate-fern-fixture.sh bare", result.stderr)
         self.assertIn("beta: unreadable expected/.crozier-fern-golden.json — restore it", result.stderr)
         self.assertIn("git checkout -- tests/fixtures/beta/expected/.crozier-fern-golden.json", result.stderr)
-        self.assertEqual(result.stdout, "generated alpha/expected-literals at fernapi/fern-python-sdk:4.3.17\n")
+        self.assertEqual(result.stdout, f"generated alpha/expected-literals at fernapi/fern-python-sdk:{STAND_IN}\n")
 
 
 if __name__ == "__main__":

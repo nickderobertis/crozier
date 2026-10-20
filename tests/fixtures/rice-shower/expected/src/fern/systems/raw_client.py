@@ -15,6 +15,10 @@ from ..errors.conflict_error import ConflictError
 from ..errors.internal_server_error import InternalServerError
 from ..errors.not_found_error import NotFoundError
 from ..errors.unprocessable_entity_error import UnprocessableEntityError
+from ..types.conflict_error_body import ConflictErrorBody
+from ..types.internal_server_error_body import InternalServerErrorBody
+from ..types.not_found_error_body import NotFoundErrorBody
+from ..types.unprocessable_entity_error_body import UnprocessableEntityErrorBody
 from .types.create_system_request_heaters_item import CreateSystemRequestHeatersItem
 from .types.create_system_request_thermos_item import CreateSystemRequestThermosItem
 from .types.create_system_response import CreateSystemResponse
@@ -158,9 +162,9 @@ class RawSystemsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ConflictErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ConflictErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -169,9 +173,9 @@ class RawSystemsClient:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -222,9 +226,9 @@ class RawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -316,9 +320,9 @@ class RawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -327,9 +331,9 @@ class RawSystemsClient:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -338,9 +342,9 @@ class RawSystemsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -391,9 +395,9 @@ class RawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -536,9 +540,9 @@ class AsyncRawSystemsClient:
                 raise ConflictError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        ConflictErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=ConflictErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -547,9 +551,9 @@ class AsyncRawSystemsClient:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -600,9 +604,9 @@ class AsyncRawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -694,9 +698,9 @@ class AsyncRawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -705,9 +709,9 @@ class AsyncRawSystemsClient:
                 raise UnprocessableEntityError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        UnprocessableEntityErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=UnprocessableEntityErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -716,9 +720,9 @@ class AsyncRawSystemsClient:
                 raise InternalServerError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        InternalServerErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=InternalServerErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -769,9 +773,9 @@ class AsyncRawSystemsClient:
                 raise NotFoundError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        NotFoundErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=NotFoundErrorBody,
                             object_=_response.json(),
                         ),
                     ),

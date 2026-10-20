@@ -71,7 +71,7 @@ class FernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        relay_pass: typing.Optional[str] = os.getenv("STATION_TOKEN"),
+        relay_pass: typing.Optional[str] = None,
         api_key: str,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
@@ -84,6 +84,7 @@ class FernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        relay_pass = relay_pass if relay_pass is not None else os.getenv("STATION_TOKEN")
         if relay_pass is None:
             raise ApiError(
                 body="The client must be instantiated be either passing in relay_pass or setting STATION_TOKEN"
@@ -220,7 +221,7 @@ class AsyncFernApi:
         *,
         base_url: typing.Optional[str] = None,
         environment: FernApiEnvironment = FernApiEnvironment.DEFAULT,
-        relay_pass: typing.Optional[str] = os.getenv("STATION_TOKEN"),
+        relay_pass: typing.Optional[str] = None,
         api_key: str,
         headers: typing.Optional[typing.Dict[str, str]] = None,
         timeout: typing.Optional[float] = None,
@@ -233,6 +234,7 @@ class AsyncFernApi:
     ):
         _defaulted_timeout = timeout if timeout is not None else 60 if httpx_client is None else None
         _defaulted_max_retries = max_retries if max_retries is not None else 2
+        relay_pass = relay_pass if relay_pass is not None else os.getenv("STATION_TOKEN")
         if relay_pass is None:
             raise ApiError(
                 body="The client must be instantiated be either passing in relay_pass or setting STATION_TOKEN"

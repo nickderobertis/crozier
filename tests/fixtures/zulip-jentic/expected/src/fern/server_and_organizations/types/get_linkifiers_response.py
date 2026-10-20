@@ -8,8 +8,8 @@ from .get_linkifiers_response_linkifiers_item import GetLinkifiersResponseLinkif
 
 
 class GetLinkifiersResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     linkifiers: typing.Optional[typing.List[GetLinkifiersResponseLinkifiersItem]] = pydantic.Field(default=None)
     """

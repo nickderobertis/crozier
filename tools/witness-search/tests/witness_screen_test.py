@@ -14,6 +14,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -819,9 +820,9 @@ class GoldenFernPinsTests(unittest.TestCase):
 
     def test_a_golden_metadata_record_that_is_no_pin_set_is_refused(self) -> None:
         good = {
-            "cliVersion": "5.20.0",
+            "cliVersion": "5.20.0",  # certified-pair: stand-in
             "generatorName": "fernapi/fern-python-sdk",
-            "generatorVersion": "4.3.17",
+            "generatorVersion": "4.3.17",  # certified-pair: stand-in
             "generatorConfig": {"enum_type": "python_enums"},
         }
         for label, text, message in (
@@ -903,6 +904,429 @@ class GoldenFernPinsTests(unittest.TestCase):
                 if text is not None:
                     self.assertIn("tests/fixtures/alpha/expected/.fern/metadata.json", refused.stderr)
                 self.assertFalse((surface / "witness-search-sourcegraph" / "screens.jsonl").exists())
+
+
+@unittest.skipIf(
+    os.name == "nt", "a bare `fern` resolves only as fern.exe on Windows, which a script cannot stand in for"
+)
+class HistoricalPairTests(unittest.TestCase):
+    """A screen measured at the certified pair, read after the corpus moves to the next.
+
+    The real stage screens a candidate at the corpus's own pins. The retarget is
+    a copy of the stage whose goldens' `.fern/metadata.json`, its pin source,
+    names a later pair: there the row is refused until `historical` labels it,
+    and is then held whole at the pair it names.
+    """
+
+    LATER = ("9.0.0", "fernapi/fern-python-sdk", "9.1.0")  # certified-pair: stand-in
+
+    def setUp(self) -> None:
+        scratch = tempfile.TemporaryDirectory(prefix="witness-screen-pair-")
+        self.addCleanup(scratch.cleanup)
+        self.surface = Path(scratch.name) / "surface"
+        self.evidence = self.surface / "witness-search-sourcegraph"
+        self.evidence.mkdir(parents=True)
+        (self.surface / "witness-search-keys.tsv").write_text(
+            "key\tselector\tregion\tcensus_status\nsample-shape\tschema:x\tschemas.md\tsupported\n", encoding="utf-8"
+        )
+        # The retargeted stage: the same scripts, over goldens at the later pair.
+        self.later = Path(scratch.name) / "later"
+        for relative in (
+            *(path.relative_to(REPO) for path in (REPO / "tools" / "witness-search").glob("*.py")),
+            *(path.relative_to(REPO) for path in (REPO / "tools" / "corpus").glob("*.py")),
+            Path("tools/surface-census/openapi-surface-census.py"),
+            Path("tools/surface-census/witness-search-region-keys.py"),
+            Path("docs/corpus-licensing.md"),
+        ):
+            (self.later / relative).parent.mkdir(parents=True, exist_ok=True)
+            (self.later / relative).write_bytes((REPO / relative).read_bytes())
+        metadata = self.later / "tests/fixtures/alpha/expected/.fern/metadata.json"
+        metadata.parent.mkdir(parents=True)
+        cli, generator, version = self.LATER
+        metadata.write_text(
+            json.dumps({"cliVersion": cli, "generatorName": generator, "generatorVersion": version}), encoding="utf-8"
+        )
+        server = _RawServer(("127.0.0.1", 0), _Raw)
+        server.requests = []
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        fake_bin = Path(scratch.name) / "bin"
+        fake_bin.mkdir()
+        (fake_bin / "fern").write_text(f"#!{sys.executable}\n" + textwrap.dedent(FERN), encoding="utf-8", newline="\n")
+        os.chmod(fake_bin / "fern", 0o755)
+        self.env = {
+            **os.environ,
+            "PATH": f"{fake_bin}{os.pathsep}{os.environ['PATH']}",
+            "FERN_STUB": "pass",
+            "CROZIER_RAW_GITHUB_URL": f"http://127.0.0.1:{server.server_port}",
+        }
+
+    def run_stage(self, root: Path, *args: str, env_stub: str = "pass") -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(root / "tools/witness-search/witness_screen.py"), *args],
+            env={**self.env, "FERN_STUB": env_stub},
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=300,
+        )
+
+    def check(self, root: Path) -> subprocess.CompletedProcess[str]:
+        """The legacy index's read of the ledger, as `root`'s copy of the index makes it."""
+        read = (
+            "import importlib.util, sys\n"
+            "from pathlib import Path\n"
+            "spec = importlib.util.spec_from_file_location('index', sys.argv[1])\n"
+            "index = importlib.util.module_from_spec(spec)\n"
+            "sys.modules['index'] = index\n"
+            "spec.loader.exec_module(index)\n"
+            "try:\n"
+            "    index.jsonl(Path(sys.argv[2]))\n"
+            "except ValueError as error:\n"
+            "    sys.exit(str(error))\n"
+        )
+        return subprocess.run(
+            [
+                sys.executable,
+                "-c",
+                read,
+                str(root / "tools/witness-search/witness-search-github-index.py"),
+                str(self.screens()),
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=120,
+        )
+
+    def screens(self) -> Path:
+        return self.evidence / "screens.jsonl"
+
+    def test_a_screen_from_an_earlier_pair_is_refused_until_labelled_then_held_at_that_pair(self) -> None:
+        filed = self.run_stage(
+            REPO,
+            "screen",
+            "--source",
+            "sourcegraph",
+            "--key",
+            "sample-shape",
+            "--repository",
+            "acme/shop",
+            "--commit",
+            COMMIT,
+            "--path",
+            "openapi.yaml",
+            "--evidence-root",
+            str(self.surface),
+            "--timeout",
+            "60",
+            "--disposition",
+            "witness-found",
+        )
+        self.assertEqual(0, filed.returncode, filed.stderr)
+        before = self.screens().read_bytes()
+        # Nothing to label while the row is a measurement at the corpus pins.
+        self.assertEqual(0, self.run_stage(REPO, "historical", "--evidence-root", str(self.surface)).returncode)
+        self.assertEqual(before, self.screens().read_bytes())
+        live = self.check(REPO)
+        self.assertEqual(0, live.returncode, live.stderr)
+
+        refused = self.check(self.later)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("the fern screen's run at the corpus pins (9.0.0, fernapi/fern-python-sdk 9.1.0)", refused.stderr)
+
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 1 screen(s)", labelled.stdout)
+        [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        cli, generator, version = SCREEN.current_pins()
+        self.assertEqual(
+            f"measured at an earlier certified pair, Fern CLI {cli} / {generator} {version}",
+            row[SCREEN.HISTORICAL_PAIR],
+        )
+        self.assertEqual(json.loads(before), {k: v for k, v in row.items() if k != SCREEN.HISTORICAL_PAIR})
+        passing = self.check(self.later)
+        self.assertEqual(0, passing.returncode, passing.stderr)
+        # A second pass finds nothing left to label.
+        again = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(("", 0), (again.stdout, again.returncode))
+
+        # The label holds only as the pair its record ran at, over a record still whole.
+        for label, change, message in (
+            (
+                "another pair named",
+                lambda r: {**r, SCREEN.HISTORICAL_PAIR: r[SCREEN.HISTORICAL_PAIR].replace(cli, "0.0.1")},
+                "not the pair its record ran at",
+            ),
+            (
+                "an outcome its run did not yield",
+                lambda r: {**r, "fern": "failed: stated, not measured"},
+                "is not the measured fern outcome",
+            ),
+            (
+                "no measured record",
+                lambda r: {k: v for k, v in r.items() if k != "measured"},
+                "label on a row with no measured record",
+            ),
+        ):
+            with self.subTest(label):
+                self.screens().write_text(json.dumps(change(row)) + "\n", encoding="utf-8", newline="\n")
+                tampered = self.check(self.later)
+                self.assertEqual(1, tampered.returncode, tampered.stderr)
+                self.assertIn(message, tampered.stderr)
+
+        # Read where its pair is still the corpus's, the label would hide a live measurement.
+        self.screens().write_text(json.dumps(row) + "\n", encoding="utf-8", newline="\n")
+        current = self.check(REPO)
+        self.assertEqual(1, current.returncode, current.stderr)
+        self.assertIn("a current measurement is never history", current.stderr)
+
+    def file(self, repository: str, stub: str, *args: str) -> None:
+        filed = self.run_stage(
+            REPO,
+            "screen",
+            "--source",
+            "sourcegraph",
+            "--key",
+            "sample-shape",
+            "--repository",
+            repository,
+            "--commit",
+            COMMIT,
+            "--path",
+            "openapi.yaml",
+            "--evidence-root",
+            str(self.surface),
+            "--timeout",
+            "60",
+            *args,
+            env_stub=stub,
+        )
+        self.assertEqual(0, filed.returncode, filed.stderr)
+
+    def test_a_mixed_ledger_labels_exactly_its_earlier_pair_runs_and_keeps_every_other_line(self) -> None:
+        # A row filed before the stage, with no record and no date: history already.
+        pre_stage = json.dumps(
+            {
+                "source": "sourcegraph",
+                "repository": "acme/old",
+                "path": "openapi.yaml",
+                "commit": COMMIT,
+                "keys": ["sample-shape"],
+                "license": "passed",
+                "ref": "passed",
+                "fern": "passed",
+                "disposition": "witness-found",
+            }
+        )
+        # Written with a CRLF ending, which labelling must leave as it is.
+        self.screens().write_bytes(pre_stage.encode("utf-8") + b"\r\n")
+        self.file("acme/shop", "refuse")  # Fern refused it: measured, rejected
+        self.file("acme/eula", "pass")  # the licence failed: Fern never ran, no pins
+        self.file("acme/declared", "generate-fail")
+        # A labelled row keeps its CRLF ending; the last, with none, gains a newline.
+        lines = self.screens().read_bytes().splitlines(keepends=True)
+        lines[1] = lines[1].rstrip(b"\n") + b"\r\n"
+        lines[3] = lines[3].rstrip(b"\n")
+        self.screens().write_bytes(b"".join(lines))
+        before = self.screens().read_bytes().splitlines(keepends=True)
+        self.assertEqual(4, len(before))
+        self.assertTrue(before[0].endswith(b"\r\n"))
+
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 2 screen(s)", labelled.stdout)
+        after = self.screens().read_bytes().splitlines(keepends=True)
+        # The pre-stage row and the row whose Fern screen never ran stay byte for byte.
+        self.assertEqual((before[0], before[2]), (after[0], after[2]))
+        self.assertEqual((b"\r\n", b"\n"), (after[1][-2:], after[3][-1:]))
+        self.assertFalse(after[3].endswith(b"\r\n"))
+        for number in (1, 3):
+            row = json.loads(after[number])
+            self.assertIn(SCREEN.HISTORICAL_PAIR, row)
+            self.assertTrue(row["fern"].startswith(f"failed: {SCREEN.fern_label()} fern "), row["fern"])
+        # Each failed run is held whole at the pair it ran at, its outcome worded at that pair.
+        passing = self.check(self.later)
+        self.assertEqual(0, passing.returncode, passing.stderr)
+
+        # A label on the row whose Fern screen never ran names no pair it could be held to.
+        unpinned = {**json.loads(after[2]), SCREEN.HISTORICAL_PAIR: json.loads(after[1])[SCREEN.HISTORICAL_PAIR]}
+        self.screens().write_text(json.dumps(unpinned) + "\n", encoding="utf-8", newline="\n")
+        refused = self.check(self.later)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("ran no Fern screen at a pair", refused.stderr)
+
+    def test_an_arm_search_ledger_is_labelled_and_held_under_its_own_field_names(self) -> None:
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        [legacy] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        # The same measurement as an arm search files it: `licence`, under its source's directory.
+        arm = self.surface / "golden-reach-witnesses" / "sourcegraph"
+        shutil.copytree(self.evidence / "screens", arm / "screens")
+        row = {k: v for k, v in legacy.items() if k != "license"} | {
+            "licence": legacy["license"],
+            "key": "sample-shape",
+            "candidate": "acme/shop:openapi.yaml",
+        }
+        (arm / "screens.jsonl").write_text(json.dumps(row, sort_keys=True) + "\n", encoding="utf-8", newline="\n")
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 2 screen(s)", labelled.stdout)
+        [after] = [json.loads(line) for line in (arm / "screens.jsonl").read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(row, {k: v for k, v in after.items() if k != SCREEN.HISTORICAL_PAIR})
+        # Its `licence` field is the one held to the measured outcome.
+        (arm / "screens.jsonl").write_text(
+            json.dumps({**row, "licence": "failed: stated"}, sort_keys=True) + "\n", encoding="utf-8", newline="\n"
+        )
+        refused = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        self.assertIn("its licence 'failed: stated' is not the measured licence outcome", refused.stderr)
+
+    def test_a_numbered_ledger_part_is_labelled_as_the_index_reads_it(self) -> None:
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        filed = self.screens().read_bytes()
+        # The row moves to the ledger's first numbered part; its own file holds a pre-stage row.
+        part = self.evidence / "screens.001.jsonl"
+        part.write_bytes(filed)
+        self.screens().write_text(
+            json.dumps(
+                {
+                    "source": "sourcegraph",
+                    "repository": "acme/old",
+                    "path": "openapi.yaml",
+                    "commit": COMMIT,
+                    "keys": ["sample-shape"],
+                    "license": "passed",
+                    "ref": "passed",
+                    "fern": "passed",
+                    "disposition": "witness-found",
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        refused = self.check(self.later)
+        self.assertEqual(1, refused.returncode, refused.stderr)
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        self.assertIn("labelled 1 screen(s)", labelled.stdout)
+        self.assertIn(SCREEN.HISTORICAL_PAIR, json.loads(part.read_text(encoding="utf-8")))
+        passing = self.check(self.later)
+        self.assertEqual(0, passing.returncode, passing.stderr)
+
+    def test_historical_refuses_a_root_or_a_line_it_cannot_read_and_writes_nothing(self) -> None:
+        missing = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface / "absent"))
+        self.assertEqual(1, missing.returncode)
+        self.assertIn("is no directory", missing.stderr)
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        # Sorted after the readable ledger, which owes a label: nothing is written before it fails.
+        other = self.surface / "witness-search-vendor-portals"
+        other.mkdir()
+        for label, text in (("not JSON", "{oops\n"), ("no object", "[1, 2]\n")):
+            with self.subTest(label):
+                (other / "screens.jsonl").write_text(text, encoding="utf-8", newline="\n")
+                before = self.screens().read_bytes()
+                refused = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+                self.assertEqual(1, refused.returncode)
+                self.assertIn("witness-search-vendor-portals/screens.jsonl:1 is no JSON object", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+                self.assertEqual(before, self.screens().read_bytes())
+        (other / "screens.jsonl").unlink()
+        # A record no longer whole is not labelled history: its committed log is gone.
+        [filed] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        log = self.evidence / filed["measured"]["fern"]["log"]
+        kept = log.read_bytes()
+        log.unlink()
+        before = self.screens().read_bytes()
+        broken = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(1, broken.returncode, broken.stderr)
+        self.assertIn("which is not committed", broken.stderr)
+        self.assertEqual(before, self.screens().read_bytes())
+        log.write_bytes(kept)
+        # A label already there is held as `--check` holds it, never passed over.
+        [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        for label, labelled_row, message in (
+            ("on the current pair", {**row, SCREEN.HISTORICAL_PAIR: "measured at some pair"}, None),
+            (
+                "with no record",
+                {k: v for k, v in row.items() if k != "measured"} | {SCREEN.HISTORICAL_PAIR: "x"},
+                "with no measured record",
+            ),
+        ):
+            with self.subTest(label):
+                self.screens().write_text(json.dumps(labelled_row) + "\n", encoding="utf-8", newline="\n")
+                refused = self.run_stage(REPO, "historical", "--evidence-root", str(self.surface))
+                self.assertEqual(1, refused.returncode, refused.stderr)
+                self.assertIn(message or "a current measurement is never history", refused.stderr)
+                self.assertNotIn("Traceback", refused.stderr)
+
+    def test_the_index_reads_a_labelled_screen_as_history_of_its_pair(self) -> None:
+        self.file("acme/shop", "pass", "--disposition", "witness-found")
+        labelled = self.run_stage(self.later, "historical", "--evidence-root", str(self.surface))
+        self.assertEqual(0, labelled.returncode, labelled.stderr)
+        [row] = [json.loads(line) for line in self.screens().read_text(encoding="utf-8").splitlines()]
+        # The rest of a legacy evidence root the index reads: each source's keys,
+        # the publisher set, the declaring candidate, and a region citing the search.
+        for source in ("github-code-search", "github-publisher-trees", "sourcegraph"):
+            directory = self.surface / f"witness-search-{source}"
+            directory.mkdir(exist_ok=True)
+            (directory / "keys.json").write_text(
+                json.dumps({"keys": {"sample-shape": {"selector": "schema.additionalProperties=false"}}}),
+                encoding="utf-8",
+                newline="\n",
+            )
+        (self.surface / "witness-search-github-publisher-trees" / "publisher-set.json").write_text(
+            json.dumps({"publishers": []}), encoding="utf-8", newline="\n"
+        )
+        (self.evidence / "candidates.jsonl").write_text(
+            json.dumps(
+                {
+                    "repository": "acme/shop",
+                    "path": "openapi.yaml",
+                    "commit": COMMIT,
+                    "sha256": row["sha256"],
+                    "source": "sourcegraph",
+                    "key": "sample-shape",
+                    "disposition": "declares",
+                    "selector_count": 1,
+                }
+            )
+            + "\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        region = self.surface / "schemas.md"
+        region.write_text(
+            "# Schemas\n\n### Witness search (exhaustive)\n\n| key | outcome | search | note |\n|---|---|---|---|\n"
+            "| `sample-shape` | `witness-found` | sourcegraph: 9 candidates (9 witness-found, 0 rejected, "
+            "0 outstanding, 0 not-owed) [records](witness-search-sourcegraph/records.tsv) witness "
+            "`acme/shop:openapi.yaml` at `x` | kept |\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+        indexed = subprocess.run(
+            [
+                sys.executable,
+                str(self.later / "tools/witness-search/witness-search-github-index.py"),
+                "--evidence-root",
+                str(self.surface),
+            ],
+            env=self.env,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            timeout=120,
+        )
+        self.assertEqual(0, indexed.returncode, indexed.stderr)
+        records = (self.evidence / "records.tsv").read_text(encoding="utf-8")
+        self.assertIn(f"historical screen: {row[SCREEN.HISTORICAL_PAIR]}", records)
+        self.assertIn(
+            "sourcegraph: 1 candidates (1 witness-found, 0 rejected, 0 outstanding, 0 not-owed, "
+            "1 on historical screens)",
+            region.read_text(encoding="utf-8"),
+        )
 
 
 class WindowsNewlineTests(unittest.TestCase):
@@ -1064,7 +1488,7 @@ class CommittedScreenTests(unittest.TestCase):
                 row = json.loads(line)
                 with self.subTest(screens=screens.relative_to(REPO).as_posix(), line=number):
                     self.assertEqual([], SCREEN.row_failures(row, screens.parent, fields))
-                if not SCREEN.unmeasured(row):
+                if not SCREEN.historical(row):
                     measured.append(row["measured"])
         # At least one real candidate's Fern outcome is one pinned Fern produced
         # when the stage ran: its run's exit statuses, at the corpus pins.

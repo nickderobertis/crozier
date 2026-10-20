@@ -64,7 +64,6 @@ if typing.TYPE_CHECKING:
     from .v1hour_project_unbilled_cost import V1HourProjectUnbilledCost
     from .v1hour_project_unbilled_duration import V1HourProjectUnbilledDuration
     from .v1hour_state import V1HourState
-    from .v1hour_state_permissions_item import V1HourStatePermissionsItem
     from .v1hour_timestamps_item import V1HourTimestampsItem
     from .v1hour_user import V1HourUser
     from .v1hour_user_avatar import V1HourUserAvatar
@@ -219,7 +218,6 @@ _dynamic_imports: typing.Dict[str, str] = {
     "V1HourProjectUnbilledCost": ".v1hour_project_unbilled_cost",
     "V1HourProjectUnbilledDuration": ".v1hour_project_unbilled_duration",
     "V1HourState": ".v1hour_state",
-    "V1HourStatePermissionsItem": ".v1hour_state_permissions_item",
     "V1HourTimestampsItem": ".v1hour_timestamps_item",
     "V1HourUser": ".v1hour_user",
     "V1HourUserAvatar": ".v1hour_user_avatar",
@@ -396,7 +394,6 @@ __all__ = [
     "V1HourProjectUnbilledCost",
     "V1HourProjectUnbilledDuration",
     "V1HourState",
-    "V1HourStatePermissionsItem",
     "V1HourTimestampsItem",
     "V1HourUser",
     "V1HourUserAvatar",

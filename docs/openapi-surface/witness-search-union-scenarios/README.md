@@ -119,16 +119,22 @@ golden reaches (the last three rows' witnesses, rows 1201, 305, 194, 196 and
 329 among them, declare their shape on component unions, which lower through
 the component builder instead):
 
+The searched shape is the documents', not an arm's: at Fern CLI 5.163.1 with
+fern-python-sdk 5.41.3 the `merged_mapping_union` arm handles a mapping target
+that is a union of objects, which the shape names, so its line was added at
+that move beside the two arms the shape reached before.
+
 | key | verdict | arm | shape | renewed outcome |
 |---|---|---|---|---|
 | `nullable` | `search-incomplete` | `src/ir.rs::Builder::variant_ref[if is_plain_scalar\(variant\) && variant\.nullable == Some\(true\)]` | `union-member-nullability-dropped` | none-registrable |
-| `nullable` | `search-incomplete` | `src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | `nullable-union-component-optional-on-last-member` | none-registrable |
+| `nullable` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]` | `nullable-union-component-optional-on-last-member` | none-registrable |
 | `oneof` | `search-incomplete` | `src/ir.rs::build_endpoint[Some\(if dropped_null \{]` | `union-null-member-typed-any` | none-registrable |
 | `property-oneof-residual` | `search-incomplete` | `src/ir.rs::untagged_inline_discriminator[if untagged \{]` | `inline-oneof-discriminator-without-tag-values` | none-registrable |
 | `additional-properties-schema` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(members\) = union_value \{]` | `map-value-union-not-hoisted` | none-registrable |
+| `discriminator-mapping` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if let Some\(merged\) = merged_mapping_union\(target\x2c &property_name\x2c self\.schemas\) \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
 | `discriminator-mapping` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if union_target \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
 | `discriminator-mapping` | `search-incomplete` | `src/emit.rs::ExampleCtx::named_value_inner[Some\(m\) if m\.wrapped => \{]` | `nested-oneof-mapping-target-wrapped-as-value` | none-registrable |
-| `oneof-sole-non-null-member` | `search-incomplete` | `src/ir.rs::Builder::add_named[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | `nullable-single-inline-object-oneof-component` | none-registrable |
+| `oneof-sole-non-null-member` | `search-incomplete` | `src/ir.rs::Builder::add_named_shape[if variants\.len\(\) > 1 && is_inline_object\(only\)]` | `nullable-single-inline-object-oneof-component` | none-registrable |
 | `oneof-discriminated-union` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if !schema\.properties\.is_empty\(\)]` | `oneof-sibling-properties-base-class` | none-registrable |
 | `items-oneof-element` | `search-incomplete` | `src/ir.rs::InlineHoister::hoist_array_item_type[if member\.title\.is_some\(\)$]` | `titled-inline-object-array-item-union-members-any` | none-registrable |
 | `ref-pointer-undeclared-component-head` | `search-incomplete` | `src/ir.rs::Builder::discriminated_union[if all_dangling \{]` | `discriminator-mapping-unresolved-members` | none-registrable |

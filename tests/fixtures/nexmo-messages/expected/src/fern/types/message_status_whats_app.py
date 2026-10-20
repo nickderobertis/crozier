@@ -17,12 +17,12 @@ from .to_number import ToNumber
 
 
 class MessageStatusWhatsApp(UniversalBaseModel):
-    channel: typing.Optional[MessageStatusWhatsAppChannel] = pydantic.Field(default=None)
+    channel: MessageStatusWhatsAppChannel = pydantic.Field()
     """
     The channel sending to.
     """
 
-    status: typing.Optional[MessageStatusWhatsAppStatus] = pydantic.Field(default=None)
+    status: MessageStatusWhatsAppStatus = pydantic.Field()
     """
     The status of the message.
     """

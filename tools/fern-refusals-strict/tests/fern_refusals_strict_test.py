@@ -37,6 +37,7 @@ from fern_refusals_test import (
 
 MEASURE_LOADS = (
     "tools/fern-refusals/fern-refusals.py",
+    "assets/scaffolding/metadata.json",
     "tools/witness-search/witness-search-github.py",
     "tools/witness-search/witness-search-github-index.py",
     "tools/witness-search/witness_screen.py",
@@ -54,7 +55,9 @@ class ScratchCheckout(unittest.TestCase):
     screened by its committed `fern check` log, with the compiled crozier binary
     where `measure` looks for it. The suites below run the REAL script in it."""
 
-    CLASS = "request-property-name-collision"
+    # An evaluated `names` class whose probe Fern still refuses at the pin, so
+    # its committed `fern check` log screens the probe as refused.
+    CLASS = "type-name-collision"
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -182,7 +185,7 @@ class StrictMeasurement(ScratchCheckout):
     def test_measure_records_the_strict_exit_and_build_writes_it(self) -> None:
         measured = self.measure()
         self.assertEqual(measured["digest"], self.digest)
-        # crozier refuses the probe's colliding `name` in both modes, writing nothing.
+        # crozier refuses the probe's colliding type name in both modes, writing nothing.
         self.assertEqual((measured["crozier_exit"], measured["crozier_files"]), ("1", "0"))
         self.assertEqual(measured["crozier_strict_exit"], "1")
         self.assertEqual(self.built_row()[9:12], ["1", "0", "1"])
@@ -298,7 +301,7 @@ class FetchedAndMeasured(ScratchCheckout):
         row = self.measured()[self.served_digest]
         self.assertEqual(row["unretrievable"], "")
         self.assertEqual((row["check_exit"], row["generate_exit"], row["generate_files"]), ("0", "0", "4"))
-        # crozier refuses the probe's colliding `name`, as it does the committed one.
+        # crozier refuses the probe's colliding type name, as it does the committed one.
         self.assertEqual((row["crozier_exit"], row["crozier_files"], row["crozier_strict_exit"]), ("1", "0", "1"))
         for log in (row["check_log"], row["generate_log"]):
             self.assertTrue((self.root / log).is_file(), log)

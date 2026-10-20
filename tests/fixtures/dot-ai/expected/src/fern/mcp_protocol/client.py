@@ -153,7 +153,7 @@ class AsyncMcpProtocolClient:
 
 
         async def main() -> None:
-            response = await client.mcp_protocol.open_mcp_sse_stream()
+            response = client.mcp_protocol.open_mcp_sse_stream()
             async for chunk in response:
                 yield chunk
 

@@ -25,7 +25,7 @@ categories:
 
 What a golden *can* pin is bounded by what Fern implements, and that boundary is
 measured rather than guessed: [`fern-limitations.md`](fern-limitations.md) records
-every limitation Fern 5.20.0 was measured to have — the shapes it discards,
+every limitation Fern was measured to have, at the pair each entry names — the shapes it discards,
 ignores, refuses or matches only by coincidence — with the probe, the emitted
 output and the exit code behind each. Read it before choosing what a new fixture
 should contain.
@@ -69,10 +69,11 @@ exactly, except:
 
 ## Parity status and the residual manifest
 
-**Every registered corpus reproduces its whole committed Fern golden
-byte-for-byte at `fernapi/fern-python-sdk:5.20.0`.** Every `Corpus` in
-`crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list; that file is the measured
-truth, and this document holds the judgment about *why* each shape generates the
+**Every registered corpus but two reproduces its whole committed Fern golden
+byte-for-byte at `fernapi/fern-python-sdk:5.41.3`.** Every `Corpus` in
+`crates/crozier-e2e/tests/e2e.rs` carries an empty `unmatched` list except `komga` and
+`webflow-v2`, which are registered with a measured residual; that file is the
+measured truth, and this document holds the judgment about *why* each shape generates the
 way it does. Per-corpus file counts deliberately live only next to the data they
 describe, so prose here cannot drift away from them.
 
@@ -102,8 +103,8 @@ other missing golden, so removing a tree cannot silently reduce byte-comparison
 coverage.
 
 `calorieninjas.com` is the only such corpus. Its source operation declares no
-`operationId`; Fern 5.20.0 emits unnamed methods (`def (`, `_raw_client.(`) and
-its own Ruff pass then rejects the SDK, so the failure is upstream of crozier —
+`operationId`; Fern 5.20.0 emitted unnamed methods (`def (`, `_raw_client.(`) and
+its own Ruff pass then rejected the SDK (not re-measured at the certified 5.41.3), so the failure is upstream of crozier —
 crozier generates that same spec successfully and *names* the operation. The
 registration is bound to the exact generator version, corpus name/ref/URL, exit
 code, ordered syntax diagnostics with their source lines, Ruff summary, and
@@ -275,7 +276,8 @@ under `ruff` isort. The
 
 **Which parameter examples reach a worked call.** Fern keeps a *parameter-level*
 `example`/`examples` only on a `type: string` parameter, and does so identically
-for query, header and path parameters. Probed directly against Fern 5.20.0: an
+for query, header and path parameters. Probed directly against Fern 5.20.0 (not
+re-probed at the certified pair; the goldens below hold it at 5.41.3): an
 integer or boolean example declared on the parameter never reaches the call, nor
 does a string-*valued* example on an `integer` schema — the gate is the declared
 type, not the example's JSON kind — and a required argument whose example was
@@ -309,7 +311,8 @@ here means matching Fern, not `ruff`.
 
 **What a worked example shows.** Measured with Fern CLI 5.67.1 and
 `fernapi/fern-python-sdk` 5.20.0 on crozier-authored documents varying one
-attribute at a time, and held by the goldens named:
+attribute at a time (not re-measured at the certified pair), and held at CLI
+5.163.1 / 5.41.3 by the goldens named:
 
 - *A required query array* is passed with one sampled item, whatever its item
   type: an enum member, a constructed model, or a string placeholder, except
@@ -421,9 +424,9 @@ The per-corpus measurement lives in the `CORPORA`/`FEATURE_TARGETS` data in
 `crates/crozier-e2e/tests/e2e.rs`, the single source of truth; `just fixtures-gaps` re-measures it.
 The configured `audience-filter`, `audience-filter-strict`, `client-class-name`,
 `pydantic-extra-fields`, and `eos.local-extra-fields-forbid` fixtures are on
-5.20.0 like the rest.
+5.41.3 like the rest.
 `calorieninjas.com` is the accepted exception described earlier: it has no
-golden because 5.20.0 cannot emit valid Python for it, and its former tree had no
+golden because 5.20.0 could not emit valid Python for it, and its former tree had no
 managed provenance, so retaining it would have made byte parity depend on
 unidentified older Fern output. The items below record how each shape generates;
 paths the corpus does not yet exercise are called out inline.
@@ -713,7 +716,7 @@ SDK. All three are closed byte-for-byte against Fern goldens.
    inline remains `typing.Optional[typing.Any]` even though the separate body
    model is emitted. Bodies shared by a status are merged before hoisting so the
    root model is deterministic. The real-world `buildrelay` corpus pins the direct
-   inline case at Fern 5.20.0. Its first measured run diverged in
+   inline case, at Fern 5.20.0 then and at 5.41.3 now. Its first measured run diverged in
    `README.md`, `reference.md`, the root client and environment modules, and—most
    importantly—the `InternalServerError` and jobs raw-client modules where crozier
    used `typing.Any`. Direct inline responses now type both sites as
@@ -737,7 +740,7 @@ SDK. All three are closed byte-for-byte against Fern goldens.
    client yields each chunk with a worked streaming `Examples` block. The chunk stays
    untyped: Fern's OpenAPI importer does not resolve the `x-fern-streaming`
    `chunk-schema-ref` (the same limitation as the OAuth extension), so crozier keys
-   off the content type alone. Fern 5.20 deserializes the untyped chunk through
+   off the content type alone. Fern 5.41.3 deserializes the untyped chunk through
    `parse_sse_obj`; its README/reference snippets show a plain call, while generated
    method docstrings retain the worked iteration loop and the README retains a
    separate `## Streaming` section.
@@ -748,7 +751,7 @@ in the README's own module order — a request body does *not* promote a non-`PO
 operation ahead of that order (corpus row 123 declares no `POST` and anchors its
 README on the document's first `GET`, not on the later `PUT` that carries a
 flattened JSON body). They abbreviate the error-handling/advanced snippets,
-ruff-wrapped at the 88-col snippet width. At 5.20 the abbreviation is purely
+ruff-wrapped at the 88-col snippet width. From 5.20 the abbreviation is purely
 arity-driven — `(...)` whenever the demonstrated method takes any argument, `()`
 only for an argument-free method — which is refresh rule 1 above; the earlier
 body-shape-driven rule was fitted to pre-5.20 goldens. Each shape has a
@@ -991,7 +994,7 @@ such as `basic-auth`, `oauth-client-credentials`, `inline-array-request`, and
    names Fern recognizes: `production` or `sandbox` — so Billie's `Production`
    and `Sandbox` pair generates both members (`buildEnvironments` in Fern's
    `openapi-ir-to-fern`, and its parser's server-name rule). Probed directly
-   against Fern 5.20.0 over one-server documents: `Prod`, `Staging`, `Live`,
+   against Fern 5.20.0 (not re-probed at the certified pair) over one-server documents: `Prod`, `Staging`, `Live`,
    `Test`, `Development`, `Production API`, `Production server` and
    `Servidor de desarrollo local` are all `DEFAULT`, while `Production` stays
    `PRODUCTION` even on a templated or root-relative URL. [`ir::Environment`]
@@ -1164,7 +1167,7 @@ model plus the root-level `get_thing` method behind `digit-leading-property` mat
 in full.
 
 The root-client rule is also durable against the real-world
-`livepeer-ai-runner` corpus at Fern 5.20.0. Its three untagged, groupless
+`livepeer-ai-runner` corpus, at Fern 5.41.3. Its three untagged, groupless
 operations (`health`, `hardware_info`, and `hardware_stats`) are methods on the
 root sync and async clients alongside the tagged `generate` sub-client, and are
 wired through the package exports and their own `reference.md` sections exactly
@@ -1177,7 +1180,7 @@ file inputs before other required fields. Its whole golden matches, while
 the synthetic `digit-leading-property` fixture stays matched alongside it.
 
 The component-array-item rule is pinned by the real-world
-`apideck.com-ats` corpus at Fern 5.20.0: its
+`apideck.com-ats` corpus at Fern 5.41.3: its
 `Applicant.properties.social_links.items` object becomes the package-root
 `ApplicantSocialLinksItem` model, the `Applicant` field references it rather than
 `typing.Any`, and the aggregators re-export it. The first measured corpus run
@@ -1186,7 +1189,7 @@ shape; registering the corpus turned that previously unmeasured rule into a
 byte-exact regression target.
 
 The underscore-before-digit rename is now pinned by the real-world
-`twilio.com-twilio_messaging_v1` corpus at Fern 5.20.0:
+`twilio.com-twilio_messaging_v1` corpus at Fern 5.41.3:
 `MessagingV1BrandRegistrations.russell_3000` becomes the Python field
 `russell3000` with `russell_3000` retained as its wire alias. The first measured
 corpus run found that type file already byte-matched through the shared numeric
@@ -1272,10 +1275,11 @@ byte-match target like the rest of the corpus.
   operations with *no* audience label, which survive any filter — and emits only the
   **transitive `$ref` closure** of the surviving operations'
   parameter/request/response schemas ([`openapi::filter_by_audience`]). The closure
-  follows a `discriminator`'s `mapping` too. Fern keeps a subtype that only the
-  mapping names, as the hand-written fixture
-  [`discriminator-mapping-audience`](openapi-surface/handwritten/discriminator-mapping-audience/)
-  shows. Every other
+  follows a `discriminator`'s `mapping` too, keeping a subtype that only the
+  mapping names. That rests on the closure code (`openapi::collect_schema_refs`)
+  alone, with no byte-matched proof: an audience setting is outside the certified
+  defaults, and the hand-written fixture that once showed it was retired at the
+  move to Fern CLI 5.163.1. Every other
   `components.schemas` entry, even an unlabelled one no surviving operation reaches,
   is dropped, so each audience SDK is self-contained. Per the [dual-header
   extension policy](#fern-compatible-extension-policy) crozier reads **both**
@@ -1309,7 +1313,7 @@ byte-match target like the rest of the corpus.
   `truefoundry-trueforge-5adde28` golden declares `ImportAgentsRequest`,
   `ImportSessionRequest` and every type they reach although the three ignored
   `/api/internal/import/*` operations are their only references. Ignoring a
-  schema removes that schema alone: Fern 5.20.0 keeps `LegacyPart` when its one
+  schema removes that schema alone: Fern 5.41.3 keeps `LegacyPart` when its one
   referrer is ignored (the hand-written fixture
   [`x-fern-ignore-schema`](openapi-surface/handwritten/x-fern-ignore-schema/)), so
   the ignore is inert on a spec that carries no markers and never perturbs a full
@@ -1350,7 +1354,8 @@ The precedence lives in the field accessors (`Operation::audiences`,
 `Operation::ignored`, `Operation::sdk_group_name`, `Operation::sdk_method_name`,
 `Operation::pagination`, `Operation::streaming`, `Schema::ignored`,
 `Schema::enum_member_names`, `Schema::declared_type_name`,
-`Schema::property_name`); any future extension inherits the policy by default.
+`Schema::property_name`, `Schema::xml_text`, `Schema::xml_list_separator`); any
+future extension inherits the policy by default.
 The `crozier-property-name` feature target pins `property-name` against Fern:
 a real-world overlay renames request body properties clear of a same-named path
 parameter (the specification it was observed on is held privately), and the
@@ -1381,7 +1386,7 @@ Four of them shape the client tree and its methods, and corpus row 108
   body gets one alias per half (`{Half}Request`). A body schema a buffered
   operation also posts loses its model; one only the split posts keeps it. Both
   halves keep a referenced body's JSON content-type header.
-- **How a stream is framed** follows the extension, measured at Fern 5.20.0.
+- **How a stream is framed** follows the extension, measured at Fern 5.41.3.
   `format: sse` decodes Server-Sent Events over any success media, ending at the
   `terminator`'s `data` when one is declared. `format: json`, the boolean
   `true`, and a `stream-condition` naming no format stream newline-delimited JSON
@@ -1440,7 +1445,7 @@ tier is undecided and they are not coverage.
 Fern's `pydantic_config.enum_type` left unset, fern-python-sdk's `literals`
 default. It exists for clients that must keep parsing when a server adds an enum
 value: an enum class rejects the unknown value and with it the whole response,
-while the open union takes it. What changes, all measured against Fern 5.20.0:
+while the open union takes it. What changes, all measured against Fern 5.41.3:
 
 - every string enum module is one alias,
   `Name = typing.Union[typing.Literal["a", "b"], typing.Any]` — no class, no
@@ -1456,6 +1461,30 @@ they agree on every enum's shape. A targeted set of corpora reaching every enum
 shape carries the literals golden it is held to (`expected-literals/`, an
 overlay of `expected/`), compared by `crates/crozier-e2e/tests/e2e/overlay_goldens.rs`. Fern's third mode, `forward_compatible_python_enums`,
 has no crozier counterpart.
+
+## XML models
+
+From fern-python-sdk 5.41 an object schema carrying an OpenAPI `xml` object is
+an **XML model** (`src/emit/xml.rs`, after Fern's own generator source): its
+pydantic class gains `to_xml`/`from_xml`, `__str__`, private ordered-content
+fields, `add_child`/`add_text`/the comment methods, a fluent builder per XML
+model its child lists hold, and `copy_on_model_validation = "none"`; the SDK
+gains `core/xml_utilities.py` and a `tests/xml/test_<model>.py` round trip per
+model. What Fern reads, and so what crozier reads:
+
+- the element is the `xml.name`, else the type name, with `namespace`/`prefix`;
+- each property of the model is a child element unless its `xml` (or, for a
+  `$ref`, its target's) says `attribute`, or `x-crozier-xml-text` /
+  `x-fern-xml-text` makes it the text; its XML name likewise; `wrapped` and
+  `x-crozier-xml-list-separator` / `x-fern-xml-list-separator` are read the same
+  way. A property an inline `allOf` member contributes takes that member's XML
+  reading only if the member is an XML element itself;
+- an annotated `$ref` (`allOf: [$ref Target, {xml: {name}}]`, AWS's list
+  elements) is copied as an XML model under the annotation's name, whether or
+  not `Target` declares one (`amazonaws.com-cloudfront`).
+
+The generated tests are Fern's own: a model whose required child element the
+sample document leaves out fails its round trip in Fern's SDK too.
 
 ## Enum name sanitization (issue #50)
 
@@ -1612,8 +1641,8 @@ the **packaged** SDK every `expected/` golden holds. A generator whose `output` 
 no `--preview`, writes a **flat** module tree. crozier writes the second with
 `layout: flat` (`--layout flat`, `CROZIER_LAYOUT=flat`; see
 [`configuration.md`](configuration.md#output-layout)). Everything below was
-measured with real Fern at the certified pair (CLI 5.67.1,
-`fernapi/fern-python-sdk` 5.20.0) and is pinned by the flat goldens.
+measured with real Fern at the certified pair (CLI 5.163.1,
+`fernapi/fern-python-sdk` 5.41.3) and is pinned by the flat goldens.
 
 **The tree.** At the output root Fern's flat run writes:
 
@@ -1699,7 +1728,7 @@ workflow for a `CORPUS.md` row), comment-stripped and provenance-stamped exactly
 as `expected/` is, with `"layout": "flat"` added to its
 `.crozier-fern-golden.json`. [`flat-goldens.txt`](../tests/fixtures/flat-goldens.txt)
 declares every one. Between them they exercise every setting that changes the
-flat tree, and a shape whose flat output differs from its packaged one:
+flat tree, and the cursor-paginated shape the flat layout once left unpaged:
 
 | Flat golden | Setting it pins |
 | --- | --- |
@@ -1709,7 +1738,7 @@ flat tree, and a shape whose flat output differs from its packaged one:
 | `eos.local-extra-fields-forbid` | `extra-fields: forbid` (a `CORPUS.md` row, refreshed by the workflow) |
 | `swagger-petstore-distribution` | package `acme` and project `acme-dist` |
 | `swagger-petstore-organization` | custom Fern organization naming |
-| `truefoundry-trueforge` | none: the default names, over a registered document whose cursor `x-fern-pagination` makes Fern's flat methods return the page model (a `CORPUS.md` row) |
+| `truefoundry-trueforge` | none: the default names, over a registered document whose cursor `x-fern-pagination` Fern's flat methods page with `SyncPager`/`AsyncPager` as the packaged ones do (at Fern 5.20.0 they returned the page model; a `CORPUS.md` row) |
 
 The distribution and organization variants use the registered Swagger Petstore
 source named by their `flat-goldens.txt` rows. They add goldens without adding
@@ -1833,8 +1862,8 @@ editing one makes the row stale and regenerates it through the ordinary workflow
 two shapes Fern reads and emits output *derived from*, with no golden pinning
 either. `eozilla` (CORPUS.md row 92) and `openepcis-dpp-ready` (row 93) are those
 two, and the rules below are what reproducing them cost. Three were probed
-directly against `fernapi/fern-python-sdk:5.20.0` because no committed golden
-could answer them; the rest were read off the two goldens.
+directly against `fernapi/fern-python-sdk:5.20.0` (not re-probed at the certified
+5.41.3) because no committed golden could answer them; the rest were read off the two goldens.
 
 **A `type` list with more than one non-`null` member is an `anyOf`.** A single
 non-`null` member is nullability and nothing else, which is why
@@ -2223,7 +2252,8 @@ committed golden's expectation moved.
 ## Request bodies and schemaless responses, as measured
 
 Measured at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0 on documents
-written to vary one attribute at a time, then proven on the goldens named below.
+written to vary one attribute at a time (not re-measured at the certified pair),
+then proven on the goldens named below, which hold at CLI 5.163.1 / 5.41.3.
 Each rule replaced a feature that happened to accompany it in the corpus, which
 is how crozier came to encode the feature instead of the rule.
 

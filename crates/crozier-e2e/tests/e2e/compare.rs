@@ -1810,33 +1810,20 @@ fn replace_first_line(text: &str, line: &str, replacement: &str) -> Option<Strin
     Some(lines.join("\n"))
 }
 
-/// The lifted base-path defects
-/// (`docs/departures/evidence/lifted-base-path-docs-examples.md` and
-/// `lifted-base-path-positional-example.md`): Fern's README and endpoint
-/// reference pass a defaulted `{edition}` lifted to the client to methods that do
-/// not take it, document it under them and leave it out of the constructor, and
-/// its docstrings pass the default positionally to a keyword-only constructor.
-/// One more line of the README, the endpoint reference or a docstring — inside a
-/// method call the departure corrects, or elsewhere — fails the comparison.
+/// The lifted base-path defect
+/// (`docs/departures/evidence/lifted-base-path-docs-examples.md`): Fern's README
+/// and endpoint reference pass a defaulted `{edition}` lifted to the client to
+/// methods that do not take it, document it under them and leave it out of the
+/// constructor. One more line of the README, the endpoint reference or a
+/// docstring — inside a method call the departure corrects, or elsewhere —
+/// fails the comparison.
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_difference() {
-    let (docs, positional) = (
-        "lifted-base-path-docs-examples",
-        "lifted-base-path-positional-example",
-    );
+    let docs = "lifted-base-path-docs-examples";
     parameter_docs_departure_journey(
         "base-path-lifted-default",
-        &[
-            ("README.md", 40, docs),
-            ("reference.md", 20, docs),
-            ("src/fern/client.py", 64, positional),
-            ("src/fern/client.py", 177, positional),
-            ("src/fern/layers/client.py", 56, positional),
-            ("src/fern/layers/client.py", 84, positional),
-            ("src/fern/layers/client.py", 138, positional),
-            ("src/fern/layers/client.py", 174, positional),
-        ],
+        &[("README.md", 40, docs), ("reference.md", 20, docs)],
         &[
             (
                 "readme-call",
@@ -1854,8 +1841,8 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
             (
                 "docstring",
                 "src/fern/client.py",
-                r#"        "v2","#,
-                r#"        "v3","#,
+                r#"        edition="v2","#,
+                r#"        edition="v3","#,
             ),
         ],
     );
@@ -1863,24 +1850,24 @@ fn compare_reports_the_lifted_base_path_departures_and_fails_on_any_other_differ
 
 /// The constant-header and nullable-items documentation defects
 /// (`docs/departures/evidence/constant-header-docs-arguments.md` and
-/// `nullable-items-docs.md`): Fern's README and endpoint reference pass headers
-/// the request sends as constants, and document them, and they document nullable
-/// array items the signature drops and pass `[None]` for them. One more line of
-/// either file — inside a call the departure corrects, or elsewhere — fails the
-/// comparison.
+/// `nullable-items-docs.md`): Fern's endpoint reference documents headers the
+/// request sends as constants under the method, and Fern's README and endpoint
+/// reference document nullable array items the signature drops and pass
+/// `[None]` for them. One more line of either file — inside a block or call the
+/// departure corrects, or elsewhere — fails the comparison.
 #[cfg(unix)]
 #[test]
 fn compare_reports_the_parameter_docs_departures_and_fails_on_any_other_difference() {
     let constant = "constant-header-docs-arguments";
     parameter_docs_departure_journey(
         "header-default-constants",
-        &[("README.md", 47, constant), ("reference.md", 28, constant)],
+        &[("reference.md", 68, constant)],
         &[
             (
-                "readme-call",
-                "README.md",
-                r#"    hatch_mode="down","#,
-                "    hatch_mode=\"down\",\n    fan_speed=3,",
+                "reference-call",
+                "reference.md",
+                "    lamp_watts=1,",
+                "    lamp_watts=1,\n    fan_speed=3,",
             ),
             (
                 "readme-other",
@@ -1965,6 +1952,7 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
         "",
     );
     write(root, &format!("refs/unpackaged/{wrapper}"), &unpackaged);
+    let sdk = crozier::emit::certified_fern_pair().python_sdk;
     let braced = edited_golden(
         metadata,
         "\"client_class_name\": \"AcmeClient\"",
@@ -1981,8 +1969,8 @@ fn compare_applies_the_packaging_and_metadata_departures_exactly() {
         &format!("refs/shared-line/{metadata}"),
         &edited_golden(
             metadata,
-            "\"generatorVersion\": \"5.20.0\",\n  \"generatorConfig\"",
-            "\"generatorVersion\": \"5.20.0\", \"generatorConfig\"",
+            &format!("\"generatorVersion\": \"{sdk}\",\n  \"generatorConfig\""),
+            &format!("\"generatorVersion\": \"{sdk}\", \"generatorConfig\""),
         ),
     );
 
@@ -2176,86 +2164,4 @@ fn compare_validates_pattern_narrowed_examples_and_rejects_adjacent_changes() {
             .assert()
             .success();
     }
-}
-
-/// `crozier compare` against Fern's tree for the hand-written
-/// `kitchen-nested-mapping-target` fixture reports the
-/// `union-value-wrapper-docs-example` departure at each Markdown snippet's
-/// window and matches; the same reference with one line beside the wrapper call
-/// changed (an extra argument of the method call it sits in) is a mismatch, so
-/// the rule accounts for the wrapper call alone.
-#[cfg(unix)]
-#[test]
-fn compare_reports_the_union_value_wrapper_departure_and_rejects_an_adjacent_line() {
-    let project = crate::repo_root();
-    let fixture = project.join("docs/openapi-surface/handwritten/kitchen-nested-mapping-target");
-    let repo = tempfile::tempdir().expect("comparison repo");
-    let root = repo.path();
-    git(root, &["init", "-q"]);
-    write(
-        root,
-        "openapi.yml",
-        &std::fs::read_to_string(fixture.join("openapi.yml")).unwrap(),
-    );
-    write_script(root, "reference.sh", &format!(
-        "cp -R '{}'/. \"$CROZIER_REFERENCE_OUTPUT\"\n\
-         if [ \"${{1:-}}\" = edited ]; then\n\
-         \x20 f=\"$CROZIER_REFERENCE_OUTPUT/README.md\"\n\
-         \x20 awk '!done && /request=Course_Grill\\(/ {{ print \"    request_options=None,\"; done=1 }} {{ print }}' \"$f\" > \"$f.tmp\"\n\
-         \x20 mv \"$f.tmp\" \"$f\"\n\
-         fi\n", fixture.join("fern-expected").display()
-    ));
-    for (config, command) in [
-        ("crozier.yml", "./reference.sh"),
-        ("edited.yml", "./reference.sh edited"),
-    ] {
-        write(
-            root,
-            config,
-            &format!(
-                "spec: ./openapi.yml\npackage-name: fern\nproject-name: default_package_name\n\
-             generators:\n  python:\n    reference:\n      command: {command}\n"
-            ),
-        );
-    }
-    let assert = compare_cmd(root)
-        .args(["--json", "-", "crozier.yml"])
-        .assert()
-        .code(0);
-    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
-    validate_against_committed_schema(&report);
-    let matched = result(&report, "crozier.yml", "python");
-    assert_eq!(matched["status"], "matched", "{matched:#}");
-    let windows: Vec<(String, u64)> = matched["comparison"]["departures"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|departure| departure["id"] == "union-value-wrapper-docs-example")
-        .map(|departure| {
-            (
-                departure["file"].as_str().unwrap().to_string(),
-                departure["line"].as_u64().unwrap(),
-            )
-        })
-        .collect();
-    assert_eq!(
-        windows,
-        [
-            ("README.md".to_string(), 37),
-            ("reference.md".to_string(), 15)
-        ],
-        "{matched:#}"
-    );
-
-    let assert = compare_cmd(root)
-        .args(["--json", "-", "edited.yml"])
-        .assert()
-        .code(3);
-    let report: serde_json::Value = serde_json::from_slice(&assert.get_output().stdout).unwrap();
-    let changed = result(&report, "edited.yml", "python");
-    assert_eq!(changed["status"], "mismatched");
-    assert_eq!(
-        changed["comparison"]["differing"],
-        serde_json::json!(["README.md"])
-    );
 }

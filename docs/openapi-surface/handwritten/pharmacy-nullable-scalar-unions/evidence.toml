@@ -1,10 +1,10 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "26ad2883f6bec9fd36f6f58d5eee673fb95c68be74113b0c92f593e3bf131fc0"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "87a0c9cef823cee4e3b97319f077caffa829c791614e5f7f58b4d88300c9e9ee"
 
 [[covers]]
 key = "nullable"
-arm = 'src/ir.rs::Builder::add_named[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]'
+arm = 'src/ir.rs::Builder::add_named_shape[\(false, _\) if variants\.iter\(\)\.all\(is_plain_scalar\) => \{]'
 search = "docs/openapi-surface/witness-search-union-scenarios/README.md#witness-search"
 verdict = "search-incomplete"
 renewed = "docs/openapi-surface/witness-search-union-scenarios/README.md"

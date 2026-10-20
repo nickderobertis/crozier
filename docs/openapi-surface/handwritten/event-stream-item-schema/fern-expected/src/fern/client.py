@@ -255,7 +255,7 @@ class AsyncFernApi:
 
 
         async def main() -> None:
-            response = await client.stream_samples(
+            response = client.stream_samples(
                 balloon_id="balloonId",
             )
             async for chunk in response:

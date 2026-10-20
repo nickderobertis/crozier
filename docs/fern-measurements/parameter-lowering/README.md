@@ -1,7 +1,7 @@
 # How Fern lowers query and header parameters, measured
 
 Each directory here is a document written for the purpose and the tree Fern
-generated from it at Fern CLI 5.67.1 with `fernapi/fern-python-sdk` 5.20.0, in
+generated from it at Fern CLI 5.163.1 with `fernapi/fern-python-sdk` 5.41.3, in
 the workspace `tools/fern-goldens/generate-fern-fixture.sh` scaffolds (Route A of
 [`../../fern-goldens.md`](../../fern-goldens.md)), comment-stripped by
 `crozier internal-strip`. The trees are Fern's output as measured; nothing in
@@ -31,7 +31,7 @@ rules is corpus row 317, `lootlog-battlelog`; why the others have none yet is
 | [`single-operation-headers`](single-operation-headers/openapi.yml) | a document's only operation has its headers promoted to the client, required ones as required fields |
 | [`base-path-string`](base-path-string/openapi.yml), [`base-path-object-literal`](base-path-object-literal/openapi.yml) | `x-fern-base-path: /v2`, and its object form `{path: /v2}`, prefix every route |
 | [`base-path-templated-string`](base-path-templated-string/openapi.yml) | the string form naming a placeholder: [refused](base-path-templated-string/fern-refusal.txt) |
-| [`base-path-lifted-default`](base-path-lifted-default/openapi.yml), [`base-path-lifted-unincluded`](base-path-lifted-unincluded/openapi.yml), [`base-path-lifted-required`](base-path-lifted-required/openapi.yml), [`base-path-lifted-list`](base-path-lifted-list/openapi.yml), [`base-path-lifted-bare`](base-path-lifted-bare/openapi.yml) | the object form's placeholder lifted to the client, with and without `paths-include-base-path` and a `default`, with `parameters` as a list and with none; their trees carry the Fern defects the [`lifted-base-path-docs-examples`](../../departures/evidence/lifted-base-path-docs-examples.md) and [`lifted-base-path-positional-example`](../../departures/evidence/lifted-base-path-positional-example.md) departures correct, and match through them |
+| [`base-path-lifted-default`](base-path-lifted-default/openapi.yml), [`base-path-lifted-unincluded`](base-path-lifted-unincluded/openapi.yml), [`base-path-lifted-required`](base-path-lifted-required/openapi.yml), [`base-path-lifted-list`](base-path-lifted-list/openapi.yml), [`base-path-lifted-bare`](base-path-lifted-bare/openapi.yml) | the object form's placeholder lifted to the client, with and without `paths-include-base-path` and a `default`, with `parameters` as a list and with none; their trees carry the Fern defect the [`lifted-base-path-docs-examples`](../../departures/evidence/lifted-base-path-docs-examples.md) departure corrects, and match through it |
 
 ## The rules
 

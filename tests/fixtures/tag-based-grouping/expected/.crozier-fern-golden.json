@@ -1,5 +1,5 @@
 {
-  "fern_python_sdk_version": "5.20.0",
-  "fern_cli_version": "5.67.1",
+  "fern_python_sdk_version": "5.41.3",
+  "fern_cli_version": "5.163.1",
   "vendored_spec_path": "tests/fixtures/tag-based-grouping/openapi.yml"
 }

@@ -225,7 +225,7 @@ The shape: a path operation marked `x-fern-webhook: true` (or `x-crozier-webhook
 
 ## Offset pagination
 
-The shape: an operation whose pagination extension (either spelling) is the offset form, `offset` with no `cursor` (`operation.x-fern-pagination:offset`). Fern returns an offset pager in its packaged tree and, in its flat tree, the page model with the pagination runtime still shipped.
+The shape: an operation whose pagination extension (either spelling) is the offset form, `offset` with no `cursor` (`operation.x-fern-pagination:offset`). Fern returns an offset pager in its packaged tree and, at fern-python-sdk 5.41.3, in its flat tree too.
 
 | key | verdict | remaining work |
 |---|---|---|
@@ -245,12 +245,12 @@ The shape: an operation whose pagination extension is the cursor form, `cursor`
 with `next_cursor` (`operation.x-fern-pagination:cursor`). Registered real
 specifications declare it: `truefoundry-trueforge` and
 `truefoundry-trueforge-5adde28` (7 sites each), whose packaged goldens
-byte-match. The scenario's divergence is Fern's flat tree, where each cursor-
-paginated method returns its page model: `truefoundry-trueforge` also carries
-that flat golden (`tests/fixtures/truefoundry-trueforge/expected-flat/`, a
-[`flat-goldens.txt`](../../../tests/fixtures/flat-goldens.txt) row), which
-crozier's `--layout flat` output matches apart from the catalogued
-`flat-pagination-pager-docs` departure. The crozier-authored `crane-hire-cursor`
+byte-match. `truefoundry-trueforge` also carries a flat golden
+(`tests/fixtures/truefoundry-trueforge/expected-flat/`, a
+[`flat-goldens.txt`](../../../tests/fixtures/flat-goldens.txt) row), where at
+fern-python-sdk 5.41.3 each cursor-paginated method returns a pager as in the
+packaged tree, and crozier's `--layout flat` output matches it. The
+crozier-authored `crane-hire-cursor`
 case in
 [`../../fern-measurements/clients-extensions/`](../../fern-measurements/clients-extensions/README.md)
 pins the same contract on a smaller document, with the next cursor at the top

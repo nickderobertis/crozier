@@ -34,8 +34,9 @@ before Route A or Route B spends a generate.
 
 Before spending a generate on a shape, check
 [`fern-limitations.md`](fern-limitations.md): it records, with the measured
-evidence, which shapes Fern 5.20.0 discards, ignores or refuses — a golden cannot
-pin a style Fern throws away — and which candidate pools are exhausted.
+evidence and the pair each measurement ran at, which shapes Fern discards,
+ignores or refuses — a golden cannot pin a style Fern throws away — and which
+candidate pools are exhausted.
 
 Work on one corpus row at a time. There are two routes to the same golden, and
 who can run them differs:
@@ -314,9 +315,10 @@ step 3 rather than silently pinning nothing.
 
 ### Exact known upstream failures
 
-`calorieninjas.com` is the single registered exception across the whole corpus at
-`fernapi/fern-python-sdk:5.20.0`. Its source operation has no `operationId`, and
-Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
+`calorieninjas.com` is the single registered exception across the whole corpus,
+recorded at `fernapi/fern-python-sdk:5.20.0` and not re-measured at the certified
+5.41.3 (a registration applies only at its own generator version). Its source
+operation has no `operationId`, and Fern emits unnamed methods (`def (` and `_raw_client.(`) before Ruff rejects the
 SDK. [`known-fern-failure.json`](../tests/fixtures/calorieninjas.com/known-fern-failure.json)
 binds the exception to the exact generator version, corpus name/ref/URL, exit
 code, six ordered syntax diagnostics and source lines, Ruff summary, and failed
@@ -348,6 +350,56 @@ required evidence uploads; a missing/failed phase stays red. If the comparison
 runner is terminated before its upload step, the comparison artifact may be
 absent, but the earlier generation artifact and published fixture commit remain.
 
+## Regenerating every reference family
+
+A move of the certified pair — `cliVersion` and `generatorVersion` in
+[`../assets/scaffolding/metadata.json`](../assets/scaffolding/metadata.json),
+the one place the pair is declared — regenerates every committed Fern
+reference, family by family. Each family is one command, which runs Fern one
+generation at a time in a scratch workspace outside the checkout and writes each
+item where its gate reads it:
+
+```sh
+just fern-references-list <family>              # the family's item names, one per line
+just fern-references <family>                   # every item, at the certified pair
+just fern-references <family> <item>...         # exactly the named items
+just fern-references <family> --version V --cli-version C [<item>...]   # another pair
+```
+
+| family | what it writes | through |
+|---|---|---|
+| `corpus` | `tests/fixtures/<fixture>/expected/` and `expected-flat/` | `fern-goldens generate` for a `CORPUS.md` row, `generate-fern-fixture.sh` for a vendored fixture |
+| `overlays` | `tests/fixtures/<fixture>/expected-literals/` and `expected-default-max-retries/` | `fern-overlay-goldens.sh --jobs 1` |
+| `handwritten` | `docs/openapi-surface/handwritten/<fixture>/fern-expected/`, with `evidence.toml`'s versions and `digest` | the probe workspace below |
+| `measurements` | `docs/fern-measurements/<group>/<case>/fern-expected/`, or the case's Contract A `fern-refusal.txt` where its committed reference is Fern's refusal (a case Fern now generates from gets its tree and is reported), each `<stem>.fern.log` beside its `<stem>.openapi.*` refused document, and a case's pinned run its `measurement.json` records (its log and Fern's raw `raw_client.py`), as [`cases.tsv`](fern-measurements/cases.tsv) declares each case's document, enum mode, layout and overlay base, restating each case's `evidence.toml`/`evidence.md`; and `parameter-literals/<fixture>`, which re-measures that a hand-written fixture's literals tree is its python-enums tree less `core/enum.py` and records the metadata and digest | the probe workspace below |
+| `probes` | `docs/openapi-surface/probe-expected/<name>/`, or its Contract A refusal record, with `MANIFEST.tsv`'s digest | the probe workspace below |
+| `authored-probes` | `docs/openapi-surface/authored-probes/<case>/fern.log` and `fern-expected/` | the probe workspace below |
+| `departure-evidence` | `docs/departures/evidence/<id>/fern-reference/`, a departure note's own Fern tree, under the settings its `fern-reference.json` records | the probe workspace below |
+| `refusals` | `docs/fern-refusals/<class>/fern-refusal.txt`, `findings.tsv`, and each `<class>/evidence/<stem>.pinned-fern.log` whose probe document sits beside it | `fern-refusals.py probe` / `finding` with `--jobs 1` |
+
+The probe workspace is the one `generate-fern-fixture.sh` scaffolds, built by
+`tools/fern-goldens/fern-references.py` itself so it can write outside
+`tests/fixtures/`. Run `corpus` before `overlays`, and `handwritten` before
+`measurements`: an overlay is reduced against the tree it overlays. A probe
+whose outcome changes form (a tree Fern now refuses, or a refusal it now
+generates from) is written and reported, because its `MANIFEST.tsv` row's form
+and verdict are a Contract A decision; an authored probe Fern now refuses moves
+to the refusal registry. Two families refuse an override their delegate cannot
+honour: `overlays` takes no `--version` (each overlay is generated at the version
+its golden's provenance records, so run `corpus` first), and `refusals` takes
+neither flag (`fern-refusals.py` measures at the pair `metadata.json` declares).
+Omitting `--version` here keeps the certified pair;
+`just fern-goldens-generate` without `--version` still resolves the newest
+stable Fern tag.
+
+Witness screens are records of a search, not references, so a move does not
+regenerate them. Once the goldens carry the new pair, `python3
+tools/witness-search/witness_screen.py historical` labels every committed
+screen measured at an earlier pair as that pair's history, which no live
+decision reads as a measurement; a candidate is re-measured at the new pair by
+screening it again (`golden-reach-search.py screen`, or `witness_screen.py
+screen`).
+
 ## Publication safety
 
 Each fixture is generated into a same-filesystem staging directory and replaces
@@ -372,7 +424,7 @@ Rust, and Ruff prerequisites as the workflow and writes nothing to a branch.
 Generate selected fixtures and then run the aggregate comparison:
 
 ```sh
-just fern-goldens --version 5.20.0 --fixture anchore.io
+just fern-goldens --version 5.41.3 --fixture anchore.io
 ```
 
 Repeat `--fixture` for an exact multi-fixture selection. Omit `--version` to use
@@ -382,7 +434,7 @@ corpus goldens.
 Keep generation and comparison separate when diagnosing a phase:
 
 ```sh
-just fern-goldens-generate --version 5.20.0 --fixture anchore.io
+just fern-goldens-generate --version 5.41.3 --fixture anchore.io
 just fern-goldens-compare
 ```
 

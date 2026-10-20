@@ -1,19 +1,28 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .created_at_field import CreatedAtField
 from .preconditioning_air_conditioning_failure_cause import PreconditioningAirConditioningFailureCause
 from .preconditioning_air_conditioning_starting_cause import PreconditioningAirConditioningStartingCause
 from .preconditioning_air_conditioning_status import PreconditioningAirConditioningStatus
 from .preconditioning_program import PreconditioningProgram
 
 
-class PreconditioningAirConditioning(CreatedAtField):
+class PreconditioningAirConditioning(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     status: typing.Optional[PreconditioningAirConditioningStatus] = pydantic.Field(default=None)
     """
     The status of the preconditioning feature.

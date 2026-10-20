@@ -7,12 +7,20 @@ from importlib import import_module
 
 if typing.TYPE_CHECKING:
     from .types import Hold, Reservation, RetryAdvice, TamperAlarm
-    from .errors import GoneError, LockedError, ServiceUnavailableError, TooManyRequestsError
+    from .errors import (
+        ClientRequestError,
+        GoneError,
+        LockedError,
+        ServerError,
+        ServiceUnavailableError,
+        TooManyRequestsError,
+    )
     from ._default_clients import DefaultAioHttpClient, DefaultAsyncHttpxClient
     from .client import AsyncFernApi, FernApi
     from .version import __version__
 _dynamic_imports: typing.Dict[str, str] = {
     "AsyncFernApi": ".client",
+    "ClientRequestError": ".errors",
     "DefaultAioHttpClient": "._default_clients",
     "DefaultAsyncHttpxClient": "._default_clients",
     "FernApi": ".client",
@@ -21,6 +29,7 @@ _dynamic_imports: typing.Dict[str, str] = {
     "LockedError": ".errors",
     "Reservation": ".types",
     "RetryAdvice": ".types",
+    "ServerError": ".errors",
     "ServiceUnavailableError": ".errors",
     "TamperAlarm": ".types",
     "TooManyRequestsError": ".errors",
@@ -51,6 +60,7 @@ def __dir__():
 
 __all__ = [
     "AsyncFernApi",
+    "ClientRequestError",
     "DefaultAioHttpClient",
     "DefaultAsyncHttpxClient",
     "FernApi",
@@ -59,6 +69,7 @@ __all__ = [
     "LockedError",
     "Reservation",
     "RetryAdvice",
+    "ServerError",
     "ServiceUnavailableError",
     "TamperAlarm",
     "TooManyRequestsError",

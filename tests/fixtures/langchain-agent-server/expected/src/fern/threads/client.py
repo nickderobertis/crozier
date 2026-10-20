@@ -760,8 +760,10 @@ class ThreadsClient:
             The ID of the thread.
 
         stream_modes : typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]
+            Stream modes to control which events are returned. 'lifecycle' returns only run start/end events, 'run_modes' returns all run events (default behavior), 'state_update' returns only state update events.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Used to resume streaming from a specific point. Pass '-' to resume from the beginning.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1644,8 +1646,10 @@ class AsyncThreadsClient:
             The ID of the thread.
 
         stream_modes : typing.Optional[JoinThreadStreamThreadsThreadIdStreamGetRequestStreamModes]
+            Stream modes to control which events are returned. 'lifecycle' returns only run start/end events, 'run_modes' returns all run events (default behavior), 'state_update' returns only state update events.
 
         last_event_id : typing.Optional[str]
+            The ID of the last event received. Used to resume streaming from a specific point. Pass '-' to resume from the beginning.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -1667,7 +1671,7 @@ class AsyncThreadsClient:
 
 
         async def main() -> None:
-            response = await client.threads.join_thread_stream(
+            response = client.threads.join_thread_stream(
                 thread_id="thread_id",
             )
             async for chunk in response:

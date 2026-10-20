@@ -589,7 +589,14 @@ client = FernApi(
 
 client.plugin_data.write_marimo_chatbot_data(
     show_configuration_controls=True,
-    config=MarimoChatbotDataConfig(),
+    config=MarimoChatbotDataConfig(
+        max_tokens=None,
+        temperature=None,
+        top_p=None,
+        top_k=None,
+        frequency_penalty=None,
+        presence_penalty=None,
+    ),
     allow_attachments=True,
 )
 
@@ -695,6 +702,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_checkbox_data(
     initial_value=True,
+    label=None,
 )
 
 ```
@@ -800,6 +808,7 @@ client = FernApi(
 client.plugin_data.write_marimo_code_editor_data(
     initial_value="initialValue",
     placeholder="placeholder",
+    label=None,
 )
 
 ```
@@ -906,6 +915,7 @@ client.plugin_data.write_marimo_data_editor_data(
     initial_value=MarimoDataEditorDataInitialValue(
         edits=[],
     ),
+    label=None,
     data="data",
     editable_columns=MarimoDataEditorDataEditableColumnsOne.ALL,
 )
@@ -1222,6 +1232,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_date_data(
     initial_value="initialValue",
+    label=None,
     start="start",
     stop="stop",
 )
@@ -1328,6 +1339,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_date_range_data(
     initial_value=[],
+    label=None,
     start="start",
     stop="stop",
 )
@@ -1434,6 +1446,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_datetime_data(
     initial_value="initialValue",
+    label=None,
     start="start",
     stop="stop",
 )
@@ -1539,6 +1552,7 @@ client = FernApi(
 )
 
 client.plugin_data.write_marimo_dict_data(
+    label=None,
     element_ids={
         "key": "value"
     },
@@ -1752,6 +1766,7 @@ client.plugin_data.write_marimo_dropdown_data(
     initial_value=[
         "initialValue"
     ],
+    label=None,
     options=[
         "options"
     ],
@@ -1864,6 +1879,7 @@ client.plugin_data.write_marimo_file_data(
     ],
     multiple=True,
     kind=MarimoFileDataKind.BUTTON,
+    label=None,
     max_size=1.1,
 )
 
@@ -1974,6 +1990,7 @@ client.plugin_data.write_marimo_file_browser_data(
     ],
     selection_mode="selectionMode",
     multiple=True,
+    label=None,
     restrict_navigation=True,
 )
 
@@ -2078,6 +2095,7 @@ client = FernApi(
 )
 
 client.plugin_data.write_marimo_form_data(
+    label=None,
     element_id="elementId",
 )
 
@@ -2608,6 +2626,7 @@ client.plugin_data.write_marimo_matrix_data(
             1.1
         ]
     ],
+    label=None,
     step=[
         [
             1.1
@@ -2931,6 +2950,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_mime_renderer_data(
     mime="mime",
+    data=None,
 )
 
 ```
@@ -3147,6 +3167,7 @@ client.plugin_data.write_marimo_multiselect_data(
     initial_value=[
         "initialValue"
     ],
+    label=None,
     options=[
         "options"
     ],
@@ -3362,7 +3383,9 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.plugin_data.write_marimo_number_data()
+client.plugin_data.write_marimo_number_data(
+    label=None,
+)
 
 ```
 </dd>
@@ -3567,6 +3590,7 @@ client = FernApi(
 )
 
 client.plugin_data.write_marimo_panel_data(
+    extension_url=None,
     docs_json={
         "key": "value"
     },
@@ -3891,6 +3915,8 @@ client = FernApi(
 )
 
 client.plugin_data.write_marimo_radio_data(
+    initial_value=None,
+    label=None,
     options=[
         "options"
     ],
@@ -4000,8 +4026,10 @@ client.plugin_data.write_marimo_range_slider_data(
     initial_value=[
         1.1
     ],
+    label=None,
     start=1.1,
     stop=1.1,
+    steps=None,
 )
 
 ```
@@ -4104,7 +4132,9 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.plugin_data.write_marimo_refresh_data()
+client.plugin_data.write_marimo_refresh_data(
+    label=None,
+)
 
 ```
 </dd>
@@ -4314,8 +4344,10 @@ client = FernApi(
 
 client.plugin_data.write_marimo_slider_data(
     initial_value=1.1,
+    label=None,
     start=1.1,
     stop=1.1,
+    steps=None,
 )
 
 ```
@@ -4522,6 +4554,7 @@ client = FernApi(
 
 client.plugin_data.write_marimo_switch_data(
     initial_value=True,
+    label=None,
 )
 
 ```
@@ -4628,6 +4661,7 @@ client.plugin_data.write_marimo_table_data(
     initial_value=[
         1.1
     ],
+    label=None,
     data="data",
     total_rows=MarimoTableDataTotalRowsOne.TOO_MANY,
     row_headers=[
@@ -4740,6 +4774,7 @@ client.plugin_data.write_marimo_tabs_data(
     tabs=[
         "tabs"
     ],
+    label=None,
 )
 
 ```
@@ -4947,6 +4982,7 @@ client = FernApi(
 client.plugin_data.write_marimo_text_data(
     initial_value="initialValue",
     placeholder="placeholder",
+    label=None,
 )
 
 ```
@@ -5052,6 +5088,7 @@ client = FernApi(
 client.plugin_data.write_marimo_text_area_data(
     initial_value="initialValue",
     placeholder="placeholder",
+    label=None,
 )
 
 ```
@@ -5679,10 +5716,19 @@ client.rpc_input.write_marimo_chatbot_send_prompt_input(
         MarimoChatbotSendPromptInputMessagesItem(
             id="id",
             role=MarimoChatbotSendPromptInputMessagesItemRole.SYSTEM,
+            content=None,
             parts=[],
+            metadata=None,
         )
     ],
-    config=MarimoChatbotSendPromptInputConfig(),
+    config=MarimoChatbotSendPromptInputConfig(
+        max_tokens=None,
+        temperature=None,
+        top_p=None,
+        top_k=None,
+        frequency_penalty=None,
+        presence_penalty=None,
+    ),
 )
 
 ```
@@ -7972,7 +8018,9 @@ client.rpc_output.write_marimo_chatbot_get_chat_history_output(
         MarimoChatbotGetChatHistoryOutputMessagesItem(
             id="id",
             role=MarimoChatbotGetChatHistoryOutputMessagesItemRole.SYSTEM,
+            content=None,
             parts=[],
+            metadata=None,
         )
     ],
 )
@@ -9453,8 +9501,24 @@ client = FernApi(
 )
 
 client.rpc_output.write_marimo_table_get_column_summaries_output(
+    data=None,
     stats={
-        "key": MarimoTableGetColumnSummariesOutputStatsValue()
+        "key": MarimoTableGetColumnSummariesOutputStatsValue(
+            total=None,
+            nulls=None,
+            unique=None,
+            true=None,
+            false=None,
+            min=None,
+            max=None,
+            std=None,
+            mean=None,
+            median=None,
+            p5=None,
+            p25=None,
+            p75=None,
+            p95=None,
+        )
     },
     bin_values={
         "key": [
@@ -9686,6 +9750,7 @@ client.rpc_output.write_marimo_table_get_row_ids_output(
         1.1
     ],
     all_rows=True,
+    error=None,
 )
 
 ```
@@ -9890,7 +9955,13 @@ client = FernApi(
     base_url="https://yourhost.com/path/to/api",
 )
 
-client.rpc_output.write_marimo_table_preview_column_output()
+client.rpc_output.write_marimo_table_preview_column_output(
+    chart_spec=None,
+    chart_code=None,
+    error=None,
+    missing_packages=None,
+    stats=None,
+)
 
 ```
 </dd>
@@ -9995,6 +10066,7 @@ client = FernApi(
 client.rpc_output.write_marimo_table_search_output(
     data="data",
     total_rows=MarimoTableSearchOutputTotalRowsOne.TOO_MANY,
+    cell_styles=None,
 )
 
 ```

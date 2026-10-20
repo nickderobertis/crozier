@@ -10,7 +10,7 @@ from .v_card_vcard import VCardVcard
 
 
 class VCard(BaseMessageType):
-    message_type: typing.Optional[VCardMessageType] = pydantic.Field(default=None)
+    message_type: VCardMessageType = pydantic.Field()
     """
     The type of message to send. You must provide `vcard` in this field
     """

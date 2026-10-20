@@ -296,6 +296,9 @@ SCREEN_FIELDS = {"licence": "license", "ref": "ref", "fern": "fern"}
 # measured stage: the row stays, and is read as history rather than measurement.
 # Recorded verbatim in committed screens, so it names the stage as they do.
 HISTORICAL_SCREEN = "historical screen: filed before scripts/witness_screen.py, with no measured record"
+# Said instead when the screen was measured at a certified pair the corpus has
+# since moved from; the row's own label, naming that pair, follows it.
+HISTORICAL_PAIR_SCREEN = "historical screen: "
 
 
 OPAQUE_PREFIX = "screened-nonpublic-input:v2:"
@@ -444,6 +447,8 @@ def classify(
             settled = screen["disposition"]
             if load_screen().unmeasured(screen):
                 evidence = f"{evidence}; {HISTORICAL_SCREEN}"
+            elif load_screen().historical(screen):
+                evidence = f"{evidence}; {HISTORICAL_PAIR_SCREEN}{screen[load_screen().HISTORICAL_PAIR]}"
             disposition = (
                 settled
                 if settled in ("witness-found", "not-owed")
@@ -1043,7 +1048,8 @@ def disposition_counts(root: Path, source: str) -> dict[str, Counter]:
     with io.StringIO(read_ledger(path), newline="") as stream:
         for row in csv.DictReader(stream, delimiter="\t"):
             counts.setdefault(row["key"], Counter())[row["disposition"]] += 1
-            if HISTORICAL_SCREEN in row["evidence"]:
+            # Either historical wording opens with the same phrase.
+            if HISTORICAL_PAIR_SCREEN in row["evidence"]:
                 counts[row["key"]][HISTORICAL] += 1
     return counts
 

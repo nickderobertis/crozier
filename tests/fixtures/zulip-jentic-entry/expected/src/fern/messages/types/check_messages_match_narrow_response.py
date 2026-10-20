@@ -8,8 +8,8 @@ from .check_messages_match_narrow_response_messages_value import CheckMessagesMa
 
 
 class CheckMessagesMatchNarrowResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     messages: typing.Optional[typing.Dict[str, CheckMessagesMatchNarrowResponseMessagesValue]] = pydantic.Field(
         default=None

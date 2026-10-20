@@ -39,12 +39,12 @@ class RawRunsClient:
     def create_and_stream_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -57,6 +57,9 @@ class RawRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -71,9 +74,6 @@ class RawRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -102,6 +102,7 @@ class RawRunsClient:
             "runs/stream",
             method="POST",
             json={
+                "metadata": metadata,
                 "stream_mode": convert_and_respect_annotation_metadata(
                     object_=stream_mode, annotation=RunStreamStreamMode, direction="write"
                 ),
@@ -113,7 +114,6 @@ class RawRunsClient:
                 "messages": convert_and_respect_annotation_metadata(
                     object_=messages, annotation=typing.Sequence[Message], direction="write"
                 ),
-                "metadata": metadata,
                 "config": convert_and_respect_annotation_metadata(
                     object_=config, annotation=RunCreateConfig, direction="write"
                 ),
@@ -135,6 +135,8 @@ class RawRunsClient:
                             for _sse in _event_source.iter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,
@@ -352,12 +354,12 @@ class AsyncRawRunsClient:
     async def create_and_stream_run(
         self,
         *,
+        metadata: typing.Dict[str, typing.Any],
         stream_mode: typing.Optional[RunStreamStreamMode] = OMIT,
         thread_id: typing.Optional[str] = OMIT,
         agent_id: typing.Optional[str] = OMIT,
         input: typing.Optional[RunCreateInput] = OMIT,
         messages: typing.Optional[typing.Sequence[Message]] = OMIT,
-        metadata: typing.Optional[typing.Dict[str, typing.Any]] = OMIT,
         config: typing.Optional[RunCreateConfig] = OMIT,
         webhook: typing.Optional[str] = OMIT,
         on_completion: typing.Optional[RunCreateOnCompletion] = OMIT,
@@ -370,6 +372,9 @@ class AsyncRawRunsClient:
 
         Parameters
         ----------
+        metadata : typing.Dict[str, typing.Any]
+            Metadata to assign to the run.
+
         stream_mode : typing.Optional[RunStreamStreamMode]
             The stream mode(s) to use.
 
@@ -384,9 +389,6 @@ class AsyncRawRunsClient:
 
         messages : typing.Optional[typing.Sequence[Message]]
             The messages to pass an input to the agent.
-
-        metadata : typing.Optional[typing.Dict[str, typing.Any]]
-            Metadata to assign to the run.
 
         config : typing.Optional[RunCreateConfig]
             The configuration for the agent.
@@ -415,6 +417,7 @@ class AsyncRawRunsClient:
             "runs/stream",
             method="POST",
             json={
+                "metadata": metadata,
                 "stream_mode": convert_and_respect_annotation_metadata(
                     object_=stream_mode, annotation=RunStreamStreamMode, direction="write"
                 ),
@@ -426,7 +429,6 @@ class AsyncRawRunsClient:
                 "messages": convert_and_respect_annotation_metadata(
                     object_=messages, annotation=typing.Sequence[Message], direction="write"
                 ),
-                "metadata": metadata,
                 "config": convert_and_respect_annotation_metadata(
                     object_=config, annotation=RunCreateConfig, direction="write"
                 ),
@@ -448,6 +450,8 @@ class AsyncRawRunsClient:
                             async for _sse in _event_source.aiter_sse():
                                 if _sse.data == None:
                                     return
+                                if len(_sse.data) == 0:
+                                    continue
                                 try:
                                     yield typing.cast(
                                         str,

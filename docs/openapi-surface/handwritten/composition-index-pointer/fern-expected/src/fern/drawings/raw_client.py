@@ -25,6 +25,7 @@ class RawDrawingsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.
@@ -70,6 +71,7 @@ class AsyncRawDrawingsClient:
         Parameters
         ----------
         company_id : str
+            Unique identifier for a company.
 
         request_options : typing.Optional[RequestOptions]
             Request-specific configuration.

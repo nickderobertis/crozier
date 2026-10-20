@@ -9,7 +9,7 @@ from .core.request_options import RequestOptions
 from .environment import FernApiEnvironment
 from .raw_client import AsyncRawFernApi, RawFernApi
 from .types.send_message_request import SendMessageRequest
-from .types.send_message_response import SendMessageResponse
+from .types.send_message_response_message_uuid import SendMessageResponseMessageUuid
 
 
 OMIT = typing.cast(typing.Any, ...)
@@ -118,7 +118,7 @@ class FernApi:
 
     def send_message(
         self, *, request: SendMessageRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> SendMessageResponse:
+    ) -> SendMessageResponseMessageUuid:
         """
         Send a Message
 
@@ -131,19 +131,30 @@ class FernApi:
 
         Returns
         -------
-        SendMessageResponse
+        SendMessageResponseMessageUuid
             Accepted.
 
         Examples
         --------
-        from fern import FernApi, SendMessageRequestZero
+        from fern import (
+            ChannelOptionsSmsChannel,
+            FernApi,
+            SendMessageRequestZero,
+            TextMessageType,
+        )
 
         client = FernApi(
             username="YOUR_USERNAME",
             password="YOUR_PASSWORD",
         )
         client.send_message(
-            request=SendMessageRequestZero(),
+            request=SendMessageRequestZero(
+                to="apricot",
+                from_="from",
+                channel=ChannelOptionsSmsChannel.SMS,
+                text={"key": "value"},
+                message_type=TextMessageType.TEXT,
+            ),
         )
         """
         _response = self._raw_client.send_message(request=request, request_options=request_options)
@@ -269,7 +280,7 @@ class AsyncFernApi:
 
     async def send_message(
         self, *, request: SendMessageRequest, request_options: typing.Optional[RequestOptions] = None
-    ) -> SendMessageResponse:
+    ) -> SendMessageResponseMessageUuid:
         """
         Send a Message
 
@@ -282,14 +293,19 @@ class AsyncFernApi:
 
         Returns
         -------
-        SendMessageResponse
+        SendMessageResponseMessageUuid
             Accepted.
 
         Examples
         --------
         import asyncio
 
-        from fern import AsyncFernApi, SendMessageRequestZero
+        from fern import (
+            AsyncFernApi,
+            ChannelOptionsSmsChannel,
+            SendMessageRequestZero,
+            TextMessageType,
+        )
 
         client = AsyncFernApi(
             username="YOUR_USERNAME",
@@ -299,7 +315,13 @@ class AsyncFernApi:
 
         async def main() -> None:
             await client.send_message(
-                request=SendMessageRequestZero(),
+                request=SendMessageRequestZero(
+                    to="apricot",
+                    from_="from",
+                    channel=ChannelOptionsSmsChannel.SMS,
+                    text={"key": "value"},
+                    message_type=TextMessageType.TEXT,
+                ),
             )
 
 

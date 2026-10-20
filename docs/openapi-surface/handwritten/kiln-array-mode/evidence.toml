@@ -1,6 +1,6 @@
-fern_cli_version = "5.67.1"
-fern_python_sdk_version = "5.20.0"
-digest = "4880f639bab283cf3f0762e2a05931b06f3ee3db57d26d17e378328e3c1d1366"
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "70e06c5e0e853450951bd8e9f25b3309a7a8b55fdf4a30777f57f222d8a4c619"
 
 [[covers]]
 key = "anyof-array-variant-inline-enum-item"

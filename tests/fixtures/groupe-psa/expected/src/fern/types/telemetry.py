@@ -1,12 +1,12 @@
 
 
+import datetime as dt
 import typing
 
 import pydantic
 import typing_extensions
-from ..core.pydantic_utilities import IS_PYDANTIC_V2
+from ..core.pydantic_utilities import IS_PYDANTIC_V2, UniversalBaseModel
 from ..core.serialization import FieldMetadata
-from .created_at_field import CreatedAtField
 from .environment_base import EnvironmentBase
 from .privacy_base import PrivacyBase
 from .telemetry_embedded import TelemetryEmbedded
@@ -14,7 +14,16 @@ from .telemetry_links import TelemetryLinks
 from .telemetry_vehicle import TelemetryVehicle
 
 
-class Telemetry(CreatedAtField):
+class Telemetry(UniversalBaseModel):
+    created_at: typing_extensions.Annotated[
+        dt.datetime,
+        FieldMetadata(alias="createdAt"),
+        pydantic.Field(alias="createdAt", description="Date when the resource has been created."),
+    ]
+    """
+    Date when the resource has been created.
+    """
+
     links: typing_extensions.Annotated[TelemetryLinks, FieldMetadata(alias="_links"), pydantic.Field(alias="_links")]
     privacy: typing.Optional[PrivacyBase] = None
     vehicle: typing.Optional[TelemetryVehicle] = None

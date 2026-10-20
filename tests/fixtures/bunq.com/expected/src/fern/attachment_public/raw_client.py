@@ -14,6 +14,7 @@ from ..errors.bad_request_error import BadRequestError
 from ..types.attachment_public import AttachmentPublic
 from ..types.attachment_public_create import AttachmentPublicCreate
 from ..types.attachment_public_read import AttachmentPublicRead
+from ..types.bad_request_error_body import BadRequestErrorBody
 from pydantic import ValidationError
 
 
@@ -63,9 +64,9 @@ class RawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -117,9 +118,9 @@ class RawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -177,9 +178,9 @@ class AsyncRawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),
@@ -231,9 +232,9 @@ class AsyncRawAttachmentPublicClient:
                 raise BadRequestError(
                     headers=dict(_response.headers),
                     body=typing.cast(
-                        typing.Any,
+                        BadRequestErrorBody,
                         parse_obj_as(
-                            type_=typing.Any,
+                            type_=BadRequestErrorBody,
                             object_=_response.json(),
                         ),
                     ),

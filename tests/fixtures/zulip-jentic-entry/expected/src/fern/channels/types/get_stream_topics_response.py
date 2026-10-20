@@ -8,8 +8,8 @@ from .get_stream_topics_response_topics_item import GetStreamTopicsResponseTopic
 
 
 class GetStreamTopicsResponse(UniversalBaseModel):
-    result: typing.Optional[typing.Any] = None
-    msg: typing.Optional[typing.Any] = None
+    result: typing.Any
+    msg: typing.Any
     ignored_parameters_unsupported: typing.Optional[typing.Any] = None
     topics: typing.Optional[typing.List[GetStreamTopicsResponseTopicsItem]] = pydantic.Field(default=None)
     """

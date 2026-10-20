@@ -234,12 +234,13 @@ def boolean():
 
 
 def event_dispatch():
-    # Each event's `event` field selects the model its JSON `data` parses as; an
-    # event no branch names is skipped.
+    # Each event's `event` field selects the model, and its JSON `data` line is
+    # that model's `data` property (fern-python-sdk 5.41.3); an event no branch
+    # names is skipped.
     events = sse(
-        Named("departed", {"data": {"terminal": "North", "minutesLate": 3}}),
-        Named("docked", {"data": {"terminal": "nowhere"}}),
-        Named("arrived", {"data": {"terminal": "South"}}),
+        Named("departed", {"terminal": "North", "minutesLate": 3}),
+        Named("docked", {"terminal": "nowhere"}),
+        Named("arrived", {"terminal": "South"}),
     )
     call = lambda client: client.watch_movements("r-2")
     for chunks, sent in both(call, events):
@@ -252,16 +253,16 @@ def event_dispatch():
     # skipped with a warning, and the events after it still arrive.
     damaged = sse(
         Named("departed", "{not json"),
-        Named("arrived", {"data": "not a berth"}),
-        Named("arrived", {"data": {"terminal": "East"}}),
+        Named("arrived", '"not a berth"'),
+        Named("arrived", {"terminal": "East"}),
     )
     for chunks, _sent in both(call, damaged):
         assert [(type(chunk).__name__, chunk.data.terminal) for chunk in chunks] == [("Arrival", "East")], chunks
     # With no mapping, each variant's `const` names the event it is parsed for.
     gangway = sse(
-        Named("raised", {"data": {"terminal": "West"}}),
-        Named("boarding", {"data": {"terminal": "nowhere"}}),
-        Named("lowered", {"data": {"terminal": "West", "minutesLate": 1}}),
+        Named("raised", {"terminal": "West"}),
+        Named("boarding", {"terminal": "nowhere"}),
+        Named("lowered", {"terminal": "West", "minutesLate": 1}),
     )
     call = lambda client: client.watch_gangway("t-4")
     for chunks, sent in both(call, gangway):
