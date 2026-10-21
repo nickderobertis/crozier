@@ -62,7 +62,7 @@ import tempfile
 import threading
 import urllib.parse
 import urllib.request
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
@@ -124,6 +124,23 @@ SHAPES_HEADER = (
     "classes",
     "verdict",
     "log",
+)
+# A `shapes.tsv` row as the table spells it, one cell per SHAPES_HEADER column
+# (the functional form, since `class` is a keyword).
+ShapeCells = TypedDict(
+    "ShapeCells",
+    {
+        "class": ClassId,
+        "shape": str,
+        "role": str,
+        "digest": Digest,
+        "check_exit": str,
+        "generate_exit": str,
+        "generate_files": str,
+        "classes": str,
+        "verdict": str,
+        "log": str,
+    },
 )
 # A class's measured shape beside its probe: `<name>-probe.yml` is one Fern
 # refuses with the class, `<name>-control.yml` a near miss Fern generates from.
@@ -297,7 +314,7 @@ def read_tsv(path: Path, header: tuple[str, ...]) -> list[dict[str, str]]:
     return [dict(zip(header, row, strict=False)) for row in rows[1:]]
 
 
-def tsv_text(header: tuple[str, ...], rows: Iterable[dict[str, str]]) -> str:
+def tsv_text(header: tuple[str, ...], rows: Iterable[Mapping[str, object]]) -> str:
     lines = ["\t".join(header)]
     for row in rows:
         cells = [str(row[column]) for column in header]
@@ -1802,7 +1819,7 @@ class ShapeRow(NamedTuple):
     verdict: ShapeVerdict
     log: Path
 
-    def cells(self) -> dict[str, str]:
+    def cells(self) -> ShapeCells:
         generation = self.run.generation
         return {
             "class": self.shape.cls,
@@ -1977,19 +1994,32 @@ def shapes(args: argparse.Namespace) -> int:
     return 0
 
 
-def shape_records(path: Path) -> dict[tuple[str, str], dict[str, str]]:
+def shape_records(path: Path) -> dict[tuple[ClassId, str], ShapeCells]:
     """`shapes.tsv`'s rows by class and shape; a shape recorded twice is refused,
     never one of its measurements silently kept."""
-    records: dict[tuple[str, str], dict[str, str]] = {}
+    records: dict[tuple[ClassId, str], ShapeCells] = {}
     for row in read_tsv(path, SHAPES_HEADER):
         key = (row["class"], row["shape"])
         if key in records:
             fail(f"{rel(path)} records {row['shape']} of {row['class']} twice; delete both rows and rerun `shapes`")
-        records[key] = row
+        records[key] = ShapeCells(
+            {
+                "class": row["class"],
+                "shape": row["shape"],
+                "role": row["role"],
+                "digest": row["digest"],
+                "check_exit": row["check_exit"],
+                "generate_exit": row["generate_exit"],
+                "generate_files": row["generate_files"],
+                "classes": row["classes"],
+                "verdict": row["verdict"],
+                "log": row["log"],
+            }
+        )
     return records
 
 
-def write_shapes(path: Path, table: dict[tuple[str, str], dict[str, str]]) -> None:
+def write_shapes(path: Path, table: dict[tuple[ClassId, str], ShapeCells]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
 
