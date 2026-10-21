@@ -17803,3 +17803,24 @@ class OperationContextCompositionTests(unittest.TestCase):
                 completed = run("--selector", misspelled)
                 self.assertNotEqual(0, completed.returncode)
                 self.assertIn(misspelled, completed.stderr)
+
+    def test_anchor_index_preserves_nested_fields_and_negative_only_groups(self) -> None:
+        """The local-pool API keeps its counts for non-anchor objects and absence-only queries."""
+        document = {
+            "openapi": "3.0.3",
+            "info": {"title": "Gallery archive", "version": "1"},
+            "paths": {},
+            "components": {
+                "schemas": {"Plaque": {"type": "string", "xml": {"name": "plaque", "namespace": "urn:gallery"}}}
+            },
+        }
+        nested = "schema.xml.name&schema.xml.namespace"
+        absent = "!schema.$ref&!schema.title"
+        conjunctions = {text: census.compile_conjunction(text) for text in (nested, absent)}
+        counts = census.census_document(document, conjunctions=conjunctions)
+        # Root, info, paths, components, schema and xml are six object nodes;
+        # only the xml node writes both of the nested fields.
+        self.assertEqual((1, 6), (counts.get(nested, 0), counts.get(absent, 0)))
+        document["components"]["schemas"]["Plaque"]["title"] = "Plaque"
+        counts = census.census_document(document, conjunctions=conjunctions)
+        self.assertEqual((1, 5), (counts.get(nested, 0), counts.get(absent, 0)))

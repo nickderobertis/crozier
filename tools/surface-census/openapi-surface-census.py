@@ -6155,6 +6155,15 @@ class Census:
         # `tools/surface-census/tests/surface_census_test.py` holds the closed list to the cases the
         # blind-region tables carry.
         self.conjunctions = COMPILED_CONJUNCTIONS if conjunctions is None else conjunctions
+        self.conjunctions_by_anchor: dict[str, list[tuple[str, CompiledConjunction]]] = defaultdict(list)
+        self.unanchored_conjunctions: list[tuple[str, CompiledConjunction]] = []
+        for selector, groups in self.conjunctions.items():
+            positive = groups[0][0][0]
+            if positive:
+                anchor = next(iter(positive)).split(".", 1)[0]
+                self.conjunctions_by_anchor[anchor].append((selector, groups))
+            else:
+                self.unanchored_conjunctions.append((selector, groups))
         # The document context, reachable from every node this census walks: the
         # document's own `components.schemas` map and the set of its keys. It is
         # the document being censused and nothing else — no fetch, no
@@ -6191,7 +6200,8 @@ class Census:
         self.ref_counts: Counter[str] = reference_counts(document)
         self.root_security: Any = document.get("security") if isinstance(document, dict) else None
         self.paths: Any = document.get("paths") if isinstance(document, dict) else None
-        self.error_status_schemas: dict[str, list[list[Any]]] = defaultdict(list)
+        self.error_status_schemas: dict[str, list[Any]] = {}
+        self.differing_error_statuses: set[str] = set()
         for item in self.paths.values() if isinstance(self.paths, dict) else []:
             if not isinstance(item, dict):
                 continue
@@ -6205,8 +6215,11 @@ class Census:
                     content = response.get("content") if isinstance(response, dict) else None
                     if isinstance(content, dict):
                         schemas = [media.get("schema") for media in content.values() if isinstance(media, dict)]
-                        if schemas not in self.error_status_schemas[str(code)]:
-                            self.error_status_schemas[str(code)].append(schemas)
+                        status = str(code)
+                        if status not in self.error_status_schemas:
+                            self.error_status_schemas[status] = schemas
+                        elif schemas != self.error_status_schemas[status]:
+                            self.differing_error_statuses.add(status)
 
         # `parameter.schema:subset-header-string-default` leaves out a header an
         # apiKey scheme already writes, which promotion never takes.
@@ -6686,7 +6699,9 @@ class Census:
                 if isinstance(written, dict) and "$ref" not in written and isinstance(written.get("properties"), dict):
                     flags.add("error-object")
             schemas = [value.get("schema") for value in media_map.values() if isinstance(value, dict)]
-            if any(other != schemas for other in self.error_status_schemas.get(code, [])):
+            if code in self.differing_error_statuses or (
+                code in self.error_status_schemas and schemas != self.error_status_schemas[code]
+            ):
                 flags.add("error-status-different-schemas")
         if any(len(statuses) > 1 for statuses in refs.values()):
             flags.add("errors-shared-ref")
@@ -7206,7 +7221,8 @@ class Census:
                 continue
             self.record(selector)
         declared = self.declared_set(node, kind_name, prefix)
-        for selector, groups in self.conjunctions.items():
+        candidates = self.conjunctions_by_anchor.get(prefix.split(".", 1)[0], [])
+        for selector, groups in (*candidates, *self.unanchored_conjunctions):
             # A conjunction whose leftmost group cannot hold here is skipped before
             # its descent is tried, which is the first test `conjunction_holds`
             # makes anyway.
