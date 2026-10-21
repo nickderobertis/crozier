@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: Media kinds
+  version: "1"
+paths:
+  /both:
+    post:
+      operationId: postBoth
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+          multipart/form-data:
+            schema:
+              type: object
+      responses:
+        "204":
+          description: done
+  /form:
+    post:
+      operationId: postForm
+      parameters:
+        - name: h
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+      responses:
+        "204":
+          description: done
+  /upload:
+    post:
+      operationId: postUpload
+      parameters:
+        - name: X-Trace
+          in: header
+          schema:
+            type: string
+      requestBody:
+        $ref: "#/components/requestBodies/Upload"
+      responses:
+        "204":
+          description: done
+  /upload-or-json:
+    post:
+      operationId: postUploadOrJson
+      parameters:
+        - name: X-Trace
+          in: header
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+          application/vnd.example+json:
+            schema:
+              type: object
+      responses:
+        "204":
+          description: done
+  /choice:
+    post:
+      operationId: postChoice
+      requestBody:
+        content:
+          "Application/X-WWW-Form-Urlencoded; charset=utf-8":
+            schema:
+              oneOf:
+                - type: object
+                - type: string
+      responses:
+        "204":
+          description: done
+components:
+  requestBodies:
+    Upload:
+      content:
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary

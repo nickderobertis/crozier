@@ -665,6 +665,31 @@ class ReportTests(unittest.TestCase):
         self.assertNotEqual(0, run.returncode)
         self.assertIn("missing ['flag-unread']", run.stderr)
 
+    def add_region_row(self, key: str, sites_cell: str) -> None:
+        path = self.repo / "docs" / "openapi-surface" / "demo.md"
+        row = f"| {key} | both | Demo Object.combined | golden | census `demo.flag`: `demo-a` (1) | {sites_cell} |  |  |\n"
+        path.write_text(path.read_text(encoding="utf-8") + row, encoding="utf-8", newline="\n")
+
+    def test_a_combination_row_pending_measurement_waits_outside_the_ledger(self) -> None:
+        cell = f"{golden_reach.PENDING_REACH} — enters the ledger at the next measurement"
+        self.add_region_row("combo-demo-pair", cell)
+        run = self.run_report("--write")
+        self.assertEqual(0, run.returncode, run.stderr)
+        self.assertNotIn("combo-demo-pair", (self.repo / "docs" / "openapi-surface" / "golden-reach.tsv").read_text())
+        self.assertEqual(cell, self.cells()["combo-demo-pair"][5])
+
+    def test_a_non_combination_row_claiming_to_be_pending_still_needs_its_site_row(self) -> None:
+        self.add_region_row("flag-pair", f"{golden_reach.PENDING_REACH} — not a combination")
+        run = self.run_report()
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("missing ['flag-pair']", run.stderr)
+
+    def test_a_combination_row_whose_cell_is_not_pending_still_needs_its_site_row(self) -> None:
+        self.add_region_row("combo-demo-pair", "reach: measured elsewhere")
+        run = self.run_report()
+        self.assertNotEqual(0, run.returncode)
+        self.assertIn("missing ['combo-demo-pair']", run.stderr)
+
     def test_a_missing_measurement_names_the_recipe_that_takes_it(self) -> None:
         (self.measurement / "universe.json").unlink()
         run = self.run_report()

@@ -2637,6 +2637,66 @@ MEMBER_ONLY_PREDICATES = {
 }
 
 
+# The request-body family: an Operation Object's readings of its own request body,
+# member-only for the reason the pointer-walk family above is, and added for the
+# feature combinations `docs/openapi-surface/combinations.md` selects.
+#
+# What a request body's media types are is written as the *keys* of its `content`
+# map, and a key is a name the walk never reads as a field; and whether a body
+# property shares its name with a parameter is a comparison between two subtrees of
+# one operation, which no member at either end can say. Both are decided here, at
+# the Operation Object, from the operation alone: its `requestBody` (one
+# `#/components/requestBodies/` reference followed), the schemas its media types
+# write (local `#/components/schemas/` references followed, `allOf` members'
+# properties merged in, as `Census.object_members` reads them) and its parameters
+# together with its Path Item's (one `#/components/parameters/` reference
+# followed). Standing alone, a reading would say only half of what a combination
+# row is about — that a body is multipart says nothing about what it is combined
+# with — and a row of its own would be a single feature the region files already
+# enumerate (`media-type-multipart`, `media-type-form-urlencoded`,
+# `media-type-octet-stream`), so each is matchable only as a conjunction member
+# beside the feature it is combined with.
+REQUEST_BODY_MEMBER_PREDICATES = {
+    "operation.requestBody:json-media": (
+        "one per Operation Object whose request body offers a JSON media type — "
+        "`application/json`, a `+json` or `/ndjson` suffix, or an `application/` "
+        "subtype naming `json`, the test `is_json_like_media_type` of `src/ir.rs` makes"
+    ),
+    "operation.requestBody:multipart-form-media": (
+        "one per Operation Object whose request body offers `multipart/form-data`"
+    ),
+    "operation.requestBody:form-urlencoded-media": (
+        "one per Operation Object whose request body offers `application/x-www-form-urlencoded`"
+    ),
+    "operation.requestBody:octet-stream-media": (
+        "one per Operation Object whose request body offers `application/octet-stream`"
+    ),
+    "operation.requestBody:property-named-as-path-parameter": (
+        "one per Operation Object one of whose path parameters, declared on it or on "
+        "its Path Item, has the same `name` as a property of a schema one of its "
+        "request body's media types writes, compared as written"
+    ),
+    "operation.requestBody:property-named-as-query-parameter": (
+        "one per Operation Object one of whose query parameters shares its `name` with "
+        "such a request-body property, on the same terms"
+    ),
+    "operation.requestBody:property-named-as-header-parameter": (
+        "one per Operation Object one of whose header parameters shares its `name` with "
+        "such a request-body property, on the same terms"
+    ),
+}
+MEMBER_ONLY_PREDICATES.update(REQUEST_BODY_MEMBER_PREDICATES)
+
+# The media-type keys the four media readings above test, each against the key's
+# base type (the part before any `;` parameter), lower-cased.
+REQUEST_BODY_MEDIA_TESTS: tuple[tuple[str, Callable[[str], bool]], ...] = (
+    ("operation.requestBody:json-media", lambda base: is_json_like_media_type(base)),
+    ("operation.requestBody:multipart-form-media", lambda base: base == "multipart/form-data"),
+    ("operation.requestBody:form-urlencoded-media", lambda base: base == "application/x-www-form-urlencoded"),
+    ("operation.requestBody:octet-stream-media", lambda base: base == "application/octet-stream"),
+)
+
+
 # One compiled conjunction: per group, the members that must hold and the members
 # that must not, and the descent leaving that group.
 CompiledConjunction = tuple[tuple[tuple[frozenset[str], frozenset[str]], tuple[str, str] | None], ...]
@@ -2858,6 +2918,416 @@ CONJUNCTIONS.update(
         if case.residual is not None
     }
 )
+
+
+@dataclass(frozen=True)
+class Combination:
+    """One selected feature combination: its key, its region file, its conjunction and what it counts."""
+
+    key: str
+    region: str
+    selector: str
+    counts: str
+
+
+# The feature combinations crozier proves, declared here and nowhere else. A
+# combination is admitted to the closed list beside a case of the six blind
+# functions when it is a `## Selected` row of `docs/openapi-surface/combinations.md`:
+# a pair of features some crozier branch reads together, or that real
+# specifications combine where the two features' handling can interact. That file
+# restates each entry's key, conjunction and region with the evidence for it, and
+# `tools/surface-census/tests/surface_census_test.py` fails when the two part. A
+# combination is counted by the same composition rules as every other entry; its
+# row is the last of its region file's table, counted apart from the single
+# features.
+COMBINATIONS: tuple[Combination, ...] = (
+    Combination(
+        "combo-query-param-oneof",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.oneOf",
+        "one per Parameter Object in `query` whose schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-query-param-anyof",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.anyOf",
+        "one per Parameter Object in `query` whose schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-query-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-header-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=header&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `header` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-path-param-ref-string-enum",
+        "parameters.md",
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `path` whose schema is a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-query-param-inline-object",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.properties:non-empty&schema.type:primary=object",
+        "one per Parameter Object in `query` whose schema is an inline `object` declaring a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-query-param-ref-object",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=object",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `object` as its primary type",
+    ),
+    Combination(
+        "combo-query-param-array-ref-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is an array over `items` that are a Reference Object whose target declares a string-valued `enum`",
+    ),
+    Combination(
+        "combo-query-param-array-inline-enum-items",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.enum:string-valued",
+        "one per Parameter Object in `query` whose schema is an array over `items` declaring a string-valued `enum`",
+    ),
+    Combination(
+        "combo-path-param-ref-pattern",
+        "parameters.md",
+        "parameter.in=path&parameter.schema>schema.$ref~>schema.pattern",
+        "one per Parameter Object in `path` whose schema is a Reference Object whose target declares `pattern`",
+    ),
+    Combination(
+        "combo-param-example-beside-ref-schema",
+        "parameters.md",
+        "parameter.example&parameter.schema>schema.$ref",
+        "one per Parameter Object that writes `example` and whose schema is a Reference Object",
+    ),
+    Combination(
+        "combo-query-param-ref-date-time",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.format=date-time",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `format: date-time`",
+    ),
+    Combination(
+        "combo-query-param-ref-array-alias",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=array",
+        "one per Parameter Object in `query` whose schema is a Reference Object whose target declares `array` as its primary type",
+    ),
+    Combination(
+        "combo-query-param-array-default",
+        "parameters.md",
+        "parameter.in=query&parameter.schema>schema.default&schema.type:primary=array",
+        "one per Parameter Object in `query` whose schema is an array writing `default`",
+    ),
+    Combination(
+        "combo-body-property-named-as-path-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-path-parameter",
+        "one per Operation Object one of whose path parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-body-property-named-as-query-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-query-parameter",
+        "one per Operation Object one of whose query parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-body-property-named-as-header-param",
+        "document-paths.md",
+        "operation.requestBody&operation.requestBody:property-named-as-header-parameter",
+        "one per Operation Object one of whose header parameters shares its `name` with a property of its request body's schema",
+    ),
+    Combination(
+        "combo-octet-stream-body-header-param",
+        "document-paths.md",
+        "!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header",
+        "one per Operation Object whose request body offers `application/octet-stream` and no JSON media type and one of whose parameters is in `header`",
+    ),
+    Combination(
+        "combo-multipart-body-with-params",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody:multipart-form-media",
+        "one per Operation Object writing `parameters` whose request body offers `multipart/form-data`",
+    ),
+    Combination(
+        "combo-form-urlencoded-body-with-params",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody:form-urlencoded-media",
+        "one per Operation Object writing `parameters` whose request body offers `application/x-www-form-urlencoded`",
+    ),
+    Combination(
+        "combo-multipart-beside-json-body",
+        "document-paths.md",
+        "operation.requestBody:json-media&operation.requestBody:multipart-form-media",
+        "one per Operation Object whose request body offers both a JSON media type and `multipart/form-data`",
+    ),
+    Combination(
+        "combo-form-urlencoded-beside-json-body",
+        "document-paths.md",
+        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media",
+        "one per Operation Object whose request body offers both a JSON media type and `application/x-www-form-urlencoded`",
+    ),
+    Combination(
+        "combo-form-urlencoded-union-body",
+        "document-paths.md",
+        "!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf",
+        "one per Operation Object whose request body offers `application/x-www-form-urlencoded` and no JSON media type, one of whose media types' schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-params-beside-inline-oneof-body",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf",
+        "one per Operation Object writing `parameters` one of whose request body's media types' schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-params-beside-inline-anyof-body",
+        "document-paths.md",
+        "operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.anyOf",
+        "one per Operation Object writing `parameters` one of whose request body's media types' schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-ref-body-read-only-property",
+        "bodies-media.md",
+        "requestBody.content>mediaType.schema>schema.$ref~>schema.properties>schema.readOnly",
+        "one per Request Body Object one of whose media types' schema is a Reference Object whose target declares a property writing `readOnly`",
+    ),
+    Combination(
+        "combo-inline-body-read-only-property",
+        "bodies-media.md",
+        "requestBody.content>mediaType.schema>schema.properties>schema.readOnly",
+        "one per Request Body Object one of whose media types' inline schema declares a property writing `readOnly`",
+    ),
+    Combination(
+        "combo-optional-ref-union-body",
+        "bodies-media.md",
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.oneOf",
+        "one per Request Body Object writing no `required` one of whose media types' schema is a Reference Object whose target declares `oneOf`",
+    ),
+    Combination(
+        "combo-optional-ref-map-body",
+        "bodies-media.md",
+        "!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.additionalProperties",
+        "one per Request Body Object writing no `required` one of whose media types' schema is a Reference Object whose target writes `additionalProperties`",
+    ),
+    Combination(
+        "combo-media-example-on-ref-union-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.oneOf",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target declares `oneOf`",
+    ),
+    Combination(
+        "combo-media-example-on-inline-allof-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.allOf",
+        "one per Media Type Object writing `example` whose schema declares `allOf`",
+    ),
+    Combination(
+        "combo-media-example-on-ref-allof-body",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.allOf",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target declares `allOf`",
+    ),
+    Combination(
+        "combo-media-example-beside-component-example",
+        "bodies-media.md",
+        "mediaType.example&mediaType.schema>schema.$ref~>schema.example",
+        "one per Media Type Object writing `example` whose schema is a Reference Object whose target writes its own `example`",
+    ),
+    Combination(
+        "combo-allof-schema-example",
+        "schemas.md",
+        "schema.allOf&schema.example",
+        "one per Schema Object writing both `allOf` and `example`",
+    ),
+    Combination(
+        "combo-oneof-schema-example",
+        "schemas.md",
+        "schema.example&schema.oneOf",
+        "one per Schema Object writing both `example` and `oneOf`",
+    ),
+    Combination(
+        "combo-anyof-schema-example",
+        "schemas.md",
+        "schema.anyOf&schema.example",
+        "one per Schema Object writing both `anyOf` and `example`",
+    ),
+    Combination(
+        "combo-annotated-ref-property-example",
+        "schemas.md",
+        "schema.properties>schema.allOf:annotated-ref&schema.example",
+        "one per Schema Object one of whose properties is an annotated `$ref` writing its own `example`",
+    ),
+    Combination(
+        "combo-map-of-oneof",
+        "schemas.md",
+        "schema.additionalProperties>schema.oneOf",
+        "one per Schema Object whose `additionalProperties` schema declares `oneOf`",
+    ),
+    Combination(
+        "combo-map-of-anyof",
+        "schemas.md",
+        "schema.additionalProperties>schema.anyOf",
+        "one per Schema Object whose `additionalProperties` schema declares `anyOf`",
+    ),
+    Combination(
+        "combo-map-beside-oneof",
+        "schemas.md",
+        "schema.additionalProperties&schema.oneOf",
+        "one per Schema Object writing both `additionalProperties` and `oneOf`",
+    ),
+    Combination(
+        "combo-map-beside-anyof",
+        "schemas.md",
+        "schema.additionalProperties&schema.anyOf",
+        "one per Schema Object writing both `additionalProperties` and `anyOf`",
+    ),
+    Combination(
+        "combo-nullable-map",
+        "schemas.md",
+        "schema.additionalProperties&schema.nullable",
+        "one per Schema Object writing both `additionalProperties` and `nullable`",
+    ),
+    Combination(
+        "combo-map-of-nullable-values",
+        "schemas.md",
+        "schema.additionalProperties>schema.nullable",
+        "one per Schema Object whose `additionalProperties` schema writes `nullable`",
+    ),
+    Combination(
+        "combo-array-of-nullable-unknown-item",
+        "schemas.md",
+        "schema.items>!schema.type&schema.nullable",
+        "one per Schema Object whose `items` value writes `nullable` and no `type`",
+    ),
+    Combination(
+        "combo-map-of-discriminated-union",
+        "schemas.md",
+        "schema.additionalProperties>schema.oneOf:discriminated-union",
+        "one per Schema Object whose `additionalProperties` schema is a union `discriminated_union` builds from its `oneOf`",
+    ),
+    Combination(
+        "combo-properties-beside-additional-properties",
+        "schemas.md",
+        "schema.additionalProperties&schema.properties:non-empty",
+        "one per Schema Object writing `additionalProperties` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-allof-nullable",
+        "schemas.md",
+        "schema.allOf&schema.nullable",
+        "one per Schema Object writing both `allOf` and `nullable`",
+    ),
+    Combination(
+        "combo-allof-nullable-member",
+        "schemas.md",
+        "schema.allOf>schema.nullable",
+        "one per Schema Object one of whose `allOf` members writes `nullable`",
+    ),
+    Combination(
+        "combo-allof-deprecated",
+        "schemas.md",
+        "schema.allOf&schema.deprecated",
+        "one per Schema Object writing both `allOf` and `deprecated`",
+    ),
+    Combination(
+        "combo-property-ref-to-read-only-target",
+        "schemas.md",
+        "schema.properties>schema.$ref~>schema.readOnly",
+        "one per Schema Object one of whose properties is a Reference Object whose target writes `readOnly`",
+    ),
+    Combination(
+        "combo-property-ref-to-nullable-target",
+        "schemas.md",
+        "schema.properties>schema.$ref~>schema.nullable",
+        "one per Schema Object one of whose properties is a Reference Object whose target writes `nullable`",
+    ),
+    Combination(
+        "combo-annotated-ref-to-nullable-target",
+        "schemas.md",
+        "schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable",
+        "one per Schema Object one of whose properties is an annotated `$ref` whose target writes `nullable`",
+    ),
+    Combination(
+        "combo-allof-ref-scalar-default",
+        "schemas.md",
+        "schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar",
+        "one per Schema Object writing `default` one of whose `allOf` members is a Reference Object whose target declares a scalar primary type",
+    ),
+    Combination(
+        "combo-allof-oneof-member",
+        "schemas.md",
+        "schema.allOf>schema.oneOf",
+        "one per Schema Object one of whose `allOf` members declares `oneOf`",
+    ),
+    Combination(
+        "combo-oneof-beside-properties",
+        "schemas.md",
+        "schema.oneOf&schema.properties:non-empty",
+        "one per Schema Object writing `oneOf` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-anyof-beside-properties",
+        "schemas.md",
+        "schema.anyOf&schema.properties:non-empty",
+        "one per Schema Object writing `anyOf` beside a non-empty `properties` map",
+    ),
+    Combination(
+        "combo-allof-with-required",
+        "schemas.md",
+        "schema.allOf&schema.required",
+        "one per Schema Object writing both `allOf` and `required`",
+    ),
+    Combination(
+        "combo-array-item-oneof-titled-member",
+        "schemas.md",
+        "schema.items>schema.oneOf>schema.title",
+        "one per Schema Object whose `items` value declares `oneOf` one of whose members writes `title`",
+    ),
+    Combination(
+        "combo-array-item-anyof-titled-member",
+        "schemas.md",
+        "schema.items>schema.anyOf>schema.title",
+        "one per Schema Object whose `items` value declares `anyOf` one of whose members writes `title`",
+    ),
+    Combination(
+        "combo-discriminated-inline-members",
+        "schemas.md",
+        "schema.discriminator&schema.oneOf>!schema.$ref",
+        "one per Schema Object writing `discriminator` one of whose `oneOf` members is not a Reference Object",
+    ),
+    Combination(
+        "combo-anyof-beside-discriminator",
+        "schemas.md",
+        "schema.anyOf&schema.discriminator",
+        "one per Schema Object writing both `anyOf` and `discriminator`",
+    ),
+    Combination(
+        "combo-tagged-group-and-method-name",
+        "document-paths.md",
+        "operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name",
+        "one per Operation Object writing `tags`, `x-fern-sdk-group-name` and `x-fern-sdk-method-name`",
+    ),
+    Combination(
+        "combo-streaming-method-name",
+        "document-paths.md",
+        "operation.x-fern-sdk-method-name&operation.x-fern-streaming",
+        "one per Operation Object writing both `x-fern-sdk-method-name` and `x-fern-streaming`",
+    ),
+    Combination(
+        "combo-paginated-grouped-operation",
+        "document-paths.md",
+        "operation.x-fern-pagination&operation.x-fern-sdk-group-name",
+        "one per Operation Object writing both `x-fern-pagination` and `x-fern-sdk-group-name`",
+    ),
+)
+
+CONJUNCTIONS.update({combination.selector: combination.counts for combination in COMBINATIONS})
 
 for _spelling in CONJUNCTIONS:
     _refusal = conjunction_error(_spelling)
@@ -5537,6 +6007,7 @@ class Census:
         # per conjunction group matched against them — and a document's objects
         # live for the whole walk, so `id()` keys a stable cache.
         self.declared_cache: dict[tuple[int, str, str], list[str]] = {}
+        self.declared_set_cache: dict[tuple[int, str, str], frozenset[str]] = {}
         self.root_path = root_path.resolve() if root_path else None
         self.current_path = self.root_path
         self.tree_paths = {path.resolve() for path in tree_paths} if tree_paths else set()
@@ -5840,6 +6311,38 @@ class Census:
                 properties.setdefault(name, value)
             required |= also
         return properties, required
+
+    def request_body_readings(self, operation: dict[Any, Any]) -> list[str]:
+        """The `REQUEST_BODY_MEMBER_PREDICATES` one Operation Object holds."""
+        found: list[str] = []
+        body = self.local_component("requestBodies", operation.get("requestBody"))
+        content = body.get("content") if isinstance(body, dict) else None
+        if not isinstance(content, dict):
+            return found
+        bases = {key.split(";", 1)[0].strip().lower() for key in content if isinstance(key, str)}
+        for reading, test in REQUEST_BODY_MEDIA_TESTS:
+            if any(test(base) for base in bases):
+                found.append(reading)
+        properties: set[str] = set()
+        for media in content.values():
+            if isinstance(media, dict):
+                members, _required = self.object_members(media.get("schema"))
+                properties |= {name for name in members if isinstance(name, str)}
+        if not properties:
+            return found
+        own = operation.get("parameters")
+        parameters = own if isinstance(own, list) else []
+        route = self.operation_routes.get(id(operation))
+        item = self.paths.get(route[1]) if route is not None and isinstance(self.paths, dict) else None
+        shared = item.get("parameters") if isinstance(item, dict) else None
+        for parameter in [*parameters, *(shared if isinstance(shared, list) else [])]:
+            parameter = self.local_component("parameters", parameter)
+            if not isinstance(parameter, dict) or parameter.get("name") not in properties:
+                continue
+            reading = f"operation.requestBody:property-named-as-{parameter.get('in')}-parameter"
+            if reading in REQUEST_BODY_MEMBER_PREDICATES and reading not in found:
+                found.append(reading)
+        return found
 
     def media_example_value(self, media: dict[Any, Any]) -> Any:
         """The example a request media type's worked call reads: `example`, else the first named one."""
@@ -6276,6 +6779,8 @@ class Census:
             found += reference_cycle_predicates(node.get("schemas"))
             found += self.security_scheme_references(node.get("securitySchemes"))
         found += self.position_predicates(node, kind_name)
+        if kind_name == "operation":
+            found += self.request_body_readings(node)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
             example_kind = selected_example_kind(node)
@@ -6325,6 +6830,14 @@ class Census:
         self.declared_cache[key] = found
         return found
 
+    def declared_set(self, node: dict[Any, Any], kind_name: str, prefix: str) -> frozenset[str]:
+        """`declared_here` as a set, kept beside it for the conjunction groups matched against it."""
+        key = (id(node), kind_name, prefix)
+        cached = self.declared_set_cache.get(key)
+        if cached is None:
+            cached = self.declared_set_cache[key] = frozenset(self.declared_here(node, kind_name, prefix))
+        return cached
+
     def walk(self, node: Any, kind_name: str, prefix: str, seen: frozenset[int]) -> None:
         if not isinstance(node, dict):
             return
@@ -6343,7 +6856,13 @@ class Census:
             if selector in MEMBER_ONLY_PREDICATES:
                 continue
             self.record(selector)
+        declared = self.declared_set(node, kind_name, prefix)
         for selector, groups in self.conjunctions.items():
+            # A conjunction whose leftmost group cannot hold here is skipped before
+            # its descent is tried, which is the first test `conjunction_holds`
+            # makes anyway.
+            if not groups[0][0][0] <= declared:
+                continue
             # A fresh alias guard: a conjunction's descent is its own path from
             # this node, and the ancestors `seen` already holds are not on it.
             if self.conjunction_holds(node, kind_name, prefix, groups, 0, frozenset()):
@@ -6428,7 +6947,7 @@ class Census:
         if not isinstance(node, dict) or id(node) in seen:
             return False
         (positive, negated), descend = groups[index]
-        declared = set(self.declared_here(node, kind_name, prefix))
+        declared = self.declared_set(node, kind_name, prefix)
         if not positive.issubset(declared) or negated & declared:
             return False
         if descend is None:

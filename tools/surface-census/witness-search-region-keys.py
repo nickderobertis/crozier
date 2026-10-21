@@ -4,7 +4,9 @@
 The set is every `FIXTURE` `gap` row, plus every `handwritten` row: a hand-written
 fixture is admitted only after that key's real-specification search failed, so
 the key keeps its tracked selector here, and the hand-written fixture gate reads
-it from this file (docs/openapi-surface/handwritten/AGENTS.md).
+it from this file (docs/openapi-surface/handwritten/AGENTS.md). Every combination
+row (docs/openapi-surface/combinations.md) is in the set too, whatever its
+category, under the selector its evidence cell cites.
 
 Exit status: 0 with the key set on stdout; 1 when a region row needs repair
 (a gap with no selector, a duplicate key, a handwritten key with no tracked
@@ -25,6 +27,10 @@ COVERAGE = REPO / "docs/openapi-surface-coverage.md"
 CATEGORIES = ("golden", "limitations", "handwritten", "gap")
 # Every `census_status` a key row carries: the one vocabulary its readers import.
 CENSUS_STATUSES = ("supported", "unsupported-by-census")
+# The key prefix of a combination row (`docs/openapi-surface/combinations.md`): such
+# a row is tracked whatever its category, so the search tooling reaches every
+# selected combination by the same key and selector a single feature has.
+COMBINATION_PREFIX = "combo-"
 
 
 def region_rows(text: str) -> list[list[str]]:
@@ -105,6 +111,11 @@ def keys(regions: Path) -> list[tuple[str, str, str, str]]:
                         "restore that file from git, where the key's search recorded it"
                     )
                 selector = tracked[key]
+            elif key.startswith(COMBINATION_PREFIX):
+                match = re.search(r"census `([^`]+)`", line)
+                if not match:
+                    raise ValueError(f"{path}: combination {key} has no selector")
+                selector = match.group(1)
             elif category != "gap" or "FIXTURE" not in cells[7]:
                 continue
             else:

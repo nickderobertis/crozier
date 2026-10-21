@@ -1406,8 +1406,17 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
         )
         self.assertEqual(completed.returncode, 0, completed.stderr)
         rows = list(csv.DictReader(io.StringIO(completed.stdout), dialect="excel-tab"))
-        self.assertEqual(len(rows), 153)
-        self.assertEqual(len({row["key"] for row in rows}), 153)
+        self.assertEqual(len({row["key"] for row in rows}), len(rows))
+        # The single features, and apart from them every combination
+        # `combinations.md` selects, tracked whatever its category.
+        combinations = [row["key"] for row in rows if row["key"].startswith("combo-")]
+        self.assertEqual(len(rows) - len(combinations), 153)
+        selected = re.findall(
+            r"^\| `(combo-[a-z0-9-]+)` \|",
+            (REPO / "docs/openapi-surface/combinations.md").read_text(encoding="utf-8"),
+            re.M,
+        )
+        self.assertEqual(sorted(selected), combinations)
         self.assertNotIn("request-body-string-map", {row["key"] for row in rows})
         self.assertEqual(
             [row["key"] for row in rows if row["census_status"] == "unsupported-by-census"],

@@ -119,6 +119,11 @@ split four ways:
 
 497 + 66 + 145 + 9 = 717.
 
+**Feature combinations are counted apart.** 64 combinations are selected
+([the list](openapi-surface/combinations.md)): 60 are `golden` and 4 are `gap`.
+None is among the 717 features above, and each `gap` one is named under
+[Unproven combinations, named](#unproven-combinations-named).
+
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 498 `golden` rows declare 1018 handling sites in
 [the site table](openapi-surface/golden-reach-sites.tsv), and
@@ -1062,8 +1067,8 @@ as absent.
 
 ##### The member-only readings
 
-Five readings are a conjunction **member** and are not selectors. They are a
-closed list of 5, declared as `MEMBER_ONLY_PREDICATES` in
+Twelve readings are a conjunction **member** and are not selectors. They are a
+closed list of 12, declared as `MEMBER_ONLY_PREDICATES` in
 `tools/surface-census/openapi-surface-census.py` and restated here, with a drift gate over the
 pair, exactly as the predicates above are.
 
@@ -1128,6 +1133,45 @@ recorded as H-pointer-nesting until the conjunctions carrying them closed it.
   they carry a value after `=` for the reason `schema.type:primary=array` does:
   which of a closed set of five segment spellings the walk read is a position
   rather than a presence.
+
+The other seven are the **request-body readings** of an Operation Object, added
+for the feature combinations [`combinations.md`](openapi-surface/combinations.md)
+selects and member-only for the same reason. A request body's media types are the
+*keys* of its `content` map, which the walk reads as names rather than fields, and
+whether a body property shares its name with a parameter compares two subtrees of
+one operation, which no member at either end can say. Each is decided at the
+Operation Object from the operation alone — its `requestBody`, one
+`#/components/requestBodies/` reference followed; the schemas its media types
+write, local `#/components/schemas/` references followed and `allOf` members'
+properties merged in; and its own and its Path Item's parameters, one
+`#/components/parameters/` reference followed. Standing alone each would say only
+half of a combination and would be a single feature the region files already
+enumerate (`media-type-multipart`, `media-type-form-urlencoded`,
+`media-type-octet-stream`), so each is matchable only as a member beside the
+feature it is combined with:
+
+- `operation.requestBody:json-media` —
+  one per Operation Object whose request body offers a JSON media type —
+  `application/json`, a `+json` or `/ndjson` suffix, or an `application/`
+  subtype naming `json`, the test `is_json_like_media_type` of `src/ir.rs`
+  makes.
+- `operation.requestBody:multipart-form-media` —
+  one per Operation Object whose request body offers `multipart/form-data`.
+- `operation.requestBody:form-urlencoded-media` —
+  one per Operation Object whose request body offers
+  `application/x-www-form-urlencoded`.
+- `operation.requestBody:octet-stream-media` —
+  one per Operation Object whose request body offers `application/octet-stream`.
+- `operation.requestBody:property-named-as-path-parameter` —
+  one per Operation Object one of whose path parameters, declared on it or on its
+  Path Item, has the same `name` as a property of a schema one of its request
+  body's media types writes, compared as written.
+- `operation.requestBody:property-named-as-query-parameter` —
+  one per Operation Object one of whose query parameters shares its `name` with
+  such a request-body property, on the same terms.
+- `operation.requestBody:property-named-as-header-parameter` —
+  one per Operation Object one of whose header parameters shares its `name` with
+  such a request-body property, on the same terms.
 
 A shape that is a **combination** of fields rather than one field emits a
 **conjunction selector**, the fourth and last kind. The three kinds above each
@@ -1233,6 +1277,14 @@ unbounded with it — so what bounds the list is not the grammar but the generat
 > `src/ir.rs` — `resolve_schema_pointer`, `nested_array_element`,
 > `hoist_union_variant`, `ref_to_class`, `prop_type_ref`, `path_group`.
 
+A conjunction is **also** enumerable when it is a `## Selected` row of
+[`combinations.md`](openapi-surface/combinations.md): a feature combination some
+crozier branch reads together, or that real specifications combine where the two
+features' handling can interact, selected by the rule that file states and
+declared in the script's `COMBINATIONS`. Nothing else is admitted: every other
+entry of the list is read off a case of those six functions, and the drift tests
+hold both halves.
+
 The list is therefore read off those functions' own branch structure, one
 selector per branch a document can select, and never off the cross-product of the
 grammar: `nested_array_element` distinguishes nine cases a document can reach,
@@ -1302,9 +1354,11 @@ which count members with or without `properties`. Cases 12c and 12d use the
 stricter selectors requiring that field; the historical search counts do not
 measure those stricter cases.
 
-The conjunctions are themselves a closed list of 104, declared in
+The conjunctions are themselves a closed list of 168, declared in
 `tools/surface-census/openapi-surface-census.py` beside the predicate table and restated here,
-with a drift gate over the pair:
+with a drift gate over the pair. Its closing entries are the feature combinations
+[`combinations.md`](openapi-surface/combinations.md) selects, declared in the
+script's `COMBINATIONS` with their keys and regions:
 
 - `schema.anyOf>schema.$ref` — one per Schema Object one of whose `anyOf`
   members is a Reference Object.
@@ -1626,6 +1680,178 @@ with a drift gate over the pair:
   one per Schema Object one of whose properties declares none of the members
   `prop_type_ref`'s own arms carry, which is the residual arm its closing
   `base_type_ref` is.
+
+- `parameter.in=query&parameter.schema>schema.oneOf` —
+  one per Parameter Object in `query` whose schema declares `oneOf`.
+- `parameter.in=query&parameter.schema>schema.anyOf` —
+  one per Parameter Object in `query` whose schema declares `anyOf`.
+- `parameter.in=query&parameter.schema>schema.$ref~>schema.enum:string-valued` —
+  one per Parameter Object in `query` whose schema is a Reference Object whose
+  target declares a string-valued `enum`.
+- `parameter.in=header&parameter.schema>schema.$ref~>schema.enum:string-valued` —
+  one per Parameter Object in `header` whose schema is a Reference Object whose
+  target declares a string-valued `enum`.
+- `parameter.in=path&parameter.schema>schema.$ref~>schema.enum:string-valued` —
+  one per Parameter Object in `path` whose schema is a Reference Object whose
+  target declares a string-valued `enum`.
+- `parameter.in=query&parameter.schema>schema.properties:non-empty&schema.type:primary=object` —
+  one per Parameter Object in `query` whose schema is an inline `object` declaring
+  a non-empty `properties` map.
+- `parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=object` —
+  one per Parameter Object in `query` whose schema is a Reference Object whose
+  target declares `object` as its primary type.
+- `parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.$ref~>schema.enum:string-valued` —
+  one per Parameter Object in `query` whose schema is an array over `items` that
+  are a Reference Object whose target declares a string-valued `enum`.
+- `parameter.in=query&parameter.schema>schema.type:primary=array&schema.items>schema.enum:string-valued` —
+  one per Parameter Object in `query` whose schema is an array over `items`
+  declaring a string-valued `enum`.
+- `parameter.in=path&parameter.schema>schema.$ref~>schema.pattern` —
+  one per Parameter Object in `path` whose schema is a Reference Object whose
+  target declares `pattern`.
+- `parameter.example&parameter.schema>schema.$ref` —
+  one per Parameter Object that writes `example` and whose schema is a Reference
+  Object.
+- `parameter.in=query&parameter.schema>schema.$ref~>schema.format=date-time` —
+  one per Parameter Object in `query` whose schema is a Reference Object whose
+  target declares `format: date-time`.
+- `parameter.in=query&parameter.schema>schema.$ref~>schema.type:primary=array` —
+  one per Parameter Object in `query` whose schema is a Reference Object whose
+  target declares `array` as its primary type.
+- `parameter.in=query&parameter.schema>schema.default&schema.type:primary=array` —
+  one per Parameter Object in `query` whose schema is an array writing `default`.
+- `operation.requestBody&operation.requestBody:property-named-as-path-parameter` —
+  one per Operation Object one of whose path parameters shares its `name` with a
+  property of its request body's schema.
+- `operation.requestBody&operation.requestBody:property-named-as-query-parameter` —
+  one per Operation Object one of whose query parameters shares its `name` with a
+  property of its request body's schema.
+- `operation.requestBody&operation.requestBody:property-named-as-header-parameter` —
+  one per Operation Object one of whose header parameters shares its `name` with a
+  property of its request body's schema.
+- `!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header` —
+  one per Operation Object whose request body offers `application/octet-stream`
+  and no JSON media type and one of whose parameters is in `header`.
+- `operation.parameters&operation.requestBody:multipart-form-media` —
+  one per Operation Object writing `parameters` whose request body offers
+  `multipart/form-data`.
+- `operation.parameters&operation.requestBody:form-urlencoded-media` —
+  one per Operation Object writing `parameters` whose request body offers
+  `application/x-www-form-urlencoded`.
+- `operation.requestBody:json-media&operation.requestBody:multipart-form-media` —
+  one per Operation Object whose request body offers both a JSON media type and
+  `multipart/form-data`.
+- `operation.requestBody:form-urlencoded-media&operation.requestBody:json-media` —
+  one per Operation Object whose request body offers both a JSON media type and
+  `application/x-www-form-urlencoded`.
+- `!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf` —
+  one per Operation Object whose request body offers
+  `application/x-www-form-urlencoded` and no JSON media type, one of whose media
+  types' schema declares `oneOf`.
+- `operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf` —
+  one per Operation Object writing `parameters` one of whose request body's media
+  types' schema declares `oneOf`.
+- `operation.parameters&operation.requestBody>requestBody.content>mediaType.schema>schema.anyOf` —
+  one per Operation Object writing `parameters` one of whose request body's media
+  types' schema declares `anyOf`.
+- `requestBody.content>mediaType.schema>schema.$ref~>schema.properties>schema.readOnly` —
+  one per Request Body Object one of whose media types' schema is a Reference
+  Object whose target declares a property writing `readOnly`.
+- `requestBody.content>mediaType.schema>schema.properties>schema.readOnly` —
+  one per Request Body Object one of whose media types' inline schema declares a
+  property writing `readOnly`.
+- `!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.oneOf` —
+  one per Request Body Object writing no `required` one of whose media types'
+  schema is a Reference Object whose target declares `oneOf`.
+- `!requestBody.required&requestBody.content>mediaType.schema>schema.$ref~>schema.additionalProperties` —
+  one per Request Body Object writing no `required` one of whose media types'
+  schema is a Reference Object whose target writes `additionalProperties`.
+- `mediaType.example&mediaType.schema>schema.$ref~>schema.oneOf` —
+  one per Media Type Object writing `example` whose schema is a Reference Object
+  whose target declares `oneOf`.
+- `mediaType.example&mediaType.schema>schema.allOf` —
+  one per Media Type Object writing `example` whose schema declares `allOf`.
+- `mediaType.example&mediaType.schema>schema.$ref~>schema.allOf` —
+  one per Media Type Object writing `example` whose schema is a Reference Object
+  whose target declares `allOf`.
+- `mediaType.example&mediaType.schema>schema.$ref~>schema.example` —
+  one per Media Type Object writing `example` whose schema is a Reference Object
+  whose target writes its own `example`.
+- `schema.allOf&schema.example` —
+  one per Schema Object writing both `allOf` and `example`.
+- `schema.example&schema.oneOf` —
+  one per Schema Object writing both `example` and `oneOf`.
+- `schema.anyOf&schema.example` —
+  one per Schema Object writing both `anyOf` and `example`.
+- `schema.properties>schema.allOf:annotated-ref&schema.example` —
+  one per Schema Object one of whose properties is an annotated `$ref` writing its
+  own `example`.
+- `schema.additionalProperties>schema.oneOf` —
+  one per Schema Object whose `additionalProperties` schema declares `oneOf`.
+- `schema.additionalProperties>schema.anyOf` —
+  one per Schema Object whose `additionalProperties` schema declares `anyOf`.
+- `schema.additionalProperties&schema.oneOf` —
+  one per Schema Object writing both `additionalProperties` and `oneOf`.
+- `schema.additionalProperties&schema.anyOf` —
+  one per Schema Object writing both `additionalProperties` and `anyOf`.
+- `schema.additionalProperties&schema.nullable` —
+  one per Schema Object writing both `additionalProperties` and `nullable`.
+- `schema.additionalProperties>schema.nullable` —
+  one per Schema Object whose `additionalProperties` schema writes `nullable`.
+- `schema.items>!schema.type&schema.nullable` —
+  one per Schema Object whose `items` value writes `nullable` and no `type`.
+- `schema.additionalProperties>schema.oneOf:discriminated-union` —
+  one per Schema Object whose `additionalProperties` schema is a union
+  `discriminated_union` builds from its `oneOf`.
+- `schema.additionalProperties&schema.properties:non-empty` —
+  one per Schema Object writing `additionalProperties` beside a non-empty
+  `properties` map.
+- `schema.allOf&schema.nullable` —
+  one per Schema Object writing both `allOf` and `nullable`.
+- `schema.allOf>schema.nullable` —
+  one per Schema Object one of whose `allOf` members writes `nullable`.
+- `schema.allOf&schema.deprecated` —
+  one per Schema Object writing both `allOf` and `deprecated`.
+- `schema.properties>schema.$ref~>schema.readOnly` —
+  one per Schema Object one of whose properties is a Reference Object whose target
+  writes `readOnly`.
+- `schema.properties>schema.$ref~>schema.nullable` —
+  one per Schema Object one of whose properties is a Reference Object whose target
+  writes `nullable`.
+- `schema.properties>schema.allOf:annotated-ref&schema.allOf>schema.$ref~>schema.nullable` —
+  one per Schema Object one of whose properties is an annotated `$ref` whose
+  target writes `nullable`.
+- `schema.default&schema.allOf>schema.$ref~>schema.type:primary-scalar` —
+  one per Schema Object writing `default` one of whose `allOf` members is a
+  Reference Object whose target declares a scalar primary type.
+- `schema.allOf>schema.oneOf` —
+  one per Schema Object one of whose `allOf` members declares `oneOf`.
+- `schema.oneOf&schema.properties:non-empty` —
+  one per Schema Object writing `oneOf` beside a non-empty `properties` map.
+- `schema.anyOf&schema.properties:non-empty` —
+  one per Schema Object writing `anyOf` beside a non-empty `properties` map.
+- `schema.allOf&schema.required` —
+  one per Schema Object writing both `allOf` and `required`.
+- `schema.items>schema.oneOf>schema.title` —
+  one per Schema Object whose `items` value declares `oneOf` one of whose members
+  writes `title`.
+- `schema.items>schema.anyOf>schema.title` —
+  one per Schema Object whose `items` value declares `anyOf` one of whose members
+  writes `title`.
+- `schema.discriminator&schema.oneOf>!schema.$ref` —
+  one per Schema Object writing `discriminator` one of whose `oneOf` members is
+  not a Reference Object.
+- `schema.anyOf&schema.discriminator` —
+  one per Schema Object writing both `anyOf` and `discriminator`.
+- `operation.tags&operation.x-fern-sdk-group-name&operation.x-fern-sdk-method-name` —
+  one per Operation Object writing `tags`, `x-fern-sdk-group-name` and
+  `x-fern-sdk-method-name`.
+- `operation.x-fern-sdk-method-name&operation.x-fern-streaming` —
+  one per Operation Object writing both `x-fern-sdk-method-name` and
+  `x-fern-streaming`.
+- `operation.x-fern-pagination&operation.x-fern-sdk-group-name` —
+  one per Operation Object writing both `x-fern-pagination` and
+  `x-fern-sdk-group-name`.
 
 A conjunction selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name — and refuses a well-formed
@@ -2979,6 +3205,22 @@ reason, and a registered witness removes the row.
 | `schema-example-on-ref-to-object` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to an object schema, and no witness search has been run |
 | `schema-example-on-ref-to-enum` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to an enum schema, and no witness search has been run |
 | `schema-example-on-ref-to-union` | `schemas` | `not searched` — no registered golden source writes an example beside a `$ref` to a union schema, and no witness search has been run |
+
+#### Unproven combinations, named
+
+A `gap` combination row — a feature combination
+[`combinations.md`](openapi-surface/combinations.md) selects that no registered
+golden source declares — is unproven, and it may stand only as a row below, which
+the same gate checks. None has had a witness search, so each reads
+`not searched`; a search's verdict replaces that reason, and a registered witness
+or a hand-written fixture removes the row.
+
+| key | region | why it is unproven |
+|---|---|---|
+| `combo-header-param-ref-string-enum` | `parameters` | `not searched` — no registered golden source declares it (Parameter Object in `header` whose schema is a Reference Object whose target declares a string-valued `enum`), and no witness search has been run |
+| `combo-body-property-named-as-header-param` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object one of whose header parameters shares its `name` with a property of its request body's schema), and no witness search has been run |
+| `combo-octet-stream-body-header-param` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object whose request body offers `application/octet-stream` and no JSON media type and one of whose parameters is in `header`), and no witness search has been run |
+| `combo-form-urlencoded-union-body` | `document-paths` | `not searched` — no registered golden source declares it (Operation Object whose request body offers `application/x-www-form-urlencoded` and no JSON media type, one of whose media types' schema declares `oneOf`), and no witness search has been run |
 
 #### The `example` arm, removed as a proven divergence
 
