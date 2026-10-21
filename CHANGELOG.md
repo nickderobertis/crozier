@@ -6,6 +6,12 @@ Commit messages; do not edit released sections by hand.
 
 ## [Unreleased]
 
+## [0.0.124](https://github.com/nickderobertis/crozier/compare/v0.0.123...v0.0.124) - 2026-10-21
+
+### Fixed
+
+- *(parity)* re-measure the Fern refusal population at the retargeted pair ([#560](https://github.com/nickderobertis/crozier/pull/560))
+
 ## [0.0.123](https://github.com/nickderobertis/crozier/compare/v0.0.122...v0.0.123) - 2026-10-20
 
 ### Added
