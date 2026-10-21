@@ -837,6 +837,39 @@ def named_gap_features(root: Path) -> dict[str, str]:
     }
 
 
+def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None = None) -> bool:
+    """Admit an unfinished bounded search only with its counted, named declarers."""
+    match = re.fullmatch(
+        r"`search incomplete` — \[bounded search\]\(([^)#]+)(?:#[^)]*)?\); "
+        r"outstanding candidates: \[named census\]\(([^)]+)\)",
+        reason,
+    )
+    if not match:
+        return False
+    paths = [Path(value) for value in match.groups()]
+    if any(path.is_absolute() or ".." in path.parts or "\\" in str(path) for path in paths):
+        return False
+    record, census_path = [root / "docs" / path for path in paths]
+    if record.name != "README.md" or census_path != record.with_name("census.tsv"):
+        return False
+    try:
+        text = record.read_text(encoding="utf-8")
+        if arm is not None and f"`{arm}`" not in text:
+            return False
+        count = re.search(rf"^\| `{re.escape(key)}` \| `search-incomplete` \| (\d+) \|", text, re.M)
+        with census_path.open(encoding="utf-8", newline="") as handle:
+            rows = [row for row in csv.DictReader(handle, delimiter="\t") if row.get("key") == key]
+        return bool(
+            count
+            and rows
+            and len(rows) == int(count.group(1))
+            and all(row.get("document", "").strip() for row in rows)
+            and len({(row.get("source"), row["document"]) for row in rows}) == len(rows)
+        )
+    except (OSError, UnicodeError, csv.Error, ValueError):
+        return False
+
+
 RESIDUAL_HEADING = "#### Golden rows resting only on residual goldens"
 
 
@@ -865,8 +898,8 @@ def finished_state_failures(root: Path) -> list[str]:
     """What keeps the coverage report from its finished state, read off `root`'s ledgers.
 
     Every `FIXTURE` `gap` row needs a registered real witness or a `handwritten`
-    cover, or is a row under `NAMED_FEATURES_HEADING` giving `not searched` as
-    its reason; every unreached arm of a `golden` row needs an arm-level
+    cover, or a row under `NAMED_FEATURES_HEADING` giving `not searched` or a
+    validated bounded incomplete search with named candidates as its reason; every unreached arm of a `golden` row needs an arm-level
     hand-written cover, a committed record, with its minimal document and
     control, that only a document Fern refuses reaches it, or a row under
     `NAMED_GAPS_HEADING` — over an arm search reading `search-incomplete`, or,
@@ -890,10 +923,13 @@ def finished_state_failures(root: Path) -> list[str]:
             if key not in witnessed and not any(k == key and not arm for _f, k, arm in covers):
                 open_features.add(key)
                 if key in named_features:
-                    if not named_features[key].startswith(NOT_SEARCHED):
+                    if not (
+                        named_features[key].startswith(NOT_SEARCHED)
+                        or bounded_incomplete_search(root, key, named_features[key])
+                    ):
                         failures.append(
                             f"{key}: docs/openapi-surface-coverage.md names it an unproven feature "
-                            f"without {NOT_SEARCHED} as its reason"
+                            f"without {NOT_SEARCHED} or a validated bounded search as its reason"
                         )
                     continue
                 failures.append(
@@ -924,12 +960,22 @@ def finished_state_failures(root: Path) -> list[str]:
             if hit or (reach.key, arm) in arm_covers or (reach.key, arm) in refused:
                 continue
             if (reach.key, arm) in named:
+                reason = named[(reach.key, arm)]
+                if reason.startswith("`search incomplete`") and not bounded_incomplete_search(
+                    root, reach.key, reason, arm
+                ):
+                    failures.append(
+                        f"{reach.key}: unreached arm `{arm}` has an invalid bounded search record or unnamed candidates"
+                    )
+                    continue
                 record = searches / f"{reach.key}.md"
                 if not record.is_file():
+                    if bounded_incomplete_search(root, reach.key, named[(reach.key, arm)], arm):
+                        continue
                     if not named[(reach.key, arm)].startswith(NOT_SEARCHED):
                         failures.append(
                             f"{reach.key}: unreached arm `{arm}` is named an unproven gap with no arm "
-                            f"search record, so its reason must be {NOT_SEARCHED}"
+                            f"search record, so its reason must be {NOT_SEARCHED} or a validated bounded search"
                         )
                     continue
                 verdicts = (
@@ -3225,7 +3271,7 @@ fn following() { let other = 42; }
 
     def test_each_region_file_repeats_the_index_s_boundary_verbatim(self) -> None:
         """Six copies of the region boundaries; the index's table is the original."""
-        text = self.DOC.read_text(encoding="utf-8")
+        text = self.DOC.read_text(encoding="utf-8").partition("\n## The region files\n")[2].partition("\n## ")[0]
         owns = {
             cells[1].strip("`"): cells[3]
             for line in text.splitlines()
@@ -11424,6 +11470,7 @@ class FinishedStateGateTests(unittest.TestCase):
         copies += [path.relative_to(REPO) for path in HANDWRITTEN.glob("*/evidence.toml")]
         copies += [path.relative_to(REPO) for path in (REPO / surface / "probes").glob("*-refused*.yml")]
         copies += [Path("docs") / "openapi-surface-coverage.md"]
+        copies += [surface / "witness-search-unproven-features" / name for name in ("README.md", "census.tsv")]
         copies += [
             path.relative_to(REPO) for path in (REPO / surface / "golden-reach-witnesses" / "searches").glob("*.md")
         ]
@@ -11439,6 +11486,42 @@ class FinishedStateGateTests(unittest.TestCase):
 
     def test_the_committed_ledgers_are_in_their_finished_state(self) -> None:
         self.assertEqual([], finished_state_failures(self.root))
+
+    def test_a_bounded_feature_search_names_its_candidates(self) -> None:
+        key = "sample-unproven"
+        record = self.root / "docs/openapi-surface/sample-search"
+        record.mkdir()
+        (record / "README.md").write_text(
+            "| `sample-unproven` | `search-incomplete` | 1 | pending |\n", encoding="utf-8"
+        )
+        (record / "census.tsv").write_text(
+            "key\tsource\tdocument\tsites\nsample-unproven\tregistered\ttests/fixtures/sample/openapi.yml\t1\n",
+            encoding="utf-8",
+        )
+        reason = (
+            "`search incomplete` — [bounded search](openapi-surface/sample-search/README.md); "
+            "outstanding candidates: [named census](openapi-surface/sample-search/census.tsv)"
+        )
+        with (self.root / "docs/openapi-surface/schemas.md").open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-unproven | both | Schema Object.sample | gap | none | none | sample | FIXTURE — pending |\n"
+            )
+        self.edit(
+            "docs/openapi-surface-coverage.md",
+            NAMED_FEATURES_HEADING,
+            NAMED_FEATURES_HEADING + f"\n\n| `{key}` | `schemas` | {reason} |\n",
+        )
+        self.assertEqual([], finished_state_failures(self.root))
+        self.assertTrue(bounded_incomplete_search(self.root, key, reason))
+        (record / "census.tsv").write_text(
+            "key\tsource\tdocument\tsites\nsample-unproven\tregistered\t\t1\n", encoding="utf-8"
+        )
+        self.assertFalse(bounded_incomplete_search(self.root, key, reason))
+        (record / "README.md").unlink()
+        self.assertFalse(bounded_incomplete_search(self.root, key, reason))
+        self.assertFalse(bounded_incomplete_search(self.root, key, "a search probably happened"))
+        self.edit("docs/openapi-surface-coverage.md", reason, "a search probably happened")
+        self.assertTrue(any("unproven feature without" in failure for failure in finished_state_failures(self.root)))
 
     def test_a_fixture_gap_row_with_no_witness_or_cover_is_refused(self) -> None:
         row = (
@@ -11476,10 +11559,17 @@ class FinishedStateGateTests(unittest.TestCase):
     NAMED_KEY = "schema-example-outside-enum"
     NAMED_ARM = "src/emit.rs::ExampleCtx::example_matches_type_through[=Some\\(TypeDecl::Enum\\(decl\\)\\) => value]"
 
-    def test_the_committed_named_gap_is_an_uncovered_arm_no_search_backs(self) -> None:
-        """The arm has no cover, no refused record and no search: only its named row holds it."""
+    def test_the_committed_named_gap_is_an_uncovered_arm_with_an_incomplete_screen(self) -> None:
+        """The bounded screen is not a proof: the uncovered arm still needs its named row."""
         self.assertIn((self.NAMED_KEY, self.NAMED_ARM), named_gap_arms(self.root))
-        self.assertTrue(named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)].startswith(NOT_SEARCHED))
+        self.assertTrue(
+            bounded_incomplete_search(
+                self.root,
+                self.NAMED_KEY,
+                named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)],
+                self.NAMED_ARM,
+            )
+        )
         covered = {
             (key, arm)
             for _fixture, key, arm in handwritten_covers(self.root / "docs" / "openapi-surface" / "handwritten")
@@ -11496,17 +11586,38 @@ class FinishedStateGateTests(unittest.TestCase):
         self.assertIn(f"{self.NAMED_KEY}-retired: docs/openapi-surface-coverage.md names", failures[1])
 
     def test_a_named_gap_with_no_search_must_say_it_was_not_searched(self) -> None:
-        row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | {NOT_SEARCHED}"
+        reason = named_gap_arms(self.root)[(self.NAMED_KEY, self.NAMED_ARM)]
+        row = f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | {reason}"
         self.edit(
             "docs/openapi-surface-coverage.md", row, f"| `{self.NAMED_KEY}` | `{self.NAMED_ARM}` | searched, somewhere"
         )
         self.assertEqual(
             [
                 f"{self.NAMED_KEY}: unreached arm `{self.NAMED_ARM}` is named an unproven gap with no arm "
-                f"search record, so its reason must be {NOT_SEARCHED}"
+                f"search record, so its reason must be {NOT_SEARCHED} or a validated bounded search"
             ],
             finished_state_failures(self.root),
         )
+
+    def test_a_bounded_arm_search_refuses_absent_records_and_unnamed_candidates(self) -> None:
+        record = self.root / "docs/openapi-surface/witness-search-unproven-features/README.md"
+        census_path = record.with_name("census.tsv")
+        self.assertEqual([], finished_state_failures(self.root))
+        text = record.read_text(encoding="utf-8")
+        record.unlink()
+        self.assertTrue(any(self.NAMED_ARM in failure for failure in finished_state_failures(self.root)))
+        record.write_text(text, encoding="utf-8")
+        with census_path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter="\t")
+            columns = reader.fieldnames
+            rows = list(reader)
+        assert columns is not None
+        next(row for row in rows if row["key"] == self.NAMED_KEY)["document"] = ""
+        with census_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.DictWriter(handle, fieldnames=columns, delimiter="\t", lineterminator="\n")
+            writer.writeheader()
+            writer.writerows(rows)
+        self.assertTrue(any(self.NAMED_ARM in failure for failure in finished_state_failures(self.root)))
 
     def test_a_named_gap_over_a_search_reading_exhausted_is_refused(self) -> None:
         """Once a search record exists, only its `search-incomplete` verdict admits the row."""
@@ -11525,11 +11636,16 @@ class FinishedStateGateTests(unittest.TestCase):
             finished_state_failures(self.root),
         )
 
-    def test_a_fixture_gap_named_as_not_searched_passes_and_unlisted_ones_fail(self) -> None:
+    def test_a_fixture_gap_named_with_its_search_state_passes_and_unlisted_ones_fail(self) -> None:
         """The committed `FIXTURE` gaps stand only because the report names each one."""
         named = named_gap_features(self.root)
         self.assertIn("operation-id-digit-leading-method", named)
-        self.assertTrue(all(reason.startswith(NOT_SEARCHED) for reason in named.values()))
+        self.assertTrue(
+            all(
+                reason.startswith(NOT_SEARCHED) or bounded_incomplete_search(self.root, key, reason)
+                for key, reason in named.items()
+            )
+        )
         self.edit(
             "docs/openapi-surface-coverage.md",
             "| `operation-id-digit-leading-method` |",
@@ -11551,13 +11667,13 @@ class FinishedStateGateTests(unittest.TestCase):
     def test_a_fixture_gap_named_without_the_not_searched_reason_is_refused(self) -> None:
         self.edit(
             "docs/openapi-surface-coverage.md",
-            f"| `operation-id-digit-leading-method` | `document-paths` | {NOT_SEARCHED}",
+            f"| `operation-id-digit-leading-method` | `document-paths` | {named_gap_features(self.root)['operation-id-digit-leading-method']}",
             "| `operation-id-digit-leading-method` | `document-paths` | pending",
         )
         self.assertEqual(
             [
                 "operation-id-digit-leading-method: docs/openapi-surface-coverage.md names it an "
-                f"unproven feature without {NOT_SEARCHED} as its reason"
+                f"unproven feature without {NOT_SEARCHED} or a validated bounded search as its reason"
             ],
             finished_state_failures(self.root),
         )
@@ -17072,6 +17188,115 @@ class NamingWireCensusTests(unittest.TestCase):
                 self.assertEqual(
                     census.census_document(document).get("operation.operationId:camel-case-tag-prefix", 0), 0
                 )
+
+
+class CoverageRestatementTests(unittest.TestCase):
+    """The public restater diagnoses drift, writes it, and refuses missing measurements."""
+
+    def setUp(self) -> None:
+        self.directory = tempfile.TemporaryDirectory()
+        self.addCleanup(self.directory.cleanup)
+        self.root = Path(self.directory.name)
+        self.index = self.root / "docs/openapi-surface-coverage.md"
+        self.index.parent.mkdir()
+        shutil.copyfile(REPO / "docs/openapi-surface-coverage.md", self.index)
+        surface = self.root / "docs/openapi-surface"
+        surface.mkdir()
+        for path in (REPO / "docs/openapi-surface").glob("*.md"):
+            shutil.copyfile(path, surface / path.name)
+        shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
+
+    def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [
+                sys.executable,
+                str(REPO / "tools/surface-census/restate-coverage.py"),
+                "--repo-root",
+                str(self.root),
+                *args,
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+    def test_the_committed_index_is_the_restater_output(self) -> None:
+        result = self.run_restater()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_a_reclassification_requires_restatement_and_then_checks_cleanly(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        key = "sample-restatement-gap"
+        line = (
+            f"| {key} | both | Schema Object.sample | gap | census: 0 declarations | "
+            "`src/naming.rs` 1 | `client.py` and `reference.md` | FIXTURE — pending |"
+        )
+        region.write_text(region.read_text(encoding="utf-8") + "\n" + line + "\n", encoding="utf-8")
+        initial = self.run_restater("--write")
+        self.assertEqual(0, initial.returncode, initial.stderr)
+        old = region.read_text(encoding="utf-8")
+        initial_count = int(
+            matched(re.search(r"All (\d+) `FIXTURE` gaps", self.index.read_text(encoding="utf-8"))).group(1)
+        )
+        region.write_text(old.replace(line, line.replace("| gap |", "| handwritten |")), encoding="utf-8")
+        before = self.index.read_bytes()
+        refused = self.run_restater()
+        self.assertEqual(1, refused.returncode)
+        self.assertIn("derived tables differ", refused.stderr)
+        self.assertEqual(before, self.index.read_bytes())
+        written = self.run_restater("--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        after = self.index.read_text(encoding="utf-8")
+        self.assertNotEqual(before, self.index.read_bytes())
+        self.assertNotRegex(after, rf"(?m)^\| \d+ \| \[`{key}`\]")
+        self.assertIn(f"All {initial_count - 1} `FIXTURE` gaps", after)
+        checked = self.run_restater()
+        self.assertEqual(0, checked.returncode, checked.stderr)
+
+    def test_an_empty_fixture_backlog_has_no_stale_ranks_and_is_idempotent(self) -> None:
+        for path in (self.root / "docs/openapi-surface").glob("*.md"):
+            lines = []
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if "| gap |" in line and "| FIXTURE " in line:
+                    line = line.replace("| gap |", "| handwritten |")
+                lines.append(line)
+            path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        written = self.run_restater("--write")
+        self.assertEqual(0, written.returncode, written.stderr)
+        after = self.index.read_text(encoding="utf-8")
+        self.assertIn("All 0 `FIXTURE` gaps", after)
+        self.assertNotRegex(after, r"(?m)^\| \d+ \| \[`")
+        self.assertNotIn("**The median blind-spot count of this list is", after)
+        checked = self.run_restater()
+        self.assertEqual(0, checked.returncode, checked.stderr)
+
+    def test_unrelated_source_measurement_tables_are_preserved(self) -> None:
+        historical = "| `src/emit.rs` | 999999999 | 123 | 456 | 789 |"
+        with self.index.open("a", encoding="utf-8") as handle:
+            handle.write("\n## Retained measurement\n\n| file | before | after | delta | total |\n" + historical + "\n")
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        after = self.index.read_text(encoding="utf-8")
+        self.assertIn(historical, after)
+        self.assertNotIn("**999999999**", after)
+
+    def test_missing_measurement_refuses_without_writing(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        with region.open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-measurement-gap | both | Schema Object.sample | gap | census: 0 declarations | "
+                "`src/naming.rs` 1 | `client.py` | FIXTURE — pending |\n"
+            )
+        text = self.index.read_text(encoding="utf-8")
+        self.index.write_text(
+            "\n".join(line for line in text.splitlines() if not line.startswith("| `src/naming.rs` |")) + "\n",
+            encoding="utf-8",
+        )
+        before = self.index.read_bytes()
+        result = self.run_restater("--write")
+        self.assertEqual(1, result.returncode)
+        self.assertIn("no committed blind-spot measurement", result.stderr)
+        self.assertEqual(before, self.index.read_bytes())
 
 
 if __name__ == "__main__":

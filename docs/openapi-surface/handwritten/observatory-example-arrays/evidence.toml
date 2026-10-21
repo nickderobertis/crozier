@@ -1,0 +1,15 @@
+fern_cli_version = "5.163.1"
+fern_python_sdk_version = "5.41.3"
+digest = "e73e2992607927585383e5e803c21ce07c4bac5505b85aab744eb942e0d43b12"
+
+[[covers]]
+key = "schema-example-temporal-duplicate-element"
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"
+
+[[covers]]
+key = "schema-example-union-ref-sentinel"
+search = "docs/openapi-surface/witness-search-unproven-features/README.md#verdicts"
+verdict = "search-incomplete"
+renewed = "docs/openapi-surface/witness-search-unproven-features/README.md"
