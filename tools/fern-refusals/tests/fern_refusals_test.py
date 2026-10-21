@@ -1658,6 +1658,13 @@ class MeasuredAtThePair(unittest.TestCase):
             registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), [edited[key] for key in DISPOSITIONS_HEADER]]
         )
         self.assertIn(f"dispositions.tsv {digest}: the row disagrees with its log", self.script("check").stderr)
+        # A reduction's log no row names is named too.
+        stray = self.evidence / "reductions" / f"{'0' * 64}.log"
+        stray.write_text(PAIR_LINE, encoding="utf-8")
+        self.assertIn(
+            f"{stray.relative_to(self.root).as_posix()}: no dispositions.tsv row", self.script("check").stderr
+        )
+        stray.unlink()
         # Fern generating from the reduction shows crozier's detector over-broad: refused.
         self.env.update(FERN_STUB_CHECK_OUTPUT="", FERN_STUB_CHECK_EXIT="0", FERN_STUB_GENERATE_FILES="3")
         reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))

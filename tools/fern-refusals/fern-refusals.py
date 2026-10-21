@@ -2203,6 +2203,9 @@ def disposition_problems() -> list[str]:
             )
         elif disposition_cells(row, row["reduced_digest"], recorded, patterns, near) != row:
             problems.append(f"{name}: the row disagrees with its log {row['log']}; {again}")
+    named = {row["log"] for row in rows}
+    stray = sorted(rel(log) for log in (EVIDENCE / "reductions").glob("*.log") if rel(log) not in named)
+    problems += [f"{log}: no dispositions.tsv row names this reduction; delete it" for log in stray]
     return problems
 
 
