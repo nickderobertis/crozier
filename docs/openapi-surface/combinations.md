@@ -36,11 +36,12 @@ existing census row already separates the documents that take the branch from
 the ones that do not — a combination that row's own selector or fixture already
 distinguishes would be a second answer to one question. A rejected candidate is
 listed under `## Rejected` with its reason, so the review can see everything that
-was weighed. The research read crozier's code for every place one feature's
-handling branches on another, measured each candidate over the two populations
-above, and states each candidate's evidence here in crozier's own terms and
-nothing else. There is no limit on how many are selected: a long list is
-split across proof work by `seam`, never trimmed.
+was weighed. The research audits the five Rust modules for branches where one
+feature changes another's handling, and records the resulting candidates here
+in crozier's own terms. Selected selectors have registered-corpus measurements;
+acquired-pool counts are recorded where measured, rather than inferred for
+code-admitted candidates. There is no limit on how many are selected: a long
+list is split across proof work by `seam`, never trimmed.
 
 **How a combination is spelled.** Each is a conjunction of the census's selector
 grammar (`docs/openapi-surface-coverage.md`'s `### The selector grammar`), with
