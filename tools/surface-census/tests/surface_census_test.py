@@ -863,7 +863,11 @@ def bounded_incomplete_search(root: Path, key: str, reason: str, arm: str | None
             count
             and rows
             and len(rows) == int(count.group(1))
-            and all(row.get("document", "").strip() for row in rows)
+            and all(
+                isinstance(name, str) and name.strip()
+                for row in rows
+                for name in (row.get("source"), row.get("document"))
+            )
             and len({(row.get("source"), row["document"]) for row in rows}) == len(rows)
         )
     except (OSError, UnicodeError, csv.Error, ValueError):
@@ -11517,6 +11521,16 @@ class FinishedStateGateTests(unittest.TestCase):
             "key\tsource\tdocument\tsites\nsample-unproven\tregistered\t\t1\n", encoding="utf-8"
         )
         self.assertFalse(bounded_incomplete_search(self.root, key, reason))
+        for truncated in (
+            "key\tsource\tdocument\tsites\nsample-unproven\tregistered\n",
+            "key\tdocument\tsource\tsites\nsample-unproven\ttests/fixtures/sample/openapi.yml\n",
+        ):
+            with self.subTest(record=truncated):
+                (record / "census.tsv").write_text(truncated, encoding="utf-8")
+                self.assertFalse(bounded_incomplete_search(self.root, key, reason))
+                self.assertTrue(
+                    any("unproven feature without" in failure for failure in finished_state_failures(self.root))
+                )
         (record / "README.md").unlink()
         self.assertFalse(bounded_incomplete_search(self.root, key, reason))
         self.assertFalse(bounded_incomplete_search(self.root, key, "a search probably happened"))
