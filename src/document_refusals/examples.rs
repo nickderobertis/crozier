@@ -14,6 +14,7 @@ use std::collections::HashSet;
 use serde_json::Value;
 
 use super::{ignored_reference_node, yaml_pointer, Class};
+use crate::openapi::document_boolean;
 
 const METHODS: [&str; 8] = [
     "get", "put", "post", "delete", "options", "head", "patch", "trace",
@@ -543,7 +544,7 @@ impl<'a> Doc<'a> {
             .find_map(|parameter| {
                 (str_of(parameter, "in") == Some("header")
                     && str_of(parameter, "name") == Some(header)
-                    && parameter.get("required").and_then(Value::as_bool) == Some(true))
+                    && parameter.get("required").and_then(document_boolean) == Some(true))
                 .then(|| {
                     (
                         Class::VersionHeaderRedeclaredAsParameter,
@@ -563,7 +564,7 @@ impl<'a> Doc<'a> {
                 continue;
             };
             if str_of(parameter, "in") != Some("header")
-                || parameter.get("required").and_then(Value::as_bool) != Some(true)
+                || parameter.get("required").and_then(document_boolean) != Some(true)
             {
                 continue;
             }
@@ -702,7 +703,7 @@ impl<'a> Doc<'a> {
         }
         for parameter in self.parameters(operation) {
             if str_of(parameter, "in") != Some("header")
-                || parameter.get("required").and_then(Value::as_bool) == Some(true)
+                || parameter.get("required").and_then(document_boolean) == Some(true)
             {
                 continue;
             }
@@ -780,7 +781,7 @@ impl<'a> Doc<'a> {
         let members = schema.get("allOf")?.as_array()?;
         properties.iter().find_map(|(name, property)| {
             let name = name.as_str();
-            if property.get("readOnly").and_then(Value::as_bool) != Some(true) {
+            if property.get("readOnly").and_then(document_boolean) != Some(true) {
                 return None;
             }
             members.iter().find_map(|member| {
@@ -858,7 +859,7 @@ impl<'a> Doc<'a> {
     fn nullable_parent(&self, member: &'a Value) -> bool {
         str_of(member, "$ref").is_some()
             && self.resolve(member).is_some_and(|parent| {
-                parent.get("nullable").and_then(Value::as_bool) == Some(true)
+                parent.get("nullable").and_then(document_boolean) == Some(true)
                     && object_or_untyped(parent)
                     && !required_names(parent).is_empty()
             })
@@ -1048,10 +1049,9 @@ impl<'a> Doc<'a> {
             };
             let nested = self.resolve(nested)?;
             if has_composition(nested)
-                || !matches!(
-                    nested.get("additionalProperties"),
-                    None | Some(Value::Bool(false))
-                )
+                || nested
+                    .get("additionalProperties")
+                    .is_some_and(|value| document_boolean(value) != Some(false))
             {
                 return None;
             }
@@ -1280,10 +1280,9 @@ impl<'a> Doc<'a> {
         {
             return Some((Class::ExampleMissingRequiredProperty, missing.to_owned()));
         }
-        let closed = matches!(
-            schema.get("additionalProperties"),
-            None | Some(Value::Bool(false))
-        );
+        let closed = schema
+            .get("additionalProperties")
+            .is_none_or(|value| document_boolean(value) == Some(false));
         for (name, field) in fields {
             match properties.and_then(|properties| properties.get(name)) {
                 Some(property) => {
@@ -1631,10 +1630,10 @@ fn string_led_union(schema: &Value) -> bool {
 fn collision_class(loser: &Value, winner: &Value) -> Option<Class> {
     let own = loser.get("properties").and_then(Value::as_object)?;
     let theirs = winner.get("properties").and_then(Value::as_object)?;
-    if !matches!(
-        winner.get("additionalProperties"),
-        None | Some(Value::Bool(false))
-    ) || has_composition(winner)
+    if winner
+        .get("additionalProperties")
+        .is_some_and(|value| document_boolean(value) != Some(false))
+        || has_composition(winner)
     {
         return None;
     }

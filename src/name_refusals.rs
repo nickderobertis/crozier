@@ -1,6 +1,6 @@
 //! Refuse name shapes whose baseline SDK fails the refusal registry's bar.
 
-use crate::openapi::{AdditionalProperties, OpenApi, Schema};
+use crate::openapi::{document_boolean, AdditionalProperties, OpenApi, Schema};
 use crate::{Error, Result};
 use std::path::Path;
 
@@ -147,7 +147,8 @@ fn source_refusals(source: &serde_json::Value, args: &crate::GenerateArgs) -> Re
                 let target = source_target(source, &media["schema"]);
                 let mut own = Vec::new();
                 for (key, property) in target["properties"].as_object().into_iter().flatten() {
-                    if source_target(source, property)["readOnly"].as_bool() != Some(true) {
+                    if document_boolean(&source_target(source, property)["readOnly"]) != Some(true)
+                    {
                         let wire = key.as_str();
                         own.push(request_property_name(property).unwrap_or(wire).to_owned());
                     }
@@ -196,7 +197,9 @@ fn source_request_properties(
         return;
     }
     for (key, property) in node["properties"].as_object().into_iter().flatten() {
-        if request_only && source_target(source, property)["readOnly"].as_bool() == Some(true) {
+        if request_only
+            && document_boolean(&source_target(source, property)["readOnly"]) == Some(true)
+        {
             continue;
         }
         let wire = key.as_str();
