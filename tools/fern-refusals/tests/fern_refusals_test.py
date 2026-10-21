@@ -1242,6 +1242,28 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check", "generate"])
         self.assertEqual(self.shape_problems(), [])
 
+    def test_a_shape_recorded_twice_is_refused_rather_than_one_row_kept(self) -> None:
+        said = phrase(self.class_row[4])
+        self.shape("alpha-probe.yml", "alpha")
+        result = self.script("shapes", self.CLASS, check_exit="1", check_output=f"issue: {said}")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(self.shape_problems(), [])
+        # A second, contradictory row for the same shape: neither is believed.
+        table = rows(self.evidence / "shapes.tsv")
+        twice = [*table[1][:8], "generates", *table[1][9:]]
+        write_rows(self.evidence / "shapes.tsv", [*table, twice])
+        refusal = f"records alpha-probe.yml of {self.CLASS} twice; delete both rows and rerun `shapes`"
+        # `check`'s shape verdict refuses the table...
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr), self.assertRaises(SystemExit):
+            self.shape_problems()
+        self.assertIn(refusal, stderr.getvalue())
+        # ...and so does `shapes`, which measures nothing over it.
+        result = self.script("shapes", self.CLASS)
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn(refusal, result.stderr)
+        self.assertEqual(len(rows(self.evidence / "shapes.tsv")), 3, "a refused table was rewritten anyway")
+
     def test_shapes_refuses_a_class_the_registry_does_not_name(self) -> None:
         result = self.script("shapes", "no-such-class")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
@@ -1724,6 +1746,24 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertIn("0 reduction(s) measured", reused.stdout)
         self.assertFalse(self.calls.exists(), "Fern ran over a reduction already on record")
         self.assertEqual(built().returncode, 0, built().stderr)
+        # A second row whose other reduction yields the same bytes cannot share that
+        # one log: `check` names the pair, and `reduce` refuses before any Fern run.
+        kept = [row[key] for key in DISPOSITIONS_HEADER]
+        alias = dict(row, crozier_class="generator-lint-failure", reduction="/*-openapi,info,paths")
+        write_rows(
+            registry / "dispositions.tsv",
+            [list(DISPOSITIONS_HEADER), [alias[key] for key in DISPOSITIONS_HEADER], kept],
+        )
+        shared = (
+            f"reduced document {reduced_digest} comes from representative {digest} reduced by "
+            f"'/*-openapi,info,paths' and from {digest} reduced by '/x-note'"
+        )
+        self.assertIn(shared, self.script("check").stderr)
+        refused = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(refused.returncode, 1, refused.stdout + refused.stderr)
+        self.assertIn(shared, refused.stderr)
+        self.assertFalse(self.calls.exists(), "Fern ran over a reduction whose provenance is shared")
+        write_rows(registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), kept])
         # A row its log does not derive is named by `check`.
         edited = dict(row, disposition="reported-other")
         write_rows(

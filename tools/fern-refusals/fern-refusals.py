@@ -1940,7 +1940,7 @@ def shapes(args: argparse.Namespace) -> int:
     patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
     every = class_shapes(classes)
     path = shapes_path()
-    on_record = {(row["class"], row["shape"]): row for row in read_tsv(path, SHAPES_HEADER)} if path.is_file() else {}
+    on_record = shape_records(path) if path.is_file() else {}
     current = {(shape.cls, shape.path.name) for shape in every}
     table = {key: row for key, row in on_record.items() if key in current}
     taken = 0
@@ -1977,6 +1977,18 @@ def shapes(args: argparse.Namespace) -> int:
     return 0
 
 
+def shape_records(path: Path) -> dict[tuple[str, str], dict[str, str]]:
+    """`shapes.tsv`'s rows by class and shape; a shape recorded twice is refused,
+    never one of its measurements silently kept."""
+    records: dict[tuple[str, str], dict[str, str]] = {}
+    for row in read_tsv(path, SHAPES_HEADER):
+        key = (row["class"], row["shape"])
+        if key in records:
+            fail(f"{rel(path)} records {row['shape']} of {row['class']} twice; delete both rows and rerun `shapes`")
+        records[key] = row
+    return records
+
+
 def write_shapes(path: Path, table: dict[tuple[str, str], dict[str, str]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(tsv_text(SHAPES_HEADER, (table[key] for key in sorted(table))), encoding="utf-8")
@@ -1993,7 +2005,7 @@ def shape_problems() -> list[str]:
     path = shapes_path()
     if not path.is_file():
         return [f"{rel(path)} is missing; run `tools/fern-refusals/fern-refusals.py shapes`"] if every else []
-    on_record = {(row["class"], row["shape"]): row for row in read_tsv(path, SHAPES_HEADER)}
+    on_record = shape_records(path)
     problems = []
     for shape in every:
         row = on_record.pop((shape.cls, shape.path.name), None)
@@ -2313,8 +2325,10 @@ def reduce(args: argparse.Namespace) -> int:
         if digest:
             entries.setdefault(digest, entry)
     fetcher: Fetcher | None = None
-    runs: dict[str, ShapeRun] = {}
-    taken = 0
+    # Every row's reduced bytes first: one log per reduced document names the
+    # one input pair it came from, so a pair sharing it is refused before Fern runs.
+    reductions: list[tuple[int, tuple[Digest, str], bytes, Digest]] = []
+    provenance: dict[Digest, tuple[Digest, str]] = {}
     for index, row in enumerate(rows):
         if row["representative"] == EMPTY:
             continue
@@ -2329,6 +2343,13 @@ def reduce(args: argparse.Namespace) -> int:
         inputs = (row["representative"], row["reduction"])
         text = reduced(data, suffix_of(entry["locator"]), row["reduction"])
         digest = hashlib.sha256(text).hexdigest()
+        if provenance.setdefault(digest, inputs) != inputs:
+            fail(shared_reduction(digest, provenance[digest], inputs))
+        reductions.append((index, inputs, text, digest))
+    runs: dict[str, ShapeRun] = {}
+    taken = 0
+    for index, inputs, text, digest in reductions:
+        row = rows[index]
         log = reduction_log(digest)
         found = read_reduction_log(log.read_text(encoding="utf-8")) if log.is_file() else None
         # A log of these bytes from other inputs names other provenance: take it again.
@@ -2348,6 +2369,15 @@ def reduce(args: argparse.Namespace) -> int:
     write_dispositions(rows)
     print(f"fern-refusals: {taken} reduction(s) measured, {len(rows)} disposition(s) on record")
     return 0
+
+
+def shared_reduction(digest: Digest, first: tuple[Digest, str], second: tuple[Digest, str]) -> str:
+    """Why two rows' inputs cannot share one reduced document: its one log names one pair."""
+    return (
+        f"dispositions.tsv: reduced document {digest} comes from representative {first[0]} reduced by "
+        f"{first[1]!r} and from {second[0]} reduced by {second[1]!r}; give the rows one representative and "
+        "reduction, or reduce one of them further"
+    )
 
 
 def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> list[str]:
@@ -2371,6 +2401,13 @@ def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> 
     ):
         problems.append("dispositions.tsv: rows are sorted by crozier_class then document, no pair twice")
     again = "run `tools/fern-refusals/fern-refusals.py reduce`"
+    provenance: dict[Digest, tuple[Digest, str]] = {}
+    for row in rows:
+        if row["representative"] != EMPTY and row["reduced_digest"] != EMPTY:
+            inputs = (row["representative"], row["reduction"])
+            first = provenance.setdefault(row["reduced_digest"], inputs)
+            if first != inputs:
+                problems.append(shared_reduction(row["reduced_digest"], first, inputs))
     for row in rows:
         name = f"dispositions.tsv {row['document']}"
         document = documents.get(row["document"])
