@@ -44,8 +44,8 @@ code-admitted candidates. There is no limit on how many are selected: a long
 list is split across proof work by `seam`, never trimmed.
 
 **How a combination is spelled.** Each is a conjunction of the census's selector
-grammar (`docs/openapi-surface-coverage.md`'s `### The selector grammar`), with
-`&`, `>`, `~>` and `!` meaning exactly what they mean for every other conjunction.
+grammar, with `&`, `>`, `~>` and `!` meaning exactly what they mean for every
+other conjunction.
 The first grammar extension adds seven **request-body readings
 of an Operation Object**, member-only exactly as the pointer-walk readings are.
 A request body's media types are the *keys* of its `content` map, which the walk
@@ -62,9 +62,8 @@ feature it is combined with, so it adds no single-feature row.
 
 The operation-context extension joins a document's version and security defaults
 with an operation's grouping and overrides, and reads response status-map keys
-and media alternatives at that operation. The member-only
-`operation.context:*` readings are defined individually in the coverage document's
-selector grammar. Success readings use the same selected response as the
+and media alternatives at that operation through member-only
+`operation.context:*` readings. Success readings use the same selected response as the
 existing census success predicates; media alternatives belong to that response.
 Error readings inspect 4xx and 5xx responses, resolving local component responses
 and schemas. The different-schema reading compares declarations across operations
@@ -244,4 +243,5 @@ OpenAPI 3 documents of the APIs.guru archive at `f04b8d0bcd39`.
 | Several path parameters declared out of their template's order | An existing row distinguishes it: `path-parameters-template-order-31` (`operation.parameters:path-order-oas-three-one`). |
 | How a discriminant is declared — a single-member `enum`, a `const`, or an undeclared string with a mapping | Existing rows distinguish it: `oneof-discriminated-union`, `anyof-discriminated-union` and `discriminator-mapping` read the tags `src/ir.rs::Builder::discriminated_union` infers. |
 | A request body and the naming functions of `src/naming.rs` | No branch reads a feature there: every function of `src/naming.rs` reads only the string it is given, and the callers in `src/ir.rs` that choose between them are the places above. |
-| Callbacks, webhooks over AsyncAPI, Swagger 2.0 and `generators.yml` settings beyond the defaults and `enum_type` | Out of scope. |
+| Callback interactions | No branch in the five inspected crozier modules reads callbacks together with another feature. |
+| AsyncAPI webhooks, Swagger 2.0 and `generators.yml` settings beyond the defaults and `enum_type` | Out of scope. |
