@@ -2241,6 +2241,15 @@ def reduction_log(reduced_digest: str) -> Path:
     return EVIDENCE / "reductions" / f"{reduced_digest}.log"
 
 
+class Reduction(NamedTuple):
+    """A `dispositions.tsv` row's reduction, derived before Fern runs over it."""
+
+    index: int
+    inputs: tuple[Digest, str]
+    text: bytes
+    digest: Digest
+
+
 class ReductionLog(NamedTuple):
     """A reduction's log: the representative and reduction it was taken from, and Fern's run."""
 
@@ -2327,7 +2336,7 @@ def reduce(args: argparse.Namespace) -> int:
     fetcher: Fetcher | None = None
     # Every row's reduced bytes first: one log per reduced document names the
     # one input pair it came from, so a pair sharing it is refused before Fern runs.
-    reductions: list[tuple[int, tuple[Digest, str], bytes, Digest]] = []
+    reductions: list[Reduction] = []
     provenance: dict[Digest, tuple[Digest, str]] = {}
     for index, row in enumerate(rows):
         if row["representative"] == EMPTY:
@@ -2345,7 +2354,7 @@ def reduce(args: argparse.Namespace) -> int:
         digest = hashlib.sha256(text).hexdigest()
         if provenance.setdefault(digest, inputs) != inputs:
             fail(shared_reduction(digest, provenance[digest], inputs))
-        reductions.append((index, inputs, text, digest))
+        reductions.append(Reduction(index, inputs, text, digest))
     runs: dict[str, ShapeRun] = {}
     taken = 0
     for index, inputs, text, digest in reductions:

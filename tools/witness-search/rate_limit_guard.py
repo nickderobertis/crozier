@@ -997,7 +997,6 @@ def cache_store(
         if name.lower() not in UNCACHED_RESPONSE_HEADERS and not name.lower().startswith("x-ratelimit-")
     )
     try:
-        # Written under a temporary name, then published under its own digest.
         staged = meta_path.with_name(f".{key}.{os.getpid()}.{threading.get_ident()}.body.tmp")
         staged.parent.mkdir(parents=True, exist_ok=True)
         try:
