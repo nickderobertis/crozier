@@ -640,7 +640,7 @@ fn check_object_extension(
             .and_then(|name| context.names.get(name))
             .copied()
             .unwrap_or_else(|| schema_is_model(target, context.root, &mut Vec::new()));
-        if !model && !object_union_base(target, context.root) {
+        if !model && !object_union_base(target) {
             return refusal(
                 context.path,
                 context.strict,
@@ -652,62 +652,24 @@ fn check_object_extension(
     Ok(())
 }
 
-/// Whether `target` is a union every member of which is an object model, a
-/// bare constraint (`not`, `required`) or such a union itself: Fern extends
-/// such a base, measured at Fern CLI 5.163.1 by the `union-base`,
-/// `nested-union-base`, `conditional-base` and `ordered-renamed-union`
-/// controls. A scalar or array base stays refused.
-fn object_union_base(target: &serde_json::Value, root: &serde_json::Value) -> bool {
-    object_union_member(target, root, &mut Vec::new())
-        && ["oneOf", "anyOf"]
-            .iter()
-            .any(|key| target.get(key).is_some())
-}
-
-fn object_union_member(
-    schema: &serde_json::Value,
-    root: &serde_json::Value,
-    seen: &mut Vec<String>,
-) -> bool {
-    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
-        if seen.iter().any(|value| value == reference) {
-            return false;
-        }
-        seen.push(reference.to_owned());
-        let member = reference
-            .strip_prefix('#')
-            .and_then(|pointer| yaml_pointer(root, pointer))
-            .is_some_and(|target| object_union_member(target, root, seen));
-        seen.pop();
-        return member;
-    }
-    if schema_is_model(schema, root, &mut Vec::new())
-        || schema.as_object().is_some_and(|keys| {
-            !keys.is_empty()
-                && keys
-                    .keys()
-                    .all(|key| matches!(key.as_str(), "not" | "required" | "description" | "title"))
-        })
-    {
-        return true;
-    }
+/// Whether `target` is a union: Fern extends any `oneOf` or `anyOf` base,
+/// measured at Fern CLI 5.163.1 by the `union-base`, `nested-union-base`,
+/// `conditional-base`, `untyped-ref-union-base`, `anyof-ref-union-base`,
+/// `scalar-member-union-base` and `ordered-renamed-union` controls, whatever
+/// its members. A base itself typed scalar or array stays refused.
+fn object_union_base(target: &serde_json::Value) -> bool {
     let scalar = matches!(
-        schema_type(schema)
+        schema_type(target)
             .as_ref()
             .and_then(crate::openapi::TypeField::primary),
         Some("string" | "number" | "integer" | "boolean" | "array" | "null")
     );
     !scalar
         && ["oneOf", "anyOf"].iter().any(|key| {
-            schema
+            target
                 .get(key)
                 .and_then(serde_json::Value::as_array)
-                .is_some_and(|members| {
-                    !members.is_empty()
-                        && members
-                            .iter()
-                            .all(|member| object_union_member(member, root, seen))
-                })
+                .is_some_and(|members| !members.is_empty())
         })
 }
 
@@ -3105,6 +3067,9 @@ mod tests {
         for measured in [
             "union-base-control.yml",
             "nested-union-base-control.yml",
+            "untyped-ref-union-base-control.yml",
+            "anyof-ref-union-base-control.yml",
+            "scalar-member-union-base-control.yml",
             "conditional-base-control.yml",
             "typed-scalar-alias-control.yml",
             "typed-nullable-scalar-alias-control.yml",

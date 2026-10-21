@@ -238,7 +238,7 @@ refuses. Both keep Fern's logs under
   reduced until Fern's own classes were gone. In 25 of those documents Fern's
   check then accepted it, and each detector now follows a committed shape
   measured at the pin: an extension's reference reached through an array
-  (`extension-reference-cycle`), an `allOf` over a union, conditional or
+  (`extension-reference-cycle`), an `allOf` over any union or a
   one-member alias (`object-extends-non-object`), a cycle that grows by one
   reference a turn, which Fern refuses as `generated-file-name-too-long`
   rather than `heap-exhausted`, and a one-member `allOf` alias that grows

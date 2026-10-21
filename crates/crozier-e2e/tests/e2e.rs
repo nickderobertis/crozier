@@ -3207,39 +3207,51 @@ fn property_metadata_shapes_match_the_certified_fern_trees() {
 }
 
 #[test]
-fn object_union_extension_keeps_nearby_refusals_and_recovers() {
+fn object_union_extension_generates_every_union_base_and_keeps_a_scalar_base_refused() {
+    // Measured at Fern CLI 5.163.1: an `allOf` over union-sample's `Signal`
+    // generates whether the union is typed, untyped, an `anyOf` or has a string
+    // member (the `*-union-base` controls); a base that is no union is refused.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("object-extends-non-object");
+    for control in [
+        "untyped-ref-union-base-control.yml",
+        "anyof-ref-union-base-control.yml",
+        "scalar-member-union-base-control.yml",
+    ] {
+        generates_identically_in_both_modes(&class.join(control));
+    }
     let original =
         include_str!("../../../docs/openapi-surface/handwritten/union-sample/openapi.yml");
-    let controls = [
-        original.replace("    Signal:\n      type: object\n", "    Signal:\n"),
-        original.replace("    Signal:\n      type: object\n      oneOf:", "    Signal:\n      type: object\n      anyOf:"),
-        original.replace("    Analog:\n      type: object\n      properties:\n        voltage:\n          type: number\n", "    Analog:\n      type: string\n"),
-    ];
-    for source in controls {
-        assert_ne!(source, original);
-        let dir = tempfile::tempdir().unwrap();
-        let spec = dir.path().join("openapi.yml");
-        let out = dir.path().join("sdk");
-        std::fs::write(&spec, source).unwrap();
-        for strict in [false, true] {
-            let mut command = probe_command(&spec, &out);
-            if strict {
-                command.arg("--fern-strict");
-            }
-            command
-                .assert()
-                .failure()
-                .stderr(predicate::str::contains("object-extends-non-object"));
-            assert!(!out.exists());
+    let scalar = original.replace(
+        "    Signal:\n      type: object\n      oneOf:\n      - $ref: '#/components/schemas/Analog'\n      - $ref: '#/components/schemas/Digital'\n",
+        "    Signal:\n      type: string\n",
+    );
+    assert_ne!(scalar, original);
+    let dir = tempfile::tempdir().unwrap();
+    let spec = dir.path().join("openapi.yml");
+    let out = dir.path().join("sdk");
+    std::fs::write(&spec, scalar).unwrap();
+    for strict in [false, true] {
+        let mut command = probe_command(&spec, &out);
+        if strict {
+            command.arg("--fern-strict");
         }
-        std::fs::write(&spec, original).unwrap();
-        probe_command(&spec, &out).assert().success();
-        assert!(
-            std::fs::read_to_string(out.join("src/fern/types/sample.py"))
-                .unwrap()
-                .contains("voltage: typing.Optional[float]")
-        );
+        command
+            .assert()
+            .failure()
+            .stderr(predicate::str::contains(
+                "object-extends-non-object: components/schemas/Sample/allOf extends #/components/schemas/Signal",
+            ));
+        assert!(!out.exists());
     }
+    std::fs::write(&spec, original).unwrap();
+    probe_command(&spec, &out).assert().success();
+    assert!(
+        std::fs::read_to_string(out.join("src/fern/types/sample.py"))
+            .unwrap()
+            .contains("voltage: typing.Optional[float]")
+    );
 }
 
 #[test]
@@ -25591,7 +25603,7 @@ fn body_name_refusal_survives_an_unrelated_parse_failure_and_preserves_recovery(
         "openapi": "3.0.3", "info": {"title": "probe", "version": "1"},
         "components": {"schemas": {
             "Base": {"type": "object", "properties": {"name": {"type": "string"}}},
-            "Malformed": {"type": "string", "nullable": 1}
+            "Malformed": {"type": "string", "nullable": "sometimes"}
         }},
         "paths": {"/probe": {"post": {"operationId": "probe", "requestBody": {"content": {
             "application/json": {"schema": {
