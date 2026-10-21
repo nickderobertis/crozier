@@ -5073,22 +5073,20 @@ mod tests {
     /// the same text, so a change in either reader's wording fails here.
     #[test]
     fn a_refused_boolean_reads_as_the_readers_plain_boolean_refusal() {
-        #[derive(Debug, Deserialize)]
+        #[derive(Deserialize)]
         struct Plain {
-            #[allow(dead_code)]
             flag: bool,
         }
-        #[derive(Debug, Deserialize)]
+        #[derive(Deserialize)]
         struct Shared {
-            #[allow(dead_code)]
             #[serde(deserialize_with = "de_present_boolean")]
             flag: bool,
         }
         for value in ["2", "-1", "1.0", "'1'", "yes", "~", "[1]", "{a: 1}"] {
             let text = format!("other: x\nflag: {value}\n");
             assert_eq!(
-                crate::yaml::from_str::<Shared>(&text).unwrap_err(),
-                crate::yaml::from_str::<Plain>(&text).unwrap_err(),
+                crate::yaml::from_str::<Shared>(&text).map(|read| read.flag),
+                crate::yaml::from_str::<Plain>(&text).map(|read| read.flag),
                 "YAML {value}"
             );
         }
@@ -5096,11 +5094,11 @@ mod tests {
             let text = format!("{{\"other\": \"x\",\n\"flag\": {value}}}");
             assert_eq!(
                 serde_json::from_str::<Shared>(&text)
-                    .unwrap_err()
-                    .to_string(),
+                    .map(|read| read.flag)
+                    .map_err(|error| error.to_string()),
                 serde_json::from_str::<Plain>(&text)
-                    .unwrap_err()
-                    .to_string(),
+                    .map(|read| read.flag)
+                    .map_err(|error| error.to_string()),
                 "JSON {value}"
             );
         }
