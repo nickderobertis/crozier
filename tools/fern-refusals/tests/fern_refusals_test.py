@@ -32,6 +32,7 @@ import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import unittest
 from pathlib import Path
@@ -1909,6 +1910,47 @@ class MeasuredAtThePair(unittest.TestCase):
         screens.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
         self.measure()
         self.assertEqual(sorted(self.checked()), ["measured-old", "screened-current", "screened-old"])
+
+
+# A run that never ends on its own, on any platform: it starts a child that
+# inherits its pipes and beats a heartbeat file, then waits.
+HANGING_TREE = """\
+import subprocess, sys, time
+beat = sys.argv[1]
+child = subprocess.Popen([sys.executable, "-c", (
+    "import sys, time\\n"
+    "while True:\\n"
+    "    open(sys.argv[1], 'a').write('.'); time.sleep(0.1)\\n"
+), beat])
+time.sleep(600)
+"""
+
+
+class FernRunTree(unittest.TestCase):
+    """`fern_run` ends a run past its bound with every process it started, on every platform."""
+
+    def test_a_run_past_its_bound_returns_with_its_descendants_ended(self) -> None:
+        module = load_script("fern_refusals_run_tree")
+        with tempfile.TemporaryDirectory() as scratch:
+            beat = Path(scratch) / "beat"
+            results: list[tuple[str, str]] = []
+            run = threading.Thread(
+                target=lambda: results.append(
+                    module.fern_run([sys.executable, "-c", HANGING_TREE, str(beat)], Path(scratch), 3)
+                ),
+                daemon=True,
+            )
+            run.start()
+            run.join(60)
+            # The descendant held the run's pipes; returning at all shows it was ended.
+            self.assertFalse(run.is_alive(), "fern_run never returned: a descendant kept its pipes open")
+            self.assertEqual(results, [("timeout", "")])
+            self.assertTrue(beat.exists(), "the descendant never started, so nothing was proven")
+            # No heartbeat after the run returned: the descendant is gone.
+            time.sleep(0.5)
+            last = beat.stat().st_size
+            time.sleep(1)
+            self.assertEqual(beat.stat().st_size, last)
 
 
 class DiagnosticExtraction(unittest.TestCase):

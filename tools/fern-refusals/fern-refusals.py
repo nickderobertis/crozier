@@ -662,11 +662,15 @@ def terminated(signum: int, _frame: object) -> NoReturn:
 
 
 def end_tree(run: subprocess.Popen[str]) -> None:
-    """Kill a run and, on POSIX, every process of the session it leads."""
+    """Kill a run and every process it started: the session it leads on POSIX,
+    its process tree on Windows, where a descendant left alive would hold the
+    run's pipes open and `communicate` would never return."""
     killpg = getattr(os, "killpg", None)
     if killpg is not None:
         with contextlib.suppress(ProcessLookupError):
             killpg(run.pid, 9)
+    elif os.name == "nt":
+        subprocess.run(["taskkill", "/T", "/F", "/PID", str(run.pid)], capture_output=True, check=False)
     run.kill()
 
 
