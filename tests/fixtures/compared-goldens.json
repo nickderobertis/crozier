@@ -1018,6 +1018,7 @@
     },
     "tests/fixtures/oip-web-api/expected": {},
     "tests/fixtures/onevoice/expected": {},
+    "tests/fixtures/onmyshelf-api/expected": {},
     "tests/fixtures/openaire-graph/expected": {},
     "tests/fixtures/openbanking-brasil-directory/expected": {},
     "tests/fixtures/openbanking.org.uk-account-info-openapi/expected": {},

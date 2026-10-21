@@ -183,7 +183,7 @@ when the two differ.
 
 | Kind | Entries | Meaning |
 | --- | --- | --- |
-| `fern-defect` | 18 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
+| `fern-defect` | 19 | Fern's output is wrong under the defect rule; crozier writes the correct output. |
 | `branding` | 1 | crozier names itself where Fern names itself. |
 | `packaging` | 1 | crozier writes the packaged SDK's publishing details from its own settings. |
 | `provenance` | 1 | crozier writes a fixed record of how the SDK was generated. |
@@ -252,6 +252,15 @@ when the two differ.
 - **crozier writes:** The constructor receives datetime.date.fromisoformat("2023-01-15") and the example imports datetime.
 - **Why:** The placeholder is invalid for the declared date schema. The correction uses the certified generator's own date-example form and leaves string placeholders intact.
 - **Evidence:** [`docs/departures/evidence/date-header-constructor-example.md`](../../docs/departures/evidence/date-header-constructor-example.md)
+
+### `digit-leading-method-reference-identifiers`
+
+- **Kind:** `fern-defect`
+- **Trigger:** An operationId starts with an ASCII digit, and a generated method with its identifier-safe underscore prefix exists: README.md and reference.md only.
+- **Fern writes:** The digit-leading method spelling without the underscore, in README calls and reference headings, although the generated method has the underscore.
+- **crozier writes:** The identifier the generated SDK defines, retaining every other byte of the line.
+- **Why:** The documented call fails Python compilation with an invalid decimal literal and contradicts the generated SDK method, which imports and binds correctly.
+- **Evidence:** [`docs/departures/evidence/digit-leading-method-reference-identifiers.md`](../../docs/departures/evidence/digit-leading-method-reference-identifiers.md)
 
 ### `docstring-literal-dollar-escape`
 

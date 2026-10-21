@@ -9365,6 +9365,7 @@ const CORPORA: &[&Corpus] = &[
     &RICE_SHOWER,
     &SUPABASE_API_V1,
     &RTA_IN_JAPAN_TWITTER,
+    &ONMYSHELF_API,
     &BREIZHSPORT_CATALOGUE,
     &PROTOFORM_CONFORMANCE,
     &ERE_PS_APP,
@@ -12324,6 +12325,18 @@ const SUPABASE_API_V1: Corpus = Corpus {
     unmatched: &[],
 };
 
+/// Corpus row 3000: the publisher's API declares digit-leading method IDs.
+const ONMYSHELF_API: Corpus = Corpus {
+    api: "onmyshelf-api",
+    package_name: "fern",
+    project_name: "default_package_name",
+    audiences: &[],
+    audience_strict: false,
+    client_class_name: None,
+    extra_fields: None,
+    unmatched: &[],
+};
+
 /// `rta-in-japan-twitter`: corpus row 2805, the RTA in Japan Twitter API,
 /// whose first named request example's empty array is filled from its schema
 /// example.
@@ -13164,6 +13177,42 @@ fn rta_in_japan_twitter_matches_fern_output() {
     assert_committed_corpus_matches(&RTA_IN_JAPAN_TWITTER);
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
+
+#[test]
+fn onmyshelf_api_matches_fern_output() {
+    assert_committed_corpus_matches(&ONMYSHELF_API);
+}
+
+#[test]
+fn digit_leading_method_departure_rejects_adjacent_unexplained_bytes() {
+    let root = repo_root();
+    let expected = root.join("tests/fixtures/onmyshelf-api/expected");
+    let actual = generate_corpus(&ONMYSHELF_API);
+    let source = root.join("tests/fixtures/corpus-sources/onmyshelf-api/openapi.json");
+    let document = serde_json::from_str(&std::fs::read_to_string(source).unwrap()).unwrap();
+    let context = Context::from_trees(&expected, actual.path()).with_source_document(document);
+    let fern = std::fs::read_to_string(expected.join("README.md")).unwrap();
+    let generated = std::fs::read_to_string(actual.path().join("README.md")).unwrap();
+    let positive = compare_with_golden(&context, "README.md", &generated, &fern);
+    assert!(positive.matches(), "{:?}", positive.diff());
+    assert!(positive
+        .departures
+        .iter()
+        .any(|departure| departure.id == "digit-leading-method-reference-identifiers"));
+    let before = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(...)";
+    let after = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(changed=True)";
+    assert!(fern.contains(before));
+    let negative = compare_with_golden(
+        &context,
+        "README.md",
+        &generated,
+        &fern.replacen(before, after, 1),
+    );
+    assert!(
+        !negative.matches(),
+        "unexplained adjacent argument change was normalized"
+    );
+}
 
 #[test]
 fn waylay_queries_matches_fern_output() {

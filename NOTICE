@@ -615,3 +615,8 @@ Additional hosted-API specifications:
     The repository's LICENSE at that revision permits redistribution under
     Apache-2.0; corpus row 2805 records the immutable reference. The unmodified
     source and Fern-generated output are vendored, with Python comments stripped as above.
+
+OnMyShelf API specification and generated SDK golden:
+    https://github.com/onmyshelf/api/tree/e56b713d272d627a18ba14d3eea992231c550146
+    MIT; corpus row 3000 records the immutable source. The publisher's licence
+    is retained in licenses/onmyshelf-MIT.txt.
