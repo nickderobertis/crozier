@@ -24311,6 +24311,34 @@ fn example_type_mismatch_refusal_covers_measured_shapes() {
 }
 
 #[test]
+fn fractional_integer_event_stream_refusal_recovers_with_integral_examples() {
+    let probes = repo_root().join("docs/openapi-surface/probes");
+    for strict in [false, true] {
+        let run = refusal_run(
+            &crozier,
+            &probes.join("schema-example-fractional-on-integer-event-stream.yml"),
+            strict,
+        )
+        .unwrap();
+        let failures = refused_failures(
+            "example-type-mismatch",
+            &run,
+            "example-type-mismatch: GET /readings response example 2.5",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        for name in [
+            "schema-example-fractional-on-integer-event-stream-control.yml",
+            "schema-example-fractional-on-integer-optional-request-control.yml",
+        ] {
+            let control = refusal_run(&crozier, &probes.join(name), strict).unwrap();
+            assert_eq!(control.code, Some(0), "{name}: {}", control.stderr);
+            assert!(!control.files.is_empty(), "{name}");
+        }
+    }
+}
+
+#[test]
 fn example_not_enum_value_refusal_covers_measured_shapes() {
     example_value_class_holds(
         "example-not-enum-value",

@@ -1,0 +1,19 @@
+openapi: 3.1.0
+info:
+  title: Tide Reading Events
+  version: 1.0.0
+paths:
+  /readings:
+    get:
+      operationId: watchReadings
+      responses:
+        '200':
+          description: A reading event
+          content:
+            text/event-stream:
+              schema:
+                type: object
+                properties:
+                  ticks:
+                    type: integer
+                    example: 2.5

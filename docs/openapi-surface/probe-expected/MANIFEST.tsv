@@ -111,3 +111,6 @@ xml-prefix	differential	ignores	docs/openapi-surface/probe-expected/xml-prefix	x
 xml-request	absent-tree	discards	docs/openapi-surface/probe-expected/xml-request	—	350c97f3f00d72e31161d589ed44fcd163145209240037babeba3e3871ebcef9
 xml-response	absent-tree	discards	docs/openapi-surface/probe-expected/xml-response	—	0c1c60feaa2d09d5cc00604322249faefb5c7e811455f5048afec26dc0465e24
 xml-wrapped	differential	ignores	docs/openapi-surface/probe-expected/xml-wrapped	xml-wrapped-control	e86fc22cf12dd773d9dd0dcf292a344b95d5133af6bcceec1cf7b5585b84356c
+schema-example-fractional-on-integer-event-stream	refusal	refuses	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream.fern-refusal.txt	—	2a0ce9f4d396e4ff6ce6075b1ec214729892302421d7ed867614cee962df334a
+schema-example-fractional-on-integer-event-stream-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-event-stream-control	—	ebae261adfe01a6a6d43050a1c0f1c1ded845f6652ab2f0c10181a1018ab00ad
+schema-example-fractional-on-integer-optional-request-control	absent-tree	measured	docs/openapi-surface/probe-expected/schema-example-fractional-on-integer-optional-request-control	—	d4a42cea9316a20ea6bfffa358bf1ec7f9d9b266dfcc6dd0f92876e00a3a0a0c
