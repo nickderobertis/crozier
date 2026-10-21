@@ -1102,7 +1102,8 @@ class FernRuns(unittest.TestCase):
         )
         # A log an older pair took says nothing of this one: `check` names it and `shapes` takes it again.
         log = self.root / self.shape_rows()["alpha-probe.yml"]["log"]
-        log.write_text("Fern CLI 5.67.1, python-sdk 5.20.0\ncheck exit: 1\n", encoding="utf-8")
+        older = "Fern CLI 5.67.1, python-sdk 5.20.0"  # certified-pair: stand-in (a pair before the certified one)
+        log.write_text(f"{older}\ncheck exit: 1\n", encoding="utf-8")
         self.assertIn("is not one `shapes` wrote at Fern CLI", self.shape_problems()[0])
         said = phrase(self.class_row[4])
         result = self.script("shapes", check_exit="1", check_output=f"issue: {said}")
@@ -1257,7 +1258,7 @@ class MeasuredAtThePair(unittest.TestCase):
     pair is reused, and no Fern runs over it."""
 
     CLASS = "type-name-collision"
-    OLD = "CLI 5.67.1 with fernapi/fern-python-sdk:5.20.0"
+    OLD = "CLI 5.67.1 with fernapi/fern-python-sdk:5.20.0"  # certified-pair: stand-in (a screen's older pair)
     CURRENT = f"CLI {CERTIFIED['cliVersion']} with fernapi/fern-python-sdk:{CERTIFIED['generatorVersion']}"
 
     def setUp(self) -> None:
@@ -1849,7 +1850,8 @@ class MeasuredAtThePair(unittest.TestCase):
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
         records = [json.loads(line) for line in screens.read_text(encoding="utf-8").splitlines()]
-        records[1]["fern"] = f"failed: `fern check` exit 1 at CLI {CERTIFIED['cliVersion']}, fern-python-sdk:5.20.0"
+        other = "fern-python-sdk:5.20.0"  # certified-pair: stand-in (a generator other than the certified one)
+        records[1]["fern"] = f"failed: `fern check` exit 1 at CLI {CERTIFIED['cliVersion']}, {other}"
         screens.write_text("".join(json.dumps(record) + "\n" for record in records), encoding="utf-8")
         self.measure()
         self.assertEqual(sorted(self.checked()), ["measured-old", "screened-current", "screened-old"])
