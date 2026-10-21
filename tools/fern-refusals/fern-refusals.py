@@ -140,10 +140,11 @@ DISPOSITIONS_HEADER = (
     "log",
 )
 # What a reduction's Fern run shows about crozier's class, and what needs none.
-DISPOSITIONS = ("generate-stage", "masked", "over-broad", "reported-other")
+Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other"]
+DISPOSITIONS: tuple[Disposition, ...] = ("generate-stage", "masked", "over-broad", "reported-other")
 # The recorded dispositions that hold a refusal by crozier's class: every one but
 # `over-broad`, which crozier is narrowed to match.
-AGREEING = ("generate-stage", "masked", "reported-other")
+AGREEING: tuple[Disposition, ...] = ("generate-stage", "masked", "reported-other")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
@@ -814,7 +815,7 @@ def strict_refusal(log: str) -> tuple[str, str]:
 
 
 def strict_problems(
-    digest: str, names: list[str], exit_status: str, log: str, disposed: list[dict[str, str]] | None = None
+    digest: str, names: list[str], exit_status: str, log: str, disposed: list[DispositionRow] | None = None
 ) -> list[str]:
     """A refused record held to the diagnostic crozier printed: its strict exit
     agrees with the log, and the refusal is by one of the classes it carries, or
@@ -1211,7 +1212,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
     patterns = class_patterns(classes)
     near = finding_patterns(findings)
     measured = read_measurements()
-    disposed: dict[str, list[dict[str, str]]] = {}
+    disposed: dict[str, list[DispositionRow]] = {}
     for row in read_dispositions():
         disposed.setdefault(row["document"], []).append(row)
     documents: dict[str, dict[str, str]] = {}
@@ -2007,91 +2008,163 @@ def dispositions_path() -> Path:
     return REGISTRY / "dispositions.tsv"
 
 
-def read_dispositions() -> list[dict[str, str]]:
+class DispositionRow(TypedDict):
+    """A `dispositions.tsv` row, as the table spells it."""
+
+    document: str
+    crozier_class: str
+    disposition: str
+    representative: str
+    reduction: str
+    reduced_digest: str
+    check_exit: str
+    generate_exit: str
+    classes: str
+    log: str
+
+
+def disposition_row(cells: dict[str, str]) -> DispositionRow:
+    return DispositionRow(
+        document=cells["document"],
+        crozier_class=cells["crozier_class"],
+        disposition=cells["disposition"],
+        representative=cells["representative"],
+        reduction=cells["reduction"],
+        reduced_digest=cells["reduced_digest"],
+        check_exit=cells["check_exit"],
+        generate_exit=cells["generate_exit"],
+        classes=cells["classes"],
+        log=cells["log"],
+    )
+
+
+def read_dispositions() -> list[DispositionRow]:
     path = dispositions_path()
-    return read_tsv(path, DISPOSITIONS_HEADER) if path.is_file() else []
+    return [disposition_row(cells) for cells in read_tsv(path, DISPOSITIONS_HEADER)] if path.is_file() else []
 
 
-def write_dispositions(rows: list[dict[str, str]]) -> None:
+def write_dispositions(rows: list[DispositionRow]) -> None:
     ordered = sorted(rows, key=lambda row: (row["crozier_class"], row["document"]))
-    dispositions_path().write_text(tsv_text(DISPOSITIONS_HEADER, ordered), encoding="utf-8")
+    cells = [{field: str(row[field]) for field in DISPOSITIONS_HEADER} for row in ordered]
+    dispositions_path().write_text(tsv_text(DISPOSITIONS_HEADER, cells), encoding="utf-8")
 
 
-def reduction_pointers(reduction: str) -> list[list[str]]:
-    """A reduction's `;`-separated JSON pointers, each split into its unescaped
-    tokens; fails on one that is not a pointer. `—` deletes nothing: the
-    representative as it stands. A last token `*-a,b` names every member of its
-    parent but `a` and `b`."""
-    pointers: list[list[str]] = []
+class Pointer(NamedTuple):
+    """One JSON pointer of a reduction: as written, and its unescaped tokens."""
+
+    written: str
+    tokens: list[str]
+
+
+def reduction_pointers(reduction: str) -> list[Pointer]:
+    """A reduction's `;`-separated JSON pointers; fails on one that is not a
+    pointer. `—` deletes nothing: the representative as it stands. A last token
+    `*-a,b` names every member of its parent but `a` and `b`."""
+    pointers: list[Pointer] = []
     for pointer in [] if reduction == EMPTY else reduction.split(";"):
         if not pointer.startswith("/"):
             fail(f"dispositions.tsv reduction {pointer!r} is not a JSON pointer; write each as `/a/b`, `;`-separated")
-        pointers.append([token.replace("~1", "/").replace("~0", "~") for token in pointer[1:].split("/")])
+        tokens = [token.replace("~1", "/").replace("~0", "~") for token in pointer[1:].split("/")]
+        pointers.append(Pointer(pointer, tokens))
     return pointers
+
+
+# A JSON pointer token naming a list member: a non-negative index, no sign, no leading zero.
+INDEX = re.compile(r"0|[1-9][0-9]*")
+
+
+def pointed(node: Any, pointer: Pointer) -> Any:
+    """The node a pointer's leading tokens name: the parent of what it deletes."""
+    for token in pointer.tokens[:-1]:
+        match node:
+            case dict() if token in node:
+                node = node[token]
+            case list() if INDEX.fullmatch(token) and int(token) < len(node):
+                node = node[int(token)]
+            case _:
+                fail(f"dispositions.tsv reduction {pointer.written} names no node of the representative")
+    return node
+
+
+def delete(document: Any, pointer: Pointer) -> None:
+    """Delete what one pointer names: a member, a list item, or, for `*-a,b`,
+    every member of its parent but those it keeps."""
+    last = pointer.tokens[-1]
+    match pointed(document, pointer):
+        case dict() as parent if last.startswith("*-"):
+            kept = {key for key in last[2:].split(",") if key}
+            if not kept <= parent.keys():
+                fail(f"dispositions.tsv reduction {pointer.written} keeps a member the representative lacks")
+            for key in [key for key in parent if key not in kept]:
+                del parent[key]
+        case dict() as parent if last in parent:
+            del parent[last]
+        case list() as parent if INDEX.fullmatch(last) and int(last) < len(parent):
+            del parent[int(last)]
+        case _:
+            fail(f"dispositions.tsv reduction {pointer.written} names no node of the representative")
+
+
+def yaml_module() -> Any:
+    """PyYAML. The tool also runs under the host's `python3`
+    (`just fern-refusals-measure`), so it is imported only where a YAML
+    representative is reduced."""
+    try:
+        import yaml
+    except ImportError:
+        fail("reducing a YAML document needs PyYAML; run `reduce` under the workspace's `uv run`, which installs it")
+    return yaml
+
+
+def load_yaml(text: str) -> Any:
+    """`text` read as Fern's YAML 1.2 parser reads it where PyYAML's 1.1 would
+    not: `true` and `false` alone are booleans, never `on` or `yes`, and the `=`
+    value tag Jira's description writes is a string."""
+    yaml = yaml_module()
+
+    class Loader(yaml.SafeLoader):
+        pass
+
+    boolean = "tag:yaml.org,2002:bool"
+    Loader.yaml_implicit_resolvers = {
+        first: [(tag, pattern) for tag, pattern in resolvers if tag != boolean]
+        for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+    }
+    Loader.add_implicit_resolver(boolean, re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+    Loader.add_constructor("tag:yaml.org,2002:value", lambda loader, node: loader.construct_scalar(node))
+    return yaml.load(text, Loader=Loader)
 
 
 def reduced(data: bytes, suffix: str, reduction: str) -> bytes:
     """The document `data` with each node the reduction points at deleted, in
     its own format: a YAML one stays YAML, so a plain timestamp stays plain."""
     text = data.decode("utf-8")
-    yaml: Any = None
-    if suffix == ".json":
-        document = json.loads(text)
-    else:
-        try:
-            # Only a YAML representative needs it, and PyYAML is no dependency of the tool.
-            import yaml  # type: ignore[import-untyped]
-        except ImportError:
-            fail("reducing a YAML document needs PyYAML; run `reduce` under an interpreter that has it")
-
-        class Loader(yaml.SafeLoader):
-            """PyYAML's safe loader read as YAML 1.2 reads booleans (`true` and
-            `false` alone, never `on` or `yes`), and the `=` value tag Jira's
-            description writes as a string."""
-
-        boolean = "tag:yaml.org,2002:bool"
-        Loader.yaml_implicit_resolvers = {
-            first: [(tag, pattern) for tag, pattern in resolvers if tag != boolean]
-            for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
-        }
-        Loader.add_implicit_resolver(boolean, re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
-        Loader.add_constructor("tag:yaml.org,2002:value", lambda loader, node: loader.construct_scalar(node))
-        document = yaml.load(text, Loader=Loader)  # noqa: S506 - a SafeLoader subclass constructs no objects
-    for tokens in reduction_pointers(reduction):
-        node: Any = document
-        for token in tokens[:-1]:
-            node = node[int(token)] if isinstance(node, list) else node.get(token) if isinstance(node, dict) else None
-            if node is None:
-                break
-        last = tokens[-1]
-        if last.startswith("*-") and isinstance(node, dict):
-            kept = {key for key in last[2:].split(",") if key}
-            if not kept <= node.keys():
-                fail(f"dispositions.tsv reduction /{'/'.join(tokens)} keeps a member the representative lacks")
-            for key in [key for key in node if key not in kept]:
-                del node[key]
-        elif isinstance(node, dict) and last in node:
-            del node[last]
-        elif isinstance(node, list) and last.isdigit() and int(last) < len(node):
-            del node[int(last)]
-        else:
-            fail(f"dispositions.tsv reduction /{'/'.join(tokens)} names no node of the representative")
-    if yaml is not None:
-        return yaml.safe_dump(document, sort_keys=False, allow_unicode=True, width=1 << 30).encode("utf-8")
-    return (json.dumps(document, ensure_ascii=False) + "\n").encode("utf-8")
+    json_document = suffix == ".json"
+    document = json.loads(text) if json_document else load_yaml(text)
+    for pointer in reduction_pointers(reduction):
+        delete(document, pointer)
+    if json_document:
+        return (json.dumps(document, ensure_ascii=False) + "\n").encode("utf-8")
+    return yaml_module().safe_dump(document, sort_keys=False, allow_unicode=True, width=1 << 30).encode("utf-8")
 
 
 def reduction_log(reduced_digest: str) -> Path:
     return EVIDENCE / "reductions" / f"{reduced_digest}.log"
 
 
+class ReductionVerdict(NamedTuple):
+    """What a reduction's run shows about crozier's class, and the classes and findings Fern named."""
+
+    disposition: Disposition
+    named: list[str]
+
+
 def disposition_of(
     crozier_class: str, run: ShapeRun, patterns: list[Template], near: list[Template]
-) -> tuple[str, list[str]]:
-    """What a reduction's run shows about crozier's class, and the classes and
-    findings Fern named: `masked` where it names crozier's class, `reported-other`
-    where its check names another class or a check-only finding, `over-broad`
-    where its check names neither."""
+) -> ReductionVerdict:
+    """`masked` where Fern names crozier's class, `reported-other` where its
+    check names another class or a check-only finding, `over-broad` where its
+    check names neither."""
     named: set[str] = set()
     checked: set[str] = set()
     for stage, log in (("check", run.check_log), ("generate", run.generation.log if run.generation else "")):
@@ -2100,21 +2173,24 @@ def disposition_of(
         if stage == "check" and run.check_exit != 0:
             checked = {*carried, *found}
     if crozier_class in named:
-        return "masked", sorted(named)
-    return ("reported-other" if checked else "over-broad"), sorted(named)
+        return ReductionVerdict("masked", sorted(named))
+    return ReductionVerdict("reported-other" if checked else "over-broad", sorted(named))
 
 
 def disposition_cells(
-    row: dict[str, str], reduced_digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
-) -> dict[str, str]:
-    disposition, classes = disposition_of(row["crozier_class"], run, patterns, near)
-    return dict(
-        row,
-        disposition=disposition,
+    row: DispositionRow, reduced_digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
+) -> DispositionRow:
+    verdict = disposition_of(row["crozier_class"], run, patterns, near)
+    return DispositionRow(
+        document=row["document"],
+        crozier_class=row["crozier_class"],
+        disposition=verdict.disposition,
+        representative=row["representative"],
+        reduction=row["reduction"],
         reduced_digest=reduced_digest,
         check_exit=str(run.check_exit),
         generate_exit=str(run.generation.exit) if run.generation else EMPTY,
-        classes=",".join(classes) or EMPTY,
+        classes=",".join(verdict.named) or EMPTY,
         log=rel(reduction_log(reduced_digest)),
     )
 

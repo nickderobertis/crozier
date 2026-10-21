@@ -1588,29 +1588,44 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertTrue(all("--fern-strict" in run for run in runs), runs)
         self.assertFalse(self.calls.exists(), "Fern ran again over verdicts already at the pair")
 
-    def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
-        registry = self.root / "docs" / "fern-refusals"
-        # Two more classes: one only `fern generate` reports, one its check does.
+    def add_classes(self, *names: str) -> dict[str, list[str]]:
+        """The registry's rows for `names`, added to the scratch class's."""
         classes = rows(REGISTRY / "classes.tsv")
-        others = {
-            row[0]: row for row in classes[1:] if row[0] in ("generator-lint-failure", "object-extends-non-object")
-        }
-        write_rows(registry / "classes.tsv", [classes[0], *sorted([self.class_row, *others.values()])])
-        # A JSON document Fern refuses with the scratch class, its own representative.
-        document = {"openapi": "3.0.3", "info": {"title": "t", "version": "1"}, "paths": {}, "x-note": "reduce me"}
-        data = json.dumps(document).encode()
+        others = {row[0]: row for row in classes[1:] if row[0] in names}
+        table = [classes[0], *sorted([self.class_row, *others.values()])]
+        write_rows(self.root / "docs" / "fern-refusals" / "classes.tsv", table)
+        return others
+
+    def add_document(self, name: str, data: bytes) -> str:
+        """A population document Fern's check refuses with the scratch class, supplied by `--root`; its digest."""
         digest = hashlib.sha256(data).hexdigest()
-        (self.root / "documents" / "json-current.json").write_bytes(data)
+        (self.root / "documents" / name).write_bytes(data)
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
         record = {
             "fern": "failed: `fern check` refused it",
             "source": "scratch",
             "repository": "scratch/apis",
             "commit": "0" * 40,
-            "path": "json-current.json",
+            "path": name,
             "sha256": digest,
         }
         screens.write_text(screens.read_text(encoding="utf-8") + json.dumps(record) + "\n", encoding="utf-8")
+        return digest
+
+    def dispose(self, digest: str, **cells: str) -> None:
+        """`dispositions.tsv` holding one row, for `digest`."""
+        row = dict.fromkeys(DISPOSITIONS_HEADER, "—")
+        row.update(document=digest, **cells)
+        table = [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
+        write_rows(self.root / "docs" / "fern-refusals" / "dispositions.tsv", table)
+
+    def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
+        registry = self.root / "docs" / "fern-refusals"
+        # Two more classes: one only `fern generate` reports, one its check does.
+        others = self.add_classes("generator-lint-failure", "object-extends-non-object")
+        # A JSON document Fern refuses with the scratch class, its own representative.
+        document = {"openapi": "3.0.3", "info": {"title": "t", "version": "1"}, "paths": {}, "x-note": "reduce me"}
+        digest = self.add_document("json-current.json", json.dumps(document).encode())
         measured = self.measure()
         strict = self.root / measured[digest]["crozier_strict_log"]
 
@@ -1621,11 +1636,7 @@ class MeasuredAtThePair(unittest.TestCase):
             strict.write_text(self.refusal("<document>").replace(self.CLASS, cls), encoding="utf-8")
 
         def dispose(**cells: str) -> None:
-            row = dict.fromkeys(DISPOSITIONS_HEADER, "—")
-            row.update(document=digest, **cells)
-            write_rows(
-                registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
-            )
+            self.dispose(digest, **cells)
 
         self.assertEqual(built().returncode, 0, built().stderr)
         # A check-stage class Fern's log does not carry fails the build until disposed.
@@ -1683,6 +1694,70 @@ class MeasuredAtThePair(unittest.TestCase):
         # That rule is for a generate-stage class alone.
         dispose(crozier_class="object-extends-non-object", disposition="generate-stage")
         self.assertIn(f"dispositions.tsv {digest}: with no representative", self.script("check").stderr)
+
+    def test_reduce_keeps_a_yaml_representative_yaml_and_refuses_a_pointer_that_names_nothing(self) -> None:
+        self.add_classes("object-extends-non-object")
+        source = (
+            "openapi: 3.0.3\n"
+            "info: {title: t, version: '1'}\n"
+            "paths:\n"
+            "  /kept: {get: {responses: {'204': {description: ok}}}}\n"
+            "  /dropped: {get: {responses: {'204': {description: ok}}}}\n"
+            "tags: [{name: first}, {name: second}]\n"
+            "components:\n"
+            "  schemas:\n"
+            "    Flag:\n"
+            "      type: object\n"
+            "      properties:\n"
+            "        on: {type: boolean, default: yes}\n"
+            "        when: {type: string, format: date, example: 2006-01-02T15:04:05Z}\n"
+            "        op: {type: string, enum: [=, '~']}\n"
+        )
+        digest = self.add_document("yaml-current.yml", source.encode())
+        self.measure()
+        documents = str(self.root / "documents")
+
+        def reduced_by(reduction: str) -> subprocess.CompletedProcess[str]:
+            self.dispose(
+                digest,
+                crozier_class="object-extends-non-object",
+                disposition="masked",
+                representative=digest,
+                reduction=reduction,
+            )
+            self.calls.unlink(missing_ok=True)
+            return self.script("reduce", "--root", documents)
+
+        # A keep-set, a list item, an enum member and a mapping member, in turn.
+        result = reduced_by("/paths/*-~1kept;/tags/0;/components/schemas/Flag/properties/op/enum/1")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        [call] = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        spec = call["spec"]
+        # Still YAML: `on` and `yes` stay the strings Fern's YAML 1.2 reads, the
+        # timestamp stays plain, and `=` stays a string.
+        self.assertFalse(spec.lstrip().startswith("{"), spec)
+        self.assertIn("'on':", spec)
+        self.assertIn("default: 'yes'", spec)
+        self.assertIn("example: 2006-01-02 15:04:05+00:00\n", spec)
+        self.assertIn("- '='\n", spec)
+        for gone in ("/dropped", "first", "'~'"):
+            self.assertNotIn(gone, spec)
+        self.assertIn("/kept", spec)
+        # A pointer naming nothing fails, naming itself, before any Fern run.
+        for pointer in ("/tags/2", "/tags/-1", "/tags/01", "/paths/~1absent/get", "/paths/*-~1absent", "tags"):
+            with self.subTest(pointer=pointer):
+                result = reduced_by(pointer)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(pointer, result.stderr)
+                self.assertFalse(self.calls.exists(), "Fern ran over a reduction that names nothing")
+        # Without PyYAML a YAML representative cannot be reduced: say how to get it.
+        withheld = self.root / "no-yaml" / "yaml"
+        withheld.mkdir(parents=True)
+        (withheld / "__init__.py").write_text("raise ImportError('PyYAML withheld')\n", encoding="utf-8")
+        self.env["PYTHONPATH"] = str(withheld.parent)
+        result = reduced_by("/tags/0")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("reducing a YAML document needs PyYAML", result.stderr)
 
     def test_a_document_fern_generates_from_is_one_crozier_generates(self) -> None:
         # Fern's check and generation both pass over every document, and the
