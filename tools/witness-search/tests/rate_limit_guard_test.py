@@ -15,6 +15,7 @@ from __future__ import annotations
 import contextlib
 import dataclasses
 import email.utils
+import hashlib
 import http.server
 import io
 import itertools
@@ -741,6 +742,31 @@ class EvidenceTests(GuardTestCase):
         self.assertTrue(all(r.authorization == f"Bearer {SECRET}" for r in self.fixture.requests("/rate_limit")))
 
 
+# One process of the concurrent-cache test: a writer storing its own answer for
+# one key over and over, or a reader recording each hit's headers and body.
+CONCURRENT_CACHE_CHILD = """
+import hashlib, importlib.util, json, sys
+spec = importlib.util.spec_from_file_location("guard", sys.argv[1])
+guard = importlib.util.module_from_spec(spec)
+sys.modules["guard"] = guard
+spec.loader.exec_module(guard)
+url = "https://api.github.com/repos/o/r/contents/big"
+role, letter = sys.argv[2], sys.argv[3]
+if role == "write":
+    body = letter.encode() * 262144
+    for _ in range(40):
+        guard.cache_store("GET", url, {}, 200, {"ETag": letter}, body)
+else:
+    hits = []
+    for _ in range(400):
+        cached = guard.cache_lookup("GET", url, {})
+        if cached is not None:
+            body = cached.body()
+            hits.append([dict(cached.headers)["ETag"], cached.sha256, hashlib.sha256(body).hexdigest(), body[:1].decode()])
+    print(json.dumps(hits))
+"""
+
+
 class ResponseCacheTests(GuardTestCase):
     """The shared GitHub response cache, driven over the loopback server's real responses."""
 
@@ -919,6 +945,36 @@ class ResponseCacheTests(GuardTestCase):
         stored.body_path.unlink()
         self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
         self.assertEqual([p.name for p in self.cache.rglob(".*.tmp")], [])
+
+    def test_concurrent_stores_of_one_key_publish_only_whole_answers(self) -> None:
+        # Two processes store different answers for one key while two read it: every
+        # hit is one writer's whole answer, its headers and its body together.
+        url = "https://api.github.com/repos/o/r/contents/big"
+        # One answer is on record before the race, so every lookup has an entry to find.
+        self.assertIsNotNone(guard_module.cache_store("GET", url, {}, 200, {"ETag": "A"}, b"A" * 262144))
+        roles = (("write", "A"), ("write", "B"), ("read", "-"), ("read", "-"))
+        children = [
+            subprocess.Popen(
+                [sys.executable, "-c", CONCURRENT_CACHE_CHILD, str(SCRIPT), role, letter],
+                stdout=subprocess.PIPE,
+                text=True,
+            )
+            for role, letter in roles
+        ]
+        outputs = [child.communicate(timeout=300)[0] for child in children]
+        self.assertEqual([child.returncode for child in children], [0, 0, 0, 0])
+        hits = [hit for output in outputs[2:] for hit in json.loads(output)]
+        self.assertTrue(hits, "no reader saw a stored answer")
+        for etag, recorded, read, first in hits:
+            self.assertEqual((read, first), (recorded, etag))
+        # Both answers were published, each under its own digest, and nothing staged is left.
+        bodies = {path.name.split(".")[1] for path in self.cache.rglob("*.body")}
+        expected = {hashlib.sha256(letter.encode() * 262144).hexdigest() for letter in "AB"}
+        self.assertEqual(bodies, expected)
+        self.assertEqual([path.name for path in self.cache.rglob(".*.tmp")], [])
+        final = guard_module.cache_lookup("GET", url, {})
+        assert final is not None
+        self.assertIn(final.sha256, expected)
 
 
 class QuotaStatusTests(GuardTestCase):

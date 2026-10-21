@@ -138,11 +138,14 @@ The key is the SHA-256 of a canonical JSON of the request: its method, its
 full URL, and the request headers that change the answer (``CACHE_KEY_HEADERS``:
 ``Accept``, ``X-GitHub-Api-Version``, ``Range``). ``Authorization`` is never part
 of the key and the token is never stored. Each entry is two files under
-``<key[:2]>/``: ``<key>.body`` (the response body's bytes) and ``<key>.json``
-(the status, the response headers callers read, the body's size and SHA-256);
-both are written to a temporary file and published with ``os.replace``, body
-first, so a reader in another process sees a whole entry or none, and an entry
-whose body does not match its recorded digest is a miss.
+``<key[:2]>/``: ``<key>.<sha256>.body`` (the response body's bytes, named by
+their own digest) and ``<key>.json`` (the status, the response headers callers
+read, the body's size and SHA-256). Both are written to a temporary file and
+published with ``os.replace``, body first, so a reader in another process sees
+a whole entry or none. A body file is never overwritten with other bytes, so
+a hit's headers and body stay one answer while another writer stores a
+different one for the same key; an entry whose body does not match its
+recorded digest is a miss.
 
 Only answers are stored. A rate-limit refusal (``429``, or a ``403`` carrying
 ``Retry-After``, ``x-ratelimit-remaining: 0`` or a rate-limit message), a
@@ -888,9 +891,13 @@ class CachedResponse:
         return {"cache_key": self.key, "status": self.status, "sha256": self.sha256, "bytes": self.size}
 
 
-def _entry_paths(root: Path, key: str) -> tuple[Path, Path]:
-    directory = root / key[:2]
-    return directory / f"{key}.json", directory / f"{key}.body"
+def _meta_path(root: Path, key: str) -> Path:
+    return root / key[:2] / f"{key}.json"
+
+
+def _body_path(root: Path, key: str, sha256: str) -> Path:
+    """A body's file, named by its own digest so no writer ever replaces it with other bytes."""
+    return root / key[:2] / f"{key}.{sha256}.body"
 
 
 def _file_digest(path: Path) -> tuple[str, int]:
@@ -909,7 +916,7 @@ def cache_lookup(method: str, url: str, headers: Mapping[str, str]) -> CachedRes
     if root is None:
         return None
     key = cache_key(method, url, headers)
-    meta_path, body_path = _entry_paths(root, key)
+    meta_path = _meta_path(root, key)
     try:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if not isinstance(meta, dict):
@@ -929,7 +936,7 @@ def cache_lookup(method: str, url: str, headers: Mapping[str, str]) -> CachedRes
             or re.fullmatch(r"[0-9a-f]{64}", sha256) is None
             or type(size) is not int
             or size < 0
-            or _file_digest(body_path) != (sha256, size)
+            or _file_digest(body_path := _body_path(root, key, sha256)) != (sha256, size)
         ):
             return None
         cached = CachedResponse(key, status, tuple((name, value) for name, value in stored), body_path, sha256, size)
@@ -976,18 +983,26 @@ def cache_store(
     if root is None or status is None or not is_answer(status, response_headers, probe):
         return None
     key = cache_key(method, url, headers)
-    meta_path, body_path = _entry_paths(root, key)
+    meta_path = _meta_path(root, key)
     kept = tuple(
         (str(name), str(value))
         for name, value in (response_headers.items() if response_headers is not None else ())
         if name.lower() not in UNCACHED_RESPONSE_HEADERS and not name.lower().startswith("x-ratelimit-")
     )
     try:
-        if isinstance(body, bytes):
-            _publish(body_path, lambda path: path.write_bytes(body))
-        else:
-            _publish(body_path, lambda path: shutil.copyfile(body, path))
-        sha256, size = _file_digest(body_path)
+        # Written under a temporary name, then published under its own digest.
+        staged = meta_path.with_name(f".{key}.{os.getpid()}.{threading.get_ident()}.body.tmp")
+        staged.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            if isinstance(body, bytes):
+                staged.write_bytes(body)
+            else:
+                shutil.copyfile(body, staged)
+            sha256, size = _file_digest(staged)
+            body_path = _body_path(root, key, sha256)
+            os.replace(staged, body_path)
+        finally:
+            staged.unlink(missing_ok=True)
         meta: CacheMeta = {"status": status, "headers": [list(pair) for pair in kept], "sha256": sha256, "bytes": size}
         _publish(meta_path, lambda path: path.write_text(json.dumps(meta, sort_keys=True), encoding="utf-8"))
     except OSError as error:
