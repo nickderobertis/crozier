@@ -182,6 +182,8 @@ status: whether a combination is proven is its region row's category.
 | `combo-basic-auth-document-requirement` | `openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | A basic credential wrapper depends on whether a security requirement is declared, even an empty one; the document requirement and scheme are read together. (`src/ir.rs::auth_model`). |
 | `combo-basic-auth-operation-requirement` | `operation.context:basic-auth-scheme&operation.security` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | An operation declaring security can activate the basic credential wrapper when the document declares no requirement; scheme kind and requirement presence meet at this branch. (`src/ir.rs::auth_model`). |
 
+| `combo-document-operation-security` | `operation.context:document-security-declared&operation.security` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | An operation override also interacts with a document requirement when the document list is empty or permits anonymous access; declaration presence and effective authentication are separate decisions. (`src/ir.rs::auth_model`, `src/ir.rs::all_operations_authenticated`). |
+
 ## Rejected
 
 Each candidate the research weighed and did not select. Counts are over the same

@@ -119,8 +119,8 @@ split four ways:
 
 497 + 66 + 145 + 9 = 717.
 
-**Feature combinations are counted apart.** 90 combinations are selected
-([the list](openapi-surface/combinations.md)): 84 are `golden` and 6 are `gap`.
+**Feature combinations are counted apart.** 91 combinations are selected
+([the list](openapi-surface/combinations.md)): 85 are `golden` and 6 are `gap`.
 None is among the 717 features above, and each `gap` one is named under
 [Unproven combinations, named](#unproven-combinations-named).
 
@@ -1067,8 +1067,8 @@ as absent.
 
 ##### The member-only readings
 
-40 readings are a conjunction **member** and are not selectors. They are a
-closed list of 40, declared as `MEMBER_ONLY_PREDICATES` in
+41 readings are a conjunction **member** and are not selectors. They are a
+closed list of 41, declared as `MEMBER_ONLY_PREDICATES` in
 `tools/surface-census/openapi-surface-census.py` and restated here, with a drift gate over the
 pair, exactly as the predicates above are.
 
@@ -1239,6 +1239,9 @@ selected success response; separate statuses cannot manufacture a media pair.
 
 - `operation.context:basic-auth-scheme` —
   one per Operation Object where the document declares an HTTP basic security scheme.
+
+- `operation.context:document-security-declared` —
+  one per Operation Object where the document writes a security array, including an empty array or anonymous alternatives.
 
 A shape that is a **combination** of fields rather than one field emits a
 **conjunction selector**, the fourth and last kind. The three kinds above each
@@ -1421,7 +1424,7 @@ which count members with or without `properties`. Cases 12c and 12d use the
 stricter selectors requiring that field; the historical search counts do not
 measure those stricter cases.
 
-The conjunctions are themselves a closed list of 194, declared in
+The conjunctions are themselves a closed list of 195, declared in
 `tools/surface-census/openapi-surface-census.py` beside the predicate table and restated here,
 with a drift gate over the pair. Its closing entries are the feature combinations
 [`combinations.md`](openapi-surface/combinations.md) selects, declared in the
@@ -1974,6 +1977,9 @@ script's `COMBINATIONS` with their keys and regions:
   one per OpenAPI Object writing security whose components declare an HTTP basic scheme.
 - `operation.context:basic-auth-scheme&operation.security` —
   one per Operation Object where the document declares an HTTP basic security scheme and the operation writes security.
+
+- `operation.context:document-security-declared&operation.security` —
+  one per Operation Object writing security where the document also writes a security array.
 
 A conjunction selector is a selector like any other everywhere else: `--selector`
 accepts one, refuses a misspelling of one by name — and refuses a well-formed

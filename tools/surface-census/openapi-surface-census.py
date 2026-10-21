@@ -2712,6 +2712,9 @@ OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:success-statuses-mixed-me
 OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:basic-auth-scheme"] = (
     "one per Operation Object where the document declares an HTTP basic security scheme"
 )
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:document-security-declared"] = (
+    "one per Operation Object where the document writes a security array, including an empty array or anonymous alternatives"
+)
 MEMBER_ONLY_PREDICATES.update(OPERATION_CONTEXT_MEMBER_PREDICATES)
 
 # The media-type keys the four media readings above test, each against the key's
@@ -3510,6 +3513,15 @@ COMBINATIONS += (
         "document-paths.md",
         "operation.context:basic-auth-scheme&operation.security",
         "one per Operation Object where the document declares an HTTP basic security scheme and the operation writes security",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-document-operation-security",
+        "document-paths.md",
+        "operation.context:document-security-declared&operation.security",
+        "one per Operation Object writing security where the document also writes a security array",
     ),
 )
 
@@ -6564,6 +6576,8 @@ class Census:
         grouped = bool(sdk_group_segments(operation) or _first_tag(operation))
         flags.add("grouped-client" if grouped else "root-client")
         root = self.root_security
+        if isinstance(root, list):
+            flags.add("document-security-declared")
         if isinstance(root, list) and root and all(isinstance(r, dict) and r for r in root):
             flags.add("document-security-required")
         schemes = self.components.get("securitySchemes")

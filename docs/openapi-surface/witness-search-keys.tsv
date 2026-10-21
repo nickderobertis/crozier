@@ -39,6 +39,7 @@ combo-body-property-named-as-header-param	operation.requestBody&operation.reques
 combo-body-property-named-as-path-param	operation.requestBody&operation.requestBody:property-named-as-path-parameter	document-paths.md	supported
 combo-body-property-named-as-query-param	operation.requestBody&operation.requestBody:property-named-as-query-parameter	document-paths.md	supported
 combo-discriminated-inline-members	schema.discriminator&schema.oneOf>!schema.$ref	schemas.md	supported
+combo-document-operation-security	operation.context:document-security-declared&operation.security	document-paths.md	supported
 combo-document-security-security-empty	operation.context:document-security-required&operation.context:security-empty	document-paths.md	supported
 combo-document-security-security-nonempty	operation.context:document-security-required&operation.context:security-nonempty	document-paths.md	supported
 combo-echo-body-effective-anonymous	operation.context:effective-anonymous&operation.context:success-ref-matches-body	document-paths.md	supported
