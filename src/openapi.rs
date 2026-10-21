@@ -2506,16 +2506,16 @@ impl DocumentBooleanVisitor {
         }
     }
 
+    /// Read an integer by [`document_boolean`]'s rule, refusing it as
+    /// `unexpected` when the rule reads no boolean.
     fn integer<E: serde::de::Error>(
         &self,
-        value: u64,
+        value: impl Into<serde_json::Value>,
         unexpected: serde::de::Unexpected<'_>,
     ) -> std::result::Result<DocumentBoolean, E> {
-        match value {
-            1 => Ok(DocumentBoolean(true)),
-            0 => Ok(DocumentBoolean(false)),
-            _ => Err(self.refuse(unexpected)),
-        }
+        document_boolean(&value.into())
+            .map(DocumentBoolean)
+            .ok_or_else(|| self.refuse(unexpected))
     }
 }
 
@@ -2535,11 +2535,7 @@ impl<'de> Visitor<'de> for DocumentBooleanVisitor {
     }
 
     fn visit_i64<E: serde::de::Error>(self, value: i64) -> std::result::Result<Self::Value, E> {
-        let unexpected = serde::de::Unexpected::Signed(value);
-        u64::try_from(value).map_or_else(
-            |_| Err(self.refuse(unexpected)),
-            |value| self.integer(value, unexpected),
-        )
+        self.integer(value, serde::de::Unexpected::Signed(value))
     }
 
     fn visit_f64<E: serde::de::Error>(self, value: f64) -> std::result::Result<Self::Value, E> {
