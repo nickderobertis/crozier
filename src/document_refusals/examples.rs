@@ -75,7 +75,11 @@ struct Doc<'a> {
     plain: HashSet<String>,
 }
 
-/// Every timestamp a YAML source writes as a plain (unquoted) scalar.
+/// Every timestamp a YAML source writes as a plain (unquoted) scalar: after a
+/// mapping colon, a sequence dash or a flow opener, on a line that is neither
+/// a comment nor inside a block scalar (`|`, `>`), and before any trailing
+/// comment. A quoted value never matches, since a quote stands between the
+/// opener and the digits.
 ///
 /// Fern's YAML parser reads such a scalar as a timestamp, not a string, so a
 /// `date` example written that way is no string it rejects: measured at Fern
@@ -85,16 +89,59 @@ struct Doc<'a> {
 /// reads both as one string, so the plain ones are found in the source.
 fn plain_timestamps(text: &str) -> HashSet<String> {
     static TIMESTAMP: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
-    let pattern = TIMESTAMP.get_or_init(|| {
+    static BLOCK: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
+    let timestamp = TIMESTAMP.get_or_init(|| {
         fancy_regex::Regex::new(
-            r"(?m)(?:^[ \t]*-[ \t]+|:[ \t]+|[\[{,][ \t]*)(\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?)[ \t]*(?=$|[,\]}#\r])",
+            r"(?:^[ \t]*-[ \t]+|:[ \t]+|[\[{,][ \t]*)(\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?)[ \t]*(?=$|[,\]}])",
         )
         .expect("the YAML timestamp pattern compiles")
     });
-    pattern
-        .captures_iter(text)
-        .filter_map(|captures| Some(captures.ok()?.get(1)?.as_str().to_owned()))
-        .collect()
+    let block = BLOCK.get_or_init(|| {
+        fancy_regex::Regex::new(r"(?:^[ \t]*-|:)[ \t]+[|>][-+0-9]*[ \t]*$")
+            .expect("the YAML block-scalar pattern compiles")
+    });
+    let mut found = HashSet::new();
+    // The indentation of the line that opened the block scalar being skipped.
+    let mut opened: Option<usize> = None;
+    for line in text.lines() {
+        let content = line.trim_start();
+        let indent = line.len() - content.len();
+        if let Some(open) = opened {
+            if content.is_empty() || indent > open {
+                continue;
+            }
+            opened = None;
+        }
+        if content.starts_with('#') {
+            continue;
+        }
+        let code = without_comment(line);
+        found.extend(
+            timestamp
+                .captures_iter(code)
+                .filter_map(|captures| Some(captures.ok()?.get(1)?.as_str().to_owned())),
+        );
+        if block.is_match(code).unwrap_or(false) {
+            opened = Some(indent);
+        }
+    }
+    found
+}
+
+/// `line` up to a trailing comment: a `#` after whitespace, outside quotes.
+fn without_comment(line: &str) -> &str {
+    let mut quote = None;
+    let mut previous = ' ';
+    for (index, character) in line.char_indices() {
+        match (quote, character) {
+            (None, '"' | '\'') => quote = Some(character),
+            (Some(open), _) if character == open => quote = None,
+            (None, '#') if previous.is_whitespace() => return line[..index].trim_end(),
+            _ => {}
+        }
+        previous = character;
+    }
+    line.trim_end_matches('\r')
 }
 
 fn str_of<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
@@ -1467,7 +1514,9 @@ mod tests {
         let plain = plain_timestamps(
             "a:\n  example: 2019-09-15T02:06:58.147Z\n  b: [1706-01-17 00:00:00, x]\n  \
              - 2006-01-02T15:04:05+00:00 # comment\n  c: \"2001-02-03T04:05:06Z\"\n  \
-             d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n",
+             d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n  \
+             # example: 2001-02-03T04:05:09Z\n  f: x # g: 2001-02-03T04:05:10Z\n  \
+             h: |\n    example: 2001-02-03T04:05:11Z\n  i: 'a # b' # j: 2001-02-03T04:05:12Z\n",
         );
         let mut found: Vec<&str> = plain.iter().map(String::as_str).collect();
         found.sort_unstable();
