@@ -2688,6 +2688,63 @@ fn handwritten_fixtures_match_fern_goldens() {
 }
 
 // llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Every Fern golden comparison — the corpus `*_matches_fern_output` tests, the hand-written, probe and measurement gates — runs in this one binary suite by the project's design (crates/crozier-e2e/AGENTS.md), which drives the binary crozier:build leaves; giving golden comparisons their own Nx edge is a graph change for that whole family, not for these cases.
+#[test]
+fn residual_null_example_is_absent_from_matching_request_snippets() {
+    let (_, failures) = handwritten_documents(repo_root());
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let fixture = repo_root().join("docs/openapi-surface/handwritten/harbor-signal-null");
+    let spec = fixture.join("openapi.yml");
+    let failures = filtered_tree_failures(
+        "schema-example-null",
+        "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected",
+        &spec,
+        &fixture.join("fern-expected"),
+        &[],
+    );
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+    let temp = tempfile::tempdir().unwrap();
+    let output = temp.path().join("sdk");
+    probe_command(&spec, &output).assert().success();
+    for tree in [fixture.join("fern-expected"), output] {
+        let text = std::fs::read_to_string(tree.join("src/fern/client.py")).unwrap();
+        for (prefix, end) in [
+            ("\n        client.submit_signal(", "\n        )"),
+            (
+                "\n            await client.submit_signal(",
+                "\n            )",
+            ),
+        ] {
+            let snippet = text
+                .split_once(prefix)
+                .unwrap()
+                .1
+                .split_once(end)
+                .unwrap()
+                .0;
+            assert!(snippet.contains("name=\"beacon\""), "{snippet}");
+            assert!(!snippet.contains("memo="), "{snippet}");
+            assert!(!snippet.contains("None"), "{snippet}");
+        }
+    }
+    let original = std::fs::read_to_string(&spec).unwrap();
+    let control = original
+        .replace("required: [name]", "required: [name, memo]")
+        .replace("type: [string, 'null']", "type: string")
+        .replace("examples: [null]", "examples: [quiet]");
+    assert_ne!(original, control);
+    let control_spec = temp.path().join("control.yml");
+    std::fs::write(&control_spec, control).unwrap();
+    let control_output = temp.path().join("control-sdk");
+    probe_command(&control_spec, &control_output)
+        .assert()
+        .success();
+    let text = std::fs::read_to_string(control_output.join("src/fern/client.py")).unwrap();
+    assert!(
+        text.contains("memo=\"quiet\""),
+        "the required non-null control must reach the worked call"
+    );
+}
+
 /// Complete SDKs for annotated bodies and variant fields, nested enum unions,
 /// inline enum and const array items beside another union member,
 /// nullable union members, referenced form enums, JSON problem responses, and a
@@ -13178,41 +13235,42 @@ fn rta_in_japan_twitter_matches_fern_output() {
 }
 // llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
+// llmlint: ignore-block[expensive_tests_stay_behind_their_own_edge] Registered corpus comparisons run in this binary and the corpus-match tier by the existing project design (crates/crozier-e2e/AGENTS.md); these two tests exercise the same real generation and comparison boundaries as the adjacent corpus rows. Splitting that family into a new graph edge is outside this witness registration.
 #[test]
 fn onmyshelf_api_matches_fern_output() {
     assert_committed_corpus_matches(&ONMYSHELF_API);
 }
 
+// The reference command is a shell command, which compare deliberately refuses
+// on Windows; the corpus byte-match above remains portable.
+#[cfg(unix)]
 #[test]
 fn digit_leading_method_departure_rejects_adjacent_unexplained_bytes() {
     let root = repo_root();
     let expected = root.join("tests/fixtures/onmyshelf-api/expected");
-    let actual = generate_corpus(&ONMYSHELF_API);
     let source = root.join("tests/fixtures/corpus-sources/onmyshelf-api/openapi.json");
-    let document = serde_json::from_str(&std::fs::read_to_string(source).unwrap()).unwrap();
-    let context = Context::from_trees(&expected, actual.path()).with_source_document(document);
-    let fern = std::fs::read_to_string(expected.join("README.md")).unwrap();
-    let generated = std::fs::read_to_string(actual.path().join("README.md")).unwrap();
-    let positive = compare_with_golden(&context, "README.md", &generated, &fern);
-    assert!(positive.matches(), "{:?}", positive.diff());
-    assert!(positive
-        .departures
-        .iter()
-        .any(|departure| departure.id == "digit-leading-method-reference-identifiers"));
+    let (code, result) = compare_with_certified_reference(&source, &expected, None);
+    assert_eq!(
+        (code, result["status"].as_str()),
+        (0, Some("matched")),
+        "{result:#}"
+    );
     let before = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(...)";
     let after = "client.borrowers.1fd12f73a7dc29d90f19d587c1c24d15(changed=True)";
-    assert!(fern.contains(before));
-    let negative = compare_with_golden(
-        &context,
-        "README.md",
-        &generated,
-        &fern.replacen(before, after, 1),
+    let (code, result) =
+        compare_with_certified_reference(&source, &expected, Some(("README.md", before, after)));
+    assert_eq!(
+        code, 3,
+        "unexplained adjacent argument change was normalized: {result:#}"
     );
-    assert!(
-        !negative.matches(),
-        "unexplained adjacent argument change was normalized"
+    assert_eq!(result["status"], "mismatched", "{result:#}");
+    assert_eq!(
+        result["comparison"]["differing"],
+        serde_json::json!(["README.md"]),
+        "{result:#}"
     );
 }
+// llmlint: ignore-end[expensive_tests_stay_behind_their_own_edge]
 
 #[test]
 fn waylay_queries_matches_fern_output() {

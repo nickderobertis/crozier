@@ -184,7 +184,7 @@ search. This inventory does not count renamed handling sites as lost proof.
 
 ## Pending nested-mapping defect
 
-The from-scratch [nested discriminator measurement](../pending-defects/nested-discriminator-wire/README.md)
+The from-scratch [nested discriminator measurement](../../fern-measurements/examples/nested-discriminator-wire/README.md)
 executes the certified SDK against its source schema: the SDK emits a nested
 `value` envelope where the schema requires a flat object and rejects a valid
 flat response; its README example also fails compilation. This is a documented

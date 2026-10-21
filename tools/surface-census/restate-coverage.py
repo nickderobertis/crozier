@@ -338,8 +338,32 @@ def restate(root: Path) -> str:
     witnessless = {key for key, entry in entries.items() if entry.category == "golden" and not ledger[key].witnesses}
     if set(residual_keys) & witnessless:
         raise ValueError("residual-golden and witnessless populations overlap")
+    spec = importlib.util.spec_from_file_location(
+        "coverage_handwritten", Path(__file__).with_name("handwritten-fixtures.py")
+    )
+    if spec is None or spec.loader is None:
+        raise ValueError("cannot load hand-written proof reader")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    supplements, failures = module.read_residual_proofs(root)
+    if failures:
+        raise ValueError("; ".join(failures))
+    supplemental = {proof.key for proof in supplements}
+    if supplemental & (set(residual_keys) | witnessless) or any(
+        key not in entries or entries[key].category != "golden" for key in supplemental
+    ):
+        raise ValueError("supplemental proof must name a separate witnessed golden row")
+    weak = handwritten + len(supplemental)
+    header = "| key | fixture | byte-matched file | proof | real-CLI journey |\n|---|---|---|---|---|\n"
+    table = "\n".join(
+        f"| `{proof.key}` | `{proof.fixture}` | `{proof.file}` | `{proof.mode}` | `{proof.test}` |"
+        for proof in supplements
+    )
+    if supplements:
+        text = substitute(text, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + table + "\n")
     no_witness = len(witnessless)
-    real = golden - len(residual) - no_witness
+    real = golden - len(residual) - no_witness - len(supplemental)
     proof = limitations + unreachable
     unproven = fixture + len(residual) + no_witness
     text = substitute(
@@ -350,9 +374,7 @@ def restate(root: Path) -> str:
     text = substitute(text, r"those \d+\nsplit four ways", f"those {total}\nsplit four ways")
     text = substitute(text, r"\*\*\d+ carry byte-match evidence", f"**{real} carry byte-match evidence")
     text = substitute(text, r"\*\*\d+ carry a committed Fern", f"**{proof} carry a committed Fern")
-    text = substitute(
-        text, r"\*\*\d+ rest on a hand-written fixture", f"**{handwritten} rest on a hand-written fixture"
-    )
+    text = substitute(text, r"\*\*\d+ rest on a hand-written fixture", f"**{weak} rest on a hand-written fixture")
     text = substitute(text, r"They are not among the\s+\d+", f"They are not among the\n  {real}")
     feature_keys = ", ".join(f"`{key}`" for key in sorted(gaps["FIXTURE"]))
     residual_keys = ", ".join(f"`{key}`" for key in sorted(residual))
@@ -372,9 +394,7 @@ def restate(root: Path) -> str:
         r"- \*\*\d+ remain unproven\.\*\*.*?(?=\n\n\d+ \+)",
         textwrap.fill(remainder, width=88, subsequent_indent="  ", break_long_words=False, break_on_hyphens=False),
     )
-    text = substitute(
-        text, r"^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\.$", f"{real} + {proof} + {handwritten} + {unproven} = {total}."
-    )
+    text = substitute(text, r"^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\.$", f"{real} + {proof} + {weak} + {unproven} = {total}.")
     text = substitute(
         text,
         r"(\*\*What the `gap` count means\.\*\*).*?(?=\n### Reconciliation)",

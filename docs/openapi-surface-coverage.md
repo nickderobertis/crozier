@@ -38,9 +38,12 @@ split four ways:
   `UNREACHABLE` `gap` rows. Each has a `MANIFEST.tsv` row whose artifact
   `witness_supply_probes_match_fern_measurements` in `crates/crozier-e2e/tests/e2e.rs` compares
   crozier against.
-- **147 rest on a hand-written fixture, a weaker proof than a real
-  specification.** These are the `handwritten` rows. No registered real
-  specification declares the feature, its real-specification search failed, and
+- **148 rest on a hand-written fixture, a weaker proof than a real
+  specification.** These are the `handwritten` rows and the residual-only golden
+  supplements below. For the `handwritten` rows, no registered real
+  specification declares the feature. For supplements, no qualifying real
+  witness establishes parity where the feature lands. Their bounded searches
+  found no registrable proof, and
   crozier byte-matches the tree Fern generated from a document written for the
   purpose. Five have a search record that reads `exhausted`: every candidate is
   decided and none is registrable. 136 read `search-incomplete`. Of those,
@@ -102,17 +105,17 @@ split four ways:
   [Generated shapes with no registrable witness](#generated-shapes-with-no-registrable-witness)
   gives each one's evidence and what would unblock it. They are not among the
   498 and never count as a real-specification match.
-- **6 remain unproven.** 5 are the `FIXTURE` `gap` rows. Their outstanding evidence is
+- **5 remain unproven.** 5 are the `FIXTURE` `gap` rows. Their outstanding evidence is
   recorded in [Unproven features, named](#unproven-features-named).
   `schema-example-array-null-element`, `schema-example-fractional-on-integer`,
   `schema-example-on-ref-to-enum`, `schema-example-on-ref-to-object`,
-  `schema-example-on-ref-to-union`. 1 is a `golden` row resting only on residual goldens
-  whose code moves no byte-matched file: `schema-example-null` ([the
+  `schema-example-on-ref-to-union`. 0 are `golden` rows resting only on residual goldens
+  whose code moves no byte-matched file:  ([the
   attribution](#golden-rows-resting-only-on-residual-goldens)). The other 0 are `golden`
   rows declared only by corpus rows that carry no golden ([the
   list](#golden-rows-with-no-golden-only-witness)).
 
-498 + 66 + 147 + 6 = 717.
+498 + 66 + 148 + 5 = 717.
 
 `golden` is still not `golden`-exhausted, so the handling sites are split the
 same way. The 499 `golden` rows declare 1020 handling sites in
@@ -1823,6 +1826,12 @@ feature:
    stronger evidence: a byte-matching golden is crozier-versus-Fern parity
    evidence, while `fern-limitations.md` measures Fern alone and says so itself
    under *What these measurements do not establish*.
+   A residual-only row may additionally carry a hand-written feature cover after
+   a renewed bounded search finds no registrable real witness that moves a
+   byte-matched file. Its versioned supplemental registry must bind a complete
+   certified tree and a real-CLI journey proving the example's motion or absence
+   in a matching file. The category stays `golden`; the headline counts this
+   among weaker hand-written proofs, never real-specification matches.
    **Evidence cell:** the fixture names and the declared count the census reports,
    **followed by** the `fern-limitations.md` key and verdict where that file also
    carries a row for the feature.
@@ -3076,14 +3085,28 @@ files, unproven in the `unmatched` ones named. `format-idn-hostname` and
 `format-iri` rested on `short-io` until it reached full parity, and
 `extension-server` on `webflow-v2` until corpus row 2800, `vocode-core`, gave it
 a byte-matched golden-only witness. `schema-example-null` moves no generated file
-at all, so no byte-matched file vouches for it; it is an open gap, counted among
-the unproven, while the [category rules](#the-category-rules) still classify it
-`golden` because a registered golden source declares it.
+in `webflow-v2`. Its renewed bounded search found no real witness whose null
+example moves a file. The authored `harbor-signal-null` tree instead proves the
+null argument's absence in byte-matched sync and async request snippets. This is
+a weaker hand-written proof: the category remains `golden`, and the headline
+counts it among hand-written proofs, never real-specification matches.
 
 | key | residual witness | files the feature moves | verdict |
 |---|---|---|---|
 | `boolean-schema-true` | `webflow-v2` | `src/fern/collections/fields/__init__.py`, `src/fern/collections/fields/types/__init__.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties.py`, `src/fern/collections/fields/types/update_fields_response_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/create_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/get_collections_response_fields_item_validations_additional_properties_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties.py`, `src/fern/collections/types/patch_collections_response_fields_item_validations_additional_properties_additional_properties.py`; open gap: `src/fern/__init__.py`, `src/fern/collections/__init__.py`, `src/fern/collections/types/__init__.py`, which are `unmatched` | `split` |
-| `schema-example-null` | `webflow-v2` | none: replacing its three null examples with a string moves no generated file | `open gap` |
+
+#### Residual-only golden rows with hand-written proofs
+
+The version-1 [`residual-handwritten.toml`](openapi-surface/residual-handwritten.toml)
+registry binds each supplemental feature cover to a certified file and a gated
+real-CLI example journey. The fixture gate checks the residual-only witnesses,
+search, census selector, complete tree and journey binding. This table is
+regenerated by `restate-coverage.py`.
+
+| key | fixture | byte-matched file | proof | real-CLI journey |
+|---|---|---|---|---|
+| `schema-example-null` | `harbor-signal-null` | `src/fern/client.py` | `absence` | `residual_null_example_is_absent_from_matching_request_snippets` |
+
 
 ### The ranked `FIXTURE` backlog
 

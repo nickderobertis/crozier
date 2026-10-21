@@ -9028,6 +9028,9 @@ class RankedBacklogTests(unittest.TestCase):
         ledger = {reach.key: reach for _rank, reach in ledger_rows}
         manifest = manifest_rows((self.REGIONS / "probe-expected" / "MANIFEST.tsv").read_text(encoding="utf-8"))
         byte_match = no_witness = proof = handwritten = residual_gap = 0
+        supplements, errors = load_script("tools/surface-census/handwritten-fixtures.py").read_residual_proofs(REPO)
+        self.assertEqual([], errors)
+        supplemental = {item.key for item in supplements}
         residual_open = {
             key for key, (_w, _f, _g, verdict) in residual_attributions(REPO).items() if verdict == "open gap"
         }
@@ -9035,7 +9038,9 @@ class RankedBacklogTests(unittest.TestCase):
             category = cells[3].strip("`")
             if category == "golden":
                 witnesses = set(ledger[key].witnesses)
-                if key in residual_open:
+                if key in supplemental:
+                    handwritten += 1
+                elif key in residual_open:
                     residual_gap += 1
                 elif witnesses - vendored:
                     byte_match += 1
@@ -9059,7 +9064,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"measurement of non-generation that crozier is byte-compared against\.\*\* These are "
             r"the (\d+) `limitations` rows and the (\d+) `UNREACHABLE` `gap` rows\..*?\*\*(\d+) rest "
             r"on a hand-written fixture, a weaker proof than a real specification\.\*\* These are "
-            r"the `handwritten` rows\..*?They are not among the (\d+) and never count as a "
+            r"the `handwritten` rows.*?They are not among the (\d+) and never count as a "
             r"real-specification match\. - \*\*(\d+) remain unproven\.\*\* (\d+) are the `FIXTURE` `gap` "
             r"rows\..*?(\d+) (?:are|is a) `golden` rows? resting only on residual goldens whose code moves no "
             r"byte-matched file.*?The other (\d+) are `golden` rows declared only by.*?"
@@ -9191,7 +9196,11 @@ class RankedBacklogTests(unittest.TestCase):
             if (real := set(reach.witnesses) - vendored) and real <= residual
         }
         table = residual_attributions(REPO)
-        self.assertEqual(set(resting), set(table))
+        supplements, errors = load_script("tools/surface-census/handwritten-fixtures.py").read_residual_proofs(REPO)
+        self.assertEqual([], errors)
+        supplemental = {item.key for item in supplements}
+        self.assertFalse(set(table) & supplemental)
+        self.assertEqual(set(resting), set(table) | supplemental)
         for key, (witness, files, gaps, verdict) in table.items():
             with self.subTest(key=key):
                 self.assertEqual({witness}, resting[key])
@@ -16056,6 +16065,83 @@ class ParityProofIndexTests(unittest.TestCase):
                     self.assertRegex(test_sources, rf"fn {re.escape(name)}\(", f"missing comparison test {test}")
 
 
+class ResidualHandwrittenProofTests(unittest.TestCase):
+    """Supplement admission reads real files and the same registry as the fixture gate."""
+
+    def check(self, mutation: str = "") -> list[str]:
+        gate = load_script("tools/surface-census/handwritten-fixtures.py")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture = "harbor-signal-null"
+            paths = [
+                "docs/openapi-surface/residual-handwritten.toml",
+                "docs/openapi-surface/golden-reach.tsv",
+                "docs/openapi-surface/schemas.md",
+                "crates/crozier-e2e/tests/e2e.rs",
+                f"docs/openapi-surface/handwritten/{fixture}/evidence.toml",
+                f"docs/openapi-surface/handwritten/{fixture}/fern-expected/src/fern/client.py",
+            ]
+            for relative in paths:
+                target = root / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes((REPO / relative).read_bytes())
+            registry = root / paths[0]
+            test = root / paths[3]
+            if mutation == "missing-file":
+                (root / paths[-1]).unlink()
+            elif mutation == "unbound-journey":
+                test.write_text(
+                    test.read_text().replace(
+                        "fn residual_null_example_is_absent_from_matching_request_snippets", "fn unrelated_journey"
+                    )
+                )
+            elif mutation == "nonresidual":
+                test.write_text(test.read_text().replace('"webflow-v2"', '"unrelated-source"'))
+            elif mutation:
+                text = registry.read_text()
+                edits = {
+                    "version": ("version = 1", "version = 2"),
+                    "mode": ('mode = "absence"', 'mode = "assumed"'),
+                    "traversal": ('file = "src/fern/client.py"', 'file = "../client.py"'),
+                    "extra-field": ("version = 1", "version = 1\nunknown = true"),
+                    "duplicate": ("version = 1", "version = 1"),
+                }
+                before, after = edits[mutation]
+                text = text.replace(before, after)
+                if mutation == "duplicate":
+                    text += "\n[[proofs]]" + text.split("[[proofs]]", 1)[1]
+                registry.write_text(text)
+            proofs, errors = gate.read_residual_proofs(root)
+            if errors:
+                return errors
+            fixtures = {fixture: gate.read_evidence(root / "docs/openapi-surface/handwritten" / fixture)[0]}
+            # The production parser supplies region cells and measured witnesses.
+            keys = load_script("tools/surface-census/witness-search-region-keys.py")
+            rows = {
+                cells[0].strip("`"): ("schemas", cells) for cells in keys.region_rows((root / paths[2]).read_text())
+            }
+            reach = load_script("tools/surface-census/golden-reach.py")
+            ledger = {row.key: row for _rank, row in reach.read_ledger(root / paths[1])}
+            return gate.residual_proof_failures(root, proofs, fixtures, rows, ledger)
+
+    def test_committed_supplement_is_admitted(self) -> None:
+        self.assertEqual([], self.check())
+
+    def test_broken_supplements_fail_at_their_boundary(self) -> None:
+        for mutation, reason in [
+            ("version", "version = 1"),
+            ("mode", "invalid"),
+            ("traversal", "invalid"),
+            ("extra-field", "version = 1"),
+            ("duplicate", "duplicate"),
+            ("missing-file", "missing"),
+            ("unbound-journey", "bind"),
+            ("nonresidual", "residual"),
+        ]:
+            with self.subTest(mutation=mutation):
+                self.assertTrue(any(reason in failure for failure in self.check(mutation)))
+
+
 class HandwrittenE2eCoversTests(unittest.TestCase):
     """The additive multi-file cover uses real committed inputs and gate API."""
 
@@ -17310,6 +17396,7 @@ class CoverageRestatementTests(unittest.TestCase):
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
         shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
+        shutil.copyfile(REPO / "docs/openapi-surface/residual-handwritten.toml", surface / "residual-handwritten.toml")
         # Source discovery reads filenames, registrations and golden directories;
         # these valid documents supply that filesystem boundary without copying SDKs.
         text = self.index.read_text(encoding="utf-8")
@@ -17519,7 +17606,7 @@ class CoverageRestatementTests(unittest.TestCase):
                 self.index,
                 lambda text: text.replace("#### Golden rows resting only on residual goldens", "#### Missing section"),
             ),
-            "residual row": (self.index, lambda text: text.replace("| `open gap` |", "| `unknown verdict` |")),
+            "residual row": (self.index, lambda text: text.replace("| `split` |", "| `unknown verdict` |")),
         }
         originals = {path: path.read_text(encoding="utf-8") for path, _mutate in mutations.values()}
         for name, (path, mutate) in mutations.items():
@@ -17579,12 +17666,12 @@ class CoverageRestatementTests(unittest.TestCase):
     def test_residual_keys_must_be_unique_golden_and_have_witnesses(self) -> None:
         original = self.index.read_text(encoding="utf-8")
         residual = next(
-            line for line in original.splitlines() if line.startswith("| `schema-example-null` | `webflow-v2` |")
+            line for line in original.splitlines() if line.startswith("| `boolean-schema-true` | `webflow-v2` |")
         )
         for name, replacement in [
             ("duplicate", residual + "\n" + residual),
-            ("unknown", residual.replace("schema-example-null", "unknown-residual-key", 1)),
-            ("not golden", residual.replace("schema-example-null", "schema-example-temporal-duplicate-element", 1)),
+            ("unknown", residual.replace("boolean-schema-true", "unknown-residual-key", 1)),
+            ("not golden", residual.replace("boolean-schema-true", "schema-example-temporal-duplicate-element", 1)),
         ]:
             with self.subTest(residual=name):
                 self.index.write_text(original.replace(residual, replacement), encoding="utf-8")
@@ -17600,7 +17687,7 @@ class CoverageRestatementTests(unittest.TestCase):
         header = next(line.split("\t") for line in lines if line.startswith("rank\t"))
         for index, line in enumerate(lines):
             fields = line.split("\t")
-            if len(fields) == len(header) and fields[header.index("key")] == "schema-example-null":
+            if len(fields) == len(header) and fields[header.index("key")] == "boolean-schema-true":
                 fields[header.index("witnesses")] = ""
                 lines[index] = "\t".join(fields)
         ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -17615,13 +17702,13 @@ class CoverageRestatementTests(unittest.TestCase):
         original = self.index.read_text(encoding="utf-8")
         real = int(matched(re.search(r"\*\*(\d+) carry byte-match evidence", original)).group(1))
         unproven = int(matched(re.search(r"\*\*(\d+) remain unproven", original)).group(1))
-        self.index.write_text(original.replace("| `open gap` |", "| `proven` |"), encoding="utf-8")
+        self.index.write_text(original.replace("| `split` |", "| `open gap` |"), encoding="utf-8")
         result = self.run_restater("--write")
         self.assertEqual(0, result.returncode, result.stderr)
         revised = self.index.read_text(encoding="utf-8")
-        self.assertRegex(revised, rf"\*\*{real + 1} carry byte-match evidence")
-        self.assertRegex(revised, rf"\*\*{unproven - 1} remain unproven")
-        self.assertRegex(revised, rf"They are not among the\s+{real + 1}\b")
+        self.assertRegex(revised, rf"\*\*{real - 1} carry byte-match evidence")
+        self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
+        self.assertRegex(revised, rf"They are not among the\s+{real - 1}\b")
         self.assertEqual(0, self.run_restater().returncode)
         self.index.write_text(original, encoding="utf-8")
         ledger = self.root / "docs/openapi-surface/golden-reach.tsv"

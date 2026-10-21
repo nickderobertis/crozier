@@ -85,6 +85,16 @@ search = "docs/openapi-surface/schemas.md#witness-search-exhaustive"
 verdict = "exhausted"
 ```
 
+## Residual-only golden supplements
+
+A feature-level cover may supplement a `golden` row whose only real witnesses
+have residuals, under [the category rules](../../openapi-surface-coverage.md#the-category-rules).
+`../residual-handwritten.toml` version 1 binds its key, fixture, certified `file`,
+real-CLI `test` and `mode` (`absence` or `motion`). All five fields are required;
+unknown fields are refused. The complete fixture still byte-matches. This keeps
+the category `golden` and counts only as weaker hand-written proof. Its selector
+remains in `witness-search-keys.tsv`.
+
 ## The feature-level selector
 
 A feature-level cover's fixture must declare its key's shape: the census

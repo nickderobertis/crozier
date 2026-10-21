@@ -514,6 +514,7 @@
     "docs/openapi-surface/handwritten/grid-valve-console/fern-expected": {},
     "docs/openapi-surface/handwritten/group-path-ending-in-api-nested-package/fern-expected": {},
     "docs/openapi-surface/handwritten/harbor-nullable-inline-object/fern-expected": {},
+    "docs/openapi-surface/handwritten/harbor-signal-null/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-pilot-regions/fern-expected": {},
     "docs/openapi-surface/handwritten/harbour-window/fern-expected": {},
     "docs/openapi-surface/handwritten/header-subset-string-default/fern-expected": {},

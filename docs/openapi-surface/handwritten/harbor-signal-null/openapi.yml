@@ -1,0 +1,31 @@
+openapi: 3.1.0
+info:
+  title: Harbor signal log
+  version: 1.0.0
+servers:
+  - url: https://signals.example.com
+paths:
+  /signals:
+    post:
+      operationId: submitSignal
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignalRequest'
+      responses:
+        '204':
+          description: Signal accepted
+components:
+  schemas:
+    SignalRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          example: beacon
+        memo:
+          type: [string, 'null']
+          examples: [null]
