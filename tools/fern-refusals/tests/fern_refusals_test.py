@@ -159,7 +159,7 @@ class CommittedTables(unittest.TestCase):
         with tempfile.TemporaryDirectory() as scratch:
             registry = Path(scratch) / "fern-refusals"
             registry.mkdir()
-            for hand_written in ("classes.tsv", "findings.tsv", "documents.tsv"):
+            for hand_written in ("classes.tsv", "findings.tsv", "documents.tsv", "dispositions.tsv"):
                 shutil.copy(REGISTRY / hand_written, registry / hand_written)
             result = run("build", registry=registry)
             self.assertEqual(result.returncode, 0, result.stderr)

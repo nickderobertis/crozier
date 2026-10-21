@@ -1547,26 +1547,27 @@ def check(_args: argparse.Namespace) -> int:
             problems.append(f"docs/fern-refusals/{name}: the header must be exactly {chr(9).join(header)!r}")
     if problems:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
-    problems = cross_reference_problems() + confirmation_problems() + shape_problems() + disposition_problems()
-    if problems:
-        fail(
-            "\n  ".join(
-                [
-                    "the registry's tables disagree with each other "
-                    "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
-                    *problems,
-                ]
-            )
-        )
-    written, problems = tables()
+    # Both stages are reported together: a template that drifts shows in the
+    # tables and in every disposition it derives alike.
+    agreement = cross_reference_problems() + confirmation_problems() + shape_problems() + disposition_problems()
+    written, inputs = tables()
     for name, text in written.items():
         if (REGISTRY / name).read_text(encoding="utf-8") != text:
-            problems.append(
+            inputs.append(
                 f"docs/fern-refusals/{name} differs from what `build` writes; "
                 "run `tools/fern-refusals/fern-refusals.py build` and commit the result"
             )
-    if problems:
-        fail("\n  ".join(["the registry drifted from its inputs:", *problems]))
+    sections = []
+    if agreement:
+        sections += [
+            "the registry's tables disagree with each other "
+            "(run `tools/fern-refusals/fern-refusals.py build`, or restore the hand-edited one from git):",
+            *agreement,
+        ]
+    if inputs:
+        sections += ["the registry drifted from its inputs:", *inputs]
+    if sections:
+        fail("\n  ".join(sections))
     return 0
 
 

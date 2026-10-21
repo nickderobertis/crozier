@@ -185,7 +185,7 @@ class StrictMeasurement(ScratchCheckout):
     def test_measure_runs_the_strict_exit_under_fern_strict(self) -> None:
         # The strict run is told apart by the cause its refusal line names.
         self.measure()
-        logs = self.root / ".local" / "fern-refusals" / "crozier-logs"
+        logs = self.root / "docs" / "openapi-surface" / "fern-refusals" / "crozier-logs"
         strict = (logs / f"{self.digest}.strict.log").read_text(encoding="utf-8")
         self.assertIn(f"{self.CLASS}: ", strict)
         self.assertIn("(fern-strict: Fern refuses this document)", strict)
