@@ -41,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures
+import csv
 import fnmatch
 import importlib.util
 import io
@@ -53,7 +54,7 @@ import sys
 import tempfile
 import threading
 import tomllib
-from collections import defaultdict
+from collections import Counter, defaultdict
 from enum import StrEnum
 from pathlib import Path
 from typing import IO, Any, NamedTuple, NoReturn
@@ -787,9 +788,9 @@ def read_ledger(path: Path = LEDGER) -> list[tuple[int, Reach]]:
     return out
 
 
-def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
+def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR, ranks: dict[str, int] | None = None) -> int:
     """Put each golden row's reach cell in its `crozier sites` column; return rows changed."""
-    by_key = {r.key: (rank, r) for rank, r in enumerate(reaches, start=1)}
+    by_key = {r.key: ((ranks or {}).get(r.key, rank), r) for rank, r in enumerate(reaches, start=1)}
     changed = 0
     for path in sorted(regions_dir.glob("*.md")):
         text = path.read_text(encoding="utf-8")
@@ -799,12 +800,21 @@ def rewrite_cells(reaches: list[Reach], regions_dir: Path = REGIONS_DIR) -> int:
             if cells and cells[0][3].strip("`") == "golden":
                 row = cells[0]
                 key = row[0].strip("`")
-                cell = reach_cell(by_key[key][1], by_key[key][0], regions_dir)
-                if row[5] != cell:
-                    row = row[:5] + [cell] + row[6:]
-                    newline = "\n" if line.endswith("\n") else ""
-                    line = "| " + " | ".join(row) + " |" + newline
-                    changed += 1
+                if key in by_key:
+                    cell = reach_cell(by_key[key][1], by_key[key][0], regions_dir)
+                    if row[5] != cell:
+                        row = row[:5] + [cell] + row[6:]
+                        newline = "\n" if line.endswith("\n") else ""
+                        line = "| " + " | ".join(row) + " |" + newline
+                        changed += 1
+                elif ranks and key in ranks:
+                    updated = re.sub(
+                        r"(\(\[ledger\]\(golden-reach\.tsv\) rank )\d+(\))",
+                        lambda match, rank=ranks[key]: f"{match[1]}{rank}{match[2]}",
+                        line,
+                    )
+                    changed += updated != line
+                    line = updated
             out_lines.append(line)
         path.write_text("".join(out_lines), encoding="utf-8")
     return changed
@@ -1111,14 +1121,127 @@ def render_arm_sections(
 
 
 def rewrite_arm_sections(
-    ledger: list[tuple[int, Reach]], regions_dir: Path = REGIONS_DIR, path: Path = COVERAGE_DOC
+    ledger: list[tuple[int, Reach]],
+    regions_dir: Path = REGIONS_DIR,
+    path: Path = COVERAGE_DOC,
+    *,
+    headline: bool = False,
 ) -> bool:
     """Restate the coverage index's generated arm sections in place; return whether they changed."""
     text = path.read_text(encoding="utf-8")
     restated = render_arm_sections(text, ledger, regions_dir, path)
+    if headline:
+        restated = render_arm_headline(restated, ledger, regions_dir, path)
     if restated != text:
         path.write_text(restated, encoding="utf-8", newline="\n")
     return restated != text
+
+
+def headline_arm_keys(text: str, heading: str, columns: int) -> set[tuple[str, str]]:
+    """The arm identities of one existing evidence table, without counting prose."""
+    if text.count(heading) != 1:
+        fail(f"missing or repeated {heading}; restore the evidence section, then re-run arms --headline")
+    body = text.partition(heading)[2].split("\n#", 1)[0]
+    return {
+        (cells[0].strip("` "), cells[1].strip("` ").replace("\\|", "|"))
+        for line in body.splitlines()
+        if (cells := table_cells(line, columns)) and re.fullmatch(r"`[^`]+`", cells[0])
+    }
+
+
+def render_arm_headline(text: str, ledger: list[tuple[int, Reach]], regions: Path, path: Path) -> str:
+    """Restate the current arm split, retaining historical and ownership sections."""
+    declared = golden_rows(regions)
+    if len(ledger) != len(declared) or {reach.key: reach.region for _rank, reach in ledger} != declared:
+        fail("the reach ledger is not the golden region population; re-join it before arms --headline")
+    rows = arm_rows(ledger, regions)
+    unreached = {(row.key, row.site) for row in rows}
+    measured = set()
+    for filename, columns in (("handwritten-reach.tsv", REACH_COLUMNS), ("handwritten-config-gates.tsv", GATE_COLUMNS)):
+        if (regions / filename).is_file():
+            measured.update(
+                (row.fixture, row.key, row.site)
+                for row in read_measurements(regions / filename, columns)
+                if row.regions_executed
+            )
+    covers: dict[tuple[str, str], set[Verdict]] = defaultdict(set)
+    for cover in handwritten_covers(regions):
+        if cover.arm and (cover.key, cover.arm) in unreached and (cover.fixture, cover.key, cover.arm) in measured:
+            covers[(cover.key, cover.arm)].add(cover.verdict)
+    if any(len(verdicts) != 1 for verdicts in covers.values()):
+        fail("an arm cover has conflicting verdicts; correct its evidence before arms --headline")
+    verdicts = Counter(next(iter(values)) for values in covers.values())
+    try:
+        refused_text = (regions.parent / "fern-limitations.md").read_text(encoding="utf-8")
+        classes_path = regions.parent / "fern-refusals/classes.tsv"
+        with classes_path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle, delimiter="\t", quoting=csv.QUOTE_NONE)
+            if not reader.fieldnames or not {"class", "status"}.issubset(reader.fieldnames):
+                fail("classes.tsv lacks class/status columns; restore the registry, then re-run arms --headline")
+            classes = list(reader)
+        if any(
+            None in row
+            or any(value is None for value in row.values())
+            or not row["class"]
+            or row["status"] not in {"generate", "refuse", "unevaluated"}
+            for row in classes
+        ):
+            fail("classes.tsv has an incomplete or invalid row; restore it before arms --headline")
+        if len({row["class"] for row in classes}) != len(classes):
+            fail("classes.tsv repeats a class; repair the registry before arms --headline")
+    except OSError as error:
+        fail(f"cannot read headline evidence: {error}; restore it before arms --headline")
+    refused = headline_arm_keys(refused_text, "## Arms only a refused document reaches", 6) & unreached
+    named = headline_arm_keys(text, "#### Unproven arms, named", 3) & unreached
+    if set(covers) & refused or set(covers) & named or refused & named or set(covers) | refused | named != unreached:
+        fail("the headline arm populations overlap or leave an arm unaccounted for; repair their evidence first")
+    sites = sum(len(reach.sites) for _rank, reach in ledger)
+    reached = sites - len(unreached)
+    refused_keys = ", ".join(f"`{key}`" for key in sorted({key for key, _site in refused})) or "none"
+    body = (
+        "`golden` is still not `golden`-exhausted, so the handling sites are split the\n"
+        f"same way. The {len(declared)} `golden` rows declare {sites} handling sites in\n"
+        "[the site table](openapi-surface/golden-reach-sites.tsv). The\n"
+        "[ledger](openapi-surface/golden-reach.tsv) retains the base measurement's\n"
+        "provenance and records scoped updates beside their rows.\n\n"
+        f"- **{reached} are reached by a registered real specification.** Its scoped\n"
+        "  golden test executes the site; file-level residuals remain recorded separately.\n"
+        f"- **{len(covers)} are reached only by a hand-written fixture.** Each arm-level\n"
+        "  cover executes the site and byte-matches the certified tree. Thus each of the "
+        f"{len(covers)} is still one of the {len(unreached)} [unreached arms](#every-unreached-arm-and-its-search-verdict).\n"
+        f"  The cited records of {verdicts[Verdict.EXHAUSTED]} read `exhausted`, "
+        f"{verdicts[Verdict.SEARCH_INCOMPLETE]} read `search-incomplete` "
+        f"and {verdicts[Verdict.CONFIG_GATED]} read `config-gated`.\n"
+        f"- **{len(refused)} are reachable only by a document Fern refuses**, leaving no\n"
+        "  successful complete tree to byte-match. Their refused documents and controls\n"
+        "  are recorded in [the limitations ledger](fern-limitations.md#arms-only-a-refused-document-reaches).\n"
+        f"  The keys are {refused_keys}.\n"
+        f"- **{len(named)} {'is a named gap' if len(named) == 1 else 'are named gaps'}**, "
+        "whose outstanding evidence is in [Unproven arms, named](#unproven-arms-named).\n\n"
+        f"{reached} + {len(covers)} + {len(refused)} + {len(named)} = {sites}."
+    )
+    pattern = r"`golden` is still not `golden`-exhausted.*?^\d+ \+ \d+ \+ \d+ \+ \d+ = \d+\."
+    text, count = re.subn(pattern, lambda _match: body, text, count=1, flags=re.M | re.S)
+    if count != 1:
+        fail(f"{path}: missing current arm headline; restore it before arms --headline")
+    paragraph = (
+        "Where crozier deliberately differs from Fern is decided in\n"
+        f"[the refusal registry](fern-refusals/README.md). Each of its {len(classes)} classes has a decided detector or a fully evaluated document population\n"
+        "([the exception contract](fern-refusals/README.md)). A `refuse` detector stops\n"
+        "generation in both modes. A `generate` decision writes by default and refuses\n"
+        "under `fern-strict`; an evaluated `fern-limitation` document generates in both\n"
+        "modes and carries its SDK evaluation.\n\n"
+    )
+    text, count = re.subn(
+        r"Where crozier deliberately differs from Fern.*?(?=\*\*What the census still cannot enumerate\.\*\*)",
+        lambda _match: paragraph,
+        text,
+        count=1,
+        flags=re.S,
+    )
+    if count != 1:
+        fail(f"{path}: missing refusal headline; restore it before arms --headline")
+    return text
 
 
 def fixture_test_map(repo_root: Path) -> dict[str, str]:
@@ -1234,12 +1357,20 @@ def measured_commit(out: Path) -> str:
 
 def report(args: argparse.Namespace) -> int:
     repo_root: Path = args.repo_root
+    rows = golden_rows(repo_root / "docs" / "openapi-surface")
+    table = read_sites_table(repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv")
+    if args.keys:
+        unknown = sorted(set(args.keys) - rows.keys())
+        if unknown:
+            fail(f"unknown golden key(s): {', '.join(unknown)}; pass keys from the golden region rows")
+        rows = {key: region for key, region in rows.items() if key in args.keys}
+        table = {key: row for key, row in table.items() if key in rows}
     census = load_census(Path(args.census) if args.census else args.out / "census.json")
     coverage, universe, commit = load_coverage(args.out)
     fixture_tests = {f: t for f, t in fixture_test_map(repo_root).items() if t in coverage}
     reaches = compute(
-        golden_rows(repo_root / "docs" / "openapi-surface"),
-        read_sites_table(repo_root / "docs" / "openapi-surface" / "golden-reach-sites.tsv"),
+        rows,
+        table,
         census,
         fixture_tests,
         coverage,
@@ -1250,6 +1381,8 @@ def report(args: argparse.Namespace) -> int:
         f"golden-only tier, one scoped run per golden test, measured at commit "
         f"{commit[:12]} over {len(coverage)} golden tests"
     )
+    if args.keys:
+        return scoped_report(args, reaches, commit, len(coverage))
     if args.write:
         (repo_root / "docs" / "openapi-surface" / "golden-reach.tsv").write_text(
             ledger_text(reaches, provenance), encoding="utf-8"
@@ -1271,11 +1404,51 @@ def report(args: argparse.Namespace) -> int:
     return 0
 
 
+def scoped_report(args: argparse.Namespace, reaches: list[Reach], commit: str, tests: int) -> int:
+    """Join selected measurements and rerank, preserving every other measurement.
+    Other region content changes only where its derived rank link moves.
+    """
+    regions = args.repo_root / "docs/openapi-surface"
+    ledger = regions / "golden-reach.tsv"
+    previous = read_ledger(ledger)
+    combined = {reach.key: reach for _rank, reach in previous}
+    measured = []
+    for reach in reaches:
+        note = f"measured at commit {commit} over {tests} scoped golden test(s)"
+        reach = reach._replace(note=f"{reach.note}; {note}" if reach.note else note)
+        measured.append(reach)
+        combined[reach.key] = reach
+    ranked = sorted(combined.values(), key=ranking_key)
+    ranks = {reach.key: rank for rank, reach in enumerate(ranked, 1)}
+    lines = ledger.read_text(encoding="utf-8").splitlines(keepends=True)
+    lines[0] = lines[0].rstrip("\n").split("; scoped updates", 1)[0] + "; scoped updates carry per-row provenance\n"
+    old_rows = {line.split("\t")[1]: line for line in lines[2:]}
+    selected = {reach.key for reach in measured}
+    output = lines[:2]
+    for reach in ranked:
+        if reach.key in selected:
+            line = ledger_text([reach], "scoped").splitlines(keepends=True)[2]
+        else:
+            line = old_rows[reach.key]
+        output.append(f"{ranks[reach.key]}\t{line.partition(chr(9))[2]}")
+    text = "".join(output)
+    if args.write:
+        ledger.write_text(text, encoding="utf-8")
+        changed = rewrite_cells(measured, regions, ranks)
+        print(f"golden-reach: updated {len(measured)} scoped ledger row(s) and {changed} reach cell(s)")
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
 def arms(args: argparse.Namespace) -> int:
     """Restate the coverage index's arm counts and arm table from the committed ledger and records."""
     regions = args.repo_root / "docs" / "openapi-surface"
     restated = rewrite_arm_sections(
-        read_ledger(regions / "golden-reach.tsv"), regions, args.repo_root / "docs" / "openapi-surface-coverage.md"
+        read_ledger(regions / "golden-reach.tsv"),
+        regions,
+        args.repo_root / "docs" / "openapi-surface-coverage.md",
+        headline=args.headline,
     )
     print(f"golden-reach: arm sections {'restated' if restated else 'unchanged'}")
     return 0
@@ -1325,7 +1498,9 @@ def main(argv: list[str] | None = None) -> int:
     r = sub.add_parser("report", help="join census, sites and coverage into the ledger")
     r.add_argument("--census", help="`just surface-census --json` output (default: OUT/census.json)")
     r.add_argument("--write", action="store_true", help="write the ledger and reach cells")
-    sub.add_parser("arms", help="restate the coverage index's arm counts and table from committed files")
+    r.add_argument("--keys", nargs="+", help="update only these golden keys, retaining other measured rows and ranks")
+    a = sub.add_parser("arms", help="restate the coverage index's arm counts and table from committed files")
+    a.add_argument("--headline", action="store_true", help="also restate its current arm and refusal headline")
     s = sub.add_parser("sites", help="resolve every declared site against src/")
     s.add_argument("--verbose", action="store_true")
     s.add_argument("--table", type=Path, help="a site table other than the committed one")

@@ -9126,7 +9126,7 @@ class RankedBacklogTests(unittest.TestCase):
             r"The cited records of (\d+) read `exhausted`, (\d+) read `search-incomplete` "
             r"and (\d+) read `config-gated`.*?\*\*(\d+) are reachable only by a document Fern refuses\*\*(.*?)"
             r"\*\*(\d+) (?:is a named gap|are named gaps)\*\*.*?"
-            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes is decided `refuse`",
+            r"(\d+) \+ (\d+) \+ (\d+) \+ (\d+) = (\d+)\..*?Each of its (\d+) classes has a decided detector or a fully evaluated document population",
             headline,
         )
         self.assertIsNotNone(arms_stated, "the headline no longer states the three-way arm split")
@@ -9164,7 +9164,14 @@ class RankedBacklogTests(unittest.TestCase):
             sorted(set(re.findall(r"`([a-z-]+)`(?:'s)?", arms_stated.group(11))) & {k for k, _a in refused}),
             "the headline does not name every arm only a Fern-refused document reaches",
         )
-        self.assertEqual({"refuse"}, {row["status"] for row in classes}, "a class is no longer `refuse`")
+        self.assertTrue(
+            all(
+                row["status"] in {"refuse", "generate"}
+                or (row["status"] == "unevaluated" and refusal_population_is_decided(REPO, row["class"]))
+                for row in classes
+            ),
+            "a class has neither a decided detector nor an evaluated document population",
+        )
 
     def test_every_golden_row_resting_only_on_residual_goldens_is_attributed(self) -> None:
         """A residual golden proves a row only where its byte-matched files carry the row.
@@ -17303,6 +17310,34 @@ class CoverageRestatementTests(unittest.TestCase):
         for path in (REPO / "docs/openapi-surface").glob("*.md"):
             shutil.copyfile(path, surface / path.name)
         shutil.copyfile(REPO / "docs/openapi-surface/golden-reach.tsv", surface / "golden-reach.tsv")
+        # Source discovery reads filenames, registrations and golden directories;
+        # these valid documents supply that filesystem boundary without copying SDKs.
+        text = self.index.read_text(encoding="utf-8")
+        acquired = int(matched(re.search(r"acquires (\d+) sources", text)).group(1))
+        population = matched(re.search(r"\*\*(\d+)\*\* registered sources, of which\s+\*\*(\d+)\*\*", text))
+        registered, golden = map(int, population.groups())
+        fixtures = self.root / "tests/fixtures"
+        for number in range(registered):
+            directory = fixtures / f"sample-source-{number}"
+            directory.mkdir(parents=True)
+            (directory / "openapi.yml").write_text(
+                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+            )
+            if number < golden:
+                (directory / "expected").mkdir()
+        corpus_rows = []
+        for number in range(acquired - registered):
+            name = f"unproven-source-{number}"
+            directory = fixtures / "corpus-sources" / name
+            directory.mkdir(parents=True)
+            (directory / "openapi.yml").write_text(
+                "openapi: 3.0.3\ninfo: {title: Sample, version: '1'}\npaths: {}\n", encoding="utf-8"
+            )
+            corpus_rows.append(f"| {number + 1} | {name} | 3.0 | source | grant | notes | committed | bytes |\n")
+        (fixtures / "CORPUS.md").write_text("".join(corpus_rows), encoding="utf-8")
+        registry = self.root / "crates/crozier-e2e/tests/e2e.rs"
+        registry.parent.mkdir(parents=True)
+        registry.write_text("", encoding="utf-8")
 
     def run_restater(self, *args: str) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -17321,6 +17356,51 @@ class CoverageRestatementTests(unittest.TestCase):
     def test_the_committed_index_is_the_restater_output(self) -> None:
         result = self.run_restater()
         self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_a_new_single_witness_golden_updates_the_thin_witness_list(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        with region.open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-single-witness | both | Schema Object.sample | golden | registered source | none | `client.py` | settled |\n"
+            )
+        ledger = self.root / "docs/openapi-surface/golden-reach.tsv"
+        with ledger.open("a", encoding="utf-8") as handle:
+            handle.write("999\tsample-single-witness\tschemas\t0\t0\t0\tsample-publisher\t-\tnone\t-\n")
+        result = self.run_restater("--write")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            "| `sample-single-witness` | `schemas` | `sample-publisher` |",
+            self.index.read_text(encoding="utf-8"),
+        )
+        self.assertEqual(self.run_restater().returncode, 0)
+
+    def test_source_population_changes_are_restated_and_missing_inputs_refuse(self) -> None:
+        source = self.root / "tests/fixtures/sample-source-0/openapi.yml"
+        content = source.read_text(encoding="utf-8")
+        source.unlink()
+        self.assertEqual(self.run_restater().returncode, 1)
+        changed = self.run_restater("--write")
+        self.assertEqual(changed.returncode, 0, changed.stderr)
+        self.assertEqual(self.run_restater().returncode, 0)
+        source.write_text(content, encoding="utf-8")
+        self.assertEqual(self.run_restater().returncode, 1)
+        self.assertEqual(self.run_restater("--write").returncode, 0)
+        shutil.rmtree(self.root / "tests/fixtures")
+        before = self.index.read_bytes()
+        failed = self.run_restater("--write")
+        self.assertEqual(failed.returncode, 1)
+        self.assertIn("tests/fixtures is missing", failed.stderr)
+        self.assertEqual(self.index.read_bytes(), before)
+
+    def test_a_missing_thin_witness_section_refuses_without_writing(self) -> None:
+        text = self.index.read_text(encoding="utf-8").replace(
+            "#### Rows resting on one document", "#### Retired thin witness list"
+        )
+        self.index.write_text(text, encoding="utf-8")
+        result = self.run_restater("--write")
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("missing one-document witness section", result.stderr)
+        self.assertEqual(self.index.read_text(encoding="utf-8"), text)
 
     def test_a_reclassification_requires_restatement_and_then_checks_cleanly(self) -> None:
         region = self.root / "docs/openapi-surface/schemas.md"
@@ -17463,6 +17543,7 @@ class CoverageRestatementTests(unittest.TestCase):
         self.assertEqual(0, self.run_restater().returncode)
 
     def test_zero_site_count_still_names_a_source_file(self) -> None:
+        before = int(matched(re.search(r"All (\d+) `FIXTURE` gaps", self.index.read_text(encoding="utf-8"))).group(1))
         with (self.root / "docs/openapi-surface/schemas.md").open("a", encoding="utf-8") as handle:
             handle.write(
                 "\n| sample-zero-site | both | Schema Object.sample | gap | census: 0 declarations | "
@@ -17471,7 +17552,7 @@ class CoverageRestatementTests(unittest.TestCase):
         result = self.run_restater("--write")
         self.assertEqual(0, result.returncode, result.stderr)
         text = self.index.read_text(encoding="utf-8")
-        self.assertIn("0 of the 7 entries name no `src/` file", text)
+        self.assertIn(f"0 of the {before + 1} entries name no `src/` file", text)
 
     def test_changed_narrative_inputs_refuse_without_writing(self) -> None:
         original = self.index.read_text(encoding="utf-8")

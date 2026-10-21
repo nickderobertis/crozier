@@ -316,6 +316,53 @@ class ReportTests(unittest.TestCase):
         self.assertIn("not counted: no arm of `src/demo.rs` reads it", cells["flag-unread"][5])
         self.assertEqual("none", cells["flag-gap"][5], "a gap row's cells are not the reach cell's")
 
+    def test_scoped_report_replaces_only_named_rows_and_refuses_unknown_keys(self) -> None:
+        self.assertEqual(self.run_report("--write").returncode, 0)
+        path = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        before = path.read_text(encoding="utf-8")
+        cells = self.cells()
+        # This run reaches another arm of demo-a. Only flag-set is re-joined.
+        (self.measurement / "tests/demo_a_matches_fern_output.json").write_text(
+            json.dumps({"src/demo.rs": UNIVERSE}), encoding="utf-8"
+        )
+        result = self.run_report("--write", "--keys", "flag-set")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        after = path.read_text(encoding="utf-8")
+        before_rows = {line.split("\t")[1]: line for line in before.splitlines()[2:]}
+        after_rows = {line.split("\t")[1]: line for line in after.splitlines()[2:]}
+        self.assertNotEqual(before_rows["flag-set"], after_rows["flag-set"])
+        self.assertIn("measured at commit 0123456789abcdef", after_rows["flag-set"])
+        for key in ("flag-orphan", "flag-unread"):
+            self.assertEqual(before_rows[key], after_rows[key])
+            self.assertEqual(cells[key], self.cells()[key])
+        self.assertIn("**2** of **2** handling sites", self.cells()["flag-set"][5])
+        failed = self.run_report("--write", "--keys", "missing-key")
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("unknown golden key", failed.stderr)
+        self.assertEqual(after, path.read_text(encoding="utf-8"))
+
+    def test_scoped_report_inserts_at_rubric_rank_without_changing_old_measurements(self) -> None:
+        self.assertEqual(self.run_report("--write").returncode, 0)
+        path = self.repo / "docs/openapi-surface/golden-reach.tsv"
+        lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+        kept = [line for line in lines[2:] if line.split("\t")[1] != "flag-set"]
+        path.write_text(
+            "".join(lines[:2] + [f"{rank}\t{line.partition(chr(9))[2]}" for rank, line in enumerate(kept, 1)]),
+            encoding="utf-8",
+        )
+        measurements = {line.split("\t")[1]: line.partition("\t")[2] for line in kept}
+        result = self.run_report("--write", "--keys", "flag-set")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        ledger = golden_reach.read_ledger(path)
+        self.assertEqual(["flag-orphan", "flag-set", "flag-unread"], [reach.key for _rank, reach in ledger])
+        self.assertEqual([1, 2, 3], [rank for rank, _reach in ledger])
+        for line in path.read_text(encoding="utf-8").splitlines(keepends=True)[2:]:
+            key = line.split("\t")[1]
+            if key in measurements:
+                self.assertEqual(measurements[key], line.partition("\t")[2])
+        for rank, reach in ledger:
+            self.assertIn(f"rank {rank})", self.cells()[reach.key][5])
+
     def test_a_searched_row_links_its_arm_search_record_and_no_other_row_does(self) -> None:
         records = self.repo / "docs" / "openapi-surface" / "golden-reach-witnesses" / "searches"
         records.mkdir(parents=True)
@@ -381,14 +428,46 @@ class ReportTests(unittest.TestCase):
     # `flag-set`'s one unreached arm in the ledger `report --write` takes off the demo measurement.
     FLAG_SET_ARM = "src/demo.rs::handles[\\} else \\{]"
 
-    def run_arms(self) -> subprocess.CompletedProcess[str]:
+    def run_arms(self, *extra: str) -> subprocess.CompletedProcess[str]:
         """`golden-reach.py arms` over the scratch repository, after `report --write` gives it a ledger."""
         return subprocess.run(
-            [sys.executable, str(SCRIPT), "--repo-root", str(self.repo), "arms"],
+            [sys.executable, str(SCRIPT), "--repo-root", str(self.repo), "arms", *extra],
             capture_output=True,
             text=True,
             encoding="utf-8",
         )
+
+    def test_arm_headline_uses_the_ledger_regions_and_registry_and_refuses_missing_inputs(self) -> None:
+        self.assertEqual(self.run_report("--write").returncode, 0)
+        text = (REPO / "docs/openapi-surface-coverage.md").read_text(encoding="utf-8")
+        named = (
+            "#### Unproven arms, named\n\n| key | site | reason |\n|---|---|---|\n"
+            "| `flag-orphan` | `src/demo.rs::unrelated` | `not searched` |\n"
+            "| `flag-set` | `src/demo.rs::handles[\\} else \\{]` | `not searched` |\n"
+        )
+        text = re.sub(r"#### Unproven arms, named\n.*?(?=\n#|\Z)", lambda _match: named, text, flags=re.S)
+        index = self.arms_index(text)
+        registry = self.repo / "docs/fern-refusals/classes.tsv"
+        registry.parent.mkdir()
+        original_classes = (REPO / "docs/fern-refusals/classes.tsv").read_text(encoding="utf-8").splitlines()
+        registry.write_text("\n".join(original_classes[:2]) + "\n", encoding="utf-8")
+        (self.repo / "docs/fern-limitations.md").write_text(
+            "## Arms only a refused document reaches\n\n| key | arm | probe | reason | control | class |\n|---|---|---|---|---|---|\n",
+            encoding="utf-8",
+        )
+        result = self.run_arms("--headline")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        after = index.read_text(encoding="utf-8")
+        self.assertIn("The 3 `golden` rows declare 3 handling sites", after)
+        self.assertIn("**1 are reached by a registered real specification.**", after)
+        self.assertIn("1 + 0 + 0 + 2 = 3.", after)
+        self.assertIn("Each of its 1 classes has a decided detector or a fully evaluated document population", after)
+        self.assertIn("**Earlier reconstruction from main's 826 of 886.**", after)
+        registry.unlink()
+        failed = self.run_arms("--headline")
+        self.assertNotEqual(failed.returncode, 0)
+        self.assertIn("classes.tsv", failed.stderr)
+        self.assertEqual(index.read_text(encoding="utf-8"), after)
 
     def arms_index(self, text: str | None = None) -> Path:
         """The scratch coverage index: one arm-count and one arm-table section, or `text`."""

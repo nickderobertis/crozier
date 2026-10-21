@@ -68,6 +68,7 @@ class Ranked(NamedTuple):
 
 class Reach(NamedTuple):
     witnesses: str
+    unreached_sites: int
 
 
 ARTIFACTS = ("types/", "client.py", "raw_client.py", "errors/", "reference.md", "core/")
@@ -93,10 +94,40 @@ def substitute(text: str, pattern: str, replacement: str) -> str:
     return result
 
 
+def source_counts(root: Path) -> tuple[int, int, int]:
+    """Use the census's source discovery, without parsing or re-measuring specs."""
+    path = Path(__file__).with_name("openapi-surface-census.py")
+    spec = importlib.util.spec_from_file_location("coverage_source_reader", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot load {path}")
+    census = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = census
+    spec.loader.exec_module(census)
+    fixtures = root / "tests/fixtures"
+    if not fixtures.is_dir():
+        raise ValueError("tests/fixtures is missing; restore the source population before restating")
+    try:
+        acquired = census.acquisition_sources(fixtures, fixtures / "corpus-sources", False)
+        sources = census.registered_sources(fixtures, fixtures / "corpus-sources", False)
+    except SystemExit as error:
+        raise ValueError(str(error)) from error
+    aliases = census.corpus_aliases(fixtures)
+    golden = sum((fixtures / aliases.get(source.fixture, source.fixture) / "expected").is_dir() for source in sources)
+    return len(acquired), len(sources), golden
+
+
 def restate(root: Path) -> str:
     """Derive tables from category rows and the committed blind-spot measurement."""
     index = root / "docs/openapi-surface-coverage.md"
     text = index.read_text(encoding="utf-8")
+    acquired, registered, golden_sources = source_counts(root)
+    text = substitute(
+        text,
+        r"  acquires \d+ sources.*?evidence only\.",
+        f"  acquires {acquired} sources. The walk reads the\n"
+        f"  **{registered}** registered sources, of which **{golden_sources}** carry a committed golden; "
+        f"the {acquired - registered}\n  others carry none and are acquisition evidence only.",
+    )
     parser = reader()
     entries: dict[str, CategoryRow] = {}
     counts: dict[str, Totals] = {}
@@ -254,14 +285,40 @@ def restate(root: Path) -> str:
     ledger: dict[str, Reach] = {}
     with (surface / "golden-reach.tsv").open(encoding="utf-8", newline="") as handle:
         records = csv.DictReader((line for line in handle if not line.startswith("#")), delimiter="\t")
-        if not records.fieldnames or "key" not in records.fieldnames or "witnesses" not in records.fieldnames:
+        if not records.fieldnames or not {"key", "witnesses", "unreached_sites"}.issubset(records.fieldnames):
             raise ValueError("golden-reach.tsv: missing key/witnesses header")
         for row in records:
             if None in row or any(value is None for value in row.values()) or not row["key"]:
                 raise ValueError("golden-reach.tsv: incomplete record")
             if row["key"] in ledger:
                 raise ValueError(f"golden-reach.tsv: duplicate key {row['key']}")
-            ledger[row["key"]] = Reach(row["witnesses"])
+            if not row["unreached_sites"].isascii() or not row["unreached_sites"].isdigit():
+                raise ValueError(f"golden-reach.tsv: invalid unreached_sites for {row['key']}")
+            ledger[row["key"]] = Reach("" if row["witnesses"] == "-" else row["witnesses"], int(row["unreached_sites"]))
+    one = [
+        f"| `{key}` | `{entries[key].region}` | `{reach.witnesses}` |"
+        for key, reach in ledger.items()
+        if reach.witnesses and "," not in reach.witnesses
+    ]
+    thin_heading = "#### Rows resting on one document"
+    if text.count(thin_heading) != 1:
+        raise ValueError("missing one-document witness section")
+    before, _, remaining = text.partition(thin_heading)
+    section, following, tail = remaining.partition("\n#### ")
+    section = substitute(
+        section,
+        r"\*\*\d+\*\* golden rows rest on one document",
+        f"**{len(one)}** golden rows rest on one document",
+    )
+    header = "| key | region | only golden-only witness |\n|---|---|---|\n"
+    section = substitute(section, re.escape(header) + r"(?:\|[^\n]*\|\n)*", header + "\n".join(one) + "\n")
+    text = before + thin_heading + section + following + tail
+    reaching = sum(reach.unreached_sites == 0 for reach in ledger.values())
+    text = substitute(
+        text,
+        r"\*\*\d+\*\* golden rows reach every handling site",
+        f"**{reaching}** golden rows reach every handling site",
+    )
     heading = "#### Golden rows resting only on residual goldens"
     if heading not in text:
         raise ValueError("missing residual-golden section")

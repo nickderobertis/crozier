@@ -101,7 +101,7 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 |---|---|---|---|
 | `discriminator-mapping` | `search-incomplete` | 899 | outstanding: screen and parity/reach review not complete |
 | `oneof-string-const-variant` | `search-incomplete` | 70 | outstanding: screen and parity/reach review not complete |
-| `operation-id-digit-leading-method` | `search-incomplete` | 97 | outstanding: screen and parity/reach review not complete |
+| `operation-id-digit-leading-method` | `search-incomplete` | 97 | registered: corpus row 3000, `onmyshelf-api`; complete certified-pair SDK byte-match |
 | `schema-example-array-null-element` | `search-incomplete` | 41 | outstanding: screen and parity/reach review not complete |
 | `schema-example-empty-object` | `search-incomplete` | 171 | outstanding: screen and parity/reach review not complete |
 | `schema-example-fractional-on-integer` | `search-incomplete` | 20 | outstanding: screen and parity/reach review not complete |

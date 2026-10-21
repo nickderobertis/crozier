@@ -1,6 +1,6 @@
 source	repository	path	commit	keys	licence	reference	fern	publisher_provenance
 github-code-search	clingen-data-model/clingen-gene-tracker	openapi.yaml	8011052b843871c77e3d9769707faf95777fedc1	operation-id-digit-leading-method	failed	passed	not-run: the licence screen failed	outstanding: publisher review required
-github-code-search	onmyshelf/api	inc/openapi.json	e56b713d272d627a18ba14d3eea992231c550146	operation-id-digit-leading-method	passed	passed	passed	outstanding: publisher review required
+github-code-search	onmyshelf/api	inc/openapi.json	e56b713d272d627a18ba14d3eea992231c550146	operation-id-digit-leading-method	passed	passed	passed	registered: primary publisher API repository; corpus row 3000, complete certified-pair SDK byte-match
 sourcegraph	Kucoin/kucoin-universal-sdk	spec/rest/api/openapi-broker-apibroker.json	c2f39bdb8b7d5f31cfb3fd532f9baf2f09fd8f12	operation-id-digit-leading-method	passed	passed	passed	outstanding: publisher review required
 github-code-search	speakeasy-sdks/speakeasytryout	openapi.yaml	27688717b491131b64c8f6fead988db943750171	schema-example-on-ref-to-enum	passed	passed	passed	outstanding: publisher review required
 github-code-search	vkazakevich/slim-vue-app	openapi.json	c85759ee3ad57bad47a6e7e464b5ed66b74f630e	operation-id-digit-leading-method	passed	passed	passed	outstanding: publisher review required
