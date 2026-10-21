@@ -1693,7 +1693,7 @@ pub struct Schema {
     pub(crate) reference_nullable: bool,
     /// `deprecated: true`. Fern's worked examples leave out an optional property
     /// whose own schema is marked deprecated. Read leniently: any value but one
-    /// [`document_boolean`] reads as `true` is no mark, so a document spelling it
+    /// the document boolean rule reads as `true` is no mark, so a document spelling it
     /// otherwise still loads.
     #[serde(default, deserialize_with = "de_deprecated")]
     pub deprecated: bool,
@@ -2762,7 +2762,7 @@ impl TypeField {
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(untagged)]
 pub enum AdditionalProperties {
-    /// `true`/`false`, read by [`document_boolean`]'s rule.
+    /// `true`/`false`, or the integer `1`/`0` standing for one.
     Bool(#[serde(deserialize_with = "de_present_boolean")] bool),
     /// A schema describing the map's values.
     Schema(Box<Schema>),
