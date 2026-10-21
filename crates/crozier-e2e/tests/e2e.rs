@@ -23680,14 +23680,19 @@ fn unresolved_schema_refusal_preserves_optional_and_response_root_references() {
 #[test]
 fn recursive_inline_union_refusal_preserves_named_recursion() {
     let class = repo_root().join(FERN_REFUSALS_DIR).join("heap-exhausted");
-    for case in [
-        "probe.yml",
-        "single-child-probe.yml",
-        "recursive-union-allof-probe.json",
+    // Each probe's class is the one its Fern measurement names: one growing
+    // reference lengthens a file name past the limit, two exhaust the heap.
+    for (case, refusal) in [
+        ("probe.yml", "heap-exhausted"),
+        ("single-child-probe.yml", "generated-file-name-too-long"),
+        (
+            "recursive-union-allof-probe.json",
+            "generated-file-name-too-long",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
-            let failures = refused_failures("heap-exhausted", &run, "components/schemas", strict);
+            let failures = refused_failures(refusal, &run, "components/schemas", strict);
             assert!(failures.is_empty(), "{case}: {}", failures.join("\n"));
             assert_eq!(run.stderr.lines().count(), 1);
         }
@@ -23714,6 +23719,7 @@ fn recursive_inline_union_refusal_preserves_named_recursion() {
         "named-object-recursion-control.yml",
         "nonrecursive-union-control.yml",
         "named-binary-recursion-control.json",
+        "nullable-union-alias-control.yml",
     ] {
         let normal = refusal_run(&crozier, &class.join(case), false).unwrap();
         let strict = refusal_run(&crozier, &class.join(case), true).unwrap();

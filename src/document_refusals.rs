@@ -33,6 +33,7 @@ enum Class {
     ExtensionReferenceCycle,
     UnresolvedSchemaReference,
     HeapExhausted,
+    GeneratedFileNameTooLong,
     DefaultNotEnumValue,
     GeneratorLintFailure,
     TypeNotDefined,
@@ -68,6 +69,7 @@ impl Class {
             Self::ExtensionReferenceCycle => "extension-reference-cycle",
             Self::UnresolvedSchemaReference => "unresolved-schema-reference",
             Self::HeapExhausted => "heap-exhausted",
+            Self::GeneratedFileNameTooLong => "generated-file-name-too-long",
             Self::DefaultNotEnumValue => "default-not-enum-value",
             Self::GeneratorLintFailure => "generator-lint-failure",
             Self::TypeNotDefined => "type-not-defined",
@@ -596,6 +598,16 @@ fn check_object_extension(
     ) {
         return Ok(());
     }
+    // One referenced member and no fields of its own is an alias of that
+    // member, whatever `type` or `nullable` sits beside it: measured at Fern CLI
+    // 5.163.1, `typed-scalar-alias` and `typed-nullable-scalar-alias` generate.
+    let own_fields = schema
+        .get("properties")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|properties| !properties.is_empty());
+    if children.len() == 1 && references.len() == 1 && !own_fields {
+        return Ok(());
+    }
     let object = primary == Some("object")
         || schema
             .get("properties")
@@ -628,37 +640,7 @@ fn check_object_extension(
             .and_then(|name| context.names.get(name))
             .copied()
             .unwrap_or_else(|| schema_is_model(target, context.root, &mut Vec::new()));
-        // An explicitly object-typed union can contribute an object shape to a
-        // child with its own fields. Untyped and scalar unions remain refused.
-        let object_union = schema
-            .get("properties")
-            .and_then(serde_json::Value::as_object)
-            .is_some_and(|properties| !properties.is_empty())
-            && schema_type(target)
-                .as_ref()
-                .and_then(crate::openapi::TypeField::primary)
-                == Some("object")
-            && target
-                .get("properties")
-                .and_then(serde_json::Value::as_object)
-                .is_none_or(serde_json::Map::is_empty)
-            && target
-                .get("oneOf")
-                .and_then(serde_json::Value::as_array)
-                .is_some_and(|variants| {
-                    variants.len() >= 2
-                        && variants.iter().all(|variant| {
-                            variant
-                                .get("$ref")
-                                .and_then(serde_json::Value::as_str)
-                                .and_then(|reference| reference.strip_prefix('#'))
-                                .and_then(|pointer| yaml_pointer(context.root, pointer))
-                                .is_some_and(|member| {
-                                    schema_is_model(member, context.root, &mut Vec::new())
-                                })
-                        })
-                });
-        if !model && !object_union {
+        if !model && !object_union_base(target, context.root) {
             return refusal(
                 context.path,
                 context.strict,
@@ -668,6 +650,40 @@ fn check_object_extension(
         }
     }
     Ok(())
+}
+
+/// Whether `target` is a union every member of which is an object model or a
+/// bare constraint (`not`, `required`): Fern extends such a base, measured at
+/// Fern CLI 5.163.1 by the `union-base`, `conditional-base` and
+/// `ordered-renamed-union` controls. A scalar or array base stays refused.
+fn object_union_base(target: &serde_json::Value, root: &serde_json::Value) -> bool {
+    let scalar = matches!(
+        schema_type(target)
+            .as_ref()
+            .and_then(crate::openapi::TypeField::primary),
+        Some("string" | "number" | "integer" | "boolean" | "array" | "null")
+    );
+    !scalar
+        && ["oneOf", "anyOf"].iter().any(|key| {
+            target
+                .get(key)
+                .and_then(serde_json::Value::as_array)
+                .is_some_and(|members| {
+                    !members.is_empty()
+                        && members.iter().all(|member| {
+                            schema_is_model(member, root, &mut Vec::new())
+                                || member.as_object().is_some_and(|keys| {
+                                    !keys.is_empty()
+                                        && keys.keys().all(|key| {
+                                            matches!(
+                                                key.as_str(),
+                                                "not" | "required" | "description" | "title"
+                                            )
+                                        })
+                                })
+                        })
+                })
+        })
 }
 
 fn named_default_unsupported(schema: &serde_json::Value, root: &serde_json::Value) -> bool {
@@ -1392,14 +1408,21 @@ fn check_schema_resolution(
 
 /// The references from which a cycle that grows on every turn is reachable.
 ///
-/// A turn grows when one of its references points partway into a component
-/// (anywhere but its `$defs`), or extends a union base through `allOf`: Fern
-/// expands such a cycle without end and exhausts its heap. The answer is
+/// A turn grows where one of its references points partway into a component
+/// (anywhere but its `$defs`), or extends a union base through `allOf`. Fern
+/// expands such a cycle without end: measured at Fern CLI 5.163.1, one growing
+/// reference names each turn's type after the last until a file name is too
+/// long (`single-child` and `recursive-union-allof` probes, Kibana's zod
+/// schema), while two or more branch the expansion and exhaust its heap (the
+/// class probe, Wiremock's and virtual-tools' documents). The answer is
 /// computed once per document over the reference graph's strongly connected
 /// components, so a densely recursive description (Stripe's) stays linear.
 #[derive(Default)]
 struct ExpandingCycles {
-    reaching: std::collections::HashSet<String>,
+    /// References reaching a cycle with two or more growing references.
+    branching: std::collections::HashSet<String>,
+    /// References reaching a cycle with one growing reference.
+    lengthening: std::collections::HashSet<String>,
 }
 
 /// A reference a schema reaches without following another, and whether that
@@ -1438,22 +1461,36 @@ impl ExpandingCycles {
             }
         }
         // Tarjan's order lists every component after the ones it reaches.
-        let mut reaches = vec![false; components.len()];
+        let mut branches = vec![false; components.len()];
+        let mut lengthens = vec![false; components.len()];
         for (index, members) in components.iter().enumerate() {
-            reaches[index] = members.iter().any(|member| {
-                edges[member].iter().any(|step| {
+            let mut growing = 0;
+            for member in members {
+                for step in &edges[member] {
                     let next = component_of[step.reference.as_str()];
-                    (next == index && step.grows) || (next != index && reaches[next])
-                })
-            });
+                    if next == index {
+                        growing += usize::from(step.grows);
+                    } else {
+                        branches[index] |= branches[next];
+                        lengthens[index] |= lengthens[next];
+                    }
+                }
+            }
+            branches[index] |= growing >= 2;
+            lengthens[index] |= growing == 1;
         }
-        let reaching = components
-            .iter()
-            .enumerate()
-            .filter(|(index, _)| reaches[*index])
-            .flat_map(|(_, members)| members.iter().cloned())
-            .collect();
-        Self { reaching }
+        let members_where = |flags: &[bool]| -> std::collections::HashSet<String> {
+            components
+                .iter()
+                .zip(flags)
+                .filter(|(_, flag)| **flag)
+                .flat_map(|(members, _)| members.iter().cloned())
+                .collect()
+        };
+        Self {
+            branching: members_where(&branches),
+            lengthening: members_where(&lengthens),
+        }
     }
 }
 
@@ -1536,10 +1573,19 @@ fn reference_steps(
             reference_steps(child, root, false, steps);
         }
     }
+    // One referenced `allOf` member and no fields of its own is an alias of
+    // that member, not an extension of it: measured at Fern CLI 5.163.1,
+    // Helicone's nullable `allOf: [CustomerSource]` generates
+    // (`nullable-union-alias` control).
+    let own_fields = schema
+        .get("properties")
+        .and_then(serde_json::Value::as_object)
+        .is_some_and(|properties| !properties.is_empty());
     for key in ["allOf", "oneOf", "anyOf"] {
         if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
+            let extends = key == "allOf" && (children.len() > 1 || own_fields);
             for child in children {
-                reference_steps(child, root, key == "allOf", steps);
+                reference_steps(child, root, extends, steps);
             }
         }
     }
@@ -1615,16 +1661,25 @@ fn strongly_connected(edges: &indexmap::IndexMap<String, Vec<ReferenceStep>>) ->
     components
 }
 
-/// Whether a cycle that grows on every turn is reachable from `schema`.
-fn expanding_union_cycle(schema: &serde_json::Value, context: &SchemaContext<'_>) -> bool {
+/// The class Fern refuses `schema` with when a cycle that grows on every turn
+/// is reachable from it: `heap-exhausted` where one branches, else
+/// `generated-file-name-too-long`.
+fn expanding_union_cycle(schema: &serde_json::Value, context: &SchemaContext<'_>) -> Option<Class> {
     let cycles = context
         .expanding
         .get_or_init(|| ExpandingCycles::of(context.root));
     let mut steps = Vec::new();
     reference_steps(schema, context.root, false, &mut steps);
-    steps
-        .iter()
-        .any(|step| cycles.reaching.contains(&step.reference))
+    let reaches = |set: &std::collections::HashSet<String>| {
+        steps.iter().any(|step| set.contains(&step.reference))
+    };
+    if reaches(&cycles.branching) {
+        Some(Class::HeapExhausted)
+    } else if reaches(&cycles.lengthening) {
+        Some(Class::GeneratedFileNameTooLong)
+    } else {
+        None
+    }
 }
 
 fn check_schema(
@@ -1657,9 +1712,10 @@ fn check_schema(
             .get(key)
             .and_then(serde_json::Value::as_array)
             .is_some_and(|variants| variants.len() > 1)
-    }) && expanding_union_cycle(schema, context)
-    {
-        return refusal(context.path, context.strict, Class::HeapExhausted, element);
+    }) {
+        if let Some(class) = expanding_union_cycle(schema, context) {
+            return refusal(context.path, context.strict, class, element);
+        }
     }
     check_object_extension(schema, context, element)?;
     if let Some(default) = schema
@@ -2945,7 +3001,8 @@ mod tests {
             }})),
             None
         );
-        // The same union reached through a property pointer still expands.
+        // The same union reached through a property pointer still expands, one
+        // longer name a turn.
         let error = schema_refusal(serde_json::json!({"Tool": {
             "type": "object",
             "properties": {"composition": {"anyOf": [
@@ -2957,7 +3014,9 @@ mod tests {
         }}))
         .unwrap_or_default();
         assert!(
-            error.contains("heap-exhausted: components/schemas/Tool/properties/composition"),
+            error.contains(
+                "generated-file-name-too-long: components/schemas/Tool/properties/composition"
+            ),
             "{error}"
         );
     }
@@ -2986,37 +3045,81 @@ mod tests {
     }
 
     #[test]
+    fn an_object_extends_a_union_of_objects_or_aliases_one_member_but_no_scalar() {
+        let class = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/object-extends-non-object");
+        let mut shapes: Vec<String> = std::fs::read_dir(&class)
+            .unwrap()
+            .filter_map(|entry| entry.ok()?.file_name().into_string().ok())
+            .filter(|name| {
+                name == "probe.yml" || name.contains("-probe.") || name.contains("-control.")
+            })
+            .collect();
+        shapes.sort();
+        for measured in [
+            "union-base-control.yml",
+            "conditional-base-control.yml",
+            "typed-scalar-alias-control.yml",
+            "typed-nullable-scalar-alias-control.yml",
+        ] {
+            assert!(shapes.iter().any(|shape| shape == measured), "{measured}");
+        }
+        for shape in shapes {
+            let error = registry_shape_refusal(&format!("object-extends-non-object/{shape}"));
+            let refused = error
+                .as_deref()
+                .is_some_and(|error| error.contains("object-extends-non-object: "));
+            assert_eq!(refused, !shape.contains("-control."), "{shape}: {error:?}");
+        }
+    }
+
+    #[test]
     fn a_densely_recursive_union_document_is_decided_once() {
         // Stripe's expandable fields: every object reaches every other through a
         // string-or-object union, with no turn that grows.
         assert_eq!(schema_refusal(densely_recursive(40)), None);
-        // One pointer partway into a component makes a turn through it grow.
+        // One pointer partway into a component makes a turn through it grow,
+        // lengthening each turn's name; a second branches the expansion.
         let mut schemas = densely_recursive(40);
         schemas["S7"]["properties"]["deep"] =
             serde_json::json!({"$ref": "#/components/schemas/S3/properties/p7"});
+        let error = schema_refusal(schemas.clone()).unwrap_or_default();
+        assert!(error.contains("generated-file-name-too-long: "), "{error}");
+        schemas["S9"]["properties"]["deep"] =
+            serde_json::json!({"$ref": "#/components/schemas/S5/properties/p9"});
         let error = schema_refusal(schemas).unwrap_or_default();
         assert!(error.contains("heap-exhausted: "), "{error}");
     }
 
     #[test]
     fn a_cycle_grows_through_a_partial_pointer_or_an_extended_union_base() {
-        for (shape, refused) in [
-            ("probe.yml", true),
-            ("single-child-probe.yml", true),
-            ("recursive-union-allof-probe.json", true),
-            ("defs-json-value-control.yml", false),
-            ("named-binary-recursion-control.json", false),
-            ("named-object-recursion-control.yml", false),
-            ("nonrecursive-union-control.yml", false),
+        // The class each shape's Fern measurement names, or `None` for a control.
+        for (shape, class) in [
+            ("probe.yml", Some("heap-exhausted")),
+            (
+                "single-child-probe.yml",
+                Some("generated-file-name-too-long"),
+            ),
+            (
+                "recursive-union-allof-probe.json",
+                Some("generated-file-name-too-long"),
+            ),
+            ("defs-json-value-control.yml", None),
+            ("named-binary-recursion-control.json", None),
+            ("named-object-recursion-control.yml", None),
+            ("nonrecursive-union-control.yml", None),
+            ("nullable-union-alias-control.yml", None),
         ] {
             let error = registry_shape_refusal(&format!("heap-exhausted/{shape}"));
-            assert_eq!(
-                error
-                    .as_deref()
-                    .is_some_and(|error| error.contains("heap-exhausted: ")),
-                refused,
-                "{shape}: {error:?}"
-            );
+            match class {
+                Some(class) => assert!(
+                    error
+                        .as_deref()
+                        .is_some_and(|error| error.contains(&format!("{class}: "))),
+                    "{shape}: {error:?}"
+                ),
+                None => assert_eq!(error, None, "{shape}"),
+            }
         }
     }
 
