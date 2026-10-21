@@ -1,3 +1,4 @@
+fern-refusals: reduction of 03797d7241bd2b7129a5251297452c3189cba8d24948230cdf733ff693687832: /paths/~1documents/post;/paths/~1documents~1{document_id}~1copy/post
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:

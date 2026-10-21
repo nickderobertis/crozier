@@ -65,7 +65,7 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Literal, NamedTuple, NoReturn, TypedDict
+from typing import Any, Literal, NamedTuple, NoReturn, TypedDict, TypeGuard
 
 REPO = Path(__file__).resolve().parents[2]
 # The tests point this at a scratch copy to show `check` failing on drift.
@@ -140,10 +140,11 @@ DISPOSITIONS_HEADER = (
     "log",
 )
 # What a reduction's Fern run shows about crozier's class, and what needs none.
-Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other"]
-DISPOSITIONS: tuple[Disposition, ...] = ("generate-stage", "masked", "over-broad", "reported-other")
-# The recorded dispositions that hold a refusal by crozier's class: every one but
-# `over-broad`, which crozier is narrowed to match.
+Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other", "unmeasured"]
+DISPOSITIONS: tuple[Disposition, ...] = ("generate-stage", "masked", "over-broad", "reported-other", "unmeasured")
+# The recorded dispositions that hold a refusal by crozier's class: not
+# `over-broad`, which crozier is narrowed to match, nor `unmeasured`, a
+# reduction Fern did not finish within `reduce`'s bound.
 AGREEING: tuple[Disposition, ...] = ("generate-stage", "masked", "reported-other")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
@@ -2011,33 +2012,68 @@ def dispositions_path() -> Path:
 
 
 class DispositionRow(TypedDict):
-    """A `dispositions.tsv` row, as the table spells it."""
+    """A `dispositions.tsv` row, its outcomes parsed; `None` and `[]` are `—`."""
 
     document: str
     crozier_class: str
-    disposition: str
+    disposition: Disposition
     representative: str
     reduction: str
     reduced_digest: str
-    check_exit: str
-    generate_exit: str
-    classes: str
+    check_exit: StageExit | None
+    generate_exit: StageExit | None
+    classes: list[str]
     log: str
 
 
+def is_disposition(text: str) -> TypeGuard[Disposition]:
+    return text in DISPOSITIONS
+
+
 def disposition_row(cells: dict[str, str]) -> DispositionRow:
+    """A row read from the table, every cell checked against what it may hold."""
+    name = f"dispositions.tsv {cells['document']}"
+    disposition = cells["disposition"]
+    if not is_disposition(disposition):
+        fail(f"{name}: disposition {disposition!r} is not one of {', '.join(DISPOSITIONS)}; restore it from git")
+
+    def outcome(field: str) -> StageExit | None:
+        text = cells[field]
+        if text == EMPTY:
+            return None
+        parsed = stage_exit(text)
+        if parsed is None:
+            fail(f"{name}: {field} {text!r} is not an exit status, `timeout` or `—`; rerun `reduce`")
+        return parsed
+
     return DispositionRow(
         document=cells["document"],
         crozier_class=cells["crozier_class"],
-        disposition=cells["disposition"],
+        disposition=disposition,
         representative=cells["representative"],
         reduction=cells["reduction"],
         reduced_digest=cells["reduced_digest"],
-        check_exit=cells["check_exit"],
-        generate_exit=cells["generate_exit"],
-        classes=cells["classes"],
+        check_exit=outcome("check_exit"),
+        generate_exit=outcome("generate_exit"),
+        classes=[] if cells["classes"] == EMPTY else cells["classes"].split(","),
         log=cells["log"],
     )
+
+
+def disposition_text(row: DispositionRow) -> dict[str, str]:
+    """A row as the table spells it."""
+    return {
+        "document": row["document"],
+        "crozier_class": row["crozier_class"],
+        "disposition": row["disposition"],
+        "representative": row["representative"],
+        "reduction": row["reduction"],
+        "reduced_digest": row["reduced_digest"],
+        "check_exit": EMPTY if row["check_exit"] is None else str(row["check_exit"]),
+        "generate_exit": EMPTY if row["generate_exit"] is None else str(row["generate_exit"]),
+        "classes": ",".join(row["classes"]) or EMPTY,
+        "log": row["log"],
+    }
 
 
 def read_dispositions() -> list[DispositionRow]:
@@ -2047,8 +2083,8 @@ def read_dispositions() -> list[DispositionRow]:
 
 def write_dispositions(rows: list[DispositionRow]) -> None:
     ordered = sorted(rows, key=lambda row: (row["crozier_class"], row["document"]))
-    cells = [{field: str(row[field]) for field in DISPOSITIONS_HEADER} for row in ordered]
-    dispositions_path().write_text(tsv_text(DISPOSITIONS_HEADER, cells), encoding="utf-8")
+    text = tsv_text(DISPOSITIONS_HEADER, [disposition_text(row) for row in ordered])
+    dispositions_path().write_text(text, encoding="utf-8")
 
 
 class Pointer(NamedTuple):
@@ -2160,6 +2196,31 @@ def reduction_log(reduced_digest: str) -> Path:
     return EVIDENCE / "reductions" / f"{reduced_digest}.log"
 
 
+class ReductionLog(NamedTuple):
+    """A reduction's log: the representative and reduction it was taken from, and Fern's run."""
+
+    representative: str
+    reduction: str
+    run: ShapeRun
+
+
+# A reduction log's first line, naming its inputs; the shape log's text follows.
+REDUCTION_LINE = re.compile(r"fern-refusals: reduction of (?P<representative>[0-9a-f]{64}): (?P<reduction>[^\n]+)\n")
+
+
+def reduction_log_text(representative: str, reduction: str, run: ShapeRun) -> str:
+    return f"fern-refusals: reduction of {representative}: {reduction}\n" + shape_log_text(run)
+
+
+def read_reduction_log(text: str) -> ReductionLog | None:
+    """The inputs and run a reduction log records, or `None` when it is not one `reduce` wrote at the pair."""
+    named = REDUCTION_LINE.match(text)
+    run = read_shape_log(text[named.end() :]) if named else None
+    if named is None or run is None:
+        return None
+    return ReductionLog(named["representative"], named["reduction"], run)
+
+
 class ReductionVerdict(NamedTuple):
     """What a reduction's run shows about crozier's class, and the classes and findings Fern named."""
 
@@ -2172,7 +2233,9 @@ def disposition_of(
 ) -> ReductionVerdict:
     """`masked` where Fern names crozier's class, `reported-other` where its
     check names another class or a check-only finding, `over-broad` where its
-    check names neither."""
+    check names neither, and `unmeasured` where a stage ran past the bound."""
+    if run.check_exit == "timeout" or (run.generation and run.generation.exit == "timeout"):
+        return ReductionVerdict("unmeasured", [])
     named: set[str] = set()
     checked: set[str] = set()
     for stage, log in (("check", run.check_log), ("generate", run.generation.log if run.generation else "")):
@@ -2196,9 +2259,9 @@ def disposition_cells(
         representative=row["representative"],
         reduction=row["reduction"],
         reduced_digest=reduced_digest,
-        check_exit=str(run.check_exit),
-        generate_exit=str(run.generation.exit) if run.generation else EMPTY,
-        classes=",".join(verdict.named) or EMPTY,
+        check_exit=run.check_exit,
+        generate_exit=run.generation.exit if run.generation else None,
+        classes=verdict.named,
         log=rel(reduction_log(reduced_digest)),
     )
 
@@ -2230,10 +2293,13 @@ def reduce(args: argparse.Namespace) -> int:
         data, reason = fetcher.get(located)
         if data is None:
             fail(f"cannot read representative {row['representative']}: {reason}")
+        inputs = (row["representative"], row["reduction"])
         text = reduced(data, suffix_of(entry["locator"]), row["reduction"])
         digest = hashlib.sha256(text).hexdigest()
         log = reduction_log(digest)
-        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        found = read_reduction_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        # A log of these bytes from other inputs names other provenance: take it again.
+        recorded = found.run if found and (found.representative, found.reduction) == inputs else None
         run = runs.get(digest) or (None if args.again else recorded)
         if run is None:
             with tempfile.TemporaryDirectory(prefix="fern-refusals-reduced-") as scratch:
@@ -2241,7 +2307,7 @@ def reduce(args: argparse.Namespace) -> int:
                 document.write_bytes(text)
                 run = fern_document(document, args.timeout, patterns, near)
             log.parent.mkdir(parents=True, exist_ok=True)
-            log.write_text(shape_log_text(run), encoding="utf-8")
+            log.write_text(reduction_log_text(*inputs, run), encoding="utf-8")
             taken += 1
         runs[digest] = run
         rows[index] = disposition_cells(row, digest, run, patterns, near)
@@ -2281,12 +2347,10 @@ def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> 
         if row["crozier_class"] not in stages or row["crozier_class"] in document["classes"].split(","):
             problems.append(f"{name}: {row['crozier_class']} is no class, or one the document carries")
             continue
-        if row["disposition"] not in DISPOSITIONS:
-            problems.append(f"{name}: disposition {row['disposition']!r} is not one of {', '.join(DISPOSITIONS)}")
-            continue
         if row["representative"] == EMPTY:
             stage = stages[row["crozier_class"]] == "generate" and document["fern_stage"] == "check"
-            blank = all(row[field] == EMPTY for field in DISPOSITIONS_HEADER[4:])
+            text = disposition_text(row)
+            blank = all(text[field] == EMPTY for field in DISPOSITIONS_HEADER[4:])
             if row["disposition"] != "generate-stage" or not stage or not blank:
                 problems.append(
                     f"{name}: with no representative, a disposition is `generate-stage`, for a class only "
@@ -2294,13 +2358,18 @@ def disposition_problems(documents: dict[str, dict[str, str]] | None = None) -> 
                 )
             continue
         log = REPO / row["log"]
-        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        recorded = read_reduction_log(log.read_text(encoding="utf-8")) if log.is_file() else None
         if recorded is None or log != reduction_log(row["reduced_digest"]):
             problems.append(
                 f"{name}: its log {row['log']} is not one `reduce` wrote at Fern CLI {FERN_CLI} with "
                 f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
             )
-        elif disposition_cells(row, row["reduced_digest"], recorded, patterns, near) != row:
+        elif (recorded.representative, recorded.reduction) != (row["representative"], row["reduction"]):
+            problems.append(
+                f"{name}: its log {row['log']} was taken from representative {recorded.representative} reduced by "
+                f"{recorded.reduction!r}, not the row's; {again}"
+            )
+        elif disposition_cells(row, row["reduced_digest"], recorded.run, patterns, near) != row:
             problems.append(f"{name}: the row disagrees with its log {row['log']}; {again}")
     return problems
 

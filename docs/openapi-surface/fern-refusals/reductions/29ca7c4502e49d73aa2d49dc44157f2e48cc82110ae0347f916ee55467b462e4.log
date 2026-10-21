@@ -1,3 +1,4 @@
+fern-refusals: reduction of 4ce2c6eafa40cc6e3d40c1b2534cb95fd0d8511902a7cdb00a8c4847b239510d: /paths/~1projects~1{project_gid}~1addFollowers/post;/paths/~1projects~1{project_gid}~1saveAsTemplate/post;/paths/~1projects~1{project_gid}~1removeFollowers/post;/components/schemas/AddFollowersRequest;/components/schemas/ProjectSaveAsTemplateRequest;/components/schemas/RemoveFollowersRequest
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:

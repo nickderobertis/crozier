@@ -1,3 +1,4 @@
+fern-refusals: reduction of afbac15e29ae60ef15e570edde3332368f0b8e3fdab4c42be40f36f125e6e734: /paths/~1projects~1{id}/put/requestBody/content/application~1json/schema/properties/context/properties/approx_usage/enum
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:

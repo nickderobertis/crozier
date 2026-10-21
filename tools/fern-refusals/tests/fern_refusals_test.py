@@ -1663,10 +1663,11 @@ class MeasuredAtThePair(unittest.TestCase):
             (row["disposition"], row["reduced_digest"], row["check_exit"], row["generate_exit"], row["classes"]),
             ("masked", reduced_digest, "1", "—", "object-extends-non-object"),
         )
-        # Fern ran once, over the reduced bytes, and the log names the pair.
+        # Fern ran once, over the reduced bytes, and the log names its inputs, then the pair.
         [call] = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
         self.assertEqual((call["argv"], json.loads(call["spec"])), (["check"], without))
-        self.assertTrue((self.root / row["log"]).read_text(encoding="utf-8").startswith(PAIR_LINE))
+        provenance, pair = (self.root / row["log"]).read_text(encoding="utf-8").splitlines(keepends=True)[:2]
+        self.assertEqual((provenance, pair), (f"fern-refusals: reduction of {digest}: /x-note\n", PAIR_LINE))
         self.assertEqual(built().returncode, 0, built().stderr)
         # A row its log does not derive is named by `check`.
         edited = dict(row, disposition="reported-other")
@@ -1687,6 +1688,32 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
         self.assertEqual(rows(registry / "dispositions.tsv")[1][2], "over-broad")
         self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        # Fern naming another class there instead is recorded as reported, and vouches.
+        self.env.update(
+            FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(self.class_row[4])}",
+            FERN_STUB_CHECK_EXIT="1",
+            FERN_STUB_GENERATE_FILES="0",
+        )
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][8]), ("reported-other", self.CLASS))
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A row whose inputs are not the ones its log was taken from is named.
+        table[1][4] = "/info"
+        write_rows(registry / "dispositions.tsv", table)
+        self.assertIn(f"dispositions.tsv {digest}: its log", self.script("check").stderr)
+        self.assertIn("was taken from representative", self.script("check").stderr)
+        table[1][4] = "/x-note"
+        write_rows(registry / "dispositions.tsv", table)
+        # A reduction Fern does not finish within the bound is unmeasured, and vouches for nothing.
+        self.env["FERN_STUB_HANG"] = str(self.root / "fern-pids")
+        reduced = self.script("reduce", "--again", "--timeout", "2", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][6], table[1][8]), ("unmeasured", "timeout", "—"))
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        del self.env["FERN_STUB_HANG"]
         # A class only `fern generate` reports, on a document Fern's check stopped, agrees by rule.
         refused_with("generator-lint-failure")
         dispose(crozier_class="generator-lint-failure", disposition="generate-stage")

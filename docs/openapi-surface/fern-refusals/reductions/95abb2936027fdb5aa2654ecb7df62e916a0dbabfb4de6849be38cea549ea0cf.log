@@ -1,3 +1,4 @@
+fern-refusals: reduction of af66914f0d43b7c45c46a69e7619d3a7e008eff4668fc4caa43145170f9b97a3: /components/schemas/FieldValueClause/properties/operator/enum
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:

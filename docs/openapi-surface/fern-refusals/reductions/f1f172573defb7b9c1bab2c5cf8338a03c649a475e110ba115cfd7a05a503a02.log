@@ -1,3 +1,4 @@
+fern-refusals: reduction of e145ad381fe4277ec2e558cd19b86af645e76479eab8ad5801eef63c976a7fae: /paths/~1api/get;/paths/~1api~1processes-list/get
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:

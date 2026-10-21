@@ -1,3 +1,4 @@
+fern-refusals: reduction of 074048fe12ed07ed40e24d6ff027c480745d1ffe51bd07e86e5d24491b5031e2: /paths/*-;/components/schemas/*-Kibana_HTTP_APIs__zod_v4_3___schema0;/components/examples;/components/parameters
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:

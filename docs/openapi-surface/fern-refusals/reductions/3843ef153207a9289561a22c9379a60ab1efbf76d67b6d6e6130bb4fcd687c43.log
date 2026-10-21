@@ -1,3 +1,4 @@
+fern-refusals: reduction of 9fa0f7571be771e2340dda4c9292b2aee1309e818a19fb55a28525eb1e67ab70: /paths/~1v1~1admin~1subscription-data/get;/components/schemas/DataEntry/anyOf/0/properties/_type
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:

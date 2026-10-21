@@ -1,3 +1,4 @@
+fern-refusals: reduction of 04da5a3c1c68b149b9feda12c59ec18b7d90af360856ee4a9e7b3b1158c2ac8b: /components/schemas/conversation_list_item/properties/custom_attributes;/components/schemas/conversation/properties/custom_attributes;/components/schemas/create_phone_switch_request/properties/custom_attributes;/components/schemas/update_conversation_request/properties/custom_attributes
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:

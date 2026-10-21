@@ -1,3 +1,4 @@
+fern-refusals: reduction of 5ce68565710ca03a17792aaccccb4949d135632e69898d665aa349dbf710385a: /components/schemas/DiscoveryAssetLog/properties/history_type/enum/0
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 1
 Warnings for generators.yml:

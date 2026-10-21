@@ -1,3 +1,4 @@
+fern-refusals: reduction of 260f6a7ef323e089933ad3211808087ba23a759c262a0d419ff6f9ac6e194f53: /paths/~1objects~1restsearch/post;/paths/~1auth_keys~1add~1{userId}/post
 fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
 check exit: 0
 Warnings for generators.yml:
