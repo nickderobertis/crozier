@@ -193,19 +193,15 @@ def restate(root: Path) -> str:
         r"^\| # \| key \| region \| 1\. crozier sites[^\n]*\n\|---[^\n]*\n(?:\|[^\n]*\n)*",
         table.rstrip("\n") + "\n",
     )
-    text = re.sub(r"All \d+ `FIXTURE` gaps", f"All {fixture} `FIXTURE` gaps", text)
+    text = substitute(text, r"All \d+ `FIXTURE` gaps", f"All {fixture} `FIXTURE` gaps")
     zero_witness = sum(score.witnesses == 0 for _order, _row, score, _has_file in ranked)
-    text = re.sub(
+    text = substitute(
+        text,
         r"(?:\d+ of the \d+ score zero|no ranked witnesses remain)",
         f"{zero_witness} of the {fixture} score zero" if fixture else "no ranked witnesses remain",
-        text,
     )
     no_file = sum(not entry.has_file for entry in ranked)
     no_blind = sum(entry.score.blind == 0 for entry in ranked)
-    text = re.sub(r"\d+ of the \d+ entries name no", f"{no_file} of the {fixture} entries name no", text)
-    text = re.sub(
-        r"\d+ of the \d+ ranked entries reach no", f"{no_blind} of the {fixture} ranked entries reach no", text
-    )
     values = sorted(score.blind for _order, _row, score, _has_file in ranked)
     median = (values[(len(values) - 1) // 2] + values[len(values) // 2]) // 2 if values else None
     if median is None:
@@ -276,8 +272,16 @@ def restate(root: Path) -> str:
         for line in residual_rows
     ):
         raise ValueError("malformed residual-golden row")
+    residual_keys = [line.split("|")[1].strip().strip("`") for line in residual_rows]
+    if len(set(residual_keys)) != len(residual_keys):
+        raise ValueError("duplicate residual-golden key")
+    if any(key not in entries or entries[key].category != "golden" for key in residual_keys):
+        raise ValueError("residual-golden key is not a golden category row")
     residual = set(re.findall(r"^\| `([^`]+)` \|[^\n]*\| `open gap` \|$", residual_section, re.M))
-    no_witness = sum(entry.category == "golden" and not ledger[key].witnesses for key, entry in entries.items())
+    witnessless = {key for key, entry in entries.items() if entry.category == "golden" and not ledger[key].witnesses}
+    if set(residual_keys) & witnessless:
+        raise ValueError("residual-golden and witnessless populations overlap")
+    no_witness = len(witnessless)
     real = golden - len(residual) - no_witness
     proof = limitations + unreachable
     unproven = fixture + len(residual) + no_witness
@@ -286,11 +290,13 @@ def restate(root: Path) -> str:
         r"The walk enumerates \d+ features\. By category,.*?`gap`\.",
         f"The walk enumerates {total} features. By category, {golden} are `golden`, {limitations}\n`limitations`, {handwritten} `handwritten` and {gap} `gap`.",
     )
-    text = re.sub(r"those \d+\nsplit four ways", f"those {total}\nsplit four ways", text)
-    text = re.sub(r"\*\*\d+ carry byte-match evidence", f"**{real} carry byte-match evidence", text)
-    text = re.sub(r"\*\*\d+ carry a committed Fern", f"**{proof} carry a committed Fern", text)
-    text = re.sub(r"\*\*\d+ rest on a hand-written fixture", f"**{handwritten} rest on a hand-written fixture", text)
-    text = re.sub(r"They are not among the \d+", f"They are not among the {real}", text)
+    text = substitute(text, r"those \d+\nsplit four ways", f"those {total}\nsplit four ways")
+    text = substitute(text, r"\*\*\d+ carry byte-match evidence", f"**{real} carry byte-match evidence")
+    text = substitute(text, r"\*\*\d+ carry a committed Fern", f"**{proof} carry a committed Fern")
+    text = substitute(
+        text, r"\*\*\d+ rest on a hand-written fixture", f"**{handwritten} rest on a hand-written fixture"
+    )
+    text = substitute(text, r"They are not among the\s+\d+", f"They are not among the\n  {real}")
     feature_keys = ", ".join(f"`{key}`" for key in sorted(gaps["FIXTURE"]))
     residual_keys = ", ".join(f"`{key}`" for key in sorted(residual))
     feature_text = f"{feature_keys}. " if feature_keys else ""

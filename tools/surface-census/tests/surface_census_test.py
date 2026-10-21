@@ -17396,6 +17396,119 @@ class CoverageRestatementTests(unittest.TestCase):
         text = self.index.read_text(encoding="utf-8")
         self.assertIn("0 of the 7 entries name no `src/` file", text)
 
+    def test_changed_narrative_inputs_refuse_without_writing(self) -> None:
+        original = self.index.read_text(encoding="utf-8")
+        for before, after in [
+            ("All ", "Every "),
+            ("score zero", "have zero witnesses"),
+            ("split four ways", "split ways"),
+            ("carry byte-match evidence", "have matching evidence"),
+            ("carry a committed Fern", "have a measurement"),
+            ("rest on a hand-written fixture", "have an authored tree"),
+            ("They are not among the", "They lie outside"),
+        ]:
+            with self.subTest(narrative=before):
+                self.assertIn(before, original)
+                self.index.write_text(original.replace(before, after), encoding="utf-8")
+                mutated = self.index.read_bytes()
+                result = self.run_restater("--write")
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn("coverage index no longer matches", result.stderr)
+                self.assertEqual(mutated, self.index.read_bytes())
+                self.index.write_text(original, encoding="utf-8")
+                self.assertEqual(0, self.run_restater().returncode)
+
+    def test_residual_keys_must_be_unique_golden_and_have_witnesses(self) -> None:
+        original = self.index.read_text(encoding="utf-8")
+        residual = next(
+            line for line in original.splitlines() if line.startswith("| `schema-example-null` | `webflow-v2` |")
+        )
+        for name, replacement in [
+            ("duplicate", residual + "\n" + residual),
+            ("unknown", residual.replace("schema-example-null", "unknown-residual-key", 1)),
+            ("not golden", residual.replace("schema-example-null", "schema-example-temporal-duplicate-element", 1)),
+        ]:
+            with self.subTest(residual=name):
+                self.index.write_text(original.replace(residual, replacement), encoding="utf-8")
+                before = self.index.read_bytes()
+                result = self.run_restater("--write")
+                self.assertEqual(1, result.returncode, result.stderr)
+                self.assertIn("residual-golden", result.stderr)
+                self.assertEqual(before, self.index.read_bytes())
+        self.index.write_text(original, encoding="utf-8")
+        ledger = self.root / "docs/openapi-surface/golden-reach.tsv"
+        text = ledger.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        header = next(line.split("\t") for line in lines if line.startswith("rank\t"))
+        for index, line in enumerate(lines):
+            fields = line.split("\t")
+            if len(fields) == len(header) and fields[header.index("key")] == "schema-example-null":
+                fields[header.index("witnesses")] = ""
+                lines[index] = "\t".join(fields)
+        ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        result = self.run_restater("--write")
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn("populations overlap", result.stderr)
+        self.assertEqual(original, self.index.read_text(encoding="utf-8"))
+        ledger.write_text(text, encoding="utf-8")
+        self.assertEqual(0, self.run_restater().returncode)
+
+    def test_changed_residual_and_witness_populations_reconcile(self) -> None:
+        original = self.index.read_text(encoding="utf-8")
+        real = int(matched(re.search(r"\*\*(\d+) carry byte-match evidence", original)).group(1))
+        unproven = int(matched(re.search(r"\*\*(\d+) remain unproven", original)).group(1))
+        self.index.write_text(original.replace("| `open gap` |", "| `proven` |"), encoding="utf-8")
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        revised = self.index.read_text(encoding="utf-8")
+        self.assertRegex(revised, rf"\*\*{real + 1} carry byte-match evidence")
+        self.assertRegex(revised, rf"\*\*{unproven - 1} remain unproven")
+        self.assertRegex(revised, rf"They are not among the\s+{real + 1}\b")
+        self.assertEqual(0, self.run_restater().returncode)
+        self.index.write_text(original, encoding="utf-8")
+        ledger = self.root / "docs/openapi-surface/golden-reach.tsv"
+        text = ledger.read_text(encoding="utf-8")
+        lines = text.splitlines()
+        header = next(line.split("\t") for line in lines if line.startswith("rank\t"))
+        for index, line in enumerate(lines):
+            fields = line.split("\t")
+            if len(fields) == len(header) and fields[header.index("key")] == "request-body-content":
+                self.assertTrue(fields[header.index("witnesses")])
+                fields[header.index("witnesses")] = ""
+                lines[index] = "\t".join(fields)
+        ledger.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        result = self.run_restater("--write")
+        self.assertEqual(0, result.returncode, result.stderr)
+        revised = self.index.read_text(encoding="utf-8")
+        self.assertRegex(revised, rf"\*\*{real - 1} carry byte-match evidence")
+        self.assertRegex(revised, rf"\*\*{unproven + 1} remain unproven")
+        self.assertRegex(revised, rf"{real - 1} \+ \d+ \+ \d+ \+ {unproven + 1} = \d+\.")
+        self.assertEqual(0, self.run_restater().returncode)
+
+    def test_output_write_failure_reports_and_recovers(self) -> None:
+        region = self.root / "docs/openapi-surface/schemas.md"
+        with region.open("a", encoding="utf-8") as handle:
+            handle.write(
+                "\n| sample-readonly-output | both | Schema Object.sample | gap | census: 0 declarations | "
+                "`src/naming.rs` 1 | `client.py` | FIXTURE — pending |\n"
+            )
+        original = self.index.read_bytes()
+        mode = self.index.stat().st_mode
+        try:
+            self.index.chmod(0o444)
+            if os.access(self.index, os.W_OK):
+                self.skipTest("this user bypasses read-only file permissions")
+            result = self.run_restater("--write")
+            self.assertEqual(1, result.returncode, result.stderr)
+            self.assertIn("coverage-restatement:", result.stderr)
+            self.assertIn("Permission denied", result.stderr)
+            self.assertEqual(original, self.index.read_bytes())
+        finally:
+            self.index.chmod(mode)
+        recovered = self.run_restater("--write")
+        self.assertEqual(0, recovered.returncode, recovered.stderr)
+        self.assertEqual(0, self.run_restater().returncode)
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
