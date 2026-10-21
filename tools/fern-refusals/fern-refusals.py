@@ -47,6 +47,7 @@ from __future__ import annotations
 import argparse
 import contextlib
 import csv
+import datetime
 import gzip
 import hashlib
 import importlib.util
@@ -72,6 +73,11 @@ REPO = Path(__file__).resolve().parents[2]
 ClassId: TypeAlias = str
 # The lower-hex SHA-256 of a document's (or a reduced document's) exact bytes: its identity.
 Digest: TypeAlias = str
+# A parsed OpenAPI document's node, as `json` or PyYAML's safe loader builds it:
+# YAML admits non-string mapping keys and plain timestamps, so both are here.
+DocumentNode: TypeAlias = (
+    "dict[object, DocumentNode] | list[DocumentNode] | str | int | float | bool | datetime.date | None"
+)
 # The tests point this at a scratch copy to show `check` failing on drift.
 REGISTRY = Path(os.environ.get("CROZIER_FERN_REFUSALS_REGISTRY") or REPO / "docs" / "fern-refusals")
 EVIDENCE = REPO / "docs" / "openapi-surface" / "fern-refusals"
@@ -2138,7 +2144,7 @@ ESCAPED = re.compile(r"(?:[^~]|~[01])*")
 INDEX = re.compile(r"0|[1-9][0-9]*")
 
 
-def pointed(node: Any, pointer: Pointer) -> Any:
+def pointed(node: DocumentNode, pointer: Pointer) -> DocumentNode:
     """The node a pointer's leading tokens name: the parent of what it deletes."""
     for token in pointer.tokens[:-1]:
         match node:
@@ -2151,7 +2157,7 @@ def pointed(node: Any, pointer: Pointer) -> Any:
     return node
 
 
-def delete(document: Any, pointer: Pointer) -> None:
+def delete(document: DocumentNode, pointer: Pointer) -> None:
     """Delete what one pointer names: a member, a list item, or, for `*-a,b`,
     every member of its parent but those it keeps."""
     last = pointer.tokens[-1]
@@ -2183,7 +2189,7 @@ def yaml_module() -> Any:
     return yaml
 
 
-def load_yaml(text: str) -> Any:
+def load_yaml(text: str) -> DocumentNode:
     """`text` read as Fern's YAML 1.2 parser reads it where PyYAML's 1.1 would
     not: `true` and `false` alone are booleans, never `on` or `yes`, and the `=`
     value tag Jira's description writes is a string."""
