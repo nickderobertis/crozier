@@ -23493,6 +23493,10 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
             "field-boolean-probe.json",
             "schemas/Node/properties/id/x-link",
         ),
+        (
+            "union-field-link-probe.json",
+            "schemas/Node/properties/parent/x-link",
+        ),
     ] {
         for strict in [false, true] {
             let run = refusal_run(&crozier, &class.join(case), strict).unwrap();
@@ -23522,6 +23526,9 @@ fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
             "field-string-mapped-control.json",
             "qualified-field-control.json",
             "unsigned-field-control.json",
+            "field-oneof-link-control.json",
+            "root-oneof-link-control.json",
+            "expandable-field-control.json",
         ]
         .map(|case| class.join(case)),
     );

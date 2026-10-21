@@ -331,12 +331,13 @@ fn extension_reference_cycle(
         }
         return cycle;
     }
+    // Fern follows an extension's reference through its object members only: a
+    // reference under an array (Stripe's `x-expansionResources: {oneOf: [...]}`)
+    // never overflows its stack (the `*-oneof-link-control` and
+    // `expandable-field-control` shapes).
     match node {
         serde_json::Value::Object(values) => values
             .values()
-            .any(|value| extension_reference_cycle(value, root, state)),
-        serde_json::Value::Array(values) => values
-            .iter()
             .any(|value| extension_reference_cycle(value, root, state)),
         _ => false,
     }
@@ -419,6 +420,7 @@ struct SchemaContext<'a> {
     names: indexmap::IndexMap<String, bool>,
     default_names: indexmap::IndexMap<String, bool>,
     missing_header_types: std::collections::HashSet<String>,
+    expanding: std::cell::OnceCell<ExpandingCycles>,
 }
 
 fn schema_declaration_names(
@@ -846,6 +848,7 @@ fn check_document_schemas(root: &serde_json::Value, path: &Path, strict: bool) -
         }),
         default_names: schema_declaration_names(root, true, named_default_unsupported),
         missing_header_types: missing_header_types(root),
+        expanding: std::cell::OnceCell::new(),
     };
     if let Some(schemas) = root
         .get("components")
@@ -1387,23 +1390,114 @@ fn check_schema_resolution(
     Ok(())
 }
 
-fn expanding_union_cycle(
+/// The references from which a cycle that grows on every turn is reachable.
+///
+/// A turn grows when one of its references points partway into a component
+/// (anywhere but its `$defs`), or extends a union base through `allOf`: Fern
+/// expands such a cycle without end and exhausts its heap. The answer is
+/// computed once per document over the reference graph's strongly connected
+/// components, so a densely recursive description (Stripe's) stays linear.
+#[derive(Default)]
+struct ExpandingCycles {
+    reaching: std::collections::HashSet<String>,
+}
+
+/// A reference a schema reaches without following another, and whether that
+/// step grows a cycle through it.
+struct ReferenceStep {
+    reference: String,
+    grows: bool,
+}
+
+impl ExpandingCycles {
+    fn of(root: &serde_json::Value) -> Self {
+        let mut edges: indexmap::IndexMap<String, Vec<ReferenceStep>> = indexmap::IndexMap::new();
+        // Every reference the document writes is a node, wherever a union
+        // that reaches it sits.
+        let mut queue = Vec::new();
+        every_reference(root, &mut queue);
+        while let Some(reference) = queue.pop() {
+            if edges.contains_key(&reference) {
+                continue;
+            }
+            let mut steps = Vec::new();
+            if let Some(target) = reference
+                .strip_prefix('#')
+                .and_then(|pointer| yaml_pointer(root, pointer))
+            {
+                reference_steps(target, root, false, &mut steps);
+            }
+            queue.extend(steps.iter().map(|step| step.reference.clone()));
+            edges.insert(reference, steps);
+        }
+        let components = strongly_connected(&edges);
+        let mut component_of = std::collections::HashMap::new();
+        for (index, members) in components.iter().enumerate() {
+            for member in members {
+                component_of.insert(member.as_str(), index);
+            }
+        }
+        // Tarjan's order lists every component after the ones it reaches.
+        let mut reaches = vec![false; components.len()];
+        for (index, members) in components.iter().enumerate() {
+            reaches[index] = members.iter().any(|member| {
+                edges[member].iter().any(|step| {
+                    let next = component_of[step.reference.as_str()];
+                    (next == index && step.grows) || (next != index && reaches[next])
+                })
+            });
+        }
+        let reaching = components
+            .iter()
+            .enumerate()
+            .filter(|(index, _)| reaches[*index])
+            .flat_map(|(_, members)| members.iter().cloned())
+            .collect();
+        Self { reaching }
+    }
+}
+
+/// Every `$ref` string anywhere under `node`.
+fn every_reference(node: &serde_json::Value, found: &mut Vec<String>) {
+    match node {
+        serde_json::Value::Object(values) => {
+            if let Some(reference) = values.get("$ref").and_then(serde_json::Value::as_str) {
+                found.push(reference.to_owned());
+            }
+            for value in values.values() {
+                every_reference(value, found);
+            }
+        }
+        serde_json::Value::Array(values) => {
+            for value in values {
+                every_reference(value, found);
+            }
+        }
+        _ => {}
+    }
+}
+
+/// Every reference `schema` reaches through its properties, items, map values
+/// and `allOf`/`oneOf`/`anyOf` members, without following one.
+fn reference_steps(
     schema: &serde_json::Value,
     root: &serde_json::Value,
     extends: bool,
-    expansions: usize,
-    active: &mut std::collections::HashMap<String, usize>,
-) -> bool {
+    steps: &mut Vec<ReferenceStep>,
+) {
     if ignored_reference_node(schema) {
-        return false;
+        return;
     }
     if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
-        let Some(pointer) = reference.strip_prefix('#') else {
-            return false;
+        let Some(target) = reference
+            .strip_prefix('#')
+            .and_then(|pointer| yaml_pointer(root, pointer))
+        else {
+            return;
         };
-        let Some(target) = yaml_pointer(root, pointer) else {
-            return false;
-        };
+        if ignored_reference_node(target) {
+            return;
+        }
         // A pointer into a component's `$defs` names a schema of its own, which
         // Fern follows as it does a component: measured at Fern CLI 5.163.1 /
         // fern-python-sdk 5.41.3, a JSON-value union recursing through
@@ -1423,44 +1517,114 @@ fn expanding_union_cycle(
                     .is_some_and(|variants| variants.len() > 1)
             })
             && !schema_is_model(target, root, &mut Vec::new());
-        let expansions = expansions + usize::from(partial || union_base);
-        if let Some(previous) = active.get(reference) {
-            return expansions > *previous;
-        }
-        active.insert(reference.to_owned(), expansions);
-        let cycle = expanding_union_cycle(target, root, false, expansions, active);
-        active.remove(reference);
-        return cycle;
+        steps.push(ReferenceStep {
+            reference: reference.to_owned(),
+            grows: partial || union_base,
+        });
+        return;
     }
     if let Some(properties) = schema
         .get("properties")
         .and_then(serde_json::Value::as_object)
     {
-        if properties
-            .values()
-            .any(|property| expanding_union_cycle(property, root, false, expansions, active))
-        {
-            return true;
+        for property in properties.values() {
+            reference_steps(property, root, false, steps);
         }
     }
     for key in ["items", "additionalProperties"] {
         if let Some(child) = schema.get(key) {
-            if expanding_union_cycle(child, root, false, expansions, active) {
-                return true;
-            }
+            reference_steps(child, root, false, steps);
         }
     }
     for key in ["allOf", "oneOf", "anyOf"] {
         if let Some(children) = schema.get(key).and_then(serde_json::Value::as_array) {
-            if children
-                .iter()
-                .any(|child| expanding_union_cycle(child, root, key == "allOf", expansions, active))
-            {
-                return true;
+            for child in children {
+                reference_steps(child, root, key == "allOf", steps);
             }
         }
     }
-    false
+}
+
+/// The strongly connected components of `edges` (Tarjan's, iterative), each
+/// listed after every component it reaches.
+fn strongly_connected(edges: &indexmap::IndexMap<String, Vec<ReferenceStep>>) -> Vec<Vec<String>> {
+    let count = edges.len();
+    let next: Vec<Vec<usize>> = edges
+        .values()
+        .map(|steps| {
+            steps
+                .iter()
+                .map(|step| edges.get_index_of(&step.reference).unwrap_or(usize::MAX))
+                .filter(|index| *index != usize::MAX)
+                .collect()
+        })
+        .collect();
+    let mut index = vec![usize::MAX; count];
+    let mut low = vec![0; count];
+    let mut on_stack = vec![false; count];
+    let mut stack = Vec::new();
+    let mut components = Vec::new();
+    let mut counter = 0;
+    for start in 0..count {
+        if index[start] != usize::MAX {
+            continue;
+        }
+        let mut frames = vec![(start, 0)];
+        index[start] = counter;
+        low[start] = counter;
+        counter += 1;
+        stack.push(start);
+        on_stack[start] = true;
+        while let Some(&mut (node, ref mut edge)) = frames.last_mut() {
+            if let Some(&target) = next[node].get(*edge) {
+                *edge += 1;
+                if index[target] == usize::MAX {
+                    index[target] = counter;
+                    low[target] = counter;
+                    counter += 1;
+                    stack.push(target);
+                    on_stack[target] = true;
+                    frames.push((target, 0));
+                } else if on_stack[target] {
+                    low[node] = low[node].min(index[target]);
+                }
+                continue;
+            }
+            frames.pop();
+            if let Some(&(parent, _)) = frames.last() {
+                low[parent] = low[parent].min(low[node]);
+            }
+            if low[node] == index[node] {
+                let mut members = Vec::new();
+                while let Some(member) = stack.pop() {
+                    on_stack[member] = false;
+                    members.push(
+                        edges
+                            .get_index(member)
+                            .map(|(key, _)| key.clone())
+                            .unwrap_or_default(),
+                    );
+                    if member == node {
+                        break;
+                    }
+                }
+                components.push(members);
+            }
+        }
+    }
+    components
+}
+
+/// Whether a cycle that grows on every turn is reachable from `schema`.
+fn expanding_union_cycle(schema: &serde_json::Value, context: &SchemaContext<'_>) -> bool {
+    let cycles = context
+        .expanding
+        .get_or_init(|| ExpandingCycles::of(context.root));
+    let mut steps = Vec::new();
+    reference_steps(schema, context.root, false, &mut steps);
+    steps
+        .iter()
+        .any(|step| cycles.reaching.contains(&step.reference))
 }
 
 fn check_schema(
@@ -1493,13 +1657,8 @@ fn check_schema(
             .get(key)
             .and_then(serde_json::Value::as_array)
             .is_some_and(|variants| variants.len() > 1)
-    }) && expanding_union_cycle(
-        schema,
-        context.root,
-        false,
-        0,
-        &mut std::collections::HashMap::new(),
-    ) {
+    }) && expanding_union_cycle(schema, context)
+    {
         return refusal(context.path, context.strict, Class::HeapExhausted, element);
     }
     check_object_extension(schema, context, element)?;
@@ -2691,6 +2850,39 @@ mod tests {
         promoted_optional_array_header(&doc, &crate::ir::build(&doc, &config))
     }
 
+    /// The extension element `cyclic_extension` refuses among `schemas`, or `None`.
+    fn extension_cycle(schemas: serde_json::Value) -> Option<String> {
+        let root = serde_json::json!({"components": {"schemas": schemas}});
+        cyclic_extension(&root, &root, "", &mut ExtensionCycles::default(), false)
+    }
+
+    #[test]
+    fn an_extension_reaching_its_reference_through_an_array_is_no_cycle() {
+        let node = serde_json::json!({"$ref": "#/components/schemas/Node"});
+        // Stripe's expandable field: a string-or-object union whose
+        // `x-expansionResources` lists the object it expands to.
+        let expandable = serde_json::json!({"Node": {"type": "object", "properties": {"parent": {
+            "anyOf": [{"type": "string"}, node],
+            "x-expansionResources": {"oneOf": [node]},
+        }}}});
+        assert_eq!(extension_cycle(expandable), None);
+        let root = serde_json::json!({"Node": {
+            "type": "object",
+            "x-link": {"oneOf": [node]},
+            "properties": {"id": {"type": "string"}},
+        }});
+        assert_eq!(extension_cycle(root), None);
+        // Through an object member the same field still cycles, union or not.
+        let member = serde_json::json!({"Node": {"type": "object", "properties": {"parent": {
+            "anyOf": [{"type": "string"}, node],
+            "x-link": {"target": node},
+        }}}});
+        assert_eq!(
+            extension_cycle(member).as_deref(),
+            Some("components/schemas/Node/properties/parent/x-link")
+        );
+    }
+
     /// `check_document_schemas`'s verdict on `schemas`, as the refusal line it prints.
     fn schema_refusal(schemas: serde_json::Value) -> Option<String> {
         let root = serde_json::json!({
@@ -2768,6 +2960,64 @@ mod tests {
             error.contains("heap-exhausted: components/schemas/Tool/properties/composition"),
             "{error}"
         );
+    }
+
+    /// `count` components, each with a property per component that is either a
+    /// string or a reference to it: every component reaches every other, so a
+    /// search over each path between them never finishes.
+    fn densely_recursive(count: usize) -> serde_json::Value {
+        let mut schemas = serde_json::Map::new();
+        for index in 0..count {
+            let properties: serde_json::Map<String, serde_json::Value> = (0..count)
+                .map(|other| {
+                    let reference = format!("#/components/schemas/S{other}");
+                    (
+                        format!("p{other}"),
+                        serde_json::json!({"anyOf": [{"type": "string"}, {"$ref": reference}]}),
+                    )
+                })
+                .collect();
+            schemas.insert(
+                format!("S{index}"),
+                serde_json::json!({"type": "object", "properties": properties}),
+            );
+        }
+        serde_json::Value::Object(schemas)
+    }
+
+    #[test]
+    fn a_densely_recursive_union_document_is_decided_once() {
+        // Stripe's expandable fields: every object reaches every other through a
+        // string-or-object union, with no turn that grows.
+        assert_eq!(schema_refusal(densely_recursive(40)), None);
+        // One pointer partway into a component makes a turn through it grow.
+        let mut schemas = densely_recursive(40);
+        schemas["S7"]["properties"]["deep"] =
+            serde_json::json!({"$ref": "#/components/schemas/S3/properties/p7"});
+        let error = schema_refusal(schemas).unwrap_or_default();
+        assert!(error.contains("heap-exhausted: "), "{error}");
+    }
+
+    #[test]
+    fn a_cycle_grows_through_a_partial_pointer_or_an_extended_union_base() {
+        for (shape, refused) in [
+            ("probe.yml", true),
+            ("single-child-probe.yml", true),
+            ("recursive-union-allof-probe.json", true),
+            ("defs-json-value-control.yml", false),
+            ("named-binary-recursion-control.json", false),
+            ("named-object-recursion-control.yml", false),
+            ("nonrecursive-union-control.yml", false),
+        ] {
+            let error = registry_shape_refusal(&format!("heap-exhausted/{shape}"));
+            assert_eq!(
+                error
+                    .as_deref()
+                    .is_some_and(|error| error.contains("heap-exhausted: ")),
+                refused,
+                "{shape}: {error:?}"
+            );
+        }
     }
 
     /// `check_structure_file`'s and `check_document`'s refusal over a committed
