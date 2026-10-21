@@ -232,18 +232,19 @@ fn a_retiring_class_probe_must_generate_in_both_modes() {
     let root = tempfile::tempdir().unwrap();
     let header = "class\tstatus\tcrozier_diagnostic\n";
     let mut rows = String::new();
+    // A measured control crozier generates from stands in for a retiring
+    // class's probe that now generates.
     for (id, source) in [
-        ("retiring-generated", "object-property-name-collision"),
-        ("retiring-still-refused", "type-name-collision"),
-        ("type-name-collision", "type-name-collision"),
+        (
+            "retiring-generated",
+            "request-property-name-collision/body-allof-member-redeclared-control.yml",
+        ),
+        ("retiring-still-refused", "type-name-collision/probe.yml"),
+        ("type-name-collision", "type-name-collision/probe.yml"),
     ] {
         let dir = root.path().join(id);
         std::fs::create_dir(&dir).unwrap();
-        std::fs::copy(
-            committed.join(source).join("probe.yml"),
-            dir.join("probe.yml"),
-        )
-        .unwrap();
+        std::fs::copy(committed.join(source), dir.join("probe.yml")).unwrap();
         rows.push_str(&format!("{id}\trefuse\ttype GetThingResponse\n"));
     }
     std::fs::write(root.path().join("classes.tsv"), format!("{header}{rows}")).unwrap();
