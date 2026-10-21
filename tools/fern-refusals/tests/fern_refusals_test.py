@@ -47,6 +47,19 @@ CONFIRMATIONS = REPO / "docs" / "openapi-surface" / "fern-refusals" / "confirmat
 # The certified Fern pair, from its one declaration.
 CERTIFIED = json.loads((REPO / "assets" / "scaffolding" / "metadata.json").read_text(encoding="utf-8"))
 TABLES = ("classes.tsv", "documents.tsv", "generated.tsv", "unretrievable.tsv")
+# `dispositions.tsv`'s columns, as `reduce` writes them.
+DISPOSITIONS_HEADER = (
+    "document",
+    "crozier_class",
+    "disposition",
+    "representative",
+    "reduction",
+    "reduced_digest",
+    "check_exit",
+    "generate_exit",
+    "classes",
+    "log",
+)
 # The first line of every log `measure` and `confirm` write, naming the pair.
 PAIR_LINE = (
     f"fern-refusals: Fern CLI {CERTIFIED['cliVersion']}, fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}\n"
@@ -1569,6 +1582,95 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertEqual(len(runs), 4, runs)
         self.assertTrue(all("--fern-strict" in run for run in runs), runs)
         self.assertFalse(self.calls.exists(), "Fern ran again over verdicts already at the pair")
+
+    def test_a_refusal_by_a_class_fern_does_not_report_is_held_to_its_recorded_disposition(self) -> None:
+        registry = self.root / "docs" / "fern-refusals"
+        # Two more classes: one only `fern generate` reports, one its check does.
+        classes = rows(REGISTRY / "classes.tsv")
+        others = {
+            row[0]: row for row in classes[1:] if row[0] in ("generator-lint-failure", "object-extends-non-object")
+        }
+        write_rows(registry / "classes.tsv", [classes[0], *sorted([self.class_row, *others.values()])])
+        # A JSON document Fern refuses with the scratch class, its own representative.
+        document = {"openapi": "3.0.3", "info": {"title": "t", "version": "1"}, "paths": {}, "x-note": "reduce me"}
+        data = json.dumps(document).encode()
+        digest = hashlib.sha256(data).hexdigest()
+        (self.root / "documents" / "json-current.json").write_bytes(data)
+        screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
+        record = {
+            "fern": "failed: `fern check` refused it",
+            "source": "scratch",
+            "repository": "scratch/apis",
+            "commit": "0" * 40,
+            "path": "json-current.json",
+            "sha256": digest,
+        }
+        screens.write_text(screens.read_text(encoding="utf-8") + json.dumps(record) + "\n", encoding="utf-8")
+        measured = self.measure()
+        strict = self.root / measured[digest]["crozier_strict_log"]
+
+        def built() -> subprocess.CompletedProcess[str]:
+            return self.script("build")
+
+        def refused_with(cls: str) -> None:
+            strict.write_text(self.refusal("<document>").replace(self.CLASS, cls), encoding="utf-8")
+
+        def dispose(**cells: str) -> None:
+            row = dict.fromkeys(DISPOSITIONS_HEADER, "—")
+            row.update(document=digest, **cells)
+            write_rows(
+                registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), [row[key] for key in DISPOSITIONS_HEADER]]
+            )
+
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A check-stage class Fern's log does not carry fails the build until disposed.
+        refused_with("object-extends-non-object")
+        result = built()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", result.stderr)
+        self.assertIn("dispositions.tsv", result.stderr)
+        # Reduced until the scratch class is gone, Fern reports crozier's class: masked.
+        dispose(
+            crozier_class="object-extends-non-object", disposition="masked", representative=digest, reduction="/x-note"
+        )
+        objects = others["object-extends-non-object"][4]
+        self.env.update(FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(objects)}", FERN_STUB_CHECK_EXIT="1")
+        self.calls.unlink()
+        reduced = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        [row] = [
+            dict(zip(DISPOSITIONS_HEADER, cells, strict=True)) for cells in rows(registry / "dispositions.tsv")[1:]
+        ]
+        without = {key: value for key, value in document.items() if key != "x-note"}
+        reduced_digest = hashlib.sha256((json.dumps(without) + "\n").encode()).hexdigest()
+        self.assertEqual(
+            (row["disposition"], row["reduced_digest"], row["check_exit"], row["generate_exit"], row["classes"]),
+            ("masked", reduced_digest, "1", "—", "object-extends-non-object"),
+        )
+        # Fern ran once, over the reduced bytes, and the log names the pair.
+        [call] = [json.loads(line) for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual((call["argv"], json.loads(call["spec"])), (["check"], without))
+        self.assertTrue((self.root / row["log"]).read_text(encoding="utf-8").startswith(PAIR_LINE))
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # A row its log does not derive is named by `check`.
+        edited = dict(row, disposition="reported-other")
+        write_rows(
+            registry / "dispositions.tsv", [list(DISPOSITIONS_HEADER), [edited[key] for key in DISPOSITIONS_HEADER]]
+        )
+        self.assertIn(f"dispositions.tsv {digest}: the row disagrees with its log", self.script("check").stderr)
+        # Fern generating from the reduction shows crozier's detector over-broad: refused.
+        self.env.update(FERN_STUB_CHECK_OUTPUT="", FERN_STUB_CHECK_EXIT="0", FERN_STUB_GENERATE_FILES="3")
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(rows(registry / "dispositions.tsv")[1][2], "over-broad")
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        # A class only `fern generate` reports, on a document Fern's check stopped, agrees by rule.
+        refused_with("generator-lint-failure")
+        dispose(crozier_class="generator-lint-failure", disposition="generate-stage")
+        self.assertEqual(built().returncode, 0, built().stderr)
+        # That rule is for a generate-stage class alone.
+        dispose(crozier_class="object-extends-non-object", disposition="generate-stage")
+        self.assertIn(f"dispositions.tsv {digest}: with no representative", self.script("check").stderr)
 
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"

@@ -1,0 +1,31 @@
+fern-refusals: Fern CLI 5.163.1, fernapi/fern-python-sdk 5.41.3
+check exit: 0
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Skipping formData parameter, idCliente, in POST /clientes/documento
+[api]: Skipping formData parameter, idTipoDocumento, in POST /clientes/documento
+[api]: Skipping formData parameter, documento, in POST /clientes/documento
+[api]: GET /promesas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: GET /pagos/conciliados: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: GET /v2/reservas/canceladas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+Found 0 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+
+generate exit: 0
+files: 602
+Warnings for generators.yml:
+	Using "api.path" is deprecated. Please use "api.specs[].openapi" or "api.specs[].asyncapi" instead.
+[api]: Writing preview to <tmp>/preview
+[api]: python-sdk Started.
+[api]: python-sdk fernapi/fern-python-sdk Started.
+[api]: python-sdk Skipping formData parameter, idCliente, in POST /clientes/documento
+[api]: python-sdk Skipping formData parameter, idTipoDocumento, in POST /clientes/documento
+[api]: python-sdk Skipping formData parameter, documento, in POST /clientes/documento
+[api]: python-sdk GET /promesas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk GET /pagos/conciliados: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk GET /v2/reservas/canceladas: the 204 response declares a body, but a 204 (No Content) response cannot include one. Ignoring the declared 204 body and treating the success response as optional.
+[api]: python-sdk Found 0 errors and 11 warnings in <n> seconds. Run fern check --warnings to print out the warnings not shown.
+[api]: python-sdk fernapi/fern-python-sdk Executing generator fernapi/fern-python-sdk using container image: fernapi/fern-python-sdk:5.41.3
+[api]: python-sdk fernapi/fern-python-sdk Generator logs here: <tmp>
+[api]: python-sdk fernapi/fern-python-sdk Wrote files to <tmp>/preview/fern-python-sdk
+[api]: python-sdk fernapi/fern-python-sdk Finished.
+[api]: python-sdk Finished.

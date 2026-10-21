@@ -118,6 +118,32 @@ SHAPES_HEADER = (
 # A class's measured shape beside its probe: `<name>-probe.yml` is one Fern
 # refuses with the class, `<name>-control.yml` a near miss Fern generates from.
 SHAPE = re.compile(r"(?P<name>.+)-(?P<role>probe|control)\.(?:yml|yaml|json)")
+# A refused document crozier's strict run refuses with a class its Fern log does
+# not carry, and why that agrees with Fern: a `generate-stage` class Fern's check
+# stopped it before reaching, or a check-stage class Fern reports once the
+# representative document is reduced (`reduction`, JSON pointers deleted) until
+# its own classes are gone (`masked`), or the other class or check-only finding
+# Fern reports there instead (`reported-other`). A reduction Fern's check accepts
+# shows crozier's detector `over-broad`, which crozier is narrowed to match.
+# `reduce` measures each reduction into `log`; `classes` holds the classes and
+# findings it names.
+DISPOSITIONS_HEADER = (
+    "document",
+    "crozier_class",
+    "disposition",
+    "representative",
+    "reduction",
+    "reduced_digest",
+    "check_exit",
+    "generate_exit",
+    "classes",
+    "log",
+)
+# What a reduction's Fern run shows about crozier's class, and what needs none.
+DISPOSITIONS = ("generate-stage", "masked", "over-broad", "reported-other")
+# The recorded dispositions that hold a refusal by crozier's class: every one but
+# `over-broad`, which crozier is narrowed to match.
+AGREEING = ("generate-stage", "masked", "reported-other")
 FINDINGS_HEADER = ("finding", "kind", "check_exit", "generate_exit", "diagnostic", "probe")
 DROPPED_HEADER = ("name", "corpus_line", "source", "locator", "revision", "sha256", "evidence", "reason")
 MEASUREMENT_FIELDS = (
@@ -786,9 +812,12 @@ def strict_refusal(log: str) -> tuple[str, str]:
     return (found["cls"] if found else ""), error
 
 
-def strict_problems(digest: str, names: list[str], exit_status: str, log: str) -> list[str]:
+def strict_problems(
+    digest: str, names: list[str], exit_status: str, log: str, disposed: dict[str, str] | None = None
+) -> list[str]:
     """A refused record held to the diagnostic crozier printed: its strict exit
-    agrees with the log, and the refusal is by one of the classes it carries."""
+    agrees with the log, and the refusal is by one of the classes it carries, or
+    by a class `dispositions.tsv` shows agrees with Fern for this document."""
     if not (REPO / log).is_file():
         return [f"{digest}: its crozier log {log} is missing; retake it with `measure --crozier-again`"]
     printed, error = strict_refusal(read_log(log))
@@ -800,10 +829,13 @@ def strict_problems(digest: str, names: list[str], exit_status: str, log: str) -
         return [f"{digest}: crozier_strict_exit {exit_status} disagrees with {log}; retake it with `measure`"]
     if printed in names:
         return []
+    if disposed and disposed["crozier_class"] == printed and disposed["disposition"] in AGREEING:
+        return []
     said = f"stops at `{error}`" if error else "generates it"
     return [
         f"{digest}: crozier --fern-strict {said} ({log}), not with a diagnostic of its classes "
-        f"{', '.join(names)}; repair crozier so the class detector refuses it, then `measure --crozier-again`"
+        f"{', '.join(names)}; repair crozier so the class detector refuses it, then `measure --crozier-again`, "
+        "or record why it agrees with Fern in docs/fern-refusals/dispositions.tsv and run `reduce`"
     ]
 
 
@@ -1178,6 +1210,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
     patterns = class_patterns(classes)
     near = finding_patterns(findings)
     measured = read_measurements()
+    disposed = {row["document"]: row for row in read_dispositions()}
     documents: dict[str, dict[str, str]] = {}
     generated: dict[str, dict[str, str]] = {}
     unretrievable: list[dict[str, str]] = []
@@ -1250,7 +1283,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
             if not strict or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
                 continue
-            problems += strict_problems(digest, names, strict, result["crozier_strict_log"])
+            problems += strict_problems(digest, names, strict, result["crozier_strict_log"], disposed.get(digest))
         documents[digest] = dict(
             identity,
             digest=digest,
@@ -1502,7 +1535,7 @@ def check(_args: argparse.Namespace) -> int:
             problems.append(f"docs/fern-refusals/{name}: the header must be exactly {chr(9).join(header)!r}")
     if problems:
         fail("\n  ".join(["the registry drifted from its contract:", *problems]))
-    problems = cross_reference_problems() + confirmation_problems() + shape_problems()
+    problems = cross_reference_problems() + confirmation_problems() + shape_problems() + disposition_problems()
     if problems:
         fail(
             "\n  ".join(
@@ -1820,9 +1853,14 @@ def shape_row(shape: Shape, digest: str, run: ShapeRun, patterns: list[Template]
 
 def fern_shape(shape: Shape, timeout: int, patterns: list[Template], near: list[Template]) -> ShapeRun:
     """`fern check` over a shape, then `fern generate` unless the check named a class, each output scrubbed."""
+    return fern_document(shape.path, timeout, patterns, near)
+
+
+def fern_document(document: Path, timeout: int, patterns: list[Template], near: list[Template]) -> ShapeRun:
+    """`fern check` over a document, then `fern generate` unless the check named a class, each output scrubbed."""
     with tempfile.TemporaryDirectory(prefix="fern-refusals-shape-") as scratch:
         workspace = Path(scratch) / "fern"
-        fern_workspace(shape.path, workspace)
+        fern_workspace(document, workspace)
         status, output = fern_run(["fern", "check"], workspace, timeout)
         check_exit, check_log = stage_exit(status), scrub(output)
         assert check_exit is not None, status
@@ -1952,6 +1990,222 @@ def shape_problems() -> list[str]:
     return problems
 
 
+def dispositions_path() -> Path:
+    return REGISTRY / "dispositions.tsv"
+
+
+def read_dispositions() -> list[dict[str, str]]:
+    path = dispositions_path()
+    return read_tsv(path, DISPOSITIONS_HEADER) if path.is_file() else []
+
+
+def write_dispositions(rows: list[dict[str, str]]) -> None:
+    ordered = sorted(rows, key=lambda row: (row["crozier_class"], row["document"]))
+    dispositions_path().write_text(tsv_text(DISPOSITIONS_HEADER, ordered), encoding="utf-8")
+
+
+def reduction_pointers(reduction: str) -> list[list[str]]:
+    """A reduction's `;`-separated JSON pointers, each split into its unescaped
+    tokens; fails on one that is not a pointer. `—` deletes nothing: the
+    representative as it stands. A last token `*-a,b` names every member of its
+    parent but `a` and `b`."""
+    pointers: list[list[str]] = []
+    for pointer in [] if reduction == EMPTY else reduction.split(";"):
+        if not pointer.startswith("/"):
+            fail(f"dispositions.tsv reduction {pointer!r} is not a JSON pointer; write each as `/a/b`, `;`-separated")
+        pointers.append([token.replace("~1", "/").replace("~0", "~") for token in pointer[1:].split("/")])
+    return pointers
+
+
+def reduced(data: bytes, suffix: str, reduction: str) -> bytes:
+    """The document `data` with each node the reduction points at deleted, in
+    its own format: a YAML one stays YAML, so a plain timestamp stays plain."""
+    text = data.decode("utf-8")
+    yaml: Any = None
+    if suffix == ".json":
+        document = json.loads(text)
+    else:
+        try:
+            # Only a YAML representative needs it, and PyYAML is no dependency of the tool.
+            import yaml  # type: ignore[import-untyped]
+        except ImportError:
+            fail("reducing a YAML document needs PyYAML; run `reduce` under an interpreter that has it")
+
+        class Loader(yaml.SafeLoader):
+            """PyYAML's safe loader read as YAML 1.2 reads booleans (`true` and
+            `false` alone, never `on` or `yes`), and the `=` value tag Jira's
+            description writes as a string."""
+
+        boolean = "tag:yaml.org,2002:bool"
+        Loader.yaml_implicit_resolvers = {
+            first: [(tag, pattern) for tag, pattern in resolvers if tag != boolean]
+            for first, resolvers in yaml.SafeLoader.yaml_implicit_resolvers.items()
+        }
+        Loader.add_implicit_resolver(boolean, re.compile(r"^(?:true|True|TRUE|false|False|FALSE)$"), list("tTfF"))
+        Loader.add_constructor("tag:yaml.org,2002:value", lambda loader, node: loader.construct_scalar(node))
+        document = yaml.load(text, Loader=Loader)  # noqa: S506 - a SafeLoader subclass constructs no objects
+    for tokens in reduction_pointers(reduction):
+        node: Any = document
+        for token in tokens[:-1]:
+            node = node[int(token)] if isinstance(node, list) else node.get(token) if isinstance(node, dict) else None
+            if node is None:
+                break
+        last = tokens[-1]
+        if last.startswith("*-") and isinstance(node, dict):
+            kept = {key for key in last[2:].split(",") if key}
+            if not kept <= node.keys():
+                fail(f"dispositions.tsv reduction /{'/'.join(tokens)} keeps a member the representative lacks")
+            for key in [key for key in node if key not in kept]:
+                del node[key]
+        elif isinstance(node, dict) and last in node:
+            del node[last]
+        elif isinstance(node, list) and last.isdigit() and int(last) < len(node):
+            del node[int(last)]
+        else:
+            fail(f"dispositions.tsv reduction /{'/'.join(tokens)} names no node of the representative")
+    if yaml is not None:
+        return yaml.safe_dump(document, sort_keys=False, allow_unicode=True, width=1 << 30).encode("utf-8")
+    return (json.dumps(document, ensure_ascii=False) + "\n").encode("utf-8")
+
+
+def reduction_log(reduced_digest: str) -> Path:
+    return EVIDENCE / "reductions" / f"{reduced_digest}.log"
+
+
+def disposition_of(
+    crozier_class: str, run: ShapeRun, patterns: list[Template], near: list[Template]
+) -> tuple[str, list[str]]:
+    """What a reduction's run shows about crozier's class, and the classes and
+    findings Fern named: `masked` where it names crozier's class, `reported-other`
+    where its check names another class or a check-only finding, `over-broad`
+    where its check names neither."""
+    named: set[str] = set()
+    checked: set[str] = set()
+    for stage, log in (("check", run.check_log), ("generate", run.generation.log if run.generation else "")):
+        carried, found, _unmatched = classify(diagnostics(log), patterns, near)
+        named |= {*carried, *found}
+        if stage == "check" and run.check_exit != 0:
+            checked = {*carried, *found}
+    if crozier_class in named:
+        return "masked", sorted(named)
+    return ("reported-other" if checked else "over-broad"), sorted(named)
+
+
+def disposition_cells(
+    row: dict[str, str], reduced_digest: str, run: ShapeRun, patterns: list[Template], near: list[Template]
+) -> dict[str, str]:
+    disposition, classes = disposition_of(row["crozier_class"], run, patterns, near)
+    return dict(
+        row,
+        disposition=disposition,
+        reduced_digest=reduced_digest,
+        check_exit=str(run.check_exit),
+        generate_exit=str(run.generation.exit) if run.generation else EMPTY,
+        classes=",".join(classes) or EMPTY,
+        log=rel(reduction_log(reduced_digest)),
+    )
+
+
+def reduce(args: argparse.Namespace) -> int:
+    """Measure Fern, one run at a time, on each `dispositions.tsv` row's reduced
+    representative, writing its log and the row's derived cells. A reduction
+    already measured at the pair over the same bytes is kept."""
+    rows = read_dispositions()
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    entries = {entry["digest"]: entry for entry in population() if entry["digest"]}
+    measured = read_measurements()
+    for entry in population():
+        digest = measured.get(entry["key"], {}).get("digest")
+        if digest:
+            entries.setdefault(digest, entry)
+    fetcher: Fetcher | None = None
+    runs: dict[str, ShapeRun] = {}
+    taken = 0
+    for index, row in enumerate(rows):
+        if row["representative"] == EMPTY:
+            continue
+        entry = entries.get(row["representative"])
+        if entry is None:
+            fail(f"dispositions.tsv: representative {row['representative']} is no population document")
+        fetcher = fetcher or Fetcher([REPO / ".local", *args.root])
+        located: Entry = {**entry, "digest": row["representative"]}
+        data, reason = fetcher.get(located)
+        if data is None:
+            fail(f"cannot read representative {row['representative']}: {reason}")
+        text = reduced(data, suffix_of(entry["locator"]), row["reduction"])
+        digest = hashlib.sha256(text).hexdigest()
+        log = reduction_log(digest)
+        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        run = runs.get(digest) or (None if args.again else recorded)
+        if run is None:
+            with tempfile.TemporaryDirectory(prefix="fern-refusals-reduced-") as scratch:
+                document = Path(scratch) / "openapi.json"
+                document.write_bytes(text)
+                run = fern_document(document, args.timeout, patterns, near)
+            log.parent.mkdir(parents=True, exist_ok=True)
+            log.write_text(shape_log_text(run), encoding="utf-8")
+            taken += 1
+        runs[digest] = run
+        rows[index] = disposition_cells(row, digest, run, patterns, near)
+        write_dispositions(rows)
+    write_dispositions(rows)
+    print(f"fern-refusals: {taken} reduction(s) measured, {len(rows)} disposition(s) on record")
+    return 0
+
+
+def disposition_problems() -> list[str]:
+    """Every `dispositions.tsv` row against the registry and its own log: its
+    document is refused, its class is one the document does not carry, a
+    `generate-stage` row is one by the classes' stages, and every other row is
+    what its reduction's log at the pair derives."""
+    path = dispositions_path()
+    if not path.is_file():
+        return []
+    classes = read_tsv(REGISTRY / "classes.tsv", CLASSES_HEADER)
+    stages = {row["class"]: row["fern_stage"] for row in classes}
+    patterns, near = class_patterns(classes), finding_patterns(read_tsv(REGISTRY / "findings.tsv", FINDINGS_HEADER))
+    documents = {row["digest"]: row for row in read_tsv(REGISTRY / "documents.tsv", DOCUMENTS_HEADER)}
+    rows = read_dispositions()
+    problems = []
+    if [(row["crozier_class"], row["document"]) for row in rows] != sorted(
+        {(row["crozier_class"], row["document"]) for row in rows}
+    ):
+        problems.append("dispositions.tsv: rows are sorted by crozier_class then document, no document twice")
+    again = "run `tools/fern-refusals/fern-refusals.py reduce`"
+    for row in rows:
+        name = f"dispositions.tsv {row['document']}"
+        document = documents.get(row["document"])
+        if document is None:
+            problems.append(f"{name}: no documents.tsv row; drop the disposition")
+            continue
+        if row["crozier_class"] not in stages or row["crozier_class"] in document["classes"].split(","):
+            problems.append(f"{name}: {row['crozier_class']} is no class, or one the document carries")
+            continue
+        if row["disposition"] not in DISPOSITIONS:
+            problems.append(f"{name}: disposition {row['disposition']!r} is not one of {', '.join(DISPOSITIONS)}")
+            continue
+        if row["representative"] == EMPTY:
+            stage = stages[row["crozier_class"]] == "generate" and document["fern_stage"] == "check"
+            blank = all(row[field] == EMPTY for field in DISPOSITIONS_HEADER[4:])
+            if row["disposition"] != "generate-stage" or not stage or not blank:
+                problems.append(
+                    f"{name}: with no representative, a disposition is `generate-stage`, for a class only "
+                    "`fern generate` reports on a document Fern's check stopped, every other cell `—`"
+                )
+            continue
+        log = REPO / row["log"]
+        recorded = read_shape_log(log.read_text(encoding="utf-8")) if log.is_file() else None
+        if recorded is None or log != reduction_log(row["reduced_digest"]):
+            problems.append(
+                f"{name}: its log {row['log']} is not one `reduce` wrote at Fern CLI {FERN_CLI} with "
+                f"fernapi/fern-python-sdk {FERN_PYTHON_SDK}; {again}"
+            )
+        elif disposition_cells(row, row["reduced_digest"], recorded, patterns, near) != row:
+            problems.append(f"{name}: the row disagrees with its log {row['log']}; {again}")
+    return problems
+
+
 def positive(text: str) -> int:
     """A worker count or a timeout: an integer of at least one."""
     value = int(text)
@@ -2013,6 +2267,11 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--jobs", type=positive, default=6)
     c.add_argument("--timeout", type=positive, default=3600)
     c.set_defaults(run=confirm)
+    r = sub.add_parser("reduce", help="measure Fern on each disposition's reduced representative")
+    r.add_argument("--again", action="store_true", help="re-measure reductions already on record at the pair")
+    r.add_argument("--timeout", type=positive, default=1800)
+    r.add_argument("--root", type=Path, action="append", default=[], help="a directory supplying documents by digest")
+    r.set_defaults(run=reduce)
     sub.add_parser("build", help="rewrite the tables from the committed inputs").set_defaults(run=build)
     sub.add_parser("check", help="fail when the tables drift from the inputs").set_defaults(run=check)
     args = parser.parse_args(argv)
