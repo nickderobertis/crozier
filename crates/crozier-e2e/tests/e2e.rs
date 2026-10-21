@@ -24371,6 +24371,11 @@ fn example_type_mismatch_refusal_covers_measured_shapes() {
 #[test]
 fn fractional_integer_event_stream_refusal_recovers_with_integral_examples() {
     let probes = repo_root().join("docs/openapi-surface/probes");
+    let source = std::fs::read_to_string(
+        probes.join("schema-example-fractional-on-integer-event-stream.yml"),
+    )
+    .unwrap();
+    let workspace = tempfile::tempdir().unwrap();
     for strict in [false, true] {
         let run = refusal_run(
             &crozier,
@@ -24385,6 +24390,25 @@ fn fractional_integer_event_stream_refusal_recovers_with_integral_examples() {
             strict,
         );
         assert!(failures.is_empty(), "{}", failures.join("\n"));
+        for (name, media_example) in [
+            ("single", "example: {ticks: 2}"),
+            ("named", "examples: {measured: {value: {ticks: 2}}}"),
+        ] {
+            let explicit = workspace.path().join(format!("{name}.yml"));
+            let text = source.replace(
+                "              schema:",
+                &format!("              {media_example}\n              schema:"),
+            );
+            assert!(text.contains(media_example));
+            assert!(
+                text.contains("example: 2.5"),
+                "the fractional schema example must remain"
+            );
+            std::fs::write(&explicit, text).unwrap();
+            let control = refusal_run(&crozier, &explicit, strict).unwrap();
+            assert_eq!(control.code, Some(0), "{name}: {}", control.stderr);
+            assert!(!control.files.is_empty(), "{name}");
+        }
         for name in [
             "schema-example-fractional-on-integer-event-stream-control.yml",
             "schema-example-fractional-on-integer-optional-request-control.yml",
