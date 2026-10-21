@@ -40,6 +40,10 @@ paths:
           in: query
           x-crozier-ignore: true
           schema: { type: string }
+        - name: debug
+          in: query
+          x-fern-ignore: true
+          schema: { type: string }
       responses:
         '200':
           description: OK
@@ -64,6 +68,19 @@ paths:
       responses:
         '204':
           description: Archived
+  /items/{id}/restore:
+    post:
+      operationId: restoreItem
+      tags: [items]
+      x-crozier-ignore: true
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '204':
+          description: Restored
   /items:
     post:
       operationId: createItem
@@ -110,6 +127,9 @@ components:
         internal:
           type: string
           x-fern-ignore: true
+        hidden:
+          type: string
+          x-crozier-ignore: true
         legacy:
           type: string
           deprecated: true
@@ -131,6 +151,7 @@ components:
         - $ref: '#/components/schemas/Square'
       discriminator: { propertyName: kind }
       x-fern-discriminated: true
+      x-crozier-discriminated: true
     Circle:
       type: object
       required: [kind]
@@ -209,6 +230,22 @@ const SITES: &[(&str, &str)] = &[
         "property x-fern-ignore",
         "/components/schemas/Item/properties/internal/x-fern-ignore",
     ),
+    (
+        "operation x-crozier-ignore",
+        "/paths/~1items~1{id}~1restore/post/x-crozier-ignore",
+    ),
+    (
+        "parameter x-fern-ignore",
+        "/paths/~1items~1{id}/get/parameters/3/x-fern-ignore",
+    ),
+    (
+        "property x-crozier-ignore",
+        "/components/schemas/Item/properties/hidden/x-crozier-ignore",
+    ),
+    (
+        "x-crozier-discriminated",
+        "/components/schemas/Shape/x-crozier-discriminated",
+    ),
     ("x-is-beta", "/components/schemas/Item/x-is-beta"),
     (
         "x-fern-discriminated",
@@ -238,8 +275,15 @@ const READ_SITES: &[(&str, Option<&str>)] = &[
     ("readOnly", None),
     ("uniqueItems", None),
     ("explode", None),
+    ("operation x-fern-ignore", None),
+    ("operation x-crozier-ignore", None),
+    ("parameter x-fern-ignore", None),
     ("parameter x-crozier-ignore", None),
+    ("property x-fern-ignore", None),
+    ("property x-crozier-ignore", None),
     ("x-fern-discriminated", None),
+    ("x-crozier-discriminated", None),
+    ("x-is-beta", None),
     (
         "additionalProperties",
         Some("data did not match any variant of untagged enum AdditionalProperties"),
@@ -423,38 +467,46 @@ fn a_yaml_boolean_keeps_the_spellings_it_read_before() {
 
 #[test]
 fn any_other_value_in_a_boolean_place_is_refused() {
-    for (name, message) in READ_SITES {
-        for (value, unexpected, yaml) in [
-            (json!(2), "integer `2`", YAML_REFUSAL),
-            (json!("yes"), "string \"yes\"", YAML_REFUSAL),
-            (json!(1.0), "floating point `1.0`", YAML_REFUSAL),
-            (json!(-1), "integer `-1`", YAML_REFUSAL),
-            (json!([1]), "sequence", "expected string scalar"),
-            (json!({"a": 1}), "map", "expected string scalar"),
-        ] {
-            if value.is_object() && *name == "additionalProperties" {
-                // A mapping there is a value schema.
-                continue;
-            }
-            for (format, strict) in cases() {
-                let dir = tempfile::tempdir().expect("tempdir");
-                let spec = write(dir.path(), "boolean", &document(&[name], &value), format);
-                let error = generate(&spec, strict).err().unwrap_or_else(|| {
-                    panic!("{name} {format:?} strict={strict}: {value} generated")
-                });
-                let message = match (message, format) {
-                    (Some(message), _) => (*message).to_owned(),
-                    (None, Format::Yaml) => yaml.to_owned(),
-                    (None, Format::Json) => {
-                        format!("invalid type: {unexpected}, expected a boolean")
-                    }
-                };
-                assert!(
-                    error.starts_with("crozier: could not parse OpenAPI document")
-                        && error.contains(&message),
-                    "{name} {format:?} strict={strict} {value}: expected `{message}`:\n{error}"
-                );
-            }
+    std::thread::scope(|scope| {
+        for (name, message) in READ_SITES {
+            scope.spawn(move || refuses_other_values(name, *message));
+        }
+    });
+}
+
+/// `name`'s site holding a non-boolean is refused with `message`, or with the
+/// reader's plain-boolean refusal when it is `None`, in every format and mode.
+fn refuses_other_values(name: &str, message: Option<&str>) {
+    for (value, unexpected, yaml) in [
+        (json!(2), "integer `2`", YAML_REFUSAL),
+        (json!("yes"), "string \"yes\"", YAML_REFUSAL),
+        (json!(1.0), "floating point `1.0`", YAML_REFUSAL),
+        (json!(-1), "integer `-1`", YAML_REFUSAL),
+        (json!([1]), "sequence", "expected string scalar"),
+        (json!({"a": 1}), "map", "expected string scalar"),
+    ] {
+        if value.is_object() && name == "additionalProperties" {
+            // A mapping there is a value schema.
+            continue;
+        }
+        for (format, strict) in cases() {
+            let dir = tempfile::tempdir().expect("tempdir");
+            let spec = write(dir.path(), "boolean", &document(&[name], &value), format);
+            let error = generate(&spec, strict)
+                .err()
+                .unwrap_or_else(|| panic!("{name} {format:?} strict={strict}: {value} generated"));
+            let message = match (message, format) {
+                (Some(message), _) => message.to_owned(),
+                (None, Format::Yaml) => yaml.to_owned(),
+                (None, Format::Json) => {
+                    format!("invalid type: {unexpected}, expected a boolean")
+                }
+            };
+            assert!(
+                error.starts_with("crozier: could not parse OpenAPI document")
+                    && error.contains(&message),
+                "{name} {format:?} strict={strict} {value}: expected `{message}`:\n{error}"
+            );
         }
     }
 }
