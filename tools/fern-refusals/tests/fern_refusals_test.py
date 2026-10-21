@@ -1668,6 +1668,12 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertEqual((call["argv"], json.loads(call["spec"])), (["check"], without))
         provenance, pair = (self.root / row["log"]).read_text(encoding="utf-8").splitlines(keepends=True)[:2]
         self.assertEqual((provenance, pair), (f"fern-refusals: reduction of {digest}: /x-note\n", PAIR_LINE))
+        # Reduced again without --again, the recorded run is reused and Fern does not run.
+        self.calls.unlink()
+        reused = self.script("reduce", "--root", str(self.root / "documents"))
+        self.assertEqual(reused.returncode, 0, reused.stdout + reused.stderr)
+        self.assertIn("0 reduction(s) measured", reused.stdout)
+        self.assertFalse(self.calls.exists(), "Fern ran over a reduction already on record")
         self.assertEqual(built().returncode, 0, built().stderr)
         # A row its log does not derive is named by `check`.
         edited = dict(row, disposition="reported-other")
@@ -1728,6 +1734,20 @@ class MeasuredAtThePair(unittest.TestCase):
         self.assertIn(f"dispositions.tsv {digest}: with no representative", result.stderr)
         dispose(crozier_class="object-extends-non-object", disposition="agreed")
         self.assertIn(f"dispositions.tsv {digest}: disposition 'agreed' is not one of", built().stderr)
+        dispose(crozier_class="object-extends-non-object", disposition="masked", reduced_digest="../../escape")
+        self.assertIn(f"dispositions.tsv {digest}: reduced_digest '../../escape' is not a SHA-256", built().stderr)
+        # Two rows sharing one reduction take one Fern run between them, and one log.
+        other = self.documents["measured-current"]
+        shared = [digest, "object-extends-non-object", "masked", digest, "/x-note", "—", "—", "—", "—", "—"]
+        table = [list(DISPOSITIONS_HEADER), *sorted([shared, [other, *shared[1:]]])]
+        write_rows(registry / "dispositions.tsv", table)
+        self.env.update(FERN_STUB_CHECK_OUTPUT=f"issue: {phrase(objects)}", FERN_STUB_CHECK_EXIT="1")
+        self.calls.unlink(missing_ok=True)
+        reduced = self.script("reduce", "--again", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        self.assertEqual(len(self.calls.read_text(encoding="utf-8").splitlines()), 1)
+        self.assertIn("1 reduction(s) measured, 2 disposition(s)", reduced.stdout)
+        self.assertEqual(len({row[9] for row in rows(registry / "dispositions.tsv")[1:]}), 1)
 
     def test_reduce_keeps_a_yaml_representative_yaml_and_refuses_a_pointer_that_names_nothing(self) -> None:
         self.add_classes("object-extends-non-object")

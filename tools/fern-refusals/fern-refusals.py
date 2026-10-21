@@ -807,12 +807,18 @@ def crozier_strict_measure(binary: Path, document: Path, digest: str, timeout: i
 STRICT_REFUSAL = re.compile(r"^crozier: invalid OpenAPI document .*?: (?P<cls>[a-z][a-z0-9]*(?:-[a-z0-9]+)+): ", re.M)
 
 
-def strict_refusal(log: str) -> tuple[str, str]:
-    """The class crozier's `--fern-strict` run refused with, if any, and its
-    first error line (what it stopped at when no class detector refused)."""
+class StrictRefusal(NamedTuple):
+    """What crozier's `--fern-strict` run printed: the class it refused with
+    (empty when none did) and its first error line (empty when it generated)."""
+
+    cls: str
+    error: str
+
+
+def strict_refusal(log: str) -> StrictRefusal:
     error = next((line for line in log.splitlines() if line.startswith("crozier: ")), "")
     found = STRICT_REFUSAL.match(error)
-    return (found["cls"] if found else ""), error
+    return StrictRefusal(found["cls"] if found else "", error)
 
 
 def strict_problems(
@@ -823,7 +829,8 @@ def strict_problems(
     by a class `dispositions.tsv` shows agrees with Fern for this document."""
     if not (REPO / log).is_file():
         return [f"{digest}: its crozier log {log} is missing; retake it with `measure --crozier-again`"]
-    printed, error = strict_refusal(read_log(log))
+    refusal = strict_refusal(read_log(log))
+    printed, error = refusal.cls, refusal.error
     if exit_status == "timeout":
         return [
             f"{digest}: crozier --fern-strict ran past `measure`'s time bound ({log}); retake it with a longer --timeout"
@@ -1271,7 +1278,7 @@ def tables() -> tuple[dict[str, str], list[str]]:
             if not result["crozier_strict_exit"] or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
             elif (REPO / result["crozier_strict_log"]).is_file() and result["crozier_strict_exit"] != "0":
-                error = strict_refusal(read_log(result["crozier_strict_log"]))[1]
+                error = strict_refusal(read_log(result["crozier_strict_log"])).error
                 problems.append(
                     f"{digest}: Fern generates it, but crozier --fern-strict stops at `{error}` "
                     f"({result['crozier_strict_log']}); narrow crozier to generate it, then `measure --crozier-again`"
@@ -2033,6 +2040,9 @@ def is_disposition(text: str) -> TypeGuard[Disposition]:
 def disposition_row(cells: dict[str, str]) -> DispositionRow:
     """A row read from the table, every cell checked against what it may hold."""
     name = f"dispositions.tsv {cells['document']}"
+    for field in ("document", "representative", "reduced_digest"):
+        if not (DIGEST.fullmatch(cells[field]) or (field != "document" and cells[field] == EMPTY)):
+            fail(f"{name}: {field} {cells[field]!r} is not a SHA-256 digest{'' if field == 'document' else ' or `—`'}")
     disposition = cells["disposition"]
     if not is_disposition(disposition):
         fail(f"{name}: disposition {disposition!r} is not one of {', '.join(DISPOSITIONS)}; restore it from git")
@@ -2111,6 +2121,8 @@ def reduction_pointers(reduction: str) -> list[Pointer]:
     return pointers
 
 
+# A document's or reduction's identity: the lower-hex SHA-256 of its bytes.
+DIGEST = re.compile(r"[0-9a-f]{64}")
 # A JSON pointer token as written: `~` only in its escapes `~0` and `~1` (RFC 6901).
 ESCAPED = re.compile(r"(?:[^~]|~[01])*")
 # A JSON pointer token naming a list member: a non-negative index, no sign, no leading zero.
