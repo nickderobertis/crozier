@@ -84,7 +84,8 @@ def run(
 # FERN_STUB_GENERATE_FILES files under `--output`, and appends what it was run
 # with (its arguments, the workspace's pinned CLI and generator versions, and
 # the environment `fern_run` sets) to FERN_STUB_CALLS. With FERN_STUB_HANG it
-# starts a child and never ends, writing both process ids to that file.
+# starts a child and never ends, writing both process ids to that file; with
+# FERN_STUB_HANG_STAGE too, only that stage hangs.
 FERN_STUB = """\
 import json, os, sys
 from pathlib import Path
@@ -98,7 +99,7 @@ if calls:
                                  "spec": Path("openapi/openapi.yml").read_text(),
                                  "node_options": os.environ.get("NODE_OPTIONS")}) + "\\n")
 hang = os.environ.get("FERN_STUB_HANG")
-if hang:
+if hang and os.environ.get("FERN_STUB_HANG_STAGE", stage) == stage:
     # A run that never ends, as Fern's `npx` tree does: a child of its own, then a wait.
     import subprocess, time
     child = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(600)"])
@@ -1225,6 +1226,21 @@ class FernRuns(unittest.TestCase):
         self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check"])
         self.assertEqual(self.shape_problems(), [])
 
+    def test_a_shape_whose_generation_runs_past_the_bound_is_unmeasured(self) -> None:
+        self.shape("alpha-control.yml", "alpha")
+        result = self.script(
+            "shapes", "--timeout", "3", hang=str(self.root / "fern-pids"), hang_stage="generate", generate_files="3"
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        alpha = self.shape_rows()["alpha-control.yml"]
+        self.assertEqual(
+            [alpha[key] for key in ("check_exit", "generate_exit", "generate_files", "verdict")],
+            ["0", "timeout", "0", "unmeasured"],
+        )
+        # The check finished and named no class, so the generation ran, and was ended.
+        self.assertEqual([call["argv"][0] for call in self.calls_made()], ["check", "generate"])
+        self.assertEqual(self.shape_problems(), [])
+
     def test_shapes_refuses_a_class_the_registry_does_not_name(self) -> None:
         result = self.script("shapes", "no-such-class")
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
@@ -1547,6 +1563,37 @@ class MeasuredAtThePair(unittest.TestCase):
             ),
         )
 
+    def test_a_generation_past_the_time_bound_is_recorded_unmeasured(self) -> None:
+        self.env.update(
+            FERN_STUB_CHECK_EXIT="0",
+            FERN_STUB_CHECK_OUTPUT="",
+            FERN_STUB_HANG=str(self.root / "fern-pids"),
+            FERN_STUB_HANG_STAGE="generate",
+        )
+        measured = self.measure("--timeout", "2")
+        for name in ("screened-old", "measured-old"):
+            with self.subTest(document=name):
+                row = measured[self.documents[name]]
+                self.assertEqual((row["check_exit"], row["generate_exit"]), ("0", "timeout"))
+        # Each check named no class, so each was followed by a generation that never finished.
+        stages = [json.loads(line)["argv"][0] for line in self.calls.read_text(encoding="utf-8").splitlines()]
+        self.assertEqual(stages, ["check", "generate", "check", "generate"])
+        built = self.script("build")
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertEqual("fern-refusals: 2 refused, 0 generated, 2 unretrievable\n", built.stdout)
+        unretrievable = rows(self.root / "docs" / "fern-refusals" / "unretrievable.tsv")[1:]
+        self.assertEqual(
+            sorted((row[4], row[5]) for row in unretrievable),
+            sorted(
+                (
+                    self.documents[name],
+                    f"unmeasured: `fern generate` ran past `measure`'s time bound at Fern CLI "
+                    f"{CERTIFIED['cliVersion']} with fernapi/fern-python-sdk {CERTIFIED['generatorVersion']}",
+                )
+                for name in ("screened-old", "measured-old")
+            ),
+        )
+
     def rewrite_measurement(self, name: str, **fields: str) -> None:
         """The measurements.jsonl row of document `name`, with `fields` replaced."""
         digest = self.documents[name]
@@ -1720,7 +1767,14 @@ class MeasuredAtThePair(unittest.TestCase):
         table = rows(registry / "dispositions.tsv")
         self.assertEqual((table[1][2], table[1][6], table[1][8]), ("unmeasured", "timeout", "—"))
         self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
-        del self.env["FERN_STUB_HANG"]
+        # So is one whose check names nothing and whose generation does not finish.
+        self.env.update(FERN_STUB_CHECK_OUTPUT="", FERN_STUB_CHECK_EXIT="0", FERN_STUB_HANG_STAGE="generate")
+        reduced = self.script("reduce", "--again", "--timeout", "2", "--root", str(self.root / "documents"))
+        self.assertEqual(reduced.returncode, 0, reduced.stdout + reduced.stderr)
+        table = rows(registry / "dispositions.tsv")
+        self.assertEqual((table[1][2], table[1][6], table[1][7], table[1][8]), ("unmeasured", "0", "timeout", "—"))
+        self.assertIn(f"{digest}: crozier --fern-strict stops at", built().stderr)
+        del self.env["FERN_STUB_HANG"], self.env["FERN_STUB_HANG_STAGE"]
         # A class only `fern generate` reports, on a document Fern's check stopped, agrees by rule.
         refused_with("generator-lint-failure")
         dispose(crozier_class="generator-lint-failure", disposition="generate-stage")

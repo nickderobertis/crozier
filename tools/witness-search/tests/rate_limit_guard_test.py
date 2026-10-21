@@ -347,6 +347,24 @@ class GitHubCapTests(GuardTestCase):
         (probe,) = self.kinds(guard, "probe")
         self.assertEqual((probe["admitted_by"], probe["burn"]["rate_per_s"]), ("burn-rate", 0))
 
+    def test_a_used_count_that_fell_within_the_window_is_a_zero_burn(self) -> None:
+        self.fixture.set("search", limit=100, used=59, reset_in=5)
+        self.fixture.charge["/search/repositories"] = 0
+        guard = self.guard()
+        self.call(guard, "search", "/search/repositories", hold=0.1)  # 41 remain after it
+        # Within the same window `used` falls from 59 to 55: that is no negative
+        # rate but nothing burning, so the 39 left after a call costing 6 are
+        # admitted rather than waited out.
+        with self.fixture.lock:
+            self.fixture.buckets["search"]["used"] = 55
+        _admitted_at, status = self.call(guard, "search", "/search/repositories", cost=6)
+        self.assertEqual(status, 200)
+        self.assertEqual(self.kinds(guard, "wait"), [])
+        (probe,) = self.kinds(guard, "probe")
+        self.assertEqual(
+            (probe["admitted_by"], probe["reading"]["used"], probe["burn"]["rate_per_s"]), ("burn-rate", 55, 0)
+        )
+
     def test_the_burn_rate_never_admits_a_call_past_the_remaining_quota(self) -> None:
         self.fixture.set("core", limit=100, used=50, reset_in=1.5)
         reset = self.fixture.buckets["core"]["reset"]
