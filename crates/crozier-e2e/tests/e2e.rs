@@ -23827,6 +23827,65 @@ fn generates_identically_in_both_modes(spec: &Path) {
 }
 
 #[test]
+fn a_date_example_is_judged_by_its_own_yaml_style_through_aliases_and_merges() {
+    // Measured at Fern CLI 5.163.1: the class probe's quoted datetime `date`
+    // example is refused and the same text written plain generates. Each
+    // occurrence is judged by its own style, wherever an alias or a `<<` merge
+    // places it, and a plain copy elsewhere exempts no quoted one.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("example-type-mismatch");
+    let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+    let quoted = "          example: \"2006-01-02T15:04:05+00:00\"\n";
+    assert!(probe.contains(quoted));
+    let with_info = |info: &str, example: &str| {
+        probe
+            .replace(
+                "info:\n  title: probe\n",
+                &format!("info:\n{info}  title: probe\n"),
+            )
+            .replace(quoted, example)
+    };
+    let plain_copy = "  x-released: &released 2006-01-02T15:04:05+00:00\n";
+    let plain_defaults = "  x-defaults: &defaults {example: 2006-01-02T15:04:05+00:00}\n";
+    let quoted_defaults = "  x-defaults: &defaults {example: '2006-01-02T15:04:05+00:00'}\n";
+    let merged = "          <<: *defaults\n";
+    let dir = tempfile::tempdir().unwrap();
+    let write = |name: &str, text: String| {
+        assert_ne!(text, probe, "{name}");
+        let path = dir.path().join(name);
+        std::fs::write(&path, text).unwrap();
+        path
+    };
+    let element = "GET /probe response example \"2006-01-02T15:04:05+00:00\"";
+    for spec in [
+        write("plain-copy-beside.yml", with_info(plain_copy, quoted)),
+        write("quoted-merge.yml", with_info(quoted_defaults, merged)),
+    ] {
+        for strict in [false, true] {
+            let run = refusal_run(&crozier, &spec, strict).unwrap();
+            let failures = refused_failures("example-type-mismatch", &run, element, strict);
+            assert!(
+                failures.is_empty(),
+                "{}: {}",
+                spec.display(),
+                failures.join("\n")
+            );
+            assert_eq!(run.stderr.lines().count(), 1, "{}", run.stderr);
+        }
+    }
+    for spec in [
+        write(
+            "aliased.yml",
+            with_info(plain_copy, "          example: *released\n"),
+        ),
+        write("plain-merge.yml", with_info(plain_defaults, merged)),
+    ] {
+        generates_identically_in_both_modes(&spec);
+    }
+}
+
+#[test]
 fn type_not_defined_refuses_api_file_references_and_body_member_unions() {
     let class = repo_root().join(FERN_REFUSALS_DIR).join("type-not-defined");
     for (spec, element) in [

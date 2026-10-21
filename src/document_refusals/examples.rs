@@ -101,11 +101,24 @@ fn plain_timestamps(root: &Value, text: &str) -> HashSet<*const Value> {
         .collect()
 }
 
-/// A mapping being read (its current key, once read) or a sequence (its next
-/// index), as [`plain_timestamp_paths`] walks the parser's events.
+/// Where [`plain_timestamp_paths`] stands in a collection: a mapping awaiting
+/// its next key, a mapping awaiting the value of the key just read (`None` for a
+/// key with no path of its own: an alias or a collection), or a sequence at its
+/// next index.
 enum Frame {
-    Map { key: Option<String>, at_key: bool },
-    Seq { index: usize },
+    MapKey,
+    MapValue(Option<String>),
+    Seq(usize),
+}
+
+/// An anchored collection being read: what its anchor will hold once it closes.
+struct Recording {
+    anchor: usize,
+    /// How many frames enclosed it when it opened.
+    depth: usize,
+    /// The length of its own path, which the paths it holds are relative to.
+    base: usize,
+    held: Vec<Vec<String>>,
 }
 
 /// The paths (mapping keys and sequence indices) of every plain timestamp
@@ -124,39 +137,40 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
     // The plain timestamps under each anchor, relative to the anchored node.
     let mut anchors: std::collections::HashMap<usize, Vec<Vec<String>>> =
         std::collections::HashMap::new();
-    // Anchored collections being read: their anchor, the frame depth they
-    // opened at, their path's length, and what they hold so far.
-    let mut recording: Vec<(usize, usize, usize, Vec<Vec<String>>)> = Vec::new();
-    // Depth inside a complex (collection) mapping key, whose content has no path.
+    let mut recording: Vec<Recording> = Vec::new();
+    // Depth inside a collection used as a mapping key, whose content has no path.
     let mut in_key = 0usize;
+    // The path of the node about to be read; `None` under a key with no path.
     let path_of = |frames: &[Frame]| -> Option<Vec<String>> {
         frames
             .iter()
             .map(|frame| match frame {
-                Frame::Map { key, .. } => key.clone(),
-                Frame::Seq { index } => Some(index.to_string()),
+                Frame::MapValue(key) => key.clone(),
+                Frame::Seq(index) => Some(index.to_string()),
+                Frame::MapKey => None,
             })
             .collect()
     };
-    let mut record =
-        |path: Vec<String>, recording: &mut Vec<(usize, usize, usize, Vec<Vec<String>>)>| {
-            for (_, _, base, held) in recording.iter_mut() {
-                if path.len() >= *base {
-                    held.push(path[*base..].to_vec());
-                }
+    let mut record = |path: Vec<String>, recording: &mut Vec<Recording>| {
+        for open in recording.iter_mut() {
+            if path.len() >= open.base {
+                open.held.push(path[open.base..].to_vec());
             }
-            found.push(path);
-        };
-    // Whether the next node is a mapping key (and so has no path of its own).
-    let at_key = |frames: &[Frame]| matches!(frames.last(), Some(Frame::Map { at_key: true, .. }));
-    // A node in value position is complete: the next one is its sibling.
-    let advance = |frames: &mut Vec<Frame>| match frames.last_mut() {
-        Some(Frame::Map { key, at_key }) => {
-            *key = None;
-            *at_key = true;
         }
-        Some(Frame::Seq { index }) => *index += 1,
-        None => {}
+        found.push(path);
+    };
+    // The key just read (`None`: one with no path); its value comes next.
+    let keyed = |frames: &mut Vec<Frame>, key: Option<String>| {
+        if let Some(frame) = frames.last_mut() {
+            *frame = Frame::MapValue(key);
+        }
+    };
+    // A value is complete: the next node is its mapping's next key, or its
+    // sequence's next item.
+    let advance = |frames: &mut Vec<Frame>| match frames.last_mut() {
+        Some(frame @ Frame::MapValue(_)) => *frame = Frame::MapKey,
+        Some(Frame::Seq(index)) => *index += 1,
+        Some(Frame::MapKey) | None => {}
     };
     let mut parser = Parser::new_from_str(text);
     while let Some(Ok((event, _span))) = parser.next_event() {
@@ -166,25 +180,20 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                 Event::MappingEnd | Event::SequenceEnd => {
                     in_key -= 1;
                     if in_key == 0 {
-                        if let Some(Frame::Map { at_key, .. }) = frames.last_mut() {
-                            *at_key = false;
-                        }
+                        keyed(&mut frames, None);
                     }
                 }
                 _ => {}
             }
             continue;
         }
+        let at_key = matches!(frames.last(), Some(Frame::MapKey));
         match event {
             Event::DocumentEnd => break,
+            Event::Scalar(value, _, _, _) if at_key => keyed(&mut frames, Some(value.into_owned())),
+            Event::Alias(_) if at_key => keyed(&mut frames, None),
+            Event::MappingStart(..) | Event::SequenceStart(..) if at_key => in_key = 1,
             Event::Scalar(value, style, anchor, _tag) => {
-                if at_key(&frames) {
-                    if let Some(Frame::Map { key, at_key }) = frames.last_mut() {
-                        *key = Some(value.into_owned());
-                        *at_key = false;
-                    }
-                    continue;
-                }
                 let plain =
                     style == ScalarStyle::Plain && timestamp.is_match(&value).unwrap_or(false);
                 if anchor != 0 {
@@ -198,29 +207,19 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                 advance(&mut frames);
             }
             Event::Alias(anchor) => {
-                if at_key(&frames) {
-                    if let Some(Frame::Map { at_key, .. }) = frames.last_mut() {
-                        *at_key = false;
-                    }
-                    continue;
-                }
                 // A `<<` merge (one alias, or a sequence of them) places the
                 // anchored mapping's members beside the merging mapping's own.
-                let merged = |frame: Option<&Frame>| matches!(frame, Some(Frame::Map { key: Some(key), .. }) if key == "<<");
+                let merged = |frame: Option<&Frame>| matches!(frame, Some(Frame::MapValue(Some(key))) if key == "<<");
                 let depth = frames.len();
-                let base_len = if merged(frames.last()) {
-                    Some(depth - 1)
-                } else if matches!(frames.last(), Some(Frame::Seq { .. }))
+                let base = if merged(frames.last()) {
+                    path_of(&frames[..depth - 1])
+                } else if matches!(frames.last(), Some(Frame::Seq(_)))
                     && depth >= 2
                     && merged(frames.get(depth - 2))
                 {
-                    Some(depth - 2)
+                    path_of(&frames[..depth - 2])
                 } else {
-                    None
-                };
-                let base = match base_len {
-                    Some(length) => path_of(&frames[..length]),
-                    None => path_of(&frames),
+                    path_of(&frames)
                 };
                 if let (Some(base), Some(held)) = (base, anchors.get(&anchor).cloned()) {
                     for relative in held {
@@ -230,32 +229,26 @@ fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
                 advance(&mut frames);
             }
             Event::MappingStart(_, anchor, _) | Event::SequenceStart(_, anchor, _) => {
-                if at_key(&frames) {
-                    in_key = 1;
-                    continue;
-                }
                 if anchor != 0 {
                     if let Some(path) = path_of(&frames) {
-                        recording.push((anchor, frames.len(), path.len(), Vec::new()));
+                        recording.push(Recording {
+                            anchor,
+                            depth: frames.len(),
+                            base: path.len(),
+                            held: Vec::new(),
+                        });
                     }
                 }
                 frames.push(if matches!(event, Event::MappingStart(..)) {
-                    Frame::Map {
-                        key: None,
-                        at_key: true,
-                    }
+                    Frame::MapKey
                 } else {
-                    Frame::Seq { index: 0 }
+                    Frame::Seq(0)
                 });
             }
             Event::MappingEnd | Event::SequenceEnd => {
                 frames.pop();
-                while recording
-                    .last()
-                    .is_some_and(|(_, depth, _, _)| *depth == frames.len())
-                {
-                    let (anchor, _, _, held) = recording.pop().expect("a recording was open");
-                    anchors.insert(anchor, held);
+                while let Some(open) = recording.pop_if(|open| open.depth == frames.len()) {
+                    anchors.insert(open.anchor, open.held);
                 }
                 advance(&mut frames);
             }
