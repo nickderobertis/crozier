@@ -2064,13 +2064,19 @@ def reduction_pointers(reduction: str) -> list[Pointer]:
     `*-a,b` names every member of its parent but `a` and `b`."""
     pointers: list[Pointer] = []
     for pointer in [] if reduction == EMPTY else reduction.split(";"):
-        if not pointer.startswith("/"):
-            fail(f"dispositions.tsv reduction {pointer!r} is not a JSON pointer; write each as `/a/b`, `;`-separated")
-        tokens = [token.replace("~1", "/").replace("~0", "~") for token in pointer[1:].split("/")]
+        raw = pointer[1:].split("/")
+        if not pointer.startswith("/") or not all(ESCAPED.fullmatch(token) for token in raw):
+            fail(
+                f"dispositions.tsv reduction {pointer!r} is not a JSON pointer; write each as `/a/b`, "
+                "`;`-separated, with `~` only as `~0` and `/` as `~1`"
+            )
+        tokens = [token.replace("~1", "/").replace("~0", "~") for token in raw]
         pointers.append(Pointer(pointer, tokens))
     return pointers
 
 
+# A JSON pointer token as written: `~` only in its escapes `~0` and `~1` (RFC 6901).
+ESCAPED = re.compile(r"(?:[^~]|~[01])*")
 # A JSON pointer token naming a list member: a non-negative index, no sign, no leading zero.
 INDEX = re.compile(r"0|[1-9][0-9]*")
 

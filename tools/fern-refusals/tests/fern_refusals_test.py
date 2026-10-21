@@ -1751,7 +1751,16 @@ class MeasuredAtThePair(unittest.TestCase):
             self.assertNotIn(gone, spec)
         self.assertIn("/kept", spec)
         # A pointer naming nothing fails, naming itself, before any Fern run.
-        for pointer in ("/tags/2", "/tags/-1", "/tags/01", "/paths/~1absent/get", "/paths/*-~1absent", "tags"):
+        for pointer in (
+            "/tags/2",
+            "/tags/-1",
+            "/tags/01",
+            "/paths/~1absent/get",
+            "/paths/*-~1absent",
+            "tags",
+            "/paths/~2kept",
+            "/paths/~",
+        ):
             with self.subTest(pointer=pointer):
                 result = reduced_by(pointer)
                 self.assertNotEqual(result.returncode, 0)
