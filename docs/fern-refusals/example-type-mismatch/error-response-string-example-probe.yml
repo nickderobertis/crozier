@@ -1,0 +1,32 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /banner:
+    get:
+      operationId: getBanner
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Banner'}
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              example: '"Only admins can read the banner."'
+              schema: {$ref: '#/components/schemas/Errors'}
+components:
+  schemas:
+    Banner:
+      type: object
+      properties:
+        message: {type: string}
+    Errors:
+      type: object
+      properties:
+        errorMessages:
+          type: array
+          items: {type: string}

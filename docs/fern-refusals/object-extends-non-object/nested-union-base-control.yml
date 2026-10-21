@@ -1,0 +1,44 @@
+openapi: 3.0.3
+info:
+  title: probe
+  version: 1.0.0
+paths:
+  /probe:
+    get:
+      operationId: probe
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Created'}
+components:
+  schemas:
+    Placed:
+      type: object
+      required: [uuid]
+      properties:
+        uuid: {type: string}
+    Highlighted:
+      type: object
+      required: [page]
+      properties:
+        page: {type: integer}
+    PdfAnchor:
+      oneOf:
+        - allOf:
+            - $ref: '#/components/schemas/Placed'
+            - type: object
+              properties:
+                kind: {type: string, enum: [placed]}
+        - $ref: '#/components/schemas/Highlighted'
+    Anchor:
+      oneOf:
+        - $ref: '#/components/schemas/PdfAnchor'
+    Created:
+      allOf:
+        - $ref: '#/components/schemas/Anchor'
+        - type: object
+          required: [documentId]
+          properties:
+            documentId: {type: string}

@@ -298,7 +298,7 @@ pub fn check_structure_file(path: &Path, strict: bool) -> Result<()> {
     check_discriminant_examples(&root, path, strict)?;
     check_example_names(&root, path, strict)?;
     check_example_query_parameters(&root, path, strict)?;
-    if let Some((class, element)) = examples::first_violation(&root) {
+    if let Some((class, element)) = examples::first_violation_in(&root, &text) {
         return refusal(path, strict, class, &element);
     }
     Ok(())
@@ -652,36 +652,61 @@ fn check_object_extension(
     Ok(())
 }
 
-/// Whether `target` is a union every member of which is an object model or a
-/// bare constraint (`not`, `required`): Fern extends such a base, measured at
-/// Fern CLI 5.163.1 by the `union-base`, `conditional-base` and
-/// `ordered-renamed-union` controls. A scalar or array base stays refused.
+/// Whether `target` is a union every member of which is an object model, a
+/// bare constraint (`not`, `required`) or such a union itself: Fern extends
+/// such a base, measured at Fern CLI 5.163.1 by the `union-base`,
+/// `nested-union-base`, `conditional-base` and `ordered-renamed-union`
+/// controls. A scalar or array base stays refused.
 fn object_union_base(target: &serde_json::Value, root: &serde_json::Value) -> bool {
+    object_union_member(target, root, &mut Vec::new())
+        && ["oneOf", "anyOf"]
+            .iter()
+            .any(|key| target.get(key).is_some())
+}
+
+fn object_union_member(
+    schema: &serde_json::Value,
+    root: &serde_json::Value,
+    seen: &mut Vec<String>,
+) -> bool {
+    if let Some(reference) = schema.get("$ref").and_then(serde_json::Value::as_str) {
+        if seen.iter().any(|value| value == reference) {
+            return false;
+        }
+        seen.push(reference.to_owned());
+        let member = reference
+            .strip_prefix('#')
+            .and_then(|pointer| yaml_pointer(root, pointer))
+            .is_some_and(|target| object_union_member(target, root, seen));
+        seen.pop();
+        return member;
+    }
+    if schema_is_model(schema, root, &mut Vec::new())
+        || schema.as_object().is_some_and(|keys| {
+            !keys.is_empty()
+                && keys
+                    .keys()
+                    .all(|key| matches!(key.as_str(), "not" | "required" | "description" | "title"))
+        })
+    {
+        return true;
+    }
     let scalar = matches!(
-        schema_type(target)
+        schema_type(schema)
             .as_ref()
             .and_then(crate::openapi::TypeField::primary),
         Some("string" | "number" | "integer" | "boolean" | "array" | "null")
     );
     !scalar
         && ["oneOf", "anyOf"].iter().any(|key| {
-            target
+            schema
                 .get(key)
                 .and_then(serde_json::Value::as_array)
                 .is_some_and(|members| {
                     !members.is_empty()
-                        && members.iter().all(|member| {
-                            schema_is_model(member, root, &mut Vec::new())
-                                || member.as_object().is_some_and(|keys| {
-                                    !keys.is_empty()
-                                        && keys.keys().all(|key| {
-                                            matches!(
-                                                key.as_str(),
-                                                "not" | "required" | "description" | "title"
-                                            )
-                                        })
-                                })
-                        })
+                        && members
+                            .iter()
+                            .all(|member| object_union_member(member, root, seen))
                 })
         })
 }
@@ -2264,6 +2289,27 @@ pub fn check_sdk(
             );
         }
     }
+    // A syntax error: a sub-client class named from a tag led by a digit
+    // (Hyperswitch's `3DS Decision Rule` → `class 3dsDecisionRuleClient`), which
+    // Fern's own `ruff check` fails on at Fern CLI 5.163.1.
+    if let Some(module) = ir
+        .endpoint_modules
+        .iter()
+        .flat_map(|module| module.split('/'))
+        .find(|segment| {
+            crate::naming::to_pascal_case(segment).starts_with(|first: char| first.is_ascii_digit())
+        })
+    {
+        return refusal(
+            path,
+            strict,
+            class,
+            &format!(
+                "sub-client {module} class {}Client",
+                crate::naming::to_pascal_case(module)
+            ),
+        );
+    }
     for endpoint in ir.endpoints.iter().filter(|endpoint| endpoint.emittable) {
         let route = format!("{} {}", endpoint.http_method, endpoint.path);
         // F811: a root-client method and a sub-client property of one name.
@@ -3058,6 +3104,7 @@ mod tests {
         shapes.sort();
         for measured in [
             "union-base-control.yml",
+            "nested-union-base-control.yml",
             "conditional-base-control.yml",
             "typed-scalar-alias-control.yml",
             "typed-nullable-scalar-alias-control.yml",
@@ -3071,6 +3118,43 @@ mod tests {
                 .is_some_and(|error| error.contains("object-extends-non-object: "));
             assert_eq!(refused, !shape.contains("-control."), "{shape}: {error:?}");
         }
+    }
+
+    /// `check_sdk`'s refusal over `spec`, or `None`.
+    fn sdk_refusal(spec: &str) -> Option<String> {
+        let mut doc: OpenApi = crate::yaml::from_str(spec).unwrap();
+        let config = crate::config::GenerateConfig::new(
+            std::path::PathBuf::from("openapi.yml"),
+            std::path::PathBuf::from("out"),
+            Some("api".to_string()),
+            None,
+            None,
+            crate::settings::ExtraFields::default(),
+            "Api",
+        )
+        .unwrap();
+        let ir = crate::ir::build(&doc, &config);
+        check_sdk(&mut doc, &ir, &config, Path::new("openapi.yml"), true)
+            .err()
+            .map(|error| error.to_string())
+    }
+
+    #[test]
+    fn a_sub_client_led_by_a_digit_is_a_lint_failure() {
+        let spec = |tag: &str| {
+            format!(
+                "openapi: 3.0.3\ninfo: {{title: Api, version: '1'}}\npaths:\n  /rules:\n    get:\n      \
+                 tags: ['{tag}']\n      operationId: listRules\n      responses: {{'204': {{description: OK}}}}\n"
+            )
+        };
+        let error = sdk_refusal(&spec("3DS Decision Rule")).unwrap_or_default();
+        assert!(
+            error.contains(
+                "generator-lint-failure: sub-client _3ds_decision_rule class 3DsDecisionRuleClient"
+            ),
+            "{error}"
+        );
+        assert_eq!(sdk_refusal(&spec("Decision Rule 3DS")), None);
     }
 
     #[test]

@@ -21,8 +21,17 @@ const METHODS: [&str; 8] = [
 
 /// The first example value Fern's check rejects, as the class it reports and
 /// the offending element.
+#[cfg(test)]
 pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
-    let doc = Doc { root };
+    first_violation_in(root, "")
+}
+
+/// [`first_violation`] over a document whose source text is `text`.
+pub(super) fn first_violation_in(root: &Value, text: &str) -> Option<(Class, String)> {
+    let doc = Doc {
+        root,
+        plain: plain_timestamps(text),
+    };
     for operation in doc.operations() {
         let element = format!(
             "{} {}",
@@ -61,6 +70,31 @@ struct Operation<'a> {
 
 struct Doc<'a> {
     root: &'a Value,
+    /// The timestamps the source writes as plain YAML scalars (see
+    /// [`plain_timestamps`]).
+    plain: HashSet<String>,
+}
+
+/// Every timestamp a YAML source writes as a plain (unquoted) scalar.
+///
+/// Fern's YAML parser reads such a scalar as a timestamp, not a string, so a
+/// `date` example written that way is no string it rejects: measured at Fern
+/// CLI 5.163.1, the class probe's quoted `"2006-01-02T15:04:05+00:00"` is
+/// refused and the same value unquoted generates (`unquoted-date-example`
+/// control; Asana's `due_at`, `2019-09-15T02:06:58.147Z`). crozier's parser
+/// reads both as one string, so the plain ones are found in the source.
+fn plain_timestamps(text: &str) -> HashSet<String> {
+    static TIMESTAMP: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
+    let pattern = TIMESTAMP.get_or_init(|| {
+        fancy_regex::Regex::new(
+            r"(?m)(?:^[ \t]*-[ \t]+|:[ \t]+|[\[{,][ \t]*)(\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?)[ \t]*(?=$|[,\]}#\r])",
+        )
+        .expect("the YAML timestamp pattern compiles")
+    });
+    pattern
+        .captures_iter(text)
+        .filter_map(|captures| Some(captures.ok()?.get(1)?.as_str().to_owned()))
+        .collect()
 }
 
 fn str_of<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
@@ -198,6 +232,12 @@ fn json_media(content: Option<&Value>) -> Option<&Value> {
 }
 
 impl<'a> Doc<'a> {
+    /// [`bad_scalar`], less a `date` example the source writes as a plain
+    /// timestamp.
+    fn bad_scalar(&self, schema: &Value, value: &Value) -> bool {
+        bad_scalar(schema, value) && !value.as_str().is_some_and(|text| self.plain.contains(text))
+    }
+
     fn resolve(&self, mut node: &'a Value) -> Option<&'a Value> {
         for _ in 0..20 {
             let Some(reference) = str_of(node, "$ref") else {
@@ -598,7 +638,7 @@ impl<'a> Doc<'a> {
     fn schema_scalar_example(&self, operation: &Operation<'a>) -> Option<(Class, String)> {
         let mut visit = |node: &'a Value| {
             let example = node.get("example")?;
-            (scalar(example) && bad_scalar(node, example))
+            (scalar(example) && self.bad_scalar(node, example))
                 .then(|| format!("example {}", literal(example)))
         };
         let unexampled =
@@ -629,7 +669,7 @@ impl<'a> Doc<'a> {
                 }
                 let schema = self.resolve(parameter.get("schema")?)?;
                 let example = parameter.get("example").or_else(|| schema.get("example"))?;
-                (scalar(example) && bad_scalar(schema, example)).then(|| {
+                (scalar(example) && self.bad_scalar(schema, example)).then(|| {
                     (
                         Class::ExampleTypeMismatch,
                         format!(
@@ -695,7 +735,7 @@ impl<'a> Doc<'a> {
                     .iter()
                     .find_map(|item| self.written_scalar(item_schema, item, depth + 1))
             }
-            _ => (scalar(value) && bad_scalar(schema, value))
+            _ => (scalar(value) && self.bad_scalar(schema, value))
                 .then(|| format!("example {}", literal(value))),
         }
     }
@@ -957,8 +997,10 @@ impl<'a> Doc<'a> {
             let Some(text) = value.as_str() else {
                 return Some((Class::ExampleTypeMismatch, literal(value)));
             };
-            return (str_of(schema, "format") == Some("date") && !is_date(text))
-                .then(|| (Class::ExampleTypeMismatch, literal(value)));
+            return (str_of(schema, "format") == Some("date")
+                && !is_date(text)
+                && !self.plain.contains(text))
+            .then(|| (Class::ExampleTypeMismatch, literal(value)));
         }
         if is_type(schema, "integer") {
             return (!is_integral(value)).then(|| (Class::ExampleTypeMismatch, literal(value)));
@@ -1377,6 +1419,34 @@ mod tests {
     }
 
     #[test]
+    fn a_date_example_written_as_a_plain_timestamp_is_no_string_fern_rejects() {
+        let plain = plain_timestamps(
+            "a:\n  example: 2019-09-15T02:06:58.147Z\n  b: [1706-01-17 00:00:00, x]\n  \
+             - 2006-01-02T15:04:05+00:00 # comment\n  c: \"2001-02-03T04:05:06Z\"\n  \
+             d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n",
+        );
+        let mut found: Vec<&str> = plain.iter().map(String::as_str).collect();
+        found.sort_unstable();
+        assert_eq!(
+            found,
+            [
+                "1706-01-17 00:00:00",
+                "2006-01-02T15:04:05+00:00",
+                "2019-09-15T02:06:58.147Z"
+            ]
+        );
+        // The class probe quotes its datetime; the control writes it plain.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let verdict = |shape: &str| {
+            let text = std::fs::read_to_string(class.join(shape)).unwrap();
+            first_violation_in(&yaml(&text), &text).map(|(class, _)| class.id())
+        };
+        assert_eq!(verdict("probe.yml"), Some("example-type-mismatch"));
+        assert_eq!(verdict("unquoted-date-example-control.yml"), None);
+    }
+
+    #[test]
     fn a_required_property_beside_a_definitions_member_is_no_unexpected_property() {
         // Measured at Fern CLI 5.163.1 / fern-python-sdk 5.41.3: Fern follows an
         // `allOf` member referenced into a component's own `definitions`, so
@@ -1475,7 +1545,10 @@ mod tests {
             "components:\n  schemas:\n    Thing:\n      type: object\n      required: [id]\n      \
              properties:\n        id: {type: string}\n        kind: {type: string, enum: [A]}\n",
         );
-        let doc = Doc { root: &root };
+        let doc = Doc {
+            root: &root,
+            plain: HashSet::new(),
+        };
         let schema = yaml("{$ref: '#/components/schemas/Thing'}");
         let class = |value: &str| {
             doc.validate(&schema, &yaml(value), 0)
