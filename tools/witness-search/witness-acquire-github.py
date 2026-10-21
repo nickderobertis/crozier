@@ -75,7 +75,7 @@ class Acquisition(TypedDict, total=False):
     cache: Literal["hit"]
     status: int
     error: str
-    sha256: str
+    sha256: GUARD.Sha256
     bytes: int
 
 

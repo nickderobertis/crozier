@@ -65,9 +65,13 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Literal, NamedTuple, NoReturn, TypedDict, TypeGuard
+from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard
 
 REPO = Path(__file__).resolve().parents[2]
+# A `classes.tsv` class id or a `findings.tsv` finding name, as Fern's logs are classified into them.
+ClassId: TypeAlias = str
+# The lower-hex SHA-256 of a document's (or a reduced document's) exact bytes: its identity.
+Digest: TypeAlias = str
 # The tests point this at a scratch copy to show `check` failing on drift.
 REGISTRY = Path(os.environ.get("CROZIER_FERN_REFUSALS_REGISTRY") or REPO / "docs" / "fern-refusals")
 EVIDENCE = REPO / "docs" / "openapi-surface" / "fern-refusals"
@@ -811,7 +815,7 @@ class StrictRefusal(NamedTuple):
     """What crozier's `--fern-strict` run printed: the class it refused with
     (empty when none did) and its first error line (empty when it generated)."""
 
-    cls: str
+    cls: ClassId
     error: str
 
 
@@ -1751,7 +1755,7 @@ def stage_exit(text: str) -> StageExit | None:
 class Shape(NamedTuple):
     """A class's committed probe or control shape."""
 
-    cls: str
+    cls: ClassId
     path: Path
     role: ShapeRole
 
@@ -1777,9 +1781,9 @@ class ShapeRow(NamedTuple):
     """A shape's `shapes.tsv` row, typed; `cells` is the row as the table spells it."""
 
     shape: Shape
-    digest: str
+    digest: Digest
     run: ShapeRun
-    classes: list[str]
+    classes: list[ClassId]
     verdict: ShapeVerdict
     log: Path
 
@@ -2021,15 +2025,15 @@ def dispositions_path() -> Path:
 class DispositionRow(TypedDict):
     """A `dispositions.tsv` row, its outcomes parsed; `None` and `[]` are `—`."""
 
-    document: str
-    crozier_class: str
+    document: Digest
+    crozier_class: ClassId
     disposition: Disposition
-    representative: str
+    representative: Digest
     reduction: str
-    reduced_digest: str
+    reduced_digest: Digest
     check_exit: StageExit | None
     generate_exit: StageExit | None
-    classes: list[str]
+    classes: list[ClassId]
     log: str
 
 
@@ -2211,7 +2215,7 @@ def reduction_log(reduced_digest: str) -> Path:
 class ReductionLog(NamedTuple):
     """A reduction's log: the representative and reduction it was taken from, and Fern's run."""
 
-    representative: str
+    representative: Digest
     reduction: str
     run: ShapeRun
 
@@ -2237,7 +2241,7 @@ class ReductionVerdict(NamedTuple):
     """What a reduction's run shows about crozier's class, and the classes and findings Fern named."""
 
     disposition: Disposition
-    named: list[str]
+    named: list[ClassId]
 
 
 def disposition_of(

@@ -192,7 +192,7 @@ import urllib.parse
 import urllib.request
 from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
-from typing import Any, Literal, NamedTuple, NotRequired, Protocol, TypedDict
+from typing import Any, Literal, NamedTuple, NotRequired, Protocol, TypeAlias, TypedDict
 
 FLOOR = fractions.Fraction(2, 5)
 """The share of any GitHub REST bucket that must remain after a call (40%), outside the burn-rate exception.
@@ -448,12 +448,18 @@ class AdmissionProbe(TypedDict, total=False):
     burn: BurnFigures
 
 
+# A response cache entry's name: the SHA-256 of its canonical request (see ``cache_key``).
+CacheKey: TypeAlias = str
+# The lower-hex SHA-256 of a stored body's bytes.
+Sha256: TypeAlias = str
+
+
 class CacheHit(TypedDict):
     """The fields a ``github-cache-hits.jsonl`` row records of the answer it was served."""
 
-    cache_key: str
+    cache_key: CacheKey
     status: int
-    sha256: str
+    sha256: Sha256
     bytes: int
 
 
@@ -462,7 +468,7 @@ class CacheMeta(TypedDict):
 
     status: int
     headers: list[list[str]]
-    sha256: str
+    sha256: Sha256
     bytes: int
 
 
@@ -843,7 +849,7 @@ def github_cache_root(url: str) -> Path | None:
     return root / "crozier" / "github-responses"
 
 
-def cache_key(method: str, url: str, headers: Mapping[str, str]) -> str:
+def cache_key(method: str, url: str, headers: Mapping[str, str]) -> CacheKey:
     """SHA-256 of the request's method, URL and answer-changing headers; never the credential."""
     kept = {name.lower(): str(value) for name, value in dict(headers).items() if name.lower() in CACHE_KEY_HEADERS}
     canonical = json.dumps(
@@ -869,11 +875,11 @@ def is_answer(status: int | None, headers: ResponseHeaders | None, body: bytes =
 class CachedResponse:
     """One stored GitHub answer; ``body_path`` holds its bytes."""
 
-    key: str
+    key: CacheKey
     status: int
     headers: tuple[tuple[str, str], ...]
     body_path: Path
-    sha256: str
+    sha256: Sha256
     size: int
 
     def body(self) -> bytes:
