@@ -30,7 +30,7 @@ pub(super) fn first_violation(root: &Value) -> Option<(Class, String)> {
 pub(super) fn first_violation_in(root: &Value, text: &str) -> Option<(Class, String)> {
     let doc = Doc {
         root,
-        plain: plain_timestamps(text),
+        plain: plain_timestamps(root, text),
     };
     for operation in doc.operations() {
         let element = format!(
@@ -70,16 +70,16 @@ struct Operation<'a> {
 
 struct Doc<'a> {
     root: &'a Value,
-    /// The timestamps the source writes as plain YAML scalars (see
-    /// [`plain_timestamps`]).
-    plain: HashSet<String>,
+    /// The nodes of `root` the source writes as plain YAML timestamps (see
+    /// [`plain_timestamps`]), by address: one occurrence each, never a value.
+    plain: HashSet<*const Value>,
 }
 
-/// Every timestamp a YAML source writes as a plain (unquoted) scalar: after a
-/// mapping colon, a sequence dash or a flow opener, on a line that is neither
-/// a comment nor inside a block scalar (`|`, `>`), and before any trailing
-/// comment. A quoted value never matches, since a quote stands between the
-/// opener and the digits.
+/// Every node of `root` that its YAML source `text` writes as a plain
+/// (unquoted) timestamp scalar, decided per occurrence from that scalar's own
+/// style: a quoted copy of the same text elsewhere is not one, and neither is
+/// timestamp-like text inside a comment, a block scalar or a quoted string. A
+/// node an alias or a `<<` merge places is one where its anchored scalar is.
 ///
 /// Fern's YAML parser reads such a scalar as a timestamp, not a string, so a
 /// `date` example written that way is no string it rejects: measured at Fern
@@ -87,61 +87,182 @@ struct Doc<'a> {
 /// refused and the same value unquoted generates (`unquoted-date-example`
 /// control; Asana's `due_at`, `2019-09-15T02:06:58.147Z`). crozier's parser
 /// reads both as one string, so the plain ones are found in the source.
-fn plain_timestamps(text: &str) -> HashSet<String> {
+fn plain_timestamps(root: &Value, text: &str) -> HashSet<*const Value> {
+    plain_timestamp_paths(text)
+        .iter()
+        .filter_map(|path| {
+            path.iter().try_fold(root, |node, step| match node {
+                Value::Object(fields) => fields.get(step),
+                Value::Array(items) => items.get(step.parse::<usize>().ok()?),
+                _ => None,
+            })
+        })
+        .map(std::ptr::from_ref)
+        .collect()
+}
+
+/// A mapping being read (its current key, once read) or a sequence (its next
+/// index), as [`plain_timestamp_paths`] walks the parser's events.
+enum Frame {
+    Map { key: Option<String>, at_key: bool },
+    Seq { index: usize },
+}
+
+/// The paths (mapping keys and sequence indices) of every plain timestamp
+/// scalar in `text`'s first document; see [`plain_timestamps`].
+fn plain_timestamp_paths(text: &str) -> Vec<Vec<String>> {
+    use serde_saphyr::granit_parser::{Event, Parser, ScalarStyle};
     static TIMESTAMP: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
-    static BLOCK: std::sync::OnceLock<fancy_regex::Regex> = std::sync::OnceLock::new();
     let timestamp = TIMESTAMP.get_or_init(|| {
         fancy_regex::Regex::new(
-            r"(?:^[ \t]*-[ \t]+|:[ \t]+|[\[{,][ \t]*)(\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?)[ \t]*(?=$|[,\]}])",
+            r"^\d{4}-\d{1,2}-\d{1,2}(?:[Tt]|[ \t]+)\d{1,2}:\d{2}:\d{2}(?:\.\d*)?(?:[ \t]*(?:Z|[-+]\d{1,2}(?::\d{2})?))?$",
         )
         .expect("the YAML timestamp pattern compiles")
     });
-    let block = BLOCK.get_or_init(|| {
-        fancy_regex::Regex::new(r"(?:^[ \t]*-|:)[ \t]+[|>][-+0-9]*[ \t]*$")
-            .expect("the YAML block-scalar pattern compiles")
-    });
-    let mut found = HashSet::new();
-    // The indentation of the line that opened the block scalar being skipped.
-    let mut opened: Option<usize> = None;
-    for line in text.lines() {
-        let content = line.trim_start();
-        let indent = line.len() - content.len();
-        if let Some(open) = opened {
-            if content.is_empty() || indent > open {
-                continue;
+    let mut frames: Vec<Frame> = Vec::new();
+    let mut found: Vec<Vec<String>> = Vec::new();
+    // The plain timestamps under each anchor, relative to the anchored node.
+    let mut anchors: std::collections::HashMap<usize, Vec<Vec<String>>> =
+        std::collections::HashMap::new();
+    // Anchored collections being read: their anchor, the frame depth they
+    // opened at, their path's length, and what they hold so far.
+    let mut recording: Vec<(usize, usize, usize, Vec<Vec<String>>)> = Vec::new();
+    // Depth inside a complex (collection) mapping key, whose content has no path.
+    let mut in_key = 0usize;
+    let path_of = |frames: &[Frame]| -> Option<Vec<String>> {
+        frames
+            .iter()
+            .map(|frame| match frame {
+                Frame::Map { key, .. } => key.clone(),
+                Frame::Seq { index } => Some(index.to_string()),
+            })
+            .collect()
+    };
+    let mut record =
+        |path: Vec<String>, recording: &mut Vec<(usize, usize, usize, Vec<Vec<String>>)>| {
+            for (_, _, base, held) in recording.iter_mut() {
+                if path.len() >= *base {
+                    held.push(path[*base..].to_vec());
+                }
             }
-            opened = None;
+            found.push(path);
+        };
+    // Whether the next node is a mapping key (and so has no path of its own).
+    let at_key = |frames: &[Frame]| matches!(frames.last(), Some(Frame::Map { at_key: true, .. }));
+    // A node in value position is complete: the next one is its sibling.
+    let advance = |frames: &mut Vec<Frame>| match frames.last_mut() {
+        Some(Frame::Map { key, at_key }) => {
+            *key = None;
+            *at_key = true;
         }
-        if content.starts_with('#') {
+        Some(Frame::Seq { index }) => *index += 1,
+        None => {}
+    };
+    let mut parser = Parser::new_from_str(text);
+    while let Some(Ok((event, _span))) = parser.next_event() {
+        if in_key > 0 {
+            match event {
+                Event::MappingStart(..) | Event::SequenceStart(..) => in_key += 1,
+                Event::MappingEnd | Event::SequenceEnd => {
+                    in_key -= 1;
+                    if in_key == 0 {
+                        if let Some(Frame::Map { at_key, .. }) = frames.last_mut() {
+                            *at_key = false;
+                        }
+                    }
+                }
+                _ => {}
+            }
             continue;
         }
-        let code = without_comment(line);
-        found.extend(
-            timestamp
-                .captures_iter(code)
-                .filter_map(|captures| Some(captures.ok()?.get(1)?.as_str().to_owned())),
-        );
-        if block.is_match(code).unwrap_or(false) {
-            opened = Some(indent);
+        match event {
+            Event::DocumentEnd => break,
+            Event::Scalar(value, style, anchor, _tag) => {
+                if at_key(&frames) {
+                    if let Some(Frame::Map { key, at_key }) = frames.last_mut() {
+                        *key = Some(value.into_owned());
+                        *at_key = false;
+                    }
+                    continue;
+                }
+                let plain =
+                    style == ScalarStyle::Plain && timestamp.is_match(&value).unwrap_or(false);
+                if anchor != 0 {
+                    anchors.insert(anchor, if plain { vec![Vec::new()] } else { Vec::new() });
+                }
+                if plain {
+                    if let Some(path) = path_of(&frames) {
+                        record(path, &mut recording);
+                    }
+                }
+                advance(&mut frames);
+            }
+            Event::Alias(anchor) => {
+                if at_key(&frames) {
+                    if let Some(Frame::Map { at_key, .. }) = frames.last_mut() {
+                        *at_key = false;
+                    }
+                    continue;
+                }
+                // A `<<` merge (one alias, or a sequence of them) places the
+                // anchored mapping's members beside the merging mapping's own.
+                let merged = |frame: Option<&Frame>| matches!(frame, Some(Frame::Map { key: Some(key), .. }) if key == "<<");
+                let depth = frames.len();
+                let base_len = if merged(frames.last()) {
+                    Some(depth - 1)
+                } else if matches!(frames.last(), Some(Frame::Seq { .. }))
+                    && depth >= 2
+                    && merged(frames.get(depth - 2))
+                {
+                    Some(depth - 2)
+                } else {
+                    None
+                };
+                let base = match base_len {
+                    Some(length) => path_of(&frames[..length]),
+                    None => path_of(&frames),
+                };
+                if let (Some(base), Some(held)) = (base, anchors.get(&anchor).cloned()) {
+                    for relative in held {
+                        record([base.clone(), relative].concat(), &mut recording);
+                    }
+                }
+                advance(&mut frames);
+            }
+            Event::MappingStart(_, anchor, _) | Event::SequenceStart(_, anchor, _) => {
+                if at_key(&frames) {
+                    in_key = 1;
+                    continue;
+                }
+                if anchor != 0 {
+                    if let Some(path) = path_of(&frames) {
+                        recording.push((anchor, frames.len(), path.len(), Vec::new()));
+                    }
+                }
+                frames.push(if matches!(event, Event::MappingStart(..)) {
+                    Frame::Map {
+                        key: None,
+                        at_key: true,
+                    }
+                } else {
+                    Frame::Seq { index: 0 }
+                });
+            }
+            Event::MappingEnd | Event::SequenceEnd => {
+                frames.pop();
+                while recording
+                    .last()
+                    .is_some_and(|(_, depth, _, _)| *depth == frames.len())
+                {
+                    let (anchor, _, _, held) = recording.pop().expect("a recording was open");
+                    anchors.insert(anchor, held);
+                }
+                advance(&mut frames);
+            }
+            _ => {}
         }
     }
     found
-}
-
-/// `line` up to a trailing comment: a `#` after whitespace, outside quotes.
-fn without_comment(line: &str) -> &str {
-    let mut quote = None;
-    let mut previous = ' ';
-    for (index, character) in line.char_indices() {
-        match (quote, character) {
-            (None, '"' | '\'') => quote = Some(character),
-            (Some(open), _) if character == open => quote = None,
-            (None, '#') if previous.is_whitespace() => return line[..index].trim_end(),
-            _ => {}
-        }
-        previous = character;
-    }
-    line.trim_end_matches('\r')
 }
 
 fn str_of<'a>(value: &'a Value, key: &str) -> Option<&'a str> {
@@ -282,7 +403,7 @@ impl<'a> Doc<'a> {
     /// [`bad_scalar`], less a `date` example the source writes as a plain
     /// timestamp.
     fn bad_scalar(&self, schema: &Value, value: &Value) -> bool {
-        bad_scalar(schema, value) && !value.as_str().is_some_and(|text| self.plain.contains(text))
+        bad_scalar(schema, value) && !self.plain.contains(&std::ptr::from_ref(value))
     }
 
     fn resolve(&self, mut node: &'a Value) -> Option<&'a Value> {
@@ -1067,7 +1188,7 @@ impl<'a> Doc<'a> {
             };
             return (str_of(schema, "format") == Some("date")
                 && !is_date(text)
-                && !self.plain.contains(text))
+                && !self.plain.contains(&std::ptr::from_ref(value)))
             .then(|| (Class::ExampleTypeMismatch, literal(value)));
         }
         if is_type(schema, "integer") {
@@ -1509,19 +1630,36 @@ mod tests {
         }
     }
 
+    /// The text of each node [`plain_timestamps`] finds in `text`, sorted.
+    fn plain_texts(text: &str) -> Vec<String> {
+        fn visit(node: &Value, plain: &HashSet<*const Value>, found: &mut Vec<String>) {
+            if plain.contains(&std::ptr::from_ref(node)) {
+                found.push(node.as_str().unwrap_or_default().to_owned());
+            }
+            match node {
+                Value::Object(fields) => fields.values().for_each(|v| visit(v, plain, found)),
+                Value::Array(items) => items.iter().for_each(|v| visit(v, plain, found)),
+                _ => {}
+            }
+        }
+        let root = yaml(text);
+        let mut found = Vec::new();
+        visit(&root, &plain_timestamps(&root, text), &mut found);
+        found.sort_unstable();
+        found
+    }
+
     #[test]
     fn a_date_example_written_as_a_plain_timestamp_is_no_string_fern_rejects() {
-        let plain = plain_timestamps(
-            "a:\n  example: 2019-09-15T02:06:58.147Z\n  b: [1706-01-17 00:00:00, x]\n  \
-             - 2006-01-02T15:04:05+00:00 # comment\n  c: \"2001-02-03T04:05:06Z\"\n  \
-             d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n  \
-             # example: 2001-02-03T04:05:09Z\n  f: x # g: 2001-02-03T04:05:10Z\n  \
-             h: |\n    example: 2001-02-03T04:05:11Z\n  i: 'a # b' # j: 2001-02-03T04:05:12Z\n",
-        );
-        let mut found: Vec<&str> = plain.iter().map(String::as_str).collect();
-        found.sort_unstable();
         assert_eq!(
-            found,
+            plain_texts(
+                "a:\n  example: 2019-09-15T02:06:58.147Z\n  b: [1706-01-17 00:00:00, x]\n  \
+                 l:\n    - 2006-01-02T15:04:05+00:00 # comment\n  c: \"2001-02-03T04:05:06Z\"\n  \
+                 d: '2001-02-03T04:05:07Z'\n  e: 2001-02-03T04:05:08Zsuffix\n  \
+                 # example: 2001-02-03T04:05:09Z\n  f: x # g: 2001-02-03T04:05:10Z\n  \
+                 h: |\n    example: 2001-02-03T04:05:11Z\n  i: 'a # b' # j: 2001-02-03T04:05:12Z\n  \
+                 k: \"text: 2001-02-03T04:05:13Z\"\n  m: [\"x\", '2001-02-03T04:05:14Z']\n"
+            ),
             [
                 "1706-01-17 00:00:00",
                 "2006-01-02T15:04:05+00:00",
@@ -1537,6 +1675,72 @@ mod tests {
         };
         assert_eq!(verdict("probe.yml"), Some("example-type-mismatch"));
         assert_eq!(verdict("unquoted-date-example-control.yml"), None);
+    }
+
+    #[test]
+    fn a_quoted_date_example_is_refused_beside_a_plain_copy_of_its_text() {
+        // The probe's quoted example, with the same text written plain in a
+        // vendor extension elsewhere: each occurrence is judged by its own style.
+        let class = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("docs/fern-refusals/example-type-mismatch");
+        let probe = std::fs::read_to_string(class.join("probe.yml")).unwrap();
+        let mixed = probe.replace(
+            "info:\n  title: probe\n",
+            "info:\n  x-released: 2006-01-02T15:04:05+00:00\n  title: probe\n",
+        );
+        assert_ne!(mixed, probe);
+        let root = yaml(&mixed);
+        assert_eq!(
+            first_violation_in(&root, &mixed).map(|(class, detail)| (class.id(), detail)),
+            first_violation_in(&yaml(&probe), &probe).map(|(class, detail)| (class.id(), detail)),
+        );
+        assert_eq!(
+            first_violation_in(&root, &mixed).map(|(class, _)| class.id()),
+            Some("example-type-mismatch")
+        );
+        // The plain copy is the one occurrence found, and the quoted example is not.
+        let plain = plain_timestamps(&root, &mixed);
+        assert!(plain.contains(&std::ptr::from_ref(&root["info"]["x-released"])));
+        let example = &root["components"]["schemas"]["Thing"]["properties"]["born"]["example"];
+        assert!(!plain.contains(&std::ptr::from_ref(example)));
+        // Written plain, the example itself is accepted, beside the other copy too.
+        let unquoted = mixed.replace(
+            "example: \"2006-01-02T15:04:05+00:00\"",
+            "example: 2006-01-02T15:04:05+00:00",
+        );
+        assert_ne!(unquoted, mixed);
+        assert_eq!(
+            first_violation_in(&yaml(&unquoted), &unquoted).map(|(_, detail)| detail),
+            None
+        );
+    }
+
+    #[test]
+    fn an_aliased_or_merged_plain_timestamp_is_plain_where_it_lands() {
+        let text = "base: &base {at: 2001-02-03T04:05:06Z, note: x}\n\
+                    one: &one 2001-02-03T04:05:07Z\n\
+                    copy: *one\n\
+                    merged:\n  <<: *base\n  own: '2001-02-03T04:05:08Z'\n\
+                    listed:\n  <<: [*base]\n\
+                    items: [x, 2001-02-03T04:05:09Z]\n";
+        let root = yaml(text);
+        let plain = plain_timestamps(&root, text);
+        for path in [
+            "/base/at",
+            "/one",
+            "/copy",
+            "/merged/at",
+            "/listed/at",
+            "/items/1",
+        ] {
+            let node = root
+                .pointer(path)
+                .unwrap_or_else(|| panic!("{path} parses"));
+            assert!(plain.contains(&std::ptr::from_ref(node)), "{path}");
+        }
+        let own = root.pointer("/merged/own").unwrap();
+        assert!(!plain.contains(&std::ptr::from_ref(own)));
+        assert_eq!(plain.len(), 6);
     }
 
     #[test]
