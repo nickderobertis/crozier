@@ -17693,7 +17693,7 @@ class RequestBodyReadingTests(unittest.TestCase):
         "!operation.requestBody:json-media&operation.requestBody:octet-stream-media&operation.parameters>parameter.in=header": {
             "media-kinds": 1
         },
-        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media": {},
+        "operation.requestBody:form-urlencoded-media&operation.requestBody:json-media": {"media-kinds": 1},
         "!operation.requestBody:json-media&operation.requestBody:form-urlencoded-media&operation.requestBody>requestBody.content>mediaType.schema>schema.oneOf": {
             "media-kinds": 1
         },
@@ -17824,3 +17824,59 @@ class OperationContextCompositionTests(unittest.TestCase):
         document["components"]["schemas"]["Plaque"]["title"] = "Plaque"
         counts = census.census_document(document, conjunctions=conjunctions)
         self.assertEqual((1, 5), (counts.get(nested, 0), counts.get(absent, 0)))
+
+    def report_documents(self, selector: str, documents: dict[str, Any]) -> dict[str, int]:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, document in documents.items():
+                source = root / name / "openapi.json"
+                source.parent.mkdir()
+                source.write_text(json.dumps(document), encoding="utf-8")
+            completed = run("--vendored-only", "--fixtures-root", str(root), "--selector", selector, "--json")
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        return {row["fixture"]: row["count"] for row in json.loads(completed.stdout)["rows"]}
+
+    def test_anonymous_security_alternative_counts_and_required_control_does_not(self) -> None:
+        template = json.loads(
+            (self.DATA / "echo-body-effective-anonymous" / "openapi.json").read_text(encoding="utf-8")
+        )
+        documents = {}
+        for name, requirements in (
+            ("anonymous-alternative", [{}, {"Access": []}]),
+            ("required-control", [{"Access": []}]),
+        ):
+            document = json.loads(json.dumps(template))
+            document["paths"]["/target"]["get"]["security"] = requirements
+            documents[name] = document
+        selector = "operation.context:effective-anonymous&operation.context:success-ref-matches-body"
+        self.assertEqual({"anonymous-alternative": 1}, self.report_documents(selector, documents))
+
+    def test_nullable_flag_and_null_type_array_count_and_nonnullable_controls_do_not(self) -> None:
+        template = json.loads((self.DATA / "success-oneof-nullable" / "openapi.json").read_text(encoding="utf-8"))
+        documents = {}
+        for name, version, declaration, member in (
+            ("nullable-flag", "3.0.3", {"type": "object", "nullable": True}, {"type": "object", "nullable": True}),
+            ("null-type-array", "3.1.0", {"type": ["object", "null"]}, {"type": ["object", "null"]}),
+        ):
+            document = json.loads(json.dumps(template))
+            document["openapi"] = version
+            schema = {
+                **declaration,
+                "oneOf": [
+                    {**member, "properties": {"label": {"type": "string"}}, "required": ["label"]},
+                    {"type": "object", "properties": {"index": {"type": "integer"}}, "required": ["index"]},
+                ],
+            }
+            document["paths"]["/target"]["get"]["responses"]["200"]["content"]["application/json"]["schema"] = schema
+            documents[name] = document
+            control = json.loads(json.dumps(document))
+            nonnullable = control["paths"]["/target"]["get"]["responses"]["200"]["content"]["application/json"][
+                "schema"
+            ]
+            if version.startswith("3.0"):
+                nonnullable["nullable"] = False
+            else:
+                nonnullable["type"] = ["object"]
+            documents[name + "-control"] = control
+        selector = "operation.context:success-nullable&operation.context:success-oneof"
+        self.assertEqual({"nullable-flag": 1, "null-type-array": 1}, self.report_documents(selector, documents))
