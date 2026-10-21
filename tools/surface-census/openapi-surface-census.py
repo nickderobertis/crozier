@@ -2675,6 +2675,45 @@ REQUEST_BODY_MEMBER_PREDICATES = {
 }
 MEMBER_ONLY_PREDICATES.update(REQUEST_BODY_MEMBER_PREDICATES)
 
+
+# Operation context is a conjunction member: it joins document settings, status
+# map keys and response representations at the operation that lowering reads.
+OPERATION_CONTEXT_MEMBER_PREDICATES = {
+    "operation.context:oas-three-zero": "one per Operation Object where the enclosing document declares OpenAPI 3.0",
+    "operation.context:oas-three-one": "one per Operation Object where the enclosing document declares OpenAPI 3.1",
+    "operation.context:root-client": "one per Operation Object where neither a nonempty SDK group nor a nonblank tag groups the operation",
+    "operation.context:grouped-client": "one per Operation Object where a nonempty SDK group or a nonblank tag groups the operation",
+    "operation.context:document-security-required": "one per Operation Object where the document declares a nonempty security list with no anonymous alternative",
+    "operation.context:security-empty": "one per Operation Object where the operation explicitly declares an empty security list",
+    "operation.context:security-nonempty": "one per Operation Object where the operation explicitly declares a nonempty security list",
+    "operation.context:effective-oauth2": "one per Operation Object where the effective security requirements name an OAuth2 scheme",
+    "operation.context:effective-non-oauth-required": "one per Operation Object where the effective security list requires authentication and names no OAuth2 scheme",
+    "operation.context:effective-anonymous": "one per Operation Object where the effective security list is absent, empty or contains an anonymous alternative",
+    "operation.context:success-json": "one per Operation Object where the selected success response offers application/json",
+    "operation.context:success-download": "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type",
+    "operation.context:success-text": "one per Operation Object where the selected success response offers a text media type other than event-stream",
+    "operation.context:success-binary-schema": "one per Operation Object where a selected success representation resolves to a string schema with format binary",
+    "operation.context:success-oneof": "one per Operation Object where a selected success representation resolves to a schema declaring oneOf",
+    "operation.context:success-anyof": "one per Operation Object where a selected success representation resolves to a schema declaring anyOf",
+    "operation.context:success-nullable": "one per Operation Object where a selected success representation resolves to a nullable schema or a union with a null member",
+    "operation.context:success-content": "one per Operation Object where the selected success response declares nonempty content",
+    "operation.context:response-204": "one per Operation Object where the responses map declares status 204",
+    "operation.context:success-ref-matches-body": "one per Operation Object where the application/json request schema and a selected success representation write the same reference",
+    "operation.context:errors-shared-ref": "one per Operation Object where two distinct error status keys declare bodies with the same schema reference",
+    "operation.context:error-multiple-media": "one per Operation Object where an error response declares at least two media types",
+    "operation.context:error-oneof": "one per Operation Object where an error representation resolves to a schema declaring oneOf",
+    "operation.context:error-object": "one per Operation Object where an error representation declares an inline object with properties",
+    "operation.context:error-status-different-schemas": "one per Operation Object where an error status key occurs on another operation with a differently declared schema",
+    "operation.context:success-range": "one per Operation Object where the responses map declares 2XX beside a concrete 2xx status",
+}
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:success-statuses-mixed-media"] = (
+    "one per Operation Object where two concrete success status keys declare different media-type key sequences"
+)
+OPERATION_CONTEXT_MEMBER_PREDICATES["operation.context:basic-auth-scheme"] = (
+    "one per Operation Object where the document declares an HTTP basic security scheme"
+)
+MEMBER_ONLY_PREDICATES.update(OPERATION_CONTEXT_MEMBER_PREDICATES)
+
 # The media-type keys the four media readings above test, each against the key's
 # base type (the part before any `;` parameter), lower-cased.
 REQUEST_BODY_MEDIA_TESTS: tuple[tuple[str, Callable[[str], bool]], ...] = (
@@ -3306,6 +3345,171 @@ COMBINATIONS: tuple[Combination, ...] = (
         "document-paths.md",
         "operation.x-fern-pagination&operation.x-fern-sdk-group-name",
         "one per Operation Object writing both `x-fern-pagination` and `x-fern-sdk-group-name`",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-success-oneof",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-oneof",
+        "one per Operation Object where the selected success response declares nonempty content and a selected success representation resolves to a schema declaring oneOf",
+    ),
+    Combination(
+        "combo-success-anyof",
+        "document-paths.md",
+        "operation.context:success-anyof&operation.context:success-content",
+        "one per Operation Object where a selected success representation resolves to a schema declaring anyOf and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-success-oneof-nullable",
+        "document-paths.md",
+        "operation.context:success-nullable&operation.context:success-oneof",
+        "one per Operation Object where a selected success representation resolves to a nullable schema or a union with a null member and a selected success representation resolves to a schema declaring oneOf",
+    ),
+    Combination(
+        "combo-success-anyof-nullable",
+        "document-paths.md",
+        "operation.context:success-anyof&operation.context:success-nullable",
+        "one per Operation Object where a selected success representation resolves to a schema declaring anyOf and a selected success representation resolves to a nullable schema or a union with a null member",
+    ),
+    Combination(
+        "combo-no-content-beside-body-response",
+        "document-paths.md",
+        "operation.context:response-204&operation.context:success-content",
+        "one per Operation Object where the responses map declares status 204 and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-range-beside-concrete-success",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-range",
+        "one per Operation Object where the selected success response declares nonempty content and the responses map declares 2XX beside a concrete 2xx status",
+    ),
+    Combination(
+        "combo-root-oas30-download",
+        "document-paths.md",
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-download",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.0 and neither a nonempty SDK group nor a nonblank tag groups the operation and the selected success response offers an octet-stream, PDF, image, audio or video media type",
+    ),
+    Combination(
+        "combo-root-oas30-binary-schema",
+        "document-paths.md",
+        "operation.context:oas-three-zero&operation.context:root-client&operation.context:success-binary-schema",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.0 and neither a nonempty SDK group nor a nonblank tag groups the operation and a selected success representation resolves to a string schema with format binary",
+    ),
+    Combination(
+        "combo-oas31-root-response",
+        "document-paths.md",
+        "operation.context:oas-three-one&operation.context:root-client&operation.context:success-content",
+        "one per Operation Object where the enclosing document declares OpenAPI 3.1 and neither a nonempty SDK group nor a nonblank tag groups the operation and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-oas31-grouped-response",
+        "document-paths.md",
+        "operation.context:grouped-client&operation.context:oas-three-one&operation.context:success-content",
+        "one per Operation Object where a nonempty SDK group or a nonblank tag groups the operation and the enclosing document declares OpenAPI 3.1 and the selected success response declares nonempty content",
+    ),
+    Combination(
+        "combo-success-json-beside-download",
+        "document-paths.md",
+        "operation.context:success-download&operation.context:success-json",
+        "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type and the selected success response offers application/json",
+    ),
+    Combination(
+        "combo-success-text-beside-download",
+        "document-paths.md",
+        "operation.context:success-download&operation.context:success-text",
+        "one per Operation Object where the selected success response offers an octet-stream, PDF, image, audio or video media type and the selected success response offers a text media type other than event-stream",
+    ),
+    Combination(
+        "combo-success-json-beside-binary-schema",
+        "document-paths.md",
+        "operation.context:success-binary-schema&operation.context:success-json",
+        "one per Operation Object where a selected success representation resolves to a string schema with format binary and the selected success response offers application/json",
+    ),
+    Combination(
+        "combo-errors-shared-ref",
+        "document-paths.md",
+        "operation.context:errors-shared-ref&operation.responses",
+        "one per Operation Object where two distinct error status keys declare bodies with the same schema reference and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-multiple-media",
+        "document-paths.md",
+        "operation.context:error-multiple-media&operation.responses",
+        "one per Operation Object where an error response declares at least two media types and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-oneof",
+        "document-paths.md",
+        "operation.context:error-oneof&operation.responses",
+        "one per Operation Object where an error representation resolves to a schema declaring oneOf and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-object",
+        "document-paths.md",
+        "operation.context:error-object&operation.responses",
+        "one per Operation Object where an error representation declares an inline object with properties and the operation writes responses",
+    ),
+    Combination(
+        "combo-error-status-different-schemas",
+        "document-paths.md",
+        "operation.context:error-status-different-schemas&operation.responses",
+        "one per Operation Object where an error status key occurs on another operation with a differently declared schema and the operation writes responses",
+    ),
+    Combination(
+        "combo-document-security-security-empty",
+        "document-paths.md",
+        "operation.context:document-security-required&operation.context:security-empty",
+        "one per Operation Object where the document declares a nonempty security list with no anonymous alternative and the operation explicitly declares an empty security list",
+    ),
+    Combination(
+        "combo-document-security-security-nonempty",
+        "document-paths.md",
+        "operation.context:document-security-required&operation.context:security-nonempty",
+        "one per Operation Object where the document declares a nonempty security list with no anonymous alternative and the operation explicitly declares a nonempty security list",
+    ),
+    Combination(
+        "combo-echo-body-effective-oauth2",
+        "document-paths.md",
+        "operation.context:effective-oauth2&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security requirements name an OAuth2 scheme and the application/json request schema and a selected success representation write the same reference",
+    ),
+    Combination(
+        "combo-echo-body-effective-non-oauth-required",
+        "document-paths.md",
+        "operation.context:effective-non-oauth-required&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security list requires authentication and names no OAuth2 scheme and the application/json request schema and a selected success representation write the same reference",
+    ),
+    Combination(
+        "combo-echo-body-effective-anonymous",
+        "document-paths.md",
+        "operation.context:effective-anonymous&operation.context:success-ref-matches-body",
+        "one per Operation Object where the effective security list is absent, empty or contains an anonymous alternative and the application/json request schema and a selected success representation write the same reference",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-success-statuses-mixed-media",
+        "document-paths.md",
+        "operation.context:success-content&operation.context:success-statuses-mixed-media",
+        "one per Operation Object where the selected success response declares nonempty content and two concrete success status keys declare different media-type key sequences",
+    ),
+)
+
+COMBINATIONS += (
+    Combination(
+        "combo-basic-auth-document-requirement",
+        "document-paths.md",
+        "openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic",
+        "one per OpenAPI Object writing security whose components declare an HTTP basic scheme",
+    ),
+    Combination(
+        "combo-basic-auth-operation-requirement",
+        "document-paths.md",
+        "operation.context:basic-auth-scheme&operation.security",
+        "one per Operation Object where the document declares an HTTP basic security scheme and the operation writes security",
     ),
 )
 
@@ -5973,7 +6177,25 @@ class Census:
         version = document.get("openapi") if isinstance(document, dict) else None
         self.openapi_30: bool = isinstance(version, str) and version.startswith("3.0")
         self.ref_counts: Counter[str] = reference_counts(document)
+        self.root_security: Any = document.get("security") if isinstance(document, dict) else None
         self.paths: Any = document.get("paths") if isinstance(document, dict) else None
+        self.error_status_schemas: dict[str, list[list[Any]]] = defaultdict(list)
+        for item in self.paths.values() if isinstance(self.paths, dict) else []:
+            if not isinstance(item, dict):
+                continue
+            for method in _HTTP_METHODS:
+                operation = item.get(method)
+                responses = operation.get("responses") if isinstance(operation, dict) else None
+                for code, response in responses.items() if isinstance(responses, dict) else []:
+                    if not str(code).startswith(("4", "5")):
+                        continue
+                    response = self.local_component("responses", response)
+                    content = response.get("content") if isinstance(response, dict) else None
+                    if isinstance(content, dict):
+                        schemas = [media.get("schema") for media in content.values() if isinstance(media, dict)]
+                        if schemas not in self.error_status_schemas[str(code)]:
+                            self.error_status_schemas[str(code)].append(schemas)
+
         # `parameter.schema:subset-header-string-default` leaves out a header an
         # apiKey scheme already writes, which promotion never takes.
         schemes = self.components.get("securitySchemes")
@@ -6326,6 +6548,135 @@ class Census:
             if reading in REQUEST_BODY_MEMBER_PREDICATES and reading not in found:
                 found.append(reading)
         return found
+
+    def operation_context_readings(self, operation: dict[Any, Any]) -> list[str]:
+        """Join document context and response-map readings at one operation.
+
+        Response references use the census's local component resolver; remote
+        documents are never fetched. Media alternatives stay in their response,
+        so two different statuses cannot manufacture a media co-occurrence.
+        """
+        flags: set[str] = set()
+        if self.openapi_version.startswith("3.1"):
+            flags.add("oas-three-one")
+        elif self.openapi_version.startswith("3.0"):
+            flags.add("oas-three-zero")
+        grouped = bool(sdk_group_segments(operation) or _first_tag(operation))
+        flags.add("grouped-client" if grouped else "root-client")
+        root = self.root_security
+        if isinstance(root, list) and root and all(isinstance(r, dict) and r for r in root):
+            flags.add("document-security-required")
+        schemes = self.components.get("securitySchemes")
+        for declared in schemes.values() if isinstance(schemes, dict) else []:
+            scheme = self.local_component("securitySchemes", declared)
+            if isinstance(scheme, dict) and scheme.get("type") == "http" and scheme.get("scheme") == "basic":
+                flags.add("basic-auth-scheme")
+        own = operation.get("security")
+        if isinstance(own, list):
+            flags.add("security-nonempty" if own else "security-empty")
+        effective = own if isinstance(own, list) else root
+        schemes = self.components.get("securitySchemes")
+
+        def oauth_scheme(name: Any) -> bool:
+            declared = schemes.get(name) if isinstance(schemes, dict) else None
+            scheme = self.local_component("securitySchemes", declared)
+            return isinstance(scheme, dict) and scheme.get("type") == "oauth2"
+
+        oauth = isinstance(effective, list) and any(
+            isinstance(requirement, dict) and any(oauth_scheme(name) for name in requirement)
+            for requirement in effective
+        )
+        required = (
+            isinstance(effective, list)
+            and bool(effective)
+            and all(isinstance(requirement, dict) and requirement for requirement in effective)
+        )
+        if oauth:
+            flags.add("effective-oauth2")
+        if required and not oauth:
+            flags.add("effective-non-oauth-required")
+        if not required:
+            flags.add("effective-anonymous")
+        responses = operation.get("responses")
+        entries = {str(code): value for code, value in responses.items()} if isinstance(responses, dict) else {}
+        if "204" in entries:
+            flags.add("response-204")
+        if "2XX" in entries and any(re.fullmatch(r"2[0-9]{2}", code) for code in entries):
+            flags.add("success-range")
+        success_media: list[list[Any]] = []
+        for code, value in entries.items():
+            if not re.fullmatch(r"2[0-9]{2}", code):
+                continue
+            value = self.local_component("responses", value)
+            representations = value.get("content") if isinstance(value, dict) else None
+            names = list(representations) if isinstance(representations, dict) else []
+            if names not in success_media:
+                success_media.append(names)
+        if len(success_media) > 1:
+            flags.add("success-statuses-mixed-media")
+        _, success = self.success_entry(operation)
+        content = success.get("content") if isinstance(success, dict) else None
+        if isinstance(content, dict) and content:
+            flags.add("success-content")
+            if "application/json" in content:
+                flags.add("success-json")
+            bases = [key.split(";", 1)[0].strip().lower() for key in content if isinstance(key, str)]
+            if any(
+                base in ("application/octet-stream", "application/pdf")
+                or base.startswith(("image/", "audio/", "video/"))
+                for base in bases
+            ):
+                flags.add("success-download")
+            if any(base.startswith("text/") and base != "text/event-stream" for base in bases):
+                flags.add("success-text")
+            body = self.local_component("requestBodies", operation.get("requestBody"))
+            body_content = body.get("content") if isinstance(body, dict) else None
+            body_json = body_content.get("application/json") if isinstance(body_content, dict) else None
+            body_schema = body_json.get("schema") if isinstance(body_json, dict) else None
+            body_ref = body_schema.get("$ref") if isinstance(body_schema, dict) else None
+            for media in content.values():
+                written = media.get("schema") if isinstance(media, dict) else None
+                if isinstance(body_ref, str) and isinstance(written, dict) and written.get("$ref") == body_ref:
+                    flags.add("success-ref-matches-body")
+                schema = self.resolved_schema(written)
+                if not isinstance(schema, dict):
+                    continue
+                if primary_type(schema.get("type")) == "string" and schema.get("format") == "binary":
+                    flags.add("success-binary-schema")
+                for keyword in ("oneOf", "anyOf"):
+                    members = schema.get(keyword)
+                    if isinstance(members, list):
+                        flags.add(f"success-{keyword.lower()}")
+                        if any(isinstance(member, dict) and member.get("type") == "null" for member in members):
+                            flags.add("success-nullable")
+                types = schema.get("type")
+                if schema.get("nullable") is True or (isinstance(types, list) and "null" in types):
+                    flags.add("success-nullable")
+        refs: dict[str, set[str]] = defaultdict(set)
+        for code, response in entries.items():
+            if not code.startswith(("4", "5")):
+                continue
+            response = self.local_component("responses", response)
+            media_map = response.get("content") if isinstance(response, dict) else None
+            if not isinstance(media_map, dict):
+                continue
+            if len(media_map) > 1:
+                flags.add("error-multiple-media")
+            for media in media_map.values():
+                written = media.get("schema") if isinstance(media, dict) else None
+                if isinstance(written, dict) and isinstance(written.get("$ref"), str):
+                    refs[written["$ref"]].add(code)
+                schema = self.resolved_schema(written)
+                if isinstance(schema, dict) and isinstance(schema.get("oneOf"), list):
+                    flags.add("error-oneof")
+                if isinstance(written, dict) and "$ref" not in written and isinstance(written.get("properties"), dict):
+                    flags.add("error-object")
+            schemas = [value.get("schema") for value in media_map.values() if isinstance(value, dict)]
+            if any(other != schemas for other in self.error_status_schemas.get(code, [])):
+                flags.add("error-status-different-schemas")
+        if any(len(statuses) > 1 for statuses in refs.values()):
+            flags.add("errors-shared-ref")
+        return [f"operation.context:{flag}" for flag in sorted(flags)]
 
     def media_example_value(self, media: dict[Any, Any]) -> Any:
         """The example a request media type's worked call reads: `example`, else the first named one."""
@@ -6764,6 +7115,7 @@ class Census:
         found += self.position_predicates(node, kind_name)
         if kind_name == "operation":
             found += self.request_body_readings(node)
+            found += self.operation_context_readings(node)
         if kind_name == "schema" and not is_reference_node(node, kind_name):
             found += self.schema_predicates(node)
             example_kind = selected_example_kind(node)

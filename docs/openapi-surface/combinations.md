@@ -27,8 +27,9 @@ A combination is **selected** when one of two kinds of evidence admits it:
   APIs.guru searches pinned, whose 4,138 JSON and YAML entries read as 1,970
   OpenAPI 3 documents.
 
-Every `why` cell gives both counts, so the size of each combination's real
-population is visible beside its branch.
+The original population measurements give both counts. Additional candidates
+admitted by a code branch name that branch directly; their region rows record
+the registered-corpus counts, without claiming an acquired-pool measurement.
 
 A candidate is **rejected** when neither kind of evidence admits it, or when an
 existing census row already separates the documents that take the branch from
@@ -44,7 +45,7 @@ split across proof work by `seam`, never trimmed.
 **How a combination is spelled.** Each is a conjunction of the census's selector
 grammar (`docs/openapi-surface-coverage.md`'s `### The selector grammar`), with
 `&`, `>`, `~>` and `!` meaning exactly what they mean for every other conjunction.
-The selection needed one extension of that grammar: seven **request-body readings
+The first grammar extension adds seven **request-body readings
 of an Operation Object**, member-only exactly as the pointer-walk readings are.
 A request body's media types are the *keys* of its `content` map, which the walk
 reads as names rather than fields, and whether a body property shares its name
@@ -57,6 +58,18 @@ which media types the operation's request body offers, and
 Path Item — has the same `name` as a property of a schema its request body writes.
 None is a selector on its own: each is matchable only as a member beside the
 feature it is combined with, so it adds no single-feature row.
+
+The operation-context extension joins a document's version and security defaults
+with an operation's grouping and overrides, and reads response status-map keys
+and media alternatives at that operation. The member-only
+`operation.context:*` readings are defined individually in the coverage document's
+selector grammar. Success readings use the same selected response as the
+existing census success predicates; media alternatives belong to that response.
+Error readings inspect 4xx and 5xx responses, resolving local component responses
+and schemas. The different-schema reading compares declarations across operations
+at the same written error status; it deliberately measures candidate sites rather
+than claiming that their converted exception types differ. No new standalone
+single-feature selector is introduced.
 
 **What the list holds and what it does not.** `key`, `selector` and `region`
 restate the census's `COMBINATIONS` declaration in
@@ -140,6 +153,35 @@ status: whether a combination is proven is its region row's category.
 | `combo-streaming-method-name` | `operation.x-fern-sdk-method-name&operation.x-fern-streaming` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | A stream-condition operation's two methods are named from the declared method name (`src/ir.rs::stream_condition_method_names`); registered corpus: **5** sites in **3** of the 256 registered sources; APIs.guru `openapi-directory` at `f04b8d0bcd39`: **0** of the 1,970 OpenAPI 3 documents read |
 | `combo-paginated-grouped-operation` | `operation.x-fern-pagination&operation.x-fern-sdk-group-name` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | A paginated method is emitted in the declared group's client, so its pager's imports and the group's module meet at one method; registered corpus: **15** sites in **3** of the 256 registered sources; APIs.guru `openapi-directory` at `f04b8d0bcd39`: **0** of the 1,970 OpenAPI 3 documents read |
 
+| `combo-success-oneof` | `operation.context:success-content&operation.context:success-oneof` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Selecting a success representation and lowering its union meet in the endpoint return type. (`src/ir.rs::build_endpoint`). |
+| `combo-success-anyof` | `operation.context:success-anyof&operation.context:success-content` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | An anyOf success body is lowered after status and media selection. (`src/ir.rs::build_endpoint`). |
+| `combo-success-oneof-nullable` | `operation.context:success-nullable&operation.context:success-oneof` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | A nullable success union changes the return annotation after its members are lowered. (`src/ir.rs::build_endpoint`). |
+| `combo-success-anyof-nullable` | `operation.context:success-anyof&operation.context:success-nullable` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | A nullable success union changes the return annotation after its members are lowered. (`src/ir.rs::build_endpoint`). |
+| `combo-no-content-beside-body-response` | `operation.context:response-204&operation.context:success-content` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | A 204 alternative competes with a response carrying content when choosing the success return type. (`src/ir.rs::success_response_entry`). |
+| `combo-range-beside-concrete-success` | `operation.context:success-content&operation.context:success-range` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | A range status competes with a concrete success response for the endpoint return type. (`src/ir.rs::success_response_entry`). |
+| `combo-root-oas30-download` | `operation.context:oas-three-zero&operation.context:root-client&operation.context:success-download` | `document-paths.md` | `examples` | `prove-schema-combinations` | Root placement and document version decide whether a binary response gets a worked example. (`src/emit.rs::root_binary_download_undocumented`). |
+| `combo-root-oas30-binary-schema` | `operation.context:oas-three-zero&operation.context:root-client&operation.context:success-binary-schema` | `document-paths.md` | `examples` | `prove-schema-combinations` | Root placement and document version decide whether a binary response gets a worked example. (`src/emit.rs::root_binary_download_undocumented`). |
+| `combo-oas31-root-response` | `operation.context:oas-three-one&operation.context:root-client&operation.context:success-content` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | Document version and module placement decide whitespace in the response method docstring. (`src/emit.rs::raw_docstring`). |
+| `combo-oas31-grouped-response` | `operation.context:grouped-client&operation.context:oas-three-one&operation.context:success-content` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | Document version and module placement decide whitespace in the response method docstring. (`src/emit.rs::raw_docstring`). |
+| `combo-success-json-beside-download` | `operation.context:success-download&operation.context:success-json` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Media alternatives and a binary schema compete when deciding whether the endpoint streams bytes. (`src/ir.rs::is_binary_response`). |
+| `combo-success-text-beside-download` | `operation.context:success-download&operation.context:success-text` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Media alternatives and a binary schema compete when deciding whether the endpoint streams bytes. (`src/ir.rs::is_binary_response`). |
+| `combo-success-json-beside-binary-schema` | `operation.context:success-binary-schema&operation.context:success-json` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Media alternatives and a binary schema compete when deciding whether the endpoint streams bytes. (`src/ir.rs::is_binary_response`). |
+| `combo-errors-shared-ref` | `operation.context:errors-shared-ref&operation.responses` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Error bodies and success responses share endpoint lowering; error status, representation and schema shape decide exception types and hoisted models. (`src/ir.rs::hoist_error_body_types`). |
+| `combo-error-multiple-media` | `operation.context:error-multiple-media&operation.responses` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Error bodies and success responses share endpoint lowering; error status, representation and schema shape decide exception types and hoisted models. (`src/ir.rs::error_body_schema`). |
+| `combo-error-oneof` | `operation.context:error-oneof&operation.responses` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Error bodies and success responses share endpoint lowering; error status, representation and schema shape decide exception types and hoisted models. (`src/ir.rs::error_body_type`). |
+| `combo-error-object` | `operation.context:error-object&operation.responses` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Error bodies and success responses share endpoint lowering; error status, representation and schema shape decide exception types and hoisted models. (`src/ir.rs::hoist_error_body_types`). |
+| `combo-error-status-different-schemas` | `operation.context:error-status-different-schemas&operation.responses` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Error bodies and success responses share endpoint lowering; error status, representation and schema shape decide exception types and hoisted models. (`src/ir.rs::unequal_error_statuses`). |
+| `combo-document-security-security-empty` | `operation.context:document-security-required&operation.context:security-empty` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | An operation override changes whether document authentication becomes required client configuration. (`src/ir.rs::auth_model`, `src/ir.rs::all_operations_authenticated`). |
+| `combo-document-security-security-nonempty` | `operation.context:document-security-required&operation.context:security-nonempty` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | An operation override changes whether document authentication becomes required client configuration. (`src/ir.rs::auth_model`, `src/ir.rs::all_operations_authenticated`). |
+| `combo-echo-body-effective-oauth2` | `operation.context:effective-oauth2&operation.context:success-ref-matches-body` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Effective authentication changes whether a request and success response sharing a reference retain one model. (`src/ir.rs::body_response_same_ref`). |
+| `combo-echo-body-effective-non-oauth-required` | `operation.context:effective-non-oauth-required&operation.context:success-ref-matches-body` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Effective authentication changes whether a request and success response sharing a reference retain one model. (`src/ir.rs::body_response_same_ref`). |
+| `combo-echo-body-effective-anonymous` | `operation.context:effective-anonymous&operation.context:success-ref-matches-body` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Effective authentication changes whether a request and success response sharing a reference retain one model. (`src/ir.rs::body_response_same_ref`). |
+
+| `combo-success-statuses-mixed-media` | `operation.context:success-content&operation.context:success-statuses-mixed-media` | `document-paths.md` | `bodies-responses` | `prove-operation-combinations` | Selecting the return schema and deciding whether to stream examine different success entries; different media on two success statuses can make those decisions interact. (`src/ir.rs::is_binary_response`, `src/ir.rs::success_response_entry`). |
+
+| `combo-basic-auth-document-requirement` | `openapi.security&openapi.components>components.securitySchemes>securityScheme.scheme=basic` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | A basic credential wrapper depends on whether a security requirement is declared, even an empty one; the document requirement and scheme are read together. (`src/ir.rs::auth_model`). |
+| `combo-basic-auth-operation-requirement` | `operation.context:basic-auth-scheme&operation.security` | `document-paths.md` | `naming-clients` | `prove-operation-combinations` | An operation declaring security can activate the basic credential wrapper when the document declares no requirement; scheme kind and requirement presence meet at this branch. (`src/ir.rs::auth_model`). |
+
 ## Rejected
 
 Each candidate the research weighed and did not select. Counts are over the same
@@ -191,9 +233,6 @@ OpenAPI 3 documents of the APIs.guru archive at `f04b8d0bcd39`.
 | An idempotent operation beside the document's idempotency headers (`src/ir.rs::build_endpoint`, `src/emit.rs::method_params`, `src/emit.rs::reference_entry`) | An existing row distinguishes it: `operation-idempotent-with-root-headers`. |
 | Operation servers, server names and templated default URLs (`src/ir.rs::environment_field`, `src/ir.rs::operation_server_urls`, `src/ir.rs::environment_model`, `src/ir.rs::resolve_server_url`) | Existing rows distinguish them: `operation-servers-named`, `server-name-several` and `server-default-url-templated`. |
 | An event stream's dispatch, item schema, binary schema and protocol (`src/ir.rs::is_streaming`, `src/ir.rs::stream_protocol`, `src/ir.rs::sse_event_dispatch`, `src/openapi.rs::normalize_event_stream_item_schemas`) | Existing rows distinguish them: `media-type-event-stream-event-dispatch`, `media-type-event-stream-item-schema`, `media-type-event-stream-binary-schema`, `fern-streaming-extension` and `stream-error-status-raises-typed-error`. |
-| A success or error response's own shape: a union, a nullable member, a `204` beside a body, a binary schema in the root module, an error body shared across statuses, and security beside a body and response sharing one `$ref` (`src/ir.rs::build_endpoint`, `src/ir.rs::is_binary_response`, `src/ir.rs::error_body_type`, `src/ir.rs::error_body_schema`, `src/ir.rs::hoist_error_body_types`, `src/ir.rs::unequal_error_statuses`, `src/ir.rs::body_response_same_ref`, `src/emit.rs::root_binary_download_undocumented`, `src/emit.rs::reference_entry`) | Not selected in this pass. A Response Object is reached through a status-code key of the Responses Object, which the walk reads as a name, so no member can yet anchor a combination on one, and the extension it needs is a reading of the Responses Object rather than another member of this pass's. The single features are the existing `response-content`, `response-default`, `range-2XX`, `response-contentless-200-with-created` and `operation-wildcard-binary-response` rows; the combinations wait on that extension. |
-| The document's security requirement beside an operation's own (`src/ir.rs::auth_model`, `src/ir.rs::all_operations_authenticated`) | The two sit on the OpenAPI Object and an Operation Object, joined only through the Paths Object's keys, which no member descends through. The halves are the existing `document-security`, `operation-security` and `operation-security-alternatives` rows, all `golden`. |
-| A docstring's blank-line whitespace by module and OpenAPI version (`src/emit.rs::raw_docstring`) | The version is a document-level field and the module is decided by grouping, two objects no conjunction joins; the version rows of `oas31-extensions.md` and the grouping rows of `document-paths.md` distinguish the halves. |
 | A component registered under a taken name from another document, and a remote document's local pointer (`src/refs.rs::register_component_schemas`, `src/refs.rs::Resolver::resolve_schema`, `src/refs.rs::Resolver::resolve_path_item`) | Existing rows distinguish them: `remote-ref-at-use-site-inlined`, `remote-document-local-pointer-resolved-against-root` and `relative-file-ref`. |
 | A body field or parameter named like crozier's own `json` call argument (`src/emit.rs::append_request_call_args`) | A name, not a feature: the collision is with crozier's call keyword rather than with another feature of the document. |
 | The request call's content-type decision (`src/emit.rs::append_request_call_args`) | Not one combination but the endpoint's whole body state: every condition it reads is a body shape selected here or an existing body row above. |

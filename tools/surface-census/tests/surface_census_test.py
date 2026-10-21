@@ -2909,7 +2909,7 @@ class GrammarContractTests(unittest.TestCase):
         start = "##### The member-only readings"
         self.assertIn(start, text, "the grammar section documents no member-only reading")
         body = text.split(start, 1)[1].split("\nA shape that is a **combination**", 1)[0]
-        documented = set(re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z-]+(?:=[A-Za-z]+)?)`", body, re.M))
+        documented = set(re.findall(r"^- `([A-Za-z][A-Za-z.$]*:[a-z0-9-]+(?:=[A-Za-z]+)?)`", body, re.M))
         self.assertEqual(set(census.MEMBER_ONLY_PREDICATES), documented)
         stated = re.search(r"They are a\s+closed list of (\d+)", body)
         self.assertIsNotNone(stated, "the section no longer states how many there are")
@@ -17698,3 +17698,63 @@ class RequestBodyReadingTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=1, buffer=False, argv=[sys.argv[0], *sys.argv[1:]])
+
+
+class OperationContextCompositionTests(unittest.TestCase):
+    """Drive status, document and media readings through the census CLI."""
+
+    DATA = Path(__file__).resolve().parent / "data" / "operation-context"
+
+    def test_authored_documents_count_only_the_operations_the_composition_names(self) -> None:
+        declarations = {item.key.removeprefix("combo-"): item for item in census.COMBINATIONS}
+        for fixture in sorted(self.DATA.iterdir()):
+            item = declarations[fixture.name]
+            expected = 2 if fixture.name == "error-status-different-schemas" else 1
+            with self.subTest(key=item.key):
+                completed = run(
+                    "--vendored-only",
+                    "--fixtures-root",
+                    str(self.DATA),
+                    "--fixture",
+                    fixture.name,
+                    "--selector",
+                    item.selector,
+                    "--json",
+                )
+                self.assertEqual(0, completed.returncode, completed.stderr)
+                rows = json.loads(completed.stdout)["rows"]
+                self.assertEqual(
+                    [(item.selector, fixture.name, expected)],
+                    [(row["selector"], row["fixture"], row["count"]) for row in rows],
+                )
+                # Removing the declaring operation leaves an adjacent ordinary
+                # response; it must not stand in for the missing combination.
+                document = json.loads((fixture / "openapi.json").read_text(encoding="utf-8"))
+                del document["paths"]["/target"]
+                document["paths"].pop("/peer", None)
+                with tempfile.TemporaryDirectory() as directory:
+                    root = Path(directory)
+                    source = root / fixture.name / "openapi.json"
+                    source.parent.mkdir()
+                    source.write_text(json.dumps(document), encoding="utf-8")
+                    recovery = run(
+                        "--vendored-only",
+                        "--fixtures-root",
+                        str(root),
+                        "--fixture",
+                        fixture.name,
+                        "--selector",
+                        item.selector,
+                        "--json",
+                    )
+                    self.assertEqual(0, recovery.returncode, recovery.stderr)
+                    self.assertEqual([], json.loads(recovery.stdout)["rows"])
+
+    def test_every_context_reading_is_a_member_and_a_misspelling_is_named(self) -> None:
+        self.assertLessEqual(set(census.OPERATION_CONTEXT_MEMBER_PREDICATES), set(census.MEMBER_ONLY_PREDICATES))
+        for reading in census.OPERATION_CONTEXT_MEMBER_PREDICATES:
+            with self.subTest(reading=reading):
+                misspelled = reading + "-misspelled&operation.responses"
+                completed = run("--selector", misspelled)
+                self.assertNotEqual(0, completed.returncode)
+                self.assertIn(misspelled, completed.stderr)
