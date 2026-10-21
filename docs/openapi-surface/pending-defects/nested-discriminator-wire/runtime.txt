@@ -1,0 +1,9 @@
+pydantic 2.14.1
+valid provider payload: {"crust": "shortcrust", "fruit": "pear", "kind": "tart"}
+certified SDK serializes: {"kind": "tart", "value": {"crust": "shortcrust", "fruit": "pear", "kind": "tart"}}
+schema validation of certified SDK output fails: {'value': {'crust': 'shortcrust', 'kind': 'tart', 'fruit': 'pear'}, 'kind': 'tart'} is not valid under any of the given schemas
+certified SDK validation of valid provider payload fails: 1 validation error for tagged-union[Pastry_Tart,Pastry_Croissant]
+tart.value
+  Field required [type=missing, input_value={'kind': 'tart', 'crust':...crust', 'fruit': 'pear'}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.14/v/missing
+certified README fails compilation: expected argument value expression (certified README usage, line 9)

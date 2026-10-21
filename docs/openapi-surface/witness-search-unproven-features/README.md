@@ -143,3 +143,12 @@ and `oneof-string-const-variant`'s
 `src/ir.rs::InlineHoister::hoist_union_variant[if let Some\(values\) = string_enum_values\(variant\) \{]`.
 The first already has registered golden reach; the other three remain in this
 search. This inventory does not count renamed handling sites as lost proof.
+
+## Pending nested-mapping defect
+
+The from-scratch [nested discriminator measurement](../pending-defects/nested-discriminator-wire/README.md)
+executes the certified SDK against its source schema: the SDK emits a nested
+`value` envelope where the schema requires a flat object and rejects a valid
+flat response; its README example also fails compilation. This is a documented
+Fern runtime defect pending a separate crozier repair, not a byte-matched arm
+proof. Neither nested mapping arm leaves the named unproven list on this evidence.
