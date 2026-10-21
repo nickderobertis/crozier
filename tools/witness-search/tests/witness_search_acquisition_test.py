@@ -1430,6 +1430,8 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             "no FIXTURE gap rows": "",
             "has no selector": "| `shape-a` | x | x | `gap` | no selector | x | x | FIXTURE |\n",
             "duplicate gap key": valid + valid,
+            "combination combo-shape has no selector": valid
+            + "| `combo-shape` | x | x | `golden` | declared by two sources | x |  |  |\n",
             "handwritten shape-b has no selector in witness-search-keys.tsv": valid
             + "| `shape-b` | x | x | `handwritten` | handwritten: shape-b-fixture; search: exhausted"
             " ([record](schemas.md#witness-search-exhaustive)) |  |  |  |\n",

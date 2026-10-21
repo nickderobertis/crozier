@@ -45,7 +45,7 @@ from collections.abc import Callable, Iterator
 from dataclasses import dataclass
 from pathlib import Path, PureWindowsPath
 from types import ModuleType
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NamedTuple
 from unittest import mock
 
 # Every child these tests start has its output decoded as UTF-8, so a Python
@@ -826,7 +826,33 @@ COMBINATION_REGIONS = (
 )
 
 
-def combination_list(root: Path) -> tuple[list[dict[str, str]], list[str]]:
+@dataclass(frozen=True)
+class SelectedCombination:
+    """One `## Selected` row of `combinations.md`, its code-spans unwrapped."""
+
+    key: str
+    selector: str
+    region: str
+    seam: str
+    owner: str
+    why: str
+
+
+class CombinationRow(NamedTuple):
+    """A combination's region row: the region file's stem and the row's eight cells."""
+
+    region: str
+    cells: list[str]
+
+
+class NamedCombination(NamedTuple):
+    """A row of the coverage report's `Unproven combinations, named` table."""
+
+    region: str
+    why: str
+
+
+def combination_list(root: Path) -> tuple[list[SelectedCombination], list[str]]:
     """`combinations.md`'s `## Selected` rows as dicts, and what is wrong with its two tables.
 
     The list restates the census's `COMBINATIONS`; this is the one parse of it the
@@ -841,7 +867,7 @@ def combination_list(root: Path) -> tuple[list[dict[str, str]], list[str]]:
             sections[heading] = ""
             continue
         sections[heading] = text.split(f"\n{heading}\n", 1)[1].split("\n## ", 1)[0]
-    selected: list[dict[str, str]] = []
+    selected: list[SelectedCombination] = []
     header = [line for line in sections["## Selected"].splitlines() if line.startswith("| key |")]
     if header and tuple(cell.strip() for cell in header[0].strip().strip("|").split("|")) != COMBINATION_COLUMNS:
         failures.append(f"combinations.md's `## Selected` columns are {header[0]!r}, not {COMBINATION_COLUMNS}")
@@ -849,10 +875,9 @@ def combination_list(root: Path) -> tuple[list[dict[str, str]], list[str]]:
         cells = table_cells(line, len(COMBINATION_COLUMNS))
         if not cells or not re.fullmatch(r"`[^`]+`", cells[0].strip()):
             continue
-        row = dict(zip(COMBINATION_COLUMNS, (cell.strip() for cell in cells), strict=True))
-        for column in ("key", "selector", "region", "seam", "owner"):
-            row[column] = row[column].strip("`")
-        selected.append(row)
+        *spans, why = (cell.strip() for cell in cells)
+        key, selector, region, seam, owner = (span.strip("`") for span in spans)
+        selected.append(SelectedCombination(key, selector, region, seam, owner, why))
     if not selected:
         failures.append("combinations.md's `## Selected` table has no row")
     rejected = [
@@ -868,14 +893,14 @@ def combination_list(root: Path) -> tuple[list[dict[str, str]], list[str]]:
     return selected, failures
 
 
-def combination_failures(root: Path, declared: tuple[Any, ...]) -> list[str]:
+def combination_failures(root: Path, declared: tuple[census.Combination, ...]) -> list[str]:
     """Where `combinations.md` parts from the census, the region rows or `witness-search-keys.tsv`."""
     selected, failures = combination_list(root)
     surface = root / "docs" / "openapi-surface"
-    keys = [row["key"] for row in selected]
+    keys = [row.key for row in selected]
     for key in sorted({key for key in keys if keys.count(key) > 1}):
         failures.append(f"{key}: combinations.md lists it twice")
-    listed = {row["key"]: (row["selector"], row["region"]) for row in selected}
+    listed = {row.key: (row.selector, row.region) for row in selected}
     census_side = {combination.key: (combination.selector, combination.region) for combination in declared}
     for key in sorted(set(listed) | set(census_side)):
         if key not in census_side:
@@ -887,17 +912,17 @@ def combination_failures(root: Path, declared: tuple[Any, ...]) -> list[str]:
                 f"{key}: combinations.md has selector and region {listed[key]}, the census {census_side[key]}"
             )
     for row in selected:
-        key, seam, owner = row["key"], row["seam"], row["owner"]
+        key, seam, owner = row.key, row.seam, row.owner
         if not key.startswith(COMBINATION_PREFIX) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", key):
             failures.append(f"{key}: a combination key is lower-kebab and begins {COMBINATION_PREFIX!r}")
-        if row["region"] not in COMBINATION_REGIONS:
-            failures.append(f"{key}: region {row['region']!r} is not one of {COMBINATION_REGIONS}")
+        if row.region not in COMBINATION_REGIONS:
+            failures.append(f"{key}: region {row.region!r} is not one of {COMBINATION_REGIONS}")
         if seam not in COMBINATION_OWNERS:
             failures.append(f"{key}: seam {seam!r} is not one of {sorted(COMBINATION_OWNERS)}")
         elif owner != COMBINATION_OWNERS[seam]:
             failures.append(f"{key}: owner {owner!r} does not follow from seam {seam!r} ({COMBINATION_OWNERS[seam]})")
-        if not re.search(r"`src/[a-z_/]+\.rs::[A-Za-z_:]+`", row["why"]) and not re.search(
-            r"\*\*\d+\*\* sites in \*\*\d+\*\*", row["why"]
+        if not re.search(r"`src/[a-z_/]+\.rs::[A-Za-z_:]+`", row.why) and not re.search(
+            r"\*\*\d+\*\* sites in \*\*\d+\*\*", row.why
         ):
             failures.append(f"{key}: its `why` names neither a crozier function nor co-occurrence counts")
     region_keys: dict[str, tuple[str, list[str]]] = {}
@@ -930,25 +955,25 @@ def combination_failures(root: Path, declared: tuple[Any, ...]) -> list[str]:
     return failures
 
 
-def combination_rows(root: Path) -> dict[str, tuple[str, list[str]]]:
-    """`key` -> (region stem, cells) of every combination row of `root`'s region files."""
+def combination_rows(root: Path) -> dict[str, CombinationRow]:
+    """`key` -> the region row of every combination in `root`'s region files."""
     region_rows_of = load_script("tools/surface-census/witness-search-region-keys.py").region_rows
     return {
-        cells[0].strip("`"): (path.stem, cells)
+        cells[0].strip("`"): CombinationRow(path.stem, cells)
         for path in sorted((root / "docs" / "openapi-surface").glob("*.md"))
         for cells in region_rows_of(path.read_text(encoding="utf-8"))
         if cells[0].strip("`").startswith(COMBINATION_PREFIX)
     }
 
 
-def named_gap_combinations(root: Path) -> dict[str, tuple[str, str]]:
-    """`key` -> (region, why) of the coverage report's `Unproven combinations, named` table."""
+def named_gap_combinations(root: Path) -> dict[str, NamedCombination]:
+    """`key` -> its row of the coverage report's `Unproven combinations, named` table."""
     doc = (root / "docs" / "openapi-surface-coverage.md").read_text(encoding="utf-8")
     if NAMED_COMBINATIONS_HEADING not in doc:
         return {}
     body = doc.split(NAMED_COMBINATIONS_HEADING, 1)[1].split("\n#", 1)[0]
     return {
-        cells[0].strip("` "): (cells[1].strip("` "), cells[2].strip())
+        cells[0].strip("` "): NamedCombination(cells[1].strip("` "), cells[2].strip())
         for line in body.splitlines()
         if (cells := table_cells(line, 3)) and re.fullmatch(r"`[^`]+`", cells[0].strip())
     }
@@ -1067,12 +1092,12 @@ def finished_state_failures(root: Path) -> list[str]:
                 f"{key}: a `gap` combination row ({region}.md) missing from "
                 f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md"
             )
-        elif named_combinations[key][0] != region:
+        elif named_combinations[key].region != region:
             failures.append(
                 f"{key}: docs/openapi-surface-coverage.md names it in region "
-                f"{named_combinations[key][0]!r}, but its row is in {region!r}"
+                f"{named_combinations[key].region!r}, but its row is in {region!r}"
             )
-        elif not named_combinations[key][1].startswith(NOT_SEARCHED):
+        elif not named_combinations[key].why.startswith(NOT_SEARCHED):
             failures.append(
                 f"{key}: docs/openapi-surface-coverage.md names it an unproven combination "
                 f"without {NOT_SEARCHED} as its reason"
@@ -3161,7 +3186,7 @@ class GrammarContractTests(unittest.TestCase):
         }
         selected_rows, failures = combination_list(REPO)
         self.assertEqual([], failures)
-        selected = {row["selector"] for row in selected_rows}
+        selected = {row.selector for row in selected_rows}
         retired = set(census.RETIRED_CASE_CONJUNCTIONS)
         self.assertLessEqual(retired, set(census.CONJUNCTIONS), "a retired spelling is still declared")
         self.assertEqual(set(), retired & derived, "a retired conjunction is read off a live case")
@@ -11755,7 +11780,7 @@ class FinishedStateGateTests(unittest.TestCase):
         )
         self.edit(doc, line + "\n", "")
         self.assertIn(
-            f"{key}: a `gap` combination row ({combination_rows(self.root)[key][0]}.md) missing from "
+            f"{key}: a `gap` combination row ({combination_rows(self.root)[key].region}.md) missing from "
             f"{NAMED_COMBINATIONS_HEADING!r} in docs/openapi-surface-coverage.md",
             finished_state_failures(self.root),
         )

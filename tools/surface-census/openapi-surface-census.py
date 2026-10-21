@@ -2638,24 +2638,12 @@ MEMBER_ONLY_PREDICATES = {
 
 
 # The request-body family: an Operation Object's readings of its own request body,
-# member-only for the reason the pointer-walk family above is, and added for the
-# feature combinations `docs/openapi-surface/combinations.md` selects.
-#
-# What a request body's media types are is written as the *keys* of its `content`
-# map, and a key is a name the walk never reads as a field; and whether a body
-# property shares its name with a parameter is a comparison between two subtrees of
-# one operation, which no member at either end can say. Both are decided here, at
-# the Operation Object, from the operation alone: its `requestBody` (one
-# `#/components/requestBodies/` reference followed), the schemas its media types
-# write (local `#/components/schemas/` references followed, `allOf` members'
-# properties merged in, as `Census.object_members` reads them) and its parameters
-# together with its Path Item's (one `#/components/parameters/` reference
-# followed). Standing alone, a reading would say only half of what a combination
-# row is about — that a body is multipart says nothing about what it is combined
-# with — and a row of its own would be a single feature the region files already
-# enumerate (`media-type-multipart`, `media-type-form-urlencoded`,
-# `media-type-octet-stream`), so each is matchable only as a conjunction member
-# beside the feature it is combined with.
+# member-only for the reason the pointer-walk family above is. A media type is a
+# *key* of `content`, which the walk reads as a name, and a body property sharing a
+# parameter's name is a comparison across one operation's subtrees, so neither is a
+# member any other node can say; and alone each would be a single feature the
+# region files already enumerate. Why the selected combinations need them is
+# `docs/openapi-surface-coverage.md`'s member-only section.
 REQUEST_BODY_MEMBER_PREDICATES = {
     "operation.requestBody:json-media": (
         "one per Operation Object whose request body offers a JSON media type — "
@@ -2930,16 +2918,10 @@ class Combination:
     counts: str
 
 
-# The feature combinations crozier proves, declared here and nowhere else. A
-# combination is admitted to the closed list beside a case of the six blind
-# functions when it is a `## Selected` row of `docs/openapi-surface/combinations.md`:
-# a pair of features some crozier branch reads together, or that real
-# specifications combine where the two features' handling can interact. That file
-# restates each entry's key, conjunction and region with the evidence for it, and
-# `tools/surface-census/tests/surface_census_test.py` fails when the two part. A
-# combination is counted by the same composition rules as every other entry; its
-# row is the last of its region file's table, counted apart from the single
-# features.
+# The feature combinations, declared here and nowhere else: the one source of each
+# selected key, region and conjunction. `docs/openapi-surface/combinations.md`
+# restates them with the evidence that selected them, and
+# `tools/surface-census/tests/surface_census_test.py` fails when the two part.
 COMBINATIONS: tuple[Combination, ...] = (
     Combination(
         "combo-query-param-oneof",
@@ -6337,7 +6319,8 @@ class Census:
         shared = item.get("parameters") if isinstance(item, dict) else None
         for parameter in [*parameters, *(shared if isinstance(shared, list) else [])]:
             parameter = self.local_component("parameters", parameter)
-            if not isinstance(parameter, dict) or parameter.get("name") not in properties:
+            name = parameter.get("name") if isinstance(parameter, dict) else None
+            if not isinstance(name, str) or name not in properties:
                 continue
             reading = f"operation.requestBody:property-named-as-{parameter.get('in')}-parameter"
             if reading in REQUEST_BODY_MEMBER_PREDICATES and reading not in found:
