@@ -65,7 +65,7 @@ from collections.abc import Iterable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from types import ModuleType
-from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard
+from typing import Any, Literal, NamedTuple, NoReturn, TypeAlias, TypedDict, TypeGuard, get_args
 
 REPO = Path(__file__).resolve().parents[2]
 # A `classes.tsv` class id or a `findings.tsv` finding name, as Fern's logs are classified into them.
@@ -145,7 +145,7 @@ DISPOSITIONS_HEADER = (
 )
 # What a reduction's Fern run shows about crozier's class, and what needs none.
 Disposition = Literal["generate-stage", "masked", "over-broad", "reported-other", "unmeasured"]
-DISPOSITIONS: tuple[Disposition, ...] = ("generate-stage", "masked", "over-broad", "reported-other", "unmeasured")
+DISPOSITIONS: tuple[Disposition, ...] = get_args(Disposition)
 # The recorded dispositions that hold a refusal by crozier's class: not
 # `over-broad`, which crozier is narrowed to match, nor `unmeasured`, a
 # reduction Fern did not finish within `reduce`'s bound.
@@ -1281,7 +1281,12 @@ def tables() -> tuple[dict[str, str], list[str]]:
             # A document Fern generates from is one crozier's strict run generates.
             if not result["crozier_strict_exit"] or not result["crozier_strict_log"]:
                 problems.append(f"{entry['key']}: not measured (crozier-strict); run `just fern-refusals-measure`")
-            elif (REPO / result["crozier_strict_log"]).is_file() and result["crozier_strict_exit"] != "0":
+            elif not (REPO / result["crozier_strict_log"]).is_file():
+                problems.append(
+                    f"{digest}: its crozier log {result['crozier_strict_log']} is missing; "
+                    "retake it with `measure --crozier-again`"
+                )
+            elif result["crozier_strict_exit"] != "0":
                 error = strict_refusal(read_log(result["crozier_strict_log"])).error
                 problems.append(
                     f"{digest}: Fern generates it, but crozier --fern-strict stops at `{error}` "

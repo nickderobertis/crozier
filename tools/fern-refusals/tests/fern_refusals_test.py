@@ -1837,6 +1837,14 @@ class MeasuredAtThePair(unittest.TestCase):
         built = self.script("build")
         self.assertEqual(built.returncode, 0, built.stderr)
         self.assertEqual(built.stdout, "fern-refusals: 0 refused, 4 generated, 0 unretrievable\n")
+        # A generated document's strict log gone is no measurement to hold it to.
+        log = self.root / "docs" / "openapi-surface" / "fern-refusals" / "crozier-logs"
+        gone = log / f"{self.documents['measured-old']}.strict.log"
+        gone.unlink()
+        built = self.script("build")
+        self.assertNotEqual(built.returncode, 0)
+        self.assertIn(f"{self.documents['measured-old']}: its crozier log", built.stderr)
+        self.assertIn("is missing", built.stderr)
 
     def test_a_screen_naming_another_generator_is_not_reused(self) -> None:
         screens = self.root / "docs" / "openapi-surface" / "scratch" / "screens.jsonl"
