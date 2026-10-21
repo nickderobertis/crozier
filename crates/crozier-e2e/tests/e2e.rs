@@ -4310,7 +4310,7 @@ fn inline_request_read_only_parent_overlap_refuses_and_disjoint_fields_recover_t
     // classifies the same overlap rather than leaving only the parser's diagnostic.
     let mut malformed = overlap.clone();
     malformed["components"]["schemas"]["Malformed"] =
-        serde_json::json!({"type": "string", "nullable": 1});
+        serde_json::json!({"type": "string", "nullable": "sometimes"});
     std::fs::write(&spec, serde_json::to_vec_pretty(&malformed).unwrap()).unwrap();
     let out = input.path().join("sdk-malformed");
     crozier_clean_env()
@@ -25793,7 +25793,7 @@ fn read_only_body_properties_and_oversized_json_integers_do_not_change_name_refu
         serde_json::json!({"type": "string", "readOnly": true}),
     );
     document["components"]["schemas"]["Malformed"] =
-        serde_json::json!({"type": "string", "nullable": 1});
+        serde_json::json!({"type": "string", "nullable": "sometimes"});
     let (code, stderr) = generate_strict_with_big_integers(dir.path(), &document);
     assert_eq!(code, Some(1), "{stderr}");
     assert!(stderr.contains("expected a boolean"), "{stderr}");

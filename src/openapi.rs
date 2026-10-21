@@ -2429,7 +2429,7 @@ where
         serde_json::Value::Number(number) => Ok(Some(number.as_f64() != Some(0.0))),
         serde_json::Value::Null => Ok(None),
         other => Err(serde::de::Error::custom(format!(
-            "nullable must be a boolean, not {other}"
+            "invalid nullable {other}: expected a boolean"
         ))),
     }
 }
@@ -4861,7 +4861,7 @@ mod tests {
         assert_eq!(nullable("true"), Ok(Some(true)));
         assert_eq!(nullable("~"), Ok(None));
         let error = nullable("'yes'").unwrap_err();
-        assert!(error.contains("nullable must be a boolean"), "{error}");
+        assert!(error.contains("expected a boolean"), "{error}");
     }
 
     /// `FERN_ERROR_NAMES` is the importer's spelling of the error names, kept
