@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: type-name-not-letter-led: #/components/schemas/Gestor reference "#/definitions/Contacto" forms an empty object type name; use a component schema reference (fern-strict: Fern refuses this document)

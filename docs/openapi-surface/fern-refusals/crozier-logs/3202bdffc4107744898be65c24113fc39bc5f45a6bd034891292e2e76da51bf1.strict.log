@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-schema-reference: paths//v1/infer/post/responses/200/content/application/json/schema/properties/usage reference #/components/schemas/PageElementsResponse/$defs/UsageInfo (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/enterprise-ruleset-conditions/oneOf/0/allOf extends #/components/schemas/repository-ruleset-conditions (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/Operation/oneOf/0/allOf extends #/components/schemas/InfraObject (fern-strict refusal)

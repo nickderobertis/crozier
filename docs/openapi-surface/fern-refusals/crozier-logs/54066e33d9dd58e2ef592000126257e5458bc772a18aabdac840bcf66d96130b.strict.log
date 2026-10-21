@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-schema-reference: paths//meta/companies/get/responses/200/content/application/json/schema/allOf/0/properties/results/items/allOf/1/properties/dataConnections/items/properties/sourceType reference #/components/schemas/Integration/definitions/sourceType (fern-strict refusal)

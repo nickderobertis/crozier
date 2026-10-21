@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: POST /budget response 400 example {"a":{"summary":"invalid user","value":"invalid user id"},"b":{"summary":"invalid profile","value":"invalid profile name"}} (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: GET /download/videos/generate/:videoId parameter videoId (fern-strict refusal)

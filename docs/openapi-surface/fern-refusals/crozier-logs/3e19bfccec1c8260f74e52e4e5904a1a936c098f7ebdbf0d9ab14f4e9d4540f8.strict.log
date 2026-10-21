@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-value-unnameable: #/components/schemas/buttonResponse/properties/button enum value "⬅\u{fe0f}"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

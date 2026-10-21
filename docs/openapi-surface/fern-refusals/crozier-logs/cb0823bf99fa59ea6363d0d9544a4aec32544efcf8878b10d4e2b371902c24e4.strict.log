@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: duplicate-example-name: POST /repos/{owner}/{repo}/code-scanning/codeql/variant-analyses response example name Response for a successful variant analysis submission (fern-strict refusal)

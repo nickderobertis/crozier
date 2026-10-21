@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/aaa_audit-logs-v2-org-response-collection/allOf extends #/components/schemas/aaa_audit-logs-response-collection (fern-strict refusal)

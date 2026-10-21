@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: endpoint-auth-undefined: POST /v1/bundle security/mutualTLS (fern-strict refusal)

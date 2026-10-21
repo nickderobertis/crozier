@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-name-unsuitable: GET /characters/{character_id}/mail/labels/ response 200/properties/labels/items/properties/color enum value "#0000fe"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

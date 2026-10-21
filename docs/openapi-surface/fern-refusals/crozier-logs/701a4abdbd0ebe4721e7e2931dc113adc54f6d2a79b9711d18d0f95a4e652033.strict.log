@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-value-unnameable: #/components/schemas/ProcessTransactionRequest/properties/processing_code enum value "404000"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

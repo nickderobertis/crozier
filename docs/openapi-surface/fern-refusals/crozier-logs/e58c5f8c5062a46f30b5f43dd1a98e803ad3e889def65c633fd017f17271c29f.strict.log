@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: DELETE /v1/lab/mutation/no-content parameter item_id (fern-strict refusal)

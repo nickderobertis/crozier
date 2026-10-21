@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: #/components/responses/AuthKeyResponse/content/application/json/schema/properties/User/properties/org_id/allOf extends #/components/schemas/OrganisationId (fern-strict refusal)

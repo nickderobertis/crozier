@@ -1,0 +1,10 @@
+crozier: could not parse OpenAPI document <document>: error: line 8408 column 21: invalid boolean (strict mode expects true/false)
+    --> <input>:8408:21
+     |
+8406 |       properties:
+8407 |         code:
+8408 |           nullable: 1
+     |                     ^ invalid boolean (strict mode expects true/false)
+8409 |           title: Code
+8410 |           type: string
+     |

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: components/securitySchemes/BasicAuth: ../openapi.yaml#/components/securitySchemes/BasicAuth (fern-strict refusal)

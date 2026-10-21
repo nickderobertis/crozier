@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-missing-required-property: POST /app-manifests/{code}/conversions response extends nullable #/components/schemas/integration (fern-strict refusal)

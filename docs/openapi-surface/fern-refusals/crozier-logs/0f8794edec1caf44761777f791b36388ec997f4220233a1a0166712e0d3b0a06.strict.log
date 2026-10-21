@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-missing-required-property: POST /oauth2/token response extends nullable #/components/schemas/File--Base (fern-strict refusal)

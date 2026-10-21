@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: undefined-component-reference: paths//companies/get/responses/200/content/application/json/examples/defaultResponse: #/components/examples/JSONEXAMPLES/value/COMPANIES_GET (fern-strict refusal)

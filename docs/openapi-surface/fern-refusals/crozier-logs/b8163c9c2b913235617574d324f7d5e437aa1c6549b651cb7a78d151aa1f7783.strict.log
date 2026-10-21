@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//users/login/post/responses/400: #/paths/~1adverts/get/responses/400 (fern-strict refusal)

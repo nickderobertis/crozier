@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//api/ids/get/responses/400: #/$defs/400 (fern-strict refusal)

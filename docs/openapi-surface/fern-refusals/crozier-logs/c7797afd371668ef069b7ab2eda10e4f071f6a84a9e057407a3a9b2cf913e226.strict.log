@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-missing-required-property: GET /seb-api/v1/applications response member #/components/schemas/CustomApplication discriminant type (fern-strict refusal)

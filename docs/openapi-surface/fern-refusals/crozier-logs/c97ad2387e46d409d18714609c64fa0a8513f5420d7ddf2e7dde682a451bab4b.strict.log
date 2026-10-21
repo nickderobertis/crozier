@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: POST /v1/platform/alerts/{session_id}/test parameter alert_rule_id (fern-strict refusal)

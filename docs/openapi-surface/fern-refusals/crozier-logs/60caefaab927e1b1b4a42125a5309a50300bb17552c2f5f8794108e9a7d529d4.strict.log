@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: extension-reference-cycle: paths//v2/core/account_links/post/requestBody/content/application/json/schema/properties/account/x-stripeProperty (fern-strict refusal)

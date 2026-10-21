@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: enum-name-unsuitable: PUT /templates/{template_id}/add_fields request body/properties/fields/items/properties/checkCharacter enum value "&#10003;"; declare a usable name with x-crozier-enum (fern-strict: Fern refuses this document)

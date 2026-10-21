@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: components/securitySchemes/OAuth2ClientCredentials: ./components.yaml#/components/securitySchemes/OAuth2ClientCredentials (fern-strict refusal)

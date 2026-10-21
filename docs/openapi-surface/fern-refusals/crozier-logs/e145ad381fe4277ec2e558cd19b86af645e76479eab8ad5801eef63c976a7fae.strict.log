@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/cwl-CWLTypeRecordFieldDef/allOf extends #/components/schemas/cwl-CWLFileOnlyParametersConditional (fern-strict refusal)

@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: example-type-mismatch: POST /video/assets response 400 examples/Result "{\n  \"error\": {\n    \"code\": \"source_not_found\",\n    \"message\": \"Could not find any video source with specified source ID.\"\n  }\n}" (fern-strict refusal)

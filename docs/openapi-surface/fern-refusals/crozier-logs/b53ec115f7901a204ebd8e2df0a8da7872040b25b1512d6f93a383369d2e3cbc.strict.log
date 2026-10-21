@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/capture_request/allOf extends #/components/schemas/2 (fern-strict refusal)

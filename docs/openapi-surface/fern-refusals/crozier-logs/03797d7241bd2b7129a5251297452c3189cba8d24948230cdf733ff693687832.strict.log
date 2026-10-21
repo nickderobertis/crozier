@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: object-extends-non-object: components/schemas/AnchorId/oneOf/0/allOf extends #/components/schemas/PdfAnchorId (fern-strict refusal)

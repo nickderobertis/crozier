@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-schema-reference: paths//grok/v1/responses/post/requestBody/content/application/json/schema/properties/test reference #/components/schemas/Structured%20outputs (fern-strict refusal)

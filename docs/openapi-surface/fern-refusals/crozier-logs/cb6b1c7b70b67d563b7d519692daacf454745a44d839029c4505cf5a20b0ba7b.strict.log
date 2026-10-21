@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: path-parameter-unreferenced: POST /api/database/{id}/permission/workspace/check parameter cached (fern-strict refusal)

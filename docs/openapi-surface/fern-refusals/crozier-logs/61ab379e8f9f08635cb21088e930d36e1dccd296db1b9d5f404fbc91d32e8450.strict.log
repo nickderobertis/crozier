@@ -1,0 +1,1 @@
+crozier: invalid OpenAPI document <document>: unresolved-reference: paths//subscriptions/post/responses/400: TS29571_CommonData.yaml#/components/responses/400 (fern-strict refusal)
