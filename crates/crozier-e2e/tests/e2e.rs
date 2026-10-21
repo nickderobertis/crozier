@@ -23462,6 +23462,28 @@ fn named_default_refusal_preserves_declared_aliases_and_recovers_without_a_defau
 }
 
 #[test]
+fn digit_led_sub_client_refusal_preserves_a_tag_led_by_a_letter() {
+    // A tag led by a digit names a sub-client class that is no identifier,
+    // which Fern CLI 5.163.1's own `ruff check` fails; the same tag with the
+    // digits last generates in both modes.
+    let class = repo_root()
+        .join(FERN_REFUSALS_DIR)
+        .join("generator-lint-failure");
+    for strict in [false, true] {
+        let run = refusal_run(&crozier, &class.join("digit-led-tag-probe.yml"), strict).unwrap();
+        let failures = refused_failures(
+            "generator-lint-failure",
+            &run,
+            "sub-client _3ds_decision_rule class 3DsDecisionRuleClient",
+            strict,
+        );
+        assert!(failures.is_empty(), "{}", failures.join("\n"));
+        assert_eq!(run.stderr.lines().count(), 1);
+    }
+    generates_identically_in_both_modes(&class.join("digit-trailing-tag-control.yml"));
+}
+
+#[test]
 fn extension_cycle_refusal_preserves_ordinary_recursive_schemas() {
     let class = repo_root()
         .join(FERN_REFUSALS_DIR)
