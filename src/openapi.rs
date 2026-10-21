@@ -5009,11 +5009,11 @@ mod tests {
         assert!(error.contains("expected a boolean"), "{error}");
     }
 
-    /// One rule reads every boolean the document model holds: `1`/`0` stand for
-    /// `true`/`false`, in YAML and JSON alike, and any other non-boolean is
-    /// refused in the reader's own words for a plain boolean.
+    /// `1`/`0` stand for `true`/`false` in a boolean field, in YAML and JSON
+    /// alike, and a field read as `Option<bool>` refuses any other non-boolean
+    /// in the reader's own words for a plain boolean.
     #[test]
-    fn every_document_boolean_reads_one_and_zero_and_refuses_other_values() {
+    fn boolean_fields_read_one_and_zero_and_refuse_other_values() {
         let yaml = |text: &str| crate::yaml::from_str::<Schema>(text);
         let json = |text: &str| serde_json::from_str::<Schema>(text).map_err(|e| e.to_string());
         for (one, zero) in [("1", "0"), ("true", "false")] {
@@ -5042,7 +5042,6 @@ mod tests {
         }
         assert_eq!(yaml("nullable: ~\n").unwrap().nullable, None);
         assert_eq!(json(r#"{"readOnly": null}"#).unwrap().read_only, None);
-        assert!(!yaml("deprecated: 2\n").unwrap().deprecated);
         for value in ["2", "-1", "1.0", "'1'", "yes"] {
             let error = yaml(&format!("readOnly: {value}\n")).unwrap_err();
             assert!(
@@ -5066,6 +5065,20 @@ mod tests {
         }
         let error = yaml("additionalProperties: 2\n").unwrap_err();
         assert!(error.contains("did not match any variant"), "{error}");
+    }
+
+    #[test]
+    fn a_deprecated_mark_reads_one_and_takes_any_other_value_as_no_mark() {
+        let deprecated = |value: &str| {
+            crate::yaml::from_str::<Schema>(&format!("deprecated: {value}\n"))
+                .unwrap()
+                .deprecated
+        };
+        assert!(deprecated("1"));
+        assert!(deprecated("true"));
+        for other in ["0", "2", "'yes'", "[1]"] {
+            assert!(!deprecated(other), "{other}");
+        }
     }
 
     #[test]

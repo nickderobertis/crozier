@@ -1130,8 +1130,9 @@ Wherever the document model reads a boolean, crozier now reads the integer `1`
 as `true` and `0` as `false` through one rule ([`openapi`]'s
 `document_boolean`). That covers `nullable`, `required` on a parameter or
 request body, a schema's `deprecated`, `readOnly`, `uniqueItems`, `explode`,
-the boolean `additionalProperties`, the `x-*-ignore` and `x-*-discriminated`
-flags, and the refusal checks that read the source tree before the typed parse.
+the boolean `additionalProperties`, the `x-*-ignore`, `x-*-discriminated` and
+`x-is-beta` flags, an XML Object's `attribute` / `wrapped`, and the refusal
+checks that read the source tree before the typed parse.
 It holds in YAML and JSON, with or without `--fern-strict`, and the SDK is
 byte-identical to the one the same document with `true` / `false` generates.
 Any other non-boolean there (`2`, `-1`, `1.0`, `"yes"`) is still refused, in
@@ -1142,7 +1143,9 @@ reads any other value as no mark. Keywords the model does not read
 (`writeOnly`, the 3.0 boolean `exclusiveMinimum` / `exclusiveMaximum`,
 `allowEmptyValue`, `allowReserved`, an operation's `deprecated`) are ignored
 whatever they hold. The journeys are in
-`crates/crozier-e2e/tests/e2e/document_booleans.rs`.
+`crates/crozier-e2e/tests/e2e/document_booleans.rs`. One of them rewrites every
+committed Fern-refusal probe and control's booleans to `1` / `0` and holds
+each one to its `--fern-strict` verdict.
 
 ### Tag-based client grouping
 
