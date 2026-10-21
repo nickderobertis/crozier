@@ -105,7 +105,7 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 | `schema-example-array-null-element` | `search-incomplete` | 41 | outstanding: screen and parity/reach review not complete |
 | `schema-example-empty-object` | `search-incomplete` | 171 | outstanding: screen and parity/reach review not complete |
 | `schema-example-fractional-on-integer` | `search-incomplete` | 20 | outstanding: screen and parity/reach review not complete |
-| `schema-example-null` | `search-incomplete` | 28 | outstanding: screen and parity/reach review not complete |
+| `schema-example-null` | `search-incomplete` | 28 | cached attribution preflight complete: no qualifying byte-moving witness; lower-proof fixture required |
 | `schema-example-object-on-map` | `search-incomplete` | 636 | outstanding: screen and parity/reach review not complete |
 | `schema-example-on-ref-to-enum` | `search-incomplete` | 100 | outstanding: screen and parity/reach review not complete |
 | `schema-example-on-ref-to-object` | `search-incomplete` | 93 | outstanding: screen and parity/reach review not complete |
@@ -116,7 +116,9 @@ is document/key rows, not a count of distinct APIs or successful witnesses.
 | `schema-example-union-ref-sentinel` | `search-incomplete` | 0 | no declarer in the bounded populations |
 
 The two zero-declarer keys have `none-registrable` outcomes within these
-bounded populations. The other keys have no such conclusion yet. In
+bounded populations. The null-example key also has that outcome after the
+bounded attribution preflight below. The other unresolved keys have no such
+conclusion yet. In
 particular, the ledger contains successful Fern and licence screens for the
 digit-leading method, array-null element, examples beside object/enum/union
 references, null example, empty-object arm, object-on-map arm and string-const
@@ -130,6 +132,42 @@ fallback only if no real witness can be registered.
 |---|---|---|
 | `schema-example-temporal-duplicate-element` | `search-incomplete` | none-registrable |
 | `schema-example-union-ref-sentinel` | `search-incomplete` | none-registrable |
+| `schema-example-null` | `search-incomplete` | none-registrable |
+
+## Null-example attribution preflight
+
+The renewed null search is bounded to all 28 declarers already acquired above;
+it makes no new document fetch and no Fern run. [`null-preflight.tsv`](null-preflight.tsv)
+records every identity and source digest, including Webflow and SandboxFusion.
+Byte-identical acquisitions reuse their measurement and retain every declaring
+identity in the table.
+
+For each cached document, load its object model with the census's own reader,
+clone it, and apply `residual-attribution.py::_stringify_null_examples`. Generate
+both JSON object models with the compiled crozier, `--no-config`, package `fern`
+and project `default_package_name`, under the existing corpus offline harness's
+inherited socket-denial filter. Compare every generated file byte for byte.
+This is the attribution tool's JSON-model protocol. The perturbation count is
+not a new schema census: the transform also visits nested example content;
+`census.tsv` retains the object-model detector's declaring-site counts.
+
+No successful model pair moves a file. Other rows explicitly record refusal of
+the unperturbed or perturbed model, not a claim that a refused run generated an
+unchanged SDK. None therefore supplies the byte-moving, byte-matched-file proof
+this residual-only key requires. A generating declarer without such motion is
+not a qualifying real witness, even with an admissible grant and publisher.
+
+That eligibility check precedes renewed licence and publisher review. The table
+retains prior grant screens where available, identifies registered provenance
+and obvious third-party copies, and explicitly marks reviews not renewed after
+the preflight disqualified the document. No qualifying witness was discarded
+on an unverified licensing or publisher assumption.
+
+An earlier exploratory comparison serialized only the perturbed side as YAML.
+That changed unrelated timestamp examples in Vercel and Runpod and was discarded;
+those apparent file movements are not evidence. The accepted table comes only
+from the two-sided JSON-model run. An audit of all 28 cached sources found no
+absolute remote references; the accepted run additionally denied sockets.
 
 ## Retargeted arm inventory
 
