@@ -4,14 +4,12 @@ Classified entries for the `document-paths` region, against the boundary in
 `## Scope` and the walk in `## How this region's feature list was enumerated`
 below.
 
-Nothing here is dated by a measurement it did not come from: every evidence cell
-names the date of each state it rests on. The census half — every fixture count
-below — is the result of the **2026-10-08** walk of the registered golden sources
-that `### Snapshot reconciliation` pins by digest, re-transcribed whole from that
-one walk. The ledger half is unchanged, and each citation still carries the date
-its own verdict was taken on. Refreshing the surface again is an explicit new
-measurement that updates the affected rows, their dates and the digest together,
-and `just check` fails until it does.
+The original single-feature cells retain their stated measurement dates. The
+extended snapshot below also includes the selected combination declarations
+measured on **2026-10-21**. Existing ledger citations retain the dates of their
+verdicts. Refreshing the surface is an explicit new measurement: update the
+affected census cells and the canonical-JSON digest together; `just check`
+fails when they drift.
 
 ## Scope
 
@@ -268,7 +266,7 @@ re-deriving which keys that ledger owns — holds each `golden` row to a reach c
 and each `gap` row to a site count, and fails if one spec location is classified
 in two region files.
 
-**Snapshot digest:** `a9aefac82c7b416b0cf145247eab38c50cb0bf0ba47a7f38ff1afea610fc5f40`, over **256** registered golden sources (31 original fixtures, 225 corpus sources), taken on **2026-10-21**. The check reconciles
+**Snapshot digest:** `cf9fcb8b9504e07ae987d08dbab1f9fdb2f0ce1bf0671034450c46450348100e`, over **256** registered golden sources (31 original fixtures, 225 corpus sources), taken on **2026-10-21**. The check reconciles
 `document-paths evidence: ok (68 census rows, 7 ledger keys, 1 gap row)`; the feature-combination rows at the end of this file are reconciled with the conjunction rows instead.
 
 A registration, a withdrawal or a grammar change that moves the census fails the
