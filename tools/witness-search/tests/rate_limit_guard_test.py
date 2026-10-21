@@ -874,6 +874,7 @@ class ResponseCacheTests(GuardTestCase):
                 # The live answer replaced the entry, which serves the next ask.
                 self.assertTrue(self.fetch(guard, path, {})[2])
 
+    @unittest.skipIf(os.name == "nt", "a read-only directory mode does not deny writes on Windows")
     def test_a_cache_that_cannot_be_written_costs_the_caller_nothing(self) -> None:
         path = "/repos/o/r/contents"
         self.cache.chmod(0o500)
@@ -903,6 +904,27 @@ class ResponseCacheTests(GuardTestCase):
         cached = guard_module.cache_lookup("GET", url, {})
         assert cached is not None
         self.assertEqual((cached.status, cached.body()), (200, b"tree archive bytes"))
+
+    def test_a_body_already_published_is_not_replaced_and_a_torn_one_is(self) -> None:
+        # A reader may hold the body open, which a replace breaks on Windows, so
+        # storing the same bytes again leaves that very file in place.
+        url = "https://api.github.com/repos/o/r/contents/same"
+        stored = guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        assert stored is not None
+        before = stored.body_path.stat()
+        again = guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        assert again is not None
+        self.assertEqual(again.body_path, stored.body_path)
+        after = stored.body_path.stat()
+        self.assertEqual((after.st_ino, after.st_mtime_ns), (before.st_ino, before.st_mtime_ns))
+        # A body file whose bytes no longer match its name is published again.
+        stored.body_path.write_bytes(b"torn")
+        self.assertIsNone(guard_module.cache_lookup("GET", url, {}))
+        guard_module.cache_store("GET", url, {}, 200, {}, b"same bytes")
+        cached = guard_module.cache_lookup("GET", url, {})
+        assert cached is not None
+        self.assertEqual(cached.body(), b"same bytes")
+        self.assertEqual([path.name for path in self.cache.rglob(".*.tmp")], [])
 
     def test_an_answer_that_is_not_a_success_is_cached(self) -> None:
         self.fixture.scripted["/repos/o/r/contents"] = [(404, {"x-ratelimit-resource": "core"})]

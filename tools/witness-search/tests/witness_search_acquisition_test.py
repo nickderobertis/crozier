@@ -1637,19 +1637,21 @@ class WitnessSearchAcquisitionTest(unittest.TestCase):
             self.assertEqual((record["cache"], record["status"], record["error"]), ("hit", 404, "Not Found"))
 
             # A cached tree that cannot be copied out is a failed acquisition, recorded with its cause.
-            blocked = root / "seven"
-            (blocked / "evidence").mkdir(parents=True)
-            blocked.chmod(0o500)
-            try:
-                stuck, evidence = acquire("/tree.tar.gz", "seven")
-            finally:
-                blocked.chmod(0o700)
-            self.assertEqual(stuck.returncode, 1)
-            self.assertIn("could not copy the cached response", stuck.stderr)
-            self.assertFalse((blocked / "tree.tar.gz").exists())
-            (record,) = [json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text().splitlines()]
-            self.assertEqual((record["cache"], record["status"]), ("hit", 200))
-            self.assertNotIn("sha256", record)
+            # A read-only directory denies the copy only where file modes are enforced.
+            if os.name != "nt":
+                blocked = root / "seven"
+                (blocked / "evidence").mkdir(parents=True)
+                blocked.chmod(0o500)
+                try:
+                    stuck, evidence = acquire("/tree.tar.gz", "seven")
+                finally:
+                    blocked.chmod(0o700)
+                self.assertEqual(stuck.returncode, 1)
+                self.assertIn("could not copy the cached response", stuck.stderr)
+                self.assertFalse((blocked / "tree.tar.gz").exists())
+                (record,) = [json.loads(line) for line in (evidence / "acquisitions.jsonl").read_text().splitlines()]
+                self.assertEqual((record["cache"], record["status"]), ("hit", 200))
+                self.assertNotIn("sha256", record)
             self.assertEqual(state["requests"].count("/tree.tar.gz"), 1)
 
     def test_guarded_acquisition_waits_for_cap_and_records_refusal(self) -> None:

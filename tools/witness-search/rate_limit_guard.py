@@ -142,7 +142,8 @@ of the key and the token is never stored. Each entry is two files under
 their own digest) and ``<key>.json`` (the status, the response headers callers
 read, the body's size and SHA-256). Both are written to a temporary file and
 published with ``os.replace``, body first, so a reader in another process sees
-a whole entry or none. A body file is never overwritten with other bytes, so
+a whole entry or none. A body file is never overwritten with other bytes, and
+one already holding its bytes is left in place, so
 a hit's headers and body stay one answer while another writer stores a
 different one for the same key; an entry whose body does not match its
 recorded digest is a miss.
@@ -1006,7 +1007,15 @@ def cache_store(
                 shutil.copyfile(body, staged)
             sha256, size = _file_digest(staged)
             body_path = _body_path(root, key, sha256)
-            os.replace(staged, body_path)
+            # A body already holding these bytes is left in place: replacing a
+            # file another process has open fails on Windows, and a reader
+            # there would see it vanish mid-replace.
+            try:
+                published = _file_digest(body_path) == (sha256, size)
+            except OSError:
+                published = False
+            if not published:
+                os.replace(staged, body_path)
         finally:
             staged.unlink(missing_ok=True)
         meta: CacheMeta = {"status": status, "headers": [list(pair) for pair in kept], "sha256": sha256, "bytes": size}
